@@ -83,7 +83,10 @@ export const useRunner = create<RunnerState>()(
       set({ gameState: state });
     },
     
-    setCharacter: (character) => set({ selectedCharacter: character }),
+    setCharacter: (character) => {
+      console.log("setCharacter called with:", character);
+      set({ selectedCharacter: character });
+    },
     
     movePlayer: (direction) => {
       const { player, lanes } = get();

@@ -45,10 +45,14 @@ export default function CharacterSelect() {
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-purple-400 via-pink-400 to-red-400 p-4">
       <div className="w-full max-w-4xl">
         <Card className="bg-white bg-opacity-95 backdrop-blur-sm shadow-2xl">
-          <CardHeader className="text-center">
+          <CardHeader className="text-center relative">
             <Button 
               variant="outline" 
-              onClick={goBack}
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("Back button clicked");
+                goBack();
+              }}
               className="absolute top-4 left-4"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -72,7 +76,11 @@ export default function CharacterSelect() {
                       ? 'ring-4 ring-yellow-400 bg-yellow-50' 
                       : 'hover:shadow-lg'
                   }`}
-                  onClick={() => setCharacter(character.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log("Character selected:", character.id);
+                    setCharacter(character.id);
+                  }}
                 >
                   <CardContent className="p-6 text-center">
                     {/* Character Avatar */}
@@ -144,7 +152,11 @@ export default function CharacterSelect() {
             {/* Start Game Button */}
             <div className="text-center">
               <Button 
-                onClick={startGame}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log("Start Running clicked!");
+                  startGame();
+                }}
                 className="w-full max-w-md text-xl py-6 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold"
               >
                 Start Running!
