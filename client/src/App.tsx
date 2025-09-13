@@ -33,6 +33,9 @@ function App() {
   const { phase } = useGame();
   const { gameState, inChoiceMode } = useRunner();
 
+  // Debug logging
+  console.log("App render - phase:", phase, "gameState:", gameState);
+
   return (
     <div style={{ 
       width: '100vw', 

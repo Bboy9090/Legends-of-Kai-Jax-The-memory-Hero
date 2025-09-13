@@ -78,7 +78,10 @@ export const useRunner = create<RunnerState>()(
     baseSpeed: 10,
     lanes: [-4, 0, 4],
     
-    setGameState: (state) => set({ gameState: state }),
+    setGameState: (state) => {
+      console.log("setGameState called with:", state);
+      set({ gameState: state });
+    },
     
     setCharacter: (character) => set({ selectedCharacter: character }),
     
