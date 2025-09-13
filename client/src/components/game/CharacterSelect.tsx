@@ -9,8 +9,9 @@ export default function CharacterSelect() {
   const { start } = useGame();
   
   const startGame = () => {
-    setGameState("playing");
-    start();
+    console.log("Starting game with character:", selectedCharacter);
+    start(); // First change phase to "playing"
+    setGameState("playing"); // Then set game state to "playing"
   };
   
   const goBack = () => {
