@@ -177,10 +177,10 @@ export default function Environment({ playerZ }: EnvironmentProps) {
         </group>
       ))}
       
-      {/* Skybox/Background */}
-      <mesh position={[0, 20, playerZ]}>
-        <planeGeometry args={[200, 40]} />
-        <meshBasicMaterial color="#87CEEB" />
+      {/* Apartment Ceiling */}
+      <mesh position={[0, 15, playerZ]}>
+        <planeGeometry args={[30, 200]} />
+        <meshBasicMaterial color="#F5F5DC" />
       </mesh>
     </group>
   );
