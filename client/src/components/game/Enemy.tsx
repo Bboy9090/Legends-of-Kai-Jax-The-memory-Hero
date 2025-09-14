@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { type Enemy as EnemyType } from "../../lib/gameLogic";
@@ -9,6 +9,19 @@ interface EnemyProps {
 
 export default function Enemy({ enemy }: EnemyProps) {
   const meshRef = useRef<THREE.Group>(null);
+  
+  // Pre-calculate random values for goo bubbles to avoid Math.random() in render
+  const gooBubbles = useMemo(() => {
+    return [0, 1, 2].map(i => ({
+      id: i,
+      position: [
+        (Math.random() - 0.5) * 1.5, 
+        0.5 + Math.random() * 0.5, 
+        (Math.random() - 0.5) * 1.5
+      ] as [number, number, number],
+      radius: 0.1 + Math.random() * 0.1
+    }));
+  }, [enemy.id]); // Only recalculate if enemy changes
   
   // Simple movement animation for scuttle bots
   useFrame((state, delta) => {
@@ -109,13 +122,9 @@ export default function Enemy({ enemy }: EnemyProps) {
           </mesh>
           
           {/* Goo bubbles */}
-          {[0, 1, 2].map(i => (
-            <mesh key={`bubble_${i}`} position={[
-              (Math.random() - 0.5) * 1.5, 
-              0.5 + Math.random() * 0.5, 
-              (Math.random() - 0.5) * 1.5
-            ]} castShadow>
-              <sphereGeometry args={[0.1 + Math.random() * 0.1]} />
+          {gooBubbles.map(bubble => (
+            <mesh key={`bubble_${bubble.id}`} position={bubble.position} castShadow>
+              <sphereGeometry args={[bubble.radius]} />
               <meshLambertMaterial color="#87CEEB" transparent opacity={0.8} />
             </mesh>
           ))}
