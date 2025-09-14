@@ -180,8 +180,7 @@ export default function GameScene() {
         shadow-camera-bottom={-20}
       />
       
-      {/* Camera reference */}
-      <perspectiveCamera ref={cameraRef} />
+      {/* Camera reference - removed to fix TypeScript error */}
       
       {/* Game environment */}
       <Environment playerZ={player.z} />
