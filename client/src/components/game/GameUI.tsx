@@ -3,10 +3,28 @@ import { useGame } from "../../lib/stores/useGame";
 import { useAudio } from "../../lib/stores/useAudio";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
-import { Heart, Star, Coins, Trophy, Volume2, VolumeX, Pause, Play } from "lucide-react";
+import { Heart, Star, Coins, Trophy, Volume2, VolumeX, Pause, Play, Zap, Flame, RefreshCw, Users } from "lucide-react";
 
 export default function GameUI() {
-  const { stats, gameState, setGameState, resetGame } = useRunner();
+  const { 
+    stats, 
+    gameState, 
+    setGameState, 
+    resetGame, 
+    selectedCharacter,
+    activeCharacter,
+    switchCharacter,
+    reunionMode,
+    player,
+    toyChaseActive,
+    dogZoomiesActive,
+    pillowMountainHeight,
+    activateRuleBreaking,
+    activateMasterPlan,
+    buildPillowMountain,
+    startToyChase,
+    triggerDogZoomies
+  } = useRunner();
   const { phase, restart } = useGame();
   const { isMuted, toggleMute } = useAudio();
   
@@ -96,6 +114,33 @@ export default function GameUI() {
                   <Heart className="w-4 h-4 text-pink-400" />
                   <span>{stats.helpTokens}/3</span>
                 </div>
+                
+                {/* Bond Meter */}
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-purple-400" />
+                  <div className="w-16 h-2 bg-gray-600 rounded-full">
+                    <div 
+                      className="h-full bg-purple-400 rounded-full transition-all"
+                      style={{ width: `${stats.bondMeter}%` }}
+                    />
+                  </div>
+                </div>
+                
+                {/* Volume Meter */}
+                {stats.volumeLevel > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Volume2 className="w-4 h-4 text-yellow-400" />
+                    <div className="w-16 h-2 bg-gray-600 rounded-full">
+                      <div 
+                        className={`h-full rounded-full transition-all ${
+                          stats.volumeLevel > 80 ? 'bg-red-400' : 
+                          stats.volumeLevel > 50 ? 'bg-yellow-400' : 'bg-green-400'
+                        }`}
+                        style={{ width: `${stats.volumeLevel}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -103,6 +148,18 @@ export default function GameUI() {
         
         {/* Control Buttons */}
         <div className="flex gap-2 pointer-events-auto">
+          {/* Character Switch Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={switchCharacter}
+            className={`bg-black bg-opacity-60 text-white border-gray-600 hover:bg-opacity-80 ${
+              activeCharacter === "jaxon" ? "border-blue-400" : "border-red-400"
+            }`}
+          >
+            {activeCharacter === "jaxon" ? <Zap className="w-4 h-4" /> : <Flame className="w-4 h-4" />}
+          </Button>
+          
           <Button
             variant="outline"
             size="sm"
@@ -134,13 +191,140 @@ export default function GameUI() {
         </Card>
       </div>
       
-      {/* Kindness Points */}
+      {/* Creative Chaos Panel */}
       <div className="absolute bottom-4 left-4 pointer-events-auto">
         <Card className="bg-black bg-opacity-60 text-white border-none">
           <CardContent className="p-3">
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 text-blue-400" />
-              <span className="font-bold">Kindness: {stats.kindnessPoints}</span>
+            <div className="flex flex-col gap-2 text-sm">
+              {/* Active Character Display */}
+              <div className="flex items-center gap-2 mb-2">
+                {activeCharacter === "jaxon" ? <Zap className="w-4 h-4 text-blue-400" /> : <Flame className="w-4 h-4 text-red-400" />}
+                <span className="font-bold">
+                  {activeCharacter === "jaxon" ? "Fearless Jaxon" : "Strategic Kaison"}
+                </span>
+              </div>
+              
+              {/* Reunion Mode Indicator */}
+              {reunionMode !== "normal" && (
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-purple-400" />
+                  <span className="capitalize">{reunionMode} Reunion!</span>
+                </div>
+              )}
+              
+              {/* Active Chaos Indicators */}
+              {toyChaseActive && (
+                <div className="flex items-center gap-2 text-yellow-400">
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>I got the toy!</span>
+                </div>
+              )}
+              
+              {dogZoomiesActive && (
+                <div className="flex items-center gap-2 text-green-400">
+                  <RefreshCw className="w-4 h-4 animate-bounce" />
+                  <span>Dog Zoomies!</span>
+                </div>
+              )}
+              
+              {pillowMountainHeight > 0 && (
+                <div className="flex items-center gap-2 text-blue-400">
+                  <Star className="w-4 h-4" />
+                  <span>Mountain Level: {pillowMountainHeight}</span>
+                </div>
+              )}
+              
+              {/* Player Special States */}
+              {player.isRuleBreaking && (
+                <div className="flex items-center gap-2 text-blue-300 animate-pulse">
+                  <Zap className="w-4 h-4" />
+                  <span>Rule Breaking Mode!</span>
+                </div>
+              )}
+              
+              {player.isMasterPlanning && (
+                <div className="flex items-center gap-2 text-red-300 animate-pulse">
+                  <Flame className="w-4 h-4" />
+                  <span>Master Planning...</span>
+                </div>
+              )}
+              
+              {/* Kindness Points */}
+              <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-600">
+                <Star className="w-4 h-4 text-yellow-400" />
+                <span className="font-bold">Kindness: {stats.kindnessPoints}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Special Abilities Panel */}
+      <div className="absolute bottom-4 right-4 pointer-events-auto">
+        <Card className="bg-black bg-opacity-60 text-white border-none">
+          <CardContent className="p-3">
+            <div className="flex gap-2">
+              {/* Pillow Mountain Builder */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={buildPillowMountain}
+                className="bg-blue-600 bg-opacity-40 text-white border-blue-400 hover:bg-opacity-60"
+                title="Build Pillow Mountain!"
+              >
+                🏔️
+              </Button>
+              
+              {/* Toy Chase */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={startToyChase}
+                disabled={toyChaseActive}
+                className="bg-yellow-600 bg-opacity-40 text-white border-yellow-400 hover:bg-opacity-60 disabled:opacity-50"
+                title="I got the toy!"
+              >
+                🧸
+              </Button>
+              
+              {/* Dog Zoomies */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={triggerDogZoomies}
+                disabled={dogZoomiesActive}
+                className="bg-green-600 bg-opacity-40 text-white border-green-400 hover:bg-opacity-60 disabled:opacity-50"
+                title="Trigger Dog Zoomies!"
+              >
+                🐕
+              </Button>
+              
+              {/* Character Special Abilities */}
+              {activeCharacter === "jaxon" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={activateRuleBreaking}
+                  disabled={player.isRuleBreaking}
+                  className="bg-blue-600 bg-opacity-40 text-white border-blue-400 hover:bg-opacity-60 disabled:opacity-50"
+                  title="Jaxon's Rule Breaking!"
+                >
+                  <Zap className="w-4 h-4" />
+                </Button>
+              )}
+              
+              {activeCharacter === "kaison" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={activateMasterPlan}
+                  disabled={player.isMasterPlanning}
+                  className="bg-red-600 bg-opacity-40 text-white border-red-400 hover:bg-opacity-60 disabled:opacity-50"
+                  title="Kaison's Master Plan!"
+                >
+                  <Flame className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
