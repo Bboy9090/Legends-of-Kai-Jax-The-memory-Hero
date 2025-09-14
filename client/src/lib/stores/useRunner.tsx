@@ -83,7 +83,7 @@ interface RunnerState {
 
 const initialPlayerState: PlayerState = {
   x: 0,
-  y: 0,
+  y: 1.6, // Raise player above floor so legs don't sink into ground
   z: 0,
   isJumping: false,
   isSliding: false,
