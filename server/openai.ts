@@ -8,7 +8,14 @@ Follow these instructions when using this blueprint:
 */
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Debug API key loading
+console.log('OPENAI_API_KEY length:', process.env.OPENAI_API_KEY?.length);
+console.log('OPENAI_API_KEY prefix:', process.env.OPENAI_API_KEY?.substring(0, 10));
+
+const openai = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY 
+});
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
