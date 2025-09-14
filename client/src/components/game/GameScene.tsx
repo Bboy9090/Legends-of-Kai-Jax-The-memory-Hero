@@ -117,15 +117,17 @@ export default function GameScene() {
     const playerPos = new THREE.Vector3(player.x, player.y, player.z);
     const playerSize = new THREE.Vector3(1.2, 1.8, 1.2);
     
-    // Check obstacle collisions
-    obstacles.forEach(obstacle => {
-      if (obstacle.active && checkAABBCollision(playerPos, playerSize, obstacle.position, obstacle.size)) {
-        // Player hit obstacle - game over
-        console.log("Hit obstacle!");
-        playHit();
-        end();
-      }
-    });
+    // Check obstacle collisions (skip during startup grace period)
+    if (player.z > 10) {
+      obstacles.forEach(obstacle => {
+        if (obstacle.active && checkAABBCollision(playerPos, playerSize, obstacle.position, obstacle.size)) {
+          // Player hit obstacle - game over
+          console.log("Hit obstacle! Player Z:", player.z, "Obstacle:", obstacle);
+          playHit();
+          end();
+        }
+      });
+    }
     
     // Check enemy collisions
     setEnemies(prev => prev.map(enemy => {
