@@ -9,6 +9,7 @@ import GameUI from "./components/game/GameUI";
 import MainMenu from "./components/game/MainMenu";
 import CharacterSelect from "./components/game/CharacterSelect";
 import ChoiceMode from "./components/game/ChoiceMode";
+import AIAssistantDemo from "./components/game/AIAssistantDemo";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 
@@ -50,6 +51,9 @@ function App() {
         
         {/* Character Selection */}
         {phase === 'ready' && gameState === 'character-select' && <CharacterSelect />}
+        
+        {/* AI Assistant */}
+        {phase === 'ready' && gameState === 'ai-assistant' && <AIAssistantDemo />}
         
         {/* Game Canvas */}
         {(phase === 'playing' || phase === 'ended') && (

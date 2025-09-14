@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
-export type GameState = "menu" | "character-select" | "playing" | "paused" | "game-over";
+export type GameState = "menu" | "character-select" | "playing" | "paused" | "game-over" | "ai-assistant";
 export type Character = "jaxon" | "kaison";
 export type ReunionMode = "sleepy" | "hyper" | "normal";
 

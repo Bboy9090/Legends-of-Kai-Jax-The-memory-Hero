@@ -2,7 +2,7 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { useAudio } from "../../lib/stores/useAudio";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Play, Settings, Volume2, VolumeX } from "lucide-react";
+import { Play, Settings, Volume2, VolumeX, MessageCircle } from "lucide-react";
 
 export default function MainMenu() {
   const { setGameState } = useRunner();
@@ -10,6 +10,10 @@ export default function MainMenu() {
   
   const startGame = () => {
     setGameState("character-select");
+  };
+
+  const openAIAssistant = () => {
+    setGameState("ai-assistant");
   };
   
   return (
@@ -78,6 +82,15 @@ export default function MainMenu() {
             >
               <Play className="w-6 h-6 mr-2" />
               Start Adventure
+            </Button>
+
+            {/* AI Assistant button */}
+            <Button 
+              onClick={openAIAssistant}
+              className="w-full text-lg py-4 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold"
+            >
+              <MessageCircle className="w-5 h-5 mr-2" />
+              AI Assistant
             </Button>
             
             {/* Settings */}
