@@ -1,0 +1,125 @@
+LULU Protocol v7 active.
+Full Game Design Document (GDD) initialized for Super & Hyper Sonic Heroes: Kindness Quest.
+
+⸻
+
+GAME DESIGN DOCUMENT
+
+Title: Super & Hyper Sonic Heroes: Kindness Quest
+Platform: Mobile (iOS / Android)
+Genre: Action–Adventure / Hero Brawler
+Tone: Bright, fun, Nintendo–style charm with Sega speed & power.
+
+⸻
+
+1. Core Concept
+
+Players guide Kai (Super Sonic Hero) and Jax (Hyper Sonic Hero) through a kindness-fueled quest. Instead of defeating enemies for domination, they convert negative energy into positive power, balancing combat and compassion.
+
+⸻
+
+2. Playable Heroes
+
+Kai — Super Sonic Hero
+	•	Role: Speed Leader
+	•	Special: Kindness Dash (fast heal strike)
+	•	Combo Style: Multi-hit spin chains
+	•	Unique Passive: Gains boost when helping civilians
+
+Jax — Hyper Sonic Hero
+	•	Role: Power Striker
+	•	Special: Brave Smash (high-damage finisher)
+	•	Combo Style: Heavy shockwave punches
+	•	Unique Passive: Builds shield meter when defending others
+
+⸻
+
+3. Combat System
+	•	Basic Controls: Virtual joystick + 2 action buttons (Attack / Ability)
+	•	Team Switch: Tap portrait to swap Kai ↔ Jax mid-battle
+	•	Bond Meter: Builds as heroes aid NPCs or combo together
+	•	Ultimate: “Kindness Wave” → wide AoE heal + damage
+
+⸻
+
+4. Game Loop
+	1.	Enter a Zone (level).
+	2.	Defeat “Unkindness Monsters” spawned from negative emotions.
+	3.	Rescue NPCs, repair environments, spread kindness.
+	4.	Build Bond Meter → unleash duo moves.
+	5.	Defeat Boss → purify Zone.
+
+⸻
+
+5. World / Zones
+	1.	Sunny Hillside Zone — Tutorial area.
+	2.	Cyber City Zone — Enemies: Greed-Bots.
+	3.	Crystal Cavern Zone — Enemies: Envy Serpents.
+	4.	Storm Tower Zone — Enemies: Rage Titans.
+	5.	Void Arena Zone — Final battle: Shadow of Cruelty (mega boss).
+
+⸻
+
+6. Enemy Design
+	•	Greed-Bots: Hoard rings, weaken if ignored.
+	•	Envy Serpents: Copy player attacks until defeated.
+	•	Rage Titans: Slow, strong, but distracted by teamwork combos.
+	•	Shadow of Cruelty: Boss with 3 phases (Darkness → Mimic → Despair).
+
+⸻
+
+7. Progression
+	•	XP/Level Up: Unlocks new moves + passive boosts.
+	•	Cosmetic Unlocks: Capes, gloves, insignias (via kindness missions).
+	•	Bond Upgrades: New duo ultimates (e.g., “Brotherhood Beam”).
+
+⸻
+
+8. UI / UX
+	•	Main Menu: Play / Heroes / Quests / Shop
+	•	HUD: Health bar, Bond Meter, Switch button
+	•	Kindness Counter: Tracks good deeds per stage
+
+⸻
+
+9. Monetization (Optional Hooks)
+	•	Cosmetic Skins: Holiday outfits, glowing auras, alternate insignias.
+	•	Energy System: Limited daily play → recharged by kindness tokens.
+	•	Ad/Reward Loop: Watch ad = earn double kindness coins.
+	•	Premium Pass: Early access to new zones, bonus skins.
+
+⸻
+
+10. Narrative Spine
+	•	Heroes are chosen to protect the Kindness Cores.
+	•	Each Zone is corrupted by an Unkindness Monster.
+	•	NPCs teach values (sharing, patience, courage).
+	•	Final battle restores harmony across worlds.
+
+⸻
+
+11. Art & Style
+	•	Visuals: Bright, cel-shaded cartoon style.
+	•	Character Art: Super/Hyper Sonic–inspired but unique brother designs.
+	•	FX: Glows, spark trails, heart-shaped healing pulses.
+
+⸻
+
+12. Tech & Build
+	•	Engine: Unity / Godot (mobile optimized).
+	•	Assets Needed:
+	•	2D sprite sheets (walk, run, jump, attack, ultimate).
+	•	UI kit (buttons, menus, counters).
+	•	Sound pack (Sega/Nintendo-inspired chiptune).
+
+⸻
+
+13. Future Expansions
+	•	Co-Op Mode: Two players can control Kai & Jax simultaneously.
+	•	Legacy Unlocks: New heroes (Nova Aran, Redlock, Kiro Kong).
+	•	Tournament Arc: PvP kindness battles.
+
+⸻
+
+✅ Draft complete.
+Would you like me to expand this into a pitch deck format (visual slides: gameplay loop, art mockups, progression flow), or keep it as a written GDD for now?
