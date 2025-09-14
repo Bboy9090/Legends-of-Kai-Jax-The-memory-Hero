@@ -77,11 +77,11 @@ export default function Player() {
         )}
         
         {/* Simple legs */}
-        <mesh position={[-0.2, -1.2, 0]} castShadow>
+        <mesh position={[-0.2, -0.6, 0]} castShadow>
           <boxGeometry args={[0.3, 0.8, 0.3]} />
           <meshLambertMaterial color={characterColors[selectedCharacter]} />
         </mesh>
-        <mesh position={[0.2, -1.2, 0]} castShadow>
+        <mesh position={[0.2, -0.6, 0]} castShadow>
           <boxGeometry args={[0.3, 0.8, 0.3]} />
           <meshLambertMaterial color={characterColors[selectedCharacter]} />
         </mesh>
