@@ -35,23 +35,23 @@ export default function CharacterSelect() {
   const characters = [
     {
       id: "jaxon" as const,
-      name: "Hyper Sonic Jaxon",
-      description: "The energetic twin with lightning-fast reflexes",
+      name: "Fearless Jaxon",
+      description: "The youngest but most daring - breaks rules with a smile!",
       color: "bg-blue-500",
       accent: "text-blue-600",
       icon: Zap,
-      traits: ["Quick thinking", "High energy", "Impulsive but brave"],
-      power: "Lightning Speed"
+      traits: ["Fearless adventurer", "Rule-breaker extraordinaire", "Charms his way out of trouble"],
+      power: "Chaos Creator"
     },
     {
       id: "kaison" as const,
-      name: "Super Sonic Kaison",
-      description: "The strategic twin with solar-powered strength",
+      name: "Strategic Kaison",
+      description: "The big brother mastermind who follows little brother's adventures",
       color: "bg-red-500",
       accent: "text-red-600",
       icon: Flame,
-      traits: ["Strategic mind", "Thoughtful planning", "Steady and reliable"],
-      power: "Solar Energy"
+      traits: ["Secret mastermind", "Protective big brother", "Points finger with a grin"],
+      power: "Master Planner"
     }
   ];
   

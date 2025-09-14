@@ -7,138 +7,170 @@ interface EnvironmentProps {
 }
 
 export default function Environment({ playerZ }: EnvironmentProps) {
-  const roadTexture = useTexture("/textures/asphalt.png");
-  const sidewalkTexture = useTexture("/textures/asphalt.png");
+  const floorTexture = useTexture("/textures/wood.jpg"); // Dad's apartment floor
+  const carpetTexture = useTexture("/textures/wood.jpg"); // For the play areas
   
-  // Configure texture repetition
-  roadTexture.wrapS = roadTexture.wrapT = THREE.RepeatWrapping;
-  roadTexture.repeat.set(2, 50);
+  // Configure texture repetition for apartment floor
+  floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+  floorTexture.repeat.set(4, 20); // Apartment hallway feel
   
-  sidewalkTexture.wrapS = sidewalkTexture.wrapT = THREE.RepeatWrapping;
-  sidewalkTexture.repeat.set(1, 50);
+  carpetTexture.wrapS = carpetTexture.wrapT = THREE.RepeatWrapping;
+  carpetTexture.repeat.set(2, 20);
   
-  // Generate city buildings
-  const buildings = useMemo(() => {
-    const buildingArray = [];
-    const buildingCount = 20;
+  // Generate apartment furniture (couch, coffee table, etc.)
+  const furniture = useMemo(() => {
+    const furnitureArray = [];
+    const furnitureCount = 12;
     
-    for (let i = 0; i < buildingCount; i++) {
+    for (let i = 0; i < furnitureCount; i++) {
       const side = Math.random() < 0.5 ? -1 : 1;
-      const x = side * (15 + Math.random() * 10);
-      const z = (i - 10) * 30 + Math.random() * 20;
-      const height = 5 + Math.random() * 15;
-      const width = 3 + Math.random() * 4;
-      const depth = 3 + Math.random() * 4;
+      const x = side * (8 + Math.random() * 6); // Closer to apartment walls
+      const z = (i - 6) * 25 + Math.random() * 15;
       
-      buildingArray.push({
-        id: `building_${i}`,
-        position: [x, height / 2, z] as [number, number, number],
-        size: [width, height, depth] as [number, number, number],
-        color: `hsl(${200 + Math.random() * 60}, 30%, ${40 + Math.random() * 20}%)`
+      // Different furniture types
+      const furnitureTypes = ['couch', 'coffee_table', 'tv_stand', 'bookshelf'];
+      const type = furnitureTypes[Math.floor(Math.random() * furnitureTypes.length)];
+      
+      let size, height, color;
+      switch (type) {
+        case 'couch':
+          size = [3, 1, 1.5];
+          height = 0.5;
+          color = '#8B4513'; // Brown
+          break;
+        case 'coffee_table':
+          size = [2, 0.8, 1];
+          height = 0.4;
+          color = '#654321'; // Dark brown
+          break;
+        case 'tv_stand':
+          size = [4, 1.5, 1];
+          height = 0.75;
+          color = '#2F4F4F'; // Dark slate gray
+          break;
+        case 'bookshelf':
+          size = [1.5, 4, 0.8];
+          height = 2;
+          color = '#8B4513'; // Brown
+          break;
+        default:
+          size = [2, 1, 1];
+          height = 0.5;
+          color = '#8B4513';
+      }
+      
+      furnitureArray.push({
+        id: `furniture_${i}`,
+        type,
+        position: [x, height, z] as [number, number, number],
+        size: size as [number, number, number],
+        color
       });
     }
     
-    return buildingArray;
+    return furnitureArray;
   }, []);
   
-  // Generate street props
-  const streetProps = useMemo(() => {
-    const props = [];
-    const propCount = 15;
+  // Generate apartment items (toys, pillows, etc.)
+  const apartmentItems = useMemo(() => {
+    const items = [];
+    const itemCount = 10;
     
-    for (let i = 0; i < propCount; i++) {
-      const z = i * 25;
-      const types = ['streetlight', 'tree', 'bench'];
+    for (let i = 0; i < itemCount; i++) {
+      const z = i * 30;
+      const types = ['toy_car', 'pillow', 'lamp', 'plant'];
       const type = types[Math.floor(Math.random() * types.length)];
       const side = Math.random() < 0.5 ? -1 : 1;
       
-      props.push({
-        id: `prop_${i}`,
+      items.push({
+        id: `item_${i}`,
         type,
-        position: [side * 8, 0, z] as [number, number, number]
+        position: [side * 6, 0, z] as [number, number, number]
       });
     }
     
-    return props;
+    return items;
   }, []);
   
   return (
     <group>
-      {/* Road surface */}
+      {/* Apartment Floor */}
       <mesh position={[0, -0.1, playerZ]} receiveShadow>
-        <planeGeometry args={[20, 200]} />
-        <meshLambertMaterial map={roadTexture} />
+        <planeGeometry args={[16, 200]} />
+        <meshLambertMaterial map={floorTexture} />
       </mesh>
       
-      {/* Lane dividers */}
-      {[-2, 2].map((x, i) => (
-        <mesh key={`divider_${i}`} position={[x, 0, playerZ]}>
-          <boxGeometry args={[0.2, 0.1, 200]} />
-          <meshLambertMaterial color="#FFFF00" />
+      {/* Apartment Carpet Lines (play zones) */}
+      {[-3, 3].map((x, i) => (
+        <mesh key={`carpet_${i}`} position={[x, -0.05, playerZ]} receiveShadow>
+          <planeGeometry args={[2, 200]} />
+          <meshLambertMaterial map={carpetTexture} color="#8B4513" />
         </mesh>
       ))}
       
-      {/* Sidewalks */}
-      <mesh position={[-12, -0.05, playerZ]} receiveShadow>
-        <planeGeometry args={[8, 200]} />
-        <meshLambertMaterial map={sidewalkTexture} color="#888888" />
-      </mesh>
-      <mesh position={[12, -0.05, playerZ]} receiveShadow>
-        <planeGeometry args={[8, 200]} />
-        <meshLambertMaterial map={sidewalkTexture} color="#888888" />
-      </mesh>
-      
-      {/* Buildings */}
-      {buildings.map(building => (
+      {/* Apartment Furniture */}
+      {furniture.map((item: any) => (
         <mesh
-          key={building.id}
-          position={building.position}
+          key={item.id}
+          position={item.position}
           castShadow
           receiveShadow
         >
-          <boxGeometry args={building.size} />
-          <meshLambertMaterial color={building.color} />
+          <boxGeometry args={item.size} />
+          <meshLambertMaterial color={item.color} />
         </mesh>
       ))}
       
-      {/* Street props */}
-      {streetProps.map(prop => (
-        <group key={prop.id} position={prop.position}>
-          {prop.type === 'streetlight' && (
+      {/* Apartment Items */}
+      {apartmentItems.map(item => (
+        <group key={item.id} position={item.position}>
+          {item.type === 'toy_car' && (
             <>
-              <mesh position={[0, 3, 0]} castShadow>
-                <cylinderGeometry args={[0.1, 0.1, 6]} />
-                <meshLambertMaterial color="#555555" />
+              <mesh position={[0, 0.2, 0]} castShadow>
+                <boxGeometry args={[1, 0.4, 0.6]} />
+                <meshLambertMaterial color="#FF4757" />
               </mesh>
-              <mesh position={[0, 6, 0]} castShadow>
-                <sphereGeometry args={[0.3]} />
-                <meshLambertMaterial color="#FFFF88" />
+              {/* Car wheels */}
+              {[[-0.4, -0.3], [0.4, -0.3], [-0.4, 0.3], [0.4, 0.3]].map((pos, i) => (
+                <mesh key={i} position={[pos[0], 0.1, pos[1]]} castShadow>
+                  <cylinderGeometry args={[0.1, 0.1, 0.2]} />
+                  <meshLambertMaterial color="#333333" />
+                </mesh>
+              ))}
+            </>
+          )}
+          
+          {item.type === 'pillow' && (
+            <>
+              <mesh position={[0, 0.2, 0]} castShadow>
+                <boxGeometry args={[1.2, 0.4, 1.2]} />
+                <meshLambertMaterial color="#FFB6C1" />
               </mesh>
             </>
           )}
           
-          {prop.type === 'tree' && (
+          {item.type === 'lamp' && (
             <>
-              <mesh position={[0, 1.5, 0]} castShadow>
-                <cylinderGeometry args={[0.3, 0.3, 3]} />
+              <mesh position={[0, 1, 0]} castShadow>
+                <cylinderGeometry args={[0.05, 0.05, 2]} />
                 <meshLambertMaterial color="#8B4513" />
               </mesh>
-              <mesh position={[0, 4, 0]} castShadow>
-                <sphereGeometry args={[1.5]} />
-                <meshLambertMaterial color="#228B22" />
+              <mesh position={[0, 2.2, 0]} castShadow>
+                <coneGeometry args={[0.6, 0.8, 8]} />
+                <meshLambertMaterial color="#F5F5DC" />
               </mesh>
             </>
           )}
           
-          {prop.type === 'bench' && (
+          {item.type === 'plant' && (
             <>
-              <mesh position={[0, 0.5, 0]} castShadow>
-                <boxGeometry args={[2, 0.2, 0.8]} />
-                <meshLambertMaterial color="#654321" />
+              <mesh position={[0, 0.3, 0]} castShadow>
+                <cylinderGeometry args={[0.3, 0.3, 0.6]} />
+                <meshLambertMaterial color="#8B4513" />
               </mesh>
-              <mesh position={[0, 0.8, 0.3]} castShadow>
-                <boxGeometry args={[2, 0.6, 0.1]} />
-                <meshLambertMaterial color="#654321" />
+              <mesh position={[0, 1, 0]} castShadow>
+                <sphereGeometry args={[0.5]} />
+                <meshLambertMaterial color="#228B22" />
               </mesh>
             </>
           )}
