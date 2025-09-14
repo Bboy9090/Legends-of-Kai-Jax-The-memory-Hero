@@ -95,14 +95,14 @@ export default function Environment({ playerZ }: EnvironmentProps) {
   return (
     <group>
       {/* Apartment Floor */}
-      <mesh position={[0, -0.1, playerZ]} receiveShadow>
+      <mesh position={[0, -0.1, playerZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[16, 200]} />
         <meshLambertMaterial map={floorTexture} />
       </mesh>
       
       {/* Apartment Carpet Lines (play zones) */}
       {[-3, 3].map((x, i) => (
-        <mesh key={`carpet_${i}`} position={[x, -0.05, playerZ]} receiveShadow>
+        <mesh key={`carpet_${i}`} position={[x, -0.05, playerZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <planeGeometry args={[2, 200]} />
           <meshLambertMaterial map={carpetTexture} color="#8B4513" />
         </mesh>
