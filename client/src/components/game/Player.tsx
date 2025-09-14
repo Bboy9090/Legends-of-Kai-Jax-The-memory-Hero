@@ -31,8 +31,8 @@ export default function Player() {
   // Simple animation for running
   useFrame((state) => {
     if (meshRef.current && !player.isSliding) {
-      // Bobbing animation while running
-      meshRef.current.position.y += Math.sin(state.clock.elapsedTime * 8) * 0.1;
+      // Bobbing animation while running - use absolute position to prevent drift
+      meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 8) * 0.1;
       
       // Slight rotation for dynamic feel
       meshRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 6) * 0.05;
@@ -40,8 +40,8 @@ export default function Player() {
   });
   
   return (
-    <animated.group position={position}>
-      <animated.group scale={scale} rotation={rotation}>
+    <animated.group position={position as any}>
+      <animated.group scale={scale as any} rotation={rotation as any}>
         {/* Main character body */}
         <mesh ref={meshRef} castShadow receiveShadow>
           <boxGeometry args={[1, 1.6, 0.8]} />

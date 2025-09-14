@@ -91,7 +91,7 @@ export default function TouchControls() {
     const interval = setInterval(handleKeyboardControls, 16); // ~60fps
     
     return () => clearInterval(interval);
-  }, [gameState, get, jumpPlayer, slidePlayer, movePlayer]);
+  }, [gameState]); // Removed dependencies that cause unnecessary re-renders
   
   // Touch control UI for mobile devices
   if (!isTouchDevice() || gameState !== "playing") {

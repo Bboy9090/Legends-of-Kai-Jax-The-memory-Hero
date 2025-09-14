@@ -3,10 +3,12 @@ import { useGame } from "../../lib/stores/useGame";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { ArrowLeft, Zap, Flame } from "lucide-react";
+import { useRef } from "react";
 
 export default function CharacterSelect() {
   const { selectedCharacter, setCharacter, setGameState } = useRunner();
   const { start } = useGame();
+  const lastSelectionTime = useRef(0);
   
   const startGame = () => {
     console.log("Starting game with character:", selectedCharacter);
@@ -16,6 +18,18 @@ export default function CharacterSelect() {
   
   const goBack = () => {
     setGameState("menu");
+  };
+  
+  const handleCharacterSelect = (characterId: "jaxon" | "kaison") => {
+    const now = Date.now();
+    // Debounce character selection to prevent rapid multiple selections
+    if (now - lastSelectionTime.current < 100) { // 100ms debounce
+      return;
+    }
+    lastSelectionTime.current = now;
+    
+    console.log("Character selected:", characterId);
+    setCharacter(characterId);
   };
   
   const characters = [
@@ -78,8 +92,7 @@ export default function CharacterSelect() {
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    console.log("Character selected:", character.id);
-                    setCharacter(character.id);
+                    handleCharacterSelect(character.id);
                   }}
                 >
                   <CardContent className="p-6 text-center">

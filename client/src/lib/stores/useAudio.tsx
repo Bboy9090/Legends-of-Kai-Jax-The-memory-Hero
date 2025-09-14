@@ -43,16 +43,24 @@ export const useAudio = create<AudioState>((set, get) => ({
     if (hitSound) {
       // If sound is muted, don't play anything
       if (isMuted) {
-        console.log("Hit sound skipped (muted)");
         return;
       }
       
-      // Clone the sound to allow overlapping playback
-      const soundClone = hitSound.cloneNode() as HTMLAudioElement;
-      soundClone.volume = 0.3;
-      soundClone.play().catch(error => {
-        console.log("Hit sound play prevented:", error);
-      });
+      try {
+        // Clone the sound to allow overlapping playback
+        const soundClone = hitSound.cloneNode() as HTMLAudioElement;
+        soundClone.volume = 0.3;
+        soundClone.play().catch(error => {
+          // Sound autoplay blocked by browser - this is expected on first interaction
+          if (error.name === 'NotAllowedError') {
+            console.log("Hit sound blocked - awaiting user interaction");
+          } else {
+            console.warn("Hit sound failed to play:", error);
+          }
+        });
+      } catch (error) {
+        console.error("Failed to create hit sound clone:", error);
+      }
     }
   },
   
@@ -61,14 +69,22 @@ export const useAudio = create<AudioState>((set, get) => ({
     if (successSound) {
       // If sound is muted, don't play anything
       if (isMuted) {
-        console.log("Success sound skipped (muted)");
         return;
       }
       
-      successSound.currentTime = 0;
-      successSound.play().catch(error => {
-        console.log("Success sound play prevented:", error);
-      });
+      try {
+        successSound.currentTime = 0;
+        successSound.play().catch(error => {
+          // Sound autoplay blocked by browser - this is expected on first interaction
+          if (error.name === 'NotAllowedError') {
+            console.log("Success sound blocked - awaiting user interaction");
+          } else {
+            console.warn("Success sound failed to play:", error);
+          }
+        });
+      } catch (error) {
+        console.error("Failed to play success sound:", error);
+      }
     }
   }
 }));
