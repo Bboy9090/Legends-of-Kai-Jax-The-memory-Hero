@@ -19,7 +19,11 @@ enum Controls {
   slide = 'slide',
   left = 'left',
   right = 'right',
-  pause = 'pause'
+  pause = 'pause',
+  punch = 'punch',
+  kick = 'kick',
+  special = 'special',
+  dash = 'dash'
 }
 
 const controls = [
@@ -28,6 +32,10 @@ const controls = [
   { name: Controls.left, keys: ["ArrowLeft", "KeyA"] },
   { name: Controls.right, keys: ["ArrowRight", "KeyD"] },
   { name: Controls.pause, keys: ["Escape", "KeyP"] },
+  { name: Controls.punch, keys: ["KeyJ", "KeyX"] },
+  { name: Controls.kick, keys: ["KeyK", "KeyZ"] },
+  { name: Controls.special, keys: ["KeyL", "KeyC"] },
+  { name: Controls.dash, keys: ["ShiftLeft", "KeyV"] },
 ];
 
 function App() {

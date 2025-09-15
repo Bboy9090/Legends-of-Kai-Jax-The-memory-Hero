@@ -8,11 +8,15 @@ enum Controls {
   slide = 'slide',
   left = 'left',
   right = 'right',
-  pause = 'pause'
+  pause = 'pause',
+  punch = 'punch',
+  kick = 'kick',
+  special = 'special',
+  dash = 'dash'
 }
 
 export default function TouchControls() {
-  const { movePlayer, jumpPlayer, slidePlayer, gameState } = useRunner();
+  const { movePlayer, jumpPlayer, slidePlayer, attackEnemy, dashPlayer, gameState } = useRunner();
   const [, get] = useKeyboardControls<Controls>();
   const touchManagerRef = useRef<TouchManager | null>(null);
   
@@ -85,6 +89,20 @@ export default function TouchControls() {
       }
       if (controls.right) {
         movePlayer('right');
+      }
+      
+      // Combat Controls
+      if (controls.punch) {
+        attackEnemy('punch');
+      }
+      if (controls.kick) {
+        attackEnemy('kick');
+      }
+      if (controls.special) {
+        attackEnemy('special');
+      }
+      if (controls.dash) {
+        dashPlayer();
       }
     };
     

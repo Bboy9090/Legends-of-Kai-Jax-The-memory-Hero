@@ -16,6 +16,17 @@ interface PlayerState {
   // Character-specific states
   isRuleBreaking: boolean; // Jaxon's special ability
   isMasterPlanning: boolean; // Kaison's special ability
+  // Combat system
+  isAttacking: boolean;
+  attackType: "punch" | "kick" | "special" | null;
+  attackCombo: number; // Combo counter
+  energy: number; // 0-100 for special moves
+  health: number; // Player health
+  invulnerable: boolean; // Temporary invincibility
+  // Enhanced movement
+  dashCooldown: number;
+  wallRunning: boolean;
+  groundPounding: boolean;
 }
 
 interface GameStats {
@@ -70,6 +81,15 @@ interface RunnerState {
   resolveChoice: (isKindChoice: boolean) => void;
   resetGame: () => void;
   
+  // Combat System Actions
+  attackEnemy: (attackType: "punch" | "kick" | "special") => void;
+  finishAttack: () => void;
+  dashPlayer: () => void;
+  groundPound: () => void;
+  takeDamage: (damage: number) => void;
+  regenerateEnergy: (amount: number) => void;
+  setInvulnerable: (duration: number) => void;
+  
   // New bond/chaos actions
   buildBond: (amount: number) => void;
   triggerReunion: () => void;
@@ -90,7 +110,18 @@ const initialPlayerState: PlayerState = {
   lane: 0,
   speed: 10,
   isRuleBreaking: false,
-  isMasterPlanning: false
+  isMasterPlanning: false,
+  // Combat system
+  isAttacking: false,
+  attackType: null,
+  attackCombo: 0,
+  energy: 100,
+  health: 100,
+  invulnerable: false,
+  // Enhanced movement
+  dashCooldown: 0,
+  wallRunning: false,
+  groundPounding: false
 };
 
 const initialStats: GameStats = {
@@ -141,6 +172,10 @@ export const useRunner = create<RunnerState>()(
     
     movePlayer: (direction) => {
       const { player, lanes } = get();
+      
+      // Enhanced movement with dash capability
+      if (player.isAttacking || player.groundPounding) return;
+      
       const currentLaneIndex = lanes.indexOf(player.x);
       let newLaneIndex = currentLaneIndex;
       
@@ -150,13 +185,27 @@ export const useRunner = create<RunnerState>()(
         newLaneIndex = currentLaneIndex + 1;
       }
       
+      // Enhanced lane switching with brief speed boost
+      const hasLaneChanged = newLaneIndex !== currentLaneIndex;
+      
       set({
         player: {
           ...player,
           x: lanes[newLaneIndex],
-          lane: newLaneIndex - 1 // -1, 0, 1
+          lane: newLaneIndex - 1, // -1, 0, 1
+          speed: hasLaneChanged ? player.speed + 2 : player.speed // Brief speed boost when changing lanes
         }
       });
+      
+      // Reset speed boost after lane change
+      if (hasLaneChanged) {
+        setTimeout(() => {
+          const currentPlayer = get().player;
+          set({
+            player: { ...currentPlayer, speed: 10 }
+          });
+        }, 300);
+      }
     },
     
     jumpPlayer: () => {
@@ -193,20 +242,37 @@ export const useRunner = create<RunnerState>()(
     
     updatePlayerPosition: (delta) => {
       const { player, stats } = get();
-      const newZ = player.z + player.speed * delta;
+      
+      // Enhanced movement physics
+      let newZ = player.z + player.speed * delta;
       const newDistance = stats.distance + player.speed * delta * 0.1;
       
-      // Handle jumping physics
+      // Handle jumping physics with better arc
       let newY = player.y;
-      if (player.isJumping) {
-        const jumpTime = 0.6; // seconds
-        const jumpHeight = 3;
-        // Simple arc calculation
-        newY = Math.sin((Date.now() % (jumpTime * 1000)) / 1000 * Math.PI / jumpTime) * jumpHeight;
+      if (player.isJumping && !player.groundPounding) {
+        const jumpTime = 0.6;
+        const jumpHeight = 3.5;
+        const timeInJump = (Date.now() % (jumpTime * 1000)) / 1000;
+        newY = Math.sin(timeInJump * Math.PI / jumpTime) * jumpHeight + 1.6;
+      } else if (!player.isJumping) {
+        newY = 1.6; // Default height
       }
       
+      // Update cooldowns
+      const newDashCooldown = Math.max(0, player.dashCooldown - delta * 1000);
+      
+      // Passive energy regeneration
+      const energyRegen = player.isAttacking ? 0 : 15 * delta; // 15 energy per second
+      const newEnergy = Math.min(100, player.energy + energyRegen);
+      
       set({
-        player: { ...player, z: newZ, y: newY },
+        player: { 
+          ...player, 
+          z: newZ, 
+          y: newY,
+          dashCooldown: newDashCooldown,
+          energy: newEnergy
+        },
         stats: { ...stats, distance: newDistance }
       });
     },
@@ -408,6 +474,159 @@ export const useRunner = create<RunnerState>()(
         toyChaseActive: false,
         dogZoomiesActive: false
       });
+    },
+    
+    // Combat System Implementation
+    attackEnemy: (attackType) => {
+      const { player, selectedCharacter } = get();
+      
+      if (player.isAttacking || player.energy < 20) return;
+      
+      console.log(`${selectedCharacter} performs ${attackType} attack!`);
+      
+      set({
+        player: {
+          ...player,
+          isAttacking: true,
+          attackType: attackType,
+          attackCombo: player.attackCombo + 1,
+          energy: Math.max(0, player.energy - (attackType === "special" ? 30 : 10))
+        }
+      });
+      
+      // Auto-finish attack after animation
+      setTimeout(() => {
+        get().finishAttack();
+      }, attackType === "special" ? 800 : 400);
+    },
+    
+    finishAttack: () => {
+      const { player } = get();
+      set({
+        player: {
+          ...player,
+          isAttacking: false,
+          attackType: null
+        }
+      });
+      
+      // Reset combo after 2 seconds of no attacks
+      setTimeout(() => {
+        const currentPlayer = get().player;
+        if (!currentPlayer.isAttacking) {
+          set({
+            player: { ...currentPlayer, attackCombo: 0 }
+          });
+        }
+      }, 2000);
+    },
+    
+    dashPlayer: () => {
+      const { player } = get();
+      
+      if (player.dashCooldown > 0 || player.energy < 15) return;
+      
+      console.log("Player dashes forward with burst speed!");
+      
+      set({
+        player: {
+          ...player,
+          speed: player.speed + 8, // Temporary speed boost
+          energy: player.energy - 15,
+          dashCooldown: 3000, // 3 second cooldown
+          invulnerable: true // Brief invincibility during dash
+        }
+      });
+      
+      // Reset speed and invincibility
+      setTimeout(() => {
+        const currentPlayer = get().player;
+        set({
+          player: {
+            ...currentPlayer,
+            speed: 10, // Back to normal speed
+            invulnerable: false
+          }
+        });
+      }, 500);
+    },
+    
+    groundPound: () => {
+      const { player } = get();
+      
+      if (!player.isJumping || player.energy < 25) return;
+      
+      console.log("GROUND POUND! Massive area damage!");
+      
+      set({
+        player: {
+          ...player,
+          groundPounding: true,
+          energy: player.energy - 25,
+          y: 0 // Force to ground
+        }
+      });
+      
+      // Ground pound effect duration
+      setTimeout(() => {
+        const currentPlayer = get().player;
+        set({
+          player: {
+            ...currentPlayer,
+            groundPounding: false,
+            isJumping: false
+          }
+        });
+      }, 600);
+    },
+    
+    takeDamage: (damage) => {
+      const { player } = get();
+      
+      if (player.invulnerable) return;
+      
+      const newHealth = Math.max(0, player.health - damage);
+      console.log(`Player takes ${damage} damage! Health: ${newHealth}`);
+      
+      set({
+        player: {
+          ...player,
+          health: newHealth
+        }
+      });
+      
+      // Trigger invincibility frames
+      get().setInvulnerable(1000);
+      
+      // Game over if health reaches 0
+      if (newHealth <= 0) {
+        console.log("Game Over - Health depleted!");
+        set({ gameState: "game-over" });
+      }
+    },
+    
+    regenerateEnergy: (amount) => {
+      const { player } = get();
+      set({
+        player: {
+          ...player,
+          energy: Math.min(100, player.energy + amount)
+        }
+      });
+    },
+    
+    setInvulnerable: (duration) => {
+      const { player } = get();
+      set({
+        player: { ...player, invulnerable: true }
+      });
+      
+      setTimeout(() => {
+        const currentPlayer = get().player;
+        set({
+          player: { ...currentPlayer, invulnerable: false }
+        });
+      }, duration);
     }
   }))
 );
