@@ -63,9 +63,9 @@ export default function GameScene() {
       setEnemies(initialEnemies);
       setCollectibles(initialCollectibles);
       
-      lastObstacleZ.current = 200;
-      lastEnemyZ.current = 200;
-      lastCollectibleZ.current = 200;
+      lastObstacleZ.current = 250;
+      lastEnemyZ.current = 250;
+      lastCollectibleZ.current = 250;
     }
   }, [gameState]);
   
@@ -75,8 +75,8 @@ export default function GameScene() {
     // Update player position
     updatePlayerPosition(delta);
     
-    // Update camera to follow player
-    state.camera.position.set(player.x * 0.1, 4, player.z + 8);
+    // Update camera to follow player - camera behind player looking forward
+    state.camera.position.set(player.x * 0.2, 4, player.z - 10);
     state.camera.lookAt(player.x, 1.5, player.z + 20);
     
     // Generate new objects ahead of player
