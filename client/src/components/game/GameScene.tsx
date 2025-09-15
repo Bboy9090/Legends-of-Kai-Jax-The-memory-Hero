@@ -25,7 +25,6 @@ export default function GameScene() {
   const { phase, end } = useGame();
   const { playHit, playSuccess } = useAudio();
   
-  const cameraRef = useRef<THREE.Camera>(null);
   const [obstacles, setObstacles] = useState<Obstacle[]>([]);
   const [enemies, setEnemies] = useState<EnemyType[]>([]);
   const [collectibles, setCollectibles] = useState<Collectible[]>([]);
@@ -43,10 +42,10 @@ export default function GameScene() {
       const initialEnemies: EnemyType[] = [];
       const initialCollectibles: Collectible[] = [];
       
-      for (let i = 1; i <= 10; i++) {
-        const z = i * 20;
+      for (let i = 3; i <= 10; i++) {
+        const z = i * 25;
         
-        if (Math.random() < 0.3) {
+        if (Math.random() < 0.2) {
           initialObstacles.push(generateObstacle(z));
         }
         
@@ -77,10 +76,8 @@ export default function GameScene() {
     updatePlayerPosition(delta);
     
     // Update camera to follow player
-    if (cameraRef.current) {
-      cameraRef.current.position.z = player.z + 12;
-      cameraRef.current.position.x = player.x * 0.1; // Slight camera movement with lane changes
-    }
+    state.camera.position.set(player.x * 0.1, 4, player.z + 8);
+    state.camera.lookAt(player.x, 1.5, player.z + 20);
     
     // Generate new objects ahead of player
     const playerZ = player.z;
@@ -118,7 +115,7 @@ export default function GameScene() {
     const playerSize = new THREE.Vector3(1.2, 1.8, 1.2);
     
     // Check obstacle collisions (skip during startup grace period)
-    if (player.z > 10) {
+    if (player.z > 50) {
       obstacles.forEach(obstacle => {
         if (obstacle.active && checkAABBCollision(playerPos, playerSize, obstacle.position, obstacle.size)) {
           // Player hit obstacle - game over
