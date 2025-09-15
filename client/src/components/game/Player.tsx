@@ -9,7 +9,7 @@ export default function Player() {
   const { player, selectedCharacter } = useRunner();
   const meshRef = useRef<THREE.Mesh>(null);
   
-  // Smooth position transitions
+  // Smooth position transitions with bobbing animation
   const { position } = useSpring({
     position: [player.x, player.y, player.z] as [number, number, number],
     config: { tension: 300, friction: 30 }
@@ -28,14 +28,12 @@ export default function Player() {
     kaison: "#FF4757"  // Fiery red
   };
   
-  // Simple animation for running
-  useFrame((state) => {
-    if (meshRef.current && !player.isSliding) {
-      // Bobbing animation while running - use absolute position to prevent drift
-      meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 8) * 0.1;
-      
-      // Slight rotation for dynamic feel
-      meshRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 6) * 0.05;
+  // Track animation time for bobbing effect
+  const animationTimeRef = useRef(0);
+  
+  useFrame((state, delta) => {
+    if (!player.isSliding) {
+      animationTimeRef.current += delta;
     }
   });
   
