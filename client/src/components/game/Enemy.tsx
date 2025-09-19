@@ -134,28 +134,28 @@ export default function Enemy({ enemy }: EnemyProps) {
   const getEnemyConfig = () => {
     switch (enemy.enemyType) {
       case "scuttle": return {
-        primaryColor: "#FF4444",
-        accentColor: "#FF6666",
-        glowColor: "#FF8888",
-        eyeColor: "#FFFF00"
+        primaryColor: "#FF2222", // Bright red like classic Sonic badniks
+        accentColor: "#CC0000",  // Dark red
+        glowColor: "#FF6666",    // Light red glow  
+        eyeColor: "#000000"      // Black pupils
       };
       case "stomper": return {
-        primaryColor: "#2C3E50",
-        accentColor: "#34495E",
-        glowColor: "#5DADE2",
-        eyeColor: "#E74C3C"
+        primaryColor: "#4444FF", // Bright blue
+        accentColor: "#2222CC",  // Dark blue
+        glowColor: "#6666FF",    // Light blue glow
+        eyeColor: "#000000"      // Black pupils
       };
       case "goo": return {
-        primaryColor: "#27AE60",
-        accentColor: "#2ECC71",
-        glowColor: "#58D68D",
-        eyeColor: "#F39C12"
+        primaryColor: "#44FF44", // Bright green
+        accentColor: "#22CC22",  // Dark green
+        glowColor: "#66FF66",    // Light green glow
+        eyeColor: "#000000"      // Black pupils
       };
       default: return {
-        primaryColor: "#FF4444",
-        accentColor: "#FF6666", 
-        glowColor: "#FF8888",
-        eyeColor: "#FFFF00"
+        primaryColor: "#FF44FF", // Bright magenta
+        accentColor: "#CC22CC",  // Dark magenta
+        glowColor: "#FF66FF",    // Light magenta glow
+        eyeColor: "#000000"      // Black pupils
       };
     }
   };
@@ -174,32 +174,55 @@ export default function Enemy({ enemy }: EnemyProps) {
   
   return (
     <group ref={meshRef} position={enemy.position}>
-      {/* Main enemy body - Enhanced with aggressive glow */}
+      {/* Sonic-style rounded enemy body */}
       <mesh castShadow receiveShadow>
-        <boxGeometry args={getEnemySize()} />
-        <meshStandardMaterial 
+        <capsuleGeometry args={[getEnemySize()[0] * 0.4, getEnemySize()[1] * 0.7]} />
+        <meshToonMaterial 
           color={config.primaryColor}
           emissive={config.accentColor}
           emissiveIntensity={aggressiveGlow}
-          metalness={0.3}
-          roughness={0.4}
         />
+      </mesh>
+      
+      {/* Cartoon-style enemy head */}
+      <mesh position={[0, getEnemySize()[1] * 0.6, 0]} castShadow receiveShadow>
+        <sphereGeometry args={[getEnemySize()[0] * 0.4, 16, 12]} />
+        <meshToonMaterial 
+          color={config.primaryColor}
+          emissive={config.accentColor}
+          emissiveIntensity={aggressiveGlow * 0.8}
+        />
+      </mesh>
+      
+      {/* Large cartoon eyes */}
+      <mesh position={[-0.2, getEnemySize()[1] * 0.7, 0.3]} castShadow receiveShadow>
+        <sphereGeometry args={[0.15, 12, 8]} />
+        <meshToonMaterial color="#FFFFFF" />
+      </mesh>
+      <mesh position={[0.2, getEnemySize()[1] * 0.7, 0.3]} castShadow receiveShadow>
+        <sphereGeometry args={[0.15, 12, 8]} />
+        <meshToonMaterial color="#FFFFFF" />
+      </mesh>
+      
+      {/* Cartoon pupils */}
+      <mesh position={[-0.2, getEnemySize()[1] * 0.7, 0.4]} castShadow receiveShadow>
+        <sphereGeometry args={[0.08, 8, 6]} />
+        <meshToonMaterial color={config.eyeColor} />
+      </mesh>
+      <mesh position={[0.2, getEnemySize()[1] * 0.7, 0.4]} castShadow receiveShadow>
+        <sphereGeometry args={[0.08, 8, 6]} />
+        <meshToonMaterial color={config.eyeColor} />
       </mesh>
       
       {/* Aggressive glow aura when near player */}
       {isAggressive && (
         <mesh>
-          <boxGeometry args={[
-            getEnemySize()[0] * 1.2, 
-            getEnemySize()[1] * 1.2, 
-            getEnemySize()[2] * 1.2
-          ]} />
-          <meshStandardMaterial 
+          <sphereGeometry args={[getEnemySize()[0] * 1.5, 16, 12]} />
+          <meshBasicMaterial 
             color={config.glowColor}
             transparent
-            opacity={0.3}
-            emissive={config.glowColor}
-            emissiveIntensity={0.8}
+            opacity={0.2}
+            depthWrite={false}
           />
         </mesh>
       )}

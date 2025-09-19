@@ -357,17 +357,54 @@ export default function Player() {
           <meshToonMaterial color="#FFFFFF" />
         </mesh>
         
-        {/* Power particle effects */}
+        {/* Enhanced Sonic-style speed trails and particles */}
         <Points ref={particleRef} positions={particles}>
           <PointMaterial 
-            size={selectedCharacter === "jaxon" ? 0.05 : 0.08}
+            size={selectedCharacter === "jaxon" ? 0.12 : 0.15}
             color={config.particleColor}
             transparent
-            opacity={0.8}
+            opacity={0.9}
             sizeAttenuation
             depthWrite={false}
           />
         </Points>
+        
+        {/* Speed trail effect */}
+        {player.speed > 2 && (
+          <>
+            <mesh position={[0, 0, -1]} rotation={[0, 0, 0]}>
+              <planeGeometry args={[1.5, 0.3]} />
+              <meshBasicMaterial 
+                color={config.glowColor}
+                transparent
+                opacity={0.6}
+                depthWrite={false}
+              />
+            </mesh>
+            <mesh position={[0, 0, -1.5]} rotation={[0, 0, 0]}>
+              <planeGeometry args={[1.2, 0.2]} />
+              <meshBasicMaterial 
+                color={config.particleColor}
+                transparent
+                opacity={0.4}
+                depthWrite={false}
+              />
+            </mesh>
+          </>
+        )}
+        
+        {/* Power aura when running fast */}
+        {player.speed > 3 && (
+          <mesh position={[0, 0, 0]}>
+            <sphereGeometry args={[2, 16, 12]} />
+            <meshBasicMaterial 
+              color={config.glowColor}
+              transparent
+              opacity={0.1}
+              depthWrite={false}
+            />
+          </mesh>
+        )}
       </animated.group>
     </animated.group>
   );

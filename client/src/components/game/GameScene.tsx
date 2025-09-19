@@ -75,9 +75,11 @@ export default function GameScene() {
     // Update player position
     updatePlayerPosition(delta);
     
-    // Update camera to follow player - camera behind player looking forward
-    state.camera.position.set(player.x * 0.2, 4, player.z - 10);
-    state.camera.lookAt(player.x, 1.5, player.z + 20);
+    // Sonic-style dynamic camera - more dramatic follow with speed effects
+    const cameraOffset = player.speed > 3 ? 12 : 10; // Further back when speeding
+    const cameraHeight = player.speed > 3 ? 5 : 4;   // Higher when speeding
+    state.camera.position.set(player.x * 0.3, cameraHeight, player.z - cameraOffset);
+    state.camera.lookAt(player.x, 2, player.z + 25);
     
     // Generate new objects ahead of player
     const playerZ = player.z;
