@@ -28,44 +28,79 @@ export default function GameScene() {
   const [obstacles, setObstacles] = useState<Obstacle[]>([]);
   const [enemies, setEnemies] = useState<EnemyType[]>([]);
   const [collectibles, setCollectibles] = useState<Collectible[]>([]);
+  const [webAnchors, setWebAnchors] = useState<Array<{ id: string; position: [number, number, number] }>>([]);
   
-  // Track game objects generation
-  const lastObstacleZ = useRef(0);
-  const lastEnemyZ = useRef(0);
-  const lastCollectibleZ = useRef(0);
+  // Track game objects generation - using X for 2.5D side-scrolling
+  const lastObstacleX = useRef(0);
+  const lastEnemyX = useRef(0);
+  const lastCollectibleX = useRef(0);
+  const lastWebAnchorX = useRef(0);
   
-  // Initialize game objects
+  // Initialize game objects for 2.5D side-scrolling
   useEffect(() => {
     if (gameState === "playing") {
-      // Generate initial objects
+      // Generate initial web anchors and objects
+      const initialWebAnchors: Array<{ id: string; position: [number, number, number] }> = [];
       const initialObstacles: Obstacle[] = [];
       const initialEnemies: EnemyType[] = [];
       const initialCollectibles: Collectible[] = [];
       
-      for (let i = 3; i <= 10; i++) {
-        const z = i * 25;
+      for (let i = 3; i <= 15; i++) {
+        const x = i * 20; // Side-scrolling uses X-axis
         
-        if (Math.random() < 0.2) {
-          initialObstacles.push(generateObstacle(z));
+        // Generate web anchor points for swinging
+        if (i % 2 === 0) {
+          const anchorY = 8 + Math.random() * 4; // Varying heights
+          initialWebAnchors.push({
+            id: `anchor-${i}`,
+            position: [x, anchorY, 0]
+          });
         }
         
-        if (Math.random() < 0.2) {
-          initialEnemies.push(generateEnemy(z));
+        // Platform obstacles
+        if (Math.random() < 0.15) {
+          const obstacleX = x + Math.random() * 10;
+          const obstacleY = Math.random() * 5; // Ground level obstacles
+          initialObstacles.push({
+            ...generateObstacle(obstacleX),
+            position: new THREE.Vector3(obstacleX, obstacleY, 0),
+            size: new THREE.Vector3(2, 2, 1)
+          });
         }
         
+        // Flying enemies
+        if (Math.random() < 0.2) {
+          const enemyX = x + Math.random() * 15;
+          const enemyY = 3 + Math.random() * 8;
+          initialEnemies.push({
+            ...generateEnemy(enemyX),
+            position: new THREE.Vector3(enemyX, enemyY, 0),
+            size: new THREE.Vector3(1.5, 1.5, 1)
+          });
+        }
+        
+        // Collectibles in the air
         if (Math.random() < 0.4) {
           const type = Math.random() < 0.7 ? "coin" : "helpToken";
-          initialCollectibles.push(generateCollectible(z, type));
+          const collectX = x + Math.random() * 12;
+          const collectY = 2 + Math.random() * 10;
+          initialCollectibles.push({
+            ...generateCollectible(collectX, type),
+            position: new THREE.Vector3(collectX, collectY, 0),
+            size: new THREE.Vector3(0.8, 0.8, 0.8)
+          });
         }
       }
       
+      setWebAnchors(initialWebAnchors);
       setObstacles(initialObstacles);
       setEnemies(initialEnemies);
       setCollectibles(initialCollectibles);
       
-      lastObstacleZ.current = 250;
-      lastEnemyZ.current = 250;
-      lastCollectibleZ.current = 250;
+      lastObstacleX.current = 300;
+      lastEnemyX.current = 300;
+      lastCollectibleX.current = 300;
+      lastWebAnchorX.current = 300;
     }
   }, [gameState]);
   
@@ -83,35 +118,61 @@ export default function GameScene() {
     state.camera.position.set(cameraX, cameraY, cameraZ);
     state.camera.lookAt(player.x, player.y, 0); // Look at player position
     
-    // Generate new objects ahead of player
-    const playerZ = player.z;
+    // Generate new objects ahead of player (2.5D uses X-axis)
+    const playerX = player.x;
+    
+    // Generate web anchor points
+    if (playerX > lastWebAnchorX.current - 50) {
+      const anchorX = lastWebAnchorX.current + 20;
+      const anchorY = 6 + Math.random() * 6;
+      setWebAnchors(prev => [...prev, {
+        id: `anchor-${Date.now()}`,
+        position: [anchorX, anchorY, 0]
+      }]);
+      lastWebAnchorX.current += 20;
+    }
     
     // Generate obstacles
-    if (playerZ > lastObstacleZ.current - 100) {
-      if (Math.random() < 0.3) {
-        const newObstacle = generateObstacle(lastObstacleZ.current + 30);
-        setObstacles(prev => [...prev, newObstacle]);
+    if (playerX > lastObstacleX.current - 100) {
+      if (Math.random() < 0.2) {
+        const obstacleX = lastObstacleX.current + 30;
+        const obstacleY = Math.random() * 5;
+        setObstacles(prev => [...prev, {
+          ...generateObstacle(obstacleX),
+          position: new THREE.Vector3(obstacleX, obstacleY, 0),
+          size: new THREE.Vector3(2, 2, 1)
+        }]);
       }
-      lastObstacleZ.current += 20;
+      lastObstacleX.current += 20;
     }
     
     // Generate enemies
-    if (playerZ > lastEnemyZ.current - 100) {
+    if (playerX > lastEnemyX.current - 100) {
       if (Math.random() < 0.25) {
-        const newEnemy = generateEnemy(lastEnemyZ.current + 25);
-        setEnemies(prev => [...prev, newEnemy]);
+        const enemyX = lastEnemyX.current + 25;
+        const enemyY = 3 + Math.random() * 8;
+        setEnemies(prev => [...prev, {
+          ...generateEnemy(enemyX),
+          position: new THREE.Vector3(enemyX, enemyY, 0),
+          size: new THREE.Vector3(1.5, 1.5, 1)
+        }]);
       }
-      lastEnemyZ.current += 15;
+      lastEnemyX.current += 15;
     }
     
     // Generate collectibles
-    if (playerZ > lastCollectibleZ.current - 80) {
+    if (playerX > lastCollectibleX.current - 80) {
       if (Math.random() < 0.5) {
         const type = Math.random() < 0.7 ? "coin" : "helpToken";
-        const newCollectible = generateCollectible(lastCollectibleZ.current + 20, type);
-        setCollectibles(prev => [...prev, newCollectible]);
+        const collectX = lastCollectibleX.current + 20;
+        const collectY = 2 + Math.random() * 10;
+        setCollectibles(prev => [...prev, {
+          ...generateCollectible(collectX, type),
+          position: new THREE.Vector3(collectX, collectY, 0),
+          size: new THREE.Vector3(0.8, 0.8, 0.8)
+        }]);
       }
-      lastCollectibleZ.current += 15;
+      lastCollectibleX.current += 15;
     }
     
     // Collision detection
@@ -119,15 +180,30 @@ export default function GameScene() {
     const playerSize = new THREE.Vector3(1.2, 1.8, 1.2);
     
     // Check obstacle collisions (skip during startup grace period)
-    if (player.z > 50) {
+    if (player.x > 20) {
       obstacles.forEach(obstacle => {
         if (obstacle.active && checkAABBCollision(playerPos, playerSize, obstacle.position, obstacle.size)) {
           // Player hit obstacle - game over
-          console.log("Hit obstacle! Player Z:", player.z, "Obstacle:", obstacle);
+          console.log("Hit obstacle! Player X:", player.x, "Obstacle:", obstacle);
           playHit();
           end();
         }
       });
+    }
+    
+    // Check web anchor proximity for auto-attach
+    if (!player.webAttached && player.webButtonPressed) {
+      const nearestAnchor = webAnchors.find(anchor => {
+        const distance = Math.sqrt(
+          Math.pow(anchor.position[0] - player.x, 2) +
+          Math.pow(anchor.position[1] - player.y, 2)
+        );
+        return distance < 20; // Attach range
+      });
+      
+      if (nearestAnchor) {
+        useRunner.getState().attachWeb(nearestAnchor.position);
+      }
     }
     
     // Check enemy collisions
@@ -159,11 +235,12 @@ export default function GameScene() {
       return collectible;
     }));
     
-    // Remove objects behind player
+    // Remove objects behind player (2.5D uses X-axis)
     const cullDistance = 50;
-    setObstacles(prev => prev.filter(obj => obj.position.z > playerZ - cullDistance));
-    setEnemies(prev => prev.filter(obj => obj.position.z > playerZ - cullDistance));
-    setCollectibles(prev => prev.filter(obj => obj.position.z > playerZ - cullDistance));
+    setObstacles(prev => prev.filter(obj => obj.position.x > playerX - cullDistance));
+    setEnemies(prev => prev.filter(obj => obj.position.x > playerX - cullDistance));
+    setCollectibles(prev => prev.filter(obj => obj.position.x > playerX - cullDistance));
+    setWebAnchors(prev => prev.filter(anchor => anchor.position[0] > playerX - cullDistance));
   });
   
   return (
@@ -212,6 +289,39 @@ export default function GameScene() {
       {/* Collectibles */}
       {collectibles.map(collectible => (
         <Collectibles key={collectible.id} collectible={collectible} />
+      ))}
+      
+      {/* Web Anchor Points - for Spider-Man style swinging */}
+      {webAnchors.map(anchor => (
+        <group key={anchor.id} position={anchor.position}>
+          {/* Anchor point indicator */}
+          <mesh>
+            <sphereGeometry args={[0.5, 16, 12]} />
+            <meshToonMaterial 
+              color="#00CED1" 
+              emissive="#00CED1"
+              emissiveIntensity={0.5}
+            />
+          </mesh>
+          {/* Glowing ring effect */}
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.6, 0.8, 16]} />
+            <meshBasicMaterial 
+              color="#00FFFF"
+              transparent
+              opacity={0.6}
+            />
+          </mesh>
+          {/* Pulsing outer ring */}
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.9, 1.2, 16]} />
+            <meshBasicMaterial 
+              color="#40E0D0"
+              transparent
+              opacity={0.3}
+            />
+          </mesh>
+        </group>
       ))}
     </>
   );

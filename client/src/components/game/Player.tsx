@@ -440,7 +440,7 @@ export default function Player() {
                 {/* Silver shimmer effect */}
                 <mesh position={[0, 1, 0]}>
                   <torusGeometry args={[1.8, 0.15, 12, 24]} />
-                  <meshBasicMaterial 
+                  <meshToonMaterial 
                     color="#C0C0C0"
                     emissive="#C0C0C0"
                     emissiveIntensity={0.8}
@@ -464,7 +464,7 @@ export default function Player() {
                 {/* Chaotic dark energy trails */}
                 <mesh position={[0, 0, -1]} rotation={[Math.PI / 4, animationTimeRef.current, 0]}>
                   <torusGeometry args={[2, 0.2, 8, 16]} />
-                  <meshBasicMaterial 
+                  <meshToonMaterial 
                     color="#DC143C"
                     emissive="#8B008B"
                     emissiveIntensity={1}
@@ -488,7 +488,7 @@ export default function Player() {
             {/* Transformation duration indicator - glowing ring */}
             <mesh position={[0, -2, 0]} rotation={[Math.PI / 2, 0, 0]}>
               <ringGeometry args={[1.5, 2, 32]} />
-              <meshBasicMaterial 
+              <meshToonMaterial 
                 color={selectedCharacter === "kaison" ? "#00CED1" : "#DC143C"}
                 emissive={selectedCharacter === "kaison" ? "#00CED1" : "#DC143C"}
                 emissiveIntensity={1}

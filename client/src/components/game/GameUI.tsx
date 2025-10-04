@@ -141,6 +141,34 @@ export default function GameUI() {
                     </div>
                   </div>
                 )}
+                
+                {/* Energy Meter for Transformation */}
+                <div className="flex items-center gap-2">
+                  <Zap className={`w-4 h-4 ${player.energyMeter >= 100 ? 'text-yellow-400 animate-pulse' : 'text-gray-400'}`} />
+                  <div className="w-16 h-2 bg-gray-600 rounded-full">
+                    <div 
+                      className={`h-full rounded-full transition-all ${
+                        player.energyMeter >= 100 ? 'bg-yellow-400 animate-pulse' : 
+                        selectedCharacter === 'kaison' ? 'bg-cyan-400' : 'bg-red-400'
+                      }`}
+                      style={{ width: `${player.energyMeter}%` }}
+                    />
+                  </div>
+                </div>
+                
+                {/* Health Bar */}
+                <div className="flex items-center gap-2">
+                  <Heart className="w-4 h-4 text-red-400" />
+                  <div className="w-16 h-2 bg-gray-600 rounded-full">
+                    <div 
+                      className={`h-full rounded-full transition-all ${
+                        player.health > 50 ? 'bg-green-400' : 
+                        player.health > 25 ? 'bg-yellow-400' : 'bg-red-400'
+                      }`}
+                      style={{ width: `${player.health}%` }}
+                    />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -148,6 +176,25 @@ export default function GameUI() {
         
         {/* Control Buttons */}
         <div className="flex gap-2 pointer-events-auto">
+          {/* Transformation Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => useRunner.getState().transformHero()}
+            disabled={player.energyMeter < 100 || player.powerLevel > 0}
+            className={`bg-black bg-opacity-60 text-white border-gray-600 hover:bg-opacity-80 ${
+              player.energyMeter >= 100 && player.powerLevel === 0 
+                ? 'border-yellow-400 animate-pulse' 
+                : 'opacity-50'
+            }`}
+          >
+            {player.powerLevel > 0 ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <Star className="w-4 h-4" />
+            )}
+          </Button>
+          
           {/* Character Switch Button */}
           <Button
             variant="outline"
@@ -239,6 +286,33 @@ export default function GameUI() {
                 <div className="flex items-center gap-2 text-blue-300 animate-pulse">
                   <Zap className="w-4 h-4" />
                   <span>Rule Breaking Mode!</span>
+                </div>
+              )}
+              
+              {/* Transformation State */}
+              {player.powerLevel > 0 && (
+                <div className="flex items-center gap-2 text-yellow-400 animate-pulse">
+                  <Star className="w-4 h-4" />
+                  <span>
+                    {selectedCharacter === 'kaison' ? 'Super Kaison!' : 'Hyper Jaxon!'}
+                  </span>
+                  <span className="text-xs">
+                    ({Math.ceil(player.transformDuration / 60)}s)
+                  </span>
+                </div>
+              )}
+              
+              {/* Web Kick Charge Indicator */}
+              {player.webAttached && player.kickChargeTimer > 0 && (
+                <div className="flex items-center gap-2 text-cyan-400">
+                  <Zap className="w-4 h-4 animate-bounce" />
+                  <span>Kick Power: {Math.floor(player.kickPower)}</span>
+                  <div className="w-20 h-2 bg-gray-600 rounded-full">
+                    <div 
+                      className="h-full bg-cyan-400 rounded-full transition-all"
+                      style={{ width: `${(player.kickChargeTimer / 3) * 100}%` }}
+                    />
+                  </div>
                 </div>
               )}
               
