@@ -116,7 +116,9 @@ export default function GameScene() {
     const cameraZ = 15; // Fixed depth for 2.5D perspective
     
     state.camera.position.set(cameraX, cameraY, cameraZ);
-    state.camera.lookAt(player.x, player.y, 0); // Look at player position
+    // Use Vector3 to avoid undefined issues
+    const lookAtTarget = new THREE.Vector3(player.x || 0, player.y || 2, 0);
+    state.camera.lookAt(lookAtTarget);
     
     // Generate new objects ahead of player (2.5D uses X-axis)
     const playerX = player.x;

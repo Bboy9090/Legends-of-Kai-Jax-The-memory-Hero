@@ -246,41 +246,17 @@ export const useRunner = create<RunnerState>()(
     },
     
     movePlayer: (direction) => {
-      const { player, lanes } = get();
+      const { player } = get();
       
-      // Enhanced movement with dash capability
-      if (player.isAttacking || player.groundPounding) return;
+      // 2.5D Side-Scroller: Left/Right controls are DISABLED
+      // Player moves forward automatically (X increases in updatePlayerPosition)
+      // Use Jump/Web-Swing for vertical movement instead
+      // This prevents breaking the continuous X-axis movement
       
-      const currentLaneIndex = lanes.indexOf(player.x);
-      let newLaneIndex = currentLaneIndex;
+      console.log(`movePlayer(${direction}) called but disabled for 2.5D side-scroller`);
       
-      if (direction === "left" && currentLaneIndex > 0) {
-        newLaneIndex = currentLaneIndex - 1;
-      } else if (direction === "right" && currentLaneIndex < lanes.length - 1) {
-        newLaneIndex = currentLaneIndex + 1;
-      }
-      
-      // Enhanced lane switching with brief speed boost
-      const hasLaneChanged = newLaneIndex !== currentLaneIndex;
-      
-      set({
-        player: {
-          ...player,
-          x: lanes[newLaneIndex],
-          lane: newLaneIndex - 1, // -1, 0, 1
-          speed: hasLaneChanged ? player.speed + 2 : player.speed // Brief speed boost when changing lanes
-        }
-      });
-      
-      // Reset speed boost after lane change
-      if (hasLaneChanged) {
-        setTimeout(() => {
-          const currentPlayer = get().player;
-          set({
-            player: { ...currentPlayer, speed: 10 }
-          });
-        }, 300);
-      }
+      // Optional: Could map left/right to Y-axis velocity boosts in future
+      // For now, we rely on jump and web-swinging for vertical control
     },
     
     jumpPlayer: () => {
