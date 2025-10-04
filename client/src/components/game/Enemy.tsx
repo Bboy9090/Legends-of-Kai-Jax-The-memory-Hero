@@ -42,8 +42,9 @@ export default function Enemy({ enemy }: EnemyProps) {
     if (!meshRef.current || !enemy.active) return;
     
     const time = state.clock.elapsedTime;
-    const distanceToPlayer = Math.abs(player.z - enemy.position.z);
-    const isPlayerNear = distanceToPlayer < 20;
+    // 2.5D Distance: Use X-axis (horizontal) distance for side-scroller
+    const distanceToPlayer = Math.abs(player.x - enemy.position.x);
+    const isPlayerNear = distanceToPlayer < 8; // Closer threshold for 2.5D
     
     // Update attack cooldown
     if (attackCooldown > 0) {
