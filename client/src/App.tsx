@@ -23,7 +23,11 @@ enum Controls {
   punch = 'punch',
   kick = 'kick',
   special = 'special',
-  dash = 'dash'
+  dash = 'dash',
+  webSwing = 'webSwing', // Hold to attach web, release to launch
+  chargeKick = 'chargeKick', // Hold to charge kick while web-swinging
+  transform = 'transform', // Activate transformation
+  energyBlast = 'energyBlast' // Fire energy blast (Jaxon only)
 }
 
 const controls = [
@@ -36,6 +40,10 @@ const controls = [
   { name: Controls.kick, keys: ["KeyK", "KeyZ"] },
   { name: Controls.special, keys: ["KeyL", "KeyC"] },
   { name: Controls.dash, keys: ["ShiftLeft", "KeyV"] },
+  { name: Controls.webSwing, keys: ["ControlLeft", "ControlRight"] }, // Hold Ctrl for web
+  { name: Controls.chargeKick, keys: ["KeyF"] }, // F to charge kick
+  { name: Controls.transform, keys: ["KeyT"] }, // T to transform
+  { name: Controls.energyBlast, keys: ["KeyE"] }, // E for energy blast
 ];
 
 function App() {
