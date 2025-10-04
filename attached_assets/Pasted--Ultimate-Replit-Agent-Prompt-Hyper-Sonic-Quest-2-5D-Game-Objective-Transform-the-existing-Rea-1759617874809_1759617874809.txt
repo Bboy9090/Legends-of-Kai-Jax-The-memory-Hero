@@ -1,0 +1,51 @@
+👑 Ultimate Replit Agent Prompt: Hyper Sonic Quest (2.5D Game)
+Objective: Transform the existing React/Three.js project into a functional 2.5D side-scrolling platformer called "Hyper Sonic Quest" that incorporates complex physics for web-swinging and charged attacks. The final game must be visually impressive, like a high-energy animated cartoon.
+
+1. Game Setup and Perspective
+Perspective: Implement a 2.5D side-scroller view. Lock all character and camera movement primarily to the X and Y axes. The camera should follow the character only on the X-axis (horizontally), maintaining a fixed side-view angle and a static Z-depth.
+
+Characters/Assets: Define two main player models (Kaison and Jaxon) and models for the two primary enemy types (Germ Monster, Booger Ghost). Use simple placeholders (e.g., colored boxes or basic imported GLTF/GLB models) if custom assets are unavailable.
+
+State Management: Use the existing Zustand store to manage all game state variables, including player physics, web state, and power levels.
+
+2. Core Physics and Movement
+Primary Movement: Implement standard left/right movement and jumping. Ensure reliable ground collision detection against a flat groundLevel (Y=0) or defined platforms.
+
+Web-Swinging: Implement the pendulum physics.
+
+Mechanic: When the 'Web' button is held, the character must orbit a fixed webAnchorPoint. The movement must be governed by angular velocity and gravity to create a natural, swinging arc.
+
+Launch: Upon releasing the 'Web' button, calculate the character's tangential velocity at the release point and apply it as the new X and Y velocity vectors for a clean launch.
+
+3. Combat and Superpowers
+Charged Web Kick (Melee):
+
+Mechanic: Implement a charge timer when the 'Kick' button is held while swinging.
+
+Damage: Upon release, apply damage proportional to the charge time. The collision logic must check for hits in a forward-facing arc relative to the player's momentum.
+
+Energy Web Shots (Jaxon Only):
+
+System: When the 'Blast' button is held, charge and fire a projectile.
+
+Aiming: Implement a basic auto-aim assist. The projectile should primarily follow the player's current direction but subtly snap to the nearest enemy within a 60-degree cone in front of Jaxon.
+
+Recoil: Apply a minor recoil force to Jaxon opposite the firing direction.
+
+Collision System: Create a central system to handle all collisions (Player-Enemy, Projectile-Enemy, Player-Ground). Use the Matter.js library if necessary for complex object interactions, or rely on simple bounding box checks within the useFrame loop.
+
+4. Transformation and Visual Payoff
+Transformation Logic: Implement a transformHero() function that sets the powerLevel state to 1 for a 10-second duration (using an internal frame counter or timer).
+
+Visual Effects (R3F Implementation):
+
+Kaison (Super Sonic): When powered up, override his material to a glowing, emissive gold/yellow color. Add a subtle upward-flowing particle system around the character model.
+
+Jaxon (Hyper Sonic): When powered up, implement a rapidly cycling prismatic color effect (flashing rainbow hues) on his model. Render a highly visible energy trail behind the character using a component like MeshLine or Postprocessing.
+
+Gameplay Enhancement: Double the base damage and remove the cooldowns for the character's primary attack while transformed.
+
+5. Structure and Integration
+UI: Design simple on-screen virtual button components for Jump, Web, Kick, and Blast. Ensure the Health Bar and Score are visible in the top-left corner.
+
+Code Separation: Ensure all new logic is contained within dedicated, clean TypeScript files (e.g., gameStore.ts, Physics.ts, Combat.ts) and imported into the main Player.tsx component's useFrame hook.
