@@ -6,27 +6,56 @@ export type Character = "jaxon" | "kaison";
 export type ReunionMode = "sleepy" | "hyper" | "normal";
 
 interface PlayerState {
+  // 2.5D Position (X horizontal, Y vertical, Z locked at 0)
   x: number;
   y: number;
-  z: number;
+  z: number; // Always 0 for 2.5D
+  velocityX: number; // Horizontal velocity
+  velocityY: number; // Vertical velocity (gravity/jump)
   isJumping: boolean;
   isSliding: boolean;
+  isGrounded: boolean; // Ground collision state
   lane: number; // -1, 0, 1 for left, center, right
   speed: number;
+  
+  // Web-Swinging Physics
+  webAttached: boolean;
+  webButtonPressed: boolean;
+  webAngle: number; // Current swing angle in radians
+  webAngularVelocity: number;
+  webAnchorPoint: [number, number, number] | null;
+  webLength: number;
+  
   // Character-specific states
   isRuleBreaking: boolean; // Jaxon's special ability
   isMasterPlanning: boolean; // Kaison's special ability
+  
   // Combat system
   isAttacking: boolean;
-  attackType: "punch" | "kick" | "special" | null;
+  attackType: "punch" | "kick" | "special" | "webKick" | "energyBlast" | null;
   attackCombo: number; // Combo counter
+  kickChargeTimer: number; // For charged web kick
+  kickPower: number; // Damage based on charge
+  
+  // Energy & Transformation
   energy: number; // 0-100 for special moves
+  energyMeter: number; // 0-100 for transformation
+  maxEnergy: number;
+  powerLevel: 0 | 1; // 0=Normal, 1=Transformed (Super/Hyper)
+  transformDuration: number; // Frames remaining in transformed state
+  
   health: number; // Player health
   invulnerable: boolean; // Temporary invincibility
+  
   // Enhanced movement
   dashCooldown: number;
   wallRunning: boolean;
   groundPounding: boolean;
+  
+  // Physics constants
+  gravity: number;
+  jumpStrength: number;
+  groundLevel: number;
 }
 
 interface GameStats {
@@ -99,29 +128,75 @@ interface RunnerState {
   startToyChase: () => void;
   triggerDogZoomies: () => void;
   adjustVolume: (level: number) => void;
+  
+  // Web-Swinging Actions
+  attachWeb: (anchorPoint: [number, number, number]) => void;
+  releaseWeb: () => void;
+  setWebButtonPressed: (pressed: boolean) => void;
+  updateWebSwing: (delta: number) => void;
+  
+  // Transformation Actions
+  transformHero: () => void;
+  updateTransformation: (delta: number) => void;
+  addEnergyMeter: (amount: number) => void;
+  
+  // Enhanced Combat Actions
+  chargeWebKick: (delta: number) => void;
+  releaseWebKick: () => void;
+  fireEnergyBlast: (direction: [number, number]) => void;
 }
 
 const initialPlayerState: PlayerState = {
+  // 2.5D Position
   x: 0,
-  y: 1.6, // Raise player above floor so legs don't sink into ground
-  z: 0,
+  y: 1.6, // Raise player above floor
+  z: 0, // Always 0 for 2.5D
+  velocityX: 5, // Initial horizontal speed
+  velocityY: 0,
   isJumping: false,
   isSliding: false,
+  isGrounded: true,
   lane: 0,
   speed: 10,
+  
+  // Web-Swinging Physics
+  webAttached: false,
+  webButtonPressed: false,
+  webAngle: 0,
+  webAngularVelocity: 0,
+  webAnchorPoint: null,
+  webLength: 15, // Web rope length
+  
+  // Character states
   isRuleBreaking: false,
   isMasterPlanning: false,
+  
   // Combat system
   isAttacking: false,
   attackType: null,
   attackCombo: 0,
+  kickChargeTimer: 0,
+  kickPower: 0,
+  
+  // Energy & Transformation
   energy: 100,
+  energyMeter: 0,
+  maxEnergy: 100,
+  powerLevel: 0,
+  transformDuration: 0,
+  
   health: 100,
   invulnerable: false,
+  
   // Enhanced movement
   dashCooldown: 0,
   wallRunning: false,
-  groundPounding: false
+  groundPounding: false,
+  
+  // Physics constants
+  gravity: 0.5,
+  jumpStrength: 12,
+  groundLevel: 0
 };
 
 const initialStats: GameStats = {
@@ -210,17 +285,16 @@ export const useRunner = create<RunnerState>()(
     
     jumpPlayer: () => {
       const { player } = get();
-      if (!player.isJumping && !player.isSliding) {
+      if (!player.isJumping && !player.isSliding && player.isGrounded) {
+        console.log("Player jumps!");
         set({
-          player: { ...player, isJumping: true }
+          player: { 
+            ...player, 
+            isJumping: true,
+            velocityY: player.jumpStrength, // Apply jump velocity
+            isGrounded: false
+          }
         });
-        
-        // Auto-land after jump duration
-        setTimeout(() => {
-          set((state) => ({
-            player: { ...state.player, isJumping: false, y: 0 }
-          }));
-        }, 600);
       }
     },
     
@@ -243,33 +317,86 @@ export const useRunner = create<RunnerState>()(
     updatePlayerPosition: (delta) => {
       const { player, stats } = get();
       
-      // Enhanced movement physics
-      let newZ = player.z + player.speed * delta;
-      const newDistance = stats.distance + player.speed * delta * 0.1;
+      // Check if web-swinging - if so, use special physics
+      if (player.webAttached && player.webButtonPressed) {
+        get().updateWebSwing(delta);
+        get().updateTransformation(delta);
+        
+        // Still update energy and cooldowns
+        const newDashCooldown = Math.max(0, player.dashCooldown - delta * 1000);
+        const energyRegen = player.isAttacking ? 0 : 15 * delta;
+        const newEnergy = Math.min(100, player.energy + energyRegen);
+        
+        set({
+          player: {
+            ...player,
+            dashCooldown: newDashCooldown,
+            energy: newEnergy
+          }
+        });
+        return;
+      }
       
-      // Handle jumping physics with better arc
-      let newY = player.y;
-      if (player.isJumping && !player.groundPounding) {
-        const jumpTime = 0.6;
-        const jumpHeight = 3.5;
-        const timeInJump = (Date.now() % (jumpTime * 1000)) / 1000;
-        newY = Math.sin(timeInJump * Math.PI / jumpTime) * jumpHeight + 1.6;
-      } else if (!player.isJumping) {
-        newY = 1.6; // Default height
+      // 2.5D Physics - Horizontal and Vertical movement
+      let newX = player.x + player.velocityX * delta;
+      let newY = player.y + player.velocityY * delta;
+      let newVelocityY = player.velocityY;
+      let newIsGrounded = false;
+      
+      // Apply gravity if not grounded
+      if (newY > player.groundLevel + 1.6) {
+        newVelocityY -= player.gravity * delta;
+      }
+      
+      // Ground collision
+      if (newY <= player.groundLevel + 1.6) {
+        newY = player.groundLevel + 1.6;
+        newVelocityY = 0;
+        newIsGrounded = true;
+        
+        if (player.isJumping) {
+          set({
+            player: { ...player, isJumping: false }
+          });
+        }
+      }
+      
+      // Apply horizontal friction on ground
+      let newVelocityX = player.velocityX;
+      if (newIsGrounded && !player.webAttached) {
+        newVelocityX *= 0.95; // Friction
+        if (Math.abs(newVelocityX) < 0.1) {
+          newVelocityX = 5; // Minimum forward speed
+        }
+      }
+      
+      // Sliding physics
+      if (player.isSliding) {
+        newY = player.groundLevel + 0.8; // Crouch position
       }
       
       // Update cooldowns
       const newDashCooldown = Math.max(0, player.dashCooldown - delta * 1000);
       
       // Passive energy regeneration
-      const energyRegen = player.isAttacking ? 0 : 15 * delta; // 15 energy per second
+      const energyRegen = player.isAttacking ? 0 : 15 * delta;
       const newEnergy = Math.min(100, player.energy + energyRegen);
+      
+      // Update transformation timer
+      get().updateTransformation(delta);
+      
+      // Update state
+      const newDistance = stats.distance + Math.abs(newVelocityX) * delta * 0.1;
       
       set({
         player: { 
           ...player, 
-          z: newZ, 
+          x: newX,
           y: newY,
+          z: 0, // Always 0 for 2.5D
+          velocityX: newVelocityX,
+          velocityY: newVelocityY,
+          isGrounded: newIsGrounded,
           dashCooldown: newDashCooldown,
           energy: newEnergy
         },
@@ -627,6 +754,235 @@ export const useRunner = create<RunnerState>()(
           player: { ...currentPlayer, invulnerable: false }
         });
       }, duration);
+    },
+    
+    // Web-Swinging Implementation
+    attachWeb: (anchorPoint) => {
+      const { player } = get();
+      console.log("Web attached to anchor point:", anchorPoint);
+      
+      const dx = player.x - anchorPoint[0];
+      const dy = player.y - anchorPoint[1];
+      const angle = Math.atan2(dy, dx);
+      const length = Math.sqrt(dx * dx + dy * dy);
+      
+      set({
+        player: {
+          ...player,
+          webAttached: true,
+          webAngle: angle,
+          webAnchorPoint: anchorPoint,
+          webLength: length
+        }
+      });
+    },
+    
+    releaseWeb: () => {
+      const { player } = get();
+      
+      if (!player.webAttached || !player.webAnchorPoint) return;
+      
+      // Calculate tangential velocity for launch
+      const angularSpeed = player.webAngularVelocity;
+      const tangentialSpeed = Math.abs(angularSpeed * player.webLength);
+      const releaseAngle = player.webAngle + Math.PI / 2 * Math.sign(player.webAngularVelocity);
+      
+      const launchVx = tangentialSpeed * Math.cos(releaseAngle);
+      const launchVy = tangentialSpeed * Math.sin(releaseAngle);
+      
+      console.log("Web released! Launch velocity:", { launchVx, launchVy });
+      
+      set({
+        player: {
+          ...player,
+          webAttached: false,
+          webButtonPressed: false,
+          webAngle: 0,
+          webAngularVelocity: 0,
+          webAnchorPoint: null,
+          velocityX: launchVx,
+          velocityY: launchVy
+        }
+      });
+    },
+    
+    setWebButtonPressed: (pressed) => {
+      const { player } = get();
+      set({
+        player: { ...player, webButtonPressed: pressed }
+      });
+      
+      if (!pressed && player.webAttached) {
+        get().releaseWeb();
+      }
+    },
+    
+    updateWebSwing: (delta) => {
+      const { player } = get();
+      
+      if (!player.webAttached || !player.webAnchorPoint) return;
+      
+      const dx = player.x - player.webAnchorPoint[0];
+      const dy = player.y - player.webAnchorPoint[1];
+      const currentAngle = Math.atan2(dy, dx);
+      
+      // Pendulum physics: gravity creates angular acceleration
+      const gravityForce = player.gravity * Math.sin(currentAngle);
+      let newAngularVelocity = player.webAngularVelocity + gravityForce * delta * 0.1;
+      newAngularVelocity *= 0.98; // Air resistance
+      
+      let newAngle = currentAngle + newAngularVelocity;
+      
+      // Calculate new position
+      const newX = player.webAnchorPoint[0] + player.webLength * Math.cos(newAngle);
+      const newY = player.webAnchorPoint[1] + player.webLength * Math.sin(newAngle);
+      
+      set({
+        player: {
+          ...player,
+          x: newX,
+          y: newY,
+          webAngle: newAngle,
+          webAngularVelocity: newAngularVelocity
+        }
+      });
+    },
+    
+    // Transformation System
+    transformHero: () => {
+      const { player, selectedCharacter } = get();
+      
+      if (player.energyMeter < 100) {
+        console.log("Not enough energy to transform! Need:", 100 - player.energyMeter);
+        return;
+      }
+      
+      const transformName = selectedCharacter === "kaison" ? "Super Kaison" : "Hyper Jaxon";
+      console.log(`${transformName} transformation activated!`);
+      
+      set({
+        player: {
+          ...player,
+          powerLevel: 1,
+          energyMeter: 0,
+          transformDuration: 600 // 10 seconds at 60fps
+        }
+      });
+    },
+    
+    updateTransformation: (delta) => {
+      const { player } = get();
+      
+      if (player.transformDuration > 0) {
+        const newDuration = player.transformDuration - 1;
+        
+        if (newDuration <= 0) {
+          console.log("Transformation ended!");
+          set({
+            player: {
+              ...player,
+              powerLevel: 0,
+              transformDuration: 0
+            }
+          });
+        } else {
+          set({
+            player: { ...player, transformDuration: newDuration }
+          });
+        }
+      }
+    },
+    
+    addEnergyMeter: (amount) => {
+      const { player } = get();
+      const newEnergy = Math.min(player.maxEnergy, player.energyMeter + amount);
+      
+      set({
+        player: { ...player, energyMeter: newEnergy }
+      });
+      
+      // Auto-transform when meter is full
+      if (newEnergy >= 100 && player.powerLevel === 0) {
+        console.log("Energy meter full! Press transform button!");
+      }
+    },
+    
+    // Enhanced Combat
+    chargeWebKick: (delta) => {
+      const { player } = get();
+      
+      if (!player.webAttached) return;
+      
+      const newChargeTime = Math.min(player.kickChargeTimer + delta, 3); // Max 3 seconds
+      const newPower = 10 + (newChargeTime / 3) * 40; // 10-50 damage based on charge
+      
+      set({
+        player: {
+          ...player,
+          kickChargeTimer: newChargeTime,
+          kickPower: newPower
+        }
+      });
+    },
+    
+    releaseWebKick: () => {
+      const { player } = get();
+      
+      console.log(`Web kick released! Power: ${player.kickPower}`);
+      
+      set({
+        player: {
+          ...player,
+          isAttacking: true,
+          attackType: "webKick",
+          kickChargeTimer: 0
+        }
+      });
+      
+      // Finish attack
+      setTimeout(() => {
+        const currentPlayer = get().player;
+        set({
+          player: {
+            ...currentPlayer,
+            isAttacking: false,
+            attackType: null,
+            kickPower: 0
+          }
+        });
+      }, 400);
+    },
+    
+    fireEnergyBlast: (direction) => {
+      const { player, selectedCharacter } = get();
+      
+      if (selectedCharacter !== "jaxon" || player.energy < 25) return;
+      
+      console.log("Jaxon fires energy blast in direction:", direction);
+      
+      set({
+        player: {
+          ...player,
+          isAttacking: true,
+          attackType: "energyBlast",
+          energy: player.energy - 25,
+          // Apply recoil
+          velocityX: player.velocityX - direction[0] * 2,
+          velocityY: player.velocityY - direction[1] * 2
+        }
+      });
+      
+      // Finish attack
+      setTimeout(() => {
+        const currentPlayer = get().player;
+        set({
+          player: {
+            ...currentPlayer,
+            isAttacking: false,
+            attackType: null
+          }
+        });
+      }, 300);
     }
   }))
 );

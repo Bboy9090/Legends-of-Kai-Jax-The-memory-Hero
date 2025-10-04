@@ -1,0 +1,41 @@
+. Kaison (Inspired by Sonic's agility, unique visual spin)
+Core Inspiration: Image 1 & 3 (Normal Sonic's dynamic pose, smooth model)
+
+Color Palette: Dominant color: Vibrant Cyan/Turquoise (instead of blue). Accent colors: Electric Orange for secondary details, Silver for gloves/shoes.
+
+Body Type: Lean and athletic, similar to Sonic.
+
+Head/Hair: Stylized, short "quills" or "spikes" that are less pronounced than Sonic's, maybe swept slightly back. Color: Cyan/Turquoise.
+
+Eyes: Large, expressive eyes (like Sonic), but perhaps a unique shape (e.g., more angular or with a single, sharp "inner" point rather than fully rounded). Iris color: Bright green.
+
+Distinguishing Feature: "Orange Wisps" or "Energy Trails" that subtly emanate from his back or feet when moving fast (even in normal form). These would intensify during his powered-up state.
+
+Replit Agent Instruction: "For Kaison, use a dominant Cyan body material, Electric Orange accents, and Silver for gloves/shoes. Give him Bright Green eyes. Ensure his 'quills' are less pronounced. Implement subtle Orange particle effects/trails from his feet when moving, intensifying with speed."
+
+Super Kaison Transformation:
+
+Visual: Instead of pure gold, he transforms into a Glimmering Silver-Blue metallic texture with intense, upward-flowing Electric Orange energy particles that form a fiery aura (inspired by Image 2, but with our unique color scheme).
+
+Replit Agent Instruction: "Super Kaison: Override material to Metallic Silver-Blue. Surround with bright, upward-flowing Electric Orange particles for an aura, similar to Image 2 but with the specified colors."
+
+2. Jaxon (Inspired by Knuckles' power and Sonic's speed, unique hybrid)
+Core Inspiration: Image 4 (shows Sonic and Super Sonic, hinting at different power levels) combined with Knuckles' power.
+
+Color Palette: Dominant color: Deep Crimson Red (instead of Knuckles' brighter red or Sonic's blue). Accent colors: Obsidian Black or very dark gray for secondary details, Charcoal Gray for shoes.
+
+Body Type: More muscular and broad-shouldered than Kaison, suggesting raw strength (like Knuckles), but still agile.
+
+Head/Hair: Knuckles-like "dreads" or "locks" but shorter and more angular, swept slightly back. Color: Deep Crimson Red.
+
+Eyes: Fierce, expressive eyes. Iris color: Fiery gold.
+
+Distinguishing Feature: Exaggerated, armored gauntlets/gloves (similar to Knuckles' fists, but sleeker and black/charcoal in color). These are part of his base design.
+
+Replit Agent Instruction: "For Jaxon, use a dominant Deep Crimson Red body material, Obsidian Black accents, and Charcoal Gray for shoes/armored gauntlets. Give him Fiery Gold eyes. Design his 'dreads' to be shorter and angular."
+
+Hyper Jaxon Transformation:
+
+Visual: Instead of rainbow, he shifts to a Pulsating Deep Purple to Crimson-Red gradient with a highly dense, dark energy aura and a chaotic, multi-layered black and red trail (using Meshline/Postprocessing). The energy might crackle.
+
+Replit Agent Instruction: "Hyper Jaxon: Apply a pulsating gradient material that cycles between Deep Purple and Crimson Red. Generate a dense, dark energy aura and a chaotic, multi-layered trail behind him, using Black and Red colors."

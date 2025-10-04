@@ -75,11 +75,13 @@ export default function GameScene() {
     // Update player position
     updatePlayerPosition(delta);
     
-    // Sonic-style dynamic camera - more dramatic follow with speed effects
-    const cameraOffset = player.speed > 3 ? 12 : 10; // Further back when speeding
-    const cameraHeight = player.speed > 3 ? 5 : 4;   // Higher when speeding
-    state.camera.position.set(player.x * 0.3, cameraHeight, player.z - cameraOffset);
-    state.camera.lookAt(player.x, 2, player.z + 25);
+    // 2.5D Side-view Camera - follows player horizontally
+    const cameraX = player.x + 5; // Camera slightly ahead of player
+    const cameraY = 8; // Fixed height for side view
+    const cameraZ = 15; // Fixed depth for 2.5D perspective
+    
+    state.camera.position.set(cameraX, cameraY, cameraZ);
+    state.camera.lookAt(player.x, player.y, 0); // Look at player position
     
     // Generate new objects ahead of player
     const playerZ = player.z;
