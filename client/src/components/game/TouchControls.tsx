@@ -12,13 +12,31 @@ enum Controls {
   punch = 'punch',
   kick = 'kick',
   special = 'special',
-  dash = 'dash'
+  dash = 'dash',
+  webSwing = 'webSwing', // Hold to attach web, release to launch
+  chargeKick = 'chargeKick', // Hold to charge kick while web-swinging
+  transform = 'transform', // Activate transformation
+  energyBlast = 'energyBlast' // Fire energy blast (Jaxon only)
 }
 
 export default function TouchControls() {
-  const { movePlayer, jumpPlayer, slidePlayer, attackEnemy, dashPlayer, gameState } = useRunner();
+  const { 
+    movePlayer, 
+    jumpPlayer, 
+    slidePlayer, 
+    attackEnemy, 
+    dashPlayer, 
+    gameState,
+    player,
+    setWebButtonPressed,
+    chargeWebKick,
+    releaseWebKick,
+    transformHero,
+    fireEnergyBlast
+  } = useRunner();
   const [, get] = useKeyboardControls<Controls>();
   const touchManagerRef = useRef<TouchManager | null>(null);
+  const kickChargeInterval = useRef<NodeJS.Timeout | null>(null);
   
   // Handle touch gestures
   const handleTap = () => {
@@ -73,6 +91,9 @@ export default function TouchControls() {
   
   // Handle keyboard controls
   useEffect(() => {
+    let lastWebState = false;
+    let lastChargeState = false;
+    
     const handleKeyboardControls = () => {
       if (gameState !== "playing") return;
       
@@ -104,12 +125,60 @@ export default function TouchControls() {
       if (controls.dash) {
         dashPlayer();
       }
+      
+      // Web-Swinging Controls (hold-based)
+      if (controls.webSwing !== lastWebState) {
+        setWebButtonPressed(controls.webSwing);
+        lastWebState = controls.webSwing;
+        console.log("Web button:", controls.webSwing ? "PRESSED" : "RELEASED");
+      }
+      
+      // Charged Kick Controls (hold while web-swinging)
+      if (controls.chargeKick && player.webAttached) {
+        if (!lastChargeState) {
+          // Start charging
+          kickChargeInterval.current = setInterval(() => {
+            chargeWebKick(0.016); // ~60fps delta
+          }, 16);
+          lastChargeState = true;
+          console.log("Started charging web kick!");
+        }
+      } else if (lastChargeState) {
+        // Release kick
+        if (kickChargeInterval.current) {
+          clearInterval(kickChargeInterval.current);
+          kickChargeInterval.current = null;
+        }
+        if (player.kickChargeTimer > 0) {
+          releaseWebKick();
+          console.log("Released web kick!");
+        }
+        lastChargeState = false;
+      }
+      
+      // Transformation Control (press to activate)
+      if (controls.transform && player.energyMeter >= 100 && player.powerLevel === 0) {
+        transformHero();
+        console.log("Transformation activated!");
+      }
+      
+      // Energy Blast Control (Jaxon only)
+      if (controls.energyBlast && !player.isAttacking) {
+        // Fire in direction based on mouse or default forward
+        fireEnergyBlast([1, 0]); // Forward direction
+        console.log("Energy blast fired!");
+      }
     };
     
     const interval = setInterval(handleKeyboardControls, 16); // ~60fps
     
-    return () => clearInterval(interval);
-  }, [gameState]); // Removed dependencies that cause unnecessary re-renders
+    return () => {
+      clearInterval(interval);
+      if (kickChargeInterval.current) {
+        clearInterval(kickChargeInterval.current);
+      }
+    };
+  }, [gameState, player.webAttached, player.kickChargeTimer, player.energyMeter, player.powerLevel, player.isAttacking]);
   
   // Touch control UI for mobile devices
   if (!isTouchDevice() || gameState !== "playing") {
