@@ -140,9 +140,9 @@ export default function Player() {
   return (
     <animated.group position={position as any}>
       <animated.group scale={scale as any} rotation={rotation as any}>
-        {/* Sonic-style rounded body (larger torso like Sonic) */}
+        {/* Sonic-style rounded body (SHORTER and WIDER torso) */}
         <mesh ref={meshRef} castShadow receiveShadow>
-          <capsuleGeometry args={[0.7, 1.2]} />
+          <capsuleGeometry args={[0.8, 1.0]} />
           <meshToonMaterial 
             color={config.primaryColor} 
             emissive={config.accentColor}
@@ -150,9 +150,9 @@ export default function Player() {
           />
         </mesh>
         
-        {/* Large Sonic-style head (much bigger proportion) */}
-        <mesh position={[0, 1.8, 0]} castShadow receiveShadow>
-          <sphereGeometry args={[0.8, 32, 24]} />
+        {/* Large Sonic-style head (MUCH bigger proportion) */}
+        <mesh position={[0, 1.4, 0]} castShadow receiveShadow>
+          <sphereGeometry args={[1.0, 32, 24]} />
           <meshToonMaterial 
             color={config.primaryColor}
             emissive={config.accentColor}
@@ -160,98 +160,98 @@ export default function Player() {
           />
         </mesh>
         
-        {/* Cartoon-style muzzle/mouth area */}
-        <mesh position={[0, 1.5, 0.6]} castShadow receiveShadow>
-          <sphereGeometry args={[0.35, 16, 12]} />
+        {/* Cartoon-style muzzle/mouth area - Adjusted for bigger head */}
+        <mesh position={[0, 1.15, 0.75]} castShadow receiveShadow>
+          <sphereGeometry args={[0.4, 16, 12]} />
           <meshToonMaterial 
             color={config.muzzleColor || "#FFE4B5"}
           />
         </mesh>
         
-        {/* Large Sonic-style eyes (much bigger and more expressive) */}
-        <mesh position={[-0.25, 1.9, 0.5]}>
-          <sphereGeometry args={[0.2, 16, 12]} />
+        {/* Large Sonic-style eyes (adjusted for bigger head) */}
+        <mesh position={[-0.3, 1.5, 0.65]}>
+          <sphereGeometry args={[0.25, 16, 12]} />
           <meshToonMaterial color={config.eyeColor} />
         </mesh>
-        <mesh position={[0.25, 1.9, 0.5]}>
-          <sphereGeometry args={[0.2, 16, 12]} />
+        <mesh position={[0.3, 1.5, 0.65]}>
+          <sphereGeometry args={[0.25, 16, 12]} />
           <meshToonMaterial color={config.eyeColor} />
         </mesh>
         
         {/* Large cartoon pupils */}
-        <mesh position={[-0.25, 1.9, 0.65]}>
-          <sphereGeometry args={[0.12, 12, 8]} />
+        <mesh position={[-0.3, 1.5, 0.8]}>
+          <sphereGeometry args={[0.15, 12, 8]} />
           <meshToonMaterial color={config.pupilColor} />
         </mesh>
-        <mesh position={[0.25, 1.9, 0.65]}>
-          <sphereGeometry args={[0.12, 12, 8]} />
+        <mesh position={[0.3, 1.5, 0.8]}>
+          <sphereGeometry args={[0.15, 12, 8]} />
           <meshToonMaterial color={config.pupilColor} />
         </mesh>
         
-        {/* Eye shine highlights (Sonic-style) */}
-        <mesh position={[-0.2, 2.0, 0.7]}>
-          <sphereGeometry args={[0.04, 8, 6]} />
+        {/* Eye shine highlights (Sonic-style) - Adjusted for bigger head */}
+        <mesh position={[-0.25, 1.6, 0.85]}>
+          <sphereGeometry args={[0.05, 8, 6]} />
           <meshToonMaterial color="#FFFFFF" emissive="#FFFFFF" emissiveIntensity={0.8} />
         </mesh>
-        <mesh position={[0.3, 2.0, 0.7]}>
-          <sphereGeometry args={[0.04, 8, 6]} />
+        <mesh position={[0.35, 1.6, 0.85]}>
+          <sphereGeometry args={[0.05, 8, 6]} />
           <meshToonMaterial color="#FFFFFF" emissive="#FFFFFF" emissiveIntensity={0.8} />
         </mesh>
         
         {/* Jaxon's Angular Dreads - PROMINENT sharp, geometric hairstyle */}
         {selectedCharacter === "jaxon" && (
           <>
-            {/* Main central angular dread - LARGE and dominant */}
-            <mesh position={[0, 2.5, -0.6]} rotation={[Math.PI / 3, 0, 0]}>
+            {/* Main central angular dread - LARGE and dominant - Adjusted for bigger head */}
+            <mesh position={[0, 2.1, -0.7]} rotation={[Math.PI / 3, 0, 0]}>
               <boxGeometry args={[0.35, 1.2, 0.25]} />
               <meshToonMaterial 
                 color="#0D0D0D" // Obsidian Black
-                emissive="#8B008B" // Purple glow
-                emissiveIntensity={0.6}
+                emissive="#DC143C" // Deep Crimson Red glow
+                emissiveIntensity={1.0} // INCREASED GLOW
               />
             </mesh>
             
             {/* Left sharp angular dread - PROMINENT */}
-            <mesh position={[-0.5, 2.4, -0.5]} rotation={[Math.PI / 4, -Math.PI / 5, -Math.PI / 8]}>
+            <mesh position={[-0.6, 2.0, -0.6]} rotation={[Math.PI / 4, -Math.PI / 5, -Math.PI / 8]}>
               <boxGeometry args={[0.25, 0.9, 0.2]} />
               <meshToonMaterial 
                 color="#0D0D0D"
-                emissive="#8B008B"
-                emissiveIntensity={0.5}
+                emissive="#DC143C"
+                emissiveIntensity={1.0}
               />
             </mesh>
             
             {/* Right sharp angular dread - PROMINENT */}
-            <mesh position={[0.5, 2.4, -0.5]} rotation={[Math.PI / 4, Math.PI / 5, Math.PI / 8]}>
+            <mesh position={[0.6, 2.0, -0.6]} rotation={[Math.PI / 4, Math.PI / 5, Math.PI / 8]}>
               <boxGeometry args={[0.25, 0.9, 0.2]} />
               <meshToonMaterial 
                 color="#0D0D0D"
-                emissive="#8B008B"
-                emissiveIntensity={0.5}
+                emissive="#DC143C"
+                emissiveIntensity={1.0}
               />
             </mesh>
             
             {/* Additional side dreads for fuller look */}
-            <mesh position={[-0.65, 2.2, -0.3]} rotation={[Math.PI / 6, -Math.PI / 4, 0]}>
+            <mesh position={[-0.75, 1.8, -0.4]} rotation={[Math.PI / 6, -Math.PI / 4, 0]}>
               <boxGeometry args={[0.18, 0.7, 0.15]} />
               <meshToonMaterial 
                 color="#0D0D0D"
                 emissive="#DC143C" // Crimson accent
-                emissiveIntensity={0.4}
+                emissiveIntensity={0.8}
               />
             </mesh>
-            <mesh position={[0.65, 2.2, -0.3]} rotation={[Math.PI / 6, Math.PI / 4, 0]}>
+            <mesh position={[0.75, 1.8, -0.4]} rotation={[Math.PI / 6, Math.PI / 4, 0]}>
               <boxGeometry args={[0.18, 0.7, 0.15]} />
               <meshToonMaterial 
                 color="#0D0D0D"
                 emissive="#DC143C"
-                emissiveIntensity={0.4}
+                emissiveIntensity={0.8}
               />
             </mesh>
             
             {/* Armored headband - Obsidian Black with edge highlights */}
-            <mesh position={[0, 2.35, 0.1]} rotation={[0, 0, 0]}>
-              <torusGeometry args={[0.7, 0.12, 6, 16]} />
+            <mesh position={[0, 1.95, 0.2]} rotation={[0, 0, 0]}>
+              <torusGeometry args={[0.85, 0.12, 6, 16]} />
               <meshToonMaterial 
                 color="#0D0D0D"
                 emissive="#36454F" // Charcoal edge
@@ -264,63 +264,63 @@ export default function Player() {
         {/* Kaison's VERY Subtle Quills - MINIMALIST sleek design */}
         {selectedCharacter === "kaison" && (
           <>
-            {/* Single tiny back quill - barely visible, sleek */}
-            <mesh position={[0, 2.15, -0.35]} rotation={[Math.PI / 8, 0, 0]}>
-              <coneGeometry args={[0.08, 0.25, 8]} />
+            {/* Single back quill - sharp and highly emissive - Adjusted for bigger head */}
+            <mesh position={[0, 1.75, -0.45]} rotation={[Math.PI / 8, 0, 0]}>
+              <coneGeometry args={[0.1, 0.3, 8]} />
               <meshToonMaterial 
                 color="#FF6F00" // Electric Orange
                 emissive="#FF6F00"
-                emissiveIntensity={0.7}
+                emissiveIntensity={1.2} // HIGH GLOW to signify speed
               />
             </mesh>
             
             {/* Micro side quills - almost flush with head */}
-            <mesh position={[-0.2, 2.1, -0.25]} rotation={[Math.PI / 12, -Math.PI / 16, 0]}>
+            <mesh position={[-0.25, 1.7, -0.35]} rotation={[Math.PI / 12, -Math.PI / 16, 0]}>
               <coneGeometry args={[0.05, 0.15, 6]} />
               <meshToonMaterial 
                 color="#FF6F00"
                 emissive="#FF6F00"
-                emissiveIntensity={0.6}
+                emissiveIntensity={1.0}
               />
             </mesh>
-            <mesh position={[0.2, 2.1, -0.25]} rotation={[Math.PI / 12, Math.PI / 16, 0]}>
+            <mesh position={[0.25, 1.7, -0.35]} rotation={[Math.PI / 12, Math.PI / 16, 0]}>
               <coneGeometry args={[0.05, 0.15, 6]} />
               <meshToonMaterial 
                 color="#FF6F00"
                 emissive="#FF6F00"
-                emissiveIntensity={0.6}
+                emissiveIntensity={1.0}
               />
             </mesh>
             
             {/* Sleek tech headband - Electric Orange, thinner */}
-            <mesh position={[0, 2.2, 0.15]} rotation={[0, 0, 0]}>
-              <torusGeometry args={[0.68, 0.05, 8, 20]} />
+            <mesh position={[0, 1.8, 0.25]} rotation={[0, 0, 0]}>
+              <torusGeometry args={[0.85, 0.05, 8, 20]} />
               <meshToonMaterial 
                 color="#FF6F00"
                 emissive="#FF6F00"
-                emissiveIntensity={0.9}
+                emissiveIntensity={1.2}
               />
             </mesh>
             
             {/* Visor/tech accent on forehead */}
-            <mesh position={[0, 2.1, 0.65]} rotation={[0, 0, 0]}>
-              <boxGeometry args={[0.5, 0.15, 0.05]} />
+            <mesh position={[0, 1.7, 0.8]} rotation={[0, 0, 0]}>
+              <boxGeometry args={[0.6, 0.18, 0.05]} />
               <meshToonMaterial 
                 color="#C0C0C0" // Silver
                 emissive="#00CED1" // Cyan glow
-                emissiveIntensity={0.6}
+                emissiveIntensity={0.8}
               />
             </mesh>
           </>
         )}
         
-        {/* Sonic-style rounded legs with running animation */}
+        {/* Sonic-style legs - SHORTER and closer to torso */}
         <mesh 
           ref={leftLegRef}
-          position={[-0.4, -0.8, 0]} 
+          position={[-0.4, -0.2, 0]} 
           castShadow
         >
-          <capsuleGeometry args={[0.25, 1.0]} />
+          <capsuleGeometry args={[0.2, 0.6]} />
           <meshToonMaterial 
             color={config.primaryColor}
             emissive={config.accentColor}
@@ -329,10 +329,10 @@ export default function Player() {
         </mesh>
         <mesh 
           ref={rightLegRef}
-          position={[0.4, -0.8, 0]} 
+          position={[0.4, -0.2, 0]} 
           castShadow
         >
-          <capsuleGeometry args={[0.25, 1.0]} />
+          <capsuleGeometry args={[0.2, 0.6]} />
           <meshToonMaterial 
             color={config.primaryColor}
             emissive={config.accentColor}
@@ -340,14 +340,22 @@ export default function Player() {
           />
         </mesh>
         
-        {/* Character-specific boots/shoes */}
-        <mesh position={[-0.4, -1.5, 0.2]} castShadow receiveShadow>
-          <capsuleGeometry args={[0.2, 0.6]} />
-          <meshToonMaterial color={config.shoeColor} />
+        {/* Character-specific HUGE SONIC SHOES - EXAGGERATED */}
+        <mesh position={[-0.4, -0.6, 0.2]} castShadow receiveShadow>
+          <boxGeometry args={[0.7, 0.5, 1.0]} />
+          <meshToonMaterial 
+            color={config.shoeColor}
+            emissive={config.shoeColor}
+            emissiveIntensity={0.3}
+          />
         </mesh>
-        <mesh position={[0.4, -1.5, 0.2]} castShadow receiveShadow>
-          <capsuleGeometry args={[0.2, 0.6]} />
-          <meshToonMaterial color={config.shoeColor} />
+        <mesh position={[0.4, -0.6, 0.2]} castShadow receiveShadow>
+          <boxGeometry args={[0.7, 0.5, 1.0]} />
+          <meshToonMaterial 
+            color={config.shoeColor}
+            emissive={config.shoeColor}
+            emissiveIntensity={0.3}
+          />
         </mesh>
         
         {/* Sonic-style rounded arms with running motion */}
@@ -381,31 +389,39 @@ export default function Player() {
         {/* Character-specific gloves/gauntlets - DISTINCTIVE designs */}
         {selectedCharacter === "jaxon" ? (
           <>
-            {/* Jaxon's CHARCOAL GAUNTLETS - angular and armored */}
+            {/* Jaxon's CHARCOAL GAUNTLETS - angular and armored - MORE AGGRESSIVE */}
             <mesh position={[-0.9, 0.2, 0]} castShadow receiveShadow>
-              <boxGeometry args={[0.35, 0.35, 0.35]} />
+              <boxGeometry args={[0.4, 0.4, 0.4]} />
               <meshToonMaterial 
-                color="#36454F" // Charcoal gray
+                color={config.gloveColor} // Charcoal gray
                 emissive="#0D0D0D"
-                emissiveIntensity={0.2}
+                emissiveIntensity={0.5}
               />
             </mesh>
             <mesh position={[0.9, 0.2, 0]} castShadow receiveShadow>
-              <boxGeometry args={[0.35, 0.35, 0.35]} />
+              <boxGeometry args={[0.4, 0.4, 0.4]} />
               <meshToonMaterial 
-                color="#36454F"
+                color={config.gloveColor}
                 emissive="#0D0D0D"
-                emissiveIntensity={0.2}
+                emissiveIntensity={0.5}
               />
             </mesh>
-            {/* Gauntlet spikes for extra edge */}
-            <mesh position={[-0.9, 0.25, 0.25]} rotation={[Math.PI / 4, 0, 0]}>
-              <coneGeometry args={[0.08, 0.2, 4]} />
-              <meshToonMaterial color="#0D0D0D" />
+            {/* Gauntlet spikes for Knuckles-like look */}
+            <mesh position={[-0.9, 0.3, 0.3]} rotation={[Math.PI / 4, 0, 0]}>
+              <coneGeometry args={[0.1, 0.25, 4]} />
+              <meshToonMaterial 
+                color="#0D0D0D"
+                emissive="#DC143C"
+                emissiveIntensity={0.6}
+              />
             </mesh>
-            <mesh position={[0.9, 0.25, 0.25]} rotation={[Math.PI / 4, 0, 0]}>
-              <coneGeometry args={[0.08, 0.2, 4]} />
-              <meshToonMaterial color="#0D0D0D" />
+            <mesh position={[0.9, 0.3, 0.3]} rotation={[Math.PI / 4, 0, 0]}>
+              <coneGeometry args={[0.1, 0.25, 4]} />
+              <meshToonMaterial 
+                color="#0D0D0D"
+                emissive="#DC143C"
+                emissiveIntensity={0.6}
+              />
             </mesh>
           </>
         ) : (
