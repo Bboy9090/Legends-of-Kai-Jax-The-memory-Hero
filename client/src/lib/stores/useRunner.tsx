@@ -149,7 +149,7 @@ interface RunnerState {
 const initialPlayerState: PlayerState = {
   // 2.5D Position
   x: 0,
-  y: 1.6, // Raise player above floor
+  y: 0.8, // Start ON the ground (adjusted for Sonic proportions)
   z: 0, // Always 0 for 2.5D
   velocityX: 5, // Initial horizontal speed
   velocityY: 0,
@@ -194,8 +194,8 @@ const initialPlayerState: PlayerState = {
   groundPounding: false,
   
   // Physics constants
-  gravity: 0.5,
-  jumpStrength: 12,
+  gravity: 30, // Increased gravity for tighter platformer feel
+  jumpStrength: 15, // Stronger jump to compensate
   groundLevel: 0
 };
 
@@ -319,14 +319,14 @@ export const useRunner = create<RunnerState>()(
       let newVelocityY = player.velocityY;
       let newIsGrounded = false;
       
-      // Apply gravity if not grounded
-      if (newY > player.groundLevel + 1.6) {
+      // Apply gravity if not grounded (adjusted for Sonic body height)
+      if (newY > player.groundLevel + 0.8) {
         newVelocityY -= player.gravity * delta;
       }
       
-      // Ground collision
-      if (newY <= player.groundLevel + 1.6) {
-        newY = player.groundLevel + 1.6;
+      // Ground collision (character stands at 0.8 above ground)
+      if (newY <= player.groundLevel + 0.8) {
+        newY = player.groundLevel + 0.8;
         newVelocityY = 0;
         newIsGrounded = true;
         
@@ -348,7 +348,7 @@ export const useRunner = create<RunnerState>()(
       
       // Sliding physics
       if (player.isSliding) {
-        newY = player.groundLevel + 0.8; // Crouch position
+        newY = player.groundLevel + 0.4; // Crouch position (lower for Sonic body)
       }
       
       // Update cooldowns
