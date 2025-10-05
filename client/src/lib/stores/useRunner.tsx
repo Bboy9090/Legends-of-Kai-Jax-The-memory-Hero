@@ -784,11 +784,13 @@ export const useRunner = create<RunnerState>()(
     
     setWebButtonPressed: (pressed) => {
       const { player } = get();
+      console.log(`🕸️ setWebButtonPressed(${pressed}) - current webAttached: ${player.webAttached}`);
       set({
         player: { ...player, webButtonPressed: pressed }
       });
       
       if (!pressed && player.webAttached) {
+        console.log("Releasing web!");
         get().releaseWeb();
       }
     },

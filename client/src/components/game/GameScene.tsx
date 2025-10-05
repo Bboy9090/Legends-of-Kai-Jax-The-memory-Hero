@@ -195,16 +195,21 @@ export default function GameScene() {
     
     // Check web anchor proximity for auto-attach
     if (!player.webAttached && player.webButtonPressed) {
+      console.log("Web button pressed! Looking for anchors. Total anchors:", webAnchors.length);
       const nearestAnchor = webAnchors.find(anchor => {
         const distance = Math.sqrt(
           Math.pow(anchor.position[0] - player.x, 2) +
           Math.pow(anchor.position[1] - player.y, 2)
         );
+        console.log(`Anchor at [${anchor.position[0]}, ${anchor.position[1]}], distance: ${distance.toFixed(1)}`);
         return distance < 20; // Attach range
       });
       
       if (nearestAnchor) {
+        console.log("✅ Attaching to web anchor!", nearestAnchor.position);
         useRunner.getState().attachWeb(nearestAnchor.position);
+      } else {
+        console.log("❌ No anchor in range (need < 20 units)");
       }
     }
     
