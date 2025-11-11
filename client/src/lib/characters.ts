@@ -14,14 +14,14 @@ export interface Fighter {
 }
 
 export const FIGHTERS: Fighter[] = [
-  // Main Heroes - Jaxon & Kaison
+  // Main Heroes - Jaxon & Kaison (LEGENDARY FUSION DESIGNS!)
   {
     id: 'jaxon',
     name: 'Jaxon',
     displayName: 'Jaxon',
-    color: '#DC143C', // Deep Crimson Red
-    accentColor: '#FFD700', // Fiery Gold
-    description: 'Super fast hero with sonic powers!',
+    color: '#DC143C', // Deep Crimson Red (Mario)
+    accentColor: '#FF4500', // Fire Orange-Red (Shadow's chaos energy)
+    description: 'Mario meets Shadow! Red cap hero with dark chaos energy!',
     category: 'heroes',
     unlocked: true
   },
@@ -29,9 +29,9 @@ export const FIGHTERS: Fighter[] = [
     id: 'kaison',
     name: 'Kaison',
     displayName: 'Kaison',
-    color: '#00CED1', // Vibrant Cyan
-    accentColor: '#00FF00', // Bright Green
-    description: 'Lightning quick hero with electric speed!',
+    color: '#0066FF', // Bright Blue (Sonic)
+    accentColor: '#00E5FF', // Cyan speed aura (Sonic's trails)
+    description: 'Sonic meets Luigi! Blue speedster with green cap and twin tails!',
     category: 'heroes',
     unlocked: true
   },
