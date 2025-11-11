@@ -70,22 +70,22 @@ export default function Opponent() {
     
     // Execute current behavior (slowed by timeScale)
     const moveSpeed = 0.08 * timeScale;
-    const gravity = -0.5;
+    const gravity = -10; // TUNED: Match player gravity!
     
     switch (ai.currentBehavior) {
       case 'approach':
         if (opponentX < playerX) {
-          moveOpponent(moveSpeed, opponentY);
+          moveOpponent(moveSpeed, useBattle.getState().opponentY);
         } else {
-          moveOpponent(-moveSpeed, opponentY);
+          moveOpponent(-moveSpeed, useBattle.getState().opponentY);
         }
         break;
         
       case 'retreat':
         if (opponentX < playerX) {
-          moveOpponent(-moveSpeed, opponentY);
+          moveOpponent(-moveSpeed, useBattle.getState().opponentY);
         } else {
-          moveOpponent(moveSpeed, opponentY);
+          moveOpponent(moveSpeed, useBattle.getState().opponentY);
         }
         break;
         
@@ -102,9 +102,31 @@ export default function Opponent() {
         break;
     }
     
-    // Apply simple gravity if in air (slowed by timeScale)
-    if (opponentY > 0.8) {
-      moveOpponent(0, Math.max(0.8, opponentY + gravity * scaledDelta));
+    // Apply jump velocity and gravity - SAME as player physics!
+    // Re-fetch COMPLETE state after all movements/actions
+    const freshState = useBattle.getState();
+    let currentY = freshState.opponentY;
+    let velocityY = freshState.opponentVelocityY;
+    
+    if (!freshState.opponentGrounded) {
+      // Apply velocity to position (using FRESH Y from store)
+      const newY = currentY + velocityY * scaledDelta;
+      
+      // Apply gravity to velocity
+      velocityY += gravity * scaledDelta;
+      
+      // Check if landed
+      if (newY <= 0.8) {
+        moveOpponent(0, 0.8);
+        useBattle.setState({ opponentVelocityY: 0, opponentGrounded: true });
+      } else {
+        moveOpponent(0, newY);
+        useBattle.setState({ opponentVelocityY: velocityY });
+      }
+    } else if (currentY > 0.8) {
+      // Fallback for edge cases
+      moveOpponent(0, 0.8);
+      useBattle.setState({ opponentGrounded: true });
     }
   });
   
