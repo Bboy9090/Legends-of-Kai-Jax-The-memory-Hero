@@ -7,6 +7,7 @@ import BattleScene from "./components/game/BattleScene";
 import TouchControls from "./components/game/TouchControls";
 import MobileControls from "./components/game/MobileControls";
 import BattleUI from "./components/game/BattleUI";
+import DialogueDisplay from "./components/game/DialogueDisplay";
 import MainMenu from "./components/game/MainMenu";
 import CharacterSelect from "./components/game/CharacterSelect";
 import CustomizationMenu from "./components/game/CustomizationMenu";
@@ -110,6 +111,9 @@ function App() {
             
             {/* Battle UI Overlay */}
             <BattleUI />
+            
+            {/* Dialogue/Banter Display */}
+            <DialogueDisplay />
             
             {/* Mobile Touch Controls */}
             <MobileControls />
