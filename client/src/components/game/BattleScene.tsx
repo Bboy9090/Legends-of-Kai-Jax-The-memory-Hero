@@ -27,19 +27,19 @@ export default function BattleScene() {
     }
   });
   
-  // Calculate camera position to keep both fighters in view
+  // MOBILE-OPTIMIZED camera - fills the screen!
   const cameraX = (playerX + opponentX) / 2;
-  const cameraY = 8;
-  const cameraZ = 15;
+  const cameraY = 5;  // Lowered from 8 to center action vertically
+  const cameraZ = 10; // Zoomed in from 15 to fill screen!
   
   return (
     <>
-      {/* Camera follows the action */}
+      {/* Camera follows the action - CENTERED for mobile! */}
       <OrbitControls
         enableZoom={false}
         enablePan={false}
         enableRotate={false}
-        target={[cameraX, 3, 0]}
+        target={[cameraX, 2, 0]}  // Lowered from 3 to center fighters on screen
       />
       
       {/* Battle Arena */}
