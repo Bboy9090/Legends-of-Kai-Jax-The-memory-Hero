@@ -1,0 +1,358 @@
+import { create } from "zustand";
+import { getFighterById } from "../characters";
+import { getArenaById } from "../arenas";
+
+export interface BattleState {
+  // Selected fighters
+  playerFighterId: string;
+  opponentFighterId: string;
+  selectedArenaId: string;
+  
+  // Battle stats
+  playerHealth: number;
+  opponentHealth: number;
+  maxHealth: number;
+  
+  // Battle state
+  roundTime: number;
+  maxRoundTime: number;
+  battlePhase: 'preRound' | 'fighting' | 'ko' | 'results';
+  winner: 'player' | 'opponent' | null;
+  
+  // Score tracking
+  playerWins: number;
+  opponentWins: number;
+  totalBattles: number;
+  battleScore: number; // Points earned
+  
+  // Player position/state (simple 2D for arena)
+  playerX: number;
+  playerY: number;
+  playerVelocityX: number;
+  playerVelocityY: number;
+  playerFacingRight: boolean;
+  playerGrounded: boolean;
+  
+  // Opponent position/state
+  opponentX: number;
+  opponentY: number;
+  opponentVelocityX: number;
+  opponentVelocityY: number;
+  opponentFacingRight: boolean;
+  opponentGrounded: boolean;
+  
+  // Combat state
+  playerAttacking: boolean;
+  playerAttackType: 'punch' | 'kick' | 'special' | null;
+  opponentAttacking: boolean;
+  opponentAttackType: 'punch' | 'kick' | 'special' | null;
+  playerInvulnerable: boolean;
+  opponentInvulnerable: boolean;
+  
+  // Actions
+  startBattle: () => void;
+  resetRound: () => void;
+  updateRoundTimer: (delta: number) => void;
+  
+  // Player actions
+  movePlayer: (x: number, y: number) => void;
+  playerJump: () => void;
+  playerAttack: (type: 'punch' | 'kick' | 'special') => void;
+  playerTakeDamage: (damage: number) => void;
+  
+  // Opponent actions
+  moveOpponent: (x: number, y: number) => void;
+  opponentJump: () => void;
+  opponentAttack: (type: 'punch' | 'kick' | 'special') => void;
+  opponentTakeDamage: (damage: number) => void;
+  
+  // Battle results
+  endBattle: (winner: 'player' | 'opponent') => void;
+  returnToMenu: () => void;
+  
+  // Setup
+  setPlayerFighter: (fighterId: string) => void;
+  setOpponentFighter: (fighterId: string) => void;
+  setArena: (arenaId: string) => void;
+}
+
+export const useBattle = create<BattleState>((set, get) => ({
+  // Initial state
+  playerFighterId: 'jaxon',
+  opponentFighterId: 'speedy',
+  selectedArenaId: 'mushroom-plains',
+  
+  playerHealth: 100,
+  opponentHealth: 100,
+  maxHealth: 100,
+  
+  roundTime: 99,
+  maxRoundTime: 99,
+  battlePhase: 'preRound',
+  winner: null,
+  
+  playerWins: 0,
+  opponentWins: 0,
+  totalBattles: 0,
+  battleScore: 0,
+  
+  // Player starts on left
+  playerX: -5,
+  playerY: 0.8,
+  playerVelocityX: 0,
+  playerVelocityY: 0,
+  playerFacingRight: true,
+  playerGrounded: true,
+  
+  // Opponent starts on right
+  opponentX: 5,
+  opponentY: 0.8,
+  opponentVelocityX: 0,
+  opponentVelocityY: 0,
+  opponentFacingRight: false,
+  opponentGrounded: true,
+  
+  playerAttacking: false,
+  playerAttackType: null,
+  opponentAttacking: false,
+  opponentAttackType: null,
+  playerInvulnerable: false,
+  opponentInvulnerable: false,
+  
+  startBattle: () => {
+    console.log("[Battle] Starting battle");
+    set({
+      battlePhase: 'fighting',
+      roundTime: get().maxRoundTime,
+      playerHealth: get().maxHealth,
+      opponentHealth: get().maxHealth,
+      playerX: -5,
+      playerY: 0.8,
+      opponentX: 5,
+      opponentY: 0.8,
+      winner: null
+    });
+  },
+  
+  resetRound: () => {
+    console.log("[Battle] Resetting round");
+    set({
+      battlePhase: 'preRound',
+      playerHealth: get().maxHealth,
+      opponentHealth: get().maxHealth,
+      roundTime: get().maxRoundTime,
+      playerX: -5,
+      playerY: 0.8,
+      opponentX: 5,
+      opponentY: 0.8,
+      playerVelocityX: 0,
+      playerVelocityY: 0,
+      opponentVelocityX: 0,
+      opponentVelocityY: 0,
+      playerAttacking: false,
+      opponentAttacking: false,
+      winner: null
+    });
+    
+    // Start after brief delay
+    setTimeout(() => {
+      get().startBattle();
+    }, 2000);
+  },
+  
+  updateRoundTimer: (delta) => {
+    const { battlePhase, roundTime } = get();
+    if (battlePhase !== 'fighting') return;
+    
+    const newTime = Math.max(0, roundTime - delta);
+    set({ roundTime: newTime });
+    
+    // Time's up - whoever has more health wins
+    if (newTime <= 0) {
+      const { playerHealth, opponentHealth } = get();
+      const winner = playerHealth > opponentHealth ? 'player' : 
+                     opponentHealth > playerHealth ? 'opponent' : null;
+      if (winner) {
+        get().endBattle(winner);
+      }
+    }
+  },
+  
+  movePlayer: (x, y) => {
+    const currentX = get().playerX;
+    const newX = Math.max(-10, Math.min(10, currentX + x)); // Arena bounds
+    set({ 
+      playerX: newX, 
+      playerY: y,
+      playerFacingRight: get().opponentX > newX // Face opponent
+    });
+  },
+  
+  playerJump: () => {
+    const { playerGrounded, playerVelocityY } = get();
+    if (playerGrounded && Math.abs(playerVelocityY) < 0.1) {
+      console.log("[Battle] Player jump");
+      set({ 
+        playerVelocityY: 12, 
+        playerGrounded: false 
+      });
+    }
+  },
+  
+  playerAttack: (type) => {
+    const { playerAttacking, battlePhase } = get();
+    if (playerAttacking || battlePhase !== 'fighting') return;
+    
+    console.log("[Battle] Player attack:", type);
+    set({ 
+      playerAttacking: true, 
+      playerAttackType: type 
+    });
+    
+    // Check if hit opponent
+    const { playerX, opponentX, opponentInvulnerable } = get();
+    const distance = Math.abs(playerX - opponentX);
+    const range = type === 'special' ? 3 : type === 'kick' ? 2 : 1.5;
+    
+    if (distance < range && !opponentInvulnerable) {
+      const damage = type === 'special' ? 20 : type === 'kick' ? 15 : 10;
+      get().opponentTakeDamage(damage);
+    }
+    
+    // Reset attack after animation
+    setTimeout(() => {
+      set({ playerAttacking: false, playerAttackType: null });
+    }, type === 'special' ? 800 : type === 'kick' ? 600 : 400);
+  },
+  
+  playerTakeDamage: (damage) => {
+    const { playerInvulnerable, playerHealth, battlePhase } = get();
+    if (playerInvulnerable || battlePhase !== 'fighting') return;
+    
+    console.log("[Battle] Player takes damage:", damage);
+    const newHealth = Math.max(0, playerHealth - damage);
+    set({ 
+      playerHealth: newHealth,
+      playerInvulnerable: true
+    });
+    
+    // Brief invulnerability
+    setTimeout(() => {
+      set({ playerInvulnerable: false });
+    }, 500);
+    
+    // Check for KO
+    if (newHealth <= 0) {
+      get().endBattle('opponent');
+    }
+  },
+  
+  moveOpponent: (x, y) => {
+    const currentX = get().opponentX;
+    const newX = Math.max(-10, Math.min(10, currentX + x));
+    set({ 
+      opponentX: newX, 
+      opponentY: y,
+      opponentFacingRight: get().playerX > newX
+    });
+  },
+  
+  opponentJump: () => {
+    const { opponentGrounded, opponentVelocityY } = get();
+    if (opponentGrounded && Math.abs(opponentVelocityY) < 0.1) {
+      set({ 
+        opponentVelocityY: 12, 
+        opponentGrounded: false 
+      });
+    }
+  },
+  
+  opponentAttack: (type) => {
+    const { opponentAttacking, battlePhase } = get();
+    if (opponentAttacking || battlePhase !== 'fighting') return;
+    
+    set({ 
+      opponentAttacking: true, 
+      opponentAttackType: type 
+    });
+    
+    // Check if hit player
+    const { playerX, opponentX, playerInvulnerable } = get();
+    const distance = Math.abs(playerX - opponentX);
+    const range = type === 'special' ? 3 : type === 'kick' ? 2 : 1.5;
+    
+    if (distance < range && !playerInvulnerable) {
+      const damage = type === 'special' ? 20 : type === 'kick' ? 15 : 10;
+      get().playerTakeDamage(damage);
+    }
+    
+    setTimeout(() => {
+      set({ opponentAttacking: false, opponentAttackType: null });
+    }, type === 'special' ? 800 : type === 'kick' ? 600 : 400);
+  },
+  
+  opponentTakeDamage: (damage) => {
+    const { opponentInvulnerable, opponentHealth, battlePhase } = get();
+    if (opponentInvulnerable || battlePhase !== 'fighting') return;
+    
+    console.log("[Battle] Opponent takes damage:", damage);
+    const newHealth = Math.max(0, opponentHealth - damage);
+    set({ 
+      opponentHealth: newHealth,
+      opponentInvulnerable: true
+    });
+    
+    setTimeout(() => {
+      set({ opponentInvulnerable: false });
+    }, 500);
+    
+    if (newHealth <= 0) {
+      get().endBattle('player');
+    }
+  },
+  
+  endBattle: (winner) => {
+    console.log("[Battle] Battle ended. Winner:", winner);
+    set({ 
+      battlePhase: 'ko',
+      winner 
+    });
+    
+    // Update wins and score
+    const newBattleScore = winner === 'player' ? get().battleScore + 100 : get().battleScore;
+    const newPlayerWins = winner === 'player' ? get().playerWins + 1 : get().playerWins;
+    const newOpponentWins = winner === 'opponent' ? get().opponentWins + 1 : get().opponentWins;
+    
+    set({
+      battleScore: newBattleScore,
+      playerWins: newPlayerWins,
+      opponentWins: newOpponentWins,
+      totalBattles: get().totalBattles + 1
+    });
+    
+    // Show results after KO animation
+    setTimeout(() => {
+      set({ battlePhase: 'results' });
+    }, 2000);
+  },
+  
+  returnToMenu: () => {
+    console.log("[Battle] Returning to menu");
+    // This will be called from GameUI
+  },
+  
+  setPlayerFighter: (fighterId) => {
+    console.log("[Battle] Set player fighter:", fighterId);
+    set({ playerFighterId: fighterId });
+  },
+  
+  setOpponentFighter: (fighterId) => {
+    console.log("[Battle] Set opponent fighter:", fighterId);
+    set({ opponentFighterId: fighterId });
+  },
+  
+  setArena: (arenaId) => {
+    console.log("[Battle] Set arena:", arenaId);
+    set({ selectedArenaId: arenaId });
+  }
+}));

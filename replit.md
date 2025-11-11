@@ -1,8 +1,8 @@
-# Hyper Sonic Heroes: Kindness Quest
+# Super Smash Heroes: Battle Royale
 
 ## Overview
 
-A mobile-focused 3D superhero endless runner game built with React and Three.js that combines fast-paced action with social-emotional learning (SEL). Players control twin brothers Jaxon and Kaison, each with unique sonic abilities, as they dash through cityscapes, battle grumpy robots, and make kindness-based choices that affect gameplay. The game features multiple phases including character selection, endless running mechanics, and choice-driven scenarios that teach empathy and social skills to children aged 4-8.
+A preschool-friendly 3D fighting game built with React and Three.js featuring Jaxon and Kaison alongside spoof versions of beloved gaming characters. Players choose from a roster of 12 unique fighters and battle in colorful arenas with simple, easy-to-learn controls. The game features character selection, unlockable fighters, multiple battle stages, and kid-friendly combat mechanics designed for children aged 4-8.
 
 ## User Preferences
 
@@ -30,10 +30,11 @@ Preferred communication style: Simple, everyday language.
 - **useChoices**: Social-emotional learning scenario management
 
 ### Game Architecture
-- **Endless Runner Mechanics**: Procedural generation of obstacles, enemies, and collectibles
-- **Character System**: Two playable characters (Jaxon and Kaison) with unique abilities and visual styles
-- **Choice Mode**: Pause-and-choose system for kindness scenarios that reward players with gameplay benefits
-- **Collision System**: AABB collision detection for player-object interactions
+- **Fighting Game Mechanics**: Arena-based combat with simple punch, kick, jump, and special moves
+- **Character Roster**: 12 playable fighters including Jaxon, Kaison, and spoof versions of Mario (Marlo), Sonic (Speedy), Link (Flynn), and more
+- **Arena System**: 6 colorful battle stages with varying platforms and visual themes
+- **Combat System**: Health-based battles with damage, knockback, and victory/defeat states
+- **Unlockables**: Fighters and arenas unlock as players earn points through battles
 
 ### Mobile-First Design
 - **Touch Controls**: Gesture-based input system with swipe and tap recognition
