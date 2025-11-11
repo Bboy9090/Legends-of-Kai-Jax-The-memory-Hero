@@ -17,7 +17,7 @@ export default function MainMenu() {
   };
   
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 relative overflow-hidden">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 relative overflow-hidden p-4">
       {/* Animated background elements */}
       <div className="absolute inset-0">
         {/* Floating clouds */}
@@ -41,16 +41,16 @@ export default function MainMenu() {
       </div>
       
       {/* Main menu content */}
-      <div className="relative z-10 text-center max-w-md mx-4">
+      <div className="relative z-10 text-center max-w-md w-full">
         <Card className="bg-white bg-opacity-95 backdrop-blur-sm shadow-2xl">
-          <CardHeader>
-            <CardTitle className="text-4xl font-bold text-gray-900 mb-2">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
               Super Smash Heroes
             </CardTitle>
-            <p className="text-xl text-blue-600 font-semibold">
+            <p className="text-lg sm:text-xl text-blue-600 font-semibold">
               Battle Royale
             </p>
-            <p className="text-gray-600 mt-2">
+            <p className="text-sm sm:text-base text-gray-600 mt-2">
               Choose your fighter and battle with friends in fun arenas!
             </p>
           </CardHeader>
