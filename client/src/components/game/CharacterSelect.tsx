@@ -44,39 +44,39 @@ export default function CharacterSelect() {
   ];
   
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 p-4 overflow-auto">
-      <div className="w-full max-w-6xl mx-auto">
-        <Card className="bg-black/40 backdrop-blur-lg border-4 border-yellow-400">
-          <CardHeader className="text-center relative border-b-4 border-yellow-400/30">
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 p-2 sm:p-4 overflow-auto">
+      <div className="w-full max-w-6xl mx-auto pb-24">
+        <Card className="bg-black/40 backdrop-blur-lg border-2 sm:border-4 border-yellow-400">
+          <CardHeader className="text-center relative border-b-2 sm:border-b-4 border-yellow-400/30 p-3 sm:p-6">
             <Button 
               variant="outline" 
               onClick={goBack}
-              className="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white border-none"
+              className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-red-500 hover:bg-red-600 text-white border-none text-sm sm:text-base p-2"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline ml-2">Back</span>
             </Button>
             
-            <CardTitle className="text-5xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
-              Choose Your Fighter!
+            <CardTitle className="text-2xl sm:text-3xl md:text-5xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] px-12 sm:px-0">
+              Choose Fighter!
             </CardTitle>
-            <p className="text-yellow-300 text-xl mt-2 font-bold">
-              {FIGHTERS.filter(f => !isLocked(f)).length} / {FIGHTERS.length} Fighters Unlocked
+            <p className="text-yellow-300 text-sm sm:text-xl mt-1 sm:mt-2 font-bold">
+              {FIGHTERS.filter(f => !isLocked(f)).length} / {FIGHTERS.length} Unlocked
             </p>
           </CardHeader>
           
-          <CardContent className="p-6">
+          <CardContent className="p-2 sm:p-4 md:p-6">
             {/* Fighter Categories */}
             {categories.map(category => {
               const categoryFighters = FIGHTERS.filter(f => f.category === category.id);
               
               return (
-                <div key={category.id} className="mb-8">
-                  <h2 className={`text-3xl font-bold mb-4 bg-gradient-to-r ${category.color} bg-clip-text text-transparent`}>
+                <div key={category.id} className="mb-4 sm:mb-8">
+                  <h2 className={`text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4 bg-gradient-to-r ${category.color} bg-clip-text text-transparent`}>
                     {category.name}
                   </h2>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
                     {categoryFighters.map(fighter => {
                       const locked = isLocked(fighter);
                       const selected = selectedCharacter === fighter.id;
@@ -85,55 +85,53 @@ export default function CharacterSelect() {
                         <div
                           key={fighter.id}
                           className={`relative cursor-pointer transition-all duration-200 ${
-                            locked ? 'opacity-50' : 'hover:scale-105'
+                            locked ? 'opacity-50' : 'active:scale-95'
                           }`}
                           onClick={() => !locked && handleFighterSelect(fighter)}
-                          onMouseEnter={() => setHoveredFighter(fighter.id)}
-                          onMouseLeave={() => setHoveredFighter(null)}
                         >
                           <Card className={`
-                            ${selected ? 'ring-4 ring-yellow-400 bg-yellow-400/20' : 'bg-gray-800/50'}
+                            ${selected ? 'ring-2 sm:ring-4 ring-yellow-400 bg-yellow-400/20' : 'bg-gray-800/50'}
                             ${locked ? 'grayscale' : ''}
                             border-2 overflow-hidden
                           `} style={{ borderColor: fighter.accentColor }}>
-                            <CardContent className="p-4 text-center">
+                            <CardContent className="p-2 sm:p-4 text-center">
                               {/* Fighter Avatar */}
                               <div 
-                                className="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg relative"
+                                className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full mx-auto mb-2 sm:mb-3 flex items-center justify-center shadow-lg relative"
                                 style={{ 
                                   backgroundColor: fighter.color,
                                   boxShadow: `0 0 20px ${fighter.accentColor}`
                                 }}
                               >
-                                <span className="text-4xl font-bold text-white">
+                                <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
                                   {fighter.name.charAt(0).toUpperCase()}
                                 </span>
                                 
                                 {locked && (
                                   <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center">
-                                    <Lock className="w-8 h-8 text-yellow-400" />
+                                    <Lock className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-yellow-400" />
                                   </div>
                                 )}
                                 
                                 {selected && !locked && (
-                                  <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full w-8 h-8 flex items-center justify-center">
-                                    <span className="text-black font-bold">✓</span>
+                                  <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-yellow-400 rounded-full w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
+                                    <span className="text-black font-bold text-sm sm:text-base">✓</span>
                                   </div>
                                 )}
                               </div>
                               
                               {/* Fighter Name */}
-                              <h3 className="text-lg font-bold text-white mb-1">
+                              <h3 className="text-sm sm:text-base md:text-lg font-bold text-white mb-1 line-clamp-1">
                                 {fighter.displayName}
                               </h3>
                               
                               {/* Description or Lock Info */}
                               {locked ? (
                                 <p className="text-xs text-yellow-400 font-semibold">
-                                  🔒 {fighter.unlockRequirement} pts
+                                  🔒 {fighter.unlockRequirement}
                                 </p>
                               ) : (
-                                <p className="text-xs text-gray-300">
+                                <p className="text-xs text-gray-300 line-clamp-2 hidden sm:block">
                                   {fighter.description}
                                 </p>
                               )}
@@ -148,10 +146,10 @@ export default function CharacterSelect() {
             })}
             
             {/* Selected Fighter Preview */}
-            <div className="mt-8 mb-6">
-              <Card className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 border-4 border-cyan-400">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-6">
+            <div className="mt-4 sm:mt-8 mb-4 sm:mb-6">
+              <Card className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 border-2 sm:border-4 border-cyan-400">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="flex items-center gap-3 sm:gap-6">
                     {selectedCharacter && (() => {
                       const fighter = getFighterById(selectedCharacter);
                       if (!fighter) return null;
@@ -159,26 +157,26 @@ export default function CharacterSelect() {
                       return (
                         <>
                           <div 
-                            className="w-24 h-24 rounded-full flex items-center justify-center shadow-2xl"
+                            className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center shadow-2xl flex-shrink-0"
                             style={{ 
                               backgroundColor: fighter.color,
                               boxShadow: `0 0 30px ${fighter.accentColor}`
                             }}
                           >
-                            <span className="text-5xl font-bold text-white">
+                            <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">
                               {fighter.name.charAt(0).toUpperCase()}
                             </span>
                           </div>
                           
-                          <div className="flex-1">
-                            <h3 className="text-3xl font-bold text-white mb-2">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 sm:mb-2">
                               {fighter.displayName}
                             </h3>
-                            <p className="text-cyan-300 text-lg">
+                            <p className="text-cyan-300 text-sm sm:text-base md:text-lg line-clamp-2">
                               {fighter.description}
                             </p>
-                            <div className="mt-2">
-                              <span className="inline-block px-3 py-1 bg-yellow-400 text-black rounded-full text-sm font-bold">
+                            <div className="mt-1 sm:mt-2">
+                              <span className="inline-block px-2 sm:px-3 py-1 bg-yellow-400 text-black rounded-full text-xs sm:text-sm font-bold">
                                 {fighter.category.toUpperCase()}
                               </span>
                             </div>
@@ -195,17 +193,18 @@ export default function CharacterSelect() {
             <div className="text-center">
               <Button 
                 onClick={startGame}
-                className="w-full max-w-md text-2xl py-8 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 hover:from-green-600 hover:via-yellow-600 hover:to-red-600 text-white font-bold border-4 border-yellow-400 shadow-[0_0_30px_rgba(255,255,0,0.5)]"
+                className="w-full max-w-md text-lg sm:text-xl md:text-2xl py-4 sm:py-6 md:py-8 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 hover:from-green-600 hover:via-yellow-600 hover:to-red-600 text-white font-bold border-2 sm:border-4 border-yellow-400 shadow-[0_0_30px_rgba(255,255,0,0.5)]"
               >
                 🥊 START BATTLE! 🥊
               </Button>
             </div>
             
             {/* Game Info */}
-            <div className="mt-6 text-center text-sm text-gray-300 bg-black/30 p-4 rounded-lg">
-              <p className="font-bold text-yellow-300 mb-2">🎮 Controls:</p>
-              <p>Arrow Keys = Move • Space = Jump • J = Punch • K = Kick • L = Special</p>
-              <p className="mt-2 text-xs text-gray-400">Win battles to earn points and unlock more fighters!</p>
+            <div className="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-gray-300 bg-black/30 p-3 sm:p-4 rounded-lg">
+              <p className="font-bold text-yellow-300 mb-1 sm:mb-2">🎮 Controls:</p>
+              <p className="hidden sm:block">Arrow Keys = Move • Space = Jump • J = Punch • K = Kick • L = Special</p>
+              <p className="sm:hidden">Touch controls on screen</p>
+              <p className="mt-1 sm:mt-2 text-xs text-gray-400">Win battles to unlock more fighters!</p>
             </div>
           </CardContent>
         </Card>
