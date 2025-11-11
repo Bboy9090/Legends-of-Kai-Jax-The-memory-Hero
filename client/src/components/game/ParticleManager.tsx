@@ -17,7 +17,7 @@ interface Particle {
   b: number;
 }
 
-const MAX_PARTICLES = 200;
+const MAX_PARTICLES = 500; // TRIPLED for MASSIVE particle explosions!
 
 export default function ParticleManager() {
   const {
@@ -44,8 +44,8 @@ export default function ParticleManager() {
   const prevPlayerAttackRef = useRef(false);
   const prevOpponentAttackRef = useRef(false);
 
-  // Emit particles helper
-  const emit = (x: number, y: number, z: number, count: number, color: [number, number, number], speed: number) => {
+  // ENHANCED emit - EXPLOSIVE particles!
+  const emit = (x: number, y: number, z: number, count: number, color: [number, number, number], speed: number, sizeMultiplier = 1.0) => {
     for (let i = 0; i < count; i++) {
       if (particlesRef.current.length < MAX_PARTICLES) {
         const theta = Math.random() * Math.PI * 2;
@@ -57,11 +57,11 @@ export default function ParticleManager() {
           vx: Math.sin(phi) * Math.cos(theta) * spd,
           vy: Math.abs(Math.sin(phi) * Math.sin(theta)) * spd * 0.5,
           vz: Math.cos(phi) * spd,
-          life: 0.5,
-          size: 0.15 + Math.random() * 0.1,
-          r: color[0] + (Math.random() - 0.5) * 0.2,
-          g: color[1] + (Math.random() - 0.5) * 0.2,
-          b: color[2] + (Math.random() - 0.5) * 0.2
+          life: 0.7, // Longer life for more visibility!
+          size: (0.25 + Math.random() * 0.2) * sizeMultiplier, // BIGGER particles!
+          r: Math.min(1, color[0] + (Math.random() - 0.5) * 0.3),
+          g: Math.min(1, color[1] + (Math.random() - 0.5) * 0.3),
+          b: Math.min(1, color[2] + (Math.random() - 0.5) * 0.3)
         });
       }
     }
@@ -71,49 +71,83 @@ export default function ParticleManager() {
     // Apply slow-motion time scale
     const scaledDelta = delta * timeScale;
     
-    // Detect player damage and emit hit particles
+    // EXPLOSIVE HIT EFFECTS - HUGE bursts of particles!
     if (playerHealth < prevPlayerHealthRef.current) {
-      emit(playerX, playerY + 1, 0, 15, [1, 1, 1], 5);
+      // MASSIVE hit burst!
+      emit(playerX, playerY + 1, 0, 40, [1, 0.3, 0.3], 8, 2.0); // Red impact
+      emit(playerX, playerY + 1, 0, 20, [1, 1, 1], 6, 1.5); // White flash
+      emit(playerX, playerY + 1, 0, 15, [1, 0.8, 0], 5, 1.2); // Orange sparks
     }
     prevPlayerHealthRef.current = playerHealth;
 
-    // Detect opponent damage and emit hit particles
+    // EXPLOSIVE HIT EFFECTS on opponent too!
     if (opponentHealth < prevOpponentHealthRef.current) {
-      emit(opponentX, opponentY + 1, 0, 15, [1, 1, 1], 5);
+      // MASSIVE hit burst!
+      emit(opponentX, opponentY + 1, 0, 40, [1, 0.3, 0.3], 8, 2.0); // Red impact
+      emit(opponentX, opponentY + 1, 0, 20, [1, 1, 1], 6, 1.5); // White flash
+      emit(opponentX, opponentY + 1, 0, 15, [1, 0.8, 0], 5, 1.2); // Orange sparks
     }
     prevOpponentHealthRef.current = opponentHealth;
 
-    // Detect player attack and emit attack particles
+    // DRAMATIC ATTACK EFFECTS - WAY more particles!
     if (playerAttacking && !prevPlayerAttackRef.current && playerAttackType) {
       const attackX = playerX + (opponentX > playerX ? 1.5 : -1.5);
       const colors: Record<string, [number, number, number]> = {
-        punch: [1, 0.84, 0],
-        kick: [1, 0.27, 0],
-        special: [1, 0, 1]
+        punch: [1, 0.84, 0],   // Bright gold
+        kick: [1, 0.4, 0],     // Fiery orange
+        special: [1, 0, 1]     // Magenta
       };
       const counts: Record<string, number> = {
-        punch: 10,
-        kick: 15,
-        special: 25
+        punch: 30,    // TRIPLED particles!
+        kick: 45,     // TRIPLED!
+        special: 80   // MASSIVE special attack!
       };
-      emit(attackX, playerY + 1, 0, counts[playerAttackType] || 10, colors[playerAttackType] || [1, 1, 0], 4);
+      const sizes: Record<string, number> = {
+        punch: 1.2,
+        kick: 1.5,
+        special: 2.5  // HUGE special particles!
+      };
+      
+      // Primary attack burst
+      emit(attackX, playerY + 1, 0, counts[playerAttackType] || 30, colors[playerAttackType] || [1, 1, 0], 6, sizes[playerAttackType] || 1.0);
+      
+      // Add white flash for all attacks
+      emit(attackX, playerY + 1, 0, 15, [1, 1, 1], 5, sizes[playerAttackType] || 1.0);
+      
+      // Special gets extra effects!
+      if (playerAttackType === 'special') {
+        emit(attackX, playerY + 1, 0, 30, [0, 1, 1], 7, 2.0); // Cyan ring
+        emit(attackX, playerY + 1, 0, 25, [1, 1, 0], 8, 1.8); // Yellow burst
+      }
     }
     prevPlayerAttackRef.current = playerAttacking;
 
-    // Detect opponent attack and emit attack particles
+    // DRAMATIC OPPONENT ATTACK EFFECTS too!
     if (opponentAttacking && !prevOpponentAttackRef.current && opponentAttackType) {
       const attackX = opponentX + (playerX > opponentX ? 1.5 : -1.5);
       const colors: Record<string, [number, number, number]> = {
         punch: [1, 0.84, 0],
-        kick: [1, 0.27, 0],
-        special: [1, 0, 1]
+        kick: [1, 0.4, 0],
+        special: [0.6, 0, 1]  // Purple for villain special!
       };
       const counts: Record<string, number> = {
-        punch: 10,
-        kick: 15,
-        special: 25
+        punch: 30,
+        kick: 45,
+        special: 80
       };
-      emit(attackX, opponentY + 1, 0, counts[opponentAttackType] || 10, colors[opponentAttackType] || [1, 1, 0], 4);
+      const sizes: Record<string, number> = {
+        punch: 1.2,
+        kick: 1.5,
+        special: 2.5
+      };
+      
+      emit(attackX, opponentY + 1, 0, counts[opponentAttackType] || 30, colors[opponentAttackType] || [1, 1, 0], 6, sizes[opponentAttackType] || 1.0);
+      emit(attackX, opponentY + 1, 0, 15, [1, 1, 1], 5, sizes[opponentAttackType] || 1.0);
+      
+      if (opponentAttackType === 'special') {
+        emit(attackX, opponentY + 1, 0, 30, [1, 0, 0], 7, 2.0); // Red ring
+        emit(attackX, opponentY + 1, 0, 25, [0.8, 0, 0.8], 8, 1.8); // Purple burst
+      }
     }
     prevOpponentAttackRef.current = opponentAttacking;
 
@@ -175,13 +209,13 @@ export default function ParticleManager() {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.2}
+        size={0.4}  // DOUBLED base size for visibility!
         vertexColors
         transparent
-        opacity={0.9}
+        opacity={1.0}  // Full brightness!
         sizeAttenuation
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
+        blending={THREE.AdditiveBlending}  // Additive for GLOW!
       />
     </points>
   );
