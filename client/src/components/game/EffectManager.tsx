@@ -1,5 +1,6 @@
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 
 export default function EffectManager() {
@@ -19,9 +20,20 @@ export default function EffectManager() {
   const shakeIntensityRef = useRef(0);
   const prevPlayerAttackRef = useRef(false);
   const prevOpponentAttackRef = useRef(false);
+  
+  // FIXED: Always-mounted flash plane with ref-controlled material
+  const flashMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
+  
+  // FIXED: Cache camera baseline position to prevent drift
+  const cameraBasePositionRef = useRef<THREE.Vector3 | null>(null);
 
   useFrame((state, delta) => {
     const scaledDelta = delta * timeScale;
+    
+    // Cache camera baseline position on first frame
+    if (!cameraBasePositionRef.current) {
+      cameraBasePositionRef.current = state.camera.position.clone();
+    }
 
     // SCREEN FLASH on damage!
     if (playerHealth < prevPlayerHealthRef.current) {
@@ -51,38 +63,48 @@ export default function EffectManager() {
     }
     prevOpponentAttackRef.current = opponentAttacking;
 
+    // FIXED: Update flash material opacity directly (triggers render)
+    if (flashMaterialRef.current) {
+      flashMaterialRef.current.opacity = flashIntensityRef.current * 0.8;
+    }
+
     // Fade flash over time
     if (flashIntensityRef.current > 0) {
       flashIntensityRef.current = Math.max(0, flashIntensityRef.current - scaledDelta * 8);
     }
 
-    // Fade shake over time
+    // FIXED: Apply camera shake as temporary offset from baseline
     if (shakeIntensityRef.current > 0) {
-      shakeIntensityRef.current = Math.max(0, shakeIntensityRef.current - scaledDelta * 6);
-      
-      // Apply camera shake
-      if (shakeIntensityRef.current > 0) {
-        state.camera.position.x += (Math.random() - 0.5) * shakeIntensityRef.current * 0.5;
-        state.camera.position.y += (Math.random() - 0.5) * shakeIntensityRef.current * 0.3;
+      const basePos = cameraBasePositionRef.current;
+      if (basePos) {
+        // Apply shake as offset from baseline
+        state.camera.position.x = basePos.x + (Math.random() - 0.5) * shakeIntensityRef.current * 0.5;
+        state.camera.position.y = basePos.y + (Math.random() - 0.5) * shakeIntensityRef.current * 0.3;
+        state.camera.position.z = basePos.z; // Don't shake Z (depth)
       }
+      
+      // Fade shake over time
+      shakeIntensityRef.current = Math.max(0, shakeIntensityRef.current - scaledDelta * 6);
+    } else if (cameraBasePositionRef.current) {
+      // FIXED: Reset to baseline when shake ends
+      state.camera.position.copy(cameraBasePositionRef.current);
     }
   });
 
   return (
     <>
-      {/* SCREEN FLASH OVERLAY - rendered in UI space */}
-      {flashIntensityRef.current > 0 && (
-        <mesh position={[0, 0, 0]} renderOrder={999}>
-          <planeGeometry args={[100, 100]} />
-          <meshBasicMaterial
-            color="#FFFFFF"
-            transparent
-            opacity={flashIntensityRef.current * 0.8}
-            depthTest={false}
-            depthWrite={false}
-          />
-        </mesh>
-      )}
+      {/* FIXED: ALWAYS-MOUNTED screen flash - opacity controlled via ref */}
+      <mesh position={[0, 0, 5]} renderOrder={999}>
+        <planeGeometry args={[100, 100]} />
+        <meshBasicMaterial
+          ref={flashMaterialRef}
+          color="#FFFFFF"
+          transparent
+          opacity={0}
+          depthTest={false}
+          depthWrite={false}
+        />
+      </mesh>
     </>
   );
 }

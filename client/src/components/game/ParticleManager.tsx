@@ -31,6 +31,8 @@ export default function ParticleManager() {
     opponentAttackType,
     playerHealth,
     opponentHealth,
+    battlePhase,
+    winner,
     timeScale
   } = useBattle();
 
@@ -43,6 +45,8 @@ export default function ParticleManager() {
   const prevOpponentHealthRef = useRef(100);
   const prevPlayerAttackRef = useRef(false);
   const prevOpponentAttackRef = useRef(false);
+  const prevBattlePhaseRef = useRef('intro');
+  const koParticlesFiredRef = useRef(false);
 
   // ENHANCED emit - EXPLOSIVE particles!
   const emit = (x: number, y: number, z: number, count: number, color: [number, number, number], speed: number, sizeMultiplier = 1.0) => {
@@ -70,6 +74,31 @@ export default function ParticleManager() {
   useFrame((state, delta) => {
     // Apply slow-motion time scale
     const scaledDelta = delta * timeScale;
+    
+    // LEGENDARY KO EXPLOSION - ONCE when entering KO phase!
+    if (battlePhase === 'ko' && prevBattlePhaseRef.current !== 'ko' && !koParticlesFiredRef.current) {
+      koParticlesFiredRef.current = true;
+      const koX = winner === 'player' ? opponentX : playerX;
+      const koY = winner === 'player' ? opponentY : playerY;
+      
+      // APOCALYPTIC PARTICLE BURST!!!
+      emit(koX, koY + 1, 0, 100, [1, 0, 0], 12, 3.0); // MASSIVE red explosion!
+      emit(koX, koY + 1, 0, 80, [1, 1, 1], 10, 2.5); // Huge white flash
+      emit(koX, koY + 1, 0, 60, [1, 0.5, 0], 8, 2.0); // Orange shockwave
+      emit(koX, koY + 1, 0, 50, [1, 1, 0], 9, 2.2); // Yellow sparks
+      
+      // Victory sparkles for winner
+      const winnerX = winner === 'player' ? playerX : opponentX;
+      const winnerY = winner === 'player' ? playerY : opponentY;
+      emit(winnerX, winnerY + 1.5, 0, 50, [1, 1, 0], 4, 1.5); // Gold confetti
+      emit(winnerX, winnerY + 1.5, 0, 40, [0, 1, 1], 3, 1.2); // Cyan sparkles
+    }
+    
+    // Reset KO flag when leaving KO phase
+    if (battlePhase !== 'ko') {
+      koParticlesFiredRef.current = false;
+    }
+    prevBattlePhaseRef.current = battlePhase;
     
     // EXPLOSIVE HIT EFFECTS - HUGE bursts of particles!
     if (playerHealth < prevPlayerHealthRef.current) {

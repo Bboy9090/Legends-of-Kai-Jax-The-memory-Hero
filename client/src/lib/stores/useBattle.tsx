@@ -347,9 +347,12 @@ export const useBattle = create<BattleState>((set, get) => ({
   
   endBattle: (winner) => {
     console.log("[Battle] Battle ended. Winner:", winner);
+    
+    // LEGENDARY KO SEQUENCE - SLOW MOTION!
     set({ 
       battlePhase: 'ko',
-      winner 
+      winner,
+      timeScale: 0.3  // DRAMATIC SLOW-MOTION for KO!
     });
     
     // Play KO sound
@@ -367,14 +370,30 @@ export const useBattle = create<BattleState>((set, get) => ({
       totalBattles: get().totalBattles + 1
     });
     
+    // Gradually speed back up over 1.5 seconds
+    let timeElapsed = 0;
+    const speedUpInterval = setInterval(() => {
+      timeElapsed += 50;
+      const progress = timeElapsed / 1500;
+      const newTimeScale = 0.3 + (0.7 * progress); // 0.3 → 1.0
+      set({ timeScale: Math.min(1.0, newTimeScale) });
+      
+      if (timeElapsed >= 1500) {
+        clearInterval(speedUpInterval);
+      }
+    }, 50);
+    
     // Show results after KO animation
     setTimeout(() => {
-      set({ battlePhase: 'results' });
+      set({ 
+        battlePhase: 'results',
+        timeScale: 1.0  // Reset time scale
+      });
       // Play victory sound for winner
       if (winner === 'player') {
         useAudio.getState().playVictory();
       }
-    }, 2000);
+    }, 2500);
   },
   
   returnToMenu: () => {
