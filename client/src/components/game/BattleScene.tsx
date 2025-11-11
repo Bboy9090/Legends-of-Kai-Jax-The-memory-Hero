@@ -7,6 +7,7 @@ import BattlePlayer from "./BattlePlayer";
 import Opponent from "./Opponent";
 import ParticleManager from "./ParticleManager";
 import CameraEffects from "./CameraEffects";
+import AttackTrails from "./AttackTrails";
 
 export default function BattleScene() {
   const { startBattle, updateRoundTimer, battlePhase, playerX, opponentX } = useBattle();
@@ -52,6 +53,9 @@ export default function BattleScene() {
       
       {/* EPIC Particle Effects! ✨💥 */}
       <ParticleManager />
+      
+      {/* BLAZING Attack Trails! 🔥⚡ */}
+      <AttackTrails />
       
       {/* Screen Shake & Slow-Motion! 🎬 */}
       <CameraEffects />
