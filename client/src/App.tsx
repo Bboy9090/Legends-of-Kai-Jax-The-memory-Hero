@@ -5,6 +5,7 @@ import "@fontsource/inter";
 
 import BattleScene from "./components/game/BattleScene";
 import TouchControls from "./components/game/TouchControls";
+import MobileControls from "./components/game/MobileControls";
 import BattleUI from "./components/game/BattleUI";
 import MainMenu from "./components/game/MainMenu";
 import CharacterSelect from "./components/game/CharacterSelect";
@@ -110,8 +111,8 @@ function App() {
             {/* Battle UI Overlay */}
             <BattleUI />
             
-            {/* Touch Controls */}
-            <TouchControls />
+            {/* Mobile Touch Controls */}
+            <MobileControls />
           </>
         )}
       </KeyboardControls>
