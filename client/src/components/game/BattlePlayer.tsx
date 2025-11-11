@@ -42,11 +42,11 @@ export default function BattlePlayer() {
   
   const meshRef = useRef<THREE.Group>(null);
   const bodyRef = useRef<THREE.Group>(null);
-  const headRef = useRef<THREE.Mesh>(null);
-  const leftArmRef = useRef<THREE.Mesh>(null);
-  const rightArmRef = useRef<THREE.Mesh>(null);
-  const leftLegRef = useRef<THREE.Mesh>(null);
-  const rightLegRef = useRef<THREE.Mesh>(null);
+  const headRef = useRef<THREE.Group>(null);
+  const leftArmRef = useRef<THREE.Group>(null);
+  const rightArmRef = useRef<THREE.Group>(null);
+  const leftLegRef = useRef<THREE.Group>(null);
+  const rightLegRef = useRef<THREE.Group>(null);
   
   const animTimeRef = useRef(0);
   const isMovingRef = useRef(false);
@@ -235,62 +235,211 @@ export default function BattlePlayer() {
     <group ref={meshRef} position={[playerX, playerY, 0]}>
       {/* Scale and flip based on facing direction */}
       <group scale={playerFacingRight ? [1, 1, 1] : [-1, 1, 1]}>
-        {/* Body - Sonic-style proportions */}
-        <group position={[0, 0.4, 0]}>
-          {/* Huge Head */}
-          <mesh position={[0, 0.6, 0]} castShadow>
-            <sphereGeometry args={[1.0, 24, 18]} />
+        {/* ENHANCED Body - Superhero style! */}
+        <group ref={bodyRef} position={[0, 0.4, 0]}>
+          {/* DETAILED HEAD */}
+          <group ref={headRef} position={[0, 0.6, 0]}>
+            {/* Main head - hero helmet */}
+            <mesh castShadow>
+              <sphereGeometry args={[0.5, 32, 24]} />
+              <meshToonMaterial 
+                color={fighter.color}
+                emissive={fighter.accentColor}
+                emissiveIntensity={playerInvulnerable ? 0.8 : 0.3}
+              />
+            </mesh>
+            
+            {/* Helmet glow rim */}
+            <mesh scale={1.05}>
+              <sphereGeometry args={[0.5, 32, 24]} />
+              <meshBasicMaterial 
+                color={fighter.accentColor}
+                transparent
+                opacity={0.3}
+                depthWrite={false}
+              />
+            </mesh>
+            
+            {/* Visor/Eyes - glowing! */}
+            <mesh position={[0.15, 0.1, 0.45]} castShadow>
+              <boxGeometry args={[0.35, 0.15, 0.1]} />
+              <meshBasicMaterial 
+                color={fighter.accentColor}
+              />
+            </mesh>
+            <mesh position={[0.15, 0.1, 0.46]} scale={1.1}>
+              <boxGeometry args={[0.35, 0.15, 0.05]} />
+              <meshBasicMaterial 
+                color={fighter.accentColor}
+                transparent
+                opacity={0.6}
+              />
+            </mesh>
+            
+            {/* Helmet detail stripe */}
+            <mesh position={[0, 0.3, 0]} rotation={[0, 0, Math.PI / 6]}>
+              <boxGeometry args={[0.8, 0.1, 0.6]} />
+              <meshToonMaterial 
+                color={fighter.accentColor}
+                emissive={fighter.accentColor}
+                emissiveIntensity={0.5}
+              />
+            </mesh>
+          </group>
+          
+          {/* MUSCULAR TORSO with costume details */}
+          <mesh position={[0, -0.1, 0]} castShadow>
+            <boxGeometry args={[0.7, 0.9, 0.5]} />
             <meshToonMaterial 
               color={fighter.color}
-              emissive={fighter.accentColor}
-              emissiveIntensity={playerInvulnerable ? 0.5 : 0.1}
+              emissive={fighter.color}
+              emissiveIntensity={0.2}
             />
           </mesh>
           
-          {/* Eyes */}
-          <mesh position={[0.3, 0.7, 0.8]} castShadow>
-            <sphereGeometry args={[0.25, 16, 12]} />
-            <meshToonMaterial color="#FFFFFF" />
-          </mesh>
-          <mesh position={[0.3, 0.7, 0.95]}>
-            <sphereGeometry args={[0.12, 12, 10]} />
-            <meshToonMaterial color="#000000" />
-          </mesh>
-          
-          {/* Short Wide Torso */}
-          <mesh position={[0, -0.4, 0]} castShadow>
-            <boxGeometry args={[1.0, 0.8, 0.7]} />
-            <meshToonMaterial color={fighter.color} />
+          {/* Chest emblem/logo */}
+          <mesh position={[0, 0, 0.26]} castShadow>
+            <sphereGeometry args={[0.2, 16, 12]} />
+            <meshToonMaterial 
+              color={fighter.accentColor}
+              emissive={fighter.accentColor}
+              emissiveIntensity={1.0}
+            />
           </mesh>
           
-          {/* Arms */}
-          <mesh position={[-0.6, -0.3, 0]} rotation={[0, 0, playerAttacking ? -Math.PI / 3 : 0.2]} castShadow>
-            <capsuleGeometry args={[0.15, 0.6, 8, 16]} />
-            <meshToonMaterial color={fighter.color} />
-          </mesh>
-          <mesh position={[0.6, -0.3, 0]} rotation={[0, 0, playerAttacking ? Math.PI / 3 : -0.2]} castShadow>
-            <capsuleGeometry args={[0.15, 0.6, 8, 16]} />
-            <meshToonMaterial color={fighter.color} />
-          </mesh>
-          
-          {/* Legs */}
-          <mesh position={[-0.3, -1.0, 0]} castShadow>
-            <capsuleGeometry args={[0.18, 0.5, 8, 16]} />
-            <meshToonMaterial color={fighter.color} />
-          </mesh>
-          <mesh position={[0.3, -1.0, 0]} castShadow>
-            <capsuleGeometry args={[0.18, 0.5, 8, 16]} />
-            <meshToonMaterial color={fighter.color} />
-          </mesh>
-          
-          {/* Massive Shoes */}
-          <mesh position={[-0.3, -1.6, 0.1]} castShadow>
-            <boxGeometry args={[0.5, 0.4, 1.0]} />
+          {/* Belt */}
+          <mesh position={[0, -0.5, 0]} castShadow>
+            <boxGeometry args={[0.75, 0.15, 0.52]} />
             <meshToonMaterial color={fighter.accentColor} />
           </mesh>
-          <mesh position={[0.3, -1.6, 0.1]} castShadow>
-            <boxGeometry args={[0.5, 0.4, 1.0]} />
-            <meshToonMaterial color={fighter.accentColor} />
+          
+          {/* ENHANCED ARMS with shoulder pads */}
+          <group ref={leftArmRef} position={[-0.5, 0.1, 0]}>
+            {/* Shoulder pad */}
+            <mesh position={[0, 0.1, 0]} castShadow>
+              <sphereGeometry args={[0.22, 16, 12]} />
+              <meshToonMaterial 
+                color={fighter.accentColor}
+                emissive={fighter.accentColor}
+                emissiveIntensity={0.4}
+              />
+            </mesh>
+            {/* Upper arm */}
+            <mesh position={[0, -0.25, 0]} castShadow>
+              <capsuleGeometry args={[0.12, 0.4, 12, 16]} />
+              <meshToonMaterial color={fighter.color} />
+            </mesh>
+            {/* Forearm */}
+            <mesh position={[0, -0.65, 0]} castShadow>
+              <capsuleGeometry args={[0.10, 0.4, 12, 16]} />
+              <meshToonMaterial color={fighter.color} />
+            </mesh>
+            {/* Glowing glove/hand */}
+            <mesh position={[0, -0.95, 0]} castShadow>
+              <boxGeometry args={[0.18, 0.25, 0.18]} />
+              <meshToonMaterial 
+                color={fighter.accentColor}
+                emissive={fighter.accentColor}
+                emissiveIntensity={0.6}
+              />
+            </mesh>
+          </group>
+          
+          <group ref={rightArmRef} position={[0.5, 0.1, 0]}>
+            {/* Shoulder pad */}
+            <mesh position={[0, 0.1, 0]} castShadow>
+              <sphereGeometry args={[0.22, 16, 12]} />
+              <meshToonMaterial 
+                color={fighter.accentColor}
+                emissive={fighter.accentColor}
+                emissiveIntensity={0.4}
+              />
+            </mesh>
+            {/* Upper arm */}
+            <mesh position={[0, -0.25, 0]} castShadow>
+              <capsuleGeometry args={[0.12, 0.4, 12, 16]} />
+              <meshToonMaterial color={fighter.color} />
+            </mesh>
+            {/* Forearm */}
+            <mesh position={[0, -0.65, 0]} castShadow>
+              <capsuleGeometry args={[0.10, 0.4, 12, 16]} />
+              <meshToonMaterial color={fighter.color} />
+            </mesh>
+            {/* Glowing glove/hand */}
+            <mesh position={[0, -0.95, 0]} castShadow>
+              <boxGeometry args={[0.18, 0.25, 0.18]} />
+              <meshToonMaterial 
+                color={fighter.accentColor}
+                emissive={fighter.accentColor}
+                emissiveIntensity={0.6}
+              />
+            </mesh>
+          </group>
+          
+          {/* POWERFUL LEGS with knee pads */}
+          <group ref={leftLegRef} position={[-0.2, -0.7, 0]}>
+            {/* Thigh */}
+            <mesh position={[0, -0.05, 0]} castShadow>
+              <capsuleGeometry args={[0.14, 0.5, 12, 16]} />
+              <meshToonMaterial color={fighter.color} />
+            </mesh>
+            {/* Knee pad */}
+            <mesh position={[0, -0.35, 0.1]} castShadow>
+              <sphereGeometry args={[0.18, 16, 12]} />
+              <meshToonMaterial color={fighter.accentColor} />
+            </mesh>
+            {/* Lower leg */}
+            <mesh position={[0, -0.65, 0]} castShadow>
+              <capsuleGeometry args={[0.12, 0.45, 12, 16]} />
+              <meshToonMaterial color={fighter.color} />
+            </mesh>
+            {/* EPIC Boot */}
+            <mesh position={[0, -1.0, 0.15]} castShadow>
+              <boxGeometry args={[0.28, 0.35, 0.6]} />
+              <meshToonMaterial 
+                color={fighter.accentColor}
+                emissive={fighter.accentColor}
+                emissiveIntensity={0.3}
+              />
+            </mesh>
+          </group>
+          
+          <group ref={rightLegRef} position={[0.2, -0.7, 0]}>
+            {/* Thigh */}
+            <mesh position={[0, -0.05, 0]} castShadow>
+              <capsuleGeometry args={[0.14, 0.5, 12, 16]} />
+              <meshToonMaterial color={fighter.color} />
+            </mesh>
+            {/* Knee pad */}
+            <mesh position={[0, -0.35, 0.1]} castShadow>
+              <sphereGeometry args={[0.18, 16, 12]} />
+              <meshToonMaterial color={fighter.accentColor} />
+            </mesh>
+            {/* Lower leg */}
+            <mesh position={[0, -0.65, 0]} castShadow>
+              <capsuleGeometry args={[0.12, 0.45, 12, 16]} />
+              <meshToonMaterial color={fighter.color} />
+            </mesh>
+            {/* EPIC Boot */}
+            <mesh position={[0, -1.0, 0.15]} castShadow>
+              <boxGeometry args={[0.28, 0.35, 0.6]} />
+              <meshToonMaterial 
+                color={fighter.accentColor}
+                emissive={fighter.accentColor}
+                emissiveIntensity={0.3}
+              />
+            </mesh>
+          </group>
+          
+          {/* ENERGY AURA - constantly glowing! */}
+          <mesh position={[0, 0, 0]} scale={1.3}>
+            <sphereGeometry args={[0.8, 24, 18]} />
+            <meshBasicMaterial 
+              color={fighter.accentColor}
+              transparent
+              opacity={0.15}
+              depthWrite={false}
+            />
           </mesh>
         </group>
         
