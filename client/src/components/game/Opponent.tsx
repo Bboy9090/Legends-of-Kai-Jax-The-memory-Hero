@@ -15,6 +15,7 @@ export default function Opponent() {
     playerX,
     playerY,
     battlePhase,
+    timeScale,
     moveOpponent,
     opponentAttack,
     opponentJump
@@ -33,6 +34,9 @@ export default function Opponent() {
   // Simple AI behavior
   useFrame((state, delta) => {
     if (battlePhase !== 'fighting') return;
+    
+    // Apply time scale for slow-motion
+    const scaledDelta = delta * timeScale;
     
     const now = Date.now();
     const ai = aiStateRef.current;
@@ -64,8 +68,8 @@ export default function Opponent() {
       ai.lastAction = now;
     }
     
-    // Execute current behavior
-    const moveSpeed = 0.08;
+    // Execute current behavior (slowed by timeScale)
+    const moveSpeed = 0.08 * timeScale;
     const gravity = -0.5;
     
     switch (ai.currentBehavior) {
@@ -98,9 +102,9 @@ export default function Opponent() {
         break;
     }
     
-    // Apply simple gravity if in air
+    // Apply simple gravity if in air (slowed by timeScale)
     if (opponentY > 0.8) {
-      moveOpponent(0, Math.max(0.8, opponentY + gravity * delta));
+      moveOpponent(0, Math.max(0.8, opponentY + gravity * scaledDelta));
     }
   });
   

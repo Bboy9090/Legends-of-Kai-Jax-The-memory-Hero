@@ -5,6 +5,8 @@ import { useBattle } from "../../lib/stores/useBattle";
 import BattleArena from "./BattleArena";
 import BattlePlayer from "./BattlePlayer";
 import Opponent from "./Opponent";
+import ParticleManager from "./ParticleManager";
+import CameraEffects from "./CameraEffects";
 
 export default function BattleScene() {
   const { startBattle, updateRoundTimer, battlePhase, playerX, opponentX } = useBattle();
@@ -47,6 +49,12 @@ export default function BattleScene() {
       
       {/* Opponent Fighter */}
       <Opponent />
+      
+      {/* EPIC Particle Effects! ✨💥 */}
+      <ParticleManager />
+      
+      {/* Screen Shake & Slow-Motion! 🎬 */}
+      <CameraEffects />
       
       {/* Fog for depth */}
       <fog attach="fog" args={['#87CEEB', 20, 50]} />

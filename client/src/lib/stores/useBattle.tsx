@@ -19,6 +19,7 @@ export interface BattleState {
   maxRoundTime: number;
   battlePhase: 'preRound' | 'fighting' | 'ko' | 'results';
   winner: 'player' | 'opponent' | null;
+  timeScale: number; // For slow-motion effects (1.0 = normal, 0.3 = slow)
   
   // Score tracking
   playerWins: number;
@@ -70,6 +71,7 @@ export interface BattleState {
   // Battle results
   endBattle: (winner: 'player' | 'opponent') => void;
   returnToMenu: () => void;
+  setTimeScale: (scale: number) => void;
   
   // Setup
   setPlayerFighter: (fighterId: string) => void;
@@ -91,6 +93,7 @@ export const useBattle = create<BattleState>((set, get) => ({
   maxRoundTime: 99,
   battlePhase: 'preRound',
   winner: null,
+  timeScale: 1.0, // Normal speed
   
   playerWins: 0,
   opponentWins: 0,
@@ -375,6 +378,12 @@ export const useBattle = create<BattleState>((set, get) => ({
     console.log("[Battle] Returning to menu");
     // Stop battle music
     useAudio.getState().stopBattleMusic();
+    // Reset time scale
+    set({ timeScale: 1.0 });
+  },
+  
+  setTimeScale: (scale) => {
+    set({ timeScale: scale });
   },
   
   setPlayerFighter: (fighterId) => {

@@ -23,28 +23,67 @@ export default function BattlePlayer() {
     playerAttacking,
     playerAttackType,
     playerInvulnerable,
+    playerHealth,
     battlePhase,
+    winner,
+    timeScale,
     movePlayer,
     playerJump,
     playerAttack
   } = useBattle();
   
   const meshRef = useRef<THREE.Group>(null);
+  const bodyRef = useRef<THREE.Group>(null);
+  const headRef = useRef<THREE.Mesh>(null);
+  const leftArmRef = useRef<THREE.Mesh>(null);
+  const rightArmRef = useRef<THREE.Mesh>(null);
+  const leftLegRef = useRef<THREE.Mesh>(null);
+  const rightLegRef = useRef<THREE.Mesh>(null);
+  
+  const animTimeRef = useRef(0);
+  const isMovingRef = useRef(false);
+  const prevYRef = useRef(0.8);
+  const hitAnimRef = useRef(0);
+  const prevHealthRef = useRef(100);
+  
   const [, getKeys] = useKeyboardControls<Controls>();
   
   const fighter = getFighterById(playerFighterId);
   if (!fighter) return null;
   
-  // Handle player input
+  // Handle player input and animations
   useFrame((state, delta) => {
-    if (battlePhase !== 'fighting') return;
+    // Apply slow-motion time scale
+    const scaledDelta = delta * timeScale;
     
+    if (battlePhase !== 'fighting') {
+      // Victory/defeat pose
+      if (battlePhase === 'ko' || battlePhase === 'results') {
+        if (winner === 'player' && bodyRef.current) {
+          // Victory bounce
+          animTimeRef.current += scaledDelta * 3;
+          bodyRef.current.position.y = Math.abs(Math.sin(animTimeRef.current)) * 0.2;
+          if (headRef.current) headRef.current.rotation.z = Math.sin(animTimeRef.current * 2) * 0.1;
+        } else if (winner === 'opponent' && bodyRef.current) {
+          // Defeat slump
+          bodyRef.current.position.y = -0.3;
+          bodyRef.current.rotation.z = 0.3;
+        }
+      }
+      return;
+    }
+    
+    animTimeRef.current += scaledDelta;
     const { left, right, jump, punch, kick, special } = getKeys();
     
-    const moveSpeed = 0.1;
+    // Apply time scale to movement and physics
+    const moveSpeed = 0.1 * timeScale;
     const gravity = -0.5;
     
-    // Horizontal movement
+    // Track movement
+    isMovingRef.current = (left || right) && !playerAttacking;
+    
+    // Horizontal movement (slowed by timeScale)
     if (left && !playerAttacking) {
       movePlayer(-moveSpeed, playerY);
     } else if (right && !playerAttacking) {
@@ -65,10 +104,91 @@ export default function BattlePlayer() {
       playerAttack('special');
     }
     
-    // Apply gravity if in air
+    // Apply gravity if in air (slowed by timeScale)
     if (playerY > 0.8) {
-      movePlayer(0, Math.max(0.8, playerY + gravity * delta));
+      movePlayer(0, Math.max(0.8, playerY + gravity * scaledDelta));
     }
+    
+    // Detect hit (health decreased)
+    if (playerHealth < prevHealthRef.current) {
+      hitAnimRef.current = 0.3; // Hit reaction duration
+    }
+    prevHealthRef.current = playerHealth;
+    
+    // Animate character
+    if (bodyRef.current && headRef.current && leftArmRef.current && rightArmRef.current && 
+        leftLegRef.current && rightLegRef.current) {
+      
+      // Hit reaction animation
+      if (hitAnimRef.current > 0) {
+        hitAnimRef.current -= scaledDelta;
+        const recoil = hitAnimRef.current / 0.3;
+        bodyRef.current.rotation.z = Math.sin(animTimeRef.current * 20) * recoil * 0.3;
+        headRef.current.rotation.z = Math.sin(animTimeRef.current * 15) * recoil * 0.2;
+      } else {
+        bodyRef.current.rotation.z = 0;
+      }
+      
+      // Attack animations
+      if (playerAttacking && playerAttackType) {
+        const attackTime = animTimeRef.current * 10;
+        
+        if (playerAttackType === 'punch') {
+          // Punch - extend arm
+          rightArmRef.current.rotation.z = -Math.PI / 2;
+          rightArmRef.current.position.x = 0.8;
+          bodyRef.current.rotation.y = 0.2;
+        } else if (playerAttackType === 'kick') {
+          // Kick - extend leg
+          rightLegRef.current.rotation.x = Math.PI / 3;
+          bodyRef.current.rotation.x = -0.3;
+        } else if (playerAttackType === 'special') {
+          // Special - dramatic pose
+          leftArmRef.current.rotation.z = Math.PI / 2;
+          rightArmRef.current.rotation.z = -Math.PI / 2;
+          bodyRef.current.position.y = 0.2 + Math.sin(attackTime) * 0.1;
+          bodyRef.current.rotation.y = Math.sin(attackTime) * 0.2;
+        }
+      } else {
+        // Reset attack poses
+        bodyRef.current.rotation.x = 0;
+        bodyRef.current.rotation.y = 0;
+        
+        if (isMovingRef.current) {
+          // Walking animation
+          const walkSpeed = 8;
+          const t = animTimeRef.current * walkSpeed;
+          
+          leftArmRef.current.rotation.z = Math.sin(t) * 0.4;
+          rightArmRef.current.rotation.z = Math.sin(t + Math.PI) * 0.4;
+          leftLegRef.current.rotation.x = Math.sin(t) * 0.5;
+          rightLegRef.current.rotation.x = Math.sin(t + Math.PI) * 0.5;
+          
+          // Body bob
+          bodyRef.current.position.y = Math.abs(Math.sin(t * 2)) * 0.08;
+          headRef.current.rotation.x = Math.sin(t * 2) * 0.05;
+        } else if (playerY > 1.0) {
+          // Jump animation - spread arms and legs
+          leftArmRef.current.rotation.z = 0.8;
+          rightArmRef.current.rotation.z = -0.8;
+          leftLegRef.current.rotation.x = -0.3;
+          rightLegRef.current.rotation.x = -0.3;
+          bodyRef.current.rotation.x = 0.2;
+        } else {
+          // Idle breathing animation
+          const breathe = Math.sin(animTimeRef.current * 2) * 0.05;
+          bodyRef.current.position.y = breathe;
+          headRef.current.rotation.y = breathe * 0.5;
+          
+          leftArmRef.current.rotation.z = 0.1 + breathe;
+          rightArmRef.current.rotation.z = -0.1 - breathe;
+          leftLegRef.current.rotation.x = 0;
+          rightLegRef.current.rotation.x = 0;
+        }
+      }
+    }
+    
+    prevYRef.current = playerY;
   });
   
   return (

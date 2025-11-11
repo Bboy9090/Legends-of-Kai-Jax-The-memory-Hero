@@ -8,12 +8,7 @@ export default function MobileControls() {
   const [activeButtons, setActiveButtons] = useState<Set<string>>(new Set());
   const { playerJump, playerAttack, movePlayer, battlePhase } = useBattle();
   
-  // Only show controls during active fighting
-  if (battlePhase !== 'fighting') {
-    return null;
-  }
-
-  // Detect orientation
+  // Detect orientation (MUST be before early return to follow Rules of Hooks)
   useEffect(() => {
     const checkOrientation = () => {
       if (window.innerWidth > window.innerHeight) {
@@ -32,6 +27,11 @@ export default function MobileControls() {
       window.removeEventListener('orientationchange', checkOrientation);
     };
   }, []);
+  
+  // Only show controls during active fighting (AFTER all hooks)
+  if (battlePhase !== 'fighting') {
+    return null;
+  }
 
   const handleButtonPress = (action: string) => {
     setActiveButtons(prev => new Set(prev).add(action));
