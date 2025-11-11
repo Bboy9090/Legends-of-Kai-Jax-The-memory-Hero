@@ -5,10 +5,14 @@ import * as THREE from "three";
 import { Points, PointMaterial } from "@react-three/drei";
 
 import { useRunner } from "../../lib/stores/useRunner";
+import { getAccessoryById } from "../../lib/cosmetics";
 
 export default function Player() {
-  const { player, selectedCharacter } = useRunner();
+  const { player, selectedCharacter, equippedCosmetics } = useRunner();
   const meshRef = useRef<THREE.Mesh>(null);
+  
+  // Get equipped accessories for current character
+  const equipped = equippedCosmetics[selectedCharacter];
   
   // Smooth position transitions with bobbing animation
   const { position } = useSpring({
@@ -604,6 +608,197 @@ export default function Player() {
             />
           </line>
         )}
+        
+        {/* Equipped Accessories Rendering */}
+        {equipped.hat && (() => {
+          const accessory = getAccessoryById(equipped.hat);
+          if (!accessory) return null;
+          
+          if (accessory.id.includes('cap')) {
+            // Baseball cap style
+            return (
+              <group position={[0, 2.2, 0]}>
+                <mesh castShadow>
+                  <sphereGeometry args={[0.6, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+                  <meshToonMaterial 
+                    color={accessory.color}
+                    emissive={accessory.emissiveColor}
+                    emissiveIntensity={accessory.emissiveIntensity}
+                  />
+                </mesh>
+                <mesh position={[0, -0.1, 0.5]} rotation={[-Math.PI / 12, 0, 0]}>
+                  <boxGeometry args={[0.8, 0.05, 0.6]} />
+                  <meshToonMaterial color={accessory.color} />
+                </mesh>
+              </group>
+            );
+          } else if (accessory.id.includes('crown')) {
+            // Crown
+            return (
+              <group position={[0, 2.3, 0]}>
+                <mesh castShadow>
+                  <cylinderGeometry args={[0.55, 0.6, 0.3, 8]} />
+                  <meshToonMaterial 
+                    color={accessory.color}
+                    emissive={accessory.emissiveColor}
+                    emissiveIntensity={accessory.emissiveIntensity}
+                  />
+                </mesh>
+                {[0, 1, 2, 3, 4, 5, 6, 7].map(i => (
+                  <mesh 
+                    key={i} 
+                    position={[
+                      Math.cos(i * Math.PI / 4) * 0.55,
+                      0.25,
+                      Math.sin(i * Math.PI / 4) * 0.55
+                    ]}
+                  >
+                    <coneGeometry args={[0.08, 0.2, 4]} />
+                    <meshToonMaterial 
+                      color={accessory.color}
+                      emissive={accessory.emissiveColor}
+                      emissiveIntensity={accessory.emissiveIntensity}
+                    />
+                  </mesh>
+                ))}
+              </group>
+            );
+          }
+          return null;
+        })()}
+        
+        {equipped.glasses && (() => {
+          const accessory = getAccessoryById(equipped.glasses);
+          if (!accessory) return null;
+          
+          return (
+            <group position={[0, 1.5, 0.6]}>
+              {/* Left lens */}
+              <mesh position={[-0.25, 0, 0.1]}>
+                <boxGeometry args={[0.3, 0.2, 0.05]} />
+                <meshToonMaterial 
+                  color={accessory.color}
+                  emissive={accessory.emissiveColor}
+                  emissiveIntensity={accessory.emissiveIntensity}
+                  transparent
+                  opacity={0.7}
+                />
+              </mesh>
+              {/* Right lens */}
+              <mesh position={[0.25, 0, 0.1]}>
+                <boxGeometry args={[0.3, 0.2, 0.05]} />
+                <meshToonMaterial 
+                  color={accessory.color}
+                  emissive={accessory.emissiveColor}
+                  emissiveIntensity={accessory.emissiveIntensity}
+                  transparent
+                  opacity={0.7}
+                />
+              </mesh>
+              {/* Bridge */}
+              <mesh position={[0, 0, 0.1]}>
+                <boxGeometry args={[0.1, 0.05, 0.05]} />
+                <meshToonMaterial color={accessory.color} />
+              </mesh>
+            </group>
+          );
+        })()}
+        
+        {equipped.cape && (() => {
+          const accessory = getAccessoryById(equipped.cape);
+          if (!accessory) return null;
+          
+          return (
+            <group position={[0, 0.8, -0.3]}>
+              <mesh rotation={[Math.PI / 12, 0, 0]} castShadow>
+                <boxGeometry args={[1.2, 2, 0.1]} />
+                <meshToonMaterial 
+                  color={accessory.color}
+                  emissive={accessory.emissiveColor}
+                  emissiveIntensity={accessory.emissiveIntensity}
+                  side={THREE.DoubleSide}
+                />
+              </mesh>
+            </group>
+          );
+        })()}
+        
+        {equipped.belt && (() => {
+          const accessory = getAccessoryById(equipped.belt);
+          if (!accessory) return null;
+          
+          return (
+            <group position={[0, 0, 0]}>
+              <mesh castShadow>
+                <torusGeometry args={[0.75, 0.08, 8, 24]} />
+                <meshToonMaterial 
+                  color={accessory.color}
+                  emissive={accessory.emissiveColor}
+                  emissiveIntensity={accessory.emissiveIntensity}
+                />
+              </mesh>
+              {/* Belt buckle */}
+              <mesh position={[0, 0, 0.75]}>
+                <boxGeometry args={[0.15, 0.15, 0.05]} />
+                <meshToonMaterial 
+                  color="#FFD700"
+                  emissive="#FFA500"
+                  emissiveIntensity={0.5}
+                />
+              </mesh>
+            </group>
+          );
+        })()}
+        
+        {equipped.backpack && (() => {
+          const accessory = getAccessoryById(equipped.backpack);
+          if (!accessory) return null;
+          
+          return (
+            <group position={[0, 0.5, -0.6]}>
+              <mesh castShadow>
+                <boxGeometry args={[0.8, 1, 0.4]} />
+                <meshToonMaterial 
+                  color={accessory.color}
+                  emissive={accessory.emissiveColor}
+                  emissiveIntensity={accessory.emissiveIntensity}
+                />
+              </mesh>
+              {/* Jetpack nozzles */}
+              {accessory.id.includes('jetpack') && (
+                <>
+                  <mesh position={[-0.25, -0.3, 0]}>
+                    <cylinderGeometry args={[0.12, 0.15, 0.3]} />
+                    <meshToonMaterial color="#2F4F4F" />
+                  </mesh>
+                  <mesh position={[0.25, -0.3, 0]}>
+                    <cylinderGeometry args={[0.12, 0.15, 0.3]} />
+                    <meshToonMaterial color="#2F4F4F" />
+                  </mesh>
+                </>
+              )}
+            </group>
+          );
+        })()}
+        
+        {equipped.mask && (() => {
+          const accessory = getAccessoryById(equipped.mask);
+          if (!accessory) return null;
+          
+          return (
+            <group position={[0, 1.5, 0.55]}>
+              {/* Eye mask */}
+              <mesh>
+                <boxGeometry args={[0.8, 0.25, 0.05]} />
+                <meshToonMaterial 
+                  color={accessory.color}
+                  emissive={accessory.emissiveColor}
+                  emissiveIntensity={accessory.emissiveIntensity}
+                />
+              </mesh>
+            </group>
+          );
+        })()}
       </animated.group>
     </animated.group>
   );
