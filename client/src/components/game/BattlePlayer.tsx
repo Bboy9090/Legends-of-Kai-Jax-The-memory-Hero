@@ -4,6 +4,8 @@ import { useKeyboardControls } from "@react-three/drei";
 import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
+import JaxonModel from "./models/JaxonModel";
+import KaisonModel from "./models/KaisonModel";
 
 // Use the same Controls enum as App.tsx
 enum Controls {
@@ -318,23 +320,58 @@ export default function BattlePlayer() {
     prevYRef.current = playerY;
   });
   
-  return (
-    <group ref={meshRef} position={[playerX, playerY, 0]}>
-      {/* Scale and flip based on facing direction */}
-      <group scale={playerFacingRight ? [1, 1, 1] : [-1, 1, 1]}>
-        {/* ENHANCED Body - Superhero style! */}
-        <group ref={bodyRef} position={[0, 0.4, 0]}>
-          {/* DETAILED HEAD */}
-          <group ref={headRef} position={[0, 0.6, 0]}>
-            {/* Main head - hero helmet with EMOTION! */}
-            <mesh castShadow>
-              <sphereGeometry args={[0.5, 32, 24]} />
-              <meshToonMaterial 
-                color={fighter.color}
-                emissive={fighter.accentColor}
-                emissiveIntensity={playerInvulnerable ? 0.8 : (0.3 + emotionIntensityRef.current * 0.4)}
-              />
-            </mesh>
+  // LEGENDARY CHARACTER MODELS - Use specialized designs for Jaxon & Kaison!
+  const renderCharacterModel = () => {
+    if (playerFighterId === 'jaxon') {
+      return (
+        <JaxonModel 
+          bodyRef={bodyRef}
+          headRef={headRef}
+          leftArmRef={leftArmRef}
+          rightArmRef={rightArmRef}
+          leftLegRef={leftLegRef}
+          rightLegRef={rightLegRef}
+          emotionIntensity={emotionIntensityRef.current}
+          hitAnim={hitAnimRef.current}
+          animTime={animTimeRef.current}
+          isAttacking={playerAttacking}
+          isInvulnerable={playerInvulnerable}
+        />
+      );
+    }
+    
+    if (playerFighterId === 'kaison') {
+      return (
+        <KaisonModel 
+          bodyRef={bodyRef}
+          headRef={headRef}
+          leftArmRef={leftArmRef}
+          rightArmRef={rightArmRef}
+          leftLegRef={leftLegRef}
+          rightLegRef={rightLegRef}
+          emotionIntensity={emotionIntensityRef.current}
+          hitAnim={hitAnimRef.current}
+          animTime={animTimeRef.current}
+          isAttacking={playerAttacking}
+          isInvulnerable={playerInvulnerable}
+        />
+      );
+    }
+    
+    // Generic model for all other fighters
+    return (
+      <group ref={bodyRef} position={[0, 0.4, 0]}>
+        {/* DETAILED HEAD */}
+        <group ref={headRef} position={[0, 0.6, 0]}>
+          {/* Main head - hero helmet with EMOTION! */}
+          <mesh castShadow>
+            <sphereGeometry args={[0.5, 32, 24]} />
+            <meshToonMaterial 
+              color={fighter.color}
+              emissive={fighter.accentColor}
+              emissiveIntensity={playerInvulnerable ? 0.8 : (0.3 + emotionIntensityRef.current * 0.4)}
+            />
+          </mesh>
             
             {/* Helmet glow rim - INTENSIFIES with emotion! */}
             <mesh scale={1.05 + emotionIntensityRef.current * 0.1}>
@@ -536,13 +573,22 @@ export default function BattlePlayer() {
           <mesh position={[0, 0, 0]} scale={1.3}>
             <sphereGeometry args={[0.8, 24, 18]} />
             <meshBasicMaterial 
-              color={fighter.accentColor}
+              color={fighter?.accentColor || '#FFFFFF'}
               transparent
               opacity={0.15}
               depthWrite={false}
             />
           </mesh>
         </group>
+    );
+  };
+  
+  return (
+    <group ref={meshRef} position={[playerX, playerY, 0]}>
+      {/* Scale and flip based on facing direction */}
+      <group scale={playerFacingRight ? [1, 1, 1] : [-1, 1, 1]}>
+        {/* Render specialized or generic character model */}
+        {renderCharacterModel()}
         
         {/* Attack visual effects */}
         {playerAttacking && (
@@ -566,19 +612,6 @@ export default function BattlePlayer() {
               </mesh>
             )}
           </group>
-        )}
-        
-        {/* Invulnerability flash */}
-        {playerInvulnerable && (
-          <mesh position={[0, 0.5, 0]}>
-            <sphereGeometry args={[1.5, 16, 12]} />
-            <meshBasicMaterial 
-              color="#FFFFFF"
-              transparent
-              opacity={0.3}
-              depthWrite={false}
-            />
-          </mesh>
         )}
       </group>
     </group>
