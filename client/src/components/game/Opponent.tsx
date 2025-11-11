@@ -3,6 +3,8 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
+import JaxonModel from "./models/JaxonModel";
+import KaisonModel from "./models/KaisonModel";
 
 export default function Opponent() {
   const { 
@@ -22,11 +24,21 @@ export default function Opponent() {
   } = useBattle();
   
   const meshRef = useRef<THREE.Group>(null);
+  const bodyRef = useRef<THREE.Group>(null);
+  const headRef = useRef<THREE.Group>(null);
+  const leftArmRef = useRef<THREE.Group>(null);
+  const rightArmRef = useRef<THREE.Group>(null);
+  const leftLegRef = useRef<THREE.Group>(null);
+  const rightLegRef = useRef<THREE.Group>(null);
+  
   const aiStateRef = useRef({
     lastAction: 0,
     nextActionDelay: 1000,
     currentBehavior: 'idle' as 'idle' | 'approach' | 'retreat' | 'attack' | 'jump'
   });
+  
+  const animTimeRef = useRef(0);
+  const emotionIntensityRef = useRef(0);
   
   const fighter = getFighterById(opponentFighterId);
   if (!fighter) return null;
@@ -37,6 +49,18 @@ export default function Opponent() {
     
     // Apply time scale for slow-motion
     const scaledDelta = delta * timeScale;
+    
+    // Update animation time for character models
+    animTimeRef.current += scaledDelta;
+    
+    // Update emotion intensity based on health and attacking
+    if (opponentAttacking) {
+      emotionIntensityRef.current = 1.0;
+    } else if (opponentHealth < 30) {
+      emotionIntensityRef.current = 0.8;
+    } else {
+      emotionIntensityRef.current = Math.max(0, emotionIntensityRef.current - scaledDelta * 2);
+    }
     
     const now = Date.now();
     const ai = aiStateRef.current;
@@ -130,23 +154,58 @@ export default function Opponent() {
     }
   });
   
-  return (
-    <group ref={meshRef} position={[opponentX, opponentY, 0]}>
-      {/* Scale and flip based on facing direction */}
-      <group scale={opponentFacingRight ? [1, 1, 1] : [-1, 1, 1]}>
-        {/* ENHANCED Opponent - Detailed superhero/villain style! */}
-        <group position={[0, 0.4, 0]}>
-          {/* DETAILED HEAD */}
-          <group position={[0, 0.6, 0]}>
-            {/* Main head - villain helmet */}
-            <mesh castShadow>
-              <sphereGeometry args={[0.5, 32, 24]} />
-              <meshToonMaterial 
-                color={fighter.color}
-                emissive={fighter.accentColor}
-                emissiveIntensity={opponentHealth < 30 ? 0.8 : 0.3}
-              />
-            </mesh>
+  // LEGENDARY CHARACTER MODELS - Use specialized designs for Jaxon & Kaison!
+  const renderCharacterModel = () => {
+    if (opponentFighterId === 'jaxon') {
+      return (
+        <JaxonModel 
+          bodyRef={bodyRef}
+          headRef={headRef}
+          leftArmRef={leftArmRef}
+          rightArmRef={rightArmRef}
+          leftLegRef={leftLegRef}
+          rightLegRef={rightLegRef}
+          emotionIntensity={emotionIntensityRef.current}
+          hitAnim={0}
+          animTime={animTimeRef.current}
+          isAttacking={opponentAttacking}
+          isInvulnerable={false}
+        />
+      );
+    }
+    
+    if (opponentFighterId === 'kaison') {
+      return (
+        <KaisonModel 
+          bodyRef={bodyRef}
+          headRef={headRef}
+          leftArmRef={leftArmRef}
+          rightArmRef={rightArmRef}
+          leftLegRef={leftLegRef}
+          rightLegRef={rightLegRef}
+          emotionIntensity={emotionIntensityRef.current}
+          hitAnim={0}
+          animTime={animTimeRef.current}
+          isAttacking={opponentAttacking}
+          isInvulnerable={false}
+        />
+      );
+    }
+    
+    // Generic villain model for all other fighters
+    return (
+      <group ref={bodyRef} position={[0, 0.4, 0]}>
+        {/* DETAILED HEAD */}
+        <group ref={headRef} position={[0, 0.6, 0]}>
+          {/* Main head - villain helmet */}
+          <mesh castShadow>
+            <sphereGeometry args={[0.5, 32, 24]} />
+            <meshToonMaterial 
+              color={fighter.color}
+              emissive={fighter.accentColor}
+              emissiveIntensity={opponentHealth < 30 ? 0.8 : 0.3}
+            />
+          </mesh>
             
             {/* Helmet menacing glow */}
             <mesh scale={1.05}>
@@ -388,13 +447,22 @@ export default function Opponent() {
           <mesh position={[0, 0, 0]} scale={1.3}>
             <sphereGeometry args={[0.8, 24, 18]} />
             <meshBasicMaterial 
-              color={fighter.accentColor}
+              color={fighter?.accentColor || '#FF0000'}
               transparent
               opacity={opponentHealth < 30 ? 0.25 : 0.12}
               depthWrite={false}
             />
           </mesh>
         </group>
+    );
+  };
+  
+  return (
+    <group ref={meshRef} position={[opponentX, opponentY, 0]}>
+      {/* Scale and flip based on facing direction */}
+      <group scale={opponentFacingRight ? [1, 1, 1] : [-1, 1, 1]}>
+        {/* Render specialized or generic character model */}
+        {renderCharacterModel()}
         
         {/* Attack visual effect */}
         {opponentAttacking && (
