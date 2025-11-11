@@ -91,8 +91,8 @@ function App() {
             <Canvas
               shadows
               camera={{
-                position: [0, 4, 8],
-                fov: 75,
+                position: [0, 5, 10],  // Adjusted for better mobile zoom
+                fov: 60,  // Narrower FOV = more zoom to fill screen!
                 near: 0.1,
                 far: 1000
               }}
