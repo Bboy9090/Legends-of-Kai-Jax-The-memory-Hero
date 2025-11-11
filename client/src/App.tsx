@@ -3,14 +3,16 @@ import { Suspense } from "react";
 import { KeyboardControls } from "@react-three/drei";
 import "@fontsource/inter";
 
-import GameScene from "./components/game/GameScene";
+import BattleScene from "./components/game/BattleScene";
 import TouchControls from "./components/game/TouchControls";
-import GameUI from "./components/game/GameUI";
+import BattleUI from "./components/game/BattleUI";
 import MainMenu from "./components/game/MainMenu";
 import CharacterSelect from "./components/game/CharacterSelect";
 import CustomizationMenu from "./components/game/CustomizationMenu";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
+import { useBattle } from "./lib/stores/useBattle";
+import { useEffect } from "react";
 
 // Define control keys for the game (also works with touch)
 enum Controls {
@@ -47,7 +49,19 @@ const controls = [
 
 function App() {
   const { phase } = useGame();
-  const { gameState, inChoiceMode } = useRunner();
+  const { gameState, selectedCharacter } = useRunner();
+  const { setPlayerFighter, setOpponentFighter } = useBattle();
+
+  // Set up battle fighters when character is selected
+  useEffect(() => {
+    if (selectedCharacter && phase === 'playing') {
+      setPlayerFighter(selectedCharacter);
+      // Set random opponent
+      const opponents = ['speedy', 'marlo', 'leonardo', 'midnight', 'flynn'];
+      const randomOpponent = opponents[Math.floor(Math.random() * opponents.length)];
+      setOpponentFighter(randomOpponent);
+    }
+  }, [selectedCharacter, phase, setPlayerFighter, setOpponentFighter]);
 
   // Debug logging
   console.log("App render - phase:", phase, "gameState:", gameState);
@@ -89,12 +103,12 @@ function App() {
               <color attach="background" args={["#87CEEB"]} />
               
               <Suspense fallback={null}>
-                <GameScene />
+                <BattleScene />
               </Suspense>
             </Canvas>
             
-            {/* Game UI Overlay */}
-            <GameUI />
+            {/* Battle UI Overlay */}
+            <BattleUI />
             
             {/* Touch Controls */}
             <TouchControls />
