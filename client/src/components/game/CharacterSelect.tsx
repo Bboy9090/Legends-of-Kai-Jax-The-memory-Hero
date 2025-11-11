@@ -2,184 +2,210 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { useGame } from "../../lib/stores/useGame";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { ArrowLeft, Zap, Flame } from "lucide-react";
-import { useRef } from "react";
+import { ArrowLeft, Lock } from "lucide-react";
+import { useState } from "react";
+import { FIGHTERS, Fighter, getFighterById } from "../../lib/characters";
 
 export default function CharacterSelect() {
-  const { selectedCharacter, setCharacter, setGameState } = useRunner();
+  const { selectedCharacter, setCharacter, setGameState, stats } = useRunner();
   const { start } = useGame();
-  const lastSelectionTime = useRef(0);
+  const [hoveredFighter, setHoveredFighter] = useState<string | null>(null);
   
   const startGame = () => {
-    console.log("Starting game with character:", selectedCharacter);
-    start(); // First change phase to "playing"
-    setGameState("playing"); // Then set game state to "playing"
+    console.log("Starting battle with fighter:", selectedCharacter);
+    start();
+    setGameState("playing");
   };
   
   const goBack = () => {
     setGameState("menu");
   };
   
-  const handleCharacterSelect = (characterId: "jaxon" | "kaison") => {
-    const now = Date.now();
-    // Debounce character selection to prevent rapid multiple selections
-    if (now - lastSelectionTime.current < 100) { // 100ms debounce
+  const handleFighterSelect = (fighter: Fighter) => {
+    // Check if fighter is unlocked
+    if (!fighter.unlocked && fighter.unlockRequirement && stats.score < fighter.unlockRequirement) {
+      console.log("Fighter locked:", fighter.id);
       return;
     }
-    lastSelectionTime.current = now;
     
-    console.log("Character selected:", characterId);
-    setCharacter(characterId);
+    console.log("Fighter selected:", fighter.id);
+    setCharacter(fighter.id as any);
   };
   
-  const characters = [
-    {
-      id: "jaxon" as const,
-      name: "Fearless Jaxon",
-      description: "The youngest but most daring - breaks rules with a smile!",
-      color: "bg-blue-500",
-      accent: "text-blue-600",
-      icon: Zap,
-      traits: ["Fearless adventurer", "Rule-breaker extraordinaire", "Charms his way out of trouble"],
-      power: "Chaos Creator"
-    },
-    {
-      id: "kaison" as const,
-      name: "Strategic Kaison",
-      description: "The big brother mastermind who follows little brother's adventures",
-      color: "bg-red-500",
-      accent: "text-red-600",
-      icon: Flame,
-      traits: ["Secret mastermind", "Protective big brother", "Points finger with a grin"],
-      power: "Master Planner"
-    }
+  const isLocked = (fighter: Fighter) => {
+    return !fighter.unlocked && fighter.unlockRequirement && stats.score < fighter.unlockRequirement;
+  };
+  
+  const categories = [
+    { name: 'Heroes', id: 'heroes' as const, color: 'from-blue-500 to-cyan-500' },
+    { name: 'Speedsters', id: 'speedsters' as const, color: 'from-yellow-500 to-orange-500' },
+    { name: 'Warriors', id: 'warriors' as const, color: 'from-green-500 to-emerald-500' },
+    { name: 'Legends', id: 'legends' as const, color: 'from-purple-500 to-pink-500' }
   ];
   
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-purple-400 via-pink-400 to-red-400 p-4">
-      <div className="w-full max-w-4xl">
-        <Card className="bg-white bg-opacity-95 backdrop-blur-sm shadow-2xl">
-          <CardHeader className="text-center relative">
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 p-4 overflow-auto">
+      <div className="w-full max-w-6xl mx-auto">
+        <Card className="bg-black/40 backdrop-blur-lg border-4 border-yellow-400">
+          <CardHeader className="text-center relative border-b-4 border-yellow-400/30">
             <Button 
               variant="outline" 
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log("Back button clicked");
-                goBack();
-              }}
-              className="absolute top-4 left-4"
+              onClick={goBack}
+              className="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white border-none"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
             </Button>
             
-            <CardTitle className="text-3xl font-bold text-gray-900">
-              Choose Your Hero
+            <CardTitle className="text-5xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+              Choose Your Fighter!
             </CardTitle>
-            <p className="text-gray-600">
-              Select which twin hero you want to play as in your kindness quest!
+            <p className="text-yellow-300 text-xl mt-2 font-bold">
+              {FIGHTERS.filter(f => !isLocked(f)).length} / {FIGHTERS.length} Fighters Unlocked
             </p>
           </CardHeader>
           
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
-              {characters.map((character) => (
-                <Card 
-                  key={character.id}
-                  className={`cursor-pointer transition-all duration-200 ${
-                    selectedCharacter === character.id 
-                      ? 'ring-4 ring-yellow-400 bg-yellow-50' 
-                      : 'hover:shadow-lg'
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleCharacterSelect(character.id);
-                  }}
-                >
-                  <CardContent className="p-6 text-center">
-                    {/* Character Avatar */}
-                    <div className={`w-24 h-24 ${character.color} rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg`}>
-                      <character.icon className="w-12 h-12 text-white" />
-                    </div>
-                    
-                    {/* Character Info */}
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      {character.name}
-                    </h3>
-                    
-                    <p className="text-gray-600 mb-4">
-                      {character.description}
-                    </p>
-                    
-                    {/* Character Power */}
-                    <div className="mb-4">
-                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${character.accent} bg-gray-100`}>
-                        {character.power}
-                      </span>
-                    </div>
-                    
-                    {/* Character Traits */}
-                    <div className="text-left">
-                      <h4 className="font-semibold text-sm text-gray-700 mb-2">Special Traits:</h4>
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        {character.traits.map((trait, index) => (
-                          <li key={index} className="flex items-center">
-                            <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2" />
-                            {trait}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    
-                    {/* Selection Indicator */}
-                    {selectedCharacter === character.id && (
-                      <div className="mt-4 p-2 bg-yellow-400 text-yellow-900 rounded-lg font-semibold">
-                        ✓ Selected
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            
-            {/* Character Preview */}
-            <div className="text-center mb-6">
-              <Card className="bg-gray-50 p-4 inline-block">
-                <div className="flex items-center gap-4">
-                  <div className={`w-16 h-16 rounded-full ${
-                    selectedCharacter === "jaxon" ? "bg-blue-500" : "bg-red-500"
-                  } flex items-center justify-center`}>
-                    <span className="text-white text-2xl font-bold">
-                      {selectedCharacter === "jaxon" ? "J" : "K"}
-                    </span>
-                  </div>
-                  <div className="text-left">
-                    <h4 className="font-bold text-gray-900">
-                      {selectedCharacter === "jaxon" ? "Hyper Sonic Jaxon" : "Super Sonic Kaison"}
-                    </h4>
-                    <p className="text-sm text-gray-600">Ready for adventure!</p>
+          <CardContent className="p-6">
+            {/* Fighter Categories */}
+            {categories.map(category => {
+              const categoryFighters = FIGHTERS.filter(f => f.category === category.id);
+              
+              return (
+                <div key={category.id} className="mb-8">
+                  <h2 className={`text-3xl font-bold mb-4 bg-gradient-to-r ${category.color} bg-clip-text text-transparent`}>
+                    {category.name}
+                  </h2>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {categoryFighters.map(fighter => {
+                      const locked = isLocked(fighter);
+                      const selected = selectedCharacter === fighter.id;
+                      
+                      return (
+                        <div
+                          key={fighter.id}
+                          className={`relative cursor-pointer transition-all duration-200 ${
+                            locked ? 'opacity-50' : 'hover:scale-105'
+                          }`}
+                          onClick={() => !locked && handleFighterSelect(fighter)}
+                          onMouseEnter={() => setHoveredFighter(fighter.id)}
+                          onMouseLeave={() => setHoveredFighter(null)}
+                        >
+                          <Card className={`
+                            ${selected ? 'ring-4 ring-yellow-400 bg-yellow-400/20' : 'bg-gray-800/50'}
+                            ${locked ? 'grayscale' : ''}
+                            border-2 overflow-hidden
+                          `} style={{ borderColor: fighter.accentColor }}>
+                            <CardContent className="p-4 text-center">
+                              {/* Fighter Avatar */}
+                              <div 
+                                className="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg relative"
+                                style={{ 
+                                  backgroundColor: fighter.color,
+                                  boxShadow: `0 0 20px ${fighter.accentColor}`
+                                }}
+                              >
+                                <span className="text-4xl font-bold text-white">
+                                  {fighter.name.charAt(0).toUpperCase()}
+                                </span>
+                                
+                                {locked && (
+                                  <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center">
+                                    <Lock className="w-8 h-8 text-yellow-400" />
+                                  </div>
+                                )}
+                                
+                                {selected && !locked && (
+                                  <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full w-8 h-8 flex items-center justify-center">
+                                    <span className="text-black font-bold">✓</span>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Fighter Name */}
+                              <h3 className="text-lg font-bold text-white mb-1">
+                                {fighter.displayName}
+                              </h3>
+                              
+                              {/* Description or Lock Info */}
+                              {locked ? (
+                                <p className="text-xs text-yellow-400 font-semibold">
+                                  🔒 {fighter.unlockRequirement} pts
+                                </p>
+                              ) : (
+                                <p className="text-xs text-gray-300">
+                                  {fighter.description}
+                                </p>
+                              )}
+                            </CardContent>
+                          </Card>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
+              );
+            })}
+            
+            {/* Selected Fighter Preview */}
+            <div className="mt-8 mb-6">
+              <Card className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 border-4 border-cyan-400">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-6">
+                    {selectedCharacter && (() => {
+                      const fighter = getFighterById(selectedCharacter);
+                      if (!fighter) return null;
+                      
+                      return (
+                        <>
+                          <div 
+                            className="w-24 h-24 rounded-full flex items-center justify-center shadow-2xl"
+                            style={{ 
+                              backgroundColor: fighter.color,
+                              boxShadow: `0 0 30px ${fighter.accentColor}`
+                            }}
+                          >
+                            <span className="text-5xl font-bold text-white">
+                              {fighter.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          
+                          <div className="flex-1">
+                            <h3 className="text-3xl font-bold text-white mb-2">
+                              {fighter.displayName}
+                            </h3>
+                            <p className="text-cyan-300 text-lg">
+                              {fighter.description}
+                            </p>
+                            <div className="mt-2">
+                              <span className="inline-block px-3 py-1 bg-yellow-400 text-black rounded-full text-sm font-bold">
+                                {fighter.category.toUpperCase()}
+                              </span>
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </CardContent>
               </Card>
             </div>
             
-            {/* Start Game Button */}
+            {/* Start Battle Button */}
             <div className="text-center">
               <Button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log("Start Running clicked!");
-                  startGame();
-                }}
-                className="w-full max-w-md text-xl py-6 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold"
+                onClick={startGame}
+                className="w-full max-w-md text-2xl py-8 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 hover:from-green-600 hover:via-yellow-600 hover:to-red-600 text-white font-bold border-4 border-yellow-400 shadow-[0_0_30px_rgba(255,255,0,0.5)]"
               >
-                Start Running!
+                🥊 START BATTLE! 🥊
               </Button>
             </div>
             
             {/* Game Info */}
-            <div className="mt-6 text-center text-sm text-gray-600">
-              <p>Both heroes have the same abilities - choose based on who you like more!</p>
-              <p className="mt-2">Your hero will help citizens and battle Grumble-Bots throughout Aurelia City.</p>
+            <div className="mt-6 text-center text-sm text-gray-300 bg-black/30 p-4 rounded-lg">
+              <p className="font-bold text-yellow-300 mb-2">🎮 Controls:</p>
+              <p>Arrow Keys = Move • Space = Jump • J = Punch • K = Kick • L = Special</p>
+              <p className="mt-2 text-xs text-gray-400">Win battles to earn points and unlock more fighters!</p>
             </div>
           </CardContent>
         </Card>

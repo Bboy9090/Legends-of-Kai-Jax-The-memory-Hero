@@ -2,7 +2,7 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { useAudio } from "../../lib/stores/useAudio";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Play, Settings, Volume2, VolumeX, MessageCircle, Shirt } from "lucide-react";
+import { Play, Settings, Volume2, VolumeX, Shirt } from "lucide-react";
 
 export default function MainMenu() {
   const { setGameState } = useRunner();
@@ -12,10 +12,6 @@ export default function MainMenu() {
     setGameState("character-select");
   };
 
-  const openAIAssistant = () => {
-    setGameState("ai-assistant");
-  };
-  
   const openCustomization = () => {
     setGameState("customization");
   };
@@ -49,13 +45,13 @@ export default function MainMenu() {
         <Card className="bg-white bg-opacity-95 backdrop-blur-sm shadow-2xl">
           <CardHeader>
             <CardTitle className="text-4xl font-bold text-gray-900 mb-2">
-              Hyper Sonic Heroes
+              Super Smash Heroes
             </CardTitle>
             <p className="text-xl text-blue-600 font-semibold">
-              Kindness Quest
+              Battle Royale
             </p>
             <p className="text-gray-600 mt-2">
-              Race through the city and show that kindness is the greatest superpower!
+              Choose your fighter and battle with friends in fun arenas!
             </p>
           </CardHeader>
           
@@ -94,16 +90,7 @@ export default function MainMenu() {
               className="w-full text-lg py-4 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold"
             >
               <Shirt className="w-5 h-5 mr-2" />
-              Customize Heroes
-            </Button>
-            
-            {/* AI Assistant button */}
-            <Button 
-              onClick={openAIAssistant}
-              className="w-full text-lg py-4 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold"
-            >
-              <MessageCircle className="w-5 h-5 mr-2" />
-              AI Assistant
+              Unlock Fighters
             </Button>
             
             {/* Settings */}
@@ -126,17 +113,17 @@ export default function MainMenu() {
             <div className="text-left text-sm text-gray-600 bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold mb-2">Game Features:</h4>
               <ul className="space-y-1">
-                <li>• Fast-paced endless running action</li>
-                <li>• Battle Grumble-Bots throughout the city</li>
-                <li>• Make kindness choices to help citizens</li>
-                <li>• Collect coins and help tokens</li>
-                <li>• Mobile-optimized touch controls</li>
+                <li>✨ Choose from 12 unique fighters!</li>
+                <li>⚡ Simple punch, kick, and jump controls</li>
+                <li>🏆 Battle in colorful arenas</li>
+                <li>🎮 Easy to play for all ages</li>
+                <li>🌟 Unlock more fighters as you play!</li>
               </ul>
             </div>
             
             {/* Instructions */}
             <div className="text-xs text-gray-500 text-center">
-              <p>Tap to jump • Swipe down to slide • Swipe left/right to change lanes</p>
+              <p>Arrow Keys to Move • Space to Jump • J to Punch • K to Kick</p>
             </div>
           </CardContent>
         </Card>
