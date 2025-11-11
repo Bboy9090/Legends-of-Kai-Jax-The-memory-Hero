@@ -405,9 +405,13 @@ export const useRunner = create<RunnerState>()(
     
     addScore: (points) => {
       const { stats } = get();
+      const newScore = stats.score + points;
       set({
-        stats: { ...stats, score: stats.score + points }
+        stats: { ...stats, score: newScore }
       });
+      
+      // Check for accessory unlocks
+      get().checkAndUnlockAccessories();
     },
     
     collectCoin: () => {

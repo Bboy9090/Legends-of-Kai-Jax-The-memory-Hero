@@ -10,6 +10,7 @@ import MainMenu from "./components/game/MainMenu";
 import CharacterSelect from "./components/game/CharacterSelect";
 import ChoiceMode from "./components/game/ChoiceMode";
 import AIAssistantDemo from "./components/game/AIAssistantDemo";
+import CustomizationMenu from "./components/game/CustomizationMenu";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 
@@ -67,6 +68,9 @@ function App() {
         
         {/* Character Selection */}
         {phase === 'ready' && gameState === 'character-select' && <CharacterSelect />}
+        
+        {/* Customization Menu */}
+        {phase === 'ready' && gameState === 'customization' && <CustomizationMenu />}
         
         {/* AI Assistant */}
         {phase === 'ready' && gameState === 'ai-assistant' && <AIAssistantDemo />}
