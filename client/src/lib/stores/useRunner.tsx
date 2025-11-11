@@ -92,6 +92,14 @@ interface RunnerState {
   toyChaseActive: boolean; // "I got the toy!" mode
   dogZoomiesActive: boolean; // Chaos mode with dog
   
+  // Cosmetics & Customization
+  equippedCosmetics: {
+    jaxon: EquippedCosmetics;
+    kaison: EquippedCosmetics;
+  };
+  unlockedAccessories: string[]; // IDs of unlocked accessories
+  highScore: number; // Track for unlocking accessories
+  
   // Game settings
   baseSpeed: number;
   lanes: number[];
@@ -145,6 +153,12 @@ interface RunnerState {
   chargeWebKick: (delta: number) => void;
   releaseWebKick: () => void;
   fireEnergyBlast: (direction: [number, number]) => void;
+  
+  // Cosmetic Actions
+  equipAccessory: (character: Character, accessoryId: string, slot: keyof EquippedCosmetics) => void;
+  unequipAccessory: (character: Character, slot: keyof EquippedCosmetics) => void;
+  unlockAccessory: (accessoryId: string) => void;
+  checkAndUnlockAccessories: () => void;
 }
 
 const initialPlayerState: PlayerState = {
@@ -232,6 +246,14 @@ export const useRunner = create<RunnerState>()(
     pillowMountainHeight: 0,
     toyChaseActive: false,
     dogZoomiesActive: false,
+    
+    // Cosmetics & Customization
+    equippedCosmetics: {
+      jaxon: {},
+      kaison: {}
+    },
+    unlockedAccessories: ['cap_red', 'cap_cyan', 'belt_utility'], // Start with basic items unlocked
+    highScore: 0,
     
     baseSpeed: 10,
     lanes: [-4, 0, 4],
@@ -962,6 +984,72 @@ export const useRunner = create<RunnerState>()(
           }
         });
       }, 300);
+    },
+    
+    // Cosmetic System Implementation
+    equipAccessory: (character, accessoryId, slot) => {
+      const { equippedCosmetics } = get();
+      
+      console.log(`Equipping ${accessoryId} to ${character}'s ${slot} slot`);
+      
+      set({
+        equippedCosmetics: {
+          ...equippedCosmetics,
+          [character]: {
+            ...equippedCosmetics[character],
+            [slot]: accessoryId
+          }
+        }
+      });
+    },
+    
+    unequipAccessory: (character, slot) => {
+      const { equippedCosmetics } = get();
+      
+      console.log(`Unequipping ${character}'s ${slot} slot`);
+      
+      const updatedCosmetics = { ...equippedCosmetics[character] };
+      delete updatedCosmetics[slot];
+      
+      set({
+        equippedCosmetics: {
+          ...equippedCosmetics,
+          [character]: updatedCosmetics
+        }
+      });
+    },
+    
+    unlockAccessory: (accessoryId) => {
+      const { unlockedAccessories } = get();
+      
+      if (!unlockedAccessories.includes(accessoryId)) {
+        console.log(`Unlocked new accessory: ${accessoryId}!`);
+        set({
+          unlockedAccessories: [...unlockedAccessories, accessoryId]
+        });
+      }
+    },
+    
+    checkAndUnlockAccessories: () => {
+      const { stats, highScore, unlockedAccessories } = get();
+      const currentScore = stats.score;
+      
+      // Update high score
+      if (currentScore > highScore) {
+        set({ highScore: currentScore });
+      }
+      
+      // Check all accessories and unlock based on score
+      import('../cosmetics').then(({ ACCESSORIES }) => {
+        ACCESSORIES.forEach(accessory => {
+          if (
+            currentScore >= accessory.unlockRequirement &&
+            !unlockedAccessories.includes(accessory.id)
+          ) {
+            get().unlockAccessory(accessory.id);
+          }
+        });
+      });
     }
   }))
 );
