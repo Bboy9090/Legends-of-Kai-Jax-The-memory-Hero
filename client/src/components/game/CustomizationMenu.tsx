@@ -25,7 +25,7 @@ export default function CustomizationMenu() {
   ];
   
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-cyan-900 text-white overflow-auto">
+    <div className="min-h-screen w-full bg-gradient-to-br from-purple-900 via-blue-900 to-cyan-900 text-white">
       {/* Header */}
       <div className="bg-black/40 border-b-4 border-cyan-400 p-6">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -46,7 +46,7 @@ export default function CustomizationMenu() {
       </div>
 
       
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 pb-8 sm:pb-24">
         {/* Fighter Categories */}
         {categories.map(category => {
           const categoryFighters = FIGHTERS.filter(f => f.category === category.id);

@@ -44,8 +44,8 @@ export default function CharacterSelect() {
   ];
   
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 p-2 sm:p-4 overflow-auto">
-      <div className="w-full max-w-6xl mx-auto pb-24">
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 p-2 sm:p-4">
+      <div className="w-full max-w-6xl mx-auto pb-8 sm:pb-24">
         <Card className="bg-black/40 backdrop-blur-lg border-2 sm:border-4 border-yellow-400">
           <CardHeader className="text-center relative border-b-2 sm:border-b-4 border-yellow-400/30 p-3 sm:p-6">
             <Button 
