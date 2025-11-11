@@ -69,9 +69,9 @@ function App() {
   return (
     <div style={{ 
       width: '100vw', 
-      height: '100vh', 
+      minHeight: '100vh', 
       position: 'relative', 
-      overflow: 'hidden',
+      overflow: 'auto',
       background: 'linear-gradient(to bottom, #87CEEB, #98FB98)'
     }}>
       <KeyboardControls map={controls}>

@@ -17,7 +17,7 @@ export default function MainMenu() {
   };
   
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 relative overflow-hidden p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 relative p-4">
       {/* Animated background elements */}
       <div className="absolute inset-0">
         {/* Floating clouds */}
@@ -55,7 +55,7 @@ export default function MainMenu() {
             </p>
           </CardHeader>
           
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
             {/* Character icons */}
             <div className="flex justify-center gap-4 mb-6">
               <div className="text-center">
