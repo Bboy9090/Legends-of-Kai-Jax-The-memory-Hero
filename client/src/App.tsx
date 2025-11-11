@@ -8,8 +8,6 @@ import TouchControls from "./components/game/TouchControls";
 import GameUI from "./components/game/GameUI";
 import MainMenu from "./components/game/MainMenu";
 import CharacterSelect from "./components/game/CharacterSelect";
-import ChoiceMode from "./components/game/ChoiceMode";
-import AIAssistantDemo from "./components/game/AIAssistantDemo";
 import CustomizationMenu from "./components/game/CustomizationMenu";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
@@ -72,9 +70,6 @@ function App() {
         {/* Customization Menu */}
         {phase === 'ready' && gameState === 'customization' && <CustomizationMenu />}
         
-        {/* AI Assistant */}
-        {phase === 'ready' && gameState === 'ai-assistant' && <AIAssistantDemo />}
-        
         {/* Game Canvas */}
         {(phase === 'playing' || phase === 'ended') && (
           <>
@@ -103,9 +98,6 @@ function App() {
             
             {/* Touch Controls */}
             <TouchControls />
-            
-            {/* Choice Mode Overlay */}
-            {inChoiceMode && <ChoiceMode />}
           </>
         )}
       </KeyboardControls>
