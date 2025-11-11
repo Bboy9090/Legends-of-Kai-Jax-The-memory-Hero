@@ -54,6 +54,11 @@ export default function BattlePlayer() {
   const hitAnimRef = useRef(0);
   const prevHealthRef = useRef(100);
   
+  // LEGENDARY ANIMATION SYSTEM - Attack phases for smooth transitions!
+  const attackPhaseRef = useRef<'windup' | 'active' | 'recovery' | null>(null);
+  const attackPhaseTimeRef = useRef(0);
+  const emotionIntensityRef = useRef(0); // For facial expressions!
+  
   const [, getKeys] = useKeyboardControls<Controls>();
   
   const fighter = getFighterById(playerFighterId);
@@ -138,11 +143,40 @@ export default function BattlePlayer() {
       useBattle.setState({ playerGrounded: true });
     }
     
-    // Detect hit (health decreased)
+    // Detect hit (health decreased) - INTENSE FACIAL REACTION!
     if (playerHealth < prevHealthRef.current) {
       hitAnimRef.current = 0.3; // Hit reaction duration
+      emotionIntensityRef.current = 1.0; // MAX emotion - pain/anger!
     }
     prevHealthRef.current = playerHealth;
+    
+    // Fade emotion intensity over time
+    if (emotionIntensityRef.current > 0) {
+      emotionIntensityRef.current = Math.max(0, emotionIntensityRef.current - scaledDelta * 2);
+    }
+    
+    // ATTACK PHASE SYSTEM - Smooth wind-up, active, recovery!
+    if (playerAttacking && playerAttackType) {
+      attackPhaseTimeRef.current += scaledDelta;
+      
+      const windupDuration = 0.1;  // Quick wind-up
+      const activeDuration = 0.25; // Extended strike
+      const recoveryDuration = 0.15; // Quick recovery
+      
+      if (attackPhaseTimeRef.current < windupDuration) {
+        attackPhaseRef.current = 'windup';
+        emotionIntensityRef.current = 0.5; // Focus
+      } else if (attackPhaseTimeRef.current < windupDuration + activeDuration) {
+        attackPhaseRef.current = 'active';
+        emotionIntensityRef.current = 1.0; // MAX power!
+      } else {
+        attackPhaseRef.current = 'recovery';
+        emotionIntensityRef.current = 0.2; // Cooldown
+      }
+    } else {
+      attackPhaseRef.current = null;
+      attackPhaseTimeRef.current = 0;
+    }
     
     // Animate character
     if (bodyRef.current && headRef.current && leftArmRef.current && rightArmRef.current && 
@@ -158,35 +192,88 @@ export default function BattlePlayer() {
         bodyRef.current.rotation.z = 0;
       }
       
-      // Attack animations - SUPER EXAGGERATED FOR VISIBILITY!
-      if (playerAttacking && playerAttackType) {
+      // LEGENDARY ATTACK ANIMATIONS - Wind-up → Active → Recovery!
+      if (playerAttacking && playerAttackType && attackPhaseRef.current) {
         const attackTime = animTimeRef.current * 15;
+        const phase = attackPhaseRef.current;
+        
+        // Calculate smooth interpolation factors
+        const windupProgress = phase === 'windup' ? (attackPhaseTimeRef.current / 0.1) : 1.0;
+        const recoveryProgress = phase === 'recovery' ? (attackPhaseTimeRef.current - 0.35) / 0.15 : 0.0;
         
         if (playerAttackType === 'punch') {
-          // PUNCH - SUPER extended arm with body lean!
-          rightArmRef.current.rotation.z = -Math.PI / 1.5; // More rotation!
-          rightArmRef.current.position.x = 1.5; // WAY further out!
-          rightArmRef.current.position.z = 0.5; // Forward thrust!
-          bodyRef.current.rotation.y = 0.4; // Bigger body rotation!
-          bodyRef.current.position.x = 0.3; // Lean into punch!
-          leftArmRef.current.rotation.z = Math.PI / 4; // Opposite arm back
+          if (phase === 'windup') {
+            // WIND-UP - Pull fist back!
+            const pullback = windupProgress;
+            rightArmRef.current.rotation.z = -Math.PI / 6 * pullback;
+            rightArmRef.current.position.x = -0.3 * pullback;
+            bodyRef.current.rotation.y = -0.2 * pullback;
+          } else if (phase === 'active') {
+            // ACTIVE - EXPLOSIVE PUNCH!
+            rightArmRef.current.rotation.z = -Math.PI / 1.5;
+            rightArmRef.current.position.x = 1.5;
+            rightArmRef.current.position.z = 0.5;
+            bodyRef.current.rotation.y = 0.4;
+            bodyRef.current.position.x = 0.3;
+            leftArmRef.current.rotation.z = Math.PI / 4;
+          } else {
+            // RECOVERY - Return to neutral
+            const ease = 1.0 - recoveryProgress;
+            rightArmRef.current.rotation.z = -Math.PI / 1.5 * ease;
+            rightArmRef.current.position.x = 1.5 * ease;
+            rightArmRef.current.position.z = 0.5 * ease;
+            bodyRef.current.rotation.y = 0.4 * ease;
+            bodyRef.current.position.x = 0.3 * ease;
+          }
         } else if (playerAttackType === 'kick') {
-          // KICK - DRAMATIC flying kick!
-          rightLegRef.current.rotation.x = Math.PI / 2; // HUGE leg extension!
-          rightLegRef.current.position.z = 1.2; // Leg WAY out front!
-          bodyRef.current.rotation.x = -0.5; // Lean back!
-          bodyRef.current.position.y = 0.4; // Lift body up!
-          leftArmRef.current.rotation.z = Math.PI / 3; // Arms for balance
-          rightArmRef.current.rotation.z = -Math.PI / 3;
+          if (phase === 'windup') {
+            // WIND-UP - Crouch and pull leg back!
+            const pullback = windupProgress;
+            bodyRef.current.position.y = -0.2 * pullback;
+            rightLegRef.current.rotation.x = -Math.PI / 6 * pullback;
+            bodyRef.current.rotation.x = 0.2 * pullback;
+          } else if (phase === 'active') {
+            // ACTIVE - POWERFUL KICK!
+            rightLegRef.current.rotation.x = Math.PI / 2;
+            rightLegRef.current.position.z = 1.2;
+            bodyRef.current.rotation.x = -0.5;
+            bodyRef.current.position.y = 0.4;
+            leftArmRef.current.rotation.z = Math.PI / 3;
+            rightArmRef.current.rotation.z = -Math.PI / 3;
+          } else {
+            // RECOVERY
+            const ease = 1.0 - recoveryProgress;
+            rightLegRef.current.rotation.x = Math.PI / 2 * ease;
+            rightLegRef.current.position.z = 1.2 * ease;
+            bodyRef.current.rotation.x = -0.5 * ease;
+            bodyRef.current.position.y = 0.4 * ease;
+          }
         } else if (playerAttackType === 'special') {
-          // SPECIAL - EXPLOSIVE energy pose!
-          leftArmRef.current.rotation.z = Math.PI / 1.5; // Arms WIDE!
-          rightArmRef.current.rotation.z = -Math.PI / 1.5;
-          leftArmRef.current.position.y = 0.3;
-          rightArmRef.current.position.y = 0.3;
-          bodyRef.current.position.y = 0.5 + Math.sin(attackTime) * 0.3; // BIG bounce!
-          bodyRef.current.rotation.y = Math.sin(attackTime) * 0.4; // Spinning motion!
-          bodyRef.current.scale.setScalar(1.0 + Math.sin(attackTime * 2) * 0.15); // Pulsing!
+          if (phase === 'windup') {
+            // WIND-UP - Charge energy!
+            const charge = windupProgress;
+            bodyRef.current.scale.setScalar(1.0 - charge * 0.1); // Compress
+            bodyRef.current.position.y = -0.2 * charge; // Crouch
+            leftArmRef.current.rotation.z = charge * Math.PI / 6;
+            rightArmRef.current.rotation.z = -charge * Math.PI / 6;
+          } else if (phase === 'active') {
+            // ACTIVE - EXPLOSIVE SPECIAL!
+            leftArmRef.current.rotation.z = Math.PI / 1.5;
+            rightArmRef.current.rotation.z = -Math.PI / 1.5;
+            leftArmRef.current.position.y = 0.3;
+            rightArmRef.current.position.y = 0.3;
+            bodyRef.current.position.y = 0.5 + Math.sin(attackTime) * 0.3;
+            bodyRef.current.rotation.y = Math.sin(attackTime) * 0.4;
+            bodyRef.current.scale.setScalar(1.0 + Math.sin(attackTime * 2) * 0.15);
+          } else {
+            // RECOVERY
+            const ease = 1.0 - recoveryProgress;
+            leftArmRef.current.rotation.z = Math.PI / 1.5 * ease;
+            rightArmRef.current.rotation.z = -Math.PI / 1.5 * ease;
+            bodyRef.current.position.y = 0.5 * ease;
+            bodyRef.current.rotation.y = Math.sin(attackTime) * 0.4 * ease;
+            bodyRef.current.scale.setScalar(1.0 + Math.sin(attackTime * 2) * 0.15 * ease);
+          }
         }
       } else {
         // Reset attack poses
@@ -239,42 +326,56 @@ export default function BattlePlayer() {
         <group ref={bodyRef} position={[0, 0.4, 0]}>
           {/* DETAILED HEAD */}
           <group ref={headRef} position={[0, 0.6, 0]}>
-            {/* Main head - hero helmet */}
+            {/* Main head - hero helmet with EMOTION! */}
             <mesh castShadow>
               <sphereGeometry args={[0.5, 32, 24]} />
               <meshToonMaterial 
                 color={fighter.color}
                 emissive={fighter.accentColor}
-                emissiveIntensity={playerInvulnerable ? 0.8 : 0.3}
+                emissiveIntensity={playerInvulnerable ? 0.8 : (0.3 + emotionIntensityRef.current * 0.4)}
               />
             </mesh>
             
-            {/* Helmet glow rim */}
-            <mesh scale={1.05}>
+            {/* Helmet glow rim - INTENSIFIES with emotion! */}
+            <mesh scale={1.05 + emotionIntensityRef.current * 0.1}>
               <sphereGeometry args={[0.5, 32, 24]} />
               <meshBasicMaterial 
                 color={fighter.accentColor}
                 transparent
-                opacity={0.3}
+                opacity={0.3 + emotionIntensityRef.current * 0.4}
                 depthWrite={false}
               />
             </mesh>
             
-            {/* Visor/Eyes - glowing! */}
+            {/* Visor/Eyes - BLAZING when emotional! */}
             <mesh position={[0.15, 0.1, 0.45]} castShadow>
               <boxGeometry args={[0.35, 0.15, 0.1]} />
               <meshBasicMaterial 
                 color={fighter.accentColor}
               />
             </mesh>
-            <mesh position={[0.15, 0.1, 0.46]} scale={1.1}>
+            <mesh position={[0.15, 0.1, 0.46]} scale={1.1 + emotionIntensityRef.current * 0.3}>
               <boxGeometry args={[0.35, 0.15, 0.05]} />
               <meshBasicMaterial 
-                color={fighter.accentColor}
+                color={hitAnimRef.current > 0 ? '#FF0000' : fighter.accentColor} // RED when hit!
                 transparent
-                opacity={0.6}
+                opacity={0.6 + emotionIntensityRef.current * 0.4}
               />
             </mesh>
+            
+            {/* EMOTION AURA - appears during intense moments! */}
+            {emotionIntensityRef.current > 0.5 && (
+              <mesh scale={1.2 + Math.sin(animTimeRef.current * 10) * 0.1}>
+                <sphereGeometry args={[0.5, 16, 12]} />
+                <meshBasicMaterial 
+                  color={hitAnimRef.current > 0 ? '#FF0000' : fighter.accentColor}
+                  transparent
+                  opacity={emotionIntensityRef.current * 0.3}
+                  depthWrite={false}
+                  blending={THREE.AdditiveBlending}
+                />
+              </mesh>
+            )}
             
             {/* Helmet detail stripe */}
             <mesh position={[0, 0.3, 0]} rotation={[0, 0, Math.PI / 6]}>
