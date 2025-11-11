@@ -196,11 +196,13 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
   
   playerJump: () => {
-    const { playerGrounded, playerVelocityY } = get();
+    const { playerGrounded, playerVelocityY, playerY } = get();
     if (playerGrounded && Math.abs(playerVelocityY) < 0.1) {
-      console.log("[Battle] Player jump");
+      console.log("[Battle] Player JUMPING!");
+      // PERFECT tuning: apex = 0.8 + 0.2 + 0.8 = 1.8 units, airtime = 0.8s
       set({ 
-        playerVelocityY: 12, 
+        playerY: playerY + 0.2, // Immediate lift
+        playerVelocityY: 4, // Balanced for 0.8s airtime & 1.8 unit apex
         playerGrounded: false 
       });
       
@@ -277,10 +279,11 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
   
   opponentJump: () => {
-    const { opponentGrounded, opponentVelocityY } = get();
+    const { opponentGrounded, opponentVelocityY, opponentY } = get();
     if (opponentGrounded && Math.abs(opponentVelocityY) < 0.1) {
       set({ 
-        opponentVelocityY: 12, 
+        opponentY: opponentY + 0.2, // Match player liftoff
+        opponentVelocityY: 4, // Match player velocity
         opponentGrounded: false 
       });
       

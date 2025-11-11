@@ -5,13 +5,21 @@ import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
 
+// Use the same Controls enum as App.tsx
 enum Controls {
   jump = 'jump',
   left = 'left',
   right = 'right',
   punch = 'punch',
   kick = 'kick',
-  special = 'special'
+  special = 'special',
+  pause = 'pause',
+  slide = 'slide',
+  dash = 'dash',
+  webSwing = 'webSwing',
+  chargeKick = 'chargeKick',
+  transform = 'transform',
+  energyBlast = 'energyBlast'
 }
 
 export default function BattlePlayer() {
@@ -76,26 +84,26 @@ export default function BattlePlayer() {
     animTimeRef.current += scaledDelta;
     const { left, right, jump, punch, kick, special } = getKeys();
     
-    // Apply time scale to movement and physics
-    const moveSpeed = 0.1 * timeScale;
-    const gravity = -0.5;
+    // Apply time scale to movement and physics  
+    const moveSpeed = 0.2 * timeScale; // DOUBLED movement speed for visibility!
+    const gravity = -10; // TUNED: Balanced for 0.8s airtime AND 1.8 unit apex!
     
     // Track movement
     isMovingRef.current = (left || right) && !playerAttacking;
     
-    // Horizontal movement (slowed by timeScale)
+    // Horizontal movement (slowed by timeScale) - ALWAYS use LATEST Y from store!
     if (left && !playerAttacking) {
-      movePlayer(-moveSpeed, playerY);
+      movePlayer(-moveSpeed, useBattle.getState().playerY);
     } else if (right && !playerAttacking) {
-      movePlayer(moveSpeed, playerY);
+      movePlayer(moveSpeed, useBattle.getState().playerY);
     }
     
-    // Jump
+    // Jump - NOW WORKS!
     if (jump) {
       playerJump();
     }
     
-    // Attacks
+    // Attacks - NOW MORE RESPONSIVE!
     if (punch && !playerAttacking) {
       playerAttack('punch');
     } else if (kick && !playerAttacking) {
@@ -104,9 +112,30 @@ export default function BattlePlayer() {
       playerAttack('special');
     }
     
-    // Apply gravity if in air (slowed by timeScale)
-    if (playerY > 0.8) {
-      movePlayer(0, Math.max(0.8, playerY + gravity * scaledDelta));
+    // Re-fetch COMPLETE state after all movements/actions
+    const freshState = useBattle.getState();
+    let currentY = freshState.playerY;
+    let velocityY = freshState.playerVelocityY;
+    
+    if (!freshState.playerGrounded) {
+      // Apply velocity to position (using FRESH Y from store)
+      const newY = currentY + velocityY * scaledDelta;
+      
+      // Apply gravity to velocity
+      velocityY += gravity * scaledDelta;
+      
+      // Check if landed
+      if (newY <= 0.8) {
+        movePlayer(0, 0.8);
+        useBattle.setState({ playerVelocityY: 0, playerGrounded: true });
+      } else {
+        movePlayer(0, newY);
+        useBattle.setState({ playerVelocityY: velocityY });
+      }
+    } else if (currentY > 0.8) {
+      // Fallback for edge cases
+      movePlayer(0, 0.8);
+      useBattle.setState({ playerGrounded: true });
     }
     
     // Detect hit (health decreased)
@@ -129,29 +158,40 @@ export default function BattlePlayer() {
         bodyRef.current.rotation.z = 0;
       }
       
-      // Attack animations
+      // Attack animations - SUPER EXAGGERATED FOR VISIBILITY!
       if (playerAttacking && playerAttackType) {
-        const attackTime = animTimeRef.current * 10;
+        const attackTime = animTimeRef.current * 15;
         
         if (playerAttackType === 'punch') {
-          // Punch - extend arm
-          rightArmRef.current.rotation.z = -Math.PI / 2;
-          rightArmRef.current.position.x = 0.8;
-          bodyRef.current.rotation.y = 0.2;
+          // PUNCH - SUPER extended arm with body lean!
+          rightArmRef.current.rotation.z = -Math.PI / 1.5; // More rotation!
+          rightArmRef.current.position.x = 1.5; // WAY further out!
+          rightArmRef.current.position.z = 0.5; // Forward thrust!
+          bodyRef.current.rotation.y = 0.4; // Bigger body rotation!
+          bodyRef.current.position.x = 0.3; // Lean into punch!
+          leftArmRef.current.rotation.z = Math.PI / 4; // Opposite arm back
         } else if (playerAttackType === 'kick') {
-          // Kick - extend leg
-          rightLegRef.current.rotation.x = Math.PI / 3;
-          bodyRef.current.rotation.x = -0.3;
+          // KICK - DRAMATIC flying kick!
+          rightLegRef.current.rotation.x = Math.PI / 2; // HUGE leg extension!
+          rightLegRef.current.position.z = 1.2; // Leg WAY out front!
+          bodyRef.current.rotation.x = -0.5; // Lean back!
+          bodyRef.current.position.y = 0.4; // Lift body up!
+          leftArmRef.current.rotation.z = Math.PI / 3; // Arms for balance
+          rightArmRef.current.rotation.z = -Math.PI / 3;
         } else if (playerAttackType === 'special') {
-          // Special - dramatic pose
-          leftArmRef.current.rotation.z = Math.PI / 2;
-          rightArmRef.current.rotation.z = -Math.PI / 2;
-          bodyRef.current.position.y = 0.2 + Math.sin(attackTime) * 0.1;
-          bodyRef.current.rotation.y = Math.sin(attackTime) * 0.2;
+          // SPECIAL - EXPLOSIVE energy pose!
+          leftArmRef.current.rotation.z = Math.PI / 1.5; // Arms WIDE!
+          rightArmRef.current.rotation.z = -Math.PI / 1.5;
+          leftArmRef.current.position.y = 0.3;
+          rightArmRef.current.position.y = 0.3;
+          bodyRef.current.position.y = 0.5 + Math.sin(attackTime) * 0.3; // BIG bounce!
+          bodyRef.current.rotation.y = Math.sin(attackTime) * 0.4; // Spinning motion!
+          bodyRef.current.scale.setScalar(1.0 + Math.sin(attackTime * 2) * 0.15); // Pulsing!
         }
       } else {
         // Reset attack poses
         bodyRef.current.rotation.x = 0;
+        bodyRef.current.scale.setScalar(1.0);
         bodyRef.current.rotation.y = 0;
         
         if (isMovingRef.current) {
