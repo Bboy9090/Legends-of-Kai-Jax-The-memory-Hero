@@ -18,7 +18,8 @@ export default function BattleUI() {
     playerWins,
     opponentWins,
     battleScore,
-    resetRound
+    resetRound,
+    returnToMenu
   } = useBattle();
   
   const { end } = useGame();
@@ -29,6 +30,8 @@ export default function BattleUI() {
   const handleReturnToMenu = () => {
     // Save score
     addScore(battleScore);
+    // Stop battle music
+    returnToMenu();
     // Return to menu
     end();
     setGameState('menu');

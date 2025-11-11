@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { getFighterById } from "../characters";
 import { getArenaById } from "../arenas";
+import { useAudio } from "./useAudio";
 
 export interface BattleState {
   // Selected fighters
@@ -132,6 +133,9 @@ export const useBattle = create<BattleState>((set, get) => ({
       opponentY: 0.8,
       winner: null
     });
+    
+    // Start epic battle music!
+    useAudio.getState().startBattleMusic();
   },
   
   resetRound: () => {
@@ -196,6 +200,9 @@ export const useBattle = create<BattleState>((set, get) => ({
         playerVelocityY: 12, 
         playerGrounded: false 
       });
+      
+      // Play jump sound
+      useAudio.getState().playJump();
     }
   },
   
@@ -208,6 +215,12 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerAttacking: true, 
       playerAttackType: type 
     });
+    
+    // Play attack sound
+    const audio = useAudio.getState();
+    if (type === 'punch') audio.playPunch();
+    else if (type === 'kick') audio.playKick();
+    else if (type === 'special') audio.playSpecial();
     
     // Check if hit opponent
     const { playerX, opponentX, opponentInvulnerable } = get();
@@ -235,6 +248,9 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerHealth: newHealth,
       playerInvulnerable: true
     });
+    
+    // Play hit sound
+    useAudio.getState().playHit();
     
     // Brief invulnerability
     setTimeout(() => {
@@ -264,6 +280,9 @@ export const useBattle = create<BattleState>((set, get) => ({
         opponentVelocityY: 12, 
         opponentGrounded: false 
       });
+      
+      // Play jump sound
+      useAudio.getState().playJump();
     }
   },
   
@@ -275,6 +294,12 @@ export const useBattle = create<BattleState>((set, get) => ({
       opponentAttacking: true, 
       opponentAttackType: type 
     });
+    
+    // Play attack sound
+    const audio = useAudio.getState();
+    if (type === 'punch') audio.playPunch();
+    else if (type === 'kick') audio.playKick();
+    else if (type === 'special') audio.playSpecial();
     
     // Check if hit player
     const { playerX, opponentX, playerInvulnerable } = get();
@@ -302,6 +327,9 @@ export const useBattle = create<BattleState>((set, get) => ({
       opponentInvulnerable: true
     });
     
+    // Play hit sound
+    useAudio.getState().playHit();
+    
     setTimeout(() => {
       set({ opponentInvulnerable: false });
     }, 500);
@@ -318,6 +346,9 @@ export const useBattle = create<BattleState>((set, get) => ({
       winner 
     });
     
+    // Play KO sound
+    useAudio.getState().playKO();
+    
     // Update wins and score
     const newBattleScore = winner === 'player' ? get().battleScore + 100 : get().battleScore;
     const newPlayerWins = winner === 'player' ? get().playerWins + 1 : get().playerWins;
@@ -333,12 +364,17 @@ export const useBattle = create<BattleState>((set, get) => ({
     // Show results after KO animation
     setTimeout(() => {
       set({ battlePhase: 'results' });
+      // Play victory sound for winner
+      if (winner === 'player') {
+        useAudio.getState().playVictory();
+      }
     }, 2000);
   },
   
   returnToMenu: () => {
     console.log("[Battle] Returning to menu");
-    // This will be called from GameUI
+    // Stop battle music
+    useAudio.getState().stopBattleMusic();
   },
   
   setPlayerFighter: (fighterId) => {
