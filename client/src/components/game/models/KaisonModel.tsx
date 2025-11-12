@@ -80,50 +80,77 @@ export default function KaisonModel({
           <meshBasicMaterial color={secondaryColor} />
         </mesh>
         
-        {/* SONIC-STYLE BLUE QUILLS - Speed oriented */}
-        {/* Top center quill */}
-        <mesh position={[0, 0.15, -0.45]} rotation={[Math.PI / 2.5, 0, 0]} castShadow>
-          <coneGeometry args={[0.14, 0.55, 8]} />
+        {/* MASSIVE SONIC-STYLE BLUE QUILLS - Super visible! */}
+        {/* Top center quill - HUGE */}
+        <mesh position={[0, 0.25, -0.55]} rotation={[Math.PI / 2.2, 0, 0]} castShadow>
+          <coneGeometry args={[0.20, 0.85, 8]} />
           <meshToonMaterial 
             color={primaryColor}
             emissive={speedColor}
-            emissiveIntensity={0.3 + emotionIntensity * 0.3}
+            emissiveIntensity={0.5 + emotionIntensity * 0.4}
           />
         </mesh>
         
-        {/* Back quills - Sonic's three main spikes */}
-        {[-0.25, 0, 0.25].map((xOffset, i) => (
+        {/* Back quills - Sonic's three MASSIVE main spikes */}
+        {[-0.35, 0, 0.35].map((xOffset, i) => (
           <mesh 
             key={`quill-${i}`}
-            position={[xOffset, 0.05, -0.42]} 
-            rotation={[Math.PI / 2.8, 0, xOffset * 0.4]}
+            position={[xOffset, 0.15, -0.50]} 
+            rotation={[Math.PI / 2.5, 0, xOffset * 0.5]}
             castShadow
           >
-            <coneGeometry args={[0.13, 0.5, 8]} />
+            <coneGeometry args={[0.18, 0.75, 8]} />
             <meshToonMaterial 
               color={primaryColor}
               emissive={speedColor}
-              emissiveIntensity={0.25 + emotionIntensity * 0.3}
+              emissiveIntensity={0.4 + emotionIntensity * 0.4}
             />
           </mesh>
         ))}
         
-        {/* Side quills for dynamic look */}
-        <mesh position={[-0.42, 0, -0.2]} rotation={[0, -Math.PI / 6, -Math.PI / 3]} castShadow>
-          <coneGeometry args={[0.11, 0.45, 8]} />
+        {/* Side quills - VERY prominent! */}
+        <mesh position={[-0.50, 0.05, -0.25]} rotation={[0, -Math.PI / 5, -Math.PI / 2.5]} castShadow>
+          <coneGeometry args={[0.15, 0.65, 8]} />
           <meshToonMaterial 
             color={primaryColor}
             emissive={speedColor}
-            emissiveIntensity={0.2 + emotionIntensity * 0.3}
+            emissiveIntensity={0.35 + emotionIntensity * 0.4}
           />
         </mesh>
-        <mesh position={[0.42, 0, -0.2]} rotation={[0, Math.PI / 6, Math.PI / 3]} castShadow>
-          <coneGeometry args={[0.11, 0.45, 8]} />
+        <mesh position={[0.50, 0.05, -0.25]} rotation={[0, Math.PI / 5, Math.PI / 2.5]} castShadow>
+          <coneGeometry args={[0.15, 0.65, 8]} />
           <meshToonMaterial 
             color={primaryColor}
             emissive={speedColor}
-            emissiveIntensity={0.2 + emotionIntensity * 0.3}
+            emissiveIntensity={0.35 + emotionIntensity * 0.4}
           />
+        </mesh>
+        
+        {/* HEDGEHOG EARS - Round and fuzzy */}
+        <mesh position={[-0.35, 0.25, 0.15]} rotation={[0, -Math.PI / 6, Math.PI / 6]} castShadow>
+          <sphereGeometry args={[0.18, 16, 12]} />
+          <meshToonMaterial 
+            color={primaryColor}
+            emissive={speedColor}
+            emissiveIntensity={0.2}
+          />
+        </mesh>
+        <mesh position={[0.35, 0.25, 0.15]} rotation={[0, Math.PI / 6, -Math.PI / 6]} castShadow>
+          <sphereGeometry args={[0.18, 16, 12]} />
+          <meshToonMaterial 
+            color={primaryColor}
+            emissive={speedColor}
+            emissiveIntensity={0.2}
+          />
+        </mesh>
+        {/* Inner ear pink */}
+        <mesh position={[-0.35, 0.25, 0.20]} rotation={[0, -Math.PI / 6, Math.PI / 6]} castShadow>
+          <sphereGeometry args={[0.10, 12, 10]} />
+          <meshToonMaterial color="#FFB6C1" />
+        </mesh>
+        <mesh position={[0.35, 0.25, 0.20]} rotation={[0, Math.PI / 6, -Math.PI / 6]} castShadow>
+          <sphereGeometry args={[0.10, 12, 10]} />
+          <meshToonMaterial color="#FFB6C1" />
         </mesh>
         
         {/* TAILS-INSPIRED TWIN TAILS (fox tails on sides) */}

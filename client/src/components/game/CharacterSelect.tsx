@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { ArrowLeft, Lock } from "lucide-react";
 import { useState } from "react";
 import { FIGHTERS, Fighter, getFighterById } from "../../lib/characters";
+import CharacterPreview3D from "./CharacterPreview3D";
 
 export default function CharacterSelect() {
   const { selectedCharacter, setCharacter, setGameState, stats } = useRunner();
@@ -43,10 +44,20 @@ export default function CharacterSelect() {
     { name: 'Legends', id: 'legends' as const, color: 'from-purple-500 to-pink-500' }
   ];
   
+  // Determine which fighter to preview
+  const previewFighter = hoveredFighter 
+    ? getFighterById(hoveredFighter) 
+    : selectedCharacter 
+      ? getFighterById(selectedCharacter)
+      : FIGHTERS.find(f => f.unlocked); // Default to first unlocked fighter
+  
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 p-2 sm:p-4">
-      <div className="w-full max-w-6xl mx-auto pb-8 sm:pb-24">
-        <Card className="bg-black/40 backdrop-blur-lg border-2 sm:border-4 border-yellow-400">
+      <div className="w-full max-w-7xl mx-auto pb-8 sm:pb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Main character selection panel */}
+          <div className="lg:col-span-2">
+            <Card className="bg-black/40 backdrop-blur-lg border-2 sm:border-4 border-yellow-400">
           <CardHeader className="text-center relative border-b-2 sm:border-b-4 border-yellow-400/30 p-3 sm:p-6">
             <Button 
               variant="outline" 
@@ -88,6 +99,8 @@ export default function CharacterSelect() {
                             locked ? 'opacity-50' : 'active:scale-95'
                           }`}
                           onClick={() => !locked && handleFighterSelect(fighter)}
+                          onMouseEnter={() => !locked && setHoveredFighter(fighter.id)}
+                          onMouseLeave={() => setHoveredFighter(null)}
                         >
                           <Card className={`
                             ${selected ? 'ring-2 sm:ring-4 ring-yellow-400 bg-yellow-400/20' : 'bg-gray-800/50'}
@@ -208,6 +221,22 @@ export default function CharacterSelect() {
             </div>
           </CardContent>
         </Card>
+        </div>
+        
+        {/* 3D Character Preview Panel - Mortal Kombat Style! */}
+          <div className="lg:col-span-1">
+            <Card className="bg-black/50 backdrop-blur-lg border-2 sm:border-4 border-cyan-400 h-full min-h-[400px] lg:min-h-[600px] sticky top-4">
+              <CardHeader className="text-center border-b-2 border-cyan-400/30 p-3">
+                <CardTitle className="text-xl sm:text-2xl font-bold text-cyan-300">
+                  {previewFighter ? previewFighter.displayName : 'Select Fighter'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 h-[350px] lg:h-[500px]">
+                {previewFighter && <CharacterPreview3D fighter={previewFighter} />}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

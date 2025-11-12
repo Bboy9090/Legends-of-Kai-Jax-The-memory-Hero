@@ -72,40 +72,67 @@ export default function JaxonModel({
           <meshBasicMaterial color={primaryColor} />
         </mesh>
         
-        {/* SHADOW-STYLE BLACK SPIKY QUILLS */}
-        {/* Back quills - 5 spikes forming Shadow's iconic look */}
-        {[-0.3, -0.15, 0, 0.15, 0.3].map((xOffset, i) => (
+        {/* MASSIVE SHADOW-STYLE BLACK SPIKY QUILLS - Angular and edgy! */}
+        {/* Back quills - 5 HUGE angular spikes forming Shadow's iconic look */}
+        {[-0.40, -0.20, 0, 0.20, 0.40].map((xOffset, i) => (
           <mesh 
             key={`quill-${i}`}
-            position={[xOffset, 0.1, -0.4]} 
-            rotation={[Math.PI / 3, 0, xOffset * 0.3]}
+            position={[xOffset, 0.20, -0.48]} 
+            rotation={[Math.PI / 2.8, 0, xOffset * 0.4]}
             castShadow
           >
-            <coneGeometry args={[0.12, 0.5, 8]} />
+            <coneGeometry args={[0.16, 0.70, 6]} />
             <meshToonMaterial 
               color={secondaryColor}
               emissive="#FF0000"
-              emissiveIntensity={emotionIntensity * 0.5}
+              emissiveIntensity={0.3 + emotionIntensity * 0.6}
             />
           </mesh>
         ))}
         
-        {/* Side quills */}
-        <mesh position={[-0.45, 0.05, -0.2]} rotation={[0, 0, -Math.PI / 4]} castShadow>
-          <coneGeometry args={[0.10, 0.4, 8]} />
+        {/* Side quills - Angular and sharp! */}
+        <mesh position={[-0.52, 0.10, -0.25]} rotation={[0, -Math.PI / 6, -Math.PI / 2.2]} castShadow>
+          <coneGeometry args={[0.14, 0.60, 6]} />
           <meshToonMaterial 
             color={secondaryColor}
             emissive="#FF0000"
-            emissiveIntensity={emotionIntensity * 0.4}
+            emissiveIntensity={0.25 + emotionIntensity * 0.5}
           />
         </mesh>
-        <mesh position={[0.45, 0.05, -0.2]} rotation={[0, 0, Math.PI / 4]} castShadow>
-          <coneGeometry args={[0.10, 0.4, 8]} />
+        <mesh position={[0.52, 0.10, -0.25]} rotation={[0, Math.PI / 6, Math.PI / 2.2]} castShadow>
+          <coneGeometry args={[0.14, 0.60, 6]} />
           <meshToonMaterial 
             color={secondaryColor}
             emissive="#FF0000"
-            emissiveIntensity={emotionIntensity * 0.4}
+            emissiveIntensity={0.25 + emotionIntensity * 0.5}
           />
+        </mesh>
+        
+        {/* HEDGEHOG EARS - Darker, edgier */}
+        <mesh position={[-0.35, 0.28, 0.12]} rotation={[0, -Math.PI / 6, Math.PI / 6]} castShadow>
+          <sphereGeometry args={[0.18, 16, 12]} />
+          <meshToonMaterial 
+            color={secondaryColor}
+            emissive="#8B0000"
+            emissiveIntensity={0.2}
+          />
+        </mesh>
+        <mesh position={[0.35, 0.28, 0.12]} rotation={[0, Math.PI / 6, -Math.PI / 6]} castShadow>
+          <sphereGeometry args={[0.18, 16, 12]} />
+          <meshToonMaterial 
+            color={secondaryColor}
+            emissive="#8B0000"
+            emissiveIntensity={0.2}
+          />
+        </mesh>
+        {/* Inner ear - dark red */}
+        <mesh position={[-0.35, 0.28, 0.17]} rotation={[0, -Math.PI / 6, Math.PI / 6]} castShadow>
+          <sphereGeometry args={[0.10, 12, 10]} />
+          <meshToonMaterial color="#8B0000" />
+        </mesh>
+        <mesh position={[0.35, 0.28, 0.17]} rotation={[0, Math.PI / 6, -Math.PI / 6]} castShadow>
+          <sphereGeometry args={[0.10, 12, 10]} />
+          <meshToonMaterial color="#8B0000" />
         </mesh>
         
         {/* Face - tan/peach skin tone */}

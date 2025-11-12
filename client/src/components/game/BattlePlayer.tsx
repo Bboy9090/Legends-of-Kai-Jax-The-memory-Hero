@@ -229,11 +229,11 @@ export default function BattlePlayer() {
           }
         } else if (playerAttackType === 'kick') {
           if (phase === 'windup') {
-            // WIND-UP - Crouch and pull leg back!
+            // WIND-UP - Pull leg back (NO crouch to prevent ground sinking)
             const pullback = windupProgress;
-            bodyRef.current.position.y = -0.2 * pullback;
             rightLegRef.current.rotation.x = -Math.PI / 6 * pullback;
             bodyRef.current.rotation.x = 0.2 * pullback;
+            leftArmRef.current.rotation.z = Math.PI / 6 * pullback;
           } else if (phase === 'active') {
             // ACTIVE - POWERFUL KICK!
             rightLegRef.current.rotation.x = Math.PI / 2;
@@ -252,12 +252,12 @@ export default function BattlePlayer() {
           }
         } else if (playerAttackType === 'special') {
           if (phase === 'windup') {
-            // WIND-UP - Charge energy!
+            // WIND-UP - Charge energy (NO crouch to prevent ground sinking)
             const charge = windupProgress;
             bodyRef.current.scale.setScalar(1.0 - charge * 0.1); // Compress
-            bodyRef.current.position.y = -0.2 * charge; // Crouch
             leftArmRef.current.rotation.z = charge * Math.PI / 6;
             rightArmRef.current.rotation.z = -charge * Math.PI / 6;
+            headRef.current.rotation.x = -charge * 0.3; // Lean head back
           } else if (phase === 'active') {
             // ACTIVE - EXPLOSIVE SPECIAL!
             leftArmRef.current.rotation.z = Math.PI / 1.5;
