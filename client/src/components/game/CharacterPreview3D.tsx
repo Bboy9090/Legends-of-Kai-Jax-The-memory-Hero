@@ -4,6 +4,16 @@ import { Suspense, useRef } from "react";
 import { Fighter } from "../../lib/characters";
 import JaxonModel from "./models/JaxonModel";
 import KaisonModel from "./models/KaisonModel";
+import SpeedyModel from "./models/SpeedyModel";
+import MarloModel from "./models/MarloModel";
+import LeonardoModel from "./models/LeonardoModel";
+import MidnightModel from "./models/MidnightModel";
+import FlynnModel from "./models/FlynnModel";
+import SparkyModel from "./models/SparkyModel";
+import BubbleModel from "./models/BubbleModel";
+import KingSpikeModel from "./models/KingSpikeModel";
+import CaptainBlazeModel from "./models/CaptainBlazeModel";
+import NovaKnightModel from "./models/NovaKnightModel";
 import { Group } from "three";
 
 interface CharacterPreview3DProps {
@@ -33,13 +43,35 @@ export default function CharacterPreview3D({ fighter }: CharacterPreview3DProps)
       isInvulnerable: false
     };
 
-    if (fighter.id === 'jaxon') {
-      return <JaxonModel {...modelProps} />;
-    } else if (fighter.id === 'kaison') {
-      return <KaisonModel {...modelProps} />;
+    // Render specific character models
+    switch (fighter.id) {
+      case 'jaxon':
+        return <JaxonModel {...modelProps} />;
+      case 'kaison':
+        return <KaisonModel {...modelProps} />;
+      case 'speedy':
+        return <SpeedyModel {...modelProps} />;
+      case 'marlo':
+        return <MarloModel {...modelProps} />;
+      case 'leonardo':
+        return <LeonardoModel {...modelProps} />;
+      case 'midnight':
+        return <MidnightModel {...modelProps} />;
+      case 'flynn':
+        return <FlynnModel {...modelProps} />;
+      case 'sparky':
+        return <SparkyModel {...modelProps} />;
+      case 'bubble':
+        return <BubbleModel {...modelProps} />;
+      case 'kingspike':
+        return <KingSpikeModel {...modelProps} />;
+      case 'captainblaze':
+        return <CaptainBlazeModel {...modelProps} />;
+      case 'novaknight':
+        return <NovaKnightModel {...modelProps} />;
     }
 
-    // Generic preview for other fighters
+    // Fallback for any missing fighters
     return (
       <group ref={bodyRef} position={[0, 0.4, 0]}>
         <group ref={headRef} position={[0, 0.6, 0]}>
