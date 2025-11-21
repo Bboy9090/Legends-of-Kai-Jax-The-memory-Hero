@@ -6,6 +6,7 @@ import { Button } from "../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Swords, Map, Zap, Users, Home } from "lucide-react";
 import { useRunner } from "../../../lib/stores/useRunner";
+import DimensionalRift from "../DimensionalRift";
 
 // Nexus Haven - The player's hub world
 export default function NexusHaven() {
@@ -65,6 +66,11 @@ export default function NexusHaven() {
                 </mesh>
               );
             })}
+
+            {/* Dimensional Rift Portals */}
+            <DimensionalRift position={[8, 3, 0]} color="#FF00FF" />
+            <DimensionalRift position={[-8, 3, 0]} color="#00FF00" />
+            <DimensionalRift position={[0, 3, 8]} color="#FFFF00" />
           </group>
           
           <OrbitControls 
