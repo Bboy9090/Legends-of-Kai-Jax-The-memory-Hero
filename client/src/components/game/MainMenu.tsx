@@ -3,8 +3,6 @@ import { useAudio } from "../../lib/stores/useAudio";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Play, Settings, Volume2, VolumeX, Shirt } from "lucide-react";
-import logoImage from "@assets/generated_images/bright_vibrant_nintendo_smash_heroes_logo.png";
-import backgroundImage from "@assets/generated_images/bright_colorful_nintendo-style_futuristic_menu_background.png";
 
 export default function MainMenu() {
   const { setGameState } = useRunner();
@@ -22,18 +20,18 @@ export default function MainMenu() {
     <div 
       className="min-h-screen w-full flex items-center justify-center relative p-4 overflow-hidden"
       style={{
-        backgroundImage: `url(${backgroundImage})`,
+        backgroundImage: "url(/menu-bg.png)",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed"
       }}
     >
-      {/* Bright overlay for menu card visibility */}
-      <div className="absolute inset-0 bg-black bg-opacity-20" />
+      {/* Overlay for menu card visibility */}
+      <div className="absolute inset-0 bg-black bg-opacity-30" />
       
-      {/* Animated neon elements */}
+      {/* Animated energy elements - RED, BLUE, SILVER, WHITE */}
       <div className="absolute inset-0">
-        {/* Floating colorful particles */}
+        {/* Floating energy particles */}
         {[...Array(8)].map((_, i) => (
           <div
             key={i}
@@ -41,7 +39,7 @@ export default function MainMenu() {
             style={{
               width: `${30 + i * 20}px`,
               height: `${30 + i * 20}px`,
-              background: ["#FF1493", "#00FF00", "#FFD700", "#00FFFF", "#FF6B35", "#4D5DFF", "#FFD700", "#00FF88"][i],
+              background: ["#DC143C", "#1E90FF", "#C0C0C0", "#FFFFFF", "#FF0000", "#4169E1", "#D3D3D3", "#00BFFF"][i],
               opacity: 0.15,
               left: `${i * 12.5 + 5}%`,
               top: `${Math.sin(i) * 20 + 40}%`,
@@ -58,89 +56,101 @@ export default function MainMenu() {
         {/* Logo */}
         <div className="mb-8 flex justify-center">
           <img 
-            src={logoImage} 
+            src="/logo.png" 
             alt="SMASH HEROES Logo" 
-            className="max-w-sm w-full h-auto drop-shadow-2xl"
+            className="max-w-md w-full h-auto drop-shadow-2xl"
             style={{
-              filter: "drop-shadow(0 0 30px rgba(255, 20, 147, 0.6)) drop-shadow(0 0 60px rgba(0, 255, 255, 0.4))"
+              filter: "drop-shadow(0 0 30px rgba(220, 20, 60, 0.8)) drop-shadow(0 0 60px rgba(30, 144, 255, 0.6))"
             }}
           />
         </div>
         
-        <Card className="bg-white bg-opacity-98 backdrop-blur-md shadow-2xl border-4 border-yellow-400">
-          <CardHeader className="p-4 sm:p-8 bg-gradient-to-b from-yellow-200 to-white">
-            <CardTitle className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-yellow-500 to-blue-600 mb-3">
+        <Card className="bg-white bg-opacity-98 backdrop-blur-md shadow-2xl border-4 border-blue-500">
+          <CardHeader className="p-4 sm:p-8 bg-gradient-to-b from-slate-100 to-white">
+            <CardTitle 
+              className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-blue-600 to-slate-800 mb-3"
+              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif", letterSpacing: '0.05em' }}
+            >
               SMASH HEROES
             </CardTitle>
-            <p className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-lime-500">
+            <p 
+              className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-700"
+              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+            >
               Adventures of Kaison & Jaxon
             </p>
-            <p className="text-lg sm:text-xl text-green-600 font-bold mt-3">
-              Hyper Files Rewrite
+            <p 
+              className="text-lg sm:text-xl text-red-600 font-bold mt-3"
+              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+            >
+              HYPER FILES REWRITE
             </p>
             <p className="text-sm sm:text-base text-gray-700 mt-4">
               Battle epic heroes in wild arenas! Choose your fighter and become a legend!
             </p>
           </CardHeader>
           
-          <CardContent className="space-y-4 sm:space-y-5 p-4 sm:p-8 bg-gradient-to-b from-blue-50 to-white">
-            {/* Character icons - VIBRANT */}
+          <CardContent className="space-y-4 sm:space-y-5 p-4 sm:p-8 bg-gradient-to-b from-slate-50 to-white">
+            {/* Character icons - RED, BLUE, SILVER */}
             <div className="flex justify-center gap-6 mb-8">
               <div className="text-center transform hover:scale-110 transition-transform">
-                <div className="w-20 h-20 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg border-4 border-cyan-300">
-                  <span className="text-white text-3xl font-black">J</span>
+                <div className="w-20 h-20 bg-gradient-to-br from-cyan-400 to-blue-700 rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg border-4 border-blue-400">
+                  <span className="text-white text-3xl font-black" style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>J</span>
                 </div>
-                <p className="text-base font-bold text-cyan-600">JAXON</p>
-                <p className="text-xs font-semibold text-cyan-500">Cyan Legend</p>
+                <p className="text-base font-bold text-blue-700" style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>JAXON</p>
+                <p className="text-xs font-semibold text-blue-500">Electric Hero</p>
               </div>
               
               <div className="text-center transform hover:scale-110 transition-transform">
-                <div className="w-20 h-20 bg-gradient-to-br from-red-400 to-orange-600 rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg border-4 border-red-300">
-                  <span className="text-white text-3xl font-black">K</span>
+                <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-700 rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg border-4 border-red-400">
+                  <span className="text-white text-3xl font-black" style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>K</span>
                 </div>
-                <p className="text-base font-bold text-red-600">KAISON</p>
-                <p className="text-xs font-semibold text-red-500">Crimson Hero</p>
+                <p className="text-base font-bold text-red-700" style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>KAISON</p>
+                <p className="text-xs font-semibold text-red-500">Crimson Legend</p>
               </div>
             </div>
             
-            {/* Play button - NEON BRIGHT */}
+            {/* Play button - RED TO BLUE */}
             <Button 
               onClick={startGame}
-              className="w-full text-2xl py-7 bg-gradient-to-r from-lime-400 via-yellow-400 to-orange-500 hover:from-lime-500 hover:via-yellow-500 hover:to-orange-600 text-black font-black shadow-xl border-4 border-yellow-300 transform hover:scale-105 transition-transform"
+              className="w-full text-2xl py-7 bg-gradient-to-r from-red-600 via-blue-600 to-blue-700 hover:from-red-700 hover:via-blue-700 hover:to-blue-800 text-white font-black shadow-xl border-4 border-white transform hover:scale-105 transition-transform"
+              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif", letterSpacing: '0.1em' }}
             >
               <Play className="w-7 h-7 mr-3" />
               START GAME!
             </Button>
 
-            {/* Customize Characters button */}
+            {/* Customize Characters button - SILVER TO BLUE */}
             <Button 
               onClick={openCustomization}
-              className="w-full text-xl py-6 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white font-black shadow-xl border-2 border-purple-300 transform hover:scale-105 transition-transform"
+              className="w-full text-xl py-6 bg-gradient-to-r from-slate-400 via-blue-500 to-blue-600 hover:from-slate-500 hover:via-blue-600 hover:to-blue-700 text-white font-black shadow-xl border-3 border-slate-300 transform hover:scale-105 transition-transform"
+              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
             >
               <Shirt className="w-6 h-6 mr-2" />
               UNLOCK FIGHTERS
             </Button>
             
-            {/* Settings */}
+            {/* Settings - RED AND BLUE */}
             <div className="flex gap-3">
               <Button
                 onClick={toggleMute}
-                className="flex-1 text-lg py-5 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white font-bold shadow-lg border-2 border-cyan-300"
+                className="flex-1 text-lg py-5 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-bold shadow-lg border-2 border-blue-300"
+                style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
               >
                 {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                 <span className="ml-2">{isMuted ? "UNMUTE" : "MUTE"}</span>
               </Button>
               
               <Button 
-                className="px-6 text-lg py-5 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold shadow-lg border-2 border-yellow-300"
+                className="px-6 text-lg py-5 bg-gradient-to-r from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white font-bold shadow-lg border-2 border-slate-300"
               >
                 <Settings className="w-5 h-5" />
               </Button>
             </div>
             
-            {/* Game features - VIBRANT */}
-            <div className="text-left text-sm font-bold text-gray-800 bg-gradient-to-r from-yellow-200 via-green-200 to-cyan-200 p-5 rounded-xl border-3 border-yellow-400 shadow-lg">
-              <h4 className="text-lg font-black mb-3 text-purple-700">⚡ GAME FEATURES:</h4>
+            {/* Game features - RED, BLUE, SILVER */}
+            <div className="text-left text-sm font-bold text-gray-800 bg-gradient-to-r from-red-100 via-slate-100 to-blue-100 p-5 rounded-xl border-3 border-blue-400 shadow-lg">
+              <h4 className="text-lg font-black mb-3 text-red-700" style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>⚡ GAME FEATURES:</h4>
               <ul className="space-y-2">
                 <li>✨ 13 LEGENDARY FIGHTERS!</li>
                 <li>⚡ EPIC PUNCH, KICK & JUMP!</li>
@@ -150,9 +160,9 @@ export default function MainMenu() {
               </ul>
             </div>
             
-            {/* Instructions */}
-            <div className="text-sm font-bold text-white text-center bg-gradient-to-r from-blue-600 to-purple-600 p-4 rounded-lg border-2 border-purple-400">
-              <p>← ARROW KEYS or WASD → MOVE • SPACE JUMP • J PUNCH • K KICK</p>
+            {/* Instructions - BLUE TO RED */}
+            <div className="text-sm font-bold text-white text-center bg-gradient-to-r from-blue-700 via-blue-800 to-red-700 p-4 rounded-lg border-2 border-white shadow-lg">
+              <p style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>← ARROW KEYS or WASD → MOVE • SPACE JUMP • J PUNCH • K KICK</p>
             </div>
           </CardContent>
         </Card>
