@@ -2,14 +2,20 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { useAudio } from "../../lib/stores/useAudio";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Play, Settings, Volume2, VolumeX, Shirt } from "lucide-react";
+import { Play, Settings, Volume2, VolumeX, Shirt, Sparkles } from "lucide-react";
+import { useState } from "react";
 
 export default function MainMenu() {
   const { setGameState } = useRunner();
   const { isMuted, toggleMute } = useAudio();
+  const [showNarration, setShowNarration] = useState(true);
   
   const startGame = () => {
     setGameState("character-select");
+  };
+
+  const openNexusHaven = () => {
+    setGameState("nexus-haven");
   };
 
   const openCustomization = () => {
@@ -26,6 +32,43 @@ export default function MainMenu() {
         backgroundAttachment: "fixed"
       }}
     >
+      {/* Mythic Opening Narration Overlay */}
+      {showNarration && (
+        <div className="absolute inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-8 animate-in fade-in duration-1000">
+          <div className="max-w-3xl text-center">
+            <div className="mb-8 animate-in zoom-in duration-700">
+              <Sparkles className="w-16 h-16 mx-auto text-cyan-400 animate-pulse" />
+            </div>
+            <div className="space-y-6 text-white animate-in slide-in-from-bottom duration-1000">
+              <p className="text-lg sm:text-xl italic leading-relaxed">
+                "It was not a sundering of one world, but of all."
+              </p>
+              <p className="text-base sm:text-lg leading-relaxed">
+                The Weave of Reality, the cosmic thread that bound every legend, every hero, 
+                every kingdom into a chorus of light… has been silenced. In its place, a wound. A Void.
+              </p>
+              <p className="text-base sm:text-lg leading-relaxed">
+                From that emptiness, the Echoes poured forth—twisted memories of fallen champions. 
+                Worlds bled into one another. A throne of nothingness has risen.
+              </p>
+              <p className="text-lg sm:text-xl font-bold text-cyan-400 leading-relaxed">
+                But even in the final dusk, there is a spark. A Nexus. A haven where the last true heroes gather.
+              </p>
+              <p className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-cyan-400 to-blue-500 mt-8">
+                Choose your hero. Build your squad. Become everything.
+              </p>
+            </div>
+            <Button
+              onClick={() => setShowNarration(false)}
+              className="mt-12 px-8 py-6 text-xl font-black bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-700 hover:to-blue-700 text-white border-2 border-cyan-400 shadow-2xl"
+              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+            >
+              ENTER THE MULTIVERSE
+            </Button>
+          </div>
+        </div>
+      )}
+      
       {/* Overlay for menu card visibility */}
       <div className="absolute inset-0 bg-black bg-opacity-30" />
       
@@ -83,10 +126,13 @@ export default function MainMenu() {
               className="text-lg sm:text-xl text-red-600 font-bold mt-3"
               style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
             >
-              HYPER FILES REWRITE
+              WORLD COLLISION
             </p>
-            <p className="text-sm sm:text-base text-gray-700 mt-4">
-              Battle epic heroes in wild arenas! Choose your fighter and become a legend!
+            <p className="text-sm sm:text-base text-gray-700 mt-4 font-semibold">
+              The Multiverse Has Cracked. Reality Tears Open. The Void King Rises.
+            </p>
+            <p className="text-xs sm:text-sm text-slate-600 mt-2">
+              Assemble your squad. Explore the fused world. Battle dimensional rifts. Save all reality.
             </p>
           </CardHeader>
           
@@ -110,24 +156,34 @@ export default function MainMenu() {
               </div>
             </div>
             
-            {/* Play button - RED TO BLUE */}
+            {/* Nexus Haven Hub - PRIMARY BUTTON */}
             <Button 
-              onClick={startGame}
-              className="w-full text-2xl py-7 bg-gradient-to-r from-red-600 via-blue-600 to-blue-700 hover:from-red-700 hover:via-blue-700 hover:to-blue-800 text-white font-black shadow-xl border-4 border-white transform hover:scale-105 transition-transform"
+              onClick={openNexusHaven}
+              className="w-full text-2xl py-7 bg-gradient-to-r from-purple-600 via-cyan-500 to-blue-700 hover:from-purple-700 hover:via-cyan-600 hover:to-blue-800 text-white font-black shadow-xl border-4 border-cyan-300 transform hover:scale-105 transition-transform animate-pulse"
               style={{ fontFamily: "'Arial Black', 'Impact', sans-serif", letterSpacing: '0.1em' }}
             >
-              <Play className="w-7 h-7 mr-3" />
-              START GAME!
+              <Sparkles className="w-7 h-7 mr-3" />
+              NEXUS HAVEN
+            </Button>
+
+            {/* Quick Battle button */}
+            <Button 
+              onClick={startGame}
+              className="w-full text-xl py-6 bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-700 hover:to-blue-700 text-white font-black shadow-xl border-3 border-white transform hover:scale-105 transition-transform"
+              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+            >
+              <Play className="w-6 h-6 mr-2" />
+              QUICK BATTLE
             </Button>
 
             {/* Customize Characters button - SILVER TO BLUE */}
             <Button 
               onClick={openCustomization}
-              className="w-full text-xl py-6 bg-gradient-to-r from-slate-400 via-blue-500 to-blue-600 hover:from-slate-500 hover:via-blue-600 hover:to-blue-700 text-white font-black shadow-xl border-3 border-slate-300 transform hover:scale-105 transition-transform"
+              className="w-full text-lg py-5 bg-gradient-to-r from-slate-400 via-blue-500 to-blue-600 hover:from-slate-500 hover:via-blue-600 hover:to-blue-700 text-white font-bold shadow-lg border-2 border-slate-300 transform hover:scale-105 transition-transform"
               style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
             >
-              <Shirt className="w-6 h-6 mr-2" />
-              UNLOCK FIGHTERS
+              <Shirt className="w-5 h-5 mr-2" />
+              FIGHTERS
             </Button>
             
             {/* Settings - RED AND BLUE */}
