@@ -12,6 +12,7 @@ import MainMenu from "./components/game/MainMenu";
 import CharacterSelect from "./components/game/CharacterSelect";
 import CustomizationMenu from "./components/game/CustomizationMenu";
 import NexusHaven from "./components/game/world/NexusHaven";
+import SquadSelection from "./components/game/SquadSelection";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
@@ -83,6 +84,9 @@ function App() {
         
         {/* Nexus Haven Hub */}
         {phase === 'ready' && gameState === 'nexus-haven' && <NexusHaven />}
+        
+        {/* Squad Selection */}
+        {phase === 'ready' && gameState === 'squad-select' && <SquadSelection />}
         
         {/* Character Selection */}
         {phase === 'ready' && gameState === 'character-select' && <CharacterSelect />}

@@ -126,7 +126,7 @@ export default function NexusHaven() {
             </Button>
             
             <Button
-              onClick={() => setGameState("customization")}
+              onClick={() => setGameState("squad-select")}
               className="bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-bold py-6 flex flex-col items-center gap-2"
             >
               <Users className="w-6 h-6" />
