@@ -2,9 +2,10 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { useGame } from "../../lib/stores/useGame";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft, Lock, Zap, Crown } from "lucide-react";
 import { useState } from "react";
 import { FIGHTERS, Fighter, getFighterById } from "../../lib/characters";
+import { getBioForHero } from "../../lib/characterBios";
 import CharacterPreview3D from "./CharacterPreview3D";
 
 export default function CharacterSelect() {
@@ -158,17 +159,19 @@ export default function CharacterSelect() {
               );
             })}
             
-            {/* Selected Fighter Preview */}
+            {/* Selected Fighter Preview - EXPANDED RPG STYLE */}
             <div className="mt-4 sm:mt-8 mb-4 sm:mb-6">
               <Card className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 border-2 sm:border-4 border-cyan-400">
                 <CardContent className="p-3 sm:p-6">
-                  <div className="flex items-center gap-3 sm:gap-6">
-                    {selectedCharacter && (() => {
-                      const fighter = getFighterById(selectedCharacter);
-                      if (!fighter) return null;
-                      
-                      return (
-                        <>
+                  {selectedCharacter && (() => {
+                    const fighter = getFighterById(selectedCharacter);
+                    const bio = getBioForHero(selectedCharacter);
+                    if (!fighter) return null;
+                    
+                    return (
+                      <div>
+                        {/* Hero Header */}
+                        <div className="flex items-center gap-3 sm:gap-6 mb-4">
                           <div 
                             className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center shadow-2xl flex-shrink-0"
                             style={{ 
@@ -182,22 +185,76 @@ export default function CharacterSelect() {
                           </div>
                           
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 sm:mb-2">
+                            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1">
                               {fighter.displayName}
                             </h3>
-                            <p className="text-cyan-300 text-sm sm:text-base md:text-lg line-clamp-2">
-                              {fighter.description}
-                            </p>
+                            {bio && (
+                              <p className="text-cyan-300 text-xs sm:text-sm md:text-base font-bold italic">
+                                {bio.title}
+                              </p>
+                            )}
                             <div className="mt-1 sm:mt-2">
                               <span className="inline-block px-2 sm:px-3 py-1 bg-yellow-400 text-black rounded-full text-xs sm:text-sm font-bold">
                                 {fighter.category.toUpperCase()}
                               </span>
                             </div>
                           </div>
-                        </>
-                      );
-                    })()}
-                  </div>
+                        </div>
+
+                        {/* Extended Bio */}
+                        {bio && (
+                          <div className="space-y-3">
+                            <div className="bg-black/50 p-3 rounded-lg">
+                              <p className="text-white text-sm leading-relaxed">
+                                {bio.shortBio}
+                              </p>
+                            </div>
+
+                            {/* Specialty & Ultimate */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div className="bg-blue-900/50 p-3 rounded-lg">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <Zap className="w-4 h-4 text-cyan-400" />
+                                  <p className="text-cyan-400 text-xs font-bold">SPECIALTY</p>
+                                </div>
+                                <p className="text-white text-xs">{bio.specialty}</p>
+                              </div>
+
+                              <div className="bg-purple-900/50 p-3 rounded-lg">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <Crown className="w-4 h-4 text-yellow-400" />
+                                  <p className="text-yellow-400 text-xs font-bold">ULTIMATE</p>
+                                </div>
+                                <p className="text-white text-xs">{bio.ultimateAttack}</p>
+                              </div>
+                            </div>
+
+                            {/* Transformation Tree */}
+                            <div className="bg-gradient-to-r from-red-900/50 to-blue-900/50 p-3 rounded-lg">
+                              <p className="text-yellow-400 text-xs font-bold mb-2">⚡ TRANSFORMATION PATH</p>
+                              <div className="space-y-2">
+                                {bio.transformations.map((transform) => (
+                                  <div key={transform.level} className="flex items-center gap-2">
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                      transform.level === 0 ? 'bg-gray-600 text-white' :
+                                      transform.level === 1 ? 'bg-yellow-500 text-black' :
+                                      'bg-purple-600 text-white'
+                                    }`}>
+                                      {transform.level}
+                                    </div>
+                                    <div className="flex-1">
+                                      <p className="text-white text-xs font-bold">{transform.name}</p>
+                                      <p className="text-gray-300 text-xs">{transform.powerMultiplier}x Power</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             </div>
