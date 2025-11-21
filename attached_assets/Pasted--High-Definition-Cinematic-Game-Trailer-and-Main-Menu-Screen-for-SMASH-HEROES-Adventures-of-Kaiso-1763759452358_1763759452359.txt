@@ -1,0 +1,21 @@
+[High-Definition Cinematic Game Trailer and Main Menu Screen] for 'SMASH HEROES: Adventures of Kaison & Jaxon - Hyper Files Rewrite'. Legendary, gritty, futuristic sci-fi aesthetic. Think *Cyberpunk 2077* meets *Final Fantasy VII: Remake* with a touch of *Marvel vs. Capcom* flash. **BLUNT VIBE: High stakes, high energy, zero filler.**
+
+2. The Intro Trailer (3-5 seconds of key visuals)
+Goal: Describe the most epic, dynamic moments before the menu loads.
+
+Prompt Section: **INTRO TRAILER VISUALS:** Start with a rapid-fire montage of explosive action: **Visual 1:** Kaison (A hyper-speed shadow, electricity crackling, leaving streaks of neon blue/gold light) clashing with a massive, chrome-plated mech. **Visual 2:** Jaxon (Solid, heavy impact, seismic force) landing a ground-shattering punch that cracks the futuristic city street. **Visual 3:** A quick, close-up shot of their determined, battle-scarred faces with holographic data streaming over their eyes. The final shot is a slow zoom-out from the custom logo.
+
+3. The Main Menu Screen (Static/Animated)
+Goal: Describe the final, futuristic screen design.
+
+Prompt Section: **MAIN MENU SCREEN:** The scene is a dark, rain-slicked, neon-drenched cityscape (Neo-Bronx vibe) at midnight. The screen is dominated by Kaison and Jaxon standing back-to-back, ready for action. They are in sharp focus, slightly weathered. **DESIGN:** The menu itself uses a crisp, minimalist, holographic UI floating in the foreground (Options: START, LOAD, FILES, SETTINGS). The background should have subtle, slow-moving elements: rain falling, neon signs subtly pulsing, and smoke drifting. Use deep purples, electric blues, and burning orange highlights.
+
+4. The Custom Logo Design
+Goal: Detail the look of the "SMASH HEROES" logo.
+
+Prompt Section: **CUSTOM LOGO:** The logo "SMASH HEROES" is centered, using a heavy, angular, metallic typeface. It should be scorched and battle-damaged, glowing with an internal, unstable electric blue energy. The subtitle "Hyper Files Rewrite" is smaller, placed underneath, stylized like flickering green digital code. The logo must feel heavy, imposing, and instantly recognizable.
+
+🔥 Unified Final Prompt (Ready to Copy/Paste)
+[High-Definition Cinematic Game Trailer and Main Menu Screen] for 'SMASH HEROES: Adventures of Kaison & Jaxon - Hyper Files Rewrite'. Legendary, gritty, futuristic sci-fi aesthetic. Think *Cyberpunk 2077* meets *Final Fantasy VII: Remake* with a touch of *Marvel vs. Capcom* flash. **BLUNT VIBE: High stakes, high energy, zero filler.** **INTRO TRAILER VISUALS:** Rapid-fire montage: Kaison (hyper-speed shadow, neon blue/gold electricity) clashing with a chrome-plated mech. Jaxon (solid, seismic force) landing a ground-shattering punch. Close-up of their determined, battle-scarred faces with holographic data streaming over their eyes. Final shot zooms out from the custom logo. **MAIN MENU SCREEN:** Dark, rain-slicked, neon-drenched cityscape (Neo-Bronx vibe) at midnight. Kaison and Jaxon stand back-to-back, ready. Crisp, minimalist, holographic UI floats in the foreground. Subtle background animation: rain, pulsing neon, smoke. Color palette: deep purples, electric blues, burning orange. **CUSTOM LOGO:** "SMASH HEROES" heavy, angular, metallic, scorched typeface, glowing with internal electric blue energy. Subtitle "Hyper Files Rewrite" as smaller, flickering green digital code. Cinematic lighting, 16:9 aspect ratio, 8k resolution.
+
+That prompt should give you something that hits hard and looks legendary.
