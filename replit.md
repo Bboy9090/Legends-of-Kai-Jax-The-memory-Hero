@@ -20,38 +20,47 @@ Preferred communication style: Simple, everyday language.
 ### Frontend Architecture
 - **React 18** with TypeScript for the main application framework
 - **Three.js with React Three Fiber** for 3D rendering and game engine
-- **Zustand** for state management across multiple game stores (game phase, runner mechanics, audio, choices)
+- **Zustand** for state management across multiple game stores
 - **Tailwind CSS** with custom design system for UI components
 - **Vite** as the build tool with hot module replacement for development
 
 ### Component Structure
-- **Game States**: Menu, character selection, playing, paused, choice mode, AI assistant demo
-- **3D Components**: Player characters, enemies, collectibles, environment, particle effects
+- **Game States**: Menu, Nexus Haven hub, squad selection, character select, battle mode, customization
+- **3D Components**: Nexus Haven hub world, dimensional rift portals, player characters, enemies, environment
 - **UI Components**: Radix UI primitives with custom styling for accessibility
-- **Game Logic**: Collision detection, object generation, physics simulation
+- **Game Logic**: Squad combat, transformation system, dimensional rifts, world progression
 
-### State Management Pattern
+### State Management Pattern (RPG Stores)
 - **useGame**: Core game phase management (ready, playing, ended)
-- **useRunner**: Game mechanics (player movement, scoring, collision detection)
+- **useRunner**: Game mechanics and game state routing
+- **useWorldState**: RPG progression (zones, rifts, Nexus Haven level, recruited heroes, Void King weakness)
+- **useSquad**: Squad management (3-hero party, active hero, synergy bonuses, stats)
+- **useTransformations**: Power-up system (transformation levels, energy meters, unlocks)
+- **useBattle**: Combat mechanics (fighters, health, attacks)
 - **useAudio**: Sound effects and music management
-- **useChoices**: Social-emotional learning scenario management
 
 ### Game Architecture: World Collision RPG
 
-**Core Systems:**
-- **Squad Combat**: Choose 3 heroes, swap instantly, unleash synchronized combo attacks and transformation finishers
-- **Open World**: Seamless exploration across fused multiverse zones with no loading screens
-- **Dimensional Rifts**: Reality tears that spawn Echo bosses, rare skills, and weakening the Void King
-- **Transformation Trees**: Every character has legendary forms (Hyper Sonic, Thunder God Pikachu, Starborn Kirby, etc.)
-- **Nexus Haven**: Player-built hub with recruitment, upgrades, training halls, warp gates, and rift analyzers
-- **Cinematic Story**: Full saga with cutscenes, emotional arcs, world-boss invasions, and the Nexus Resistance
-- **Character Roster**: 40+ iconic heroes with unique stories, quests, abilities, and transformation paths
+**Core Systems (IMPLEMENTED):**
+- ✅ **Nexus Haven Hub**: 3D central hub with dimensional rift portals, squad management, and progression tracking
+- ✅ **Squad Selection**: Choose 3 heroes from recruited roster with synergy bonus calculations
+- ✅ **Transformation System**: Energy meters and power-up states (Base → Super → Hyper/Ultimate)
+- ✅ **Character Bios**: Cinematic backstories, specialties, ultimate attacks, and transformation paths for all heroes
+- ✅ **World State Management**: Zone discovery, rift tracking, Nexus level, hero recruitment, Void King weakness
+- ✅ **Mythic Opening**: Epic narration introducing the fractured multiverse and Void King threat
+
+**Core Systems (PLANNED):**
+- **Open World Zones**: Seamless exploration across Green Hill-Hyrule, Dream Land Skies, Lylat Ruins, etc.
+- **Dimensional Rifts**: Reality tears spawning Echo bosses with rare rewards
+- **Squad Combat**: Tag combos, assist attacks, synchronized ultimates in battle
+- **Story Mode**: Cinematic cutscenes, emotional arcs, world-boss invasions
+- **Expanded Roster**: 30+ additional heroes with unique quests and abilities
 
 **Combat Evolution:**
-- **Base Combat**: Punch, kick, jump, dodge, special moves
-- **Squad Synergy**: Tag combos, assist attacks, synchronized ultimates
-- **Transformation System**: Build up chaos/energy meters to unlock god-tier forms mid-battle
-- **Rift Mechanics**: Enter dimensional tears for high-risk/high-reward boss fights against corrupted Echoes
+- **Base Combat**: Punch, kick, jump, dodge, special moves (existing battle system)
+- **Squad Synergy**: Tag combos, assist attacks (to implement)
+- **Transformation System**: Energy meters unlock god-tier forms mid-battle (framework ready)
+- **Rift Mechanics**: Enter portals for Echo boss fights (portals visualized, mechanics pending)
 
 ### Mobile-First Design
 - **Touch Controls**: Gesture-based input system with swipe and tap recognition
