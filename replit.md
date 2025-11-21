@@ -1,8 +1,15 @@
-# Super Smash Heroes: Battle Royale
+# SMASH HEROES: WORLD COLLISION™
 
 ## Overview
 
-A preschool-friendly 3D fighting game built with React and Three.js featuring Jaxon and Kaison alongside spoof versions of beloved gaming characters. Players choose from a roster of 12 unique fighters and battle in colorful arenas with simple, easy-to-learn controls. The game features character selection, unlockable fighters, multiple battle stages, and kid-friendly combat mechanics designed for children aged 4-8.
+An epic open-world action RPG where the multiverse has cracked and legendary heroes must unite to save all reality. When the Weave of Reality fractures, corrupted Echo heroes pour into a fused world built from the ruins of countless iconic realms. Players assemble squads of 3 heroes from a roster of 40+ legendary fighters, explore a seamless interconnected world, battle dimensional rifts, unlock god-tier transformations, and build Nexus Haven—the last bastion of resistance against the Void King.
+
+**The Game Vision:**
+- **Genre**: Open-world cinematic action RPG with squad-based combat
+- **Core Loop**: Explore → Battle Rifts → Unlock Transformations → Upgrade Nexus Haven → Face World Bosses
+- **Key Heroes**: Jaxon (Sonic/Chaos Incarnate), Kaison (Mega Man X/Adaptive Arsenal), plus Mario, Link, Samus, Kirby, Pikachu, Fox, DK, Yoshi, and 30+ more
+- **Setting**: A fused multiverse where Green Hill overlooks Hyrule, Dream Land clouds drift above Toad Town, and Lylat ruins scatter the sky
+- **Endgame**: Defeat the Void King and the Entropy Court to restore reality
 
 ## User Preferences
 
@@ -29,12 +36,22 @@ Preferred communication style: Simple, everyday language.
 - **useAudio**: Sound effects and music management
 - **useChoices**: Social-emotional learning scenario management
 
-### Game Architecture
-- **Fighting Game Mechanics**: Arena-based combat with simple punch, kick, jump, and special moves
-- **Character Roster**: 12 playable fighters including Jaxon, Kaison, and spoof versions of Mario (Marlo), Sonic (Speedy), Link (Flynn), and more
-- **Arena System**: 6 colorful battle stages with varying platforms and visual themes
-- **Combat System**: Health-based battles with damage, knockback, and victory/defeat states
-- **Unlockables**: Fighters and arenas unlock as players earn points through battles
+### Game Architecture: World Collision RPG
+
+**Core Systems:**
+- **Squad Combat**: Choose 3 heroes, swap instantly, unleash synchronized combo attacks and transformation finishers
+- **Open World**: Seamless exploration across fused multiverse zones with no loading screens
+- **Dimensional Rifts**: Reality tears that spawn Echo bosses, rare skills, and weakening the Void King
+- **Transformation Trees**: Every character has legendary forms (Hyper Sonic, Thunder God Pikachu, Starborn Kirby, etc.)
+- **Nexus Haven**: Player-built hub with recruitment, upgrades, training halls, warp gates, and rift analyzers
+- **Cinematic Story**: Full saga with cutscenes, emotional arcs, world-boss invasions, and the Nexus Resistance
+- **Character Roster**: 40+ iconic heroes with unique stories, quests, abilities, and transformation paths
+
+**Combat Evolution:**
+- **Base Combat**: Punch, kick, jump, dodge, special moves
+- **Squad Synergy**: Tag combos, assist attacks, synchronized ultimates
+- **Transformation System**: Build up chaos/energy meters to unlock god-tier forms mid-battle
+- **Rift Mechanics**: Enter dimensional tears for high-risk/high-reward boss fights against corrupted Echoes
 
 ### Mobile-First Design
 - **Touch Controls**: Gesture-based input system with swipe and tap recognition
