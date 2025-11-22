@@ -29,17 +29,25 @@ export default function BattlePlayer() {
     playerFighterId, 
     playerX, 
     playerY,
-    playerFacingRight,
+    playerZ, // 3D depth position
+    playerRotation, // Facing angle in radians
+    playerFacingRight, // Legacy - computed from rotation
     playerAttacking,
     playerAttackType,
+    playerAttackPhase, // NEW: windup/contact/followthrough/recovery
     playerInvulnerable,
     playerHealth,
+    playerMomentum, // NEW: Forward momentum (0-1)
+    playerBalance, // NEW: Center of gravity stability (0-1)
+    playerStance, // NEW: Stance data (weight distribution, hip rotation)
     battlePhase,
     winner,
     timeScale,
     movePlayer,
     playerJump,
-    playerAttack
+    playerAttack,
+    updatePlayerBalance, // NEW: Balance physics
+    updatePlayerMomentum // NEW: Momentum decay
   } = useBattle();
   
   const meshRef = useRef<THREE.Group>(null);
@@ -144,6 +152,10 @@ export default function BattlePlayer() {
       movePlayer(0, 0.8);
       useBattle.setState({ playerGrounded: true });
     }
+    
+    // UPDATE BALANCE & MOMENTUM PHYSICS - Critical for dynamic combat!
+    updatePlayerBalance(scaledDelta);
+    updatePlayerMomentum(scaledDelta);
     
     // Detect hit (health decreased) - INTENSE FACIAL REACTION!
     if (playerHealth < prevHealthRef.current) {
@@ -584,9 +596,9 @@ export default function BattlePlayer() {
   };
   
   return (
-    <group ref={meshRef} position={[playerX, playerY, 0]}>
-      {/* Scale and flip based on facing direction */}
-      <group scale={playerFacingRight ? [1, 1, 1] : [-1, 1, 1]}>
+    <group ref={meshRef} position={[playerX, playerY, playerZ]} rotation={[0, playerRotation, 0]}>
+      {/* No need to flip scale - rotation handles facing direction */}
+      <group>
         {/* Render specialized or generic character model */}
         {renderCharacterModel()}
         
