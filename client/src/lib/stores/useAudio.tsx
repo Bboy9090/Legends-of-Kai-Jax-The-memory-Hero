@@ -85,7 +85,8 @@ export const useAudio = create<AudioState>((set, get) => ({
       try {
         // Clone the sound to allow overlapping playback
         const soundClone = hitSound.cloneNode() as HTMLAudioElement;
-        soundClone.volume = 0.3;
+        soundClone.volume = 0.5; // Increased volume for impact
+        soundClone.playbackRate = 0.9 + Math.random() * 0.2; // Vary pitch for variety
         soundClone.play().catch(error => {
           // Sound autoplay blocked by browser - this is expected on first interaction
           if (error.name === 'NotAllowedError') {
@@ -123,6 +124,7 @@ export const useAudio = create<AudioState>((set, get) => ({
       try {
         const clone = sound.cloneNode() as HTMLAudioElement;
         clone.volume = 0.4;
+        clone.playbackRate = 1.1 + Math.random() * 0.2; // Higher pitch for punch
         clone.play().catch(() => {});
       } catch (error) {}
     }
@@ -134,18 +136,21 @@ export const useAudio = create<AudioState>((set, get) => ({
     if (sound && !isMuted) {
       try {
         const clone = sound.cloneNode() as HTMLAudioElement;
-        clone.volume = 0.5;
+        clone.volume = 0.6;
+        clone.playbackRate = 0.8 + Math.random() * 0.2; // Lower pitch for kick (more impactful)
         clone.play().catch(() => {});
       } catch (error) {}
     }
   },
   
   playSpecial: () => {
-    const { specialSound, isMuted } = get();
-    if (specialSound && !isMuted) {
+    const { specialSound, successSound, isMuted } = get();
+    const sound = specialSound || successSound; // Fallback to success sound for epic feel
+    if (sound && !isMuted) {
       try {
-        const clone = specialSound.cloneNode() as HTMLAudioElement;
-        clone.volume = 0.6;
+        const clone = sound.cloneNode() as HTMLAudioElement;
+        clone.volume = 0.7;
+        clone.playbackRate = 0.9; // Slightly lower for power
         clone.play().catch(() => {});
       } catch (error) {}
     }
