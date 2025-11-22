@@ -565,7 +565,7 @@ export default function Opponent() {
             </mesh>
             {/* Weight distribution circles */}
             <mesh position={[-0.3, -0.2, 0]}>
-              <circleGeometry args={[0.15 * opponentStance.frontFootWeight, 16]} />
+              <circleGeometry args={[0.15 * opponentStance.weightFront, 16]} />
               <meshBasicMaterial 
                 color="#FF00FF" 
                 transparent 
@@ -574,7 +574,7 @@ export default function Opponent() {
               />
             </mesh>
             <mesh position={[0.3, -0.2, 0]}>
-              <circleGeometry args={[0.15 * opponentStance.rearFootWeight, 16]} />
+              <circleGeometry args={[0.15 * (1.0 - opponentStance.weightFront), 16]} />
               <meshBasicMaterial 
                 color="#FF00AA" 
                 transparent 

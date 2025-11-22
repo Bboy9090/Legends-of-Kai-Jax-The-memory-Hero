@@ -681,7 +681,7 @@ export default function BattlePlayer() {
             </mesh>
             {/* Weight distribution circles - Size shows weight on each foot */}
             <mesh position={[-0.3, -0.2, 0]}>
-              <circleGeometry args={[0.15 * playerStance.frontFootWeight, 16]} />
+              <circleGeometry args={[0.15 * playerStance.weightFront, 16]} />
               <meshBasicMaterial 
                 color="#FFFF00" 
                 transparent 
@@ -690,7 +690,7 @@ export default function BattlePlayer() {
               />
             </mesh>
             <mesh position={[0.3, -0.2, 0]}>
-              <circleGeometry args={[0.15 * playerStance.rearFootWeight, 16]} />
+              <circleGeometry args={[0.15 * (1.0 - playerStance.weightFront), 16]} />
               <meshBasicMaterial 
                 color="#FFAA00" 
                 transparent 
