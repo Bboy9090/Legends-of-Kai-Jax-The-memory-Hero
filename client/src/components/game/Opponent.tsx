@@ -21,16 +21,24 @@ export default function Opponent() {
     opponentFighterId, 
     opponentX, 
     opponentY,
-    opponentFacingRight,
+    opponentZ, // 3D depth position
+    opponentRotation, // Facing angle in radians
+    opponentFacingRight, // Legacy - computed from rotation
     opponentAttacking,
     opponentHealth,
+    opponentMomentum, // NEW: Forward momentum (0-1)
+    opponentBalance, // NEW: Center of gravity stability (0-1)
+    opponentStance, // NEW: Stance data
     playerX,
     playerY,
+    playerZ, // Player 3D depth
     battlePhase,
     timeScale,
     moveOpponent,
     opponentAttack,
-    opponentJump
+    opponentJump,
+    updateOpponentBalance, // NEW: Balance physics
+    updateOpponentMomentum // NEW: Momentum decay
   } = useBattle();
   
   const meshRef = useRef<THREE.Group>(null);
@@ -162,6 +170,10 @@ export default function Opponent() {
       moveOpponent(0, 0.8);
       useBattle.setState({ opponentGrounded: true });
     }
+    
+    // UPDATE BALANCE & MOMENTUM PHYSICS - Symmetric with player!
+    updateOpponentBalance(scaledDelta);
+    updateOpponentMomentum(scaledDelta);
   });
   
   // CHARACTER MODELS - All fighters have unique designs!
@@ -473,9 +485,9 @@ export default function Opponent() {
   };
   
   return (
-    <group ref={meshRef} position={[opponentX, opponentY, 0]}>
-      {/* Scale and flip based on facing direction */}
-      <group scale={opponentFacingRight ? [1, 1, 1] : [-1, 1, 1]}>
+    <group ref={meshRef} position={[opponentX, opponentY, opponentZ]} rotation={[0, opponentRotation, 0]}>
+      {/* No need to flip scale - rotation handles facing direction */}
+      <group>
         {/* Render specialized or generic character model */}
         {renderCharacterModel()}
         
