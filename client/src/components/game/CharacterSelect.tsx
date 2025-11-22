@@ -2,10 +2,10 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { useGame } from "../../lib/stores/useGame";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { ArrowLeft, Lock, Zap, Crown } from "lucide-react";
+import { ArrowLeft, Lock, Zap, Crown, Flame, Shield, BookOpen } from "lucide-react";
 import { useState } from "react";
 import { FIGHTERS, Fighter, getFighterById } from "../../lib/characters";
-import { getBioForHero } from "../../lib/characterBios";
+import { getBioForHero, getRandomBattleQuote, getVillainMatchupData, VILLAIN_MATCHUP_CHART } from "../../lib/characterBios";
 import CharacterPreview3D from "./CharacterPreview3D";
 
 export default function CharacterSelect() {
@@ -229,26 +229,74 @@ export default function CharacterSelect() {
                               </div>
                             </div>
 
-                            {/* Transformation Tree */}
+                            {/* Battle Quote */}
+                            <div className="bg-gradient-to-r from-orange-900/50 to-red-900/50 p-3 rounded-lg">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Flame className="w-4 h-4 text-orange-400" />
+                                <p className="text-orange-400 text-xs font-bold">BATTLE QUOTE</p>
+                              </div>
+                              <p className="text-white italic text-xs">"{bio.battleQuotes[Math.floor(Math.random() * bio.battleQuotes.length)]}"</p>
+                            </div>
+
+                            {/* Transformation Tree with Sequences */}
                             <div className="bg-gradient-to-r from-red-900/50 to-blue-900/50 p-3 rounded-lg">
                               <p className="text-yellow-400 text-xs font-bold mb-2">⚡ TRANSFORMATION PATH</p>
                               <div className="space-y-2">
                                 {bio.transformations.map((transform) => (
-                                  <div key={transform.level} className="flex items-center gap-2">
-                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                                      transform.level === 0 ? 'bg-gray-600 text-white' :
-                                      transform.level === 1 ? 'bg-yellow-500 text-black' :
-                                      'bg-purple-600 text-white'
-                                    }`}>
-                                      {transform.level}
+                                  <div key={transform.level} className="border-l-2 border-yellow-400/50 pl-2">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                                        transform.level === 0 ? 'bg-gray-600 text-white' :
+                                        transform.level === 1 ? 'bg-yellow-500 text-black' :
+                                        'bg-purple-600 text-white'
+                                      }`}>
+                                        {transform.level}
+                                      </div>
+                                      <div className="flex-1">
+                                        <p className="text-white text-xs font-bold">{transform.name}</p>
+                                        <p className="text-gray-300 text-xs">{transform.powerMultiplier}x Power</p>
+                                      </div>
                                     </div>
-                                    <div className="flex-1">
-                                      <p className="text-white text-xs font-bold">{transform.name}</p>
-                                      <p className="text-gray-300 text-xs">{transform.powerMultiplier}x Power</p>
-                                    </div>
+                                    {transform.transformationSequence && (
+                                      <p className="text-gray-400 text-xs italic ml-7 mb-1">{transform.transformationSequence}</p>
+                                    )}
+                                    <p className="text-yellow-300/70 text-xs ml-7">Requirement: {transform.requirements}</p>
                                   </div>
                                 ))}
                               </div>
+                            </div>
+
+                            {/* Villain Matchups */}
+                            {bio.villainMatchups && bio.villainMatchups.length > 0 && (
+                              <div className="bg-gradient-to-r from-purple-900/50 to-red-900/50 p-3 rounded-lg">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Shield className="w-4 h-4 text-purple-400" />
+                                  <p className="text-purple-400 text-xs font-bold">VILLAIN MATCHUPS</p>
+                                </div>
+                                <div className="space-y-1">
+                                  {bio.villainMatchups.map((matchup, idx) => (
+                                    <div key={idx} className="flex items-center gap-2">
+                                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                                        matchup.matchupType === 'advantage' ? 'bg-green-600 text-white' :
+                                        matchup.matchupType === 'disadvantage' ? 'bg-red-600 text-white' :
+                                        'bg-yellow-600 text-black'
+                                      }`}>
+                                        {matchup.matchupType === 'advantage' ? '✓' : matchup.matchupType === 'disadvantage' ? '✗' : '~'}
+                                      </span>
+                                      <span className="text-white text-xs"><strong>{matchup.villainName}:</strong> {matchup.reason}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Origin Story */}
+                            <div className="bg-gradient-to-r from-blue-900/50 to-indigo-900/50 p-3 rounded-lg">
+                              <div className="flex items-center gap-2 mb-2">
+                                <BookOpen className="w-4 h-4 text-blue-400" />
+                                <p className="text-blue-400 text-xs font-bold">ORIGIN STORY</p>
+                              </div>
+                              <p className="text-gray-200 text-xs leading-relaxed">{bio.originStory}</p>
                             </div>
                           </div>
                         )}
