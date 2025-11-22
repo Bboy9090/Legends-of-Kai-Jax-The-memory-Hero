@@ -16,6 +16,7 @@ import SquadSelection from "./components/game/SquadSelection";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
+import { useAudio } from "./lib/stores/useAudio";
 import { useEffect } from "react";
 
 // Define control keys for the game (also works with touch)
@@ -55,6 +56,49 @@ function App() {
   const { phase } = useGame();
   const { gameState, selectedCharacter } = useRunner();
   const { setPlayerFighter, setOpponentFighter } = useBattle();
+  const { 
+    setBackgroundMusic, 
+    setBattleMusic, 
+    setHitSound, 
+    setSuccessSound,
+    backgroundMusic,
+    isMuted
+  } = useAudio();
+
+  // Initialize audio on mount
+  useEffect(() => {
+    const bgMusic = new Audio('/sounds/background.mp3');
+    bgMusic.loop = true;
+    bgMusic.volume = 0.3;
+    setBackgroundMusic(bgMusic);
+
+    // Use background music as battle music too for now
+    const battleMusic = new Audio('/sounds/background.mp3');
+    battleMusic.loop = true;
+    battleMusic.volume = 0.4;
+    setBattleMusic(battleMusic);
+
+    const hit = new Audio('/sounds/hit.mp3');
+    setHitSound(hit);
+
+    const success = new Audio('/sounds/success.mp3');
+    setSuccessSound(success);
+
+    console.log("Audio initialized");
+  }, [setBackgroundMusic, setBattleMusic, setHitSound, setSuccessSound]);
+
+  // Play background music in menu/hub states
+  useEffect(() => {
+    if (!backgroundMusic || isMuted) return;
+
+    if (gameState === 'menu' || gameState === 'nexus-haven' || gameState === 'character-select' || gameState === 'squad-select') {
+      backgroundMusic.play().catch(() => {
+        console.log("Background music autoplay blocked - waiting for user interaction");
+      });
+    } else {
+      backgroundMusic.pause();
+    }
+  }, [gameState, backgroundMusic, isMuted]);
 
   // Set up battle fighters when character is selected
   useEffect(() => {
