@@ -48,10 +48,22 @@ Preferred communication style: Simple, everyday language.
 - ✅ **Character Bios & RPG Sheets**: Cinematic backstories, specialties, ultimate attacks, transformation paths, origin stories, and battle quotes for all heroes
 - ✅ **World State Management**: Zone discovery, rift tracking, Nexus level, hero recruitment, Void King weakness
 - ✅ **Mythic Opening**: Epic narration introducing the fractured multiverse and Void King threat
-- ✅ **3D Combat System** (Phase 2): Full 3D positioning, rotation-based facing, stance system, momentum/balance physics, visual indicators
+- ✅ **Dynamic 3D Combat System** (Master Fighting Mechanics): Full 3D positioning with depth axis, rotation-based facing, natural stance system with dynamic weight distribution (WD), center of gravity (CG) tracking, recovery frames, momentum-based power generation from hip rotation, realistic combat physics
+- ✅ **Master Fighting Formula**: P ∝ (M_B · V_H) + (A_L · ω) where power comes from hip rotation, momentum, weight distribution, and CG efficiency
 - ✅ **Battle Quote System**: Each hero has unique signature quotes displayed before battle
 - ✅ **Transformation Sequences**: Visual descriptions of how each transformation occurs
 - ✅ **Villain Matchup Charts**: Advantage/disadvantage data showing which heroes counter which villains
+
+**Combat Mechanics (PHASE 3 - DYNAMIC FIGHTING):**
+- ✅ **Natural Stance System**: Bladed/staggered fighting stance with dynamic weight distribution (60/40 front-to-back or flexible)
+- ✅ **Hip Rotation Power Generation**: All strikes originate from ground-up with hip torque (θ_H) for realistic power
+- ✅ **Weight Distribution (WD) Variable**: Dynamically shifts between front and rear foot (0.3-0.8 range) based on movement and attacks
+- ✅ **Center of Gravity (CG) Tracking**: 0-1 variable tracking CG position for damage efficiency and balance
+- ✅ **Recovery Frames**: Vulnerability windows when balance drops below threshold or after high-risk attacks
+- ✅ **Momentum & Exit Vectors**: Attacks build momentum and naturally flow into next position for combo potential
+- ✅ **3D Depth Movement**: Z-axis weaving, slipping, and evasion for dynamic spatial combat
+- ✅ **Reactionary AI**: Opponent previews attack windup, giving player window for early defensive input
+- ✅ **Range Management**: Calculates optimal fighting distance (Dopt) based on attack type
 
 **Core Systems (PLANNED):**
 - **Open World Zones**: Seamless exploration across Green Hill-Hyrule, Dream Land Skies, Lylat Ruins, etc.
@@ -59,14 +71,7 @@ Preferred communication style: Simple, everyday language.
 - **Squad Combat**: Tag combos, assist attacks, synchronized ultimates in battle
 - **Story Mode**: Cinematic cutscenes, emotional arcs, world-boss invasions
 - **Expanded Roster**: 30+ additional heroes with unique quests and abilities
-
-**Combat Evolution:**
-- **Base Combat**: Punch, kick, jump, dodge, special moves (existing battle system)
-- **Squad Synergy**: Tag combos, assist attacks (framework ready)
-- **Transformation System**: Energy meters unlock god-tier forms mid-battle (framework ready)
-- **3D Combat Dynamics**: Hip rotation for power generation, weight transfer, momentum-based damage, stance system, balance meter, real-time physics updates
-- **Rift Mechanics**: Enter portals for Echo boss fights (portals visualized, mechanics pending)
-- **Dynamic Feedback**: Visual indicators for balance stability, momentum, stance, and attack phases
+- **Dynamic Reflection Saga Mode (DRSM)**: Character leveling, gear customization, Empathy resource loop, progression systems
 
 ### Mobile-First Design
 - **Touch Controls**: Gesture-based input system with swipe and tap recognition
@@ -131,6 +136,18 @@ Detailed matchup data for major antagonists:
 
 ## Recent Updates
 
+### November 22, 2025 - Master Fighting Mechanics (Phase 3)
+- ✅ Implemented dynamic weight distribution (WD) system with front/back foot shifts
+- ✅ Added center of gravity (CG) tracking for balance and damage efficiency
+- ✅ Created recovery frame vulnerability windows (scales with attack type)
+- ✅ Implemented master fighting formula: P ∝ (M_B · V_H) + (A_L · ω)
+- ✅ Enhanced power calculation with hip rotation, momentum, stance bonuses, and CG efficiency
+- ✅ Added natural exit vectors so attacks flow into next position
+- ✅ Integrated 3D depth-axis movement with weaving and slipping mechanics
+- ✅ Simplified opponent AI attack system with recovery frames
+- ✅ Added range management framework for optimal fighting distance (Dopt)
+- ✅ Updated character select UI with battle quotes, origin stories, villain matchups, and transformation sequences
+
 ### November 22, 2025 - Character System Expansion
 - ✅ Added detailed origin stories for all 8 core heroes
 - ✅ Implemented transformation sequence visual descriptions
@@ -138,18 +155,19 @@ Detailed matchup data for major antagonists:
 - ✅ Built villain matchup chart system
 - ✅ Enhanced CharacterSelect UI to display all new data
 - ✅ Integrated RPG-style character sheets into selection flow
-- ✅ Updated character data structure with new fields
-
-### November 22, 2025 - 3D Combat System Phase 2
-- ✅ Implemented full 3D positioning (x, y, z) for fighters
-- ✅ Added rotation-based facing angle system (eliminated 2D flip)
-- ✅ Created stance system with weight distribution tracking
-- ✅ Built momentum and balance physics with frame updates
-- ✅ Added visual indicators for balance, momentum, stance, and attack phases
-- ✅ Applied symmetric updates to both player and opponent
 
 ### Earlier Phases
 - ✅ Phase 1: Expanded combat data model with 3D support
+- ✅ Phase 2: Balance/momentum physics with visual indicators
 - ✅ Audio system with background music and sound effects
 - ✅ Squad selection and transformation framework
 - ✅ Nexus Haven 3D hub world
+
+## Next Steps (DRSM & Progression)
+
+The foundation for Dynamic Reflection Saga Mode (DRSM) is ready:
+- Character leveling framework with stat growth
+- Artifact/gear customization slots (Core, Flow, Damage)
+- Empathy gauge and purification system for resource economy
+- Utility-based progression gating for story advancement
+- Squad-based XP distribution across active heroes
