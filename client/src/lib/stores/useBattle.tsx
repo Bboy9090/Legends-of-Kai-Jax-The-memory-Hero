@@ -227,14 +227,25 @@ export const useBattle = create<BattleState>((set, get) => ({
     else if (type === 'kick') audio.playKick();
     else if (type === 'special') audio.playSpecial();
     
-    // Check if hit opponent
-    const { playerX, opponentX, opponentInvulnerable } = get();
-    const distance = Math.abs(playerX - opponentX);
-    const range = type === 'special' ? 3 : type === 'kick' ? 2 : 1.5;
+    // IMPROVED HIT DETECTION - Check distance AND height
+    const { playerX, playerY, opponentX, opponentY, opponentInvulnerable } = get();
+    const distanceX = Math.abs(playerX - opponentX);
+    const distanceY = Math.abs(playerY - opponentY);
+    const range = type === 'special' ? 3.5 : type === 'kick' ? 2.2 : 1.8; // Slightly more forgiving
+    const heightRange = type === 'kick' ? 1.5 : 1.2; // Kicks have better vertical range
     
-    if (distance < range && !opponentInvulnerable) {
-      const damage = type === 'special' ? 20 : type === 'kick' ? 15 : 10;
+    const inRange = distanceX < range && distanceY < heightRange;
+    
+    if (inRange && !opponentInvulnerable) {
+      const baseDamage = type === 'special' ? 25 : type === 'kick' ? 15 : 10;
+      // Perfect hit bonus if very close
+      const perfectHit = distanceX < range * 0.5 && distanceY < heightRange * 0.5;
+      const damage = perfectHit ? Math.floor(baseDamage * 1.3) : baseDamage;
+      
+      console.log(`[Battle] HIT! Distance: ${distanceX.toFixed(2)}, Damage: ${damage}${perfectHit ? ' (PERFECT!)' : ''}`);
       get().opponentTakeDamage(damage);
+    } else {
+      console.log(`[Battle] MISS! Distance: ${distanceX.toFixed(2)}, Height: ${distanceY.toFixed(2)}`);
     }
     
     // Reset attack after animation
@@ -307,13 +318,21 @@ export const useBattle = create<BattleState>((set, get) => ({
     else if (type === 'kick') audio.playKick();
     else if (type === 'special') audio.playSpecial();
     
-    // Check if hit player
-    const { playerX, opponentX, playerInvulnerable } = get();
-    const distance = Math.abs(playerX - opponentX);
-    const range = type === 'special' ? 3 : type === 'kick' ? 2 : 1.5;
+    // IMPROVED HIT DETECTION - Check distance AND height
+    const { playerX, playerY, opponentX, opponentY, playerInvulnerable } = get();
+    const distanceX = Math.abs(playerX - opponentX);
+    const distanceY = Math.abs(playerY - opponentY);
+    const range = type === 'special' ? 3.5 : type === 'kick' ? 2.2 : 1.8;
+    const heightRange = type === 'kick' ? 1.5 : 1.2;
     
-    if (distance < range && !playerInvulnerable) {
-      const damage = type === 'special' ? 20 : type === 'kick' ? 15 : 10;
+    const inRange = distanceX < range && distanceY < heightRange;
+    
+    if (inRange && !playerInvulnerable) {
+      const baseDamage = type === 'special' ? 25 : type === 'kick' ? 15 : 10;
+      const perfectHit = distanceX < range * 0.5 && distanceY < heightRange * 0.5;
+      const damage = perfectHit ? Math.floor(baseDamage * 1.3) : baseDamage;
+      
+      console.log(`[Battle] Opponent HIT! Distance: ${distanceX.toFixed(2)}, Damage: ${damage}${perfectHit ? ' (PERFECT!)' : ''}`);
       get().playerTakeDamage(damage);
     }
     
