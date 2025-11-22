@@ -25,7 +25,7 @@ Preferred communication style: Simple, everyday language.
 - **Vite** as the build tool with hot module replacement for development
 
 ### Component Structure
-- **Game States**: Menu, Nexus Haven hub, squad selection, character select, battle mode, customization
+- **Game States**: Menu, Story Mode Selection, Game Modes, Squad Selection, Character Select, Battle Mode, Customization
 - **3D Components**: Nexus Haven hub world, dimensional rift portals, player characters, enemies, environment
 - **UI Components**: Radix UI primitives with custom styling for accessibility
 - **Game Logic**: Squad combat, transformation system, dimensional rifts, world progression
@@ -53,6 +53,9 @@ Preferred communication style: Simple, everyday language.
 - ✅ **Battle Quote System**: Each hero has unique signature quotes displayed before battle
 - ✅ **Transformation Sequences**: Visual descriptions of how each transformation occurs
 - ✅ **Villain Matchup Charts**: Advantage/disadvantage data showing which heroes counter which villains
+- ✅ **Story Mode - 9 Acts**: Complete saga experience with fire moments, boss encounters, and cinematic sequences
+- ✅ **Game Modes - 12 Modes**: Legacy Mode, Gauntlet of Gods, Riftbreak Survival, Timeline Paradox, Toddler Mode, Lab Mode, Open Zone Expeditions, Harmonarch Trials, Echo Simulator, Haven Builder, Double Fate, Cinematic Library
+- ✅ **Marvel Ultimate Alliance-style Team Synergies**: Dynamic team bonuses, fusion attacks, and squad-based buffs
 
 **Combat Mechanics (PHASE 3 - DYNAMIC FIGHTING):**
 - ✅ **Natural Stance System**: Bladed/staggered fighting stance with dynamic weight distribution (60/40 front-to-back or flexible)
@@ -69,7 +72,7 @@ Preferred communication style: Simple, everyday language.
 - **Open World Zones**: Seamless exploration across Green Hill-Hyrule, Dream Land Skies, Lylat Ruins, etc.
 - **Dimensional Rifts**: Reality tears spawning Echo bosses with rare rewards
 - **Squad Combat**: Tag combos, assist attacks, synchronized ultimates in battle
-- **Story Mode**: Cinematic cutscenes, emotional arcs, world-boss invasions
+- **Story Progression**: Unlock modes through story acts
 - **Expanded Roster**: 30+ additional heroes with unique quests and abilities
 - **Dynamic Reflection Saga Mode (DRSM)**: Character leveling, gear customization, Empathy resource loop, progression systems
 
@@ -77,6 +80,55 @@ Preferred communication style: Simple, everyday language.
 - **Touch Controls**: Gesture-based input system with swipe and tap recognition
 - **Responsive UI**: Tailwind CSS with mobile-optimized layouts
 - **Performance Optimization**: Efficient 3D rendering with object pooling and LOD systems
+
+## Story Mode - 9 Acts Structure
+
+The complete saga is now playable as **9 Cinematic Acts**, each with:
+- **Act I - Cross Point Tournament**: The multiversal tournament begins (Book 1)
+- **Act II - Year of No A-Listers**: Support heroes save the day (Book 2)
+- **Act III - Unity's Dawn**: Heroes reunite with ancient powers (Book 3)
+- **Act IV - The Great Hunt**: Artifact hunts in corrupted zones (Book 4)
+- **Act V - Primordial Gambit**: Fortress invasions and 2nd-tier transformations (Book 5)
+- **Act VI - Shadows of the Void**: Cosmic storms and titan battles (Book 6)
+- **Act VII - Nexus Legacy**: Multi-generation combat with legacy kids (Book 7)
+- **Act VIII - War of the Eternals**: Tournament of titans with environmental rules (Book 8)
+- **Act IX - Oblivion's End**: Final battle against the Void King (Book 9)
+
+Each act contains:
+- Multiple fire moments with cutscenes
+- Boss encounters
+- Unique gameplay twists
+- Difficulty progression
+- Estimated 120-350 minute playtimes
+
+## 12 Additional Game Modes
+
+Beyond the main story:
+1. **Legacy Mode** - Play post-saga with legacy kids
+2. **The Gauntlet of Gods** - 100-floor endless tower
+3. **Riftbreak Survival** - Endless wave survival
+4. **Timeline Paradox** - Replay fights with alternate outcomes
+5. **Toddler Mode** - Comedy mode with baby heroes
+6. **Lab Mode** - Upgrade and customize heroes
+7. **Open Zone Expeditions** - Explore iconic worlds
+8. **Harmonarch Trials** - Fight cosmic overseers
+9. **Echo Simulator** - AI training that learns your playstyle
+10. **Haven Builder** - Base-building for Nexus Haven
+11. **Double Fate** - Dual storylines (Light/Void paths)
+12. **Cinematic Library** - Replay cutscenes and lore
+
+## Team Synergy System (Marvel Ultimate Alliance-style)
+
+### Key Features:
+- **10+ Team Synergies**: Speed Demons, Guardian Order, Chaos Rebels, Divine Choir, Bros Bond, Tech Gurus, Stellar Protectors, Legend Crew, Dark Alliance, Smash Family
+- **Dynamic Bonuses**: Each team composition grants unique stat bonuses (speed, defense, damage, healing, etc.)
+- **Fusion Attacks**: Special combined attacks when team members fight together
+- **Team Ultimates**: Powerful group finishing moves (Lightspeed Blitzstorm, Tri-Force Starburst, Oblivion Execution, etc.)
+
+Example synergies:
+- **Speed Demons** (Sonic + Fox + Pikachu + Greninja): +20% Dash Speed, Lightspeed Blitzstorm Ultimate
+- **Guardian Order** (Mario + Link + Samus + Peach): +15% Defense, Tri-Force Starburst Ultimate
+- **Divine Choir** (Zelda + Rosalina + Palutena + Lunara): +25% Spell Power, Infinite Symphony Ultimate
 
 ## Character System Features
 
@@ -136,6 +188,15 @@ Detailed matchup data for major antagonists:
 
 ## Recent Updates
 
+### November 22, 2025 - Story Mode & Game Modes Complete
+- ✅ Implemented 9-Act story mode with fire moments and boss encounters
+- ✅ Created 12 game modes with progression-based unlocks
+- ✅ Built Marvel Ultimate Alliance-style team synergy system
+- ✅ Added 10+ team compositions with unique bonuses
+- ✅ Implemented fusion attacks and team ultimates
+- ✅ Created StoryModeSelect and GameModesMenu UI components
+- ✅ Integrated team synergy bonuses into combat calculations
+
 ### November 22, 2025 - Master Fighting Mechanics (Phase 3)
 - ✅ Implemented dynamic weight distribution (WD) system with front/back foot shifts
 - ✅ Added center of gravity (CG) tracking for balance and damage efficiency
@@ -146,7 +207,6 @@ Detailed matchup data for major antagonists:
 - ✅ Integrated 3D depth-axis movement with weaving and slipping mechanics
 - ✅ Simplified opponent AI attack system with recovery frames
 - ✅ Added range management framework for optimal fighting distance (Dopt)
-- ✅ Updated character select UI with battle quotes, origin stories, villain matchups, and transformation sequences
 
 ### November 22, 2025 - Character System Expansion
 - ✅ Added detailed origin stories for all 8 core heroes
@@ -165,7 +225,7 @@ Detailed matchup data for major antagonists:
 
 ## Next Steps (DRSM & Progression)
 
-The foundation for Dynamic Reflection Saga Mode (DRSM) is ready:
+Foundation for Dynamic Reflection Saga Mode (DRSM) is in place:
 - Character leveling framework with stat growth
 - Artifact/gear customization slots (Core, Flow, Damage)
 - Empathy gauge and purification system for resource economy
