@@ -36,7 +36,7 @@ Preferred communication style: Simple, everyday language.
 - **useWorldState**: RPG progression (zones, rifts, Nexus Haven level, recruited heroes, Void King weakness)
 - **useSquad**: Squad management (3-hero party, active hero, synergy bonuses, stats)
 - **useTransformations**: Power-up system (transformation levels, energy meters, unlocks)
-- **useBattle**: Combat mechanics (fighters, health, attacks)
+- **useBattle**: Combat mechanics (fighters, health, attacks, 3D positioning, balance/momentum)
 - **useAudio**: Sound effects and music management
 
 ### Game Architecture: World Collision RPG
@@ -44,10 +44,14 @@ Preferred communication style: Simple, everyday language.
 **Core Systems (IMPLEMENTED):**
 - ✅ **Nexus Haven Hub**: 3D central hub with dimensional rift portals, squad management, and progression tracking
 - ✅ **Squad Selection**: Choose 3 heroes from recruited roster with synergy bonus calculations
-- ✅ **Transformation System**: Energy meters and power-up states (Base → Super → Hyper/Ultimate)
-- ✅ **Character Bios**: Cinematic backstories, specialties, ultimate attacks, and transformation paths for all heroes
+- ✅ **Transformation System**: Energy meters and power-up states (Base → Super → Ultimate)
+- ✅ **Character Bios & RPG Sheets**: Cinematic backstories, specialties, ultimate attacks, transformation paths, origin stories, and battle quotes for all heroes
 - ✅ **World State Management**: Zone discovery, rift tracking, Nexus level, hero recruitment, Void King weakness
 - ✅ **Mythic Opening**: Epic narration introducing the fractured multiverse and Void King threat
+- ✅ **3D Combat System** (Phase 2): Full 3D positioning, rotation-based facing, stance system, momentum/balance physics, visual indicators
+- ✅ **Battle Quote System**: Each hero has unique signature quotes displayed before battle
+- ✅ **Transformation Sequences**: Visual descriptions of how each transformation occurs
+- ✅ **Villain Matchup Charts**: Advantage/disadvantage data showing which heroes counter which villains
 
 **Core Systems (PLANNED):**
 - **Open World Zones**: Seamless exploration across Green Hill-Hyrule, Dream Land Skies, Lylat Ruins, etc.
@@ -58,14 +62,40 @@ Preferred communication style: Simple, everyday language.
 
 **Combat Evolution:**
 - **Base Combat**: Punch, kick, jump, dodge, special moves (existing battle system)
-- **Squad Synergy**: Tag combos, assist attacks (to implement)
+- **Squad Synergy**: Tag combos, assist attacks (framework ready)
 - **Transformation System**: Energy meters unlock god-tier forms mid-battle (framework ready)
+- **3D Combat Dynamics**: Hip rotation for power generation, weight transfer, momentum-based damage, stance system, balance meter, real-time physics updates
 - **Rift Mechanics**: Enter portals for Echo boss fights (portals visualized, mechanics pending)
+- **Dynamic Feedback**: Visual indicators for balance stability, momentum, stance, and attack phases
 
 ### Mobile-First Design
 - **Touch Controls**: Gesture-based input system with swipe and tap recognition
 - **Responsive UI**: Tailwind CSS with mobile-optimized layouts
 - **Performance Optimization**: Efficient 3D rendering with object pooling and LOD systems
+
+## Character System Features
+
+### Rich Character Data
+Each hero includes:
+- **Title**: Personality archetype (e.g., "Chaos Incarnate", "Adaptive Arsenal")
+- **Short Bio**: Quick description for character select screen
+- **Extended Bio**: Cinematic RPG codex entry
+- **Origin Story**: Full mythology narrative explaining their background and abilities
+- **Specialty**: Combat focus (speed, defense, utility, etc.)
+- **Transformations**: 3 power levels with visual sequence descriptions
+  - Base Form (1.0x power)
+  - Super/Enhanced Form (2.5x power)
+  - Ultimate/Omega Form (5.0x power)
+- **Ultimate Attack**: Signature finishing move description
+- **Battle Quotes**: 5+ unique signature quotes spoken before battle
+- **Synergy Partners**: Heroes who work well together
+- **Villain Matchups**: Advantage/neutral/disadvantage against major threats
+
+### Villain Matchup System
+Detailed matchup data for major antagonists:
+- **The Void King**: Ultimate void entity with time-stopping aura
+- **Echo Heroes**: Corrupted versions of heroes with twisted abilities
+- **Entropy Court Generals**: Five void generals representing different entropy aspects
 
 ## External Dependencies
 
@@ -98,3 +128,28 @@ Preferred communication style: Simple, everyday language.
 - **TanStack Query**: Server state management for API calls
 - **Zustand**: Lightweight state management for game logic
 - **GLSL shader support**: Custom visual effects for character abilities
+
+## Recent Updates
+
+### November 22, 2025 - Character System Expansion
+- ✅ Added detailed origin stories for all 8 core heroes
+- ✅ Implemented transformation sequence visual descriptions
+- ✅ Created battle quote system (5+ unique quotes per hero)
+- ✅ Built villain matchup chart system
+- ✅ Enhanced CharacterSelect UI to display all new data
+- ✅ Integrated RPG-style character sheets into selection flow
+- ✅ Updated character data structure with new fields
+
+### November 22, 2025 - 3D Combat System Phase 2
+- ✅ Implemented full 3D positioning (x, y, z) for fighters
+- ✅ Added rotation-based facing angle system (eliminated 2D flip)
+- ✅ Created stance system with weight distribution tracking
+- ✅ Built momentum and balance physics with frame updates
+- ✅ Added visual indicators for balance, momentum, stance, and attack phases
+- ✅ Applied symmetric updates to both player and opponent
+
+### Earlier Phases
+- ✅ Phase 1: Expanded combat data model with 3D support
+- ✅ Audio system with background music and sound effects
+- ✅ Squad selection and transformation framework
+- ✅ Nexus Haven 3D hub world
