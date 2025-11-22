@@ -514,6 +514,76 @@ export default function Opponent() {
             />
           </mesh>
         )}
+        
+        {/* BALANCE METER - Shows opponent's center of gravity stability */}
+        <group position={[-1.5, 2.5, 0]}>
+          {/* Background bar */}
+          <mesh position={[0, 0, -0.01]}>
+            <planeGeometry args={[1.0, 0.15]} />
+            <meshBasicMaterial color="#333333" transparent opacity={0.6} />
+          </mesh>
+          {/* Balance fill - Green when balanced, red when unstable */}
+          <mesh position={[-(1.0 - opponentBalance * 1.0) / 2, 0, 0]}>
+            <planeGeometry args={[opponentBalance * 1.0, 0.12]} />
+            <meshBasicMaterial 
+              color={opponentBalance > 0.7 ? '#00FF00' : opponentBalance > 0.4 ? '#FFFF00' : '#FF0000'} 
+              transparent 
+              opacity={0.9} 
+            />
+          </mesh>
+        </group>
+        
+        {/* MOMENTUM INDICATOR - Shows opponent's forward momentum */}
+        <group position={[1.5, 2.5, 0]}>
+          {/* Background bar */}
+          <mesh position={[0, 0, -0.01]}>
+            <planeGeometry args={[1.0, 0.15]} />
+            <meshBasicMaterial color="#333333" transparent opacity={0.6} />
+          </mesh>
+          {/* Momentum fill - Cyan/blue gradient */}
+          <mesh position={[-(1.0 - opponentMomentum * 1.0) / 2, 0, 0]}>
+            <planeGeometry args={[opponentMomentum * 1.0, 0.12]} />
+            <meshBasicMaterial 
+              color={opponentMomentum > 0.7 ? '#00FFFF' : '#0088FF'} 
+              transparent 
+              opacity={0.9} 
+            />
+          </mesh>
+        </group>
+        
+        {/* STANCE VISUALIZATION - Shows hip rotation and weight distribution */}
+        {opponentStance && (
+          <group position={[0, -0.5, 0]}>
+            {/* Hip rotation indicator - Line showing rotation angle */}
+            <mesh rotation={[0, 0, opponentStance.hipRotation]}>
+              <boxGeometry args={[0.8, 0.05, 0.05]} />
+              <meshBasicMaterial 
+                color={fighter.accentColor} 
+                transparent 
+                opacity={0.7} 
+              />
+            </mesh>
+            {/* Weight distribution circles */}
+            <mesh position={[-0.3, -0.2, 0]}>
+              <circleGeometry args={[0.15 * opponentStance.frontFootWeight, 16]} />
+              <meshBasicMaterial 
+                color="#FF00FF" 
+                transparent 
+                opacity={0.6} 
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+            <mesh position={[0.3, -0.2, 0]}>
+              <circleGeometry args={[0.15 * opponentStance.rearFootWeight, 16]} />
+              <meshBasicMaterial 
+                color="#FF00AA" 
+                transparent 
+                opacity={0.6} 
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+          </group>
+        )}
       </group>
     </group>
   );
