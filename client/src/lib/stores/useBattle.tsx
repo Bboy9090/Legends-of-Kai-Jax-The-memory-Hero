@@ -55,8 +55,11 @@ export interface BattleState {
   playerStance: Stance;
   playerMomentum: number; // Forward momentum for dash/lunge attacks (0-1)
   playerBalance: number; // Center of gravity stability (0-1, <0.3 = stumbling)
+  playerCenterOfGravity: number; // 0-1: Current CG position (0.5 = neutral, <0.3 = vulnerable)
+  playerRecoveryFrames: number; // Vulnerability window after balance loss
   playerAttackPhase: AttackPhase;
   playerComboCount: number; // Consecutive hits in current combo
+  playerOptimalDistance: number; // Calculated ideal fighting distance
   
   // Opponent 3D position/physics
   opponentX: number;
@@ -105,6 +108,7 @@ export interface BattleState {
   updatePlayerStance: (weightShift: number, hipRotation: number) => void;
   updatePlayerBalance: (delta: number) => void; // Apply physics to balance meter
   updatePlayerMomentum: (delta: number) => void; // Decay/build momentum
+  updatePlayerRecoveryFrames: (delta: number) => void; // Decay recovery vulnerability
   
   // Opponent actions (legacy 2D)
   moveOpponent: (x: number, y: number) => void;
@@ -120,6 +124,7 @@ export interface BattleState {
   // Opponent stance & momentum
   updateOpponentBalance: (delta: number) => void;
   updateOpponentMomentum: (delta: number) => void;
+  updateOpponentRecoveryFrames: (delta: number) => void;
   
   // Battle results
   endBattle: (winner: 'player' | 'opponent') => void;
@@ -172,8 +177,11 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
   playerMomentum: 0,
   playerBalance: 1.0, // Perfect balance
+  playerCenterOfGravity: 0.5, // Neutral position
+  playerRecoveryFrames: 0, // No vulnerability
   playerAttackPhase: 'idle' as AttackPhase,
   playerComboCount: 0,
+  playerOptimalDistance: 2.0,
   
   // Opponent starts on right with 3D positioning
   opponentX: 5,
@@ -194,8 +202,11 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
   opponentMomentum: 0,
   opponentBalance: 1.0,
+  opponentCenterOfGravity: 0.5,
+  opponentRecoveryFrames: 0,
   opponentAttackPhase: 'idle' as AttackPhase,
   opponentComboCount: 0,
+  opponentOptimalDistance: 2.0,
   
   playerAttacking: false,
   playerAttackType: null,
@@ -205,7 +216,7 @@ export const useBattle = create<BattleState>((set, get) => ({
   opponentInvulnerable: false,
   
   startBattle: () => {
-    console.log("[Battle] Starting battle");
+    console.log("[Battle] Starting battle - Dynamic combat system activated!");
     set({
       battlePhase: 'fighting',
       roundTime: get().maxRoundTime,
@@ -217,16 +228,22 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerRotation: 0,
       playerMomentum: 0,
       playerBalance: 1.0,
+      playerCenterOfGravity: 0.5,
+      playerRecoveryFrames: 0,
       playerAttackPhase: 'idle' as AttackPhase,
       playerComboCount: 0,
+      playerOptimalDistance: 2.0,
       opponentX: 5,
       opponentY: 0.8,
       opponentZ: 0,
       opponentRotation: Math.PI,
       opponentMomentum: 0,
       opponentBalance: 1.0,
+      opponentCenterOfGravity: 0.5,
+      opponentRecoveryFrames: 0,
       opponentAttackPhase: 'idle' as AttackPhase,
       opponentComboCount: 0,
+      opponentOptimalDistance: 2.0,
       winner: null
     });
     
@@ -259,6 +276,10 @@ export const useBattle = create<BattleState>((set, get) => ({
       opponentMomentum: 0,
       playerBalance: 1.0,
       opponentBalance: 1.0,
+      playerCenterOfGravity: 0.5,
+      opponentCenterOfGravity: 0.5,
+      playerRecoveryFrames: 0,
+      opponentRecoveryFrames: 0,
       playerAttackPhase: 'idle' as AttackPhase,
       opponentAttackPhase: 'idle' as AttackPhase,
       playerComboCount: 0,
@@ -319,29 +340,39 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
   
   playerAttack: (type) => {
-    const { playerAttacking, battlePhase, playerAttackPhase, playerBalance } = get();
+    const { playerAttacking, battlePhase, playerAttackPhase, playerBalance, playerRecoveryFrames } = get();
     if (playerAttacking || battlePhase !== 'fighting' || playerAttackPhase !== 'idle') return;
+    
+    // Can't attack if in recovery frames (vulnerable window after lost balance)
+    if (playerRecoveryFrames > 0) {
+      console.log("[Battle] Player in RECOVERY FRAMES - vulnerable!");
+      return;
+    }
     
     // Can't attack if balance is too low (stumbling)
     if (playerBalance < 0.3) {
       console.log("[Battle] Player off-balance - attack failed!");
+      set({ playerRecoveryFrames: 0.4 }); // 400ms recovery window
       return;
     }
     
-    console.log("[Battle] Player attack:", type, "- Initiating attack phases...");
+    console.log("[Battle] Player attack:", type, "- MASTER FIGHTING MECHANICS!");
     
-    // PHASE 1: WIND-UP (Loading the attack)
+    // PHASE 1: WIND-UP (Loading the attack with hip rotation)
     set({ 
       playerAttacking: true, 
       playerAttackType: type,
       playerAttackPhase: 'windup' as AttackPhase
     });
     
-    const { playerStance, playerMomentum, playerX, playerRotation } = get();
+    const { playerStance, playerMomentum, playerX, playerRotation, playerCenterOfGravity } = get();
     
     // Calculate hip rotation for power generation (more rotation = more power)
     const targetHipRotation = type === 'punch' ? 0.3 : type === 'kick' ? 0.5 : 0.6;
-    get().updatePlayerStance(0, targetHipRotation);
+    
+    // Shift weight during windup (loading the stance)
+    const windupWeightShift = type === 'punch' ? 0.1 : type === 'kick' ? 0.15 : 0.2;
+    get().updatePlayerStance(windupWeightShift, targetHipRotation);
     
     // Wind-up timing based on attack type
     const windupTime = type === 'special' ? 250 : type === 'kick' ? 150 : 100;
@@ -357,7 +388,7 @@ export const useBattle = create<BattleState>((set, get) => ({
       else if (type === 'special') audio.playSpecial();
       
       // HIT DETECTION with 3D positioning
-      const { playerX, playerY, playerZ, opponentX, opponentY, opponentZ, opponentInvulnerable, playerStance, playerMomentum } = get();
+      const { playerX, playerY, playerZ, opponentX, opponentY, opponentZ, opponentInvulnerable, playerStance, playerMomentum, playerBalance, playerCenterOfGravity } = get();
       const distanceX = Math.abs(playerX - opponentX);
       const distanceY = Math.abs(playerY - opponentY);
       const distanceZ = Math.abs(playerZ - opponentZ);
@@ -368,41 +399,58 @@ export const useBattle = create<BattleState>((set, get) => ({
       const inRange = distanceX < range && distanceY < heightRange && distanceZ < depthRange;
       
       if (inRange && !opponentInvulnerable) {
-        // REALISTIC DAMAGE CALCULATION
+        // === MASTER FIGHTING FORMULA ===
+        // P ∝ (M_B · V_H) + (A_L · ω)
+        // Where: M_B = body mass (fighter base), V_H = hip velocity, A_L = arm length, ω = angular velocity
+        
         const baseDamage = type === 'special' ? 25 : type === 'kick' ? 15 : 10;
         
-        // Power formula: Damage ∝ (Mass × Hip Rotation) + (Momentum × Weight Distribution)
+        // Hip rotation power (more torque = more damage)
         const hipPower = Math.abs(playerStance.hipRotation) / 0.6; // 0-1 based on max rotation
-        const momentumBonus = playerMomentum * 0.5; // Momentum adds up to 50% more
-        const stanceBonus = playerStance.weightFront * 0.3; // Front-heavy stance adds power
         
-        const powerMultiplier = 1.0 + hipPower * 0.4 + momentumBonus + stanceBonus;
+        // Momentum contribution (forward velocity amplifies damage)
+        const momentumBonus = playerMomentum * 0.5; // 0-0.5x damage multiplier
+        
+        // Weight distribution (front-heavy = more power, but costs balance)
+        const stanceBonus = (playerStance.weightFront - 0.5) * 0.4; // -0.2 to +0.2 based on stance
+        
+        // Center of gravity efficiency (neutral CG = best damage transfer)
+        const cgBonus = 1.0 - Math.abs(playerCenterOfGravity - 0.5) * 0.5; // 0.75-1.0x
+        
+        // Attack type base multiplier (special moves are stronger but risky)
+        const typeMultiplier = type === 'special' ? 1.3 : type === 'kick' ? 1.1 : 1.0;
+        
+        // FINAL POWER CALCULATION
+        const powerMultiplier = cgBonus * typeMultiplier * (1.0 + hipPower * 0.5 + momentumBonus + stanceBonus);
         const damage = Math.floor(baseDamage * powerMultiplier);
         
-        // Perfect hit bonus if very close
+        // Perfect hit bonus if very close (3D spacing reward)
         const perfectHit = distanceX < range * 0.5 && distanceY < heightRange * 0.5 && distanceZ < depthRange * 0.5;
-        const finalDamage = perfectHit ? Math.floor(damage * 1.2) : damage;
+        const finalDamage = perfectHit ? Math.floor(damage * 1.25) : damage;
         
-        console.log(`[Battle] HIT! Damage: ${finalDamage} (Hip: ${hipPower.toFixed(2)}, Momentum: ${playerMomentum.toFixed(2)})${perfectHit ? ' ⚡PERFECT!' : ''}`);
+        console.log(`[Battle] ⚡ HIT! Damage: ${finalDamage} (Hip: ${hipPower.toFixed(2)}, Momentum: ${playerMomentum.toFixed(2)}, CG: ${playerCenterOfGravity.toFixed(2)})${perfectHit ? ' 🔥PERFECT!' : ''}`);
         get().opponentTakeDamage(finalDamage);
         
         // Increment combo counter
         set({ playerComboCount: get().playerComboCount + 1 });
       } else {
         console.log(`[Battle] MISS! Distance: X:${distanceX.toFixed(2)} Y:${distanceY.toFixed(2)} Z:${distanceZ.toFixed(2)}`);
-        // Missing breaks combo
+        // Missing breaks combo and costs balance
         set({ playerComboCount: 0 });
       }
       
-      // PHASE 3: FOLLOW-THROUGH (Attack completes, weight shifts)
+      // PHASE 3: FOLLOW-THROUGH (Natural exit vector for next action)
       const contactTime = 80;
       setTimeout(() => {
         set({ playerAttackPhase: 'followthrough' as AttackPhase });
         
-        // Weight transfer and momentum shift (attacks push you forward)
+        // Weight transfer after strike (natural momentum flow)
         const followThroughDistance = 0.3 * (1 + playerMomentum * 0.5);
         const cos = Math.cos(playerRotation);
         const sin = Math.sin(playerRotation);
+        
+        // Update center of gravity based on follow-through
+        const newCG = Math.min(0.8, Math.max(0.2, playerCenterOfGravity + (playerStance.weightFront - 0.5) * 0.2));
         
         set({
           playerX: Math.max(-10, Math.min(10, playerX + followThroughDistance * cos)),
@@ -412,20 +460,22 @@ export const useBattle = create<BattleState>((set, get) => ({
             weightFront: Math.min(0.8, playerStance.weightFront + 0.15), // Weight shifts forward
             hipRotation: -targetHipRotation * 0.3 // Hips counter-rotate
           },
-          playerBalance: Math.max(0.4, playerBalance - 0.1), // Attack costs balance
-          playerMomentum: Math.max(0, playerMomentum - 0.2) // Momentum spent
+          playerCenterOfGravity: newCG,
+          playerBalance: Math.max(0.35, playerBalance - 0.15), // Attack costs balance
+          playerMomentum: Math.max(0, playerMomentum - 0.25) // Momentum consumed
         });
         
-        // PHASE 4: RECOVERY (Return to ready state)
+        // PHASE 4: RECOVERY (Vulnerable window based on attack type)
         const followThroughTime = type === 'special' ? 300 : type === 'kick' ? 200 : 150;
         setTimeout(() => {
           set({ 
             playerAttacking: false, 
             playerAttackType: null,
-            playerAttackPhase: 'recovery' as AttackPhase
+            playerAttackPhase: 'recovery' as AttackPhase,
+            playerRecoveryFrames: type === 'special' ? 0.25 : type === 'kick' ? 0.15 : 0.1 // Vulnerability window
           });
           
-          // Gradually return to idle (recovery frames - vulnerable window)
+          // Gradually return to idle
           const recoveryTime = type === 'special' ? 200 : type === 'kick' ? 100 : 80;
           setTimeout(() => {
             set({ 
@@ -491,41 +541,78 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
   
   opponentAttack: (type) => {
-    const { opponentAttacking, battlePhase } = get();
-    if (opponentAttacking || battlePhase !== 'fighting') return;
+    const { opponentAttacking, battlePhase, opponentRecoveryFrames } = get();
+    if (opponentAttacking || battlePhase !== 'fighting' || opponentRecoveryFrames > 0) return;
     
     set({ 
       opponentAttacking: true, 
-      opponentAttackType: type 
+      opponentAttackType: type,
+      opponentAttackPhase: 'windup' as AttackPhase
     });
     
-    // Play attack sound
-    const audio = useAudio.getState();
-    if (type === 'punch') audio.playPunch();
-    else if (type === 'kick') audio.playKick();
-    else if (type === 'special') audio.playSpecial();
+    const { opponentStance } = get();
+    const targetHipRotation = type === 'punch' ? 0.3 : type === 'kick' ? 0.5 : 0.6;
     
-    // IMPROVED HIT DETECTION - Check distance AND height
-    const { playerX, playerY, opponentX, opponentY, playerInvulnerable } = get();
-    const distanceX = Math.abs(playerX - opponentX);
-    const distanceY = Math.abs(playerY - opponentY);
-    const range = type === 'special' ? 3.5 : type === 'kick' ? 2.2 : 1.8;
-    const heightRange = type === 'kick' ? 1.5 : 1.2;
-    
-    const inRange = distanceX < range && distanceY < heightRange;
-    
-    if (inRange && !playerInvulnerable) {
-      const baseDamage = type === 'special' ? 25 : type === 'kick' ? 15 : 10;
-      const perfectHit = distanceX < range * 0.5 && distanceY < heightRange * 0.5;
-      const damage = perfectHit ? Math.floor(baseDamage * 1.3) : baseDamage;
-      
-      console.log(`[Battle] Opponent HIT! Distance: ${distanceX.toFixed(2)}, Damage: ${damage}${perfectHit ? ' (PERFECT!)' : ''}`);
-      get().playerTakeDamage(damage);
-    }
+    // Opponent winds up (simpler AI version)
+    const windupTime = type === 'special' ? 250 : type === 'kick' ? 150 : 100;
     
     setTimeout(() => {
-      set({ opponentAttacking: false, opponentAttackType: null });
-    }, type === 'special' ? 800 : type === 'kick' ? 600 : 400);
+      set({ opponentAttackPhase: 'contact' as AttackPhase });
+      
+      // Play attack sound
+      const audio = useAudio.getState();
+      if (type === 'punch') audio.playPunch();
+      else if (type === 'kick') audio.playKick();
+      else if (type === 'special') audio.playSpecial();
+      
+      // HIT DETECTION with 3D (opponent is AI, so simpler calculation)
+      const { playerX, playerY, playerZ, opponentX, opponentY, opponentZ, playerInvulnerable, opponentMomentum, opponentBalance } = get();
+      const distanceX = Math.abs(playerX - opponentX);
+      const distanceY = Math.abs(playerY - opponentY);
+      const distanceZ = Math.abs(playerZ - opponentZ);
+      const range = type === 'special' ? 3.5 : type === 'kick' ? 2.2 : 1.8;
+      const heightRange = type === 'kick' ? 1.5 : 1.2;
+      const depthRange = 1.5;
+      
+      const inRange = distanceX < range && distanceY < heightRange && distanceZ < depthRange;
+      
+      if (inRange && !playerInvulnerable) {
+        // Opponent damage uses simpler calculation (AI doesn't have as much nuance)
+        const baseDamage = type === 'special' ? 25 : type === 'kick' ? 15 : 10;
+        const aiBonus = opponentMomentum * 0.3; // Simpler momentum bonus
+        const damage = Math.floor(baseDamage * (1.0 + aiBonus));
+        
+        console.log(`[Battle] 🎯 Opponent HIT! Distance: ${distanceX.toFixed(2)}, Damage: ${damage}`);
+        get().playerTakeDamage(damage);
+      }
+      
+      // Follow-through
+      const contactTime = 80;
+      setTimeout(() => {
+        set({ opponentAttackPhase: 'followthrough' as AttackPhase });
+        
+        const followThroughTime = type === 'special' ? 300 : type === 'kick' ? 200 : 150;
+        setTimeout(() => {
+          set({ 
+            opponentAttacking: false, 
+            opponentAttackType: null,
+            opponentAttackPhase: 'recovery' as AttackPhase,
+            opponentRecoveryFrames: type === 'special' ? 0.2 : 0.1
+          });
+          
+          const recoveryTime = type === 'special' ? 200 : type === 'kick' ? 100 : 80;
+          setTimeout(() => {
+            set({ 
+              opponentAttackPhase: 'idle' as AttackPhase,
+              opponentStance: {
+                ...get().opponentStance,
+                hipRotation: 0
+              }
+            });
+          }, recoveryTime);
+        }, followThroughTime);
+      }, contactTime);
+    }, windupTime);
   },
   
   opponentTakeDamage: (damage) => {
@@ -728,6 +815,13 @@ export const useBattle = create<BattleState>((set, get) => ({
     }
   },
   
+  updatePlayerRecoveryFrames: (delta) => {
+    const { playerRecoveryFrames } = get();
+    if (playerRecoveryFrames > 0) {
+      set({ playerRecoveryFrames: Math.max(0, playerRecoveryFrames - delta) });
+    }
+  },
+  
   updatePlayerMomentum: (delta) => {
     const { playerMomentum, playerVelocityX, playerVelocityZ } = get();
     
@@ -809,6 +903,13 @@ export const useBattle = create<BattleState>((set, get) => ({
     const isMoving = Math.abs(opponentVelocityX) > 0.1 || Math.abs(opponentVelocityZ) > 0.1;
     if (!isMoving) {
       set({ opponentMomentum: Math.max(0, opponentMomentum - delta * 0.5) });
+    }
+  },
+
+  updateOpponentRecoveryFrames: (delta) => {
+    const { opponentRecoveryFrames } = get();
+    if (opponentRecoveryFrames > 0) {
+      set({ opponentRecoveryFrames: Math.max(0, opponentRecoveryFrames - delta) });
     }
   }
 }));

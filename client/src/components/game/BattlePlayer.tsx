@@ -40,6 +40,9 @@ export default function BattlePlayer() {
     playerMomentum, // NEW: Forward momentum (0-1)
     playerBalance, // NEW: Center of gravity stability (0-1)
     playerStance, // NEW: Stance data (weight distribution, hip rotation)
+    playerCenterOfGravity, // NEW: CG tracking
+    playerRecoveryFrames, // NEW: Vulnerability window
+    playerOptimalDistance, // NEW: Ideal fighting range
     battlePhase,
     winner,
     timeScale,
@@ -47,7 +50,8 @@ export default function BattlePlayer() {
     playerJump,
     playerAttack,
     updatePlayerBalance, // NEW: Balance physics
-    updatePlayerMomentum // NEW: Momentum decay
+    updatePlayerMomentum, // NEW: Momentum decay
+    updatePlayerRecoveryFrames // NEW: Recovery frame decay
   } = useBattle();
   
   const meshRef = useRef<THREE.Group>(null);
@@ -153,9 +157,10 @@ export default function BattlePlayer() {
       useBattle.setState({ playerGrounded: true });
     }
     
-    // UPDATE BALANCE & MOMENTUM PHYSICS - Critical for dynamic combat!
+    // UPDATE BALANCE & MOMENTUM & RECOVERY FRAME PHYSICS - Critical for dynamic combat!
     updatePlayerBalance(scaledDelta);
     updatePlayerMomentum(scaledDelta);
+    updatePlayerRecoveryFrames(scaledDelta);
     
     // Detect hit (health decreased) - INTENSE FACIAL REACTION!
     if (playerHealth < prevHealthRef.current) {
