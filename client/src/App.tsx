@@ -15,11 +15,13 @@ import NexusHaven from "./components/game/world/NexusHaven";
 import SquadSelection from "./components/game/SquadSelection";
 import StoryModeSelect from "./components/game/StoryModeSelect";
 import GameModesMenu from "./components/game/GameModesMenu";
+import MissionSelect from "./components/game/MissionSelect";
+import MissionGameplay from "./components/game/MissionGameplay";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
 import { useAudio } from "./lib/stores/useAudio";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Define control keys for the game (also works with touch)
 enum Controls {
@@ -66,6 +68,10 @@ function App() {
     backgroundMusic,
     isMuted
   } = useAudio();
+  const [currentActNumber, setCurrentActNumber] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9>(1);
+  const [currentMissionId, setCurrentMissionId] = useState<string | null>(null);
+  const [completedMissions, setCompletedMissions] = useState<string[]>([]);
+  const [completedActs, setCompletedActs] = useState<(1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9)[]>([]);
 
   // Initialize audio on mount
   useEffect(() => {
@@ -129,14 +135,45 @@ function App() {
         {phase === 'ready' && gameState === 'menu' && <MainMenu />}
         
         {/* Story Mode Selection */}
-        {phase === 'ready' && gameState === 'story-mode-select' && (
+        {phase === 'ready' && gameState === 'story-mode-select' && !currentMissionId && (
           <StoryModeSelect 
             onSelectAct={(actNumber) => {
-              // TODO: Start story act gameplay
-              console.log("Starting Act:", actNumber);
+              setCurrentActNumber(actNumber);
+              setGameState('mission-select');
             }}
             onBack={() => setGameState('menu')}
-            completedActs={[]}
+            completedActs={completedActs}
+          />
+        )}
+        
+        {/* Mission Selection */}
+        {phase === 'ready' && gameState === 'mission-select' && !currentMissionId && (
+          <MissionSelect
+            actNumber={currentActNumber}
+            onSelectMission={(missionId) => {
+              setCurrentMissionId(missionId);
+              setGameState('mission-gameplay');
+            }}
+            onBack={() => setGameState('story-mode-select')}
+            completedMissions={completedMissions}
+          />
+        )}
+        
+        {/* Mission Gameplay */}
+        {phase === 'ready' && gameState === 'mission-gameplay' && currentMissionId && (
+          <MissionGameplay
+            missionId={currentMissionId}
+            onMissionComplete={(missionId, success) => {
+              if (success) {
+                setCompletedMissions([...completedMissions, missionId]);
+              }
+              setCurrentMissionId(null);
+              setGameState('mission-select');
+            }}
+            onBack={() => {
+              setCurrentMissionId(null);
+              setGameState('mission-select');
+            }}
           />
         )}
         
