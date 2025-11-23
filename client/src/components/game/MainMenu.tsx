@@ -2,7 +2,7 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { useAudio } from "../../lib/stores/useAudio";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Play, Settings, Volume2, VolumeX, Shirt, Sparkles } from "lucide-react";
+import { Play, Settings, Volume2, VolumeX, Shirt, Sparkles, Zap, Gamepad2 } from "lucide-react";
 import { useState } from "react";
 
 export default function MainMenu() {
@@ -20,6 +20,14 @@ export default function MainMenu() {
 
   const openCustomization = () => {
     setGameState("customization");
+  };
+
+  const openStoryMode = () => {
+    setGameState("story-mode-select");
+  };
+
+  const openGameModes = () => {
+    setGameState("game-modes-menu");
   };
   
   return (
@@ -166,24 +174,44 @@ export default function MainMenu() {
               NEXUS HAVEN
             </Button>
 
+            {/* STORY MODE - Primary Adventure */}
+            <Button 
+              onClick={openStoryMode}
+              className="w-full text-xl py-6 bg-gradient-to-r from-orange-600 via-red-600 to-purple-700 hover:from-orange-700 hover:via-red-700 hover:to-purple-800 text-white font-black shadow-xl border-3 border-yellow-300 transform hover:scale-105 transition-transform"
+              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+            >
+              <Zap className="w-6 h-6 mr-2" />
+              📖 STORY MODE - 9 ACTS
+            </Button>
+
+            {/* GAME MODES - Endless Fun */}
+            <Button 
+              onClick={openGameModes}
+              className="w-full text-xl py-6 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-700 hover:to-blue-800 text-white font-black shadow-xl border-3 border-cyan-300 transform hover:scale-105 transition-transform"
+              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+            >
+              <Gamepad2 className="w-6 h-6 mr-2" />
+              🎮 GAME MODES - 12 ADVENTURES
+            </Button>
+
             {/* Quick Battle button */}
             <Button 
               onClick={startGame}
-              className="w-full text-xl py-6 bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-700 hover:to-blue-700 text-white font-black shadow-xl border-3 border-white transform hover:scale-105 transition-transform"
+              className="w-full text-lg py-5 bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-700 hover:to-blue-700 text-white font-black shadow-lg border-2 border-white transform hover:scale-105 transition-transform"
               style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
             >
-              <Play className="w-6 h-6 mr-2" />
+              <Play className="w-5 h-5 mr-2" />
               QUICK BATTLE
             </Button>
 
             {/* Customize Characters button - SILVER TO BLUE */}
             <Button 
               onClick={openCustomization}
-              className="w-full text-lg py-5 bg-gradient-to-r from-slate-400 via-blue-500 to-blue-600 hover:from-slate-500 hover:via-blue-600 hover:to-blue-700 text-white font-bold shadow-lg border-2 border-slate-300 transform hover:scale-105 transition-transform"
+              className="w-full text-sm py-4 bg-gradient-to-r from-slate-400 via-blue-500 to-blue-600 hover:from-slate-500 hover:via-blue-600 hover:to-blue-700 text-white font-bold shadow-lg border-2 border-slate-300 transform hover:scale-105 transition-transform"
               style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
             >
-              <Shirt className="w-5 h-5 mr-2" />
-              FIGHTERS
+              <Shirt className="w-4 h-4 mr-2" />
+              CUSTOMIZE FIGHTERS
             </Button>
             
             {/* Settings - RED AND BLUE */}

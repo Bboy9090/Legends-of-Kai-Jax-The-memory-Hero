@@ -13,6 +13,8 @@ import CharacterSelect from "./components/game/CharacterSelect";
 import CustomizationMenu from "./components/game/CustomizationMenu";
 import NexusHaven from "./components/game/world/NexusHaven";
 import SquadSelection from "./components/game/SquadSelection";
+import StoryModeSelect from "./components/game/StoryModeSelect";
+import GameModesMenu from "./components/game/GameModesMenu";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
@@ -54,7 +56,7 @@ const controls = [
 
 function App() {
   const { phase } = useGame();
-  const { gameState, selectedCharacter } = useRunner();
+  const { gameState, selectedCharacter, setGameState } = useRunner();
   const { setPlayerFighter, setOpponentFighter } = useBattle();
   const { 
     setBackgroundMusic, 
@@ -125,6 +127,30 @@ function App() {
       <KeyboardControls map={controls}>
         {/* Main Menu */}
         {phase === 'ready' && gameState === 'menu' && <MainMenu />}
+        
+        {/* Story Mode Selection */}
+        {phase === 'ready' && gameState === 'story-mode-select' && (
+          <StoryModeSelect 
+            onSelectAct={(actNumber) => {
+              // TODO: Start story act gameplay
+              console.log("Starting Act:", actNumber);
+            }}
+            onBack={() => setGameState('menu')}
+            completedActs={[]}
+          />
+        )}
+        
+        {/* Game Modes Menu */}
+        {phase === 'ready' && gameState === 'game-modes-menu' && (
+          <GameModesMenu 
+            onSelectMode={(mode) => {
+              // TODO: Start game mode
+              console.log("Starting Game Mode:", mode);
+            }}
+            onBack={() => setGameState('menu')}
+            unlockedModes={['legacy']}
+          />
+        )}
         
         {/* Nexus Haven Hub */}
         {phase === 'ready' && gameState === 'nexus-haven' && <NexusHaven />}
