@@ -2,14 +2,14 @@
 
 ## Overview
 
-An epic open-world action RPG where the multiverse has cracked and legendary heroes must unite to save all reality. When the Weave of Reality fractures, corrupted Echo heroes pour into a fused world built from the ruins of countless iconic realms. Players assemble squads of 3 heroes from a roster of 40+ legendary fighters, explore a seamless interconnected world, battle dimensional rifts, unlock god-tier transformations, and build Nexus Haven—the last bastion of resistance against the Void King.
+An epic open-world action RPG where the multiverse has cracked and legendary heroes must unite to save all reality. When the Weave of Reality fractures, corrupted Echo heroes pour into a fused world built from the ruins of countless iconic realms. Players assemble squads of 4 heroes from a roster of 59 legendary fighters, explore a seamless interconnected world, battle dimensional rifts, unlock god-tier transformations, and build Nexus Haven—the last bastion of resistance against the Void King.
 
 **The Game Vision:**
-- **Genre**: Open-world cinematic action RPG with squad-based combat
-- **Core Loop**: Explore → Battle Rifts → Unlock Transformations → Upgrade Nexus Haven → Face World Bosses
-- **Key Heroes**: Jaxon (Sonic/Chaos Incarnate), Kaison (Mega Man X/Adaptive Arsenal), plus Mario, Link, Samus, Kirby, Pikachu, Fox, DK, Yoshi, and 30+ more
+- **Genre**: Open-world cinematic action RPG with 4-hero team switching (Marvel Ultimate Alliance × Smash × FF7R hybrid)
+- **Core Loop**: Explore → Battle Missions → Unlock Transformations → Team Synergy Building → Face World Bosses
+- **Roster**: 50+ iconic gaming heroes (Sonic, Mario, Link, Samus, Pikachu, Kirby, Fox, DK, Yoshi, and 40+ more)
 - **Setting**: A fused multiverse where Green Hill overlooks Hyrule, Dream Land clouds drift above Toad Town, and Lylat ruins scatter the sky
-- **Endgame**: Defeat the Void King and the Entropy Court to restore reality
+- **Endgame**: Defeat the Void King and unlock post-game secret ending
 
 ## User Preferences
 
@@ -25,134 +25,146 @@ Preferred communication style: Simple, everyday language.
 - **Vite** as the build tool with hot module replacement for development
 
 ### Component Structure
-- **Game States**: Menu, Story Mode Selection, Game Modes, Squad Selection, Character Select, Battle Mode, Customization
-- **3D Components**: Nexus Haven hub world, dimensional rift portals, player characters, enemies, environment
+- **Game States**: Menu, Story Mode Selection, Game Modes, Squad Selection, Team Builder, Battle Mode, Customization, Mission Select
+- **3D Components**: Nexus Haven hub world, mission arenas, player characters, enemies, environmental hazards
 - **UI Components**: Radix UI primitives with custom styling for accessibility
-- **Game Logic**: Squad combat, transformation system, dimensional rifts, world progression
+- **Game Logic**: Squad combat, transformation system, dimensional rifts, world progression, boss patterns
 
 ### State Management Pattern (RPG Stores)
 - **useGame**: Core game phase management (ready, playing, ended)
 - **useRunner**: Game mechanics and game state routing
 - **useWorldState**: RPG progression (zones, rifts, Nexus Haven level, recruited heroes, Void King weakness)
-- **useSquad**: Squad management (3-hero party, active hero, synergy bonuses, stats)
+- **useSquad**: Squad management (4-hero party, active hero, synergy bonuses, stats)
 - **useTransformations**: Power-up system (transformation levels, energy meters, unlocks)
-- **useBattle**: Combat mechanics (fighters, health, attacks, 3D positioning, balance/momentum)
+- **useBattle**: Combat mechanics (fighters, health, attacks, 3D positioning, balance/momentum, tag switching)
 - **useAudio**: Sound effects and music management
 
 ### Game Architecture: World Collision RPG
 
 **Core Systems (IMPLEMENTED):**
-- ✅ **Nexus Haven Hub**: 3D central hub with dimensional rift portals, squad management, and progression tracking
-- ✅ **Squad Selection**: Choose 3 heroes from recruited roster with synergy bonus calculations
-- ✅ **Transformation System**: Energy meters and power-up states (Base → Super → Ultimate)
-- ✅ **Character Bios & RPG Sheets**: Cinematic backstories, specialties, ultimate attacks, transformation paths, origin stories, and battle quotes for all heroes
-- ✅ **World State Management**: Zone discovery, rift tracking, Nexus level, hero recruitment, Void King weakness
-- ✅ **Mythic Opening**: Epic narration introducing the fractured multiverse and Void King threat
-- ✅ **Dynamic 3D Combat System** (Master Fighting Mechanics): Full 3D positioning with depth axis, rotation-based facing, natural stance system with dynamic weight distribution (WD), center of gravity (CG) tracking, recovery frames, momentum-based power generation from hip rotation, realistic combat physics
-- ✅ **Master Fighting Formula**: P ∝ (M_B · V_H) + (A_L · ω) where power comes from hip rotation, momentum, weight distribution, and CG efficiency
-- ✅ **Battle Quote System**: Each hero has unique signature quotes displayed before battle
-- ✅ **Transformation Sequences**: Visual descriptions of how each transformation occurs
-- ✅ **Villain Matchup Charts**: Advantage/disadvantage data showing which heroes counter which villains
-- ✅ **Story Mode - 9 Acts**: Complete saga experience with fire moments, boss encounters, and cinematic sequences
+- ✅ **Full Roster System**: 59 characters (20 core, 30 support, 9 legacy kids)
+- ✅ **Character Roles**: Vanguard, Blitzer, Mystic, Support, Wildcard, Tank, Sniper, Controller
+- ✅ **4-Hero Team System**: Tag switching with entrance strikes, revival mechanics, passive buffs
+- ✅ **100 Story Missions**: 9 Acts with detailed mission data (objectives, bosses, fire moments, rewards)
+- ✅ **Multi-Phase Boss System**: Learning AI, pattern adaptation, cinematic phases
+- ✅ **5 Open World Zones**: Green Hill, Hyrule, Mushroom Kingdom, Dreamland, Corneria with challenges
+- ✅ **8 Endgame Modes**: Rift Gauntlet, Harmonarch Trials, Legacy Echo, Omega Raids, Time Paradox, Zenith Form, Celestial Trials, Void King Rematch
+- ✅ **Complete Team Synergies**: 100+ team bonuses with dynamic stat multipliers
+- ✅ **Transformation Trees**: 4-stage transformations (Base → Super → Chaos → Celestial → Hyper)
+- ✅ **Master Fighting Formula**: P ∝ (M_B · V_H) + (A_L · ω) with weight distribution and CG tracking
+- ✅ **Story Mode - 9 Acts**: Complete saga experience with fire moments, boss encounters, cinematic sequences
 - ✅ **Game Modes - 12 Modes**: Legacy Mode, Gauntlet of Gods, Riftbreak Survival, Timeline Paradox, Toddler Mode, Lab Mode, Open Zone Expeditions, Harmonarch Trials, Echo Simulator, Haven Builder, Double Fate, Cinematic Library
-- ✅ **Marvel Ultimate Alliance-style Team Synergies**: Dynamic team bonuses, fusion attacks, and squad-based buffs
 
-**Combat Mechanics (PHASE 3 - DYNAMIC FIGHTING):**
-- ✅ **Natural Stance System**: Bladed/staggered fighting stance with dynamic weight distribution (60/40 front-to-back or flexible)
-- ✅ **Hip Rotation Power Generation**: All strikes originate from ground-up with hip torque (θ_H) for realistic power
-- ✅ **Weight Distribution (WD) Variable**: Dynamically shifts between front and rear foot (0.3-0.8 range) based on movement and attacks
-- ✅ **Center of Gravity (CG) Tracking**: 0-1 variable tracking CG position for damage efficiency and balance
-- ✅ **Recovery Frames**: Vulnerability windows when balance drops below threshold or after high-risk attacks
-- ✅ **Momentum & Exit Vectors**: Attacks build momentum and naturally flow into next position for combo potential
-- ✅ **3D Depth Movement**: Z-axis weaving, slipping, and evasion for dynamic spatial combat
-- ✅ **Reactionary AI**: Opponent previews attack windup, giving player window for early defensive input
-- ✅ **Range Management**: Calculates optimal fighting distance (Dopt) based on attack type
+**Combat Mechanics (Phase 3 - DYNAMIC FIGHTING + TAG SWITCHING):**
+- ✅ **Natural Stance System**: Bladed/staggered fighting stance with dynamic weight distribution (60/40 front-to-back)
+- ✅ **Hip Rotation Power Generation**: All strikes originate from ground-up with hip torque
+- ✅ **Weight Distribution (WD) Variable**: Dynamically shifts between front and rear foot (0.3-0.8 range)
+- ✅ **Center of Gravity (CG) Tracking**: 0-1 variable for damage efficiency and balance
+- ✅ **Recovery Frames**: Vulnerability windows when balance drops or after high-risk attacks
+- ✅ **Momentum & Exit Vectors**: Attacks build momentum and flow into next position
+- ✅ **3D Depth Movement**: Z-axis weaving, slipping, and evasion
+- ✅ **Tag Switching**: Instant character swaps with entrance strikes and passive buffs
+- ✅ **Revial System**: Downed characters can be revived by active teammates
+- ✅ **Passive Tag Buffs**: Each character grants unique bonuses when tagged in
 
-**Core Systems (PLANNED):**
-- **Open World Zones**: Seamless exploration across Green Hill-Hyrule, Dream Land Skies, Lylat Ruins, etc.
-- **Dimensional Rifts**: Reality tears spawning Echo bosses with rare rewards
-- **Squad Combat**: Tag combos, assist attacks, synchronized ultimates in battle
-- **Story Progression**: Unlock modes through story acts
-- **Expanded Roster**: 30+ additional heroes with unique quests and abilities
-- **Dynamic Reflection Saga Mode (DRSM)**: Character leveling, gear customization, Empathy resource loop, progression systems
-
-### Mobile-First Design
-- **Touch Controls**: Gesture-based input system with swipe and tap recognition
-- **Responsive UI**: Tailwind CSS with mobile-optimized layouts
-- **Performance Optimization**: Efficient 3D rendering with object pooling and LOD systems
-
-## Story Mode - 9 Acts Structure
-
-The complete saga is now playable as **9 Cinematic Acts**, each with:
-- **Act I - Cross Point Tournament**: The multiversal tournament begins (Book 1)
-- **Act II - Year of No A-Listers**: Support heroes save the day (Book 2)
-- **Act III - Unity's Dawn**: Heroes reunite with ancient powers (Book 3)
-- **Act IV - The Great Hunt**: Artifact hunts in corrupted zones (Book 4)
-- **Act V - Primordial Gambit**: Fortress invasions and 2nd-tier transformations (Book 5)
-- **Act VI - Shadows of the Void**: Cosmic storms and titan battles (Book 6)
-- **Act VII - Nexus Legacy**: Multi-generation combat with legacy kids (Book 7)
-- **Act VIII - War of the Eternals**: Tournament of titans with environmental rules (Book 8)
-- **Act IX - Oblivion's End**: Final battle against the Void King (Book 9)
-
-Each act contains:
-- Multiple fire moments with cutscenes
-- Boss encounters
-- Unique gameplay twists
-- Difficulty progression
-- Estimated 120-350 minute playtimes
-
-## 12 Additional Game Modes
-
-Beyond the main story:
-1. **Legacy Mode** - Play post-saga with legacy kids
-2. **The Gauntlet of Gods** - 100-floor endless tower
-3. **Riftbreak Survival** - Endless wave survival
-4. **Timeline Paradox** - Replay fights with alternate outcomes
-5. **Toddler Mode** - Comedy mode with baby heroes
-6. **Lab Mode** - Upgrade and customize heroes
-7. **Open Zone Expeditions** - Explore iconic worlds
-8. **Harmonarch Trials** - Fight cosmic overseers
-9. **Echo Simulator** - AI training that learns your playstyle
-10. **Haven Builder** - Base-building for Nexus Haven
-11. **Double Fate** - Dual storylines (Light/Void paths)
-12. **Cinematic Library** - Replay cutscenes and lore
-
-## Team Synergy System (Marvel Ultimate Alliance-style)
-
-### Key Features:
-- **10+ Team Synergies**: Speed Demons, Guardian Order, Chaos Rebels, Divine Choir, Bros Bond, Tech Gurus, Stellar Protectors, Legend Crew, Dark Alliance, Smash Family
-- **Dynamic Bonuses**: Each team composition grants unique stat bonuses (speed, defense, damage, healing, etc.)
-- **Fusion Attacks**: Special combined attacks when team members fight together
-- **Team Ultimates**: Powerful group finishing moves (Lightspeed Blitzstorm, Tri-Force Starburst, Oblivion Execution, etc.)
-
-Example synergies:
-- **Speed Demons** (Sonic + Fox + Pikachu + Greninja): +20% Dash Speed, Lightspeed Blitzstorm Ultimate
-- **Guardian Order** (Mario + Link + Samus + Peach): +15% Defense, Tri-Force Starburst Ultimate
-- **Divine Choir** (Zelda + Rosalina + Palutena + Lunara): +25% Spell Power, Infinite Symphony Ultimate
+**Data Layer (NEW):**
+- ✅ `client/src/lib/roster.ts` - Full character roster (59 characters)
+- ✅ `client/src/lib/missions.ts` - 100 story missions across 9 acts
+- ✅ `client/src/lib/bosses.ts` - Boss system with multi-phase patterns and AI
+- ✅ `client/src/lib/zones.ts` - 5 open world zones with challenges
+- ✅ `client/src/lib/endgameModes.ts` - 8 endgame progression modes
+- ✅ `client/src/lib/teamSystem.ts` - Tag switching, tag combos, revival mechanics
+- ✅ `client/src/lib/storyMode.ts` - Story acts and game modes data
+- ✅ `client/src/lib/teamSynergy.ts` - 100+ team synergies with bonuses
 
 ## Character System Features
 
+### Full Roster (59 Characters)
+**Core Heroes (20):** Mario, Luigi, Sonic, Shadow, Link, Samus, Pikachu, Kirby, Fox, Mega Man X, Tails, DK, Diddy, Yoshi, Captain Falcon, Peach, Zelda, Rosalina, Ash, Palutena
+
+**Support/Wildcards (30):** Bayonetta, Snake, Ryu, Terry, Shulk, Greninja, Lucario, Isabelle, Villager, Toad, Toadette, Meta Knight, Inkling, Banjo-Kazooie, Marth, Lucina, Robin, ZSS, Olimar, Jigglypuff, Ice Climbers, Min-Min, Wario, Waluigi, Ridley, Bowser, and more
+
+**Legacy Kids (9):** Solaro, Gia, Lyra, Tempest, Nova Aran, Kiro Kong, Redlock, Starling Kirby, Prince Koopa
+
+**Secret Characters:** Silver, Lunara, Mephiles Echo, Void Echo Sonic, Rift Sephiroth
+
 ### Rich Character Data
 Each hero includes:
-- **Title**: Personality archetype (e.g., "Chaos Incarnate", "Adaptive Arsenal")
-- **Short Bio**: Quick description for character select screen
-- **Extended Bio**: Cinematic RPG codex entry
-- **Origin Story**: Full mythology narrative explaining their background and abilities
-- **Specialty**: Combat focus (speed, defense, utility, etc.)
-- **Transformations**: 3 power levels with visual sequence descriptions
-  - Base Form (1.0x power)
-  - Super/Enhanced Form (2.5x power)
-  - Ultimate/Omega Form (5.0x power)
-- **Ultimate Attack**: Signature finishing move description
-- **Battle Quotes**: 5+ unique signature quotes spoken before battle
-- **Synergy Partners**: Heroes who work well together
-- **Villain Matchups**: Advantage/neutral/disadvantage against major threats
+- **Title**: Personality archetype
+- **Role**: Combat role (Vanguard, Blitzer, etc.)
+- **Stats**: Health, Attack, Defense, Speed, Special, Stamina
+- **Transformations**: 4+ stages with visual descriptions
+- **Abilities**: 4 special moves per character
+- **Ultimates**: Level 1, 2, 3, and 4 (Saga Ultimate)
+- **Synergies**: Characters they pair well with
+- **Weaknesses**: What counters them
 
-### Villain Matchup System
-Detailed matchup data for major antagonists:
-- **The Void King**: Ultimate void entity with time-stopping aura
-- **Echo Heroes**: Corrupted versions of heroes with twisted abilities
-- **Entropy Court Generals**: Five void generals representing different entropy aspects
+## Story Mode - 9 Acts Structure
+
+100 total missions across 9 cinematic acts:
+- **Act I - Cross Point Tournament** (20 missions): Tournament begins, Rift breaches
+- **Act II - Year of No A-Listers** (18 missions): A-list heroes captured, support heroes rise
+- **Act III - Unity's Dawn** (12 missions): Rescue and reunion with ancient powers
+- **Act IV - The Great Hunt** (8 missions): Artifact hunts in corrupted zones
+- **Act V - Primordial Gambit** (10 missions): Fortress invasions, 2nd-tier transformations
+- **Act VI - Shadows of the Void** (8 missions): Cosmic storms and titan battles
+- **Act VII - Nexus Legacy** (8 missions): Legacy kids full combat integration
+- **Act VIII - War of the Eternals** (10 missions): Tournament of titans with environmental rules
+- **Act IX - Oblivion's End** (6 missions): Final battle against the Void King
+
+Each mission has:
+- Detailed objectives and story
+- Boss encounters with phase patterns
+- Fire moments (cinematic sequences)
+- Difficulty scaling
+- Unique rewards and unlocks
+
+## 5 Open World Zones
+
+1. **Green Hill Frontier** (Sonic universe): Speed puzzles, ring highways, Eggman ruins
+2. **Hyrule Plateau** (Zelda universe): Climbable towers, guardian ambushes, shrine quests
+3. **Mushroom Kingdom Plains** (Mario universe): Power-up shrines, Koopaling battles, warp pipes
+4. **Dreamland Skies** (Kirby universe): Star currents, floating islands, gourmet challenges
+5. **Corneria Outlands** (Star Fox universe): Arwing dogfights, tech salvage, aerial combat
+
+Each zone features:
+- Multiple regions to explore
+- 3+ unique challenges per zone
+- Secret locations and Easter eggs
+- Zone-specific bosses
+- Environmental mechanics (speed zones, climbing, etc.)
+
+## 8 Endgame Modes
+
+1. **Rift Gauntlet** - 100-floor infinite tower with escalating difficulty
+2. **Harmonarch Trials** - Battle 5 cosmic deities (gods)
+3. **Legacy Echo Mode** - Fight alternate timeline versions of all heroes
+4. **OmegaBoss Raids** - 4-player co-op against ultimate boss versions
+5. **Time Paradox Missions** - Replay story fights with altered rules
+6. **Zenith Form Challenges** - Master transformation evolution
+7. **Celestial Trials** - Battle original celestial beings
+8. **Void King Rematch (Ultra)** - Hardest challenge in the game
+
+## Team Synergy System
+
+### 100+ Team Synergies
+Dynamic bonuses based on hero combinations:
+- **Speed Demons**: Sonic + Pikachu + Fox + Greninja (+20% speed)
+- **Guardian Order**: Mario + Link + Samus + Peach (+15% defense)
+- **Divine Choir**: Zelda + Rosalina + Palutena + Lunara (+25% special)
+- **Brute Squad**: DK + Kiro Kong + Redlock (+25% attack)
+- **And 96+ more...**
+
+### Tag Switching System
+- Instant character swaps with entrance strikes
+- Each character grants passive buffs when active
+- Revival mechanics for downed allies
+- Passive stat multipliers per character
+
+## Mobile-First Design
+- **Touch Controls**: Gesture-based input system with swipe and tap recognition
+- **Responsive UI**: Tailwind CSS with mobile-optimized layouts
+- **Performance Optimization**: Efficient 3D rendering with object pooling and LOD systems
 
 ## External Dependencies
 
@@ -163,23 +175,16 @@ Detailed matchup data for major antagonists:
 
 ### AI Integration
 - **Google Generative AI** (Gemini 2.5 Flash) for chat functionality and text analysis
-- **AI Assistant Features**: Chat interface, text summarization, sentiment analysis
 
 ### 3D Graphics & Animation
 - **@react-three/fiber**: React renderer for Three.js
 - **@react-three/drei**: Useful helpers and abstractions for Three.js
 - **@react-three/postprocessing**: Visual effects and post-processing pipeline
-- **react-spring**: Physics-based animations for smooth character movements
 
 ### UI & Accessibility
 - **Radix UI**: Comprehensive set of accessible, unstyled UI components
 - **Tailwind CSS**: Utility-first CSS framework with custom design tokens
 - **Lucide React**: Icon library for consistent visual elements
-
-### Development & Build Tools
-- **Vite**: Fast build tool with TypeScript support and hot reload
-- **esbuild**: Fast JavaScript bundler for production builds
-- **PostCSS**: CSS processing with Tailwind integration
 
 ### Game-Specific Libraries
 - **TanStack Query**: Server state management for API calls
@@ -187,6 +192,16 @@ Detailed matchup data for major antagonists:
 - **GLSL shader support**: Custom visual effects for character abilities
 
 ## Recent Updates
+
+### November 23, 2025 - COMPLETE GAME BIBLE IMPLEMENTATION
+- ✅ Created full character roster (59 characters with complete data)
+- ✅ Implemented 100 story missions across 9 acts with mission data
+- ✅ Built multi-phase boss system with learning AI
+- ✅ Created 5 open world zones with challenges and mechanics
+- ✅ Implemented 8 endgame progression modes
+- ✅ Built 4-hero team system with tag switching, entrance strikes, revival
+- ✅ Created team synergy system (100+ bonuses)
+- ✅ Integrated all systems into data layer for game logic
 
 ### November 22, 2025 - Story Mode & Game Modes Complete
 - ✅ Implemented 9-Act story mode with fire moments and boss encounters
@@ -198,36 +213,20 @@ Detailed matchup data for major antagonists:
 - ✅ Integrated team synergy bonuses into combat calculations
 
 ### November 22, 2025 - Master Fighting Mechanics (Phase 3)
-- ✅ Implemented dynamic weight distribution (WD) system with front/back foot shifts
-- ✅ Added center of gravity (CG) tracking for balance and damage efficiency
-- ✅ Created recovery frame vulnerability windows (scales with attack type)
-- ✅ Implemented master fighting formula: P ∝ (M_B · V_H) + (A_L · ω)
-- ✅ Enhanced power calculation with hip rotation, momentum, stance bonuses, and CG efficiency
-- ✅ Added natural exit vectors so attacks flow into next position
-- ✅ Integrated 3D depth-axis movement with weaving and slipping mechanics
-- ✅ Simplified opponent AI attack system with recovery frames
-- ✅ Added range management framework for optimal fighting distance (Dopt)
+- ✅ Implemented dynamic weight distribution (WD) system
+- ✅ Added center of gravity (CG) tracking for balance
+- ✅ Created recovery frame vulnerability windows
+- ✅ Implemented master fighting formula
+- ✅ Enhanced power calculation with hip rotation and momentum
+- ✅ Added natural exit vectors for combo flow
+- ✅ Integrated 3D depth-axis movement
 
-### November 22, 2025 - Character System Expansion
-- ✅ Added detailed origin stories for all 8 core heroes
-- ✅ Implemented transformation sequence visual descriptions
-- ✅ Created battle quote system (5+ unique quotes per hero)
-- ✅ Built villain matchup chart system
-- ✅ Enhanced CharacterSelect UI to display all new data
-- ✅ Integrated RPG-style character sheets into selection flow
+## Next Steps (Integration & Polish)
 
-### Earlier Phases
-- ✅ Phase 1: Expanded combat data model with 3D support
-- ✅ Phase 2: Balance/momentum physics with visual indicators
-- ✅ Audio system with background music and sound effects
-- ✅ Squad selection and transformation framework
-- ✅ Nexus Haven 3D hub world
-
-## Next Steps (DRSM & Progression)
-
-Foundation for Dynamic Reflection Saga Mode (DRSM) is in place:
-- Character leveling framework with stat growth
-- Artifact/gear customization slots (Core, Flow, Damage)
-- Empathy gauge and purification system for resource economy
-- Utility-based progression gating for story advancement
-- Squad-based XP distribution across active heroes
+Foundation complete! Ready to:
+1. Wire mission system into gameplay loop
+2. Connect boss encounters to mission completion
+3. Build zone exploration mechanics
+4. Integrate team synergy bonuses into real combat
+5. Create progression tracking and unlocks
+6. Polish and balance all systems
