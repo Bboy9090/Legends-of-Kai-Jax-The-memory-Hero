@@ -162,7 +162,7 @@ export const STORY_ACTS: Record<ActNumber, StoryAct> = {
       {
         id: 'mario_luigi_awakening',
         name: 'Mario & Luigi Awakening',
-        description: 'The brothers' true power emerges.',
+        description: "The brothers' true power emerges.",
         rewardXP: 1200,
         unlocksAbility: 'brother_fusion'
       },
