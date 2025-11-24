@@ -186,7 +186,7 @@ const PlayerController = ({ playerRef, heroConfig = DEFAULT_HERO }: PlayerContro
       setMovement((m) => ({ ...m, jump: false }));
     }
 
-    velocity.current.y += gravity * delta;
+    velocity.current.y += gravity;
     playerRef.current.position.y += velocity.current.y * delta;
     if (playerRef.current.position.y <= 1) {
       playerRef.current.position.y = 1;
