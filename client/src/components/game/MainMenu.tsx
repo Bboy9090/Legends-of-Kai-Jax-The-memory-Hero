@@ -2,7 +2,7 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { useAudio } from "../../lib/stores/useAudio";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Play, Settings, Volume2, VolumeX, Shirt, Sparkles, Zap, Gamepad2 } from "lucide-react";
+import { Play, Settings, Volume2, VolumeX, Shirt, Sparkles, Zap, Gamepad2, Swords, Users } from "lucide-react";
 import { useState } from "react";
 
 export default function MainMenu() {
@@ -28,6 +28,10 @@ export default function MainMenu() {
 
   const openGameModes = () => {
     setGameState("game-modes-menu");
+  };
+
+  const openVersusMode = () => {
+    setGameState("versus-select");
   };
   
   return (
@@ -192,6 +196,16 @@ export default function MainMenu() {
             >
               <Gamepad2 className="w-6 h-6 mr-2" />
               🎮 GAME MODES - 12 ADVENTURES
+            </Button>
+
+            {/* VERSUS MODE - MVC Style */}
+            <Button 
+              onClick={openVersusMode}
+              className="w-full text-xl py-6 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-600 hover:from-yellow-600 hover:via-orange-600 hover:to-red-700 text-white font-black shadow-xl border-3 border-yellow-300 transform hover:scale-105 transition-transform animate-pulse"
+              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+            >
+              <Swords className="w-6 h-6 mr-2" />
+              ⚔️ VERSUS MODE - 59 HEROES
             </Button>
 
             {/* Quick Battle button */}

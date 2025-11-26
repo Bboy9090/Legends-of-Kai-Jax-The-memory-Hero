@@ -10,6 +10,7 @@ import BattleUI from "./components/game/BattleUI";
 import DialogueDisplay from "./components/game/DialogueDisplay";
 import MainMenu from "./components/game/MainMenu";
 import CharacterSelect from "./components/game/CharacterSelect";
+import MVCCharacterSelect from "./components/game/MVCCharacterSelect";
 import CustomizationMenu from "./components/game/CustomizationMenu";
 import NexusHaven from "./components/game/world/NexusHaven";
 import SquadSelection from "./components/game/SquadSelection";
@@ -17,6 +18,7 @@ import StoryModeSelect from "./components/game/StoryModeSelect";
 import GameModesMenu from "./components/game/GameModesMenu";
 import MissionSelect from "./components/game/MissionSelect";
 import MissionGameplay from "./components/game/MissionGameplay";
+import TeamBattleArena from "./components/game/TeamBattleArena";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
@@ -72,6 +74,8 @@ function App() {
   const [currentMissionId, setCurrentMissionId] = useState<string | null>(null);
   const [completedMissions, setCompletedMissions] = useState<string[]>([]);
   const [completedActs, setCompletedActs] = useState<(1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9)[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState<string[]>([]);
+  const [battleMode, setBattleMode] = useState<'story' | 'versus' | 'mission'>('story');
 
   // Initialize audio on mount
   useEffect(() => {
@@ -152,27 +156,76 @@ function App() {
             actNumber={currentActNumber}
             onSelectMission={(missionId) => {
               setCurrentMissionId(missionId);
-              setGameState('mission-gameplay');
+              setGameState('mission-team-select');
             }}
             onBack={() => setGameState('story-mode-select')}
             completedMissions={completedMissions}
           />
         )}
         
-        {/* Mission Gameplay */}
-        {phase === 'ready' && gameState === 'mission-gameplay' && currentMissionId && (
-          <MissionGameplay
-            missionId={currentMissionId}
-            onMissionComplete={(missionId, success) => {
-              if (success) {
-                setCompletedMissions([...completedMissions, missionId]);
-              }
-              setCurrentMissionId(null);
-              setGameState('mission-select');
+        {/* Mission Team Select - Choose heroes before mission */}
+        {phase === 'ready' && gameState === 'mission-team-select' && currentMissionId && (
+          <MVCCharacterSelect
+            mode="mission"
+            maxTeamSize={4}
+            onTeamComplete={(team) => {
+              setSelectedTeam(team);
+              setGameState('mission-gameplay');
             }}
             onBack={() => {
               setCurrentMissionId(null);
               setGameState('mission-select');
+            }}
+          />
+        )}
+        
+        {/* Mission Gameplay */}
+        {phase === 'ready' && gameState === 'mission-gameplay' && currentMissionId && (
+          <TeamBattleArena
+            missionId={currentMissionId}
+            playerTeam={selectedTeam}
+            onBattleComplete={(success: boolean) => {
+              if (success) {
+                setCompletedMissions([...completedMissions, currentMissionId]);
+              }
+              setCurrentMissionId(null);
+              setSelectedTeam([]);
+              setGameState('mission-select');
+            }}
+            onBack={() => {
+              setCurrentMissionId(null);
+              setSelectedTeam([]);
+              setGameState('mission-select');
+            }}
+          />
+        )}
+        
+        {/* Versus Mode Character Select */}
+        {phase === 'ready' && gameState === 'versus-select' && (
+          <MVCCharacterSelect
+            mode="battle"
+            maxTeamSize={4}
+            onTeamComplete={(team) => {
+              setSelectedTeam(team);
+              setBattleMode('versus');
+              setGameState('versus-battle');
+            }}
+            onBack={() => setGameState('menu')}
+          />
+        )}
+        
+        {/* Versus Battle */}
+        {phase === 'ready' && gameState === 'versus-battle' && (
+          <TeamBattleArena
+            missionId={null}
+            playerTeam={selectedTeam}
+            onBattleComplete={() => {
+              setSelectedTeam([]);
+              setGameState('menu');
+            }}
+            onBack={() => {
+              setSelectedTeam([]);
+              setGameState('versus-select');
             }}
           />
         )}

@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { EquippedCosmetics } from "../cosmetics";
 
-export type GameState = "menu" | "character-select" | "playing" | "paused" | "game-over" | "ai-assistant" | "customization" | "nexus-haven" | "squad-select" | "story-mode-select" | "game-modes-menu" | "mission-select" | "mission-gameplay";
+export type GameState = "menu" | "character-select" | "playing" | "paused" | "game-over" | "ai-assistant" | "customization" | "nexus-haven" | "squad-select" | "story-mode-select" | "game-modes-menu" | "mission-select" | "mission-team-select" | "mission-gameplay" | "versus-select" | "versus-battle";
 export type Character = "jaxon" | "kaison";
 export type ReunionMode = "sleepy" | "hyper" | "normal";
 
