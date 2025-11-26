@@ -278,3 +278,10 @@ export interface SynergyBonus {
   name: string;
   value: number;
 }
+
+export function getActiveTeamBonuses(teamIds: string[]): TeamBonus[] {
+  return TEAM_SYNERGIES.filter(synergy => {
+    const matchCount = synergy.heroIds.filter(id => teamIds.includes(id)).length;
+    return matchCount >= 2;
+  });
+}
