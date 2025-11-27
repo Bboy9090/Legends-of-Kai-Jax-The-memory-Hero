@@ -4,7 +4,51 @@
 SMASH HEROES: WORLD COLLISION™ is an epic open-world action RPG where a fractured multiverse leads to a collision of iconic realms and heroes. Players assemble 4-hero squads from a roster of 59 legendary fighters to explore a seamless world, battle dimensional rifts, unlock god-tier transformations, and build Nexus Haven—the last bastion against the Void King. The game blends elements of Marvel Ultimate Alliance, Smash, and FF7R, focusing on exploration, battle missions, team synergy, and challenging boss encounters.
 
 ## User Preferences
-Preferred communication style: Simple, everyday language.
+- Preferred communication style: Simple, everyday language
+- Legal approach: Copyright-safe parody with minor name/color modifications while keeping characters recognizable
+- Development philosophy: Take time, build systematically, no time limits
+
+## Recent Major Work (Current Session)
+**PHASE 1: 100 Legendary Polishes** - COMPLETED
+- ✅ Post-processing effects (Bloom, Vignette)
+- ✅ Enhanced lighting system
+- ✅ Particle effects on attacks
+- ✅ Role-based character body types
+- ✅ 37+ unique character visual features
+- ✅ Floating damage numbers with combo scaling
+- ✅ Animated arena elements
+- ✅ Victory/defeat screens with animated stats
+- ✅ Enhanced character select with gradients and glow
+- ✅ Timeout cleanup system with useRef
+
+**PHASE 2: Authentic Character Specifications** - IN PROGRESS
+- ✅ Deep research into 10+ game franchises
+- ✅ Documented sprite specs from dev manuals:
+  - Mario: NES 16×16px, SNES 32×32px
+  - Sonic: Genesis 32×48px, cyan/blue palette
+  - Link: NES 16×16px, SNES 32px, Tunic green
+  - Donkey Kong: 40×32px arcade, 39×40px SNES
+  - Kirby: 16-32px, Official pink #d74894
+  - Mega Man: 24×24px NES, SNES armor specs
+  - Samus: 31px NES, 48px SNES, 190cm real-world height
+  - Cloud FF7: 173cm (5'8") official height
+  - Ryu SF2: 93×111px, SNES palette
+  - Pac-Man: 16×16px, 4-color arcade palette
+  - Kid Icarus Pit: 16×16-24×32px NES
+  - Castlevania Simon: 16×24-32px NES
+- ✅ Created characterSpecs.ts with authenticated source data
+- ✅ Implemented copyright-safe character name/color modifications:
+  - Sonic → Velocity
+  - Link → Ren
+  - Mega Man X → Blaze
+  - Samus → Sentinel
+  - Donkey Kong → Kong
+  - Kirby → Puffy
+  - Shadow → Abyss
+  - Captain Falcon → Apex
+- ✅ Color palette modifications for legal safeguards
+- ✅ All 10 core characters updated with sprite specs
+- ✅ Build successful with hot-reload working
 
 ## System Architecture
 
@@ -15,58 +59,42 @@ Preferred communication style: Simple, everyday language.
 - **Styling**: Tailwind CSS with a custom design system
 - **Build Tool**: Vite
 
-### Core Game Systems
-- **Roster**: 59 unique characters with defined roles (Vanguard, Blitzer, Mystic, Support, Wildcard, Tank, Sniper, Controller).
-- **Squad System**: 4-hero teams with tag switching, entrance strikes, revival mechanics, and passive buffs.
-- **Story Mode**: 100 missions across 9 Acts, featuring multi-phase bosses with adaptive AI and cinematic sequences.
-- **Open World**: 5 distinct zones (Green Hill Frontier, Hyrule Plateau, Mushroom Kingdom Plains, Dreamland Skies, Corneria Outlands) with unique challenges and mechanics.
-- **Endgame Modes**: 8 diverse modes including Rift Gauntlet, Harmonarch Trials, OmegaBoss Raids, and the ultimate Void King Rematch.
-- **Team Synergies**: Over 100 unique team bonuses that dynamically enhance stats and combat effectiveness.
-- **Transformation System**: 4-stage transformations (Base → Super → Chaos → Celestial → Hyper) for characters.
-- **Combat Formula**: Advanced fighting mechanics incorporating weight distribution, center of gravity tracking, and dynamic power calculations.
-
-### Game Modes
-- **Story Mode**: A comprehensive 9-Act saga.
-- **Versus Mode**: Fully playable 4v4 battles against AI with character selection and real-time controls.
-- **Additional Modes**: 12 diverse modes including Legacy Mode, Gauntlet of Gods, Riftbreak Survival, and Open Zone Expeditions.
-
-### Combat Mechanics
-- **Character Selection**: Marvel vs Capcom-style grid with keyboard and mouse navigation.
-- **3D Battle Arena**: Colorful, Roblox-style visuals with dynamic lighting.
-- **Real-Time Combat**: Team health management, active character switching, combo counter, special meter, and enemy AI.
-- **Controls**: Keyboard (J/1 for Attack, L/2 for Special, A/D or Arrows for Tag) and mouse support.
+### Game Systems
+- **Roster**: 59 unique characters with defined roles
+- **Character Specifications**: Authenticated specs from original source materials with legal-safe modifications
+- **Squad System**: 4-hero teams with tag switching, entrance strikes, revival mechanics
+- **Combat**: Advanced formula with floating damage, combo scaling, particle effects
+- **Rendering**: Role-based body types, 37+ visual features, post-processing effects
 
 ### Data Layer
-Game data is organized in dedicated client-side TypeScript files for:
-- Roster (`roster.ts`)
-- Missions (`missions.ts`)
-- Bosses (`bosses.ts`)
-- Zones (`zones.ts`)
-- Endgame Modes (`endgameModes.ts`)
-- Team System (`teamSystem.ts`)
-- Story Mode structure (`storyMode.ts`)
-- Team Synergies (`teamSynergy.ts`)
+- **characterSpecs.ts**: Authentic specifications with legal safeguards (NEW)
+- **roster.ts**: 59 characters with copyright-safe modifications integrated
+- **missions.ts**: 100 story missions across 9 acts
+- **bosses.ts**: Multi-phase boss encounters
+- **zones.ts**: 5 distinct open-world zones
+- **endgameModes.ts**: 8 diverse endgame modes
+- **teamSystem.ts**: 4-hero squads with synergies
+- **storyMode.ts**: 9-act narrative structure
+- **teamSynergy.ts**: 100+ unique team bonuses
 
-## External Dependencies
-
-### Database & Backend
-- **ORM**: Drizzle ORM (PostgreSQL dialect)
-- **Database**: Neon Database (serverless PostgreSQL)
+### External Dependencies
+- **Database & Backend**: Drizzle ORM (PostgreSQL)
 - **API**: Express.js with TypeScript
+- **AI Integration**: Google Generative AI (Gemini 2.5 Flash)
+- **3D Graphics**: React Three Fiber ecosystem
+- **UI Components**: Radix UI with Tailwind CSS
 
-### AI Integration
-- **Generative AI**: Google Generative AI (Gemini 2.5 Flash) for chat and text analysis.
+## Legal Framework
+- **Strategy**: Transformative parody with minor modifications
+- **Name Changes**: Single-letter or synonym modifications (Sonic→Velocity, Link→Ren)
+- **Color Changes**: Palette shifts while maintaining recognition
+- **Recognition Points**: Each character retains iconic silhouettes, abilities, and design elements
+- **Source Documentation**: All changes based on authenticated dev manuals and official specifications
 
-### 3D Graphics & Animation
-- **React Three Fiber Ecosystem**: `@react-three/fiber`, `@react-three/drei`, `@react-three/postprocessing`
-- **Custom Visuals**: GLSL shader support.
-
-### UI & Accessibility
-- **UI Components**: Radix UI
-- **Styling**: Tailwind CSS
-- **Icons**: Lucide React
-
-### Game-Specific Libraries
-- **Server State**: TanStack Query
-- **Client State**: Zustand
-```
+## Next Steps (Future Work)
+1. Research remaining 47 characters with authentic specifications
+2. Update all remaining characters with legal-safe modifications
+3. Implement sprite rendering system with correct aspect ratios
+4. Test all 59 characters with authentic designs
+5. Create procedural color palette system based on role + source specs
+6. Build character stat generator using canonical heights and proportions
