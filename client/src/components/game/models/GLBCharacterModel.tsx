@@ -1,8 +1,8 @@
 import { useRef, useEffect, Suspense, useState, useMemo, Component, ReactNode } from 'react';
-import { useGLTF } from '@react-three/drei';
+import { useGLTF, Clone } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { applyToonShadingToModel, normalizeToBrightColor } from '../materials/ToonMaterial';
+import { normalizeToBrightColor } from '../materials/ToonMaterial';
 
 interface GLBCharacterModelProps {
   modelPath: string;
@@ -53,6 +53,39 @@ class GLBErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState>
   }
 }
 
+const gradientMapCache = new Map<string, THREE.DataTexture>();
+
+function getGradientMap(): THREE.DataTexture {
+  const key = 'toon4';
+  if (!gradientMapCache.has(key)) {
+    const gradientData = new Uint8Array([80, 140, 200, 255]);
+    const gradientMap = new THREE.DataTexture(gradientData, 4, 1, THREE.RedFormat);
+    gradientMap.needsUpdate = true;
+    gradientMapCache.set(key, gradientMap);
+  }
+  return gradientMapCache.get(key)!;
+}
+
+const materialCache = new Map<string, Map<number, THREE.MeshToonMaterial>>();
+
+function getToonMaterial(colorKey: string, color: THREE.Color, meshIndex: number): THREE.MeshToonMaterial {
+  if (!materialCache.has(colorKey)) {
+    materialCache.set(colorKey, new Map());
+  }
+  const colorMaterials = materialCache.get(colorKey)!;
+  
+  if (!colorMaterials.has(meshIndex)) {
+    const toonMaterial = new THREE.MeshToonMaterial({
+      color: color,
+      gradientMap: getGradientMap(),
+      emissive: color.clone().multiplyScalar(0.15),
+      emissiveIntensity: 0.4,
+    });
+    colorMaterials.set(meshIndex, toonMaterial);
+  }
+  return colorMaterials.get(meshIndex)!;
+}
+
 function GLBModel({ 
   modelPath, 
   bodyRef,
@@ -67,35 +100,55 @@ function GLBModel({
 }: GLBCharacterModelProps) {
   const internalGroupRef = useRef<THREE.Group>(null);
   const rimLightRef = useRef<THREE.PointLight>(null);
-  const [modelLoaded, setModelLoaded] = useState(false);
-  const [clonedScene, setClonedScene] = useState<THREE.Group | null>(null);
+  const materialsAppliedRef = useRef(false);
+  const modelKeyRef = useRef<string>('');
   
-  let scene: THREE.Group;
-  try {
-    const gltf = useGLTF(modelPath);
-    scene = gltf.scene;
-  } catch (error) {
-    console.warn(`Failed to load model: ${modelPath}`);
-    return <StylizedFallbackCharacter primaryColor={primaryColor} accentColor={accentColor} />;
-  }
+  const { scene } = useGLTF(modelPath);
   
   const normalizedPrimary = useMemo(() => normalizeToBrightColor(primaryColor), [primaryColor]);
   const normalizedAccent = useMemo(() => normalizeToBrightColor(accentColor), [accentColor]);
+  const primaryColorObj = useMemo(() => new THREE.Color(normalizedPrimary), [normalizedPrimary]);
+  const accentColorObj = useMemo(() => new THREE.Color(normalizedAccent), [normalizedAccent]);
+  
+  const colorKey = `${normalizedPrimary}-${normalizedAccent}`;
+
+  useEffect(() => {
+    if (scene && (colorKey !== modelKeyRef.current || !materialsAppliedRef.current)) {
+      modelKeyRef.current = colorKey;
+      
+      let meshIndex = 0;
+      scene.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          const useAccent = meshIndex % 3 === 0;
+          const color = useAccent ? accentColorObj : primaryColorObj;
+          
+          child.material = getToonMaterial(colorKey, color, meshIndex);
+          child.castShadow = true;
+          child.receiveShadow = true;
+          
+          meshIndex++;
+        }
+      });
+      
+      materialsAppliedRef.current = true;
+    }
+  }, [scene, colorKey, primaryColorObj, accentColorObj]);
 
   useEffect(() => {
     if (scene) {
-      const clone = scene.clone(true);
-      applyToonShadingToModel(clone, primaryColor, accentColor);
-      setClonedScene(clone);
-      setModelLoaded(true);
+      scene.traverse((child) => {
+        if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshToonMaterial) {
+          child.material.emissiveIntensity = isInvulnerable ? 0.8 : 0.4;
+        }
+      });
     }
-  }, [scene, primaryColor, accentColor]);
+  }, [scene, isInvulnerable]);
 
   useEffect(() => {
     if (internalGroupRef.current && bodyRef.current === null) {
       (bodyRef as React.MutableRefObject<THREE.Group>).current = internalGroupRef.current;
     }
-  }, [bodyRef, modelLoaded]);
+  }, [bodyRef]);
   
   useFrame((state, delta) => {
     const group = internalGroupRef.current;
@@ -124,27 +177,34 @@ function GLBModel({
     }
 
     if (rimLightRef.current) {
-      rimLightRef.current.intensity = isAttacking ? 2 : (isInvulnerable ? 1.5 : 0.8);
+      rimLightRef.current.intensity = isAttacking ? 2.5 : (isInvulnerable ? 2 : 1);
     }
   });
   
   return (
     <group ref={internalGroupRef} scale={[scale, scale, scale]} position={[0, 0.2, 0]}>
-      {clonedScene && <primitive object={clonedScene} />}
+      <Clone object={scene} />
       
       <pointLight
         ref={rimLightRef}
         position={[0, 1, -1]}
-        intensity={0.8}
+        intensity={1}
         color={normalizedAccent}
         distance={5}
       />
       
       <pointLight
         position={[0.5, 0.5, 1]}
-        intensity={0.4}
+        intensity={0.6}
         color="#FFFFFF"
         distance={3}
+      />
+      
+      <pointLight
+        position={[-0.5, 0.8, 0.5]}
+        intensity={0.4}
+        color={normalizedPrimary}
+        distance={4}
       />
       
       {isInvulnerable && (
@@ -291,7 +351,7 @@ function StylizedFallbackCharacter({
         <meshToonMaterial color={normalizedPrimary} />
       </mesh>
       
-      <pointLight position={[0, 1.5, 1]} intensity={0.5} color={normalizedAccent} distance={3} />
+      <pointLight position={[0, 1.5, 1]} intensity={0.8} color={normalizedAccent} distance={4} />
     </group>
   );
 }
