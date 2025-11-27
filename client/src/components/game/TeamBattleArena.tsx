@@ -669,14 +669,15 @@ function BattleArenaScene({
         <FloatingDamageNumber key={dn.id} value={dn.value} position={dn.position} />
       ))}
       
-      {/* Post-Processing Effects */}
+      {/* Post-Processing Effects - Enhanced for Cartoon Look */}
       <EffectComposer>
         <Bloom
-          intensity={0.5}
-          luminanceThreshold={0.7}
-          luminanceSmoothing={0.9}
+          intensity={0.8}
+          luminanceThreshold={0.5}
+          luminanceSmoothing={0.7}
+          mipmapBlur
         />
-        <Vignette eskil={false} offset={0.1} darkness={0.5} />
+        <Vignette eskil={false} offset={0.1} darkness={0.4} />
       </EffectComposer>
       
       {/* Camera Controls */}
