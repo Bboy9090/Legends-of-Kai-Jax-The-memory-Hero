@@ -1,4 +1,4 @@
-import { useRef, useEffect, Suspense } from 'react';
+import { useRef, useEffect, Suspense, useState, Component, ReactNode } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -21,17 +21,65 @@ interface GLBCharacterModelProps {
   scale?: number;
 }
 
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+class GLBErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    console.warn('GLB Model failed to load:', error.message);
+  }
+
+  render(): ReactNode {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
+
 function GLBModel({ 
   modelPath, 
+  bodyRef,
   scale = 2.5,
   isInvulnerable = false,
   isAttacking = false,
+  hitAnim = 0,
   animTime = 0,
+  emotionIntensity = 0,
   primaryColor,
   accentColor
 }: GLBCharacterModelProps) {
-  const groupRef = useRef<THREE.Group>(null);
-  const { scene } = useGLTF(modelPath);
+  const internalGroupRef = useRef<THREE.Group>(null);
+  const [modelLoaded, setModelLoaded] = useState(false);
+  
+  let scene: THREE.Group;
+  try {
+    const gltf = useGLTF(modelPath);
+    scene = gltf.scene;
+  } catch (error) {
+    console.warn(`Failed to load model: ${modelPath}`);
+    return (
+      <mesh position={[0, 0.5, 0]}>
+        <boxGeometry args={[0.8, 1.2, 0.6]} />
+        <meshToonMaterial color={primaryColor || "#888888"} />
+      </mesh>
+    );
+  }
   
   useEffect(() => {
     if (scene) {
@@ -42,39 +90,86 @@ function GLBModel({
           
           if (child.material) {
             const material = child.material as THREE.MeshStandardMaterial;
-            if (material.emissive && isInvulnerable) {
-              material.emissiveIntensity = 0.8;
+            if (material.emissive) {
+              material.emissiveIntensity = isInvulnerable ? 0.8 : 0.2;
             }
           }
         }
       });
+      setModelLoaded(true);
     }
   }, [scene, isInvulnerable]);
+
+  useEffect(() => {
+    if (internalGroupRef.current && bodyRef.current === null) {
+      (bodyRef as React.MutableRefObject<THREE.Group>).current = internalGroupRef.current;
+    }
+  }, [bodyRef, modelLoaded]);
   
   useFrame((state, delta) => {
-    if (groupRef.current) {
-      if (isAttacking) {
-        groupRef.current.rotation.z = Math.sin(animTime * 20) * 0.1;
-      } else {
-        groupRef.current.rotation.z = Math.sin(animTime * 2) * 0.02;
-      }
-      
-      groupRef.current.position.y = Math.sin(animTime * 3) * 0.05;
+    const group = internalGroupRef.current;
+    if (!group) return;
+
+    if (hitAnim > 0) {
+      group.rotation.z = Math.sin(animTime * 30) * 0.2 * hitAnim;
+      group.position.x = Math.sin(animTime * 40) * 0.1 * hitAnim;
+    } else if (isAttacking) {
+      group.rotation.z = Math.sin(animTime * 20) * 0.15;
+      group.rotation.x = Math.sin(animTime * 15) * 0.1;
+      group.scale.setScalar(scale * (1 + Math.sin(animTime * 25) * 0.05));
+    } else {
+      group.rotation.z = Math.sin(animTime * 2) * 0.03;
+      group.rotation.x = 0;
+      group.scale.setScalar(scale);
+    }
+    
+    const breathe = Math.sin(animTime * 3) * 0.05;
+    group.position.y = 0.2 + breathe;
+    
+    if (emotionIntensity > 0.5) {
+      group.rotation.y = Math.sin(animTime * 8) * 0.05 * emotionIntensity;
     }
   });
   
   return (
-    <group ref={groupRef} scale={[scale, scale, scale]} position={[0, 0.2, 0]}>
+    <group ref={internalGroupRef} scale={[scale, scale, scale]} position={[0, 0.2, 0]}>
       <primitive object={scene.clone()} />
       
       {isInvulnerable && (
-        <mesh scale={1.3}>
-          <sphereGeometry args={[0.6, 16, 12]} />
+        <mesh scale={1.5}>
+          <sphereGeometry args={[0.5, 16, 12]} />
           <meshBasicMaterial 
             color="#FFFFFF"
             transparent
+            opacity={0.4 + Math.sin(animTime * 10) * 0.2}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+      )}
+      
+      {hitAnim > 0 && (
+        <mesh scale={1.2 + hitAnim * 0.3}>
+          <sphereGeometry args={[0.5, 12, 8]} />
+          <meshBasicMaterial 
+            color="#FF0000"
+            transparent
+            opacity={hitAnim * 0.5}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+      )}
+      
+      {isAttacking && (
+        <mesh scale={1.3 + Math.sin(animTime * 15) * 0.2}>
+          <sphereGeometry args={[0.5, 12, 8]} />
+          <meshBasicMaterial 
+            color={accentColor || "#FFFF00"}
+            transparent
             opacity={0.3}
             depthWrite={false}
+            blending={THREE.AdditiveBlending}
           />
         </mesh>
       )}
@@ -82,16 +177,22 @@ function GLBModel({
   );
 }
 
+function FallbackBox({ primaryColor }: { primaryColor?: string }) {
+  return (
+    <mesh position={[0, 0.5, 0]}>
+      <boxGeometry args={[0.8, 1.2, 0.6]} />
+      <meshToonMaterial color={primaryColor || "#888888"} />
+    </mesh>
+  );
+}
+
 export default function GLBCharacterModel(props: GLBCharacterModelProps) {
   return (
-    <Suspense fallback={
-      <mesh position={[0, 0.5, 0]}>
-        <boxGeometry args={[0.8, 1.2, 0.6]} />
-        <meshToonMaterial color={props.primaryColor || "#888888"} />
-      </mesh>
-    }>
-      <GLBModel {...props} />
-    </Suspense>
+    <GLBErrorBoundary fallback={<FallbackBox primaryColor={props.primaryColor} />}>
+      <Suspense fallback={<FallbackBox primaryColor={props.primaryColor} />}>
+        <GLBModel {...props} />
+      </Suspense>
+    </GLBErrorBoundary>
   );
 }
 
