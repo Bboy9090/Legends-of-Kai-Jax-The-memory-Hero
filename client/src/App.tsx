@@ -18,7 +18,7 @@ import StoryModeSelect from "./components/game/StoryModeSelect";
 import GameModesMenu from "./components/game/GameModesMenu";
 import MissionSelect from "./components/game/MissionSelect";
 import MissionGameplay from "./components/game/MissionGameplay";
-import TeamBattleArena from "./components/game/TeamBattleArena";
+import FluidBattleArena from "./components/game/FluidBattleArena";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
@@ -181,7 +181,7 @@ function App() {
         
         {/* Mission Gameplay */}
         {phase === 'ready' && gameState === 'mission-gameplay' && currentMissionId && (
-          <TeamBattleArena
+          <FluidBattleArena
             missionId={currentMissionId}
             playerTeam={selectedTeam}
             onBattleComplete={(success: boolean) => {
@@ -216,7 +216,7 @@ function App() {
         
         {/* Versus Battle */}
         {phase === 'ready' && gameState === 'versus-battle' && (
-          <TeamBattleArena
+          <FluidBattleArena
             missionId={null}
             playerTeam={selectedTeam}
             onBattleComplete={() => {
