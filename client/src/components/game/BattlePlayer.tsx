@@ -6,6 +6,7 @@ import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
 import JaxonModel from "./models/JaxonModel";
 import KaisonModel from "./models/KaisonModel";
+import GLBCharacterModel, { hasGLBModel, getModelPath } from "./models/GLBCharacterModel";
 
 // Use the same Controls enum as App.tsx
 enum Controls {
@@ -337,8 +338,32 @@ export default function BattlePlayer() {
     prevYRef.current = playerY;
   });
   
-  // LEGENDARY CHARACTER MODELS - Use specialized designs for Jaxon & Kaison!
+  // LEGENDARY CHARACTER MODELS - Use GLB models when available, then specialized designs!
   const renderCharacterModel = () => {
+    // CHECK FOR GLB 3D MODELS FIRST - Real character models!
+    const modelPath = getModelPath(playerFighterId);
+    if (modelPath) {
+      return (
+        <GLBCharacterModel
+          modelPath={modelPath}
+          bodyRef={bodyRef}
+          headRef={headRef}
+          leftArmRef={leftArmRef}
+          rightArmRef={rightArmRef}
+          leftLegRef={leftLegRef}
+          rightLegRef={rightLegRef}
+          emotionIntensity={emotionIntensityRef.current}
+          hitAnim={hitAnimRef.current}
+          animTime={animTimeRef.current}
+          isAttacking={playerAttacking}
+          isInvulnerable={playerInvulnerable}
+          primaryColor={fighter.color}
+          accentColor={fighter.accentColor}
+          scale={2.5}
+        />
+      );
+    }
+    
     if (playerFighterId === 'jaxon') {
       return (
         <JaxonModel 
