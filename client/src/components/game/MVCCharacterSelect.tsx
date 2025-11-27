@@ -230,41 +230,58 @@ export default function MVCCharacterSelect({
                       onMouseEnter={() => setHoveredCharacter(character.id)}
                       onMouseLeave={() => setHoveredCharacter(null)}
                     >
-                      {/* Character Cell */}
+                      {/* Character Cell - LEGENDARY */}
                       <div 
-                        className="w-full h-full rounded-lg flex items-center justify-center relative overflow-hidden"
+                        className="w-full h-full rounded-lg flex items-center justify-center relative overflow-hidden border-2 border-white/20"
                         style={{ 
-                          backgroundColor: ROLE_COLORS[character.role],
-                          boxShadow: selected ? `0 0 20px ${ROLE_COLORS[character.role]}` : 'none'
+                          background: `linear-gradient(135deg, ${ROLE_COLORS[character.role]} 0%, ${ROLE_COLORS[character.role]}88 50%, ${ROLE_COLORS[character.role]}44 100%)`,
+                          boxShadow: selected 
+                            ? `0 0 25px ${ROLE_COLORS[character.role]}, inset 0 0 15px rgba(255,255,255,0.3)` 
+                            : isCursorHere 
+                              ? `0 0 15px rgba(255,255,255,0.8), inset 0 0 10px rgba(255,255,255,0.2)`
+                              : 'inset 0 -2px 5px rgba(0,0,0,0.3)'
                         }}
                       >
+                        {/* Shine Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent pointer-events-none" />
+                        
                         {/* Character Initial/Icon */}
-                        <span className="text-white font-black text-lg md:text-2xl drop-shadow-lg">
+                        <span className="text-white font-black text-lg md:text-2xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                           {character.name.charAt(0)}
                         </span>
 
+                        {/* Universe Badge */}
+                        <span className="absolute bottom-0 right-0 text-[8px] md:text-[10px] bg-black/60 px-1 rounded-tl text-white/80 truncate max-w-full">
+                          {character.universe}
+                        </span>
+
                         {/* Role Icon Badge */}
-                        <span className="absolute top-0 right-0 text-xs md:text-sm">
+                        <span className="absolute top-0 right-0 text-xs md:text-sm bg-black/40 rounded-bl px-0.5">
                           {ROLE_ICONS[character.role]}
                         </span>
 
-                        {/* Selected Indicator */}
+                        {/* Selected Indicator - Enhanced */}
                         {selected && slotNumber && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-yellow-400 text-black text-center font-black text-xs md:text-sm py-0.5">
-                            P{slotNumber}
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-yellow-500 via-yellow-400 to-yellow-500 text-black text-center font-black text-xs md:text-sm py-0.5 shadow-[0_-2px_10px_rgba(255,215,0,0.5)]">
+                            ★ P{slotNumber} ★
                           </div>
                         )}
 
-                        {/* READY Badge */}
+                        {/* READY Badge - Enhanced */}
                         {selected && (
-                          <div className="absolute top-0 left-0 bg-green-500 text-white text-[8px] md:text-xs font-bold px-1 rounded-br">
-                            READY
+                          <div className="absolute top-0 left-0 bg-gradient-to-r from-green-600 to-green-500 text-white text-[8px] md:text-xs font-bold px-1.5 py-0.5 rounded-br shadow-[0_2px_10px_rgba(0,255,0,0.4)]">
+                            ✓ READY
                           </div>
+                        )}
+
+                        {/* Cursor Indicator */}
+                        {isCursorHere && !selected && (
+                          <div className="absolute inset-0 border-4 border-white animate-pulse rounded-lg pointer-events-none" />
                         )}
 
                         {/* Lock Overlay */}
                         {locked && (
-                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                          <div className="absolute inset-0 bg-black/70 flex items-center justify-center backdrop-blur-sm">
                             <Lock className="w-4 h-4 md:w-6 md:h-6 text-gray-400" />
                           </div>
                         )}
