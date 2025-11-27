@@ -43,6 +43,7 @@ export default function TeamBattleArena({
   const [isPaused, setIsPaused] = useState(false);
   const [battleOver, setBattleOver] = useState(false);
   const [victory, setVictory] = useState(false);
+  const [lastAction, setLastAction] = useState<string>('');
 
   const playerCharacters = useMemo(() => {
     return playerTeam.map(id => getCharacterById(id)).filter(Boolean) as Character[];
@@ -79,35 +80,56 @@ export default function TeamBattleArena({
   };
 
   const handleAttack = () => {
-    if (battleOver) return;
+    if (battleOver || isPaused) return;
     
-    const damage = 5 + Math.floor(Math.random() * 10) + (activeCharacter?.stats.attack || 50) / 20;
-    setEnemyHealth(prev => Math.max(0, prev - damage));
+    const baseDamage = 5 + Math.floor(Math.random() * 10);
+    const charStats = activeCharacter?.stats.attack || 50;
+    const damage = baseDamage + charStats / 20;
+    const newEnemyHealth = Math.max(0, enemyHealth - damage);
+    
+    setEnemyHealth(newEnemyHealth);
     setComboCount(prev => prev + 1);
     setSpecialMeter(prev => Math.min(100, prev + 5));
+    setLastAction(`${activeCharacter?.name} ATTACKED!`);
+    
+    playSound('hit');
 
-    if (enemyHealth - damage <= 0) {
+    if (newEnemyHealth <= 0) {
       setBattleOver(true);
       setVictory(true);
     }
   };
 
   const handleSpecial = () => {
-    if (battleOver || specialMeter < 100) return;
+    if (battleOver || isPaused || specialMeter < 100) return;
     
-    const damage = 25 + (activeCharacter?.stats.special || 50) / 5;
-    setEnemyHealth(prev => Math.max(0, prev - damage));
+    const charStats = activeCharacter?.stats.special || 50;
+    const damage = 25 + charStats / 5;
+    const newEnemyHealth = Math.max(0, enemyHealth - damage);
+    
+    setEnemyHealth(newEnemyHealth);
     setSpecialMeter(0);
     setComboCount(prev => prev + 3);
+    setLastAction(`${activeCharacter?.name} ULTIMATE ATTACK!`);
+    
+    playSound('success');
 
-    if (enemyHealth - damage <= 0) {
+    if (newEnemyHealth <= 0) {
       setBattleOver(true);
       setVictory(true);
     }
   };
 
+  const playSound = (type: 'hit' | 'success') => {
+    try {
+      const sound = new Audio(`/sounds/${type}.mp3`);
+      sound.volume = 0.5;
+      sound.play().catch(() => {});
+    } catch (e) {}
+  };
+
   useEffect(() => {
-    if (battleOver) return;
+    if (battleOver || isPaused) return;
     
     const enemyAttackInterval = setInterval(() => {
       const targetIndex = activePlayerIndex;
@@ -116,6 +138,7 @@ export default function TeamBattleArena({
       setTeamHealth(prev => {
         const newHealth = [...prev];
         newHealth[targetIndex] = Math.max(0, newHealth[targetIndex] - damage);
+        setLastAction(`Enemy attacked for ${Math.floor(damage)} damage!`);
         
         if (newHealth[targetIndex] <= 0) {
           const aliveIndex = newHealth.findIndex(h => h > 0);
@@ -129,10 +152,40 @@ export default function TeamBattleArena({
         
         return newHealth;
       });
-    }, 2000);
+    }, 2500);
 
     return () => clearInterval(enemyAttackInterval);
-  }, [battleOver, activePlayerIndex]);
+  }, [battleOver, isPaused, activePlayerIndex]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (battleOver || isPaused) return;
+      
+      switch(e.key.toLowerCase()) {
+        case '1':
+        case 'j':
+        case 'x':
+          handleAttack();
+          break;
+        case '2':
+        case 'l':
+        case 'c':
+          handleSpecial();
+          break;
+        case 'arrowleft':
+        case 'a':
+          if (activePlayerIndex > 0) handleTagSwitch(activePlayerIndex - 1);
+          break;
+        case 'arrowright':
+        case 'd':
+          if (activePlayerIndex < playerCharacters.length - 1) handleTagSwitch(activePlayerIndex + 1);
+          break;
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activePlayerIndex, battleOver, isPaused, playerCharacters.length]);
 
   return (
     <div className="w-full h-screen relative bg-black">
@@ -205,6 +258,11 @@ export default function TeamBattleArena({
                 <p className="text-white font-black text-xl">{comboCount} HIT COMBO!</p>
               </div>
             )}
+            {lastAction && (
+              <div className="bg-cyan-900/80 border-2 border-cyan-400 rounded-lg px-4 py-2 text-center">
+                <p className="text-cyan-300 font-bold text-sm">{lastAction}</p>
+              </div>
+            )}
           </div>
 
           {/* Enemy Health */}
@@ -255,13 +313,14 @@ export default function TeamBattleArena({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-center gap-4 pointer-events-auto">
+          <div className="flex justify-center gap-4 pointer-events-auto flex-wrap">
             <Button
               onClick={handleAttack}
               className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-black px-8 py-4 text-xl"
+              title="Press J or 1 to attack"
             >
               <Sword className="w-6 h-6 mr-2" />
-              ATTACK
+              ATTACK (J)
             </Button>
             
             <Button
@@ -272,17 +331,24 @@ export default function TeamBattleArena({
                   ? 'bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 animate-pulse' 
                   : 'bg-gray-600 cursor-not-allowed'
               }`}
+              title="Press L or 2 when charged"
             >
               <Zap className="w-6 h-6 mr-2" />
-              SPECIAL
+              SPECIAL (L)
             </Button>
             
             <Button
               onClick={() => setIsPaused(!isPaused)}
               className="bg-gray-700 hover:bg-gray-600 text-white font-bold px-6 py-4"
+              title="Press ESC to pause"
             >
               {isPaused ? 'RESUME' : 'PAUSE'}
             </Button>
+          </div>
+          
+          {/* Keyboard Controls Help */}
+          <div className="text-center text-gray-400 text-xs mt-2">
+            <p>← A/Left to tag | D/Right to tag → | J or 1 = Attack | L or 2 = Special</p>
           </div>
         </div>
 
