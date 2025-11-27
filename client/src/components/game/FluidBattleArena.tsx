@@ -628,9 +628,9 @@ function CameraController() {
 
 function EnemyFighter({ position, health }: { position: [number, number, number]; health: number }) {
   const meshRef = useRef<THREE.Group>(null);
-  const { setEnemyPosition, getDistanceToEnemy, isInAttackRange } = useFluidCombat();
+  const { setEnemyPosition } = useFluidCombat();
   
-  // Sync enemy position to combat store
+  // Initial sync of enemy position
   useEffect(() => {
     setEnemyPosition(position[0], position[1], position[2]);
   }, [position, setEnemyPosition]);
@@ -638,7 +638,11 @@ function EnemyFighter({ position, health }: { position: [number, number, number]
   useFrame((state) => {
     if (meshRef.current) {
       meshRef.current.rotation.y = Math.sin(state.clock.elapsedTime) * 0.1;
-      meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.1;
+      const bobY = Math.sin(state.clock.elapsedTime * 2) * 0.1;
+      meshRef.current.position.y = bobY;
+      
+      // Sync actual animated position to combat store every frame
+      setEnemyPosition(position[0], position[1] + bobY, position[2]);
     }
   });
   
