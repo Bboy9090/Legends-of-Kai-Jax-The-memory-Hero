@@ -1,7 +1,8 @@
-import { useRef, useEffect, Suspense, useState, Component, ReactNode } from 'react';
+import { useRef, useEffect, Suspense, useState, useMemo, Component, ReactNode } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { applyToonShadingToModel, normalizeToBrightColor } from '../materials/ToonMaterial';
 
 interface GLBCharacterModelProps {
   modelPath: string;
@@ -61,11 +62,13 @@ function GLBModel({
   hitAnim = 0,
   animTime = 0,
   emotionIntensity = 0,
-  primaryColor,
-  accentColor
+  primaryColor = '#FF4444',
+  accentColor = '#FFAA00'
 }: GLBCharacterModelProps) {
   const internalGroupRef = useRef<THREE.Group>(null);
+  const rimLightRef = useRef<THREE.PointLight>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
+  const [clonedScene, setClonedScene] = useState<THREE.Group | null>(null);
   
   let scene: THREE.Group;
   try {
@@ -73,32 +76,20 @@ function GLBModel({
     scene = gltf.scene;
   } catch (error) {
     console.warn(`Failed to load model: ${modelPath}`);
-    return (
-      <mesh position={[0, 0.5, 0]}>
-        <boxGeometry args={[0.8, 1.2, 0.6]} />
-        <meshToonMaterial color={primaryColor || "#888888"} />
-      </mesh>
-    );
+    return <StylizedFallbackCharacter primaryColor={primaryColor} accentColor={accentColor} />;
   }
   
+  const normalizedPrimary = useMemo(() => normalizeToBrightColor(primaryColor), [primaryColor]);
+  const normalizedAccent = useMemo(() => normalizeToBrightColor(accentColor), [accentColor]);
+
   useEffect(() => {
     if (scene) {
-      scene.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-          
-          if (child.material) {
-            const material = child.material as THREE.MeshStandardMaterial;
-            if (material.emissive) {
-              material.emissiveIntensity = isInvulnerable ? 0.8 : 0.2;
-            }
-          }
-        }
-      });
+      const clone = scene.clone(true);
+      applyToonShadingToModel(clone, primaryColor, accentColor);
+      setClonedScene(clone);
       setModelLoaded(true);
     }
-  }, [scene, isInvulnerable]);
+  }, [scene, primaryColor, accentColor]);
 
   useEffect(() => {
     if (internalGroupRef.current && bodyRef.current === null) {
@@ -111,85 +102,208 @@ function GLBModel({
     if (!group) return;
 
     if (hitAnim > 0) {
-      group.rotation.z = Math.sin(animTime * 30) * 0.2 * hitAnim;
-      group.position.x = Math.sin(animTime * 40) * 0.1 * hitAnim;
+      group.rotation.z = Math.sin(animTime * 30) * 0.25 * hitAnim;
+      group.position.x = Math.sin(animTime * 40) * 0.15 * hitAnim;
+      group.scale.setScalar(scale * (1 - hitAnim * 0.1));
     } else if (isAttacking) {
-      group.rotation.z = Math.sin(animTime * 20) * 0.15;
-      group.rotation.x = Math.sin(animTime * 15) * 0.1;
-      group.scale.setScalar(scale * (1 + Math.sin(animTime * 25) * 0.05));
+      group.rotation.z = Math.sin(animTime * 25) * 0.2;
+      group.rotation.x = Math.sin(animTime * 18) * 0.15;
+      group.scale.setScalar(scale * (1 + Math.sin(animTime * 30) * 0.08));
     } else {
-      group.rotation.z = Math.sin(animTime * 2) * 0.03;
-      group.rotation.x = 0;
+      group.rotation.z = Math.sin(animTime * 2) * 0.04;
+      group.rotation.x = Math.sin(animTime * 1.5) * 0.02;
       group.scale.setScalar(scale);
     }
     
-    const breathe = Math.sin(animTime * 3) * 0.05;
-    group.position.y = 0.2 + breathe;
+    const breathe = Math.sin(animTime * 3) * 0.08;
+    const bob = Math.sin(animTime * 2) * 0.03;
+    group.position.y = 0.2 + breathe + bob;
     
     if (emotionIntensity > 0.5) {
-      group.rotation.y = Math.sin(animTime * 8) * 0.05 * emotionIntensity;
+      group.rotation.y = Math.sin(animTime * 8) * 0.08 * emotionIntensity;
+    }
+
+    if (rimLightRef.current) {
+      rimLightRef.current.intensity = isAttacking ? 2 : (isInvulnerable ? 1.5 : 0.8);
     }
   });
   
   return (
     <group ref={internalGroupRef} scale={[scale, scale, scale]} position={[0, 0.2, 0]}>
-      <primitive object={scene.clone()} />
+      {clonedScene && <primitive object={clonedScene} />}
+      
+      <pointLight
+        ref={rimLightRef}
+        position={[0, 1, -1]}
+        intensity={0.8}
+        color={normalizedAccent}
+        distance={5}
+      />
+      
+      <pointLight
+        position={[0.5, 0.5, 1]}
+        intensity={0.4}
+        color="#FFFFFF"
+        distance={3}
+      />
       
       {isInvulnerable && (
-        <mesh scale={1.5}>
-          <sphereGeometry args={[0.5, 16, 12]} />
-          <meshBasicMaterial 
-            color="#FFFFFF"
-            transparent
-            opacity={0.4 + Math.sin(animTime * 10) * 0.2}
-            depthWrite={false}
-            blending={THREE.AdditiveBlending}
-          />
-        </mesh>
+        <>
+          <mesh scale={1.6}>
+            <sphereGeometry args={[0.45, 24, 16]} />
+            <meshBasicMaterial 
+              color="#88DDFF"
+              transparent
+              opacity={0.35 + Math.sin(animTime * 12) * 0.15}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+            />
+          </mesh>
+          <mesh scale={1.8}>
+            <sphereGeometry args={[0.45, 16, 12]} />
+            <meshBasicMaterial 
+              color="#FFFFFF"
+              transparent
+              opacity={0.15 + Math.sin(animTime * 8) * 0.1}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+              wireframe
+            />
+          </mesh>
+        </>
       )}
       
       {hitAnim > 0 && (
-        <mesh scale={1.2 + hitAnim * 0.3}>
-          <sphereGeometry args={[0.5, 12, 8]} />
-          <meshBasicMaterial 
-            color="#FF0000"
-            transparent
-            opacity={hitAnim * 0.5}
-            depthWrite={false}
-            blending={THREE.AdditiveBlending}
-          />
-        </mesh>
+        <>
+          <mesh scale={1.3 + hitAnim * 0.4}>
+            <sphereGeometry args={[0.45, 16, 12]} />
+            <meshBasicMaterial 
+              color="#FF4444"
+              transparent
+              opacity={hitAnim * 0.6}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+            />
+          </mesh>
+          <mesh scale={1.1}>
+            <sphereGeometry args={[0.5, 8, 6]} />
+            <meshBasicMaterial 
+              color="#FFFF00"
+              transparent
+              opacity={hitAnim * 0.3}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+            />
+          </mesh>
+        </>
       )}
       
       {isAttacking && (
-        <mesh scale={1.3 + Math.sin(animTime * 15) * 0.2}>
-          <sphereGeometry args={[0.5, 12, 8]} />
-          <meshBasicMaterial 
-            color={accentColor || "#FFFF00"}
-            transparent
-            opacity={0.3}
-            depthWrite={false}
-            blending={THREE.AdditiveBlending}
-          />
-        </mesh>
+        <>
+          <mesh scale={1.4 + Math.sin(animTime * 20) * 0.25}>
+            <sphereGeometry args={[0.45, 16, 12]} />
+            <meshBasicMaterial 
+              color={normalizedAccent}
+              transparent
+              opacity={0.4}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+            />
+          </mesh>
+          <mesh scale={1.2} rotation={[0, animTime * 5, 0]}>
+            <torusGeometry args={[0.5, 0.05, 8, 16]} />
+            <meshBasicMaterial 
+              color="#FFFFFF"
+              transparent
+              opacity={0.5}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+            />
+          </mesh>
+        </>
       )}
     </group>
   );
 }
 
-function FallbackBox({ primaryColor }: { primaryColor?: string }) {
+function StylizedFallbackCharacter({ 
+  primaryColor = '#FF4444', 
+  accentColor = '#FFAA00' 
+}: { 
+  primaryColor?: string; 
+  accentColor?: string; 
+}) {
+  const groupRef = useRef<THREE.Group>(null);
+  const normalizedPrimary = normalizeToBrightColor(primaryColor);
+  const normalizedAccent = normalizeToBrightColor(accentColor);
+  
+  useFrame((state) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
+      groupRef.current.position.y = 0.5 + Math.sin(state.clock.elapsedTime * 2) * 0.05;
+    }
+  });
+  
   return (
-    <mesh position={[0, 0.5, 0]}>
-      <boxGeometry args={[0.8, 1.2, 0.6]} />
-      <meshToonMaterial color={primaryColor || "#888888"} />
-    </mesh>
+    <group ref={groupRef} position={[0, 0.5, 0]}>
+      <mesh position={[0, 0.4, 0]}>
+        <capsuleGeometry args={[0.35, 0.6, 8, 16]} />
+        <meshToonMaterial color={normalizedPrimary} />
+      </mesh>
+      
+      <mesh position={[0, 1.0, 0]}>
+        <sphereGeometry args={[0.3, 16, 12]} />
+        <meshToonMaterial color={normalizedPrimary} />
+      </mesh>
+      
+      <mesh position={[0.15, 1.05, 0.2]}>
+        <sphereGeometry args={[0.08, 8, 8]} />
+        <meshBasicMaterial color="#FFFFFF" />
+      </mesh>
+      <mesh position={[-0.15, 1.05, 0.2]}>
+        <sphereGeometry args={[0.08, 8, 8]} />
+        <meshBasicMaterial color="#FFFFFF" />
+      </mesh>
+      <mesh position={[0.15, 1.05, 0.25]}>
+        <sphereGeometry args={[0.04, 8, 8]} />
+        <meshBasicMaterial color="#222222" />
+      </mesh>
+      <mesh position={[-0.15, 1.05, 0.25]}>
+        <sphereGeometry args={[0.04, 8, 8]} />
+        <meshBasicMaterial color="#222222" />
+      </mesh>
+      
+      <mesh position={[0.45, 0.5, 0]} rotation={[0, 0, -0.3]}>
+        <capsuleGeometry args={[0.1, 0.4, 4, 8]} />
+        <meshToonMaterial color={normalizedAccent} />
+      </mesh>
+      <mesh position={[-0.45, 0.5, 0]} rotation={[0, 0, 0.3]}>
+        <capsuleGeometry args={[0.1, 0.4, 4, 8]} />
+        <meshToonMaterial color={normalizedAccent} />
+      </mesh>
+      
+      <mesh position={[0.15, -0.2, 0]}>
+        <capsuleGeometry args={[0.12, 0.5, 4, 8]} />
+        <meshToonMaterial color={normalizedPrimary} />
+      </mesh>
+      <mesh position={[-0.15, -0.2, 0]}>
+        <capsuleGeometry args={[0.12, 0.5, 4, 8]} />
+        <meshToonMaterial color={normalizedPrimary} />
+      </mesh>
+      
+      <pointLight position={[0, 1.5, 1]} intensity={0.5} color={normalizedAccent} distance={3} />
+    </group>
   );
+}
+
+function FallbackBox({ primaryColor, accentColor }: { primaryColor?: string; accentColor?: string }) {
+  return <StylizedFallbackCharacter primaryColor={primaryColor} accentColor={accentColor} />;
 }
 
 export default function GLBCharacterModel(props: GLBCharacterModelProps) {
   return (
-    <GLBErrorBoundary fallback={<FallbackBox primaryColor={props.primaryColor} />}>
-      <Suspense fallback={<FallbackBox primaryColor={props.primaryColor} />}>
+    <GLBErrorBoundary fallback={<FallbackBox primaryColor={props.primaryColor} accentColor={props.accentColor} />}>
+      <Suspense fallback={<FallbackBox primaryColor={props.primaryColor} accentColor={props.accentColor} />}>
         <GLBModel {...props} />
       </Suspense>
     </GLBErrorBoundary>
