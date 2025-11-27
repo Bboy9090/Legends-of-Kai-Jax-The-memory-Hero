@@ -39,11 +39,14 @@ export default function TeamBattleArena({
   const [enemyHealth, setEnemyHealth] = useState(100);
   const [comboCount, setComboCount] = useState(0);
   const [specialMeter, setSpecialMeter] = useState(0);
-  const [battleTime, setBattleTime] = useState(99);
+  const [battleTime, setBattleTime] = useState(mission?.isBoss ? 180 : 99);
   const [isPaused, setIsPaused] = useState(false);
   const [battleOver, setBattleOver] = useState(false);
   const [victory, setVictory] = useState(false);
   const [lastAction, setLastAction] = useState<string>('');
+  const [objectivesComplete, setObjectivesComplete] = useState<boolean[]>(
+    mission?.objectives.map(() => false) || []
+  );
 
   const playerCharacters = useMemo(() => {
     return playerTeam.map(id => getCharacterById(id)).filter(Boolean) as Character[];
@@ -82,21 +85,29 @@ export default function TeamBattleArena({
   const handleAttack = () => {
     if (battleOver || isPaused) return;
     
+    const difficultyMult = (mission?.difficulty || 5) / 5;
     const baseDamage = 5 + Math.floor(Math.random() * 10);
     const charStats = activeCharacter?.stats.attack || 50;
-    const damage = baseDamage + charStats / 20;
+    const damage = (baseDamage + charStats / 20) * (1 + difficultyMult * 0.3);
     const newEnemyHealth = Math.max(0, enemyHealth - damage);
     
     setEnemyHealth(newEnemyHealth);
     setComboCount(prev => prev + 1);
     setSpecialMeter(prev => Math.min(100, prev + 5));
-    setLastAction(`${activeCharacter?.name} ATTACKED!`);
+    setLastAction(`${activeCharacter?.name} ATTACKED! -${Math.floor(damage)} HP`);
     
     playSound('hit');
 
     if (newEnemyHealth <= 0) {
       setBattleOver(true);
       setVictory(true);
+      if (!mission?.isBoss) {
+        setObjectivesComplete(prev => {
+          const updated = [...prev];
+          updated[0] = true; // Defeat enemy objective
+          return updated;
+        });
+      }
     }
   };
 
@@ -131,14 +142,16 @@ export default function TeamBattleArena({
   useEffect(() => {
     if (battleOver || isPaused) return;
     
+    const difficultyMult = (mission?.difficulty || 5) / 5;
     const enemyAttackInterval = setInterval(() => {
       const targetIndex = activePlayerIndex;
-      const damage = 3 + Math.floor(Math.random() * 8);
+      const baseDamage = 3 + Math.floor(Math.random() * 8);
+      const damage = baseDamage * (1 + difficultyMult * 0.25);
       
       setTeamHealth(prev => {
         const newHealth = [...prev];
         newHealth[targetIndex] = Math.max(0, newHealth[targetIndex] - damage);
-        setLastAction(`Enemy attacked for ${Math.floor(damage)} damage!`);
+        setLastAction(`${mission?.bossName || 'Enemy'} attacked for ${Math.floor(damage)} damage!`);
         
         if (newHealth[targetIndex] <= 0) {
           const aliveIndex = newHealth.findIndex(h => h > 0);
@@ -155,7 +168,7 @@ export default function TeamBattleArena({
     }, 2500);
 
     return () => clearInterval(enemyAttackInterval);
-  }, [battleOver, isPaused, activePlayerIndex]);
+  }, [battleOver, isPaused, activePlayerIndex, mission]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -266,17 +279,24 @@ export default function TeamBattleArena({
           </div>
 
           {/* Enemy Health */}
-          <div className="bg-black/80 rounded-lg p-4 border-2 border-red-500 min-w-[200px]">
-            <p className="text-red-400 font-bold text-sm mb-1">
-              {mission?.bossName || 'ENEMY'}
-            </p>
-            <div className="w-full bg-gray-700 rounded-full h-4">
+          <div className="bg-black/80 rounded-lg p-4 border-2 border-red-500 min-w-[250px]">
+            <div className="mb-2">
+              <p className="text-red-400 font-bold text-sm">
+                {mission?.bossName || 'ENEMY'}
+              </p>
+              {mission && (
+                <p className="text-gray-400 text-xs">
+                  {mission.name}
+                </p>
+              )}
+            </div>
+            <div className="w-full bg-gray-700 rounded-full h-4 mb-2">
               <div 
                 className="h-full bg-red-500 rounded-full transition-all"
                 style={{ width: `${enemyHealth}%` }}
               />
             </div>
-            <p className="text-gray-400 text-xs mt-1">{Math.ceil(enemyHealth)}% HP</p>
+            <p className="text-gray-400 text-xs">{Math.ceil(enemyHealth)}% HP</p>
           </div>
         </div>
 
@@ -351,6 +371,30 @@ export default function TeamBattleArena({
             <p>← A/Left to tag | D/Right to tag → | J or 1 = Attack | L or 2 = Special</p>
           </div>
         </div>
+
+        {/* Mission Objectives Panel (if in story mission) */}
+        {mission && (
+          <div className="absolute bottom-32 left-4 bg-black/80 border-2 border-cyan-500 rounded-lg p-3 max-w-xs max-h-32 overflow-y-auto">
+            <p className="text-cyan-400 font-bold text-xs mb-2 uppercase">MISSION OBJECTIVES</p>
+            <ul className="space-y-1">
+              {mission.objectives.map((obj, i) => (
+                <li key={i} className="text-gray-300 text-xs flex items-center gap-2">
+                  <span className={objectivesComplete[i] ? 'text-green-400' : 'text-gray-500'}>
+                    {objectivesComplete[i] ? '✓' : '○'}
+                  </span>
+                  <span className={objectivesComplete[i] ? 'line-through text-gray-500' : ''}>
+                    {obj}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {mission.difficulty && (
+              <p className="text-yellow-400 text-xs mt-2 font-bold">
+                Difficulty: {mission.difficulty}/10
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Back Button */}
         <Button
