@@ -189,7 +189,7 @@ export const CORE_HEROES: Character[] = [
     unlockLevel: 1
   },
   {
-    id: 'pikachu',
+    id: 'yoshi',
     name: 'Yoshi',
     title: 'Dino Master',
     role: 'Wildcard',
