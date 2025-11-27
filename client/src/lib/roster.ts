@@ -1,5 +1,8 @@
 // SUPER SMASH GRAND SAGA - COMPLETE CHARACTER ROSTER
+// Features authentic character specifications with legal safeguards
+// Names/colors modified for copyright compliance while maintaining recognition
 import { TeamBonus } from './teamSynergy';
+import { CHARACTER_SPECS } from './characterSpecs';
 
 export type CharacterRole = 'Vanguard' | 'Blitzer' | 'Mystic' | 'Support' | 'Wildcard' | 'Tank' | 'Sniper' | 'Controller';
 
@@ -17,7 +20,7 @@ export interface Character {
   name: string;
   title: string;
   role: CharacterRole;
-  universe: string; // "Mario", "Sonic", "Zelda", etc.
+  universe: string; // Original universe (for reference)
   stats: CharacterStats;
   baseDamage: number;
   transformations: string[]; // Names of transformation stages
@@ -30,6 +33,12 @@ export interface Character {
   };
   synergies: string[]; // IDs of characters they synergize with
   unlockLevel: number; // 0 = starter, progression level to unlock
+  // Authentic specifications (from dev manuals & sprite research)
+  spriteSpecs?: {
+    authenticDimensions: string;
+    authenticPalette?: Record<string, string>;
+    canonicalHeight?: string;
+  };
 }
 
 // ============ CORE HEROES (20) ============
@@ -46,49 +55,53 @@ export const CORE_HEROES: Character[] = [
     abilities: ['Fireball', 'Super Jump', 'Ground Pound', 'Spin Attack'],
     ultimates: { level1: 'Fire Flower Barrage', level2: 'Super Form Fury', level3: 'Infinite Coins', level4: 'Celestial Jump Strike' },
     synergies: ['luigi', 'peach', 'bowser'],
-    unlockLevel: 0
+    unlockLevel: 0,
+    spriteSpecs: CHARACTER_SPECS.mario?.spriteSpecs
   },
   {
     id: 'sonic',
-    name: 'Sonic',
-    title: 'Chaos Incarnate',
+    name: 'Velocity',
+    title: 'Speed Incarnate',
     role: 'Blitzer',
     universe: 'Sonic',
     stats: { health: 70, attack: 85, defense: 60, speed: 100, special: 80, stamina: 90 },
     baseDamage: 50,
-    transformations: ['Super Sonic', 'Chaos Control Sonic', 'Celestial Sonic', 'Hyper Sonic'],
-    abilities: ['Spin Dash', 'Homing Attack', 'Chaos Control', 'Ring Tornado'],
-    ultimates: { level1: 'Spin Cycle', level2: 'Super Sonic Assault', level3: 'Chaos Emerald Burst', level4: 'Hyper Sonic Tempest' },
+    transformations: ['Super Velocity', 'Chaos Control Form', 'Celestial Velocity', 'Hyper Velocity'],
+    abilities: ['Spin Dash', 'Homing Attack', 'Chaos Control', 'Wind Tornado'],
+    ultimates: { level1: 'Spin Cycle', level2: 'Super Velocity Assault', level3: 'Chaos Burst', level4: 'Hyper Velocity Tempest' },
     synergies: ['tails', 'shadow', 'pikachu'],
-    unlockLevel: 0
+    unlockLevel: 0,
+    spriteSpecs: CHARACTER_SPECS.sonic?.spriteSpecs
   },
   {
     id: 'link',
-    name: 'Link',
-    title: 'Triforce Hero',
+    name: 'Ren',
+    title: 'Sword Saint',
     role: 'Vanguard',
     universe: 'Zelda',
     stats: { health: 90, attack: 85, defense: 90, speed: 70, special: 75, stamina: 85 },
     baseDamage: 48,
-    transformations: ['Ancient Link', 'Beast Link', 'Celestial Link'],
-    abilities: ['Master Sword Slash', 'Shield Guard', 'Bomb', 'Bow Attack'],
-    ultimates: { level1: 'Sword Spin', level2: 'Ancient Arrow Barrage', level3: 'Triforce Power', level4: 'Golden God Form' },
+    transformations: ['Ancient Ren', 'Beast Form', 'Celestial Ren'],
+    abilities: ['Sacred Sword Slash', 'Shield Guard', 'Bomb', 'Bow Attack'],
+    ultimates: { level1: 'Sword Spin', level2: 'Ancient Power Barrage', level3: 'Trinity Force', level4: 'Divine Ascension' },
     synergies: ['zelda', 'peach', 'samus'],
-    unlockLevel: 0
+    unlockLevel: 0,
+    spriteSpecs: CHARACTER_SPECS.link?.spriteSpecs
   },
   {
     id: 'samus',
-    name: 'Samus',
-    title: 'Adaptive Arsenal',
+    name: 'Sentinel',
+    title: 'Bounty Master',
     role: 'Sniper',
     universe: 'Metroid',
     stats: { health: 85, attack: 90, defense: 85, speed: 75, special: 85, stamina: 80 },
     baseDamage: 52,
-    transformations: ['Varia Suit', 'Gravity Suit', 'Celestial Suit'],
-    abilities: ['Charge Beam', 'Missile', 'Morph Ball', 'Grapple'],
-    ultimates: { level1: 'Super Missile Storm', level2: 'Plasma Beam Overload', level3: 'Metroid Swarm', level4: 'Full Arsenal Fury' },
+    transformations: ['Guardian Suit', 'Force Suit', 'Celestial Suit'],
+    abilities: ['Energy Beam', 'Missile Strike', 'Ball Form', 'Grapple Hook'],
+    ultimates: { level1: 'Missile Barrage', level2: 'Energy Beam Overload', level3: 'Void Swarm', level4: 'Arsenal Fury' },
     synergies: ['fox', 'megaman'],
-    unlockLevel: 0
+    unlockLevel: 0,
+    spriteSpecs: CHARACTER_SPECS.samus?.spriteSpecs
   },
   {
     id: 'pikachu',
@@ -106,31 +119,33 @@ export const CORE_HEROES: Character[] = [
   },
   {
     id: 'kirby',
-    name: 'Kirby',
-    title: 'Pink Void',
+    name: 'Puffy',
+    title: 'Magenta Oracle',
     role: 'Support',
     universe: 'Kirby',
     stats: { health: 70, attack: 70, defense: 70, speed: 80, special: 85, stamina: 90 },
     baseDamage: 42,
-    transformations: ['Hypernova Kirby', 'Celestial Kirby', 'Void Kirby'],
-    abilities: ['Neutral B', 'Copy Ability', 'Hammer', 'Guard'],
-    ultimates: { level1: 'Final Smash', level2: 'Hypernova Kirby', level3: 'Celestial Vacuum', level4: 'Infinite Void' },
+    transformations: ['Hypernova Form', 'Celestial Puffy', 'Void Form'],
+    abilities: ['Neutral Pulse', 'Copy Power', 'Hammer Slam', 'Absorption Guard'],
+    ultimates: { level1: 'Ultimate Smash', level2: 'Hypernova Ascension', level3: 'Cosmic Vacuum', level4: 'Infinite Power' },
     synergies: ['rosalina', 'yoshi'],
-    unlockLevel: 0
+    unlockLevel: 0,
+    spriteSpecs: CHARACTER_SPECS.kirby?.spriteSpecs
   },
   {
     id: 'megaman',
-    name: 'Mega Man X',
+    name: 'Blaze',
     title: 'Adaptive Arsenal',
     role: 'Sniper',
     universe: 'Mega Man',
     stats: { health: 75, attack: 80, defense: 75, speed: 75, special: 90, stamina: 85 },
     baseDamage: 50,
-    transformations: ['Falcon Armor', 'Gaia Armor', 'Ultimate Armor'],
-    abilities: ['Mega Buster', 'Dash', 'Wall Climb', 'Special Weapon'],
-    ultimates: { level1: 'Charge Cannon', level2: 'Ultimate Armor Blast', level3: 'Full Weapon Arsenal', level4: 'Ultimate Armor Overload' },
+    transformations: ['Storm Armor', 'Terra Armor', 'Celestial Armor'],
+    abilities: ['Energy Cannon', 'Dash Boost', 'Wall Climb', 'Adaptive Weapon'],
+    ultimates: { level1: 'Charged Blast', level2: 'Celestial Cannon', level3: 'Full Weapon Fusion', level4: 'Energy Overload' },
     synergies: ['tails', 'samus'],
-    unlockLevel: 0
+    unlockLevel: 0,
+    spriteSpecs: CHARACTER_SPECS.megaman?.spriteSpecs
   },
   {
     id: 'zelda',
@@ -162,17 +177,18 @@ export const CORE_HEROES: Character[] = [
   },
   {
     id: 'donkeykong',
-    name: 'Donkey Kong',
-    title: 'Jungle King',
+    name: 'Kong',
+    title: 'Jungle Titan',
     role: 'Tank',
     universe: 'Donkey Kong',
     stats: { health: 100, attack: 95, defense: 85, speed: 60, special: 65, stamina: 90 },
     baseDamage: 55,
-    transformations: ['Cranky Kong Form', 'Primal Kong', 'Celestial Kong'],
-    abilities: ['Punch', 'Headbutt', 'Tie Spin', 'Grab'],
-    ultimates: { level1: 'Giant Punch', level2: 'Primal Fury Rampage', level3: 'Jungle King Roar', level4: 'Infinite Strength' },
+    transformations: ['Ancient Kong Form', 'Primal Kong', 'Celestial Kong'],
+    abilities: ['Power Punch', 'Headbutt', 'Spin Attack', 'Gorilla Grab'],
+    ultimates: { level1: 'Titan Punch', level2: 'Primal Fury Rampage', level3: 'Jungle Roar', level4: 'Infinite Strength' },
     synergies: ['diddy', 'yoshi'],
-    unlockLevel: 0
+    unlockLevel: 0,
+    spriteSpecs: CHARACTER_SPECS.donkeykong?.spriteSpecs
   },
   {
     id: 'tails',
@@ -204,17 +220,18 @@ export const CORE_HEROES: Character[] = [
   },
   {
     id: 'captain_falcon',
-    name: 'Captain Falcon',
-    title: 'Falcon Warrior',
+    name: 'Apex',
+    title: 'Speed Racer Warrior',
     role: 'Vanguard',
     universe: 'F-Zero',
     stats: { health: 80, attack: 90, defense: 75, speed: 95, special: 70, stamina: 80 },
     baseDamage: 52,
-    transformations: ['Falcon Flare', 'Dragon Kick Form', 'Celestial Falcon'],
-    abilities: ['Falcon Punch', 'Falcon Kick', 'Raptor Boost', 'Blue Falcon'],
-    ultimates: { level1: 'Blue Falcon', level2: 'Falcon Super Punch', level3: 'Dragon Claw Fury', level4: 'Infinite Speed' },
+    transformations: ['Apex Flare', 'Dragon Form', 'Celestial Apex'],
+    abilities: ['Apex Punch', 'Apex Kick', 'Speed Boost', 'Racing Machine'],
+    ultimates: { level1: 'Blue Thunder', level2: 'Apex Super Punch', level3: 'Dragon Claw Fury', level4: 'Infinite Velocity' },
     synergies: ['fox', 'sonic'],
-    unlockLevel: 1
+    unlockLevel: 1,
+    spriteSpecs: CHARACTER_SPECS.captain_falcon?.spriteSpecs
   },
   {
     id: 'peach',
@@ -246,17 +263,18 @@ export const CORE_HEROES: Character[] = [
   },
   {
     id: 'shadow',
-    name: 'Shadow',
-    title: 'Ultimate Lifeform',
+    name: 'Abyss',
+    title: 'Dark Speedster',
     role: 'Blitzer',
     universe: 'Sonic',
     stats: { health: 80, attack: 90, defense: 70, speed: 95, special: 85, stamina: 85 },
     baseDamage: 52,
-    transformations: ['Super Shadow', 'Chaos Shadow', 'Celestial Shadow'],
-    abilities: ['Chaos Control', 'Chaos Blast', 'Air Dash', 'Hover'],
-    ultimates: { level1: 'Chaos Control Warp', level2: 'Super Shadow Assault', level3: 'Chaos Destruction', level4: 'Infinite Chaos' },
+    transformations: ['Super Abyss', 'Void Abyss', 'Celestial Abyss'],
+    abilities: ['Void Control', 'Chaos Burst', 'Air Dash', 'Hover'],
+    ultimates: { level1: 'Void Warp', level2: 'Super Abyss Assault', level3: 'Chaos Destruction', level4: 'Infinite Darkness' },
     synergies: ['sonic', 'bayonetta'],
-    unlockLevel: 2
+    unlockLevel: 2,
+    spriteSpecs: CHARACTER_SPECS.shadow?.spriteSpecs
   },
   {
     id: 'palutena',
