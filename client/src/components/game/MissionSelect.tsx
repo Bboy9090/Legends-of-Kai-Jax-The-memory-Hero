@@ -9,6 +9,7 @@ interface MissionSelectProps {
   actNumber: ActNumber;
   onSelectMission: (missionId: string) => void;
   onBack: () => void;
+  onChangeAct?: (actNumber: ActNumber) => void;
   completedMissions: string[];
 }
 
@@ -16,6 +17,7 @@ export default function MissionSelect({
   actNumber,
   onSelectMission,
   onBack,
+  onChangeAct,
   completedMissions
 }: MissionSelectProps) {
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
@@ -37,13 +39,33 @@ export default function MissionSelect({
       <div className="w-full max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Button
-            onClick={onBack}
-            variant="outline"
-            className="mb-4 bg-red-600 hover:bg-red-700 text-white"
-          >
-            ← Back to Act Select
-          </Button>
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              onClick={onBack}
+              variant="outline"
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              ← Back
+            </Button>
+            {onChangeAct && actNumber > 1 && (
+              <Button
+                onClick={() => onChangeAct((actNumber - 1) as ActNumber)}
+                variant="outline"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                ← Act {actNumber - 1}
+              </Button>
+            )}
+            {onChangeAct && actNumber < 9 && (
+              <Button
+                onClick={() => onChangeAct((actNumber + 1) as ActNumber)}
+                variant="outline"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Act {actNumber + 1} →
+              </Button>
+            )}
+          </div>
           <h1 className="text-5xl md:text-6xl font-black text-white drop-shadow-lg mb-2">
             ACT {actNumber} MISSIONS
           </h1>

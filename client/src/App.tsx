@@ -138,27 +138,16 @@ function App() {
         {/* Main Menu */}
         {phase === 'ready' && gameState === 'menu' && <MainMenu />}
         
-        {/* Story Mode Selection */}
-        {phase === 'ready' && gameState === 'story-mode-select' && !currentMissionId && (
-          <StoryModeSelect 
-            onSelectAct={(actNumber) => {
-              setCurrentActNumber(actNumber);
-              setGameState('mission-select');
-            }}
-            onBack={() => setGameState('menu')}
-            completedActs={completedActs}
-          />
-        )}
-        
-        {/* Mission Selection */}
-        {phase === 'ready' && gameState === 'mission-select' && !currentMissionId && (
+        {/* Mission Selection - Skip story select, go straight to missions */}
+        {phase === 'ready' && (gameState === 'story-mode-select' || gameState === 'mission-select') && !currentMissionId && (
           <MissionSelect
             actNumber={currentActNumber}
             onSelectMission={(missionId) => {
               setCurrentMissionId(missionId);
               setGameState('mission-team-select');
             }}
-            onBack={() => setGameState('story-mode-select')}
+            onBack={() => setGameState('menu')}
+            onChangeAct={(actNumber) => setCurrentActNumber(actNumber)}
             completedMissions={completedMissions}
           />
         )}
