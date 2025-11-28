@@ -381,9 +381,9 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
   // Get model path for this character
   const modelPath = getModelPath(character.id);
   
-  // Attack effect particles
-  const primaryColor = ROLE_COLORS[character.role];
-  const accentColor = ROLE_ACCENT_COLORS[character.role];
+  // Use character-specific colors if available, otherwise use role colors
+  const primaryColor = character.primaryColor || ROLE_COLORS[character.role];
+  const accentColor = character.accentColor || ROLE_ACCENT_COLORS[character.role];
   
   // Attack effect particles
   const attackEffects = useMemo(() => {
@@ -417,7 +417,7 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
   }, [currentAttack, attackPhase, playerRotation, accentColor]);
   
   // Y offset to place character on ground (models have origin at center)
-  const CHARACTER_Y_OFFSET = 1.5;
+  const CHARACTER_Y_OFFSET = 3.5;
   
   return (
     <group ref={meshRef} position={[playerX, playerY + CHARACTER_Y_OFFSET, playerZ]}>
