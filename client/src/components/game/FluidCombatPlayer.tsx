@@ -3,7 +3,6 @@ import { useFrame } from '@react-three/fiber';
 import { useKeyboardControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useFluidCombat, COMBO_MOVES, AttackType } from '../../lib/stores/useFluidCombat';
-import GLBCharacterModel, { getModelPath } from './models/GLBCharacterModel';
 import { Character, CharacterRole } from '../../lib/roster';
 
 const ROLE_COLORS: Record<CharacterRole, string> = {
@@ -385,9 +384,6 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
     }
   };
   
-  // Get model path for this character
-  const modelPath = getModelPath(character.id);
-  
   // Use character-specific colors if available, otherwise use role colors
   const primaryColor = character.primaryColor || ROLE_COLORS[character.role];
   const accentColor = character.accentColor || ROLE_ACCENT_COLORS[character.role];
@@ -428,64 +424,43 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
   
   return (
     <group ref={meshRef} position={[playerX, playerY + CHARACTER_Y_OFFSET, playerZ]}>
-      {/* Character model */}
-      {modelPath ? (
-        <GLBCharacterModel
-          modelPath={modelPath}
-          bodyRef={bodyRef}
-          headRef={headRef}
-          leftArmRef={leftArmRef}
-          rightArmRef={rightArmRef}
-          leftLegRef={leftLegRef}
-          rightLegRef={rightLegRef}
-          emotionIntensity={emotionRef.current}
-          hitAnim={hitFlashRef.current}
-          animTime={animTimeRef.current}
-          isAttacking={!!currentAttack}
-          isInvulnerable={iFrames > 0}
-          primaryColor={primaryColor}
-          accentColor={accentColor}
-          scale={2.5}
-        />
-      ) : (
-        // Fallback stylized character
-        <group ref={bodyRef}>
+      {/* Animated stylized character with full animation support */}
+      <group ref={bodyRef}>
+        <mesh castShadow>
+          <capsuleGeometry args={[0.4, 1, 16, 32]} />
+          <meshToonMaterial color={primaryColor} />
+        </mesh>
+        <group ref={headRef} position={[0, 0.9, 0]}>
           <mesh castShadow>
-            <capsuleGeometry args={[0.4, 1, 16, 32]} />
+            <sphereGeometry args={[0.35, 32, 24]} />
             <meshToonMaterial color={primaryColor} />
           </mesh>
-          <group ref={headRef} position={[0, 0.9, 0]}>
-            <mesh castShadow>
-              <sphereGeometry args={[0.35, 32, 24]} />
-              <meshToonMaterial color={primaryColor} />
-            </mesh>
-          </group>
-          <group ref={leftArmRef} position={[-0.5, 0.3, 0]}>
-            <mesh castShadow>
-              <capsuleGeometry args={[0.12, 0.6, 12, 16]} />
-              <meshToonMaterial color={primaryColor} />
-            </mesh>
-          </group>
-          <group ref={rightArmRef} position={[0.5, 0.3, 0]}>
-            <mesh castShadow>
-              <capsuleGeometry args={[0.12, 0.6, 12, 16]} />
-              <meshToonMaterial color={primaryColor} />
-            </mesh>
-          </group>
-          <group ref={leftLegRef} position={[-0.2, -0.5, 0]}>
-            <mesh castShadow>
-              <capsuleGeometry args={[0.14, 0.7, 12, 16]} />
-              <meshToonMaterial color={primaryColor} />
-            </mesh>
-          </group>
-          <group ref={rightLegRef} position={[0.2, -0.5, 0]}>
-            <mesh castShadow>
-              <capsuleGeometry args={[0.14, 0.7, 12, 16]} />
-              <meshToonMaterial color={primaryColor} />
-            </mesh>
-          </group>
         </group>
-      )}
+        <group ref={leftArmRef} position={[-0.5, 0.3, 0]}>
+          <mesh castShadow>
+            <capsuleGeometry args={[0.12, 0.6, 12, 16]} />
+            <meshToonMaterial color={primaryColor} />
+          </mesh>
+        </group>
+        <group ref={rightArmRef} position={[0.5, 0.3, 0]}>
+          <mesh castShadow>
+            <capsuleGeometry args={[0.12, 0.6, 12, 16]} />
+            <meshToonMaterial color={primaryColor} />
+          </mesh>
+        </group>
+        <group ref={leftLegRef} position={[-0.2, -0.5, 0]}>
+          <mesh castShadow>
+            <capsuleGeometry args={[0.14, 0.7, 12, 16]} />
+            <meshToonMaterial color={primaryColor} />
+          </mesh>
+        </group>
+        <group ref={rightLegRef} position={[0.2, -0.5, 0]}>
+          <mesh castShadow>
+            <capsuleGeometry args={[0.14, 0.7, 12, 16]} />
+            <meshToonMaterial color={primaryColor} />
+          </mesh>
+        </group>
+      </group>
       
       {/* Attack effects */}
       {attackEffects}
