@@ -426,38 +426,62 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
     <group ref={meshRef} position={[playerX, playerY + CHARACTER_Y_OFFSET, playerZ]}>
       {/* Animated stylized character with full animation support */}
       <group ref={bodyRef}>
-        <mesh castShadow>
+        <mesh castShadow receiveShadow>
           <capsuleGeometry args={[0.4, 1, 16, 32]} />
-          <meshToonMaterial color={primaryColor} />
+          <meshToonMaterial 
+            color={primaryColor}
+            emissive={primaryColor}
+            emissiveIntensity={0.3}
+          />
         </mesh>
         <group ref={headRef} position={[0, 0.9, 0]}>
-          <mesh castShadow>
+          <mesh castShadow receiveShadow>
             <sphereGeometry args={[0.35, 32, 24]} />
-            <meshToonMaterial color={primaryColor} />
+            <meshToonMaterial 
+              color={primaryColor}
+              emissive={primaryColor}
+              emissiveIntensity={0.3}
+            />
           </mesh>
         </group>
         <group ref={leftArmRef} position={[-0.5, 0.3, 0]}>
-          <mesh castShadow>
+          <mesh castShadow receiveShadow>
             <capsuleGeometry args={[0.12, 0.6, 12, 16]} />
-            <meshToonMaterial color={primaryColor} />
+            <meshToonMaterial 
+              color={primaryColor}
+              emissive={primaryColor}
+              emissiveIntensity={0.3}
+            />
           </mesh>
         </group>
         <group ref={rightArmRef} position={[0.5, 0.3, 0]}>
-          <mesh castShadow>
+          <mesh castShadow receiveShadow>
             <capsuleGeometry args={[0.12, 0.6, 12, 16]} />
-            <meshToonMaterial color={primaryColor} />
+            <meshToonMaterial 
+              color={primaryColor}
+              emissive={primaryColor}
+              emissiveIntensity={0.3}
+            />
           </mesh>
         </group>
         <group ref={leftLegRef} position={[-0.2, -0.5, 0]}>
-          <mesh castShadow>
+          <mesh castShadow receiveShadow>
             <capsuleGeometry args={[0.14, 0.7, 12, 16]} />
-            <meshToonMaterial color={primaryColor} />
+            <meshToonMaterial 
+              color={primaryColor}
+              emissive={primaryColor}
+              emissiveIntensity={0.3}
+            />
           </mesh>
         </group>
         <group ref={rightLegRef} position={[0.2, -0.5, 0]}>
-          <mesh castShadow>
+          <mesh castShadow receiveShadow>
             <capsuleGeometry args={[0.14, 0.7, 12, 16]} />
-            <meshToonMaterial color={primaryColor} />
+            <meshToonMaterial 
+              color={primaryColor}
+              emissive={primaryColor}
+              emissiveIntensity={0.3}
+            />
           </mesh>
         </group>
       </group>
