@@ -1,10 +1,431 @@
 import { create } from 'zustand';
+import { CharacterRole } from '../roster';
 
 // Spider-Man style fluid combat system
 // - Auto-targeting nearest enemy
 // - Effortless combo chaining
 // - Attack canceling for smooth flow
 // - Aerial combos and launchers
+
+// Movement profiles based on character archetype
+export interface MovementProfile {
+  walkSpeed: number;
+  runSpeed: number;
+  acceleration: number;
+  friction: number;
+  jumpHeight: number;
+  dashSpeed: number;
+  dashDistance: number;
+  animationSpeed: number;  // How fast animations play
+  armSwingIntensity: number;  // How much arms swing (0-2)
+  legSwingIntensity: number;  // How much legs swing (0-2)
+  bodyLean: number;  // How much body leans when running (0-0.5)
+  bounceIntensity: number;  // Vertical bounce when moving (0-0.3)
+}
+
+// Role-based movement profiles
+export const MOVEMENT_PROFILES: Record<CharacterRole, MovementProfile> = {
+  // Vanguards - balanced, solid movement
+  'Vanguard': {
+    walkSpeed: 4,
+    runSpeed: 8,
+    acceleration: 25,
+    friction: 0.88,
+    jumpHeight: 12,
+    dashSpeed: 20,
+    dashDistance: 5,
+    animationSpeed: 10,
+    armSwingIntensity: 1.0,
+    legSwingIntensity: 1.0,
+    bodyLean: 0.15,
+    bounceIntensity: 0.12
+  },
+  // Blitzers - FAST, extreme speed
+  'Blitzer': {
+    walkSpeed: 5,
+    runSpeed: 14,
+    acceleration: 40,
+    friction: 0.92,
+    jumpHeight: 14,
+    dashSpeed: 30,
+    dashDistance: 8,
+    animationSpeed: 14,
+    armSwingIntensity: 1.5,
+    legSwingIntensity: 1.5,
+    bodyLean: 0.25,
+    bounceIntensity: 0.08
+  },
+  // Tanks - slow but powerful
+  'Tank': {
+    walkSpeed: 3,
+    runSpeed: 5,
+    acceleration: 15,
+    friction: 0.82,
+    jumpHeight: 8,
+    dashSpeed: 12,
+    dashDistance: 3,
+    animationSpeed: 6,
+    armSwingIntensity: 1.8,
+    legSwingIntensity: 0.8,
+    bodyLean: 0.08,
+    bounceIntensity: 0.2
+  },
+  // Mystics - floaty, graceful movement
+  'Mystic': {
+    walkSpeed: 4,
+    runSpeed: 7,
+    acceleration: 22,
+    friction: 0.9,
+    jumpHeight: 15,
+    dashSpeed: 18,
+    dashDistance: 6,
+    animationSpeed: 8,
+    armSwingIntensity: 0.6,
+    legSwingIntensity: 0.7,
+    bodyLean: 0.1,
+    bounceIntensity: 0.05
+  },
+  // Support - medium speed, helpful
+  'Support': {
+    walkSpeed: 4,
+    runSpeed: 7,
+    acceleration: 22,
+    friction: 0.88,
+    jumpHeight: 11,
+    dashSpeed: 16,
+    dashDistance: 5,
+    animationSpeed: 9,
+    armSwingIntensity: 0.9,
+    legSwingIntensity: 0.9,
+    bodyLean: 0.12,
+    bounceIntensity: 0.1
+  },
+  // Wildcards - unpredictable, bouncy
+  'Wildcard': {
+    walkSpeed: 4.5,
+    runSpeed: 9,
+    acceleration: 30,
+    friction: 0.85,
+    jumpHeight: 16,
+    dashSpeed: 22,
+    dashDistance: 6,
+    animationSpeed: 12,
+    armSwingIntensity: 1.3,
+    legSwingIntensity: 1.4,
+    bodyLean: 0.18,
+    bounceIntensity: 0.25
+  },
+  // Snipers - precise, controlled movement
+  'Sniper': {
+    walkSpeed: 4,
+    runSpeed: 8,
+    acceleration: 28,
+    friction: 0.9,
+    jumpHeight: 10,
+    dashSpeed: 18,
+    dashDistance: 5,
+    animationSpeed: 9,
+    armSwingIntensity: 0.7,
+    legSwingIntensity: 0.8,
+    bodyLean: 0.1,
+    bounceIntensity: 0.06
+  },
+  // Controllers - tactical, measured
+  'Controller': {
+    walkSpeed: 3.5,
+    runSpeed: 6,
+    acceleration: 20,
+    friction: 0.85,
+    jumpHeight: 10,
+    dashSpeed: 15,
+    dashDistance: 4,
+    animationSpeed: 8,
+    armSwingIntensity: 0.8,
+    legSwingIntensity: 0.7,
+    bodyLean: 0.08,
+    bounceIntensity: 0.08
+  }
+};
+
+// Get movement profile for a character role
+export function getMovementProfile(role: CharacterRole): MovementProfile {
+  return MOVEMENT_PROFILES[role] || MOVEMENT_PROFILES['Vanguard'];
+}
+
+// Character-specific signature attacks
+export interface SignatureKit {
+  specialName: string;
+  specialDescription: string;
+  specialType: 'projectile' | 'melee' | 'buff' | 'aoe' | 'dash';
+  specialDamage: number;
+  specialCooldown: number;
+  ultimateName: string;
+  ultimateDescription: string;
+  ultimateType: 'cinematic' | 'burst' | 'transformation' | 'summon';
+  ultimateDamage: number;
+  effectColor: string;
+}
+
+// Signature combat kits per character
+export const CHARACTER_KITS: Record<string, SignatureKit> = {
+  mario: {
+    specialName: 'Blazing Orb',
+    specialDescription: 'Throws a bouncing fire sphere',
+    specialType: 'projectile',
+    specialDamage: 65,
+    specialCooldown: 3,
+    ultimateName: 'Zenith Inferno',
+    ultimateDescription: 'Massive fire explosion engulfs the arena',
+    ultimateType: 'burst',
+    ultimateDamage: 180,
+    effectColor: '#FF6600'
+  },
+  luigi: {
+    specialName: 'Phantom Vacuum',
+    specialDescription: 'Drains enemy life force',
+    specialType: 'melee',
+    specialDamage: 55,
+    specialCooldown: 4,
+    ultimateName: 'Poltergust G-00 Surge',
+    ultimateDescription: 'Summons spectral energy from the Dark Moon',
+    ultimateType: 'summon',
+    ultimateDamage: 160,
+    effectColor: '#00FF66'
+  },
+  sonic: {
+    specialName: 'Crimson Cyclone',
+    specialDescription: 'High-speed spinning attack',
+    specialType: 'dash',
+    specialDamage: 70,
+    specialCooldown: 2,
+    ultimateName: 'Chaos Flow',
+    ultimateDescription: 'Channel all Chaos Emerald power',
+    ultimateType: 'transformation',
+    ultimateDamage: 200,
+    effectColor: '#FF0000'
+  },
+  link: {
+    specialName: 'Forest Arrow',
+    specialDescription: 'Precision shot with ancient power',
+    specialType: 'projectile',
+    specialDamage: 60,
+    specialCooldown: 3,
+    ultimateName: 'Triforce Slash',
+    ultimateDescription: 'Unleash the power of courage',
+    ultimateType: 'cinematic',
+    ultimateDamage: 175,
+    effectColor: '#00AA00'
+  },
+  kirby: {
+    specialName: 'Dream Inhale',
+    specialDescription: 'Absorb and copy enemy power',
+    specialType: 'melee',
+    specialDamage: 50,
+    specialCooldown: 4,
+    ultimateName: 'Star Rod Burst',
+    ultimateDescription: 'Channel the power of the Fountain of Dreams',
+    ultimateType: 'burst',
+    ultimateDamage: 165,
+    effectColor: '#FF69B4'
+  },
+  pikachu: {
+    specialName: 'Volt Tackle',
+    specialDescription: 'Electric charge through enemies',
+    specialType: 'dash',
+    specialDamage: 65,
+    specialCooldown: 3,
+    ultimateName: '10 Million Volt Thunderbolt',
+    ultimateDescription: 'Massive lightning storm covers the arena',
+    ultimateType: 'burst',
+    ultimateDamage: 190,
+    effectColor: '#FFDD00'
+  },
+  samus: {
+    specialName: 'Charge Beam',
+    specialDescription: 'Powerful energy projectile',
+    specialType: 'projectile',
+    specialDamage: 75,
+    specialCooldown: 4,
+    ultimateName: 'Zero Laser',
+    ultimateDescription: 'Devastating beam of pure energy',
+    ultimateType: 'cinematic',
+    ultimateDamage: 200,
+    effectColor: '#00CCFF'
+  },
+  fox: {
+    specialName: 'Blaster Barrage',
+    specialDescription: 'Rapid-fire laser shots',
+    specialType: 'projectile',
+    specialDamage: 55,
+    specialCooldown: 2,
+    ultimateName: 'Landmaster',
+    ultimateDescription: 'Summon the legendary Arwing tank',
+    ultimateType: 'summon',
+    ultimateDamage: 175,
+    effectColor: '#FF8800'
+  },
+  donkeykong: {
+    specialName: 'Giant Punch',
+    specialDescription: 'Devastating charged fist attack',
+    specialType: 'melee',
+    specialDamage: 85,
+    specialCooldown: 5,
+    ultimateName: 'Konga Fury',
+    ultimateDescription: 'Rhythmic beating creates shockwaves',
+    ultimateType: 'burst',
+    ultimateDamage: 195,
+    effectColor: '#8B4513'
+  },
+  bowser: {
+    specialName: 'Fire Breath',
+    specialDescription: 'Continuous stream of flames',
+    specialType: 'projectile',
+    specialDamage: 70,
+    specialCooldown: 4,
+    ultimateName: 'Giga Bowser',
+    ultimateDescription: 'Transform into ultimate Koopa form',
+    ultimateType: 'transformation',
+    ultimateDamage: 210,
+    effectColor: '#FF4400'
+  },
+  peach: {
+    specialName: 'Royal Bloom',
+    specialDescription: 'Heal allies and damage enemies',
+    specialType: 'buff',
+    specialDamage: 45,
+    specialCooldown: 5,
+    ultimateName: 'Peach Blossom',
+    ultimateDescription: 'Put enemies to sleep with dream magic',
+    ultimateType: 'cinematic',
+    ultimateDamage: 140,
+    effectColor: '#FFB6C1'
+  },
+  zelda: {
+    specialName: "Nayru's Love",
+    specialDescription: 'Protective crystal shield',
+    specialType: 'buff',
+    specialDamage: 50,
+    specialCooldown: 4,
+    ultimateName: 'Light Arrow',
+    ultimateDescription: 'Sacred arrow blessed by the gods',
+    ultimateType: 'cinematic',
+    ultimateDamage: 185,
+    effectColor: '#FFD700'
+  },
+  mewtwo: {
+    specialName: 'Shadow Ball',
+    specialDescription: 'Concentrated psychic energy',
+    specialType: 'projectile',
+    specialDamage: 80,
+    specialCooldown: 3,
+    ultimateName: 'Psystrike',
+    ultimateDescription: 'Ultimate psychic assault',
+    ultimateType: 'burst',
+    ultimateDamage: 205,
+    effectColor: '#9400D3'
+  },
+  snake: {
+    specialName: 'RPG-7',
+    specialDescription: 'Guided missile strike',
+    specialType: 'projectile',
+    specialDamage: 75,
+    specialCooldown: 5,
+    ultimateName: 'Covering Fire',
+    ultimateDescription: 'Call in helicopter support',
+    ultimateType: 'summon',
+    ultimateDamage: 185,
+    effectColor: '#556B2F'
+  },
+  ryu: {
+    specialName: 'Hadoken',
+    specialDescription: 'Surge fist energy blast',
+    specialType: 'projectile',
+    specialDamage: 60,
+    specialCooldown: 2,
+    ultimateName: 'Shin Shoryuken',
+    ultimateDescription: 'True rising dragon fist',
+    ultimateType: 'cinematic',
+    ultimateDamage: 190,
+    effectColor: '#FFFFFF'
+  },
+  cloud: {
+    specialName: 'Blade Beam',
+    specialDescription: 'Energy wave from Buster Sword',
+    specialType: 'projectile',
+    specialDamage: 65,
+    specialCooldown: 3,
+    ultimateName: 'Omnislash',
+    ultimateDescription: 'Legendary Soldier technique',
+    ultimateType: 'cinematic',
+    ultimateDamage: 215,
+    effectColor: '#4169E1'
+  },
+  bayonetta: {
+    specialName: 'Witch Time',
+    specialDescription: 'Slow time around enemies',
+    specialType: 'buff',
+    specialDamage: 55,
+    specialCooldown: 6,
+    ultimateName: 'Infernal Climax',
+    ultimateDescription: 'Summon Gomorrah from Inferno',
+    ultimateType: 'summon',
+    ultimateDamage: 200,
+    effectColor: '#AA00FF'
+  },
+  greninja: {
+    specialName: 'Water Shuriken',
+    specialDescription: 'Rapid water blade attacks',
+    specialType: 'projectile',
+    specialDamage: 55,
+    specialCooldown: 2,
+    ultimateName: 'Secret Ninja Attack',
+    ultimateDescription: 'Full-moon assassination strike',
+    ultimateType: 'cinematic',
+    ultimateDamage: 175,
+    effectColor: '#003366'
+  },
+  shadow: {
+    specialName: 'Chaos Spear',
+    specialDescription: 'Dark energy projectile',
+    specialType: 'projectile',
+    specialDamage: 70,
+    specialCooldown: 3,
+    ultimateName: 'Chaos Blast',
+    ultimateDescription: 'Release all inhibitor limits',
+    ultimateType: 'burst',
+    ultimateDamage: 195,
+    effectColor: '#333333'
+  },
+  palutena: {
+    specialName: 'Autoreticle',
+    specialDescription: 'Homing light projectiles',
+    specialType: 'projectile',
+    specialDamage: 60,
+    specialCooldown: 3,
+    ultimateName: 'Black Hole Laser',
+    ultimateDescription: 'Create void and pierce through',
+    ultimateType: 'burst',
+    ultimateDamage: 180,
+    effectColor: '#00FF88'
+  },
+  default: {
+    specialName: 'Power Strike',
+    specialDescription: 'Focused energy attack',
+    specialType: 'melee',
+    specialDamage: 60,
+    specialCooldown: 3,
+    ultimateName: 'Ultimate Fury',
+    ultimateDescription: 'Channel all power into one strike',
+    ultimateType: 'burst',
+    ultimateDamage: 150,
+    effectColor: '#FFFFFF'
+  }
+};
+
+// Get signature kit for a character
+export function getSignatureKit(characterId: string): SignatureKit {
+  return CHARACTER_KITS[characterId] || CHARACTER_KITS['default'];
+}
 
 export type AttackType = 
   | 'light1' | 'light2' | 'light3' | 'light4' | 'light5'  // Light combo chain
@@ -81,6 +502,10 @@ export const COMBO_CHAINS: Record<AttackType, AttackType[]> = {
 };
 
 interface FluidCombatState {
+  // Character info for archetype-based profiles
+  characterId: string;
+  characterRole: CharacterRole;
+  
   // Player position (free 3D movement)
   playerX: number;
   playerY: number;
@@ -118,6 +543,7 @@ interface FluidCombatState {
   // Special meters
   specialMeter: number;
   ultimateMeter: number;
+  specialCooldown: number;  // Cooldown timer for special attacks
   
   // Damage dealt this combo
   comboDamage: number;
@@ -128,6 +554,7 @@ interface FluidCombatState {
   isDodging: boolean;
   
   // Actions
+  setCharacter: (id: string, role: CharacterRole) => void;
   setMoveInput: (x: number, z: number) => void;
   movePlayer: (delta: number) => void;
   jump: () => void;
@@ -149,21 +576,28 @@ interface FluidCombatState {
   setRunning: (running: boolean) => void;
   getDistanceToEnemy: () => number;
   isInAttackRange: () => boolean;
+  getMovementProfile: () => MovementProfile;
+  getSignatureKit: () => SignatureKit;
   
   reset: () => void;
 }
 
-const MOVE_SPEED = 8.0;
-const RUN_SPEED = 12.0;
-const DASH_SPEED = 25.0;
-const JUMP_FORCE = 12.0;
+// Default fallback values (profiles override these)
+const DEFAULT_MOVE_SPEED = 8.0;
+const DEFAULT_RUN_SPEED = 12.0;
+const DEFAULT_DASH_SPEED = 25.0;
+const DEFAULT_JUMP_FORCE = 12.0;
 const GRAVITY = -35.0;
 const COMBO_TIMEOUT = 1.5;
-const DASH_COOLDOWN = 0.5;
+const DEFAULT_DASH_COOLDOWN = 0.5;
 
 const ATTACK_RANGE = 4.0;  // Distance at which attacks connect
 
 export const useFluidCombat = create<FluidCombatState>((set, get) => ({
+  // Character info - default to Vanguard
+  characterId: 'mario',
+  characterRole: 'Vanguard',
+  
   // Initial state
   playerX: -4,
   playerY: 0,
@@ -197,17 +631,36 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
   
   specialMeter: 0,
   ultimateMeter: 0,
+  specialCooldown: 0,
   comboDamage: 0,
   lastHitTime: 0,
   
   iFrames: 0,
   isDodging: false,
   
+  // Set character for archetype-based profiles
+  setCharacter: (id, role) => set({ characterId: id, characterRole: role }),
+  
+  // Get current movement profile based on character role
+  getMovementProfile: () => {
+    const state = get();
+    return MOVEMENT_PROFILES[state.characterRole] || MOVEMENT_PROFILES['Vanguard'];
+  },
+  
+  // Get current signature kit based on character ID
+  getSignatureKit: () => {
+    const state = get();
+    return CHARACTER_KITS[state.characterId] || CHARACTER_KITS['default'];
+  },
+  
   setMoveInput: (x, z) => set({ moveInput: { x, z } }),
   
   movePlayer: (delta) => {
     const state = get();
     const { moveInput, playerGrounded, currentAttack, isDashing, dashCooldown } = state;
+    
+    // Get archetype-based movement profile
+    const profile = state.getMovementProfile();
     
     // Can't move during heavy attacks (but can during light attacks)
     const isHeavyAttack = currentAttack?.startsWith('heavy') || currentAttack === 'special' || currentAttack === 'ultimate';
@@ -218,12 +671,14 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
     let newVelY = state.playerVelocityY;
     
     if (canMove && !isDashing) {
-      const speed = state.isRunning ? RUN_SPEED : MOVE_SPEED;
+      // Use profile-based speeds instead of hardcoded values
+      const speed = state.isRunning ? profile.runSpeed : profile.walkSpeed;
       const targetVelX = moveInput.x * speed;
       const targetVelZ = moveInput.z * speed;
       
-      // Smooth acceleration
-      const accel = playerGrounded ? 25.0 : 15.0;
+      // Smooth acceleration - use profile-based acceleration
+      const baseAccel = profile.acceleration;
+      const accel = playerGrounded ? baseAccel : baseAccel * 0.6;
       newVelX += (targetVelX - newVelX) * Math.min(1, accel * delta);
       newVelZ += (targetVelZ - newVelZ) * Math.min(1, accel * delta);
       
@@ -276,8 +731,10 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
   jump: () => {
     const state = get();
     if (state.playerGrounded) {
+      // Use profile-based jump height
+      const profile = state.getMovementProfile();
       set({
-        playerVelocityY: JUMP_FORCE,
+        playerVelocityY: profile.jumpHeight,
         playerGrounded: false,
       });
     }
@@ -287,23 +744,27 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
     const state = get();
     if (state.dashCooldown > 0) return;
     
+    // Use profile-based dash speed
+    const profile = state.getMovementProfile();
+    
     const dashDirX = state.moveInput.x || Math.sin(state.playerRotation);
     const dashDirZ = state.moveInput.z || Math.cos(state.playerRotation);
     const len = Math.sqrt(dashDirX * dashDirX + dashDirZ * dashDirZ) || 1;
     
     set({
-      playerVelocityX: (dashDirX / len) * DASH_SPEED,
-      playerVelocityZ: (dashDirZ / len) * DASH_SPEED,
+      playerVelocityX: (dashDirX / len) * profile.dashSpeed,
+      playerVelocityZ: (dashDirZ / len) * profile.dashSpeed,
       isDashing: true,
-      dashCooldown: DASH_COOLDOWN,
+      dashCooldown: DEFAULT_DASH_COOLDOWN,
       iFrames: 0.25,
       isDodging: true,
     });
     
-    // End dash after short duration
+    // End dash duration varies by role (faster roles dash faster)
+    const dashDuration = 200 * (10 / profile.animationSpeed);
     setTimeout(() => {
       set({ isDashing: false, isDodging: false });
-    }, 200);
+    }, dashDuration);
   },
   
   // Start a light attack - chains automatically
@@ -394,6 +855,9 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
     if (currentAttack && !canCancel) return;
     if (!state.playerGrounded) return;  // Can't launch from air
     
+    // Use profile-based jump height for launcher
+    const profile = state.getMovementProfile();
+    
     set({
       currentAttack: 'launcher',
       attackTime: 0,
@@ -401,16 +865,23 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
       canCancel: false,
       comboCount: comboCount + 1,
       comboTimer: COMBO_TIMEOUT,
-      // Jump with the launcher
-      playerVelocityY: JUMP_FORCE * 0.8,
+      // Jump with the launcher - use profile jump height
+      playerVelocityY: profile.jumpHeight * 0.8,
       playerGrounded: false,
     });
   },
   
   specialAttack: () => {
     const state = get();
+    const kit = state.getSignatureKit();
+    
+    // Check cooldown and meter
+    if (state.specialCooldown > 0) return;
     if (state.specialMeter < 50) return;
     if (state.currentAttack && !state.canCancel) return;
+    
+    // Use character-specific special attack
+    console.log(`[SPECIAL] ${kit.specialName}: ${kit.specialDescription}`);
     
     set({
       currentAttack: 'special',
@@ -418,6 +889,7 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
       attackPhase: 'windup',
       canCancel: false,
       specialMeter: state.specialMeter - 50,
+      specialCooldown: kit.specialCooldown,
       comboCount: state.comboCount + 1,
       comboTimer: COMBO_TIMEOUT,
     });
@@ -425,8 +897,13 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
   
   ultimateAttack: () => {
     const state = get();
+    const kit = state.getSignatureKit();
+    
     if (state.ultimateMeter < 100) return;
     if (state.currentAttack && !state.canCancel) return;
+    
+    // Use character-specific ultimate attack
+    console.log(`[ULTIMATE] ${kit.ultimateName}: ${kit.ultimateDescription}`);
     
     set({
       currentAttack: 'ultimate',
@@ -446,11 +923,16 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
   
   updateCombat: (delta) => {
     const state = get();
-    let { currentAttack, attackTime, comboTimer, comboCount, iFrames, specialMeter, ultimateMeter } = state;
+    let { currentAttack, attackTime, comboTimer, comboCount, iFrames, specialMeter, ultimateMeter, specialCooldown } = state;
     
     // Update i-frames
     if (iFrames > 0) {
       iFrames = Math.max(0, iFrames - delta);
+    }
+    
+    // Update special cooldown
+    if (specialCooldown > 0) {
+      specialCooldown = Math.max(0, specialCooldown - delta);
     }
     
     // Update combo timer
@@ -466,6 +948,7 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
     // Update current attack
     if (currentAttack) {
       const move = COMBO_MOVES[currentAttack];
+      const kit = state.getSignatureKit();
       attackTime += delta;
       
       let attackPhase: 'windup' | 'active' | 'recovery' | null = state.attackPhase;
@@ -480,7 +963,14 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
         attackPhase = 'active';
         // Deal damage on first frame of active - ONLY if in attack range!
         if (state.attackPhase === 'windup' && get().isInAttackRange()) {
-          get().dealDamage(move.damage);
+          // Use signature kit damage for special/ultimate, otherwise use move damage
+          let damage = move.damage;
+          if (currentAttack === 'special') {
+            damage = kit.specialDamage;
+          } else if (currentAttack === 'ultimate') {
+            damage = kit.ultimateDamage;
+          }
+          get().dealDamage(damage);
         }
       } else if (attackTime < move.duration) {
         attackPhase = 'recovery';
@@ -500,6 +990,7 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
         attackTime,
         attackPhase,
         canCancel,
+        specialCooldown,
       });
     }
     
@@ -513,6 +1004,7 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
       iFrames,
       specialMeter,
       ultimateMeter,
+      specialCooldown,
     });
   },
   
@@ -580,7 +1072,15 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
   },
   
   reset: () => {
+    // Preserve character info so archetype profiles remain active
+    const state = get();
+    const { characterId, characterRole } = state;
+    
     set({
+      // Preserve character context
+      characterId,
+      characterRole,
+      // Reset position
       playerX: -4,
       playerY: 0,
       playerZ: 0,
@@ -603,6 +1103,7 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
       lockedTarget: null,
       specialMeter: 0,
       ultimateMeter: 50,
+      specialCooldown: 0,
       comboDamage: 0,
       lastHitTime: 0,
       iFrames: 0,

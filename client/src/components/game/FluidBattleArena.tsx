@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { getAllCharacters, Character, CharacterRole, getCharacterById } from '../../lib/roster';
 import { getMissionById } from '../../lib/missions';
 import { getActiveTeamBonuses } from '../../lib/teamSynergy';
-import { useFluidCombat, COMBO_MOVES } from '../../lib/stores/useFluidCombat';
+import { useFluidCombat, COMBO_MOVES, getSignatureKit } from '../../lib/stores/useFluidCombat';
 import FluidCombatPlayer from './FluidCombatPlayer';
 import GLBCharacterModel, { getModelPath } from './models/GLBCharacterModel';
 import { Button } from '../ui/button';
@@ -88,9 +88,11 @@ export default function FluidBattleArena({
     comboDamage,
     specialMeter,
     ultimateMeter,
+    specialCooldown,
     currentAttack,
     attackPhase,
     reset: resetCombat,
+    setCharacter,
   } = useFluidCombat();
 
   useEffect(() => {
@@ -118,6 +120,13 @@ export default function FluidBattleArena({
   }, [playerTeam]);
 
   const activeCharacter = playerCharacters[activePlayerIndex];
+
+  // Set character for archetype-based movement and signature attacks
+  useEffect(() => {
+    if (activeCharacter) {
+      setCharacter(activeCharacter.id, activeCharacter.role);
+    }
+  }, [activeCharacter, setCharacter]);
 
   // Battle timer
   useEffect(() => {
