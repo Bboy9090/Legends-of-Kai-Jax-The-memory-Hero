@@ -417,7 +417,7 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
   }, [currentAttack, attackPhase, playerRotation, accentColor]);
   
   // Y offset to place character on ground (models have origin at center)
-  const CHARACTER_Y_OFFSET = 3.5;
+  const CHARACTER_Y_OFFSET = 6.0;
   
   return (
     <group ref={meshRef} position={[playerX, playerY + CHARACTER_Y_OFFSET, playerZ]}>
