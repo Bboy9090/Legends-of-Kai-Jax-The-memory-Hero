@@ -4,6 +4,24 @@
 import { TeamBonus } from './teamSynergy';
 import { CHARACTER_SPECS } from './characterSpecs';
 
+// Generate consistent random colors based on character ID
+function generateCharacterColors(id: string): { primary: string; accent: string } {
+  const hash = id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const colors = [
+    { primary: '#FF6600', accent: '#FFFF00' },
+    { primary: '#00FF00', accent: '#FF00FF' },
+    { primary: '#FF0000', accent: '#00FFFF' },
+    { primary: '#0099FF', accent: '#FF9900' },
+    { primary: '#FF00FF', accent: '#00FF00' },
+    { primary: '#00FFFF', accent: '#FF0000' },
+    { primary: '#FFCC00', accent: '#FF0099' },
+    { primary: '#00FF99', accent: '#9900FF' },
+    { primary: '#FF9900', accent: '#00CCFF' },
+    { primary: '#99FF00', accent: '#FF0066' }
+  ];
+  return colors[hash % colors.length];
+}
+
 export type CharacterRole = 'Vanguard' | 'Blitzer' | 'Mystic' | 'Support' | 'Wildcard' | 'Tank' | 'Sniper' | 'Controller';
 
 export interface CharacterStats {
@@ -257,7 +275,9 @@ export const CORE_HEROES: Character[] = [
     ultimates: { level1: 'Blue Thunder', level2: 'Apex Super Punch', level3: 'Dragon Claw Fury', level4: 'Infinite Velocity' },
     synergies: ['fox', 'sonic'],
     unlockLevel: 1,
-    spriteSpecs: CHARACTER_SPECS.captain_falcon?.spriteSpecs
+    spriteSpecs: CHARACTER_SPECS.captain_falcon?.spriteSpecs,
+    primaryColor: '#0066FF',
+    accentColor: '#FF0000'
   },
   {
     id: 'peach',
@@ -271,7 +291,9 @@ export const CORE_HEROES: Character[] = [
     abilities: ['Toad Guard', 'Vegetable Pluck', 'Peach Bomber', 'Parasol'],
     ultimates: { level1: 'Peach Blossom', level2: 'Royal Guard', level3: 'Crown Power', level4: 'Infinite Grace' },
     synergies: ['mario', 'zelda', 'rosalina'],
-    unlockLevel: 1
+    unlockLevel: 1,
+    primaryColor: '#FF99FF',
+    accentColor: '#FFFF00'
   },
   {
     id: 'rosalina',
@@ -285,7 +307,9 @@ export const CORE_HEROES: Character[] = [
     abilities: ['Luma Shot', 'Gravitational Pull', 'Luma Launch', 'Star Bit'],
     ultimates: { level1: 'Luma Swarm', level2: 'Gravity Surge', level3: 'Cosmic Power', level4: 'Infinite Stars' },
     synergies: ['kirby', 'zelda', 'palutena'],
-    unlockLevel: 1
+    unlockLevel: 1,
+    primaryColor: '#CCFFFF',
+    accentColor: '#FF99FF'
   },
   {
     id: 'shadow',
@@ -300,7 +324,9 @@ export const CORE_HEROES: Character[] = [
     ultimates: { level1: 'Void Warp', level2: 'Super Abyss Assault', level3: 'Chaos Destruction', level4: 'Infinite Darkness' },
     synergies: ['sonic', 'bayonetta'],
     unlockLevel: 2,
-    spriteSpecs: CHARACTER_SPECS.shadow?.spriteSpecs
+    spriteSpecs: CHARACTER_SPECS.shadow?.spriteSpecs,
+    primaryColor: '#FF0000',
+    accentColor: '#0099FF'
   },
   {
     id: 'palutena',
@@ -314,7 +340,9 @@ export const CORE_HEROES: Character[] = [
     abilities: ['Neutral B', 'Side B', 'Up B', 'Down B'],
     ultimates: { level1: 'Black Hole Punch', level2: 'Heavenly Light', level3: 'Divine Power', level4: 'Infinite Light' },
     synergies: ['zelda', 'peach', 'rosalina'],
-    unlockLevel: 2
+    unlockLevel: 2,
+    primaryColor: '#99FFFF',
+    accentColor: '#FFFF00'
   },
   {
     id: 'ash',
@@ -328,7 +356,9 @@ export const CORE_HEROES: Character[] = [
     abilities: ['Pikachu Call', 'Team Switch', 'Item Throw', 'Dodge'],
     ultimates: { level1: 'Charizard Attack', level2: 'Pikachu Thunder', level3: 'Pokemon Union', level4: 'Infinite Partners' },
     synergies: ['pikachu', 'greninja'],
-    unlockLevel: 2
+    unlockLevel: 2,
+    primaryColor: '#FF6600',
+    accentColor: '#000000'
   }
 ];
 
