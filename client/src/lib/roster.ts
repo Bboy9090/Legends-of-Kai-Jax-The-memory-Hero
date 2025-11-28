@@ -39,6 +39,8 @@ export interface Character {
     authenticPalette?: Record<string, string>;
     canonicalHeight?: string;
   };
+  primaryColor?: string;
+  accentColor?: string;
 }
 
 // ============ CORE HEROES (20) ============
@@ -56,7 +58,9 @@ export const CORE_HEROES: Character[] = [
     ultimates: { level1: 'Fire Flower Barrage', level2: 'Super Form Fury', level3: 'Infinite Coins', level4: 'Celestial Jump Strike' },
     synergies: ['luigi', 'peach', 'bowser'],
     unlockLevel: 0,
-    spriteSpecs: CHARACTER_SPECS.mario?.spriteSpecs
+    spriteSpecs: CHARACTER_SPECS.mario?.spriteSpecs,
+    primaryColor: '#FF0000',
+    accentColor: '#FFFF00'
   },
   {
     id: 'sonic',
@@ -71,7 +75,9 @@ export const CORE_HEROES: Character[] = [
     ultimates: { level1: 'Spin Cycle', level2: 'Super Velocity Assault', level3: 'Chaos Burst', level4: 'Hyper Velocity Tempest' },
     synergies: ['tails', 'shadow', 'pikachu'],
     unlockLevel: 0,
-    spriteSpecs: CHARACTER_SPECS.sonic?.spriteSpecs
+    spriteSpecs: CHARACTER_SPECS.sonic?.spriteSpecs,
+    primaryColor: '#0099FF',
+    accentColor: '#FF9900'
   },
   {
     id: 'link',
@@ -86,7 +92,9 @@ export const CORE_HEROES: Character[] = [
     ultimates: { level1: 'Sword Spin', level2: 'Ancient Power Barrage', level3: 'Trinity Force', level4: 'Divine Ascension' },
     synergies: ['zelda', 'peach', 'samus'],
     unlockLevel: 0,
-    spriteSpecs: CHARACTER_SPECS.link?.spriteSpecs
+    spriteSpecs: CHARACTER_SPECS.link?.spriteSpecs,
+    primaryColor: '#00CC00',
+    accentColor: '#FFFF00'
   },
   {
     id: 'samus',
@@ -101,7 +109,9 @@ export const CORE_HEROES: Character[] = [
     ultimates: { level1: 'Missile Barrage', level2: 'Energy Beam Overload', level3: 'Void Swarm', level4: 'Arsenal Fury' },
     synergies: ['fox', 'megaman'],
     unlockLevel: 0,
-    spriteSpecs: CHARACTER_SPECS.samus?.spriteSpecs
+    spriteSpecs: CHARACTER_SPECS.samus?.spriteSpecs,
+    primaryColor: '#FF8800',
+    accentColor: '#FFFF00'
   },
   {
     id: 'pikachu',
@@ -115,7 +125,9 @@ export const CORE_HEROES: Character[] = [
     abilities: ['Thunderbolt', 'Quick Attack', 'Iron Tail', 'Volt Tackle'],
     ultimates: { level1: 'Pikachu Thunder', level2: 'Gigantamax Volt Crash', level3: 'Thunder God Ascension', level4: 'Infinite Electricity' },
     synergies: ['ash', 'greninja'],
-    unlockLevel: 0
+    unlockLevel: 0,
+    primaryColor: '#FFFF00',
+    accentColor: '#000000'
   },
   {
     id: 'kirby',
@@ -130,7 +142,9 @@ export const CORE_HEROES: Character[] = [
     ultimates: { level1: 'Ultimate Smash', level2: 'Hypernova Ascension', level3: 'Cosmic Vacuum', level4: 'Infinite Power' },
     synergies: ['rosalina', 'yoshi'],
     unlockLevel: 0,
-    spriteSpecs: CHARACTER_SPECS.kirby?.spriteSpecs
+    spriteSpecs: CHARACTER_SPECS.kirby?.spriteSpecs,
+    primaryColor: '#FF00FF',
+    accentColor: '#FF00FF'
   },
   {
     id: 'megaman',
@@ -145,7 +159,9 @@ export const CORE_HEROES: Character[] = [
     ultimates: { level1: 'Charged Blast', level2: 'Celestial Cannon', level3: 'Full Weapon Fusion', level4: 'Energy Overload' },
     synergies: ['tails', 'samus'],
     unlockLevel: 0,
-    spriteSpecs: CHARACTER_SPECS.megaman?.spriteSpecs
+    spriteSpecs: CHARACTER_SPECS.megaman?.spriteSpecs,
+    primaryColor: '#0099FF',
+    accentColor: '#FFFF00'
   },
   {
     id: 'zelda',
@@ -159,7 +175,9 @@ export const CORE_HEROES: Character[] = [
     abilities: ['Phantom Slash', 'Din\'s Fire', 'Farore\'s Wind', 'Nayru\'s Love'],
     ultimates: { level1: 'Light Arrow', level2: 'Triforce Burst', level3: 'Divine Beast Power', level4: 'Infinite Wisdom' },
     synergies: ['link', 'peach', 'palutena'],
-    unlockLevel: 0
+    unlockLevel: 0,
+    primaryColor: '#FF00FF',
+    accentColor: '#FFFF00'
   },
   {
     id: 'fox',
@@ -173,7 +191,9 @@ export const CORE_HEROES: Character[] = [
     abilities: ['Blaster', 'Reflector', 'Fox Illusion', 'Shine'],
     ultimates: { level1: 'Landmaster Laser', level2: 'Arwing Assault', level3: 'Falco Combo', level4: 'Ultimate Arwing' },
     synergies: ['falcon', 'tails', 'pikachu'],
-    unlockLevel: 0
+    unlockLevel: 0,
+    primaryColor: '#FF6600',
+    accentColor: '#FFFFFF'
   },
   {
     id: 'donkeykong',
@@ -188,7 +208,9 @@ export const CORE_HEROES: Character[] = [
     ultimates: { level1: 'Titan Punch', level2: 'Primal Fury Rampage', level3: 'Jungle Roar', level4: 'Infinite Strength' },
     synergies: ['diddy', 'yoshi'],
     unlockLevel: 0,
-    spriteSpecs: CHARACTER_SPECS.donkeykong?.spriteSpecs
+    spriteSpecs: CHARACTER_SPECS.donkeykong?.spriteSpecs,
+    primaryColor: '#663300',
+    accentColor: '#FFCC00'
   },
   {
     id: 'tails',
@@ -202,7 +224,9 @@ export const CORE_HEROES: Character[] = [
     abilities: ['Twin Tails Flight', 'Wrench Smash', 'Tornado Attack', 'Gadget Grapple'],
     ultimates: { level1: 'Dual Tails Spin', level2: 'Chaos Tails Flight', level3: 'Tech Arsenal Burst', level4: 'Infinite Flight' },
     synergies: ['sonic', 'fox', 'megaman'],
-    unlockLevel: 1
+    unlockLevel: 1,
+    primaryColor: '#FF9900',
+    accentColor: '#FFFFFF'
   },
   {
     id: 'yoshi',
@@ -216,7 +240,9 @@ export const CORE_HEROES: Character[] = [
     abilities: ['Tongue Grab', 'Egg Throw', 'Ground Pound', 'Dash Attack'],
     ultimates: { level1: 'Super Yoshi Bomb', level2: 'Mega Yoshi Stomp', level3: 'Yoshi\'s Island Power', level4: 'Infinite Transformation' },
     synergies: ['kirby', 'mario'],
-    unlockLevel: 1
+    unlockLevel: 1,
+    primaryColor: '#00FF00',
+    accentColor: '#FFFF00'
   },
   {
     id: 'captain_falcon',

@@ -578,7 +578,7 @@ function FluidBattleScene({
       )}
 
       {/* Enemy - raised to sit on ground surface */}
-      <EnemyFighter position={[6, 1.5, 0]} health={enemyHealth} />
+      <EnemyFighter position={[6, 3.5, 0]} health={enemyHealth} />
 
       {/* Floating Damage Numbers */}
       {damageNumbers.map((dn) => (
