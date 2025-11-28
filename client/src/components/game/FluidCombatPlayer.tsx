@@ -182,24 +182,31 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
     
     // Running animation
     if (isMoving) {
-      const runSpeed = 12;
+      const runSpeed = 10;
       const t = time * runSpeed;
       
-      // Arm swing
-      leftArmRef.current.rotation.z = Math.sin(t) * 0.8;
-      rightArmRef.current.rotation.z = Math.sin(t + Math.PI) * 0.8;
+      // Exaggerated arm swing - forward/back motion
+      const armSwing = Math.sin(t);
+      leftArmRef.current.rotation.z = armSwing * 1.2;  // Left arm swings opposite to left leg
+      leftArmRef.current.rotation.x = Math.cos(t) * 0.4;
+      rightArmRef.current.rotation.z = armSwing * -1.2;  // Right arm swings with right leg
+      rightArmRef.current.rotation.x = Math.cos(t + Math.PI) * 0.4;
       
-      // Leg movement
-      leftLegRef.current.rotation.x = Math.sin(t) * 0.7;
-      rightLegRef.current.rotation.x = Math.sin(t + Math.PI) * 0.7;
+      // Exaggerated leg movement - stepping animation
+      const legSwing = Math.sin(t) * 1.0;
+      leftLegRef.current.rotation.x = legSwing * 1.2;  // Left leg steps forward/back
+      leftLegRef.current.rotation.z = Math.cos(t) * 0.2;
+      rightLegRef.current.rotation.x = legSwing * -1.2;  // Right leg opposite
+      rightLegRef.current.rotation.z = Math.cos(t + Math.PI) * 0.2;
       
       // Body bob and lean
-      bodyRef.current.position.y = Math.abs(Math.sin(t * 2)) * 0.1;
-      bodyRef.current.rotation.x = 0.15;  // Lean forward when running
-      bodyRef.current.rotation.z = Math.sin(t) * 0.05;
+      bodyRef.current.position.y = Math.abs(Math.sin(t * 2)) * 0.15;  // More bob
+      bodyRef.current.rotation.x = 0.2;  // Lean forward when running
+      bodyRef.current.rotation.z = Math.sin(t) * 0.08;  // Body sway
       
       // Head bob
-      headRef.current.rotation.x = Math.sin(t * 2) * 0.05;
+      headRef.current.rotation.x = Math.sin(t * 2) * 0.08;
+      headRef.current.rotation.z = Math.sin(t) * 0.05;  // Head sway
       return;
     }
     
