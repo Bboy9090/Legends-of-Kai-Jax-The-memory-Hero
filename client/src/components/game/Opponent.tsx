@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
+import GLBCharacterModel, { getModelPath } from "./models/GLBCharacterModel";
 import JaxonModel from "./models/JaxonModel";
 import KaisonModel from "./models/KaisonModel";
 import SpeedyModel from "./models/SpeedyModel";
@@ -178,6 +179,30 @@ export default function Opponent() {
   
   // CHARACTER MODELS - All fighters have unique designs!
   const renderCharacterModel = () => {
+    // CHECK FOR GLB 3D MODELS FIRST - Real character models!
+    const modelPath = getModelPath(opponentFighterId);
+    if (modelPath) {
+      return (
+        <GLBCharacterModel
+          modelPath={modelPath}
+          bodyRef={bodyRef}
+          headRef={headRef}
+          leftArmRef={leftArmRef}
+          rightArmRef={rightArmRef}
+          leftLegRef={leftLegRef}
+          rightLegRef={rightLegRef}
+          emotionIntensity={emotionIntensityRef.current}
+          hitAnim={0}
+          animTime={animTimeRef.current}
+          isAttacking={opponentAttacking}
+          isInvulnerable={false}
+          primaryColor={fighter.color}
+          accentColor={fighter.accentColor}
+          scale={2.5}
+        />
+      );
+    }
+    
     const modelProps = {
       bodyRef,
       headRef,
