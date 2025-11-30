@@ -1,5 +1,4 @@
-import { useRef, useEffect, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { Group } from 'three';
 import * as THREE from 'three';
@@ -31,6 +30,49 @@ const CHARACTER_GLB_MAP: Record<string, string> = {
   'fox': 'fox_hero.glb',
   'pikachu': 'sparky_hero.glb',
   'shadow': 'abyss_hero.glb',
+  'captain_falcon': 'apex_hero.glb',
+  'rosalina': 'rosalina_hero.glb',
+  'palutena': 'palutena_hero.glb',
+  'ash': 'ash_hero.glb',
+  'bayonetta': 'bayonetta_hero.glb',
+  'snake': 'snake_hero.glb',
+  'ryu': 'ryu_hero.glb',
+  'greninja': 'greninja_hero.glb',
+  'solaro': 'solaro_hero.glb',
+  'silver': 'silver_hero.glb',
+  'lunara': 'lunara_hero.glb',
+  'impa': 'impa_hero.glb',
+  'cloud': 'cloud_hero.glb',
+  'sephiroth': 'sephiroth_hero.glb',
+  'sora': 'sora_hero.glb',
+  'steve': 'steve_hero.glb',
+  'kazuya': 'kazuya_hero.glb',
+  'terry': 'terry_hero.glb',
+  'hero': 'hero_hero.glb',
+  'ridley': 'ridley_hero.glb',
+  'inkling': 'inkling_hero.glb',
+  'pacman': 'pacman_hero.glb',
+  'ken': 'ken_hero.glb',
+  'joker': 'joker_hero.glb',
+  'banjo': 'banjo_hero.glb',
+  'falco': 'falco_hero.glb',
+  'marth': 'marth_hero.glb',
+  'pit': 'pit_hero.glb',
+  'mewtwo': 'mewtwo_hero.glb',
+  'lucario': 'lucario_hero.glb',
+  'ness': 'ness_hero.glb',
+  'metaknight': 'metaknight_hero.glb',
+  'dedede': 'dedede_hero.glb',
+  'wario': 'wario_hero.glb',
+  'waluigi': 'waluigi_hero.glb',
+  'littlemac': 'littlemac_hero.glb',
+  'shulk': 'shulk_hero.glb',
+  'pyra': 'pyra_hero.glb',
+  'minmin': 'minmin_hero.glb',
+  'chunli': 'chunli_hero.glb',
+  'simon': 'simon_hero.glb',
+  'diddy': 'diddy_hero.glb',
+  'iceclimbers': 'iceclimbers_hero.glb',
 };
 
 export default function GLBCharacterModel({
@@ -42,139 +84,49 @@ export default function GLBCharacterModel({
   isAttacking,
   isInvulnerable,
 }: GLBCharacterModelProps) {
-  const modelRef = useRef<THREE.Group>(null);
-  const mixerRef = useRef<THREE.AnimationMixer | null>(null);
-  const actionsRef = useRef<Map<string, THREE.AnimationAction>>(new Map());
-  const currentActionRef = useRef<THREE.AnimationAction | null>(null);
-
   const glbFileName = CHARACTER_GLB_MAP[characterId];
 
-  let gltf = null;
-  try {
-    if (glbFileName) {
-      gltf = useGLTF(`/models/${glbFileName}`);
-    }
-  } catch (err) {
-    console.warn(`Could not load model for ${characterId}`);
-  }
-
-  // Initialize animations
-  useEffect(() => {
-    if (!gltf || !modelRef.current) return;
-
-    const mixer = new THREE.AnimationMixer(modelRef.current);
-    mixerRef.current = mixer;
-
-    if (gltf.animations && gltf.animations.length > 0) {
-      gltf.animations.forEach((clip) => {
-        const action = mixer.clipAction(clip);
-        actionsRef.current.set(clip.name, action);
-      });
-    }
-
-    return () => {
-      mixer.stopAllAction();
-    };
-  }, [gltf]);
-
-  // Handle animation playback based on state
-  useFrame((_, delta) => {
-    if (!mixerRef.current) return;
-
-    // Get target animation name
-    let targetAnimation = 'Idle';
-    if (isAttacking) {
-      targetAnimation = 'Attack';
-    }
-
-    // Find animation with partial name match
-    let action: THREE.AnimationAction | null = null;
-    const entries = Array.from(actionsRef.current.entries());
-    for (const [name, act] of entries) {
-      if (name.includes(targetAnimation) || name.toLowerCase().includes(targetAnimation.toLowerCase())) {
-        action = act;
-        break;
-      }
-    }
-
-    // If no matching animation found, try first available
-    if (!action && actionsRef.current.size > 0) {
-      action = Array.from(actionsRef.current.values())[0];
-    }
-
-    // Transition to new action
-    if (action && action !== currentActionRef.current) {
-      if (currentActionRef.current) {
-        currentActionRef.current.fadeOut(0.3);
-      }
-      action.reset().fadeIn(0.3).play();
-      currentActionRef.current = action;
-    }
-
-    mixerRef.current.update(delta);
-  });
-
-  // Procedurally animate arms and legs if no skeleton animations
-  useFrame(() => {
-    if (!modelRef.current) return;
-
-    // Find and animate arm bones
-    modelRef.current.traverse((child: any) => {
-      if (!child.name) return;
-
-      const name = child.name.toLowerCase();
-
-      // Animate arms - swing left/right with movement
-      if (name.includes('arm') || name.includes('shoulder')) {
-        if (name.includes('left')) {
-          child.rotation.z = Math.sin(animTime * 4) * 0.5;
-          child.rotation.x = Math.cos(animTime * 4) * 0.3;
-        } else if (name.includes('right')) {
-          child.rotation.z = -Math.sin(animTime * 4) * 0.5;
-          child.rotation.x = -Math.cos(animTime * 4) * 0.3;
-        }
-      }
-
-      // Animate legs - walk cycle
-      if (name.includes('leg') || name.includes('foot')) {
-        if (name.includes('left')) {
-          child.rotation.x = Math.sin(animTime * 3 + Math.PI) * 0.4;
-        } else if (name.includes('right')) {
-          child.rotation.x = Math.sin(animTime * 3) * 0.4;
-        }
-      }
-
-      // Torso - slight rotation during attacks
-      if ((name.includes('torso') || name.includes('spine') || name.includes('chest')) && isAttacking) {
-        child.rotation.z = Math.sin(animTime * 8) * 0.3;
-      }
-    });
-  });
-
-  return (
-    <group ref={bodyRef}>
-      {gltf ? (
-        <group ref={modelRef} scale={[2.5, 2.5, 2.5]}>
-          <primitive object={gltf.scene} />
-        </group>
-      ) : (
+  if (!glbFileName) {
+    return (
+      <group ref={bodyRef}>
         <mesh castShadow>
           <capsuleGeometry args={[0.3, 1, 16, 32]} />
           <meshToonMaterial color="#888888" />
         </mesh>
-      )}
+      </group>
+    );
+  }
 
-      {isInvulnerable && (
-        <mesh position={[0, 0, 0]} scale={1.8}>
-          <sphereGeometry args={[1.0, 16, 12]} />
-          <meshBasicMaterial
-            color="#FFD700"
-            transparent
-            opacity={0.2}
-            depthWrite={false}
-          />
+  try {
+    const gltf = useGLTF(`/models/${glbFileName}`);
+
+    return (
+      <group ref={bodyRef}>
+        <group scale={[2.5, 2.5, 2.5]}>
+          <primitive object={gltf.scene} />
+        </group>
+
+        {isInvulnerable && (
+          <mesh position={[0, 0, 0]} scale={1.8}>
+            <sphereGeometry args={[1.0, 16, 12]} />
+            <meshBasicMaterial
+              color="#FFD700"
+              transparent
+              opacity={0.2}
+              depthWrite={false}
+            />
+          </mesh>
+        )}
+      </group>
+    );
+  } catch (err) {
+    return (
+      <group ref={bodyRef}>
+        <mesh castShadow>
+          <capsuleGeometry args={[0.3, 1, 16, 32]} />
+          <meshToonMaterial color="#888888" />
         </mesh>
-      )}
-    </group>
-  );
+      </group>
+    );
+  }
 }
