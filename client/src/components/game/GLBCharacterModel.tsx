@@ -3,8 +3,6 @@ import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { Group } from 'three';
 import * as THREE from 'three';
-import { getMovementProfile } from '../../lib/stores/useFluidCombat';
-import { CharacterRole } from '../../lib/roster';
 
 interface GLBCharacterModelProps {
   characterId: string;
@@ -17,69 +15,30 @@ interface GLBCharacterModelProps {
   isMoving?: boolean;
   moveSpeed?: number;
   attackPhase?: 'windup' | 'active' | 'recovery';
-  characterRole?: CharacterRole;
+  characterRole?: string;
 }
 
 const CHARACTER_GLB_MAP: Record<string, string> = {
-  'mario': 'mario_hero.glb',
-  'luigi': 'luigi_hero.glb',
-  'sonic': 'hedgehog_hero.glb',
-  'link': 'ren_hero.glb',
-  'zelda': 'zelda_hero.glb',
-  'peach': 'peach_hero.glb',
-  'yoshi': 'yoshi_hero.glb',
-  'donkeykong': 'kong_hero.glb',
-  'tails': 'tails_hero.glb',
-  'kirby': 'puffy_hero.glb',
-  'bowser': 'bowser_hero.glb',
-  'megaman': 'blaze_hero.glb',
-  'samus': 'sentinel_hero.glb',
-  'fox': 'fox_hero.glb',
-  'pikachu': 'sparky_hero.glb',
-  'shadow': 'abyss_hero.glb',
-  'captain_falcon': 'apex_hero.glb',
-  'rosalina': 'rosalina_hero.glb',
-  'palutena': 'palutena_hero.glb',
-  'ash': 'ash_hero.glb',
-  'bayonetta': 'bayonetta_hero.glb',
-  'snake': 'snake_hero.glb',
-  'ryu': 'ryu_hero.glb',
-  'greninja': 'greninja_hero.glb',
-  'solaro': 'solaro_hero.glb',
-  'silver': 'silver_hero.glb',
-  'lunara': 'lunara_hero.glb',
-  'impa': 'impa_hero.glb',
-  'cloud': 'cloud_hero.glb',
-  'sephiroth': 'sephiroth_hero.glb',
-  'sora': 'sora_hero.glb',
-  'steve': 'steve_hero.glb',
-  'kazuya': 'kazuya_hero.glb',
-  'terry': 'terry_hero.glb',
-  'hero': 'hero_hero.glb',
-  'ridley': 'ridley_hero.glb',
-  'inkling': 'inkling_hero.glb',
-  'pacman': 'pacman_hero.glb',
-  'ken': 'ken_hero.glb',
-  'joker': 'joker_hero.glb',
-  'banjo': 'banjo_hero.glb',
-  'falco': 'falco_hero.glb',
-  'marth': 'marth_hero.glb',
-  'pit': 'pit_hero.glb',
-  'mewtwo': 'mewtwo_hero.glb',
-  'lucario': 'lucario_hero.glb',
-  'ness': 'ness_hero.glb',
-  'metaknight': 'metaknight_hero.glb',
-  'dedede': 'dedede_hero.glb',
-  'wario': 'wario_hero.glb',
-  'waluigi': 'waluigi_hero.glb',
-  'littlemac': 'littlemac_hero.glb',
-  'shulk': 'shulk_hero.glb',
-  'pyra': 'pyra_hero.glb',
-  'minmin': 'minmin_hero.glb',
-  'chunli': 'chunli_hero.glb',
-  'simon': 'simon_hero.glb',
-  'diddy': 'diddy_hero.glb',
-  'iceclimbers': 'iceclimbers_hero.glb',
+  'mario': 'mario_hero.glb', 'luigi': 'luigi_hero.glb', 'sonic': 'hedgehog_hero.glb',
+  'link': 'ren_hero.glb', 'zelda': 'zelda_hero.glb', 'peach': 'peach_hero.glb',
+  'yoshi': 'yoshi_hero.glb', 'donkeykong': 'kong_hero.glb', 'tails': 'tails_hero.glb',
+  'kirby': 'puffy_hero.glb', 'bowser': 'bowser_hero.glb', 'megaman': 'blaze_hero.glb',
+  'samus': 'sentinel_hero.glb', 'fox': 'fox_hero.glb', 'pikachu': 'sparky_hero.glb',
+  'shadow': 'abyss_hero.glb', 'captain_falcon': 'apex_hero.glb', 'rosalina': 'rosalina_hero.glb',
+  'palutena': 'palutena_hero.glb', 'ash': 'ash_hero.glb', 'bayonetta': 'bayonetta_hero.glb',
+  'snake': 'snake_hero.glb', 'ryu': 'ryu_hero.glb', 'greninja': 'greninja_hero.glb',
+  'solaro': 'solaro_hero.glb', 'silver': 'silver_hero.glb', 'lunara': 'lunara_hero.glb',
+  'impa': 'impa_hero.glb', 'cloud': 'cloud_hero.glb', 'sephiroth': 'sephiroth_hero.glb',
+  'sora': 'sora_hero.glb', 'steve': 'steve_hero.glb', 'kazuya': 'kazuya_hero.glb',
+  'terry': 'terry_hero.glb', 'hero': 'hero_hero.glb', 'ridley': 'ridley_hero.glb',
+  'inkling': 'inkling_hero.glb', 'pacman': 'pacman_hero.glb', 'ken': 'ken_hero.glb',
+  'joker': 'joker_hero.glb', 'banjo': 'banjo_hero.glb', 'falco': 'falco_hero.glb',
+  'marth': 'marth_hero.glb', 'pit': 'pit_hero.glb', 'mewtwo': 'mewtwo_hero.glb',
+  'lucario': 'lucario_hero.glb', 'ness': 'ness_hero.glb', 'metaknight': 'metaknight_hero.glb',
+  'dedede': 'dedede_hero.glb', 'wario': 'wario_hero.glb', 'waluigi': 'waluigi_hero.glb',
+  'littlemac': 'littlemac_hero.glb', 'shulk': 'shulk_hero.glb', 'pyra': 'pyra_hero.glb',
+  'minmin': 'minmin_hero.glb', 'chunli': 'chunli_hero.glb', 'simon': 'simon_hero.glb',
+  'diddy': 'diddy_hero.glb', 'iceclimbers': 'iceclimbers_hero.glb',
 };
 
 export default function GLBCharacterModel({
@@ -94,77 +53,55 @@ export default function GLBCharacterModel({
 }: GLBCharacterModelProps) {
   const glbFileName = CHARACTER_GLB_MAP[characterId];
   const modelPath = glbFileName ? `/models/${glbFileName}` : null;
-  
   const sceneRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
-  const actionRef = useRef<THREE.AnimationAction | null>(null);
 
   let gltf: any = null;
   try {
-    if (modelPath) {
-      gltf = useGLTF(modelPath, undefined);
-    }
+    if (modelPath) gltf = useGLTF(modelPath);
   } catch (e) {
-    // Model not found - will use fallback
+    // Model not found
   }
 
   useEffect(() => {
     if (!gltf?.scene || !sceneRef.current) return;
-
     const mixer = new THREE.AnimationMixer(sceneRef.current);
     mixerRef.current = mixer;
-
     if (gltf.animations?.length > 0) {
-      const action = mixer.clipAction(gltf.animations[0]);
-      action.play();
-      actionRef.current = action;
+      mixer.clipAction(gltf.animations[0]).play();
     }
   }, [gltf?.scene, gltf?.animations]);
 
-  // Procedural animation based on movement state
+  // Animate the model wrapper based on movement/attack state
   useFrame((state, delta) => {
-    if (!bodyRef.current || !sceneRef.current) return;
+    if (!sceneRef.current) return;
+    
+    if (mixerRef.current) mixerRef.current.update(delta);
 
-    const profile = getMovementProfile(characterRole);
     const time = state.clock.elapsedTime;
-
-    // Update embedded animations if available
-    if (mixerRef.current) {
-      mixerRef.current.update(delta);
-    }
-
-    // Reset position/rotation every frame
     sceneRef.current.rotation.set(0, 0, 0);
     sceneRef.current.position.set(0, 0, 0);
 
     if (isAttacking && attackPhase === 'active') {
-      // Attack punch - lean forward and squash
-      sceneRef.current.position.z = 0.3;
-      sceneRef.current.scale.set(1, 0.9, 1.1);
-    } else if (isMoving && moveSpeed > 0.1) {
-      // Walking/Running - bob up and down, lean
-      const animSpeed = profile.animationSpeed * (moveSpeed / 4);
-      const t = time * animSpeed;
-      
-      // Vertical bob
-      sceneRef.current.position.y = Math.abs(Math.sin(t * 2)) * profile.bounceIntensity * 0.5;
-      
-      // Slight lean forward while moving
-      sceneRef.current.rotation.x = Math.sin(t) * 0.05;
-      sceneRef.current.rotation.z = Math.sin(t) * 0.02;
-      
-      // Speed up animation with scale pulsing
-      const speedPulse = 0.95 + Math.sin(t * 3) * 0.05;
-      sceneRef.current.scale.set(speedPulse, speedPulse, speedPulse);
+      // Attack: lean forward
+      sceneRef.current.position.z = 0.2;
+      sceneRef.current.scale.set(1.05, 0.95, 1.1);
+    } else if (isMoving && moveSpeed > 0.05) {
+      // Movement: bob and lean
+      const t = time * 8 * moveSpeed;
+      sceneRef.current.position.y = Math.abs(Math.sin(t * 2)) * 0.2;
+      sceneRef.current.rotation.x = Math.sin(t) * 0.04;
+      const scale = 0.98 + Math.sin(t * 3) * 0.02;
+      sceneRef.current.scale.set(scale, scale, scale);
     } else {
-      // Idle - subtle breathing
-      const breathe = Math.sin(time * 2) * 0.02;
+      // Idle: breathing
+      const breathe = Math.sin(time * 2) * 0.01;
       sceneRef.current.position.y = breathe;
       sceneRef.current.scale.set(1, 1, 1);
     }
   });
 
-  // Fallback if no model
+  // Fallback
   if (!gltf?.scene) {
     return (
       <group ref={bodyRef}>
@@ -181,9 +118,8 @@ export default function GLBCharacterModel({
       <group ref={sceneRef} scale={[2.5, 2.5, 2.5]}>
         <primitive object={gltf.scene} />
       </group>
-
       {isInvulnerable && (
-        <mesh position={[0, 0, 0]} scale={1.8}>
+        <mesh scale={1.8}>
           <sphereGeometry args={[1.0, 16, 12]} />
           <meshBasicMaterial color="#FFD700" transparent opacity={0.2} depthWrite={false} />
         </mesh>

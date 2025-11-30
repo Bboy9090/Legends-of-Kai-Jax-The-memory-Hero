@@ -436,6 +436,13 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
   const moveSpeed = Math.sqrt(moveInput.x * moveInput.x + moveInput.z * moveInput.z);
   const isMoving = moveSpeed > 0.1;
   
+  // Log animation state (debug)
+  useEffect(() => {
+    if (isMoving) {
+      console.log(`Moving: speed=${moveSpeed.toFixed(2)}, attacking=${!!currentAttack}, phase=${attackPhase}`);
+    }
+  }, [isMoving, moveSpeed, currentAttack, attackPhase]);
+  
   // Render the appropriate specialized character model
   const renderCharacterModel = () => {
     // Use GLB models for all characters
@@ -449,7 +456,7 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
         isAttacking={!!currentAttack}
         isInvulnerable={iFrames > 0}
         isMoving={isMoving}
-        moveSpeed={moveSpeed * 4}
+        moveSpeed={moveSpeed}
         attackPhase={currentAttack ? (attackPhase as 'windup' | 'active' | 'recovery') : undefined}
         characterRole={character.role}
       />
