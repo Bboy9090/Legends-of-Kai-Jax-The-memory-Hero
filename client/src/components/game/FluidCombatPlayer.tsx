@@ -5,25 +5,8 @@ import * as THREE from 'three';
 import { useFluidCombat, COMBO_MOVES, AttackType, getMovementProfile } from '../../lib/stores/useFluidCombat';
 import { Character, CharacterRole } from '../../lib/roster';
 
-// Import specialized character models for spot-on designs
-import MarloModel from './models/MarloModel';
-import SpeedyModel from './models/SpeedyModel';
-import SparkyModel from './models/SparkyModel';
-import BubbleModel from './models/BubbleModel';
-import KingSpikeModel from './models/KingSpikeModel';
-import CaptainBlazeModel from './models/CaptainBlazeModel';
-import NovaKnightModel from './models/NovaKnightModel';
-import LeonardoModel from './models/LeonardoModel';
-import MidnightModel from './models/MidnightModel';
-import FlynnModel from './models/FlynnModel';
-import JaxonModel from './models/JaxonModel';
-import KaisonModel from './models/KaisonModel';
-import HeroOfTimeModel from './models/HeroOfTimeModel';
-import PrincessPeachModel from './models/PrincessPeachModel';
-import DinoRiderModel from './models/DinoRiderModel';
-import JungleKingModel from './models/JungleKingModel';
-import TwinTailsModel from './models/TwinTailsModel';
-import WisdomPrincessModel from './models/WisdomPrincessModel';
+// Import GLB character model loader
+import GLBCharacterModel from './GLBCharacterModel';
 
 const ROLE_COLORS: Record<CharacterRole, string> = {
   'Vanguard': '#ef4444',
@@ -449,123 +432,18 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
   
   // Render the appropriate specialized character model
   const renderCharacterModel = () => {
-    const modelProps = {
-      bodyRef,
-      headRef,
-      leftArmRef,
-      rightArmRef,
-      leftLegRef,
-      rightLegRef,
-      emotionIntensity: emotionRef.current,
-      hitAnim: hitFlashRef.current,
-      animTime: animTimeRef.current,
-      isAttacking: !!currentAttack,
-      isInvulnerable: iFrames > 0,
-    };
-    
-    // Select specialized model based on character ID for spot-on designs
-    switch (character.id) {
-      case 'mario':
-        return <MarloModel {...modelProps} />;
-      case 'luigi':
-        return <LeonardoModel {...modelProps} />;
-      case 'sonic':
-        return <SpeedyModel {...modelProps} />;
-      case 'pikachu':
-        return <SparkyModel {...modelProps} />;
-      case 'kirby':
-        return <BubbleModel {...modelProps} />;
-      case 'bowser':
-        return <KingSpikeModel {...modelProps} />;
-      case 'megaman':
-        return <CaptainBlazeModel {...modelProps} />;
-      case 'samus':
-        return <NovaKnightModel {...modelProps} />;
-      case 'link':
-        return <HeroOfTimeModel {...modelProps} />;
-      case 'peach':
-        return <PrincessPeachModel {...modelProps} />;
-      case 'yoshi':
-        return <DinoRiderModel {...modelProps} />;
-      case 'donkeykong':
-        return <JungleKingModel {...modelProps} />;
-      case 'tails':
-        return <TwinTailsModel {...modelProps} />;
-      case 'zelda':
-        return <WisdomPrincessModel {...modelProps} />;
-      case 'shadow':
-        return <MidnightModel {...modelProps} />;
-      case 'fox':
-        return <FlynnModel {...modelProps} />;
-      case 'jaxon':
-        return <JaxonModel {...modelProps} />;
-      case 'kaison':
-        return <KaisonModel {...modelProps} />;
-      default:
-        // Fallback: Stylized character with role-based colors
-        return (
-          <group ref={bodyRef}>
-            <mesh castShadow receiveShadow>
-              <capsuleGeometry args={[0.4, 1, 16, 32]} />
-              <meshToonMaterial 
-                color={primaryColor}
-                emissive={primaryColor}
-                emissiveIntensity={0.3}
-              />
-            </mesh>
-            <group ref={headRef} position={[0, 0.9, 0]}>
-              <mesh castShadow receiveShadow>
-                <sphereGeometry args={[0.35, 32, 24]} />
-                <meshToonMaterial 
-                  color={primaryColor}
-                  emissive={primaryColor}
-                  emissiveIntensity={0.3}
-                />
-              </mesh>
-            </group>
-            <group ref={leftArmRef} position={[-0.5, 0.3, 0]}>
-              <mesh castShadow receiveShadow>
-                <capsuleGeometry args={[0.12, 0.6, 12, 16]} />
-                <meshToonMaterial 
-                  color={primaryColor}
-                  emissive={primaryColor}
-                  emissiveIntensity={0.3}
-                />
-              </mesh>
-            </group>
-            <group ref={rightArmRef} position={[0.5, 0.3, 0]}>
-              <mesh castShadow receiveShadow>
-                <capsuleGeometry args={[0.12, 0.6, 12, 16]} />
-                <meshToonMaterial 
-                  color={primaryColor}
-                  emissive={primaryColor}
-                  emissiveIntensity={0.3}
-                />
-              </mesh>
-            </group>
-            <group ref={leftLegRef} position={[-0.2, -0.5, 0]}>
-              <mesh castShadow receiveShadow>
-                <capsuleGeometry args={[0.14, 0.7, 12, 16]} />
-                <meshToonMaterial 
-                  color={primaryColor}
-                  emissive={primaryColor}
-                  emissiveIntensity={0.3}
-                />
-              </mesh>
-            </group>
-            <group ref={rightLegRef} position={[0.2, -0.5, 0]}>
-              <mesh castShadow receiveShadow>
-                <capsuleGeometry args={[0.14, 0.7, 12, 16]} />
-                <meshToonMaterial 
-                  color={primaryColor}
-                  emissive={primaryColor}
-                  emissiveIntensity={0.3}
-                />
-              </mesh>
-            </group>
-          </group>
-        );
-    }
+    // Use GLB models for all characters
+    return (
+      <GLBCharacterModel
+        characterId={character.id}
+        bodyRef={bodyRef}
+        emotionIntensity={emotionRef.current}
+        hitAnim={hitFlashRef.current}
+        animTime={animTimeRef.current}
+        isAttacking={!!currentAttack}
+        isInvulnerable={iFrames > 0}
+      />
+    );
   };
   
   return (
