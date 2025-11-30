@@ -427,8 +427,13 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
     );
   }, [currentAttack, attackPhase, playerRotation, accentColor]);
   
-  // Y offset to place character on ground (models have origin at center)
-  const CHARACTER_Y_OFFSET = 6.0;
+  // Y offset to place character on ground (models have origin at feet)
+  const CHARACTER_Y_OFFSET = 0.1;
+  
+  // Calculate movement speed for animation
+  const moveInput = useFluidCombat.getState().moveInput;
+  const moveSpeed = Math.sqrt(moveInput.x * moveInput.x + moveInput.z * moveInput.z);
+  const isMoving = moveSpeed > 0.1;
   
   // Render the appropriate specialized character model
   const renderCharacterModel = () => {
@@ -442,6 +447,10 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
         animTime={animTimeRef.current}
         isAttacking={!!currentAttack}
         isInvulnerable={iFrames > 0}
+        isMoving={isMoving}
+        moveSpeed={moveSpeed * 4}
+        attackPhase={currentAttack ? (attackPhase as 'windup' | 'active' | 'recovery') : undefined}
+        characterRole={character.role}
       />
     );
   };

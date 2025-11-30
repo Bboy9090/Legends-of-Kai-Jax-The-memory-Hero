@@ -2,6 +2,8 @@ import { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group } from 'three';
 import * as THREE from 'three';
+import { getMovementProfile, MovementProfile } from '../../lib/stores/useFluidCombat';
+import { CharacterRole } from '../../lib/roster';
 
 interface GLBCharacterModelProps {
   characterId: string;
@@ -11,6 +13,10 @@ interface GLBCharacterModelProps {
   animTime: number;
   isAttacking: boolean;
   isInvulnerable: boolean;
+  isMoving?: boolean;
+  moveSpeed?: number;
+  attackPhase?: 'windup' | 'active' | 'recovery';
+  characterRole?: CharacterRole;
 }
 
 const CHARACTER_GLB_MAP: Record<string, string> = {
@@ -83,6 +89,10 @@ export default function GLBCharacterModel({
   animTime,
   isAttacking,
   isInvulnerable,
+  isMoving = false,
+  moveSpeed = 0,
+  attackPhase,
+  characterRole = 'Vanguard',
 }: GLBCharacterModelProps) {
   const glbFileName = CHARACTER_GLB_MAP[characterId];
   const [scene, setScene] = useState<THREE.Group | null>(null);
@@ -91,6 +101,10 @@ export default function GLBCharacterModel({
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
   const actionRef = useRef<THREE.AnimationAction | null>(null);
   const clockRef = useRef(new THREE.Clock());
+  const armLeftRef = useRef<THREE.Group>(null);
+  const armRightRef = useRef<THREE.Group>(null);
+  const legLeftRef = useRef<THREE.Group>(null);
+  const legRightRef = useRef<THREE.Group>(null);
 
   // Load model once
   useEffect(() => {
@@ -120,37 +134,65 @@ export default function GLBCharacterModel({
     actionRef.current = action;
   }, [scene, animations]);
 
-  // Update animations
-  useFrame(() => {
-    if (!mixerRef.current) return;
+  // Procedural animation based on movement
+  useFrame((state, delta) => {
+    if (!bodyRef.current) return;
 
-    const delta = clockRef.current.getDelta();
-    mixerRef.current.update(delta);
+    const profile = getMovementProfile(characterRole);
+    const time = state.clock.elapsedTime;
 
-    if (animations.length > 0 && actionRef.current) {
-      let targetClip = animations[0];
+    // Handle embedded animations if available
+    if (mixerRef.current) {
+      mixerRef.current.update(delta);
+    }
 
-      if (isAttacking && animations.length > 1) {
-        const attackClip = animations.find((clip) =>
-          clip.name.toLowerCase().includes('attack')
-        );
-        if (attackClip) targetClip = attackClip;
-      } else if (animations.length > 2) {
-        const walkClip = animations.find((clip) =>
-          clip.name.toLowerCase().includes('walk')
-        );
-        if (walkClip) targetClip = walkClip;
-      }
-
-      const current = actionRef.current.getClip();
-      if (current !== targetClip) {
-        actionRef.current.fadeOut(0.2);
-        const newAction = mixerRef.current.clipAction(targetClip);
-        newAction.fadeIn(0.2).play();
-        actionRef.current = newAction;
-      }
+    // Procedural animation override
+    if (isAttacking && attackPhase) {
+      // Attack animations
+      animateAttack(bodyRef.current, attackPhase, time, profile);
+    } else if (isMoving && moveSpeed > 0.1) {
+      // Walking/Running animation
+      const animSpeed = profile.animationSpeed * (moveSpeed / 4); // Normalize to walk speed
+      const t = time * animSpeed;
+      
+      // Arm swing
+      bodyRef.current.children.forEach((child) => {
+        if (child.name.includes('arm') || child.name.includes('Arm')) {
+          const isLeft = child.name.toLowerCase().includes('left');
+          const swing = Math.sin(t) * profile.armSwingIntensity;
+          child.rotation.z = isLeft ? swing : -swing;
+          child.rotation.x = Math.cos(t) * 0.3 * profile.armSwingIntensity;
+        }
+        if (child.name.includes('leg') || child.name.includes('Leg')) {
+          const isLeft = child.name.toLowerCase().includes('left');
+          const swing = Math.sin(t) * profile.legSwingIntensity;
+          child.rotation.x = isLeft ? swing : -swing;
+        }
+      });
+      
+      // Body bob
+      bodyRef.current.position.y = Math.abs(Math.sin(t * 2)) * profile.bounceIntensity;
+    } else {
+      // Idle animation
+      const breathe = Math.sin(time * 2) * 0.02;
+      bodyRef.current.position.y = breathe;
     }
   });
+
+  const animateAttack = (body: THREE.Group, phase: string, time: number, profile: MovementProfile) => {
+    body.children.forEach((child) => {
+      if (phase === 'active') {
+        if (child.name.includes('arm') || child.name.includes('Arm')) {
+          const isRight = child.name.toLowerCase().includes('right');
+          child.position.x = isRight ? 0.5 : -0.5;
+          child.rotation.z = isRight ? -Math.PI / 2 : Math.PI / 2;
+        }
+        if (child.name.includes('leg') || child.name.includes('Leg')) {
+          child.rotation.x = 0.3;
+        }
+      }
+    });
+  };
 
   if (!scene) {
     return (
