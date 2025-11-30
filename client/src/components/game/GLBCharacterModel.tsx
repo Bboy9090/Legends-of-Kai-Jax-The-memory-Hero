@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { Group } from 'three';
@@ -55,6 +55,12 @@ export default function GLBCharacterModel({
   const modelPath = glbFileName ? `/models/${glbFileName}` : null;
   const sceneRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
+  
+  // Refs for procedural limb animation
+  const leftArmRef = useRef<THREE.Group>(null);
+  const rightArmRef = useRef<THREE.Group>(null);
+  const leftLegRef = useRef<THREE.Group>(null);
+  const rightLegRef = useRef<THREE.Group>(null);
 
   let gltf: any = null;
   try {
@@ -72,7 +78,7 @@ export default function GLBCharacterModel({
     }
   }, [gltf?.scene, gltf?.animations]);
 
-  // Animate the model with VERY VISIBLE movements
+  // Animate limbs based on movement state
   useFrame((state, delta) => {
     if (!sceneRef.current) return;
     
@@ -80,35 +86,83 @@ export default function GLBCharacterModel({
 
     const time = state.clock.elapsedTime;
 
+    // Reset model position every frame
+    sceneRef.current.position.set(0, 0, 0);
+    sceneRef.current.rotation.set(0, 0, 0);
+    sceneRef.current.scale.set(1, 1, 1);
+
     if (isAttacking && attackPhase === 'active') {
-      // ATTACK: Strong forward lean and squash
-      sceneRef.current.position.set(0.3, 0, 0.4);
-      sceneRef.current.rotation.set(0.15, 0, 0);
-      sceneRef.current.scale.set(1.1, 0.85, 1.2);
-      console.log('ATTACKING - lean forward');
+      // ATTACK: Punch animation - extend right arm
+      if (rightArmRef.current) {
+        rightArmRef.current.position.set(0.6, 0, 0.4);
+        rightArmRef.current.rotation.set(-0.5, 0, -1.2);
+        rightArmRef.current.scale.set(1.2, 0.8, 1.2);
+      }
+      if (leftArmRef.current) {
+        leftArmRef.current.position.set(-0.3, 0.2, 0);
+        leftArmRef.current.rotation.set(-0.2, 0, 0.3);
+      }
+      sceneRef.current.position.z = 0.2;
     } else if (isMoving && moveSpeed > 0.05) {
-      // MOVEMENT: BIG bob up/down, rotation, scale pulse
-      const t = time * 10 * Math.min(moveSpeed, 1);
-      const bobHeight = Math.abs(Math.sin(t)) * 0.5; // HUGE bob
+      // WALKING/RUNNING: Swing arms and legs opposite
+      const t = time * 8 * Math.min(moveSpeed, 1);
       
-      sceneRef.current.position.y = bobHeight;
-      sceneRef.current.position.z = Math.sin(t * 0.5) * 0.1;
+      // Left arm swings forward when right leg swings forward
+      const leftArmSwing = Math.sin(t);
+      if (leftArmRef.current) {
+        leftArmRef.current.position.set(-0.3, 0.1, 0);
+        leftArmRef.current.rotation.set(leftArmSwing * 0.8, 0, 0.2);
+        leftArmRef.current.scale.set(1, 1, 1);
+      }
       
-      // Rotation for dynamic feel
-      sceneRef.current.rotation.x = Math.sin(t * 0.5) * 0.1;
-      sceneRef.current.rotation.z = Math.sin(t) * 0.08;
+      // Right arm swings opposite (back when left leg forward)
+      const rightArmSwing = Math.sin(t + Math.PI);
+      if (rightArmRef.current) {
+        rightArmRef.current.position.set(0.3, 0.1, 0);
+        rightArmRef.current.rotation.set(rightArmSwing * 0.8, 0, -0.2);
+        rightArmRef.current.scale.set(1, 1, 1);
+      }
       
-      // Scale pulse for running effect
-      const scaleFactor = 1 + Math.sin(t * 2) * 0.15;
-      sceneRef.current.scale.set(scaleFactor, scaleFactor * 0.95, scaleFactor);
+      // Left leg swings
+      const leftLegSwing = Math.sin(t);
+      if (leftLegRef.current) {
+        leftLegRef.current.position.set(-0.2, -0.5, 0);
+        leftLegRef.current.rotation.set(leftLegSwing * 1.2, 0, 0);
+        leftLegRef.current.scale.set(0.8, 1.2, 0.8);
+      }
       
-      console.log(`Moving animation - bob=${bobHeight.toFixed(2)}, speed=${moveSpeed.toFixed(2)}`);
+      // Right leg swings opposite
+      const rightLegSwing = Math.sin(t + Math.PI);
+      if (rightLegRef.current) {
+        rightLegRef.current.position.set(0.2, -0.5, 0);
+        rightLegRef.current.rotation.set(rightLegSwing * 1.2, 0, 0);
+        rightLegRef.current.scale.set(0.8, 1.2, 0.8);
+      }
+      
+      // Model bobs up and down
+      sceneRef.current.position.y = Math.abs(Math.sin(t * 2)) * 0.3;
     } else {
-      // IDLE: subtle breathing
-      const breathe = Math.sin(time * 2) * 0.02;
-      sceneRef.current.position.set(0, breathe, 0);
-      sceneRef.current.rotation.set(0, 0, 0);
-      sceneRef.current.scale.set(1, 1, 1);
+      // IDLE: Reset limbs to rest position
+      if (leftArmRef.current) {
+        leftArmRef.current.position.set(-0.3, 0.1, 0);
+        leftArmRef.current.rotation.set(0, 0, 0.1);
+        leftArmRef.current.scale.set(1, 1, 1);
+      }
+      if (rightArmRef.current) {
+        rightArmRef.current.position.set(0.3, 0.1, 0);
+        rightArmRef.current.rotation.set(0, 0, -0.1);
+        rightArmRef.current.scale.set(1, 1, 1);
+      }
+      if (leftLegRef.current) {
+        leftLegRef.current.position.set(-0.2, -0.5, 0);
+        leftLegRef.current.rotation.set(0, 0, 0);
+        leftLegRef.current.scale.set(0.8, 1.2, 0.8);
+      }
+      if (rightLegRef.current) {
+        rightLegRef.current.position.set(0.2, -0.5, 0);
+        rightLegRef.current.rotation.set(0, 0, 0);
+        rightLegRef.current.scale.set(0.8, 1.2, 0.8);
+      }
     }
   });
 
@@ -126,9 +180,41 @@ export default function GLBCharacterModel({
 
   return (
     <group ref={bodyRef}>
+      {/* Main character model */}
       <group ref={sceneRef} scale={[2.5, 2.5, 2.5]}>
         <primitive object={gltf.scene} />
       </group>
+
+      {/* Procedural arm/leg meshes for animation overlay */}
+      <group ref={leftArmRef} position={[-0.3, 0.1, 0]}>
+        <mesh castShadow>
+          <capsuleGeometry args={[0.15, 0.6, 8, 8]} />
+          <meshToonMaterial color="#ffcc99" />
+        </mesh>
+      </group>
+
+      <group ref={rightArmRef} position={[0.3, 0.1, 0]}>
+        <mesh castShadow>
+          <capsuleGeometry args={[0.15, 0.6, 8, 8]} />
+          <meshToonMaterial color="#ffcc99" />
+        </mesh>
+      </group>
+
+      <group ref={leftLegRef} position={[-0.2, -0.5, 0]}>
+        <mesh castShadow>
+          <capsuleGeometry args={[0.15, 0.8, 8, 8]} />
+          <meshToonMaterial color="#6b4423" />
+        </mesh>
+      </group>
+
+      <group ref={rightLegRef} position={[0.2, -0.5, 0]}>
+        <mesh castShadow>
+          <capsuleGeometry args={[0.15, 0.8, 8, 8]} />
+          <meshToonMaterial color="#6b4423" />
+        </mesh>
+      </group>
+
+      {/* Invulnerability shield */}
       {isInvulnerable && (
         <mesh scale={1.8}>
           <sphereGeometry args={[1.0, 16, 12]} />
