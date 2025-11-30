@@ -72,31 +72,42 @@ export default function GLBCharacterModel({
     }
   }, [gltf?.scene, gltf?.animations]);
 
-  // Animate the model wrapper based on movement/attack state
+  // Animate the model with VERY VISIBLE movements
   useFrame((state, delta) => {
     if (!sceneRef.current) return;
     
     if (mixerRef.current) mixerRef.current.update(delta);
 
     const time = state.clock.elapsedTime;
-    sceneRef.current.rotation.set(0, 0, 0);
-    sceneRef.current.position.set(0, 0, 0);
 
     if (isAttacking && attackPhase === 'active') {
-      // Attack: lean forward
-      sceneRef.current.position.z = 0.2;
-      sceneRef.current.scale.set(1.05, 0.95, 1.1);
+      // ATTACK: Strong forward lean and squash
+      sceneRef.current.position.set(0.3, 0, 0.4);
+      sceneRef.current.rotation.set(0.15, 0, 0);
+      sceneRef.current.scale.set(1.1, 0.85, 1.2);
+      console.log('ATTACKING - lean forward');
     } else if (isMoving && moveSpeed > 0.05) {
-      // Movement: bob and lean
-      const t = time * 8 * moveSpeed;
-      sceneRef.current.position.y = Math.abs(Math.sin(t * 2)) * 0.2;
-      sceneRef.current.rotation.x = Math.sin(t) * 0.04;
-      const scale = 0.98 + Math.sin(t * 3) * 0.02;
-      sceneRef.current.scale.set(scale, scale, scale);
+      // MOVEMENT: BIG bob up/down, rotation, scale pulse
+      const t = time * 10 * Math.min(moveSpeed, 1);
+      const bobHeight = Math.abs(Math.sin(t)) * 0.5; // HUGE bob
+      
+      sceneRef.current.position.y = bobHeight;
+      sceneRef.current.position.z = Math.sin(t * 0.5) * 0.1;
+      
+      // Rotation for dynamic feel
+      sceneRef.current.rotation.x = Math.sin(t * 0.5) * 0.1;
+      sceneRef.current.rotation.z = Math.sin(t) * 0.08;
+      
+      // Scale pulse for running effect
+      const scaleFactor = 1 + Math.sin(t * 2) * 0.15;
+      sceneRef.current.scale.set(scaleFactor, scaleFactor * 0.95, scaleFactor);
+      
+      console.log(`Moving animation - bob=${bobHeight.toFixed(2)}, speed=${moveSpeed.toFixed(2)}`);
     } else {
-      // Idle: breathing
-      const breathe = Math.sin(time * 2) * 0.01;
-      sceneRef.current.position.y = breathe;
+      // IDLE: subtle breathing
+      const breathe = Math.sin(time * 2) * 0.02;
+      sceneRef.current.position.set(0, breathe, 0);
+      sceneRef.current.rotation.set(0, 0, 0);
       sceneRef.current.scale.set(1, 1, 1);
     }
   });
