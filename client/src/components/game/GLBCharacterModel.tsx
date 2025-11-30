@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { useGLTF } from '@react-three/drei';
+import { useRef, useEffect, useState } from 'react';
+import { useFrame } from '@react-three/fiber';
 import { Group } from 'three';
 import * as THREE from 'three';
 
@@ -85,8 +85,74 @@ export default function GLBCharacterModel({
   isInvulnerable,
 }: GLBCharacterModelProps) {
   const glbFileName = CHARACTER_GLB_MAP[characterId];
+  const [scene, setScene] = useState<THREE.Group | null>(null);
+  const [animations, setAnimations] = useState<THREE.AnimationClip[]>([]);
+  const sceneRef = useRef<THREE.Group>(null);
+  const mixerRef = useRef<THREE.AnimationMixer | null>(null);
+  const actionRef = useRef<THREE.AnimationAction | null>(null);
+  const clockRef = useRef(new THREE.Clock());
 
-  if (!glbFileName) {
+  // Load model once
+  useEffect(() => {
+    if (!glbFileName) return;
+
+    const loader = new THREE.GLTFLoader();
+    loader.load(
+      `/models/${glbFileName}`,
+      (gltf) => {
+        setScene(gltf.scene);
+        setAnimations(gltf.animations || []);
+      },
+      undefined,
+      () => console.warn(`Failed to load ${characterId}`)
+    );
+  }, [glbFileName, characterId]);
+
+  // Setup mixer when scene loads
+  useEffect(() => {
+    if (!scene || !sceneRef.current || animations.length === 0) return;
+
+    const mixer = new THREE.AnimationMixer(sceneRef.current);
+    mixerRef.current = mixer;
+
+    const action = mixer.clipAction(animations[0]);
+    action.play();
+    actionRef.current = action;
+  }, [scene, animations]);
+
+  // Update animations
+  useFrame(() => {
+    if (!mixerRef.current) return;
+
+    const delta = clockRef.current.getDelta();
+    mixerRef.current.update(delta);
+
+    if (animations.length > 0 && actionRef.current) {
+      let targetClip = animations[0];
+
+      if (isAttacking && animations.length > 1) {
+        const attackClip = animations.find((clip) =>
+          clip.name.toLowerCase().includes('attack')
+        );
+        if (attackClip) targetClip = attackClip;
+      } else if (animations.length > 2) {
+        const walkClip = animations.find((clip) =>
+          clip.name.toLowerCase().includes('walk')
+        );
+        if (walkClip) targetClip = walkClip;
+      }
+
+      const current = actionRef.current.getClip();
+      if (current !== targetClip) {
+        actionRef.current.fadeOut(0.2);
+        const newAction = mixerRef.current.clipAction(targetClip);
+        newAction.fadeIn(0.2).play();
+        actionRef.current = newAction;
+      }
+    }
+  });
+
+  if (!scene) {
     return (
       <group ref={bodyRef}>
         <mesh castShadow>
@@ -97,36 +163,18 @@ export default function GLBCharacterModel({
     );
   }
 
-  try {
-    const gltf = useGLTF(`/models/${glbFileName}`);
-
-    return (
-      <group ref={bodyRef}>
-        <group scale={[2.5, 2.5, 2.5]}>
-          <primitive object={gltf.scene} />
-        </group>
-
-        {isInvulnerable && (
-          <mesh position={[0, 0, 0]} scale={1.8}>
-            <sphereGeometry args={[1.0, 16, 12]} />
-            <meshBasicMaterial
-              color="#FFD700"
-              transparent
-              opacity={0.2}
-              depthWrite={false}
-            />
-          </mesh>
-        )}
+  return (
+    <group ref={bodyRef}>
+      <group ref={sceneRef} scale={[2.5, 2.5, 2.5]}>
+        <primitive object={scene} />
       </group>
-    );
-  } catch (err) {
-    return (
-      <group ref={bodyRef}>
-        <mesh castShadow>
-          <capsuleGeometry args={[0.3, 1, 16, 32]} />
-          <meshToonMaterial color="#888888" />
+
+      {isInvulnerable && (
+        <mesh position={[0, 0, 0]} scale={1.8}>
+          <sphereGeometry args={[1.0, 16, 12]} />
+          <meshBasicMaterial color="#FFD700" transparent opacity={0.2} depthWrite={false} />
         </mesh>
-      </group>
-    );
-  }
+      )}
+    </group>
+  );
 }
