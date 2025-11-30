@@ -1,0 +1,284 @@
+Yo, Reflector. Let’s keep this momentum moving. You handled the first pack; now we’re locking in the heavy hitters—the magic users, the tech soldiers, and the heavyweights.
+
+This is **Pack 2**. We are defining the **Cosmic & Tech Squad**.
+
+These characters rely heavily on **Special Effects (VFX)**—magic swirls, lasers, gravity fields. Your engine needs to handle particles well for these guys.
+
+Here is the blueprint for the next 7 legends.
+
+***
+
+### ⭐ **PACK 2: THE COSMIC & TECH SQUAD**
+
+**Roster:**
+1.  **Star Shaper** (Kirby equivalent)
+2.  **Harmonarch Queen** (Peach equivalent)
+3.  **Prismatic Strategist** (Zelda equivalent)
+4.  **Stellar Matron** (Rosalina equivalent)
+5.  **Wing Commander Vox** (Fox equivalent)
+6.  **Adaptation Unit X** (Mega Man X equivalent)
+7.  **Primal Juggernaut** (Donkey Kong equivalent)
+
+---
+
+### ⭐ **CHARACTER 8 — STAR SHAPER**
+*(Kirby-equivalent – cosmic mimic)*
+
+* **A) SAFE 3D MODEL OPTIONS**
+    1.  **Quaternius – Ultimate Platformer Pack**
+        * Look for the **"Slime"** or **"Round Critter"** model. It captures the shape without infringing on the face.
+    2.  **KayKit – Spookies Pack**
+        * The **"Ghost"** or **"Wisp"** models work great for a floating cosmic entity.
+    3.  **Primitive Sphere (Fallback)**
+        * A simple sphere with a custom shader (star texture) is actually a *strong* artistic choice here.
+
+* **B) ART SPEC**
+    * **Body Type:** Spherical or amorphous blob.
+    * **Color Palette:** **Pastel Pink** (#FFB6C1) body, **Vibrant Azure** feet/nubbins.
+    * **Texture:** Needs a subtle "stardust" shader—he shouldn't look like skin, he should look like condensed nebula.
+    * **Eyes:** Large, innocent, but glowing with cosmic depth.
+    * **Silhouette:** Round, low to ground, floats slightly.
+
+* **C) LORE SHEET**
+    * **Role:** The Wildcard.
+    * **Origin:** Born from the fallout of a dying star.
+    * **Personality:** Simple, hungry, infinitely powerful but emotionally simplistic.
+    * **Quote:** *"Everything is fuel."*
+
+* **D) GAMEPLAY KIT**
+    * **Movement:** Float/Multi-jump (6 jumps).
+    * **Combat:** Inhale (Vacuum), Star Spit (Projectile).
+    * **Special:** **Mimicry** (Takes one special move from the last enemy eaten).
+    * **Super:** **Singularity Event** (Black hole screen wipe).
+
+* **E) TRANSFORMATION**
+    * **Stellar Echo Mode:** Turns into pure light, body becomes translucent, infinite flight.
+
+* **F) IMPORT NOTES**
+    * `assets/models/star_shaper.glb`
+    * **Rigging:** Needs "squash and stretch" bones.
+
+---
+
+### ⭐ **CHARACTER 9 — HARMONARCH QUEEN**
+*(Peach-equivalent – light/defense)*
+
+* **A) SAFE 3D MODEL OPTIONS**
+    1.  **KayKit – Adventurers Pack**
+        * **"Mage"** model (retextured). The robe silhouette works perfectly as a battle dress.
+    2.  **Quaternius – Medieval Pack**
+        * **"Queen"** or **"Noblewoman"**. Give her a staff instead of a parasol to change the IP feel.
+
+* **B) ART SPEC**
+    * **Body Type:** Humanoid, elegant posture.
+    * **Color Palette:** **Cream/White** dress with **Gold** trim. No bright pink (too close to original).
+    * **Accessory:** A floating **Light Prism** or **Staff** (replaces the umbrella).
+    * **VFX:** Soft, warm golden glow around her at all times.
+
+* **C) LORE SHEET**
+    * **Role:** The Anchor. Healer and shielder.
+    * **Origin:** Ruler of the Harmonic Weave.
+    * **Personality:** Gentle iron. Looks soft, hits like a truck.
+    * **Quote:** *"Harmony requires a strong hand."*
+
+* **D) GAMEPLAY KIT**
+    * **Movement:** Float (hold jump to hover).
+    * **Combat:** Slap/Magic burst.
+    * **Special:** **Harmonic Counter** (uses Toad-equivalent "Myco").
+    * **Super:** **The Great Hush** (Global sleep/stun on enemies).
+
+* **E) TRANSFORMATION**
+    * **Radiance Form:** Dress becomes wings of light.
+
+* **F) IMPORT NOTES**
+    * `assets/models/harmonarch_queen.glb`
+
+---
+
+### ⭐ **CHARACTER 10 — PRISMATIC STRATEGIST**
+*(Zelda-equivalent – magic/tactics)*
+
+* **A) SAFE 3D MODEL OPTIONS**
+    1.  **KayKit – Adventurers Pack**
+        * **"Sorceress"**. Perfect fit. Just change the colors.
+    2.  **Quaternius – RPG Pack**
+        * **"Elf Mage"**.
+
+* **B) ART SPEC**
+    * **Body Type:** Tall, slender, regal.
+    * **Color Palette:** **Royal Blue** and **Silver** robes. Triangular motifs (Saga-safe Triforce hint).
+    * **Hair:** Brown or Silver (avoid the classic blonde to stay safe).
+    * **Weapon:** Glowing geometric constructs (magic shapes).
+
+* **C) LORE SHEET**
+    * **Role:** Tactician / Burst Mage.
+    * **Origin:** Keeper of the Prismatic Logic.
+    * **Personality:** Calculated, wise, burdened by foresight.
+    * **Quote:** *"I have already seen how you lose."*
+
+* **D) GAMEPLAY KIT**
+    * **Movement:** Teleport dodge (short blink).
+    * **Combat:** Arcane blasts, geometric traps.
+    * **Special:** **Prism Reflect** (Reflects projectiles).
+    * **Super:** **Light Arrow Rain** (Lock-on bombardment).
+
+* **E) TRANSFORMATION**
+    * **Wisdom Avatar:** Becomes a being of pure rune-energy.
+
+* **F) IMPORT NOTES**
+    * `assets/models/prismatic_strategist.glb`
+
+---
+
+### ⭐ **CHARACTER 11 — STELLAR MATRON**
+*(Rosalina-equivalent – gravity/cosmic)*
+
+* **A) SAFE 3D MODEL OPTIONS**
+    1.  **Quaternius – Wizards Pack**
+        * **"High Wizard"** (female variant). The tall robes fit the floaty vibe.
+    2.  **Mixamo – "Sorceress"**
+        * Detailed, tall, perfect for a cosmic mother figure.
+
+* **B) ART SPEC**
+    * **Body Type:** Very tall, floating (no feet touching ground).
+    * **Color Palette:** **Teal** and **Star-White**.
+    * **Accessory:** Wand. Orbiting **Star-Bit** (Luma equivalent—use a simple glowing star mesh).
+    * **Hair:** White/Platinum, covering one eye (optional, but iconic).
+
+* **C) LORE SHEET**
+    * **Role:** Crowd Control / zoner.
+    * **Origin:** Watcher of the Galaxies.
+    * **Personality:** Distant, maternal, melancholic.
+    * **Quote:** *"The stars are waiting for you."*
+
+* **D) GAMEPLAY KIT**
+    * **Movement:** Low gravity jumps.
+    * **Combat:** Gravity pulls, orbiting star attacks.
+    * **Special:** **Gravitational Pull** (Sucks items/enemies in).
+    * **Super:** **Supernova** (Expanding ring of death).
+
+* **E) TRANSFORMATION**
+    * **Cosmic Giant:** Grows huge, manipulating the battlefield from above.
+
+* **F) IMPORT NOTES**
+    * `assets/models/stellar_matron.glb`
+
+---
+
+### ⭐ **CHARACTER 12 — WING COMMANDER VOX**
+*(Fox-equivalent – speed/gunner)*
+
+* **A) SAFE 3D MODEL OPTIONS**
+    1.  **Quaternius – Sci-Fi Pack**
+        * **"Space Pilot"**. Humanoid in a flight suit.
+    2.  **KayKit – Space Pack**
+        * **"Astronaut"** or **"Pilot"**.
+    * *Note: Avoid using an actual fox model to stay 100% IP safe. Use a sleek, helmeted pilot.*
+
+* **B) ART SPEC**
+    * **Body Type:** Lean, athletic, runner build.
+    * **Color Palette:** **Grey** flight suit, **Orange** visor/scarf, **Blue** boots (jet thrusters).
+    * **Weapon:** Blaster pistol + Reflector device on hip.
+    * **VFX:** Green laser fire, blue afterburners.
+
+* **C) LORE SHEET**
+    * **Role:** Hit-and-Run / Ranged DPS.
+    * **Origin:** Leader of the "Predator Wing" mercenary squadron.
+    * **Personality:** Professional, cocky in the cockpit, loyal on the ground.
+    * **Quote:** *"Speed is life. You're too slow."*
+
+* **D) GAMEPLAY KIT**
+    * **Movement:** Fast run, "Fox-Trot" (quick dash).
+    * **Combat:** Rapid fire blaster, bicycle kick melee.
+    * **Special:** **Reflector Shield** (Hexagon barrier).
+    * **Super:** **Orbital Strike** (Calls ship for a bombing run).
+
+* **E) TRANSFORMATION**
+    * **Ace Pilot:** Summons a mini-mech or exo-suit.
+
+* **F) IMPORT NOTES**
+    * `assets/models/wing_commander_vox.glb`
+
+---
+
+### ⭐ **CHARACTER 13 — ADAPTATION UNIT X**
+*(Mega Man X-equivalent – tech/copy)*
+
+* **A) SAFE 3D MODEL OPTIONS**
+    1.  **Quaternius – Mech Pack**
+        * **"Humanoid Mech"**. Look for the sleekest one.
+    2.  **Quaternius – Sci-Fi Modular**
+        * **"Cyborg"**.
+    * *Avoid the distinct "Mega Man Helmet". Go for a generic sleek android look.*
+
+* **B) ART SPEC**
+    * **Body Type:** Robotic, segmented armor.
+    * **Color Palette:** **Slate Gray** armor with **Cobalt Blue** energy lines.
+    * **Weapon:** Arm cannon (integrated into forearm).
+    * **VFX:** Charge shots (blue to yellow), dash dust.
+
+* **C) LORE SHEET**
+    * **Role:** Ranged Tank / Adaptable.
+    * **Origin:** Ancient technology reawakened.
+    * **Personality:** Pacifist warrior. Only fights because he must.
+    * **Quote:** *"My systems are ready. Are yours?"*
+
+* **D) GAMEPLAY KIT**
+    * **Movement:** Slide dash (low profile). Wall slide.
+    * **Combat:** Lemon shots (pew pew), Charge shot.
+    * **Special:** **Variable Weapon** (Cycles through 3 elemental modes: Fire, Ice, Electric).
+    * **Super:** **Full Armor System** (Temporary invincibility + flight).
+
+* **E) TRANSFORMATION**
+    * **Overdrive Mode:** Glows gold, infinite ammo.
+
+* **F) IMPORT NOTES**
+    * `assets/models/adaptation_unit_x.glb`
+
+---
+
+### ⭐ **CHARACTER 14 — PRIMAL JUGGERNAUT**
+*(Donkey Kong-equivalent – heavy/grappler)*
+
+* **A) SAFE 3D MODEL OPTIONS**
+    1.  **Quaternius – Animals Pack**
+        * **"Gorilla"**. It’s generic enough. Just don’t give him a red tie.
+    2.  **Quaternius – Monster Pack**
+        * **"Troll"** or **"Ogre"**. If you want to move away from the literal ape, an Ogre with similar proportions works perfectly for the hitbox.
+
+* **B) ART SPEC**
+    * **Body Type:** Massive upper body, smaller legs. Long arms (knuckle walker).
+    * **Color Palette:** **Dark Brown** fur, **Leather** harness (gladiator style).
+    * **VFX:** Ground cracks, dust clouds on every step.
+
+* **C) LORE SHEET**
+    * **Role:** Tank / Grappler.
+    * **Origin:** Guardian of the Deep Jungle.
+    * **Personality:** Laid back, fiercely protective, loves food.
+    * **Quote:** *"Get out of my jungle."*
+
+* **D) GAMEPLAY KIT**
+    * **Movement:** Slow walk, heavy momentum.
+    * **Combat:** Ground slap, heavy punch, cargo carry (can pick up enemies).
+    * **Special:** **Spinning Lariat** (Arm helicopter).
+    * **Super:** **Primal Rhythm** (Rhythmic ground pounding that stuns the whole screen).
+
+* **E) TRANSFORMATION**
+    * **Golden Primal:** Fur turns gold, damage doubled.
+
+* **F) IMPORT NOTES**
+    * `assets/models/primal_juggernaut.glb`
+
+---
+
+**Virgo Note:**
+That's 14 characters total now (7 from Pack 1, 7 from Pack 2).
+You have your entire starting roster and mid-game unlocks covered.
+
+**Your Action:**
+1.  Hit **Quaternius** and **KayKit** (links provided in the previous turn).
+2.  Grab these specific models.
+3.  Rename them.
+4.  Drop them into Replit.
+
+Ready for Pack 3 (The Legacy Kids & Villains)?

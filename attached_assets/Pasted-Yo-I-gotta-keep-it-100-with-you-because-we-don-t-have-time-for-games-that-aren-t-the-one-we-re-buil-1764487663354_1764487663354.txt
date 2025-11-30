@@ -1,0 +1,61 @@
+Yo, I gotta keep it 100 with you because we don't have time for games that aren't the one we're building.
+
+**No, I cannot go to those sites and download files for you.**
+
+I am an AI. I generate text and code. I don't have a mouse, I don't have a hard drive, and I can't click "Download" on Itch.io or Mixamo to hand you a `.glb` file. I can't reach out of the chat and drop a file onto your desktop.
+
+**You have to do the legwork on this part.** This is the Virgo grind. I can give you the blueprint, but you gotta lay the bricks.
+
+However, since I'm your strategist, I’m not gonna leave you hanging. I can't download them, but I can tell you **exactly** which specific free packs to grab so you don't waste hours searching.
+
+Here is your **Asset Shopping List**. Go to these links, download the files, and upload them to your Replit `assets/models/` folder.
+
+### 🛒 **The "Saga" Asset Shopping List**
+
+**1. Hyllian Valour (Link) & Fantasy Characters**
+
+  * **Source:** **KayKit** (Itch.io)
+  * **Pack:** `KayKit: Adventurers`
+  * **Download:** [KayKit Adventurers](https://kaylousberg.itch.io/kaykit-adventurers)
+  * **What to grab:** The "Knight" model (for Hyllian Valour) and the "Mage" (for Prismatic Strategist).
+
+**2. Radiant Jumper (Mario) & Civilians**
+
+  * **Source:** **Quaternius**
+  * **Pack:** `Ultimate Platformer Pack`
+  * **Download:** [Quaternius Platformer](https://quaternius.com/packs/ultimateplatformer.html)
+  * **What to grab:** The "Character\_Male" or "Astronaut". They are generic, bouncier, and fit the platforming vibe perfectly.
+
+**3. Chozo Hunter (Samus) & Adaptation Unit X (Mega Man)**
+
+  * **Source:** **Quaternius**
+  * **Pack:** `Sci-Fi Modular Pack` or `Mech Pack`
+  * **Download:** [Quaternius Sci-Fi](https://www.google.com/search?q=https://quaternius.com/packs/scifi.html)
+  * **What to grab:** The "Space Marine" or any "Robot" model. These are perfect for that armored, tech-heavy look.
+
+**4. Redhound Flow (Sonic) & Shadow**
+
+  * **Source:** **Mixamo** (Adobe)
+  * **Pack:** Search for "Mutant" or "Ninja"
+  * **Download:** [Mixamo](https://www.mixamo.com/)
+  * **What to grab:** Look for the character named "Y-Bot" or "X-Bot". They are sleek, robotic, and perfect for speedsters.
+      * *Crucial Step:* You have to download them *with* an animation (like "Running"). Choose "Format: FBX for Unity" or ".GLB" if available.
+
+**5. Primal Grom (DK) & Rift Beasts**
+
+  * **Source:** **Quaternius**
+  * **Pack:** `Animals Pack` or `Monster Pack`
+  * **Download:** [Quaternius Monsters](https://www.google.com/search?q=https://quaternius.com/packs/monsters.html)
+  * **What to grab:** The "Gorilla" (for Grom) and any weird "Slime" or "Demon" for your Rift Beasts.
+
+-----
+
+### **How to Install Them (The Virgo Workflow)**
+
+1.  **Download** the packs (usually `.zip`).
+2.  **Unzip** them on your computer.
+3.  **Find** the `.glb` or `.gltf` files inside. (If they are `.fbx`, use an online converter to turn them into `.glb` – it works better on web).
+4.  **Rename** them to match our code (e.g., rename `knight_color.glb` to `hylian_knight.glb`).
+5.  **Drag and Drop** them into the `assets/models/` folder in your Replit project.
+
+That's the mission. I built the engine; you gotta fuel it with the assets. Go get 'em.

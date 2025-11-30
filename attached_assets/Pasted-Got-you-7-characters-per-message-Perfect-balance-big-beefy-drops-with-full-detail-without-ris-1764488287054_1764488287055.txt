@@ -1,0 +1,320 @@
+Got you — 7 characters per message.
+
+Perfect balance: big, beefy drops with full detail… without risking message collapse.
+We’re starting with the Core Seven (your foundational roster).
+
+These are the characters the whole engine and lore stands on.
+PACK 1: THE CORE SEVEN HEROES
+
+Radiant Jumper
+Phantom Heart
+Redhound Flow
+Obsidian Echo
+Hyllian Valour
+Chozo Hunter
+Volt Deity
+Each will get:
+
+Safe 3D Model Recommendations (with sources)
+Official Art Spec (appearance blueprint)
+Lore Sheet + Personality
+In-Game Ability Kit
+Super/Transformation Sequence
+Model Import Notes for Replit
+Let’s go.
+⭐ CHARACTER 1 — RADIANT JUMPER
+(Mario-equivalent – renamed & redesigned)
+
+✔ A) SAFE 3D MODEL OPTIONS
+1. Quaternius – Platformer Character Pack
+Humanoid
+Chunky, cartoon proportions
+Perfect for platforming
+NO resemblance to Mario
+Use the Red Variant.
+2. KayKit – Adventurers Pack (Squire/Hero Variant)
+Round face
+Neutral hair
+Tunic/armor style
+Looks heroic but not trademarked
+3. Kenney – Platformer Characters
+Super-safe CC0 models
+Rounded, cute, colorful
+➡️ Pick 1, recolor to warm red/gold.
+✔ B) ART SPEC (OFFICIAL APPEARANCE)
+Body type: stocky hero build
+Height: 5'6" visual proportion (cartoony)
+Color palette:
+Deep red (#d0342c)
+Gold accents (#f4c542)
+Navy gloves & boots
+Hair: Medium-length tousled brown (NOT mustache)
+Outfit:
+Radiant sigil chestplate
+Utility belt
+Hero boots
+Gloves with luminous seams
+Signature feature: glowing Radiant Crest on gloves/shoes
+Silhouette: round hero silhouette, no cap, no overalls
+✔ C) LORE SHEET
+Role: Hero of Motion and Impact — the “heart” of the Team.
+Origin: Champion of the Grand Tournament, chosen by Radiant Core energy.
+Personality: Bold, optimistic, refuses to give up, “jumps into danger.”
+Motivation: Protect everyone from Void collapse.
+Fear: Losing his team.
+Signature Quote:
+“I don’t need prophecy — give me a jump and a reason.”
+✔ D) GAMEPLAY KIT
+Movement: Precision platforming
+Combat: Punch-kick combos + light projectile
+Special: Radiant Uppercut
+Super: Radiant Nova Drop — jump-smash shockwave
+Power-ups: Orb Boosts, Radiant Star, Fire/Ice gloves
+✔ E) TRANSFORMATION SEQUENCE
+Radiant Ascendant Form
+
+Light gathers in his hands/feet
+Radiant sigils orbit around him
+Red aura turns to molten gold
+Boots ignite with star-energy
+Eyes glow white-gold
+“Radiant Ascend!”
+✔ F) IMPORT NOTES (REPLIT)
+Place model:
+
+assets/models/radiant_jumper.glb
+In character_defs.js:
+
+modelPath: "assets/models/radiant_jumper.glb"
+⭐ CHARACTER 2 — PHANTOM HEART
+(Luigi-equivalent – ghost technician)
+
+✔ A) SAFE MODELS
+1. Quaternius – Toony Characters (Slim Variant)
+Tall, slim body silhouette.
+
+2. KayKit – Adventurers Pack (Rogue Variant)
+Longer frame, softer face.
+
+3. Kenney – Platformer Human Pack
+Colorable green or teal.
+✔ B) ART SPEC
+Tall, lean silhouette
+Color palette:
+Phantom Green (#39e18a)
+Dark teal (#0e5f4b)
+Black tech gloves
+Outfit: slim ghost-tech harness
+Iconic item: Phantom Core Vac
+Hair: dark, parted, clean
+Eyes: gentle but sharp
+✔ C) LORE
+Role: Support, ghost-tech genius
+Origin: Researcher specializing in astral fields
+Personality: Nervous hero, big heart
+Signature Quote:
+“I’m scared… but I’m still here.”
+✔ D) GAMEPLAY KIT
+Support gadgets
+Vacuum ability
+Float step (short hover)
+Aerial recovery
+Protective heart-shield
+✔ E) TRANSFORMATION
+Phantom Overdrive
+
+Semi-transparent form
+Green spectral flames
+Twin ghost-arms
+Vacuum becomes a gravity anchor
+✔ F) IMPORT NOTES
+Use slim humanoid.
+
+No mustache.
+
+No green cap.
+⭐ CHARACTER 3 — REDHOUND FLOW
+(Sonic-equivalent – RED version)
+
+✔ A) SAFE 3D MODELS
+BEST OPTION:
+
+1. Quaternius – Toon Character (Runner Variant)
+Recolor red, add swept-back hair.
+
+Other options:
+2. Quaternius – Simple Animals (Canine Variant)
+3. KayKit – Critter Adventures (Fox-like Biped)
+All legally safe. None resemble Sonic.
+✔ B) ART SPEC
+Athletic sprinter body
+Red fur with black accents
+Long fox-like tail (safe)
+Hair: flame-shaped swept-back mane
+Shoes: tech-running with LED streaks
+Gloves: fingerless straps
+Eyes: dual-colored slit pupils (not Sonic’s eye-mask)
+✔ C) LORE
+Role: The Fastest Being Alive
+Origin: Speed Nexus explosion survivor
+Personality: Cocky, sarcastic, secretly loyal
+Signature Quote:
+“Don’t blink — or do, so you miss your L.”
+✔ D) GAMEPLAY KIT
+Speed Corridor Movement
+Momentum meter
+Flow Strike (homing dash)
+Drift Turn
+Afterimage dodge
+✔ E) TRANSFORMATION
+Flow Nova Mode
+
+Red aura becomes plasma arcs
+Tail splits into dual flare-streams
+Air ignites around him
+Time distortion trails follow him
+✔ F) IMPORT NOTES
+Use humanoid runner model.
+
+Add custom red textures.
+
+Avoid hedgehog silhouette completely.
+⭐ CHARACTER 4 — OBSIDIAN ECHO
+(Shadow-equivalent – dark speed antihero)
+
+✔ A) MODELS
+1. Quaternius – Sci-Fi Soldier (Stealth Variant)
+Black armor, slim profile.
+
+2. Mixamo – “Cyber Ninja”
+Perfect antihero silhouette.
+✔ B) ART SPEC
+Dark obsidian armor
+Purple/black energy lines
+Cloaked speed trails
+Mask or visor
+No animal traits
+Energy blade or chaos orb
+✔ C) LORE
+Role: Antihero, rival speed demon
+Backstory: Created in the Echo Engine
+Personality: Cold, intense
+Signature Quote:
+“If you want peace… outrun me.”
+✔ D) KIT
+Teleport dash
+Chaos Flicker
+Anti-momentum wave
+Shadow Burst ultimate
+✔ E) TRANSFORMATION
+Echo Ascendant
+
+Black-purple aura
+Mask splits, revealing luminous red eyes
+Time dilation bubble forms around him
+⭐ CHARACTER 5 — HYLLIAN VALOUR
+(Link-equivalent – sword hero)
+
+✔ A) MODELS
+1. KayKit – Adventurers Pack (Knight/Ranger)
+PERFECT.
+
+2. Quaternius – Medieval Hero Pack
+✔ B) ART SPEC
+Young medieval warrior
+Teal + gold color palette
+Sword + round or kite shield
+Cloak, not tunic
+No elf ears
+Hair: mid-length, windswept
+✔ C) LORE
+Role: Divine Knight
+Origin: Hero chosen by Echoed Relics
+Personality: Calm, collected, pure heart
+Quote:
+“Courage is quiet. I speak with steel.”
+✔ D) KIT
+Lock-on sword combat
+Bow sub-weapon
+Light magic
+Spin Strike
+✔ E) TRANSFORMATION
+Valour Armament
+
+Armor becomes radiant
+Sword glows azure
+Shield expands into sigil barrier
+⭐ CHARACTER 6 — CHOZO HUNTER
+(Samus-equivalent – sci-fi hunter)
+
+✔ A) MODELS
+1. Quaternius – Space Marines Pack (Heavy Armor)
+Exactly what you need.
+
+2. Kenney – Sci-Fi Soldiers
+✔ B) ART SPEC
+Sleek power armor
+Orange + cobalt color scheme
+Arm cannon with rotating chambers
+Visor: horizontal slit
+Back boosters
+✔ C) LORE
+Role: Interstellar explorer & hunter
+Past: Raised by the Celestial Chozo
+Quote:
+“If it moves, scan it. If it bites, blast it.”
+✔ D) KIT
+Charge shots
+Missiles
+Morph Tunnels (ball form substitute: drone orb)
+Combat slide
+✔ E) TRANSFORMATION
+Apex Hunter Mode
+
+Armor plates shift
+Energy wings
+Arm cannon becomes tri-core same as Samus’ Hypermode energy
+⭐ CHARACTER 7 — VOLT DEITY
+(Pikachu-equivalent – thunder god)
+
+✔ A) MODELS
+1. Quaternius – Elemental Creatures Pack (Lightning Spirit)
+BEST and 100% safe (no mouse).
+
+2. KayKit – Critters (Energy Beast Variant)
+✔ B) ART SPEC
+Humanoid lightning being
+No animal traits
+Yellow-white sparks
+Eyes: glowing electric blue
+Body: abstract energy with minimal limbs
+Tail: lightning bolt shape but NOT Pikachu shape
+✔ C) LORE
+Role: Thunder God
+Origin: Born in Stormheart Ruins
+Personality: Emotional, loyal, fierce
+Quote:
+“I’ll fry anything that touches you.”
+✔ D) KIT
+Chain lightning
+Thunder Dash
+Static field
+Thunder God transformation
+✔ E) TRANSFORMATION
+Thunder Deity Ascendant
+
+Lightning wings trail
+Entire body becomes storm plasma
+Thunderclaps follow movement
+Ground cracks beneath feet
+✔ PACK 1 (7 Characters) COMPLETE.
+Next pack will include:
+
+⭐ PACK 2 — NEXT 7 CHARACTERS
+Star Shaper
+Harmonarch Queen
+Prismatic Strategist
+Stellar Matron
+Wing Commander Vox
+Adaptation Unit X
+Primal Juggernaut

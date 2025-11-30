@@ -1,0 +1,239 @@
+Yo, let's finish the roster. This is **Pack 3: Legacy, Triad & Villains.**
+
+This pack defines the **future** of your universe (Legacy Kids), the **cosmic forces** (The Eternal Triad), and the **ultimate threats** (Voidonus & Friends).
+
+We need these models to look distinct from the classic heroes. They represent the next generation and the end of all things.
+
+---
+
+### ⭐ **PACK 3: THE LEGACY & THE VOID**
+
+**Roster:**
+1.  **Kai-Jax** (The Memory Ascendant)
+2.  **Silver** (Time Warden)
+3.  **Lunara** (Harmony Oracle)
+4.  **Sol Invictus** (Legacy Mario)
+5.  **Redlock** (Legacy Knuckles)
+6.  **Voidonus Imperion** (The Void King)
+7.  **Rift Grunt / Beast** (The Army)
+
+---
+
+### ⭐ **CHARACTER 15 — KAI-JAX (MEMORY ASCENDANT)**
+*(The Original Prodigy – 3-Tailed Hybrid)*
+
+* **A) SAFE 3D MODEL OPTIONS**
+    1.  **Quaternius – Sci-Fi Pack**
+        * **"Cyborg Ninja"** or **"Advanced Soldier"**. You need a sleek, humanoid base.
+    2.  **Mixamo – "Kachujin"**
+        * A muscular, monstrous-but-heroic humanoid. Perfect for a powerful hybrid.
+    * *CRITICAL:* You cannot find a model with 3 tails pre-made. You must use **Particle Effects** in Three.js (trails of Gold, Blue, White) to simulate the tails in-engine.
+
+* **B) ART SPEC**
+    * **Body Type:** Lean but muscular. Hybrid agility/power.
+    * **Color Palette:** **White** base, **Gold/Blue/Purple** energy lines.
+    * **VFX:** Three distinct energy trails (The Tails) constantly flowing behind him.
+    * **Eyes:** One blue, one gold (Paradox eyes).
+
+* **C) LORE SHEET**
+    * **Role:** The Final Failsafe.
+    * **Origin:** Born from the collective memory of erased heroes.
+    * **Personality:** Conflicted, burdened, but infinitely determined.
+    * **Quote:** *"I am the one who remembers."*
+
+* **D) GAMEPLAY KIT**
+    * **Movement:** Teleport-dash, wall run, hover.
+    * **Combat:** Hybrid fighting style (uses punches, kicks, and energy blasts).
+    * **Special:** **Memory Echo** (Rewind self 3s).
+    * **Super:** **Tri-Aura Fusion** (Massive beam of all three colors).
+
+* **F) IMPORT NOTES**
+    * `assets/models/kai_jax.glb`
+
+---
+
+### ⭐ **CHARACTER 16 — SILVER (TIME WARDEN)**
+*(The Future Guardian)*
+
+* **A) SAFE 3D MODEL OPTIONS**
+    1.  **Quaternius – Sci-Fi Pack**
+        * **"Time Traveller"** or **"Psychic"**.
+    2.  **KayKit – Space Pack**
+        * **"Alien"** or **"Commander"**. Look for something with a high collar or futuristic armor.
+
+* **B) ART SPEC**
+    * **Body Type:** Floating, levitating stance.
+    * **Color Palette:** **Silver/White** armor with **Cyan** glow.
+    * **VFX:** Constant "glitch" effect or heat haze around model.
+    * **Prop:** No weapon; fights with telekinesis (floating objects).
+
+* **C) LORE SHEET**
+    * **Role:** Crowd Control / Utility.
+    * **Origin:** A timeline that no longer exists.
+    * **Quote:** *"It's no use. I've already seen this."*
+
+* **D) GAMEPLAY KIT**
+    * **Movement:** Levitate (slow fall).
+    * **Combat:** Throw debris, psychic push.
+    * **Special:** **Time Lock** (Freezes an enemy for 2s).
+    * **Super:** **Chronosphere** (Slows entire stage).
+
+* **F) IMPORT NOTES**
+    * `assets/models/silver.glb`
+
+---
+
+### ⭐ **CHARACTER 17 — LUNARA (HARMONY ORACLE)**
+*(The Soul of the Weave)*
+
+* **A) SAFE 3D MODEL OPTIONS**
+    1.  **Quaternius – Wizards Pack**
+        * **"Dryad"** or **"Nature Spirit"**.
+    2.  **KayKit – Character Pack**
+        * **"Princess"** (retextured).
+
+* **B) ART SPEC**
+    * **Body Type:** Ethereal, translucent dress/robes.
+    * **Color Palette:** **Pale Blue**, **Lavender**, **White**.
+    * **VFX:** Musical notes or soft light particles trail her movement.
+
+* **C) LORE SHEET**
+    * **Role:** Healer / Buffer.
+    * **Origin:** Born from the first song of the universe.
+    * **Quote:** *"Listen to the rhythm of the Weave."*
+
+* **D) GAMEPLAY KIT**
+    * **Movement:** Graceful glide.
+    * **Combat:** Sonic waves, singing bursts.
+    * **Special:** **Harmony Pulse** (Heals nearby allies).
+    * **Super:** **Grand Chorus** (Invincibility + Buff for team).
+
+* **F) IMPORT NOTES**
+    * `assets/models/lunara.glb`
+
+---
+
+### ⭐ **CHARACTER 18 — SOL INVICTUS**
+*(Legacy Mario – The Flame Prince)*
+
+* **A) SAFE 3D MODEL OPTIONS**
+    1.  **Quaternius – Platformer Pack**
+        * **"Adventurer"**. Similar to Radiant Jumper but leaner/younger.
+    2.  **Mixamo – "Boy"**
+        * Generic teen hero model. Add fire effects.
+
+* **B) ART SPEC**
+    * **Body Type:** Young adult, athletic.
+    * **Color Palette:** **Orange** and **White** (Fire Flower colors).
+    * **VFX:** Hands constantly smoking or lit with small flames.
+
+* **C) LORE SHEET**
+    * **Role:** Glass Cannon / Burst DPS.
+    * **Origin:** Son of the Radiant Jumper and Harmonarch Queen.
+    * **Quote:** *"I burn brighter than my father ever did."*
+
+* **D) GAMEPLAY KIT**
+    * **Movement:** Wall jump, air dash.
+    * **Combat:** Fire punches, flame kicks.
+    * **Special:** **Nova Burst** (Explosion around self).
+    * **Super:** **Sun God** (Brief giant fire form).
+
+* **F) IMPORT NOTES**
+    * `assets/models/sol_invictus.glb`
+
+---
+
+### ⭐ **CHARACTER 19 — REDLOCK**
+*(Legacy Knuckles – The Crimson Sight)*
+
+* **A) SAFE 3D MODEL OPTIONS**
+    1.  **Quaternius – Mech Pack**
+        * **"Heavy Trooper"**. Needs to look armored and tough.
+    2.  **Mixamo – "Brute"**
+        * Scaled down slightly to look young but strong.
+
+* **B) ART SPEC**
+    * **Body Type:** Stocky, spiked armor or heavy plating.
+    * **Color Palette:** **Deep Red** and **Gunmetal Grey**.
+    * **Weapon:** Heavy gauntlets or arm-mounted tech.
+
+* **C) LORE SHEET**
+    * **Role:** Tech / Brawler Hybrid.
+    * **Origin:** Adopted by the Guardian Titan.
+    * **Quote:** *"Target locked. Breaking bones."*
+
+* **D) GAMEPLAY KIT**
+    * **Movement:** Glide (tech wings), climb.
+    * **Combat:** Heavy punches, lock-on missiles.
+    * **Special:** **Dig/Drill** (Go underground/invulnerable).
+    * **Super:** **Full Arsenal** (Unloads all weapons at once).
+
+* **F) IMPORT NOTES**
+    * `assets/models/redlock.glb`
+
+---
+
+### ⭐ **CHARACTER 20 — VOIDONUS IMPERION**
+*(The Void King – Final Boss)*
+
+* **A) SAFE 3D MODEL OPTIONS**
+    1.  **Quaternius – Monster Pack**
+        * **"Demon Lord"** or **"Dark Knight"**. Needs to be HUGE.
+    2.  **Mixamo – "Mutant"**
+        * Something scary and non-human.
+
+* **B) ART SPEC**
+    * **Body Type:** Tall, imposing, jagged silhouette.
+    * **Color Palette:** **Void Black** and **Neon Violet**.
+    * **VFX:** "Glitch" shader—parts of him should flicker in and out of existence.
+    * **Scale:** 1.5x - 2x larger than the players.
+
+* **C) LORE SHEET**
+    * **Role:** The End of All Things.
+    * **Origin:** The silence between stars.
+    * **Quote:** *"I am the static at the end of your song."*
+
+* **D) BOSS KIT**
+    * **Phase 1:** Shadow Claws, dark energy orbs.
+    * **Phase 2:** Summons "Silence Zones" (disable abilities).
+    * **Phase 3:** **Reality Break** (Screen shatters, controls reverse).
+
+* **F) IMPORT NOTES**
+    * `assets/models/voidonus.glb`
+
+---
+
+### ⭐ **CHARACTER 21 — RIFT GRUNT / BEAST**
+*(The Void Army)*
+
+* **A) SAFE 3D MODEL OPTIONS**
+    1.  **Quaternius – Dungeon Pack**
+        * **"Skeleton"** or **"Goblin"**. Generic fodder.
+    2.  **Quaternius – Monster Pack**
+        * **"Slime"** or **"Beholder"**.
+
+* **B) ART SPEC**
+    * **Body Type:** Varied. Grunts are humanoid; Beasts are quadrupedal.
+    * **Color Palette:** **Grey** skin with **Purple** veins/cracks.
+    * **VFX:** They dissolve into static when killed.
+
+* **C) LORE SHEET**
+    * **Role:** Cannon fodder.
+    * **Origin:** Corrupted data from lost worlds.
+
+* **F) IMPORT NOTES**
+    * `assets/models/rift_grunt.glb`
+    * `assets/models/rift_beast.glb`
+
+---
+
+**Virgo Note:**
+That's 21 models total. You have your **Heroes**, your **Cosmic Trio**, your **Legacy Kids**, and your **Villains**.
+
+**The Play:**
+1.  Download these packs.
+2.  Rename them.
+3.  Upload them to Replit.
+4.  Update your `character_defs.js` and `enemy_defs.js` with the correct file paths.
+
+Get to work.
