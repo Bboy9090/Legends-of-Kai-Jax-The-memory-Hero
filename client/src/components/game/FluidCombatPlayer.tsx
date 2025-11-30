@@ -115,12 +115,13 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
     movePlayer(delta);
     updateCombat(delta);
     
-    // Update mesh position
+    // Update mesh position and face opponent (away from camera)
     if (meshRef.current) {
       meshRef.current.position.x = playerX;
       meshRef.current.position.y = playerY;
       meshRef.current.position.z = playerZ;
-      meshRef.current.rotation.y = playerRotation;
+      // Offset by PI to face away from camera toward opponent
+      meshRef.current.rotation.y = playerRotation + Math.PI;
     }
     
     // Animate character based on state
