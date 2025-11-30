@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { useGLTF } from '@react-three/drei';
 import { Group } from 'three';
 import * as THREE from 'three';
 import { getMovementProfile, MovementProfile } from '../../lib/stores/useFluidCombat';
@@ -95,44 +96,36 @@ export default function GLBCharacterModel({
   characterRole = 'Vanguard',
 }: GLBCharacterModelProps) {
   const glbFileName = CHARACTER_GLB_MAP[characterId];
-  const [scene, setScene] = useState<THREE.Group | null>(null);
-  const [animations, setAnimations] = useState<THREE.AnimationClip[]>([]);
+  const modelPath = glbFileName ? `/models/${glbFileName}` : null;
+  
   const sceneRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
   const actionRef = useRef<THREE.AnimationAction | null>(null);
-  const clockRef = useRef(new THREE.Clock());
-  const armLeftRef = useRef<THREE.Group>(null);
-  const armRightRef = useRef<THREE.Group>(null);
-  const legLeftRef = useRef<THREE.Group>(null);
-  const legRightRef = useRef<THREE.Group>(null);
 
-  // Load model once
-  useEffect(() => {
-    if (!glbFileName) return;
-
-    const loader = new THREE.GLTFLoader();
-    loader.load(
-      `/models/${glbFileName}`,
-      (gltf) => {
-        setScene(gltf.scene);
-        setAnimations(gltf.animations || []);
-      },
-      undefined,
-      () => console.warn(`Failed to load ${characterId}`)
-    );
-  }, [glbFileName, characterId]);
+  // Try to load the model, but don't fail if it doesn't exist
+  let gltf: any = null;
+  try {
+    // Use useGLTF with suspend:false to prevent crashes
+    if (modelPath) {
+      gltf = useGLTF(modelPath, undefined);
+    }
+  } catch (e) {
+    // Model not found - will use fallback
+  }
 
   // Setup mixer when scene loads
   useEffect(() => {
-    if (!scene || !sceneRef.current || animations.length === 0) return;
+    if (!gltf?.scene || !sceneRef.current) return;
 
     const mixer = new THREE.AnimationMixer(sceneRef.current);
     mixerRef.current = mixer;
 
-    const action = mixer.clipAction(animations[0]);
-    action.play();
-    actionRef.current = action;
-  }, [scene, animations]);
+    if (gltf.animations?.length > 0) {
+      const action = mixer.clipAction(gltf.animations[0]);
+      action.play();
+      actionRef.current = action;
+    }
+  }, [gltf?.scene, gltf?.animations]);
 
   // Procedural animation based on movement
   useFrame((state, delta) => {
@@ -152,7 +145,7 @@ export default function GLBCharacterModel({
       animateAttack(bodyRef.current, attackPhase, time, profile);
     } else if (isMoving && moveSpeed > 0.1) {
       // Walking/Running animation
-      const animSpeed = profile.animationSpeed * (moveSpeed / 4); // Normalize to walk speed
+      const animSpeed = profile.animationSpeed * (moveSpeed / 4);
       const t = time * animSpeed;
       
       // Arm swing
@@ -194,7 +187,8 @@ export default function GLBCharacterModel({
     });
   };
 
-  if (!scene) {
+  // Fallback if no model available
+  if (!gltf?.scene) {
     return (
       <group ref={bodyRef}>
         <mesh castShadow>
@@ -208,7 +202,7 @@ export default function GLBCharacterModel({
   return (
     <group ref={bodyRef}>
       <group ref={sceneRef} scale={[2.5, 2.5, 2.5]}>
-        <primitive object={scene} />
+        <primitive object={gltf.scene} />
       </group>
 
       {isInvulnerable && (
