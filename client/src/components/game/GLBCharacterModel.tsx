@@ -1,9 +1,9 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { Group } from 'three';
 import * as THREE from 'three';
-import { getMovementProfile, MovementProfile } from '../../lib/stores/useFluidCombat';
+import { getMovementProfile } from '../../lib/stores/useFluidCombat';
 import { CharacterRole } from '../../lib/roster';
 
 interface GLBCharacterModelProps {
@@ -85,9 +85,6 @@ const CHARACTER_GLB_MAP: Record<string, string> = {
 export default function GLBCharacterModel({
   characterId,
   bodyRef,
-  emotionIntensity,
-  hitAnim,
-  animTime,
   isAttacking,
   isInvulnerable,
   isMoving = false,
@@ -102,10 +99,8 @@ export default function GLBCharacterModel({
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
   const actionRef = useRef<THREE.AnimationAction | null>(null);
 
-  // Try to load the model, but don't fail if it doesn't exist
   let gltf: any = null;
   try {
-    // Use useGLTF with suspend:false to prevent crashes
     if (modelPath) {
       gltf = useGLTF(modelPath, undefined);
     }
@@ -113,7 +108,6 @@ export default function GLBCharacterModel({
     // Model not found - will use fallback
   }
 
-  // Setup mixer when scene loads
   useEffect(() => {
     if (!gltf?.scene || !sceneRef.current) return;
 
@@ -127,67 +121,50 @@ export default function GLBCharacterModel({
     }
   }, [gltf?.scene, gltf?.animations]);
 
-  // Procedural animation based on movement
+  // Procedural animation based on movement state
   useFrame((state, delta) => {
-    if (!bodyRef.current) return;
+    if (!bodyRef.current || !sceneRef.current) return;
 
     const profile = getMovementProfile(characterRole);
     const time = state.clock.elapsedTime;
 
-    // Handle embedded animations if available
+    // Update embedded animations if available
     if (mixerRef.current) {
       mixerRef.current.update(delta);
     }
 
-    // Procedural animation override
-    if (isAttacking && attackPhase) {
-      // Attack animations
-      animateAttack(bodyRef.current, attackPhase, time, profile);
+    // Reset position/rotation every frame
+    sceneRef.current.rotation.set(0, 0, 0);
+    sceneRef.current.position.set(0, 0, 0);
+
+    if (isAttacking && attackPhase === 'active') {
+      // Attack punch - lean forward and squash
+      sceneRef.current.position.z = 0.3;
+      sceneRef.current.scale.set(1, 0.9, 1.1);
     } else if (isMoving && moveSpeed > 0.1) {
-      // Walking/Running animation
+      // Walking/Running - bob up and down, lean
       const animSpeed = profile.animationSpeed * (moveSpeed / 4);
       const t = time * animSpeed;
       
-      // Arm swing
-      bodyRef.current.children.forEach((child) => {
-        if (child.name.includes('arm') || child.name.includes('Arm')) {
-          const isLeft = child.name.toLowerCase().includes('left');
-          const swing = Math.sin(t) * profile.armSwingIntensity;
-          child.rotation.z = isLeft ? swing : -swing;
-          child.rotation.x = Math.cos(t) * 0.3 * profile.armSwingIntensity;
-        }
-        if (child.name.includes('leg') || child.name.includes('Leg')) {
-          const isLeft = child.name.toLowerCase().includes('left');
-          const swing = Math.sin(t) * profile.legSwingIntensity;
-          child.rotation.x = isLeft ? swing : -swing;
-        }
-      });
+      // Vertical bob
+      sceneRef.current.position.y = Math.abs(Math.sin(t * 2)) * profile.bounceIntensity * 0.5;
       
-      // Body bob
-      bodyRef.current.position.y = Math.abs(Math.sin(t * 2)) * profile.bounceIntensity;
+      // Slight lean forward while moving
+      sceneRef.current.rotation.x = Math.sin(t) * 0.05;
+      sceneRef.current.rotation.z = Math.sin(t) * 0.02;
+      
+      // Speed up animation with scale pulsing
+      const speedPulse = 0.95 + Math.sin(t * 3) * 0.05;
+      sceneRef.current.scale.set(speedPulse, speedPulse, speedPulse);
     } else {
-      // Idle animation
+      // Idle - subtle breathing
       const breathe = Math.sin(time * 2) * 0.02;
-      bodyRef.current.position.y = breathe;
+      sceneRef.current.position.y = breathe;
+      sceneRef.current.scale.set(1, 1, 1);
     }
   });
 
-  const animateAttack = (body: THREE.Group, phase: string, time: number, profile: MovementProfile) => {
-    body.children.forEach((child) => {
-      if (phase === 'active') {
-        if (child.name.includes('arm') || child.name.includes('Arm')) {
-          const isRight = child.name.toLowerCase().includes('right');
-          child.position.x = isRight ? 0.5 : -0.5;
-          child.rotation.z = isRight ? -Math.PI / 2 : Math.PI / 2;
-        }
-        if (child.name.includes('leg') || child.name.includes('Leg')) {
-          child.rotation.x = 0.3;
-        }
-      }
-    });
-  };
-
-  // Fallback if no model available
+  // Fallback if no model
   if (!gltf?.scene) {
     return (
       <group ref={bodyRef}>
