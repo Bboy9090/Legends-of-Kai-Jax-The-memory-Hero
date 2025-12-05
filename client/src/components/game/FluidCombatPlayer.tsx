@@ -6,7 +6,7 @@ import { useFluidCombat, COMBO_MOVES, AttackType, getMovementProfile } from '../
 import { Character, CharacterRole } from '../../lib/roster';
 
 // Import GLB character model loader
-import GLBCharacterModel from './GLBCharacterModel';
+import GLBCharacterModel, { getModelPath } from './GLBCharacterModel';
 
 const ROLE_COLORS: Record<CharacterRole, string> = {
   'Vanguard': '#ef4444',
@@ -446,20 +446,23 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
   
   // Render the appropriate specialized character model
   const renderCharacterModel = () => {
-    // Use GLB models for all characters
+    const modelPath = getModelPath(character.id);
+    if (!modelPath) return null;
+    
+    const accentColor = ROLE_ACCENT_COLORS[character.role];
+    
     return (
       <GLBCharacterModel
-        characterId={character.id}
+        modelPath={modelPath}
         bodyRef={bodyRef}
         emotionIntensity={emotionRef.current}
         hitAnim={hitFlashRef.current}
         animTime={animTimeRef.current}
         isAttacking={!!currentAttack}
         isInvulnerable={iFrames > 0}
-        isMoving={isMoving}
-        moveSpeed={moveSpeed}
-        attackPhase={currentAttack ? (attackPhase as 'windup' | 'active' | 'recovery') : undefined}
-        characterRole={character.role}
+        primaryColor={ROLE_COLORS[character.role]}
+        accentColor={accentColor}
+        scale={2.5}
       />
     );
   };
