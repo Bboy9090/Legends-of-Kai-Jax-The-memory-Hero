@@ -16,11 +16,13 @@ export class SoundPool {
   play(volume = 1.0): void {
     const audio = this.pool[this.currentIndex];
     
-    audio.volume = volume;
-    audio.currentTime = 0;
-    audio.play().catch(() => {
-      // Ignore errors from auto-play restrictions
-    });
+    if (audio) {
+      audio.volume = volume;
+      audio.currentTime = 0;
+      audio.play().catch(() => {
+        // Ignore errors from auto-play restrictions
+      });
+    }
 
     this.currentIndex = (this.currentIndex + 1) % this.poolSize;
   }

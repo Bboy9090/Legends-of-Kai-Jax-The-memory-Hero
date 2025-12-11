@@ -28,8 +28,9 @@ export class InputBuffer {
 
   getLastInput(action: InputAction): InputState | undefined {
     for (let i = this.buffer.length - 1; i >= 0; i--) {
-      if (this.buffer[i].action === action) {
-        return this.buffer[i];
+      const input = this.buffer[i];
+      if (input && input.action === action) {
+        return input;
       }
     }
     return undefined;
@@ -44,7 +45,8 @@ export class InputBuffer {
     // Check if sequence matches recent inputs
     for (let i = 0; i < sequence.length; i++) {
       const bufferIndex = recentInputs.length - sequence.length + i;
-      if (recentInputs[bufferIndex].action !== sequence[i]) {
+      const input = recentInputs[bufferIndex];
+      if (!input || input.action !== sequence[i]) {
         return false;
       }
     }

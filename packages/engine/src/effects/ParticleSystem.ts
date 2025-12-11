@@ -45,6 +45,8 @@ export class ParticleSystem {
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const particle = this.particles[i];
       
+      if (!particle) continue;
+      
       // Update lifetime
       particle.lifetime += deltaTime;
       

@@ -49,7 +49,7 @@ export class CooldownTimer {
   private active = false;
 
   start(durationMs: number): void {
-    this.startTime = performance.now();
+    this.startTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
     this.duration = durationMs;
     this.active = true;
   }
@@ -57,7 +57,8 @@ export class CooldownTimer {
   isActive(): boolean {
     if (!this.active) return false;
     
-    const elapsed = performance.now() - this.startTime;
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const elapsed = now - this.startTime;
     if (elapsed >= this.duration) {
       this.active = false;
       return false;
@@ -68,13 +69,15 @@ export class CooldownTimer {
 
   getProgress(): number {
     if (!this.active) return 1;
-    const elapsed = performance.now() - this.startTime;
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const elapsed = now - this.startTime;
     return Math.min(elapsed / this.duration, 1);
   }
 
   getRemainingTime(): number {
     if (!this.active) return 0;
-    const elapsed = performance.now() - this.startTime;
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const elapsed = now - this.startTime;
     return Math.max(this.duration - elapsed, 0);
   }
 
@@ -89,7 +92,7 @@ export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeout: number | undefined;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
 
   return function executedFunction(...args: Parameters<T>) {
     const later = () => {
@@ -98,7 +101,7 @@ export function debounce<T extends (...args: any[]) => any>(
     };
 
     clearTimeout(timeout);
-    timeout = window.setTimeout(later, wait);
+    timeout = setTimeout(later, wait);
   };
 }
 

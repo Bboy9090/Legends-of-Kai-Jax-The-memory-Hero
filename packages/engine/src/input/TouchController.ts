@@ -22,7 +22,9 @@ export class TouchController {
     event.preventDefault();
     
     for (let i = 0; i < event.changedTouches.length; i++) {
-      const touch = event.changedTouches[i];
+      const touch = event.changedTouches.item(i);
+      if (!touch) continue;
+      
       const touchInput: TouchInput = {
         id: touch.identifier,
         position: { x: touch.clientX, y: touch.clientY },
@@ -41,7 +43,9 @@ export class TouchController {
     event.preventDefault();
 
     for (let i = 0; i < event.changedTouches.length; i++) {
-      const touch = event.changedTouches[i];
+      const touch = event.changedTouches.item(i);
+      if (!touch) continue;
+      
       const touchInput = this.touches.get(touch.identifier);
 
       if (touchInput) {
@@ -55,7 +59,9 @@ export class TouchController {
     event.preventDefault();
 
     for (let i = 0; i < event.changedTouches.length; i++) {
-      const touch = event.changedTouches[i];
+      const touch = event.changedTouches.item(i);
+      if (!touch) continue;
+      
       const touchInput = this.touches.get(touch.identifier);
 
       if (touchInput) {
@@ -73,7 +79,10 @@ export class TouchController {
 
   private handleTouchCancel = (event: TouchEvent): void => {
     for (let i = 0; i < event.changedTouches.length; i++) {
-      this.touches.delete(event.changedTouches[i].identifier);
+      const touch = event.changedTouches.item(i);
+      if (touch) {
+        this.touches.delete(touch.identifier);
+      }
     }
   };
 

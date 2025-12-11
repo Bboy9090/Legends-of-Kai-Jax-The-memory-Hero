@@ -102,7 +102,7 @@ export class MathUtils {
     return mod > length ? length * 2 - mod : mod;
   }
 
-  static approximately(a: number, b: number, epsilon = 0.0001): number {
+  static approximately(a: number, b: number, epsilon = 0.0001): boolean {
     return Math.abs(a - b) < epsilon;
   }
 }
