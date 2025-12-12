@@ -42,29 +42,54 @@ pnpm build
 
 ## 📦 Project Structure
 
-```
-smash-heroes/
-├── packages/
-│   ├── engine/          # Core game engine
-│   │   ├── core/        # Game loop, scene management
-│   │   ├── physics/     # Momentum physics, collision
-│   │   ├── combat/      # Combat system, knockback, combos
-│   │   ├── input/       # Unified input (keyboard, gamepad, touch)
-│   │   ├── animation/   # State machine, animation controller
-│   │   ├── effects/     # Screen shake, hitlag, particles
-│   │   └── audio/       # Audio management
-│   ├── characters/      # Fighter system
-│   │   ├── base/        # Base fighter class
-│   │   └── heroes/      # Character implementations
-│   ├── ui/              # React UI components (TODO)
-│   └── shared/          # Shared types, utils, constants
-├── apps/
-│   ├── web/            # Web game application (TODO)
-│   └── mobile/         # Capacitor mobile app (TODO)
-├── assets/             # Game assets (sprites, audio, shaders)
-└── docs/              # Documentation
+This is a modern TypeScript monorepo using pnpm workspaces and Turborepo:
 
 ```
+smash-heroes/
+├── apps/
+│   ├── web/              # Web game (Vite + React + R3F)
+│   │   ├── src/          # Game components, pages
+│   │   ├── public/       # Static assets
+│   │   └── vite.config.ts
+│   └── mobile/           # Mobile app (Capacitor + PWA)
+│       ├── src/          # Mobile-specific code
+│       └── capacitor.config.json
+├── packages/
+│   ├── engine/           # Core game engine
+│   │   ├── core/         # GameLoop (60fps), Scene, AssetLoader
+│   │   ├── physics/      # MomentumPhysics, Hitbox, Collision
+│   │   ├── combat/       # CombatEngine, Damage, Knockback
+│   │   ├── input/        # InputManager, InputBuffer (6-frame)
+│   │   ├── animation/    # StateMachine, AnimationController
+│   │   ├── effects/      # Particles, ScreenEffects
+│   │   └── audio/        # AudioManager, SoundPool
+│   ├── characters/       # Fighter implementations
+│   │   ├── base/         # BaseFighter, MoveSet, StateMachine
+│   │   └── heroes/       # Kaison (Fox), Jaxon (Hedgehog), Kaxon (Fusion), Striker
+│   ├── ui/               # React UI components
+│   │   └── components/   # HUD, BattleUI, VirtualJoystick
+│   ├── server/           # Server-side logic
+│   │   └── missions/     # Mission system (100 missions, 10 books)
+│   └── shared/           # Shared types, utils, constants
+│       ├── types/        # TypeScript types for all systems
+│       ├── constants/    # Game configuration
+│       └── utils/        # Utility functions
+├── assets/
+│   ├── sprites/          # 2D sprite assets
+│   ├── audio/            # Sound effects and music
+│   └── models/           # 3D models (.glb files)
+├── docs/                 # Game design documents
+├── legacy_replit/        # Original Replit prototype files
+├── LEGACY_FILES.md       # File mapping from old → new structure
+└── MIGRATION_LOG.md      # Detailed migration tracking
+```
+
+### 📁 Workspace Structure
+
+- **apps/**: Deployable applications (web, mobile)
+- **packages/**: Reusable packages (engine, characters, ui, etc.)
+- **Monorepo tools**: pnpm (package manager), Turborepo (build orchestration)
+
 
 ## 🎯 Core Features
 
@@ -122,6 +147,38 @@ Unified input handling for all platforms:
 ### Striker - The All-Rounder
 
 Balanced fighter with complete moveset:
+### ⚔️ Playable Characters
+
+#### Kaison 🦊 (Fox)
+**Speed Fighter** - High mobility with quick attacks
+- **Weight**: 80 (Light)
+- **Speed**: 2.4 (Fast runner)
+- **Special**: Fox Blaster, Fox Dash, Fox Fire, Fox Reflector
+- **Playstyle**: Aggressive rushdown with momentum-based combos
+
+#### Jaxon 🦔 (Hedgehog)
+**Speed Demon** - Fastest character with spin attacks
+- **Weight**: 75 (Very light)
+- **Speed**: 3.2 (Fastest)
+- **Special**: Homing Attack, Spin Dash (chargeable), Spring Jump
+- **Playstyle**: Hit-and-run with spin-based multi-hit combos
+
+#### Kaxon ⚡ (Fusion - 3 Tails)
+**Ultimate Form** - Fusion of Kaison and Jaxon
+- **Weight**: 95 (Balanced)
+- **Speed**: 3.5 (Ultimate speed)
+- **Fusion Timer**: 30 seconds
+- **Special**: Fusion Blaster Barrage, Hyper Dash, Triple Tail Tornado
+- **Ultimate**: Chaos Rift (screen-filling attack)
+- **Requires**: 100% Synergy Meter to transform
+
+#### Striker ⚡
+**Balanced Fighter** - All-around balanced moveset
+- **Weight**: 100 (Average)
+- **Speed**: 2.0 (Balanced)
+- **Playstyle**: Versatile with solid fundamentals
+
+### Attack System
 
 **Ground Attacks**
 - Jab Combo (3-hit)
@@ -133,21 +190,27 @@ Balanced fighter with complete moveset:
 - Up Air, Down Air (Spike)
 
 **Special Moves**
-- Neutral Special: Power Shot
+- Neutral Special: Projectile/Power attack
 - Side Special: Dash Strike
-- Up Special: Rising Uppercut (Recovery)
-- Down Special: Counter
+- Up Special: Recovery move
+- Down Special: Counter/Defense
 
-**Grab Game**
-- Grab, Pummel, 4 Throws
+**Tag & Fusion System**
+- Switch between Kaison and Jaxon
+- Build Synergy Meter through combos
+- Transform into Kaxon at 100% meter
+- Cinematic transformation sequence
 
 ## 🛠️ Development
 
-### Monorepo Structure
+### Monorepo Commands
 
 This project uses a pnpm workspace + Turborepo setup:
 
 ```bash
+# Install dependencies
+pnpm install
+
 # Build all packages
 pnpm build
 
@@ -160,8 +223,36 @@ pnpm lint
 # Type checking
 pnpm typecheck
 
+# Run tests
+pnpm test
+
 # Format code
 pnpm format
+```
+
+### Running Specific Apps
+
+```bash
+# Start web app
+pnpm --filter @smash-heroes/web dev
+
+# Start mobile app
+pnpm --filter @smash-heroes/mobile dev
+
+# Build specific package
+pnpm --filter @smash-heroes/engine build
+```
+
+### DevContainer
+
+Open in GitHub Codespaces or VS Code with Remote Containers:
+
+```bash
+# The devcontainer includes:
+# - Node.js 20 LTS
+# - pnpm 8+
+# - TypeScript, ESLint, Prettier extensions
+# - Auto-format on save
 ```
 
 ### Adding a New Character
