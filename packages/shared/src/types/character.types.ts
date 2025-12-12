@@ -129,3 +129,15 @@ export interface FighterConfig {
   stats: Omit<FighterStats, 'currentDamage' | 'lives' | 'ultimateMeter'>;
   moveSet: MoveSet;
 }
+
+/**
+ * Simplified fighter data for UI display
+ */
+export interface FighterDisplayState {
+  name: string;
+  health: number;
+  maxHealth: number;
+  damage: number;
+  stocks?: number;
+  ultimateMeter?: number;
+}
