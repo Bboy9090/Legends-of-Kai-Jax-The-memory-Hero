@@ -66,20 +66,20 @@ export class GamepadController {
 
       this.state.buttons.set(index, isPressed);
 
+      const action = this.buttonBindings.get(index);
+
       // Emit events on state change
-      if (isPressed && !wasPressed) {
-        const action = this.buttonBindings.get(index);
-        if (action) {
-          const inputState: InputState = {
-            action,
-            pressed: true,
-            held: false,
-            released: false,
-            timestamp: performance.now(),
-            duration: 0,
-          };
-          this.notifyListeners(inputState);
-        }
+      if (action && isPressed !== wasPressed) {
+        const inputState: InputState = {
+          action,
+          pressed: isPressed && !wasPressed,
+          held: false,
+          released: !isPressed && wasPressed,
+          timestamp: performance.now(),
+          duration: 0,
+        };
+
+        this.notifyListeners(inputState);
       }
     });
 
