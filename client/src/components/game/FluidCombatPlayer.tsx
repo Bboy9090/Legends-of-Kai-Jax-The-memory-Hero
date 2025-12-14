@@ -6,7 +6,7 @@ import { useFluidCombat, COMBO_MOVES, AttackType, getMovementProfile } from '../
 import { Character, CharacterRole } from '../../lib/roster';
 
 // Import GLB character model loader
-import GLBCharacterModel, { getModelPath } from './GLBCharacterModel';
+import GLBCharacterModel, { getModelPath } from './models/GLBCharacterModel';
 
 const ROLE_COLORS: Record<CharacterRole, string> = {
   'Vanguard': '#ef4444',
@@ -52,7 +52,7 @@ enum Controls {
 
 export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCombatPlayerProps) {
   const meshRef = useRef<THREE.Group>(null);
-  const bodyRef = useRef<THREE.Group>(null);
+  const bodyRef = useRef<THREE.Group>(null!);
   const headRef = useRef<THREE.Group>(null);
   const leftArmRef = useRef<THREE.Group>(null);
   const rightArmRef = useRef<THREE.Group>(null);
