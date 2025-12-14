@@ -75,7 +75,10 @@ export const CHARACTER_MODEL_PATHS: Record<string, string> = {
   'waluigi': '/models/waluigi_hero.glb',
   'littlemac': '/models/littlemac_hero.glb',
   'little_mac': '/models/littlemac_hero.glb',
-  'shulk': '/models/shulk_hero.glb'
+  'shulk': '/models/shulk_hero.glb',
+  'kaison': '/models/kaison_hero.glb',
+  'jaxon': '/models/jaxon_hero.glb',
+  'kaxon': '/models/kaxon_hero.glb'
 };
 
 export function hasGLBModel(characterId: string): boolean {
