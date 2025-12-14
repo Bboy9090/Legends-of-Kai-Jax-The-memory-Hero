@@ -1,20 +1,27 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  * {
-    @apply border-border;
-  }
+:root {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --radius: 0.5rem;
+}
 
-  body {
-    @apply font-sans antialiased bg-background text-foreground;
-    margin: 0;
-    padding: 0;
-    overflow: auto;
-    width: 100vw;
-    min-height: 100vh;
-  }
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  width: 100vw;
+  min-height: 100vh;
 }
 
 #root {
