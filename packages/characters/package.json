@@ -1,0 +1,26 @@
+{
+  "name": "@smash-heroes/characters",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@smash-heroes/shared": "workspace:*",
+    "@smash-heroes/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
