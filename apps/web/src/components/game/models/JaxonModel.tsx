@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { Group } from "three";
+import { EnergyAura, GlowOutline, DynamicShadow } from "../EnhancedGraphics";
 
 interface JaxonModelProps {
   bodyRef: React.RefObject<Group>;
@@ -40,10 +41,13 @@ export default function JaxonModel({
   
   return (
     <group ref={bodyRef} position={[0, 0.4, 0]}>
+      {/* Dynamic shadow that follows character */}
+      <DynamicShadow characterY={0.4} groundY={-0.4} maxDistance={3} />
+      
       {/* HEAD GROUP */}
       <group ref={headRef} position={[0, 0.6, 0]}>
         {/* ICONIC RED CAP */}
-        <mesh position={[0, 0.2, 0]} castShadow>
+        <mesh position={[0, 0.2, 0]} castShadow receiveShadow>
           <sphereGeometry args={[0.55, 32, 24, 0, Math.PI * 2, 0, Math.PI / 2]} />
           <meshToonMaterial 
             color={primaryColor}
@@ -53,7 +57,7 @@ export default function JaxonModel({
         </mesh>
         
         {/* Cap brim */}
-        <mesh position={[0, 0.15, 0.4]} rotation={[-Math.PI / 12, 0, 0]} castShadow>
+        <mesh position={[0, 0.15, 0.4]} rotation={[-Math.PI / 12, 0, 0]} castShadow receiveShadow>
           <cylinderGeometry args={[0.5, 0.55, 0.08, 32]} />
           <meshToonMaterial 
             color={primaryColor}
@@ -63,11 +67,11 @@ export default function JaxonModel({
         </mesh>
         
         {/* "J" Emblem on cap */}
-        <mesh position={[0, 0.25, 0.5]} castShadow>
+        <mesh position={[0, 0.25, 0.5]} castShadow receiveShadow>
           <circleGeometry args={[0.15, 32]} />
           <meshBasicMaterial color="#FFFFFF" />
         </mesh>
-        <mesh position={[0, 0.25, 0.51]} castShadow>
+        <mesh position={[0, 0.25, 0.51]} castShadow receiveShadow>
           <boxGeometry args={[0.08, 0.18, 0.02]} />
           <meshBasicMaterial color={primaryColor} />
         </mesh>
@@ -91,7 +95,7 @@ export default function JaxonModel({
         ))}
         
         {/* Side quills - Angular and sharp! */}
-        <mesh position={[-0.52, 0.10, -0.25]} rotation={[0, -Math.PI / 6, -Math.PI / 2.2]} castShadow>
+        <mesh position={[-0.52, 0.10, -0.25]} rotation={[0, -Math.PI / 6, -Math.PI / 2.2]} castShadow receiveShadow>
           <coneGeometry args={[0.14, 0.60, 6]} />
           <meshToonMaterial 
             color={secondaryColor}
@@ -99,7 +103,7 @@ export default function JaxonModel({
             emissiveIntensity={0.25 + emotionIntensity * 0.5}
           />
         </mesh>
-        <mesh position={[0.52, 0.10, -0.25]} rotation={[0, Math.PI / 6, Math.PI / 2.2]} castShadow>
+        <mesh position={[0.52, 0.10, -0.25]} rotation={[0, Math.PI / 6, Math.PI / 2.2]} castShadow receiveShadow>
           <coneGeometry args={[0.14, 0.60, 6]} />
           <meshToonMaterial 
             color={secondaryColor}
@@ -109,7 +113,7 @@ export default function JaxonModel({
         </mesh>
         
         {/* HEDGEHOG EARS - Darker, edgier */}
-        <mesh position={[-0.35, 0.28, 0.12]} rotation={[0, -Math.PI / 6, Math.PI / 6]} castShadow>
+        <mesh position={[-0.35, 0.28, 0.12]} rotation={[0, -Math.PI / 6, Math.PI / 6]} castShadow receiveShadow>
           <sphereGeometry args={[0.18, 16, 12]} />
           <meshToonMaterial 
             color={secondaryColor}
@@ -117,7 +121,7 @@ export default function JaxonModel({
             emissiveIntensity={0.2}
           />
         </mesh>
-        <mesh position={[0.35, 0.28, 0.12]} rotation={[0, Math.PI / 6, -Math.PI / 6]} castShadow>
+        <mesh position={[0.35, 0.28, 0.12]} rotation={[0, Math.PI / 6, -Math.PI / 6]} castShadow receiveShadow>
           <sphereGeometry args={[0.18, 16, 12]} />
           <meshToonMaterial 
             color={secondaryColor}
@@ -126,29 +130,29 @@ export default function JaxonModel({
           />
         </mesh>
         {/* Inner ear - dark red */}
-        <mesh position={[-0.35, 0.28, 0.17]} rotation={[0, -Math.PI / 6, Math.PI / 6]} castShadow>
+        <mesh position={[-0.35, 0.28, 0.17]} rotation={[0, -Math.PI / 6, Math.PI / 6]} castShadow receiveShadow>
           <sphereGeometry args={[0.10, 12, 10]} />
           <meshToonMaterial color="#8B0000" />
         </mesh>
-        <mesh position={[0.35, 0.28, 0.17]} rotation={[0, Math.PI / 6, -Math.PI / 6]} castShadow>
+        <mesh position={[0.35, 0.28, 0.17]} rotation={[0, Math.PI / 6, -Math.PI / 6]} castShadow receiveShadow>
           <sphereGeometry args={[0.10, 12, 10]} />
           <meshToonMaterial color="#8B0000" />
         </mesh>
         
         {/* Face - tan/peach skin tone */}
-        <mesh position={[0, -0.05, 0.25]} castShadow>
+        <mesh position={[0, -0.05, 0.25]} castShadow receiveShadow>
           <sphereGeometry args={[0.35, 32, 24, 0, Math.PI * 2, Math.PI / 4, Math.PI / 2]} />
           <meshToonMaterial color="#FDBCB4" />
         </mesh>
         
         {/* INTENSE GLOWING EYES - Shadow's red eyes + determination */}
-        <mesh position={[-0.12, 0.05, 0.48]} castShadow>
+        <mesh position={[-0.12, 0.05, 0.48]} castShadow receiveShadow>
           <sphereGeometry args={[0.08, 16, 12]} />
           <meshBasicMaterial 
             color={hitAnim > 0 ? "#FF0000" : "#8B4513"}
           />
         </mesh>
-        <mesh position={[0.12, 0.05, 0.48]} castShadow>
+        <mesh position={[0.12, 0.05, 0.48]} castShadow receiveShadow>
           <sphereGeometry args={[0.08, 16, 12]} />
           <meshBasicMaterial 
             color={hitAnim > 0 ? "#FF0000" : "#8B4513"}
@@ -178,7 +182,7 @@ export default function JaxonModel({
         )}
         
         {/* Mario-style mustache */}
-        <mesh position={[0, -0.08, 0.48]} castShadow>
+        <mesh position={[0, -0.08, 0.48]} castShadow receiveShadow>
           <boxGeometry args={[0.25, 0.05, 0.08]} />
           <meshToonMaterial color={secondaryColor} />
         </mesh>
@@ -199,7 +203,7 @@ export default function JaxonModel({
       </group>
       
       {/* BODY - Mario's overalls with Shadow's edgy style */}
-      <mesh position={[0, -0.1, 0]} castShadow>
+      <mesh position={[0, -0.1, 0]} castShadow receiveShadow>
         <boxGeometry args={[0.7, 0.9, 0.5]} />
         <meshToonMaterial 
           color="#0047AB"
@@ -209,17 +213,17 @@ export default function JaxonModel({
       </mesh>
       
       {/* Overalls straps */}
-      <mesh position={[-0.15, 0.2, 0.26]} castShadow>
+      <mesh position={[-0.15, 0.2, 0.26]} castShadow receiveShadow>
         <boxGeometry args={[0.12, 0.5, 0.02]} />
         <meshToonMaterial color="#0047AB" />
       </mesh>
-      <mesh position={[0.15, 0.2, 0.26]} castShadow>
+      <mesh position={[0.15, 0.2, 0.26]} castShadow receiveShadow>
         <boxGeometry args={[0.12, 0.5, 0.02]} />
         <meshToonMaterial color="#0047AB" />
       </mesh>
       
       {/* Gold buckles on straps */}
-      <mesh position={[-0.15, 0.3, 0.27]} castShadow>
+      <mesh position={[-0.15, 0.3, 0.27]} castShadow receiveShadow>
         <boxGeometry args={[0.14, 0.08, 0.02]} />
         <meshToonMaterial 
           color={accentColor}
@@ -227,7 +231,7 @@ export default function JaxonModel({
           emissiveIntensity={0.6}
         />
       </mesh>
-      <mesh position={[0.15, 0.3, 0.27]} castShadow>
+      <mesh position={[0.15, 0.3, 0.27]} castShadow receiveShadow>
         <boxGeometry args={[0.14, 0.08, 0.02]} />
         <meshToonMaterial 
           color={accentColor}
@@ -237,13 +241,13 @@ export default function JaxonModel({
       </mesh>
       
       {/* Red shirt under overalls */}
-      <mesh position={[0, 0.15, 0.25]} castShadow>
+      <mesh position={[0, 0.15, 0.25]} castShadow receiveShadow>
         <boxGeometry args={[0.55, 0.35, 0.02]} />
         <meshToonMaterial color={primaryColor} />
       </mesh>
       
       {/* Power emblem - fusion symbol */}
-      <mesh position={[0, 0, 0.27]} castShadow>
+      <mesh position={[0, 0, 0.27]} castShadow receiveShadow>
         <sphereGeometry args={[0.15, 16, 12]} />
         <meshBasicMaterial 
           color={glowColor}
@@ -251,11 +255,11 @@ export default function JaxonModel({
       </mesh>
       
       {/* Belt */}
-      <mesh position={[0, -0.5, 0]} castShadow>
+      <mesh position={[0, -0.5, 0]} castShadow receiveShadow>
         <boxGeometry args={[0.75, 0.12, 0.52]} />
         <meshToonMaterial color={secondaryColor} />
       </mesh>
-      <mesh position={[0, -0.5, 0.27]} castShadow>
+      <mesh position={[0, -0.5, 0.27]} castShadow receiveShadow>
         <boxGeometry args={[0.18, 0.15, 0.02]} />
         <meshToonMaterial 
           color={accentColor}
@@ -267,22 +271,22 @@ export default function JaxonModel({
       {/* ARMS - WHITE GLOVES (iconic!) */}
       <group ref={leftArmRef} position={[-0.5, 0.1, 0]}>
         {/* Shoulder */}
-        <mesh position={[0, 0.1, 0]} castShadow>
+        <mesh position={[0, 0.1, 0]} castShadow receiveShadow>
           <sphereGeometry args={[0.20, 16, 12]} />
           <meshToonMaterial color={primaryColor} />
         </mesh>
         {/* Upper arm - red shirt */}
-        <mesh position={[0, -0.2, 0]} castShadow>
+        <mesh position={[0, -0.2, 0]} castShadow receiveShadow>
           <capsuleGeometry args={[0.11, 0.35, 12, 16]} />
           <meshToonMaterial color={primaryColor} />
         </mesh>
         {/* Forearm */}
-        <mesh position={[0, -0.55, 0]} castShadow>
+        <mesh position={[0, -0.55, 0]} castShadow receiveShadow>
           <capsuleGeometry args={[0.10, 0.35, 12, 16]} />
           <meshToonMaterial color="#FDBCB4" />
         </mesh>
         {/* WHITE GLOVE */}
-        <mesh position={[0, -0.85, 0]} castShadow>
+        <mesh position={[0, -0.85, 0]} castShadow receiveShadow>
           <boxGeometry args={[0.22, 0.28, 0.20]} />
           <meshToonMaterial 
             color="#FFFFFF"
@@ -291,7 +295,7 @@ export default function JaxonModel({
           />
         </mesh>
         {/* Glove cuff */}
-        <mesh position={[0, -0.72, 0]} castShadow>
+        <mesh position={[0, -0.72, 0]} castShadow receiveShadow>
           <cylinderGeometry args={[0.13, 0.11, 0.08, 16]} />
           <meshToonMaterial color="#FFFFFF" />
         </mesh>
@@ -299,22 +303,22 @@ export default function JaxonModel({
       
       <group ref={rightArmRef} position={[0.5, 0.1, 0]}>
         {/* Shoulder */}
-        <mesh position={[0, 0.1, 0]} castShadow>
+        <mesh position={[0, 0.1, 0]} castShadow receiveShadow>
           <sphereGeometry args={[0.20, 16, 12]} />
           <meshToonMaterial color={primaryColor} />
         </mesh>
         {/* Upper arm */}
-        <mesh position={[0, -0.2, 0]} castShadow>
+        <mesh position={[0, -0.2, 0]} castShadow receiveShadow>
           <capsuleGeometry args={[0.11, 0.35, 12, 16]} />
           <meshToonMaterial color={primaryColor} />
         </mesh>
         {/* Forearm */}
-        <mesh position={[0, -0.55, 0]} castShadow>
+        <mesh position={[0, -0.55, 0]} castShadow receiveShadow>
           <capsuleGeometry args={[0.10, 0.35, 12, 16]} />
           <meshToonMaterial color="#FDBCB4" />
         </mesh>
         {/* WHITE GLOVE */}
-        <mesh position={[0, -0.85, 0]} castShadow>
+        <mesh position={[0, -0.85, 0]} castShadow receiveShadow>
           <boxGeometry args={[0.22, 0.28, 0.20]} />
           <meshToonMaterial 
             color="#FFFFFF"
@@ -323,7 +327,7 @@ export default function JaxonModel({
           />
         </mesh>
         {/* Glove cuff */}
-        <mesh position={[0, -0.72, 0]} castShadow>
+        <mesh position={[0, -0.72, 0]} castShadow receiveShadow>
           <cylinderGeometry args={[0.13, 0.11, 0.08, 16]} />
           <meshToonMaterial color="#FFFFFF" />
         </mesh>
@@ -332,22 +336,22 @@ export default function JaxonModel({
       {/* LEGS - Blue overalls */}
       <group ref={leftLegRef} position={[-0.2, -0.7, 0]}>
         {/* Thigh */}
-        <mesh position={[0, -0.05, 0]} castShadow>
+        <mesh position={[0, -0.05, 0]} castShadow receiveShadow>
           <capsuleGeometry args={[0.14, 0.5, 12, 16]} />
           <meshToonMaterial color="#0047AB" />
         </mesh>
         {/* Knee */}
-        <mesh position={[0, -0.35, 0]} castShadow>
+        <mesh position={[0, -0.35, 0]} castShadow receiveShadow>
           <sphereGeometry args={[0.16, 16, 12]} />
           <meshToonMaterial color="#0047AB" />
         </mesh>
         {/* Lower leg */}
-        <mesh position={[0, -0.65, 0]} castShadow>
+        <mesh position={[0, -0.65, 0]} castShadow receiveShadow>
           <capsuleGeometry args={[0.13, 0.45, 12, 16]} />
           <meshToonMaterial color="#0047AB" />
         </mesh>
         {/* ICONIC RED BOOT with gold accents */}
-        <mesh position={[0, -1.0, 0.12]} castShadow>
+        <mesh position={[0, -1.0, 0.12]} castShadow receiveShadow>
           <boxGeometry args={[0.32, 0.38, 0.55]} />
           <meshToonMaterial 
             color={primaryColor}
@@ -356,12 +360,12 @@ export default function JaxonModel({
           />
         </mesh>
         {/* Boot sole */}
-        <mesh position={[0, -1.19, 0.15]} castShadow>
+        <mesh position={[0, -1.19, 0.15]} castShadow receiveShadow>
           <boxGeometry args={[0.34, 0.05, 0.60]} />
           <meshToonMaterial color={secondaryColor} />
         </mesh>
         {/* Gold trim */}
-        <mesh position={[0, -0.95, 0.12]} castShadow>
+        <mesh position={[0, -0.95, 0.12]} castShadow receiveShadow>
           <cylinderGeometry args={[0.17, 0.17, 0.08, 16]} />
           <meshToonMaterial 
             color={accentColor}
@@ -373,22 +377,22 @@ export default function JaxonModel({
       
       <group ref={rightLegRef} position={[0.2, -0.7, 0]}>
         {/* Thigh */}
-        <mesh position={[0, -0.05, 0]} castShadow>
+        <mesh position={[0, -0.05, 0]} castShadow receiveShadow>
           <capsuleGeometry args={[0.14, 0.5, 12, 16]} />
           <meshToonMaterial color="#0047AB" />
         </mesh>
         {/* Knee */}
-        <mesh position={[0, -0.35, 0]} castShadow>
+        <mesh position={[0, -0.35, 0]} castShadow receiveShadow>
           <sphereGeometry args={[0.16, 16, 12]} />
           <meshToonMaterial color="#0047AB" />
         </mesh>
         {/* Lower leg */}
-        <mesh position={[0, -0.65, 0]} castShadow>
+        <mesh position={[0, -0.65, 0]} castShadow receiveShadow>
           <capsuleGeometry args={[0.13, 0.45, 12, 16]} />
           <meshToonMaterial color="#0047AB" />
         </mesh>
         {/* ICONIC RED BOOT */}
-        <mesh position={[0, -1.0, 0.12]} castShadow>
+        <mesh position={[0, -1.0, 0.12]} castShadow receiveShadow>
           <boxGeometry args={[0.32, 0.38, 0.55]} />
           <meshToonMaterial 
             color={primaryColor}
@@ -397,12 +401,12 @@ export default function JaxonModel({
           />
         </mesh>
         {/* Boot sole */}
-        <mesh position={[0, -1.19, 0.15]} castShadow>
+        <mesh position={[0, -1.19, 0.15]} castShadow receiveShadow>
           <boxGeometry args={[0.34, 0.05, 0.60]} />
           <meshToonMaterial color={secondaryColor} />
         </mesh>
         {/* Gold trim */}
-        <mesh position={[0, -0.95, 0.12]} castShadow>
+        <mesh position={[0, -0.95, 0.12]} castShadow receiveShadow>
           <cylinderGeometry args={[0.17, 0.17, 0.08, 16]} />
           <meshToonMaterial 
             color={accentColor}
@@ -422,6 +426,22 @@ export default function JaxonModel({
           depthWrite={false}
         />
       </mesh>
+      
+      {/* Enhanced Energy Aura for high emotion states */}
+      <EnergyAura 
+        scale={1.2}
+        color={glowColor}
+        intensity={emotionIntensity}
+      />
+      
+      {/* Enhanced Glow Outline when attacking or emotional */}
+      {(isAttacking || emotionIntensity > 0.5) && (
+        <GlowOutline 
+          scale={1.1}
+          color={isAttacking ? accentColor : glowColor}
+          intensity={isAttacking ? 1.0 : emotionIntensity}
+        />
+      )}
       
       {/* Invulnerability flash */}
       {isInvulnerable && (
