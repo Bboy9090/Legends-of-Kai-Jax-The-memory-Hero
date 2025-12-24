@@ -184,7 +184,10 @@ export class TransformationSystem {
   }
 
   /**
-   * Get remaining time for active transformation (in seconds)
+   * Get remaining time for active transformation
+   * Note: Internal time tracking is in milliseconds, but this returns seconds for easier UI display
+   * @param entityId - The entity to check
+   * @returns Remaining time in seconds (or Infinity if no time limit)
    */
   getRemainingTime(entityId: string): number {
     const transformationId = this.activeTransformations.get(entityId);
@@ -194,16 +197,20 @@ export class TransformationSystem {
     const state = this.transformationStates.get(key);
     
     if (!state || state.timeRemaining === Infinity) return Infinity;
-    return state.timeRemaining / 1000; // Convert to seconds
+    return state.timeRemaining / 1000; // Convert milliseconds to seconds for display
   }
 
   /**
-   * Get cooldown remaining (in seconds)
+   * Get cooldown remaining
+   * Note: Internal time tracking is in milliseconds, but this returns seconds for easier UI display
+   * @param entityId - The entity to check
+   * @param transformationId - The transformation to check
+   * @returns Cooldown remaining in seconds
    */
   getCooldownRemaining(entityId: string, transformationId: string): number {
     const key = `${entityId}_${transformationId}`;
     const state = this.transformationStates.get(key);
-    return state ? state.cooldownTimer / 1000 : 0;
+    return state ? state.cooldownTimer / 1000 : 0; // Convert milliseconds to seconds for display
   }
 
   /**
@@ -225,6 +232,11 @@ export class TransformationSystem {
 /**
  * Omega Protocol: Transformation Definition
  * Defines everything that changes during transformation
+ * 
+ * TIME UNIT CONVENTION:
+ * - All duration/cooldown values are in MILLISECONDS (internal storage)
+ * - Public getters convert to SECONDS for UI convenience
+ * - deltaTime updates expect MILLISECONDS
  */
 export interface TransformationDefinition {
   id: string;
