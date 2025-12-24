@@ -388,8 +388,23 @@ export class TacticalAI {
 
   private getRandomBehavior(): AIBehavior {
     const behaviors = Object.values(AIBehavior);
+    if (behaviors.length === 0) return AIBehavior.ASSESS;
     const randomIndex = Math.floor(Math.random() * behaviors.length);
     return behaviors[randomIndex] ?? AIBehavior.ASSESS;
+  }
+
+  /**
+   * Check if a fighter is AI-controlled
+   */
+  isAIControlled(fighterId: string): boolean {
+    return this.aiStates.has(fighterId);
+  }
+
+  /**
+   * Get AI state for a fighter (for debugging)
+   */
+  getAIState(fighterId: string): AIState | undefined {
+    return this.aiStates.get(fighterId);
   }
 }
 

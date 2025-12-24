@@ -218,7 +218,10 @@ export class CharacterArchetype {
       'Counter Puncher',
     ];
     
-    const index = (this.lifePath + Object.values(ZodiacSign).indexOf(this.zodiac)) % styles.length;
+    const zodiacIndex = Object.values(ZodiacSign).indexOf(this.zodiac);
+    const index = zodiacIndex >= 0 
+      ? (this.lifePath + zodiacIndex) % styles.length
+      : this.lifePath % styles.length;
     return styles[index] ?? 'Balanced All-Rounder';
   }
 
