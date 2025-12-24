@@ -1,11 +1,13 @@
 import { Vector2D, RigidBody, PhysicsConfig, Platform } from '@smash-heroes/shared';
 import { Vec2, PHYSICS_CONSTANTS } from '@smash-heroes/shared';
+import { GravityCurve } from './GravityCurve';
 
 export class MomentumPhysics {
   private config: PhysicsConfig;
   private coyoteTimeCounter = 0;
   private jumpBufferCounter = 0;
   private lastGroundedPosition: Vector2D = { x: 0, y: 0 };
+  private gravityCurve: GravityCurve;
 
   constructor(config?: Partial<PhysicsConfig>) {
     this.config = {
@@ -18,15 +20,21 @@ export class MomentumPhysics {
       jumpBufferTime: PHYSICS_CONSTANTS.JUMP_BUFFER_FRAMES,
       ...config,
     };
+    
+    // Initialize variable gravity curves for legendary jump feel
+    this.gravityCurve = new GravityCurve({
+      baseGravity: this.config.gravity,
+    });
   }
 
   update(body: RigidBody, inputs: PhysicsInputs, platforms: Platform[]): void {
     // Track grounded state
     const wasGrounded = body.isGrounded;
     
-    // Apply gravity
+    // Apply variable gravity (snappy ascent, weighted descent)
     if (!body.isGrounded) {
-      body.velocity.y += this.config.gravity;
+      // Use variable gravity curve instead of static gravity
+      this.gravityCurve.applyVariableGravity(body, inputs.jump);
       
       // Apply fast fall
       if (inputs.fastFall && body.velocity.y > 0) {
