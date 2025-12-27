@@ -2,12 +2,12 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-    content: [
-    "./apps/web/index.html",
-    "./apps/web/src/**/*.{js,ts,jsx,tsx}",
-    "./packages/ui/**/*.{js,ts,jsx,tsx}",
-    "./packages/shared/**/*.{js,ts,jsx,tsx}",
-    "./packages/engine/**/*.{js,ts,jsx,tsx}"
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "../../packages/ui/**/*.{js,ts,jsx,tsx}",
+    "../../packages/shared/**/*.{js,ts,jsx,tsx}",
+    "../../packages/engine/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
     extend: {
@@ -70,20 +70,12 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {
@@ -94,4 +86,3 @@ export default {
   },
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 } satisfies Config;
-
