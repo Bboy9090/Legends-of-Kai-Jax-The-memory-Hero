@@ -1,0 +1,21 @@
+---
+name: "Foundation Task"
+about: "Define a new foundational feature or architecture task."
+title: "[Foundation] Title Here"
+labels:
+  - "type:foundation"
+  - "P1-next"
+br_table:
+  - Guide/standards: "[Production Bible](../docs/production-bible.md)"
+---
+### Description
+Provide a clear and concise description of the foundational task.
+
+### Why is this needed?
+Explain the needs or value for this task in the project.
+
+### Scope of Work
+List each action item to be considered `Done`. Include things to exclude explicitly!
+
+### Dependencies?
+Would another sub-system or interface block this issue?
