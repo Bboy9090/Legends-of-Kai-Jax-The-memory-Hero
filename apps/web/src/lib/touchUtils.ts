@@ -21,6 +21,7 @@ export class TouchManager {
   handleTouchStart = (event: TouchEvent) => {
     event.preventDefault();
     const touch = event.touches[0];
+    if (!touch) return;
     this.touchStart = {
       x: touch.clientX,
       y: touch.clientY,
@@ -33,6 +34,7 @@ export class TouchManager {
     if (!this.touchStart) return;
     
     const touch = event.changedTouches[0];
+    if (!touch) return;
     const endX = touch.clientX;
     const endY = touch.clientY;
     const duration = Date.now() - this.touchStart.time;
