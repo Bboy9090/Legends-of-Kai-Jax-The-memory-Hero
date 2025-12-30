@@ -270,7 +270,7 @@ export const fighterDialogue: Record<string, Dialogue> = {
 
 // Get random dialogue from array
 export function getRandomDialogue(dialogues: string[]): string {
-  return dialogues[Math.floor(Math.random() * dialogues.length)];
+  return dialogues[Math.floor(Math.random() * dialogues.length)] || '';
 }
 
 // Get pre-fight taunt for a fighter
