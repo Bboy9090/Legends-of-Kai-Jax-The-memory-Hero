@@ -9,8 +9,8 @@
 
 export class KineticEngine {
   constructor(config = {}) {
-    // Physics constants
-    this.gravity = config.gravity || 9.8;
+    // Physics constants (Bronx Standard: g=18.0 for heavyweight feel)
+    this.gravity = config.gravity || 18.0;
     this.maxFallSpeed = config.maxFallSpeed || 12;
     this.airFriction = config.airFriction || 0.95;
     this.groundFriction = config.groundFriction || 0.85;
