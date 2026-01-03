@@ -1,0 +1,76 @@
+{
+  "name": "Beast-Kin Sovereignty: Genesis - Aeterna Covenant",
+  "short_name": "Aeterna Genesis",
+  "description": "PROJECT OMEGA: The Memory King's journey through the 9-book saga. Books 1-3: The Legends Era. Kai-Jax, Lunara Solis, and Umbra-Flux fight to save the Beast-Kin Sovereignty from the Architect's void.",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#050505",
+  "theme_color": "#ffbf00",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "games",
+    "action",
+    "fighting"
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/gameplay-1.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "label": "Kai-Jax vs Chronos Sere - Final Boss Battle"
+    },
+    {
+      "src": "/screenshots/saga-mode.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "label": "Saga Mode Launcher - Books 1-3 Chapter Select"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Saga Mode",
+      "short_name": "Story",
+      "description": "Begin the 9-book saga journey",
+      "url": "/saga-mode",
+      "icons": [
+        {
+          "src": "/icons/saga-mode-icon.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Versus Mode",
+      "short_name": "Versus",
+      "description": "1v1 Beast-Kin combat",
+      "url": "/versus",
+      "icons": [
+        {
+          "src": "/icons/versus-icon.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "lang": "en-US",
+  "dir": "ltr"
+}

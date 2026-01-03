@@ -1,0 +1,441 @@
+/* 🏛️ BRONX GRIT - THE AETERNA COVENANT VISUAL SYSTEM
+ * Version 1.3.0 - Genesis
+ * Project Omega: Absolute Cinematic Polish
+ */
+
+/* ============================================================================
+   COLOR PALETTE (THE COVENANT COLORS)
+   ============================================================================ */
+:root {
+  /* Primary Colors */
+  --amber: #ffbf00;
+  --cyan: #00f2ff;
+  --void: #050505;
+  --matte: #111111;
+  
+  /* Secondary Colors */
+  --red-vitality: #dc2626;
+  --red-dread: #ef4444;
+  --gold-resonance: #fbbf24;
+  --silver-moon: #e5e7eb;
+  
+  /* Grit Textures */
+  --asphalt-grit: rgba(0, 0, 0, 0.08);
+  --concrete-overlay: rgba(15, 15, 15, 0.12);
+  
+  /* Shadows & Glows */
+  --amber-glow: 0 0 20px rgba(255, 191, 0, 0.6);
+  --cyan-glow: 0 0 20px rgba(0, 242, 255, 0.8);
+  --red-glow: 0 0 15px rgba(220, 38, 38, 0.7);
+  
+  /* Typography */
+  --font-mono: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+  --font-display: 'Inter', 'Arial', sans-serif;
+}
+
+/* ============================================================================
+   GLOBAL RESET & BASE STYLES
+   ============================================================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--void);
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================================
+   GRIT FILTER (0.8 OPACITY ASPHALT TEXTURE)
+   ============================================================================ */
+.grit-filter {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="400" height="400" filter="url(%23noise)" opacity="0.3"/></svg>');
+  background-repeat: repeat;
+  z-index: 9999;
+  mix-blend-mode: multiply;
+}
+
+.grit-filter::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 50%,
+    transparent 100%
+  );
+  animation: grit-scan 8s linear infinite;
+}
+
+@keyframes grit-scan {
+  0%, 100% { transform: translateY(-100%); }
+  50% { transform: translateY(100%); }
+}
+
+/* ============================================================================
+   BRONX SHAKE ANIMATIONS (HIT-STOP VISUAL FEEDBACK)
+   ============================================================================ */
+@keyframes grit-shake-mild {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-1px, 1px); }
+  50% { transform: translate(1px, -1px); }
+  75% { transform: translate(-1px, -1px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes grit-shake-intense {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-2px, 2px) rotate(-0.5deg); }
+  20% { transform: translate(2px, -2px) rotate(0.5deg); }
+  30% { transform: translate(-3px, 3px) rotate(-1deg); }
+  40% { transform: translate(3px, -3px) rotate(1deg); }
+  50% { transform: translate(-2px, 2px) rotate(-0.5deg); }
+  60% { transform: translate(2px, -2px) rotate(0.5deg); }
+  70% { transform: translate(-1px, 1px) rotate(-0.25deg); }
+  80% { transform: translate(1px, -1px) rotate(0.25deg); }
+  90% { transform: translate(-1px, -1px) rotate(0deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.shake-mild {
+  animation: grit-shake-mild 0.1s ease-in-out;
+}
+
+.shake-intense {
+  animation: grit-shake-intense 0.15s ease-in-out;
+}
+
+/* ============================================================================
+   DREAD SYSTEM VISUAL FILTERS (80%+ THRESHOLD)
+   ============================================================================ */
+.dread-active {
+  position: relative;
+}
+
+.dread-active::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at center,
+    transparent 30%,
+    rgba(220, 38, 38, 0.15) 100%
+  );
+  animation: dread-pulse 2s ease-in-out infinite;
+  z-index: 9998;
+}
+
+@keyframes dread-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.dread-filter-blur {
+  filter: blur(1px) saturate(0.6);
+}
+
+.dread-chromatic {
+  position: relative;
+}
+
+.dread-chromatic::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  mix-blend-mode: screen;
+  animation: chromatic-aberration 0.3s ease-in-out infinite;
+}
+
+@keyframes chromatic-aberration {
+  0% { transform: translate(0, 0); filter: hue-rotate(0deg); }
+  33% { transform: translate(-2px, 0); filter: hue-rotate(120deg); }
+  66% { transform: translate(2px, 0); filter: hue-rotate(240deg); }
+  100% { transform: translate(0, 0); filter: hue-rotate(360deg); }
+}
+
+/* ============================================================================
+   RESONANCE GLOW EFFECTS
+   ============================================================================ */
+.resonance-glow {
+  box-shadow: var(--cyan-glow);
+  animation: resonance-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes resonance-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 10px rgba(0, 242, 255, 0.4);
+    filter: brightness(1);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(0, 242, 255, 0.8);
+    filter: brightness(1.2);
+  }
+}
+
+.vitality-glow {
+  box-shadow: var(--red-glow);
+}
+
+.amber-glow {
+  box-shadow: var(--amber-glow);
+  text-shadow: 0 0 10px rgba(255, 191, 0, 0.8);
+}
+
+/* ============================================================================
+   HIT-STOP FREEZE FRAME EFFECT
+   ============================================================================ */
+.hit-stop-freeze {
+  animation: hit-stop-flash 0.08s ease-out;
+}
+
+@keyframes hit-stop-flash {
+  0% { 
+    filter: brightness(2) contrast(1.5);
+    transform: scale(1.02);
+  }
+  100% { 
+    filter: brightness(1) contrast(1);
+    transform: scale(1);
+  }
+}
+
+/* ============================================================================
+   UI BARS & METERS (MATCH OVERLAY SUPPORT)
+   ============================================================================ */
+.ui-bar {
+  position: relative;
+  height: 4px;
+  background: var(--matte);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  border-radius: 0;
+}
+
+.ui-bar-fill {
+  height: 100%;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.ui-bar-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%
+  );
+  animation: bar-shimmer 2s linear infinite;
+}
+
+@keyframes bar-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.vitality-bar {
+  background: var(--red-vitality);
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.6);
+}
+
+.resonance-bar {
+  background: var(--cyan);
+  box-shadow: var(--cyan-glow);
+  transform: skewX(-15deg);
+}
+
+.dread-bar {
+  background: var(--red-dread);
+  box-shadow: var(--red-glow);
+}
+
+/* ============================================================================
+   TEXT STYLES & TYPOGRAPHY
+   ============================================================================ */
+.text-legendary {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 48px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--amber), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 30px rgba(255, 191, 0, 0.4);
+}
+
+.text-mono-small {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+}
+
+.text-grit {
+  color: rgba(255, 255, 255, 0.6);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* ============================================================================
+   BUTTON STYLES (BRONX AESTHETIC)
+   ============================================================================ */
+.btn-grit {
+  background: var(--matte);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-grit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--amber), var(--cyan));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.btn-grit:hover {
+  border-color: var(--amber);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 191, 0, 0.3);
+}
+
+.btn-grit:hover::before {
+  opacity: 0.1;
+}
+
+.btn-grit:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(255, 191, 0, 0.2);
+}
+
+/* ============================================================================
+   CINEMATIC FADE TRANSITIONS
+   ============================================================================ */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.fade-in {
+  animation: fade-in 0.5s ease-in-out forwards;
+}
+
+.fade-out {
+  animation: fade-out 0.5s ease-in-out forwards;
+}
+
+/* ============================================================================
+   SCROLLBAR CUSTOMIZATION
+   ============================================================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--void);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--matte);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 191, 0, 0.2);
+}
+
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+.pointer-events-none {
+  pointer-events: none;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.fixed {
+  position: fixed;
+}
+
+.inset-0 {
+  inset: 0;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.tracking-widest {
+  letter-spacing: 0.5em;
+}
+
+/* ============================================================================
+   THE SOURCE REMEMBERS UNITY. BUILD.
+   ============================================================================ */

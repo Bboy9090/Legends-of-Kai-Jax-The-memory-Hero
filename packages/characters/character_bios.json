@@ -1,0 +1,235 @@
+{
+  "axis_trinity": [
+    {
+      "id": "KAI_JAX",
+      "name": "Kai-Jax",
+      "dna": "Star-Slime Chimera",
+      "tails": 3,
+      "tailDescriptions": [
+        "Tail 1 (Velocity): Jax Strand - Generates hard-light echoes, leaves after-images with physical interaction",
+        "Tail 2 (Shielding): Kai Strand - Converts liquid ink into solid-state barriers and web-tethers",
+        "Tail 3 (Stability): Father Strand - Sacrificial energy loop, absorbs Sandbox collapse pressure"
+      ],
+      "vibe": "Memory King",
+      "archetype": "Kirby / Orphan Survivors",
+      "eyes": "Sage-Mode Slit Eyes (Neon-Gold)",
+      "fur": "Obsidian Charcoal with Internal Nebulae",
+      "quills": "Jagged Electric (300% extended length)",
+      "weight": 85,
+      "speed": 7.2,
+      "power": 6.8,
+      "defense": 7.5,
+      "special": "Memory Strand Manipulation - Can rewind personal timeline 3 seconds (costs 30% Resonance)"
+    },
+    {
+      "id": "CHRONOS",
+      "name": "Chronos Sere",
+      "dna": "Matte-White Lupine",
+      "tails": 1,
+      "vibe": "Will of Tomorrow",
+      "archetype": "Silver / Next-Gen Ascended",
+      "eyes": "Dual-Pupil (Left sees past, Right sees future)",
+      "fur": "Matte-White Metallic",
+      "weight": 92,
+      "speed": 8.5,
+      "power": 8.0,
+      "defense": 6.5,
+      "special": "Time Dilation - Slows combat speed 50% in 10m radius (costs 40% Resonance)"
+    },
+    {
+      "id": "LUNARA",
+      "name": "Lunara Solis",
+      "dna": "Astral Moon-Leopard / Celestial Feline-Avian",
+      "tails": 9,
+      "tailDescriptions": [
+        "5 Gold Solar Tails: Fire/Light manipulation, grants 5% HP regen under sunlight",
+        "4 Silver Lunar Tails: Precognition/Illusion casting, grants oracle vision"
+      ],
+      "vibe": "Oracle Sentinel / Harmony Keeper",
+      "archetype": "Celestial Goddess",
+      "eyes": "Duality (Gold thermal/life force, Silver probability threads)",
+      "fur": "Liquid Starlight (shifts Gold/Silver with day/night cycle)",
+      "armor": "Aether Silk Regalia - regenerates 2% HP/sec moonlight, 5% HP/sec sunlight",
+      "crown": "Infinite Stars (appears at 60%+ Resonance)",
+      "weight": 78,
+      "speed": 6.5,
+      "power": 7.0,
+      "defense": 8.5,
+      "special": "Radiant Nexus - Heals allies 20% HP, damages enemies 15% HP/sec (solar pillar)"
+    }
+  ],
+  "vanguard": [
+    {
+      "id": "BORYX",
+      "name": "Boryx Zenith",
+      "dna": "Draconic Ursine (Dragon-Bear)",
+      "tails": 0,
+      "archetype": "Mario/Luigi/Bowser",
+      "vibe": "Guardian King",
+      "height": "7ft",
+      "aesthetic": "Bronx Heavyweight Boxer",
+      "features": "Aero-Cape, Chaos-Infused Source Star (chest)",
+      "weight": 110,
+      "speed": 4.5,
+      "power": 9.5,
+      "defense": 9.0,
+      "special": "Guardian's Wrath - Ground pound creates 15m shockwave (20% damage + stun)"
+    },
+    {
+      "id": "UMBRA",
+      "name": "Umbra-Flux",
+      "dna": "Celestial Lupine (Star-Wolf/Lynx Hybrid)",
+      "tails": 5,
+      "tailDescriptions": [
+        "Tail 1 (Blue): Sonic velocity - light-speed after-images",
+        "Tail 2 (Red): Shadow chaos control - teleportation anchors",
+        "Tail 3 (Cyan): Silver psychokinesis - object manipulation",
+        "Tail 4 (Violet): Hypersonic distortion - time slow radius",
+        "Tail 5 (Gold): Celestial authority - reality anchor"
+      ],
+      "archetype": "Sonic/Shadow/Silver/Amy/Metal Sonic",
+      "vibe": "Velocity Wraith",
+      "fur": "Matte-White Metallic with Iridescent Quills",
+      "eyes": "Dual-Pupil (Past/Future Vision)",
+      "features": "Hard-Light Echo Skates, Floating Chrono-Shards",
+      "weight": 88,
+      "speed": 9.8,
+      "power": 7.5,
+      "defense": 6.0,
+      "special": "Stellar Cascade - Creates 7 psychokinetic clones (costs 50% Resonance)"
+    },
+    {
+      "id": "VOX",
+      "name": "Sentinel Vox",
+      "dna": "Saiyan-Kitsune (Buff Fox-Alien)",
+      "tails": 2,
+      "tailDescriptions": [
+        "Mechanical Energy Tail-Blades (can extend 2-to-9 configuration)"
+      ],
+      "archetype": "Fox/Tails/Samus/Falco",
+      "vibe": "Star-Force Pilot / Tactical Commander",
+      "features": "Tactical Star-Force Flight Jacket, Glowing Whisker-Scars",
+      "weight": 95,
+      "speed": 7.0,
+      "power": 8.0,
+      "defense": 7.5,
+      "special": "Orbital Strike - Calls down plasma beam (30% damage, 5-second cooldown)"
+    },
+    {
+      "id": "KIRO",
+      "name": "Kiro Kong",
+      "dna": "Augmented Ape-Kin",
+      "tails": 0,
+      "archetype": "Donkey Kong/Diddy Kong/Dixie Kong",
+      "vibe": "Primal Breaker",
+      "features": "Impact-Dampening Stone Armor",
+      "weight": 120,
+      "speed": 5.0,
+      "power": 9.0,
+      "defense": 8.5,
+      "special": "Primal Slam - AOE ground slam (25% damage, knockback scales with weight)"
+    }
+  ],
+  "next_gen_survivors": [
+    {
+      "id": "KAI_JAX",
+      "note": "See axis_trinity - Kai-Jax is both Trinity member and Next-Gen Survivor"
+    },
+    {
+      "id": "LUNARA",
+      "note": "See axis_trinity - Lunara serves as Harmony Keeper and Tier-based True Ending logic"
+    }
+  ],
+  "expanded_roster": [
+    {
+      "legacy": "Link / Zelda",
+      "beastKin": "VERDANT TALON / HYLIA-CORE",
+      "class": "Lupine Knight / Vulpine Oracle",
+      "archetype": "Melee/Magic Hybrid"
+    },
+    {
+      "legacy": "Pikachu / Ash",
+      "beastKin": "VOLT-STRIKER / SYNAPSE COMMAND",
+      "class": "Static-Rodent / Neural Catcher",
+      "archetype": "Electric Speedster"
+    },
+    {
+      "legacy": "Captain Falcon",
+      "beastKin": "AERO-CIRCUIT",
+      "class": "Kinetic Falcon Pilot",
+      "archetype": "Racing Brawler"
+    },
+    {
+      "legacy": "Meta Knight",
+      "beastKin": "VOID-BLADE WRAITH",
+      "class": "Armored Celestial Bat",
+      "archetype": "Aerial Swordsman"
+    },
+    {
+      "legacy": "Rosalina / Luma",
+      "beastKin": "COSMIC-MOTHER / STAR-SHARD",
+      "class": "Galaxy-Ursine / Plasma-Kin",
+      "archetype": "Puppet Master"
+    },
+    {
+      "legacy": "Waluigi / Wario",
+      "beastKin": "GRIT-SCAVENGER",
+      "class": "Lanky Hyena-Kin",
+      "archetype": "Trickster"
+    },
+    {
+      "legacy": "Sephiroth / Ganondorf",
+      "beastKin": "ONE-WINGED VOID / GANON-GRAVE",
+      "class": "Seraph-Kin / Boar-Dragon Titan",
+      "archetype": "Heavy Villain"
+    },
+    {
+      "legacy": "Ridley / Mother Brain",
+      "beastKin": "CYBER-TERROR / CORE-MIND",
+      "class": "Skeletal Draconic / Bio-Digital Brain",
+      "archetype": "Boss Entity"
+    },
+    {
+      "legacy": "Wolf",
+      "beastKin": "UMBRA-WOLF",
+      "class": "Tactical Lupine Mercenary",
+      "archetype": "Rival"
+    },
+    {
+      "legacy": "Knuckles",
+      "beastKin": "FIST OF TERRA",
+      "class": "Echidna-Titan",
+      "archetype": "Tectonic Striker"
+    },
+    {
+      "legacy": "Mephiles",
+      "beastKin": "THE QUIET ARCHITECT",
+      "class": "Crystalline Void Entity",
+      "archetype": "Final Boss (Books 4-6)"
+    },
+    {
+      "legacy": "Void King",
+      "beastKin": "OMEGA-VOID",
+      "class": "Sovereign of Stillness",
+      "archetype": "Ultimate Antagonist (Books 7-9)"
+    }
+  ],
+  "technical_standards": {
+    "gravity_standard": 9.8,
+    "gravity_architect_tier": 18.0,
+    "hit_stop_duration": "0.08s (5 frames at 60fps)",
+    "input_buffer_frames": 8,
+    "coyote_time_frames": 4,
+    "bronx_grit_filter": "0.8 opacity asphalt texture overlay",
+    "dread_threshold": 80,
+    "resonance_max": 100
+  },
+  "meta": {
+    "version": "1.3.0",
+    "project": "PROJECT OMEGA: AETERNA COVENANT",
+    "scope": "Genesis - Books 1-3 (54 Chapters)",
+    "total_roster": 67,
+    "playable_genesis": 6,
+    "updated": "2026-01-02"
+  }
+}
