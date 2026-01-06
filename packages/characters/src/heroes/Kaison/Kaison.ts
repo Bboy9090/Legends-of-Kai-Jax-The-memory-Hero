@@ -1,4 +1,4 @@
-import { FighterStats, FighterState } from '@smash-heroes/shared';
+import { FighterStats, FighterState } from '@beast-kin/shared';
 import { BaseFighter } from '../../base/BaseFighter';
 import { createKaisonMoveSet } from './KaisonMoves';
 
@@ -14,6 +14,7 @@ export class Kaison extends BaseFighter {
 
   protected getDefaultStats(): FighterStats {
     return {
+      id: this.id,
       weight: 80, // Light weight for high mobility
       walkSpeed: 1.5,
       runSpeed: 2.4, // Fast runner
@@ -24,9 +25,12 @@ export class Kaison extends BaseFighter {
       fastFallSpeed: 2.8,
       maxDamage: 999,
       currentDamage: 0,
+      damage: 0,
+      hitstun: 0,
       lives: 3,
       ultimateMeter: 0,
       ultimateCost: 100,
+      velocity: { x: 0, y: 0 }, // Will be synced with physics in BaseFighter
     };
   }
 
