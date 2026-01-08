@@ -1,5 +1,5 @@
-import { Vector2D, RigidBody, PhysicsConfig, Platform } from '@smash-heroes/shared';
-import { Vec2, PHYSICS_CONSTANTS } from '@smash-heroes/shared';
+import { Vector2D, RigidBody, PhysicsConfig, Platform } from '@beast-kin/shared';
+import { Vec2, PHYSICS_CONSTANTS } from '@beast-kin/shared';
 import { GravityCurve } from './GravityCurve';
 
 export class MomentumPhysics {

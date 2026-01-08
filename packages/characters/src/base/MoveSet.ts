@@ -1,4 +1,4 @@
-import { MoveSet as IMoveSet, AttackData, DamageType } from '@smash-heroes/shared';
+import { MoveSet as IMoveSet, AttackData, DamageType } from '@beast-kin/shared';
 
 export class MoveSetBuilder {
   private attacks: Map<string, AttackData> = new Map();

@@ -1,4 +1,4 @@
-import { Vector2D, Vec2, Fighter } from '@smash-heroes/shared';
+import { Vector2D, Vec2, Fighter } from '@beast-kin/shared';
 
 /**
  * Tactical AI System - NPCs that flank, retreat, and capitalize on mistakes

@@ -1,4 +1,4 @@
-import { MoveSet, AttackData } from '@smash-heroes/shared';
+import { MoveSet, AttackData } from '@beast-kin/shared';
 import { MoveSetBuilder } from '../../base/MoveSet';
 
 export function createStrikerMoveSet(): MoveSet {

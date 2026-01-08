@@ -1,5 +1,5 @@
-import { Vector2D } from '@smash-heroes/shared';
-import { Vec2 } from '@smash-heroes/shared';
+import { Vector2D } from '@beast-kin/shared';
+import { Vec2 } from '@beast-kin/shared';
 
 export interface Particle {
   position: Vector2D;

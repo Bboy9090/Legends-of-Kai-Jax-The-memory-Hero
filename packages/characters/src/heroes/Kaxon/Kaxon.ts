@@ -1,4 +1,4 @@
-import { FighterStats, FighterState } from '@smash-heroes/shared';
+import { FighterStats, FighterState } from '@beast-kin/shared';
 import { BaseFighter } from '../../base/BaseFighter';
 import { createKaxonMoveSet } from './KaxonMoves';
 
@@ -18,6 +18,7 @@ export class Kaxon extends BaseFighter {
 
   protected getDefaultStats(): FighterStats {
     return {
+      id: this.id,
       weight: 95, // Heavier than both Kaison and Jaxon
       walkSpeed: 2.0,
       runSpeed: 3.5, // Fastest runner
@@ -28,9 +29,12 @@ export class Kaxon extends BaseFighter {
       fastFallSpeed: 2.6,
       maxDamage: 999,
       currentDamage: 0,
+      damage: 0,
+      hitstun: 0,
       lives: 3,
       ultimateMeter: 100, // Starts at full
       ultimateCost: 100,
+      velocity: { x: 0, y: 0 }, // Will be synced with physics in BaseFighter
     };
   }
 

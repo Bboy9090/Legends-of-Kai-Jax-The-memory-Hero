@@ -129,7 +129,7 @@ Systems are designed to prevent performance-based attacks:
 **New Dependencies Added**: NONE
 
 All implementations use only existing project dependencies:
-- `@smash-heroes/shared` - Internal types and utilities
+- `@beast-kin/shared` - Internal types and utilities
 - TypeScript standard library
 - No external npm packages added
 - No third-party code imported

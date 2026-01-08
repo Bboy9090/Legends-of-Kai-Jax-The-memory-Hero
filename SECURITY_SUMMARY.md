@@ -38,7 +38,7 @@ Analysis Result for 'javascript':
 - No dynamic imports of untrusted code
 
 #### Dependencies ✅
-- All dependencies are from trusted sources (@smash-heroes packages, Three.js, React)
+- All dependencies are from trusted sources (@beast-kin packages, Three.js, React)
 - No new external dependencies added
 - All dependencies are well-maintained packages
 - No known vulnerabilities in dependencies

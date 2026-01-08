@@ -12,7 +12,7 @@ import {
   AttackAnimationPhase,
   SecondaryMotion,
   FootPlacement,
-} from '@smash-heroes/engine';
+} from '@beast-kin/engine';
 
 // Animation constants for tuning
 const ANIMATION_CONSTANTS = {

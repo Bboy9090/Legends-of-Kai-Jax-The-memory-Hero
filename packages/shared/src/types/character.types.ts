@@ -25,9 +25,9 @@ export enum FighterState {
   TILT_FORWARD = 'tilt_forward',
   TILT_UP = 'tilt_up',
   TILT_DOWN = 'tilt_down',
-  SMASH_FORWARD = 'smash_forward',
-  SMASH_UP = 'smash_up',
-  SMASH_DOWN = 'smash_down',
+  IMPACT_FORWARD = 'impact_forward',
+  IMPACT_UP = 'impact_up',
+  IMPACT_DOWN = 'impact_down',
   
   // Aerial attacks
   NAIR = 'nair', // Neutral air
@@ -82,6 +82,9 @@ export enum FighterState {
 }
 
 export interface FighterStats {
+  // Identity
+  id: string; // Fighter identifier for tracking
+  
   // Base stats
   weight: number; // Affects knockback (50-150)
   walkSpeed: number;
@@ -93,11 +96,16 @@ export interface FighterStats {
   fastFallSpeed: number;
   
   // Combat stats
-  maxDamage: number; // Smash-style percentage (usually 999)
+  maxDamage: number; // Resonance percentage (0-999%)
   currentDamage: number;
+  damage: number; // Alias for currentDamage (for convenience)
+  hitstun: number; // Frames remaining in hitstun state
   lives: number;
   ultimateMeter: number; // 0-100
   ultimateCost: number;
+  
+  // Physics access
+  velocity: Vector2D; // Quick access to current velocity
 }
 
 export interface MoveSet {
@@ -140,7 +148,7 @@ export interface FighterDisplayState {
   health: number;
   /** Maximum health points */
   maxHealth: number;
-  /** Smash-style damage percentage (0% to 999%) */
+  /** Resonance damage percentage (0% to 999%) */
   damage: number;
   /** Number of remaining stocks/lives (optional, for stock matches) */
   stocks?: number;

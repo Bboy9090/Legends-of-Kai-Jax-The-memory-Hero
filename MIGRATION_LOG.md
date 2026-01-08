@@ -163,7 +163,7 @@ This document provides a detailed log of all changes made during the monorepo mi
 **New**: `apps/web/src/`  
 **Changes**:
 - Updated imports from local paths to package imports
-- Example: `import { GameLoop } from './GameLoop'` → `import { GameLoop } from '@smash-heroes/engine'`
+- Example: `import { GameLoop } from './GameLoop'` → `import { GameLoop } from '@beast-kin/engine'`
 - Preserved all game logic and behavior
 - Added type safety with monorepo shared types
 

@@ -1,4 +1,4 @@
-import { FighterState } from '@smash-heroes/shared';
+import { FighterState } from '@beast-kin/shared';
 
 export interface StateTransition {
   from: FighterState;

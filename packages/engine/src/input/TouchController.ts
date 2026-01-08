@@ -1,4 +1,4 @@
-import { TouchInput, GestureInput, InputAction, InputState } from '@smash-heroes/shared';
+import { TouchInput, GestureInput, InputAction, InputState } from '@beast-kin/shared';
 
 export class TouchController {
   private touches: Map<number, TouchInput> = new Map();

@@ -1,5 +1,5 @@
-import { Vector2D } from '@smash-heroes/shared';
-import { COMBAT_CONSTANTS } from '@smash-heroes/shared';
+import { Vector2D } from '@beast-kin/shared';
+import { COMBAT_CONSTANTS } from '@beast-kin/shared';
 
 /**
  * Enhanced ScreenEffects - Omega Protocol Compliance

@@ -1,4 +1,4 @@
-import { InputState, InputAction } from '@smash-heroes/shared';
+import { InputState, InputAction } from '@beast-kin/shared';
 
 export class InputBuffer {
   private buffer: InputState[] = [];

@@ -1,25 +1,82 @@
 {
   "axis_trinity": [
     {
+      "id": "JAXON",
+      "name": "Jaxon",
+      "dna": "Beastly Hedgehog-Lupine Hybrid",
+      "tails": 0,
+      "quills": "Long, electricity-flowing quills (very feral looking)",
+      "vibe": "Solo Velocity Fracture",
+      "archetype": "Sonic / Hedgehog Speedster",
+      "personality": "Feral but calculated, smart, witty",
+      "fur": "Charcoal-furred",
+      "eyes": "Feral, amber",
+      "gravity": 9.8,
+      "weight": 65,
+      "speed": 9.5,
+      "power": 7.0,
+      "defense": 5.5,
+      "specialMoves": [
+        "Flicker-Strike (3f): Frame-3 startup dash leaving Static-Decay after-images",
+        "Panic-Speed: Passive 0.08s Hit-Stop on projectiles for frame-perfect dodges",
+        "Electric Quill Burst: Blue-frequency lightning trails"
+      ],
+      "note": "Playable solo before fusion. Found as orphan by Bovarr."
+    },
+    {
+      "id": "KAISON",
+      "name": "Kaison",
+      "dna": "Saiyan-Kitsune-Lupine (Young Fox/Tails/Wolf)",
+      "tails": 2,
+      "tailDescriptions": [
+        "Mechanical Energy Tail-Blades (can extend 2-to-9 configuration)"
+      ],
+      "vibe": "Star-Force Tactician",
+      "archetype": "Fox / Tails / Spider-Man hybrid",
+      "personality": "Smart, witty, jokingly authorized banter",
+      "fur": "Charcoal-furred with tactical jacket",
+      "eyes": "Electric blue circuitry (processors)",
+      "features": "Tactical Star-Force flight jacket, Chase Badge (sonar), Web Control",
+      "gravity": 9.8,
+      "coyoteTime": 4,
+      "weight": 55,
+      "speed": 8.0,
+      "power": 6.0,
+      "defense": 7.0,
+      "specialMoves": [
+        "Sky-Anchor (Bungee): Star-Force web-tether to any point",
+        "Chase-Badge Pulse: Sonar burst highlighting Memory Shards and hitboxes through walls",
+        "Web Control: Spider-Man-like mobility"
+      ],
+      "note": "Playable solo before fusion. Found as orphan by Bovarr with Jaxon."
+    },
+    {
       "id": "KAI_JAX",
       "name": "Kai-Jax",
-      "dna": "Star-Slime Chimera",
+      "dna": "Star-Slime Chimera (Hedgehog-Kitsune-Lupine Fusion)",
       "tails": 3,
       "tailDescriptions": [
-        "Tail 1 (Velocity): Jax Strand - Generates hard-light echoes, leaves after-images with physical interaction",
-        "Tail 2 (Shielding): Kai Strand - Converts liquid ink into solid-state barriers and web-tethers",
-        "Tail 3 (Stability): Father Strand - Sacrificial energy loop, absorbs Sandbox collapse pressure"
+        "Tail 1 (Jax Strand - Velocity/Liquid Ink): Generates hard-light echoes, leaves after-images with physical interaction, speed-focused",
+        "Tail 2 (Kai Strand - Shielding/Ink Smoke): Converts liquid ink into solid-state barriers and web-tethers, physical durability",
+        "Tail 3 (Father's Strand - Bovarr's Anchor): The sacrificial anchor keeping the world from collapsing, carries weight of lineage, prevents 'The Erasure' glitch"
       ],
-      "vibe": "Memory King",
-      "archetype": "Kirby / Orphan Survivors",
-      "eyes": "Sage-Mode Slit Eyes (Neon-Gold)",
-      "fur": "Obsidian Charcoal with Internal Nebulae",
-      "quills": "Jagged Electric (300% extended length)",
+      "vibe": "Memory King / Archive King",
+      "archetype": "Fused Orphan Survivors",
+      "eyes": "Sage-Mode Slit Eyes (Neon-Gold apertures processing Vigilance Surcharge in real-time)",
+      "fur": "Obsidian Charcoal with Internal Nebulae (skin reveals shifting nebulae)",
+      "quills": "Long electric quills (300% extended length), low-frequency electrical hum",
+      "gravity": 18.0,
       "weight": 85,
       "speed": 7.2,
       "power": 6.8,
       "defense": 7.5,
-      "special": "Memory Strand Manipulation - Can rewind personal timeline 3 seconds (costs 30% Resonance)"
+      "transformations": [
+        "Solo Form 1: Jaxon Solo (Beastly Hedgehog)",
+        "Solo Form 2: Kaison Solo (Star-Force Kitsune)",
+        "Fused Form: Kai-Jax (Star-Slime Chimera with 3 tails)"
+      ],
+      "special": "Memory Strand Manipulation - Can rewind personal timeline 3 seconds (costs 30% Resonance). Legacy Convergence at 100% Resonance shapeshifts body parts to mirror legends of old.",
+      "voiceAnchor": "Bovarr's voice remains within core, delivering low-frequency commands: 'Hold. Stand. Rise.'"
     },
     {
       "id": "CHRONOS",
