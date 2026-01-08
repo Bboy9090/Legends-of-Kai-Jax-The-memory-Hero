@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Heart, Zap, Activity, Clock, Trophy } from 'lucide-react';
 import { bus } from '../core/EventBus';
-import { Events } from '../core/EventBus';
 import '../styles/bronx_grit.css';
 
 /**
@@ -47,14 +46,16 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({ isPaused = false }) 
       setPlayer1Resonance(resonance);
     };
 
-    bus.on(Events.UI_UPDATE_DREAD, handleDreadUpdate);
-    bus.on(Events.UI_UPDATE_HP, handleHpUpdate);
-    bus.on(Events.UI_UPDATE_RESONANCE, handleResonanceUpdate);
+    bus.on('UI_UPDATE_DREAD', handleDreadUpdate);
+    bus.on('UI_UPDATE_HP', handleHpUpdate);
+    bus.on('RESONANCE_UPDATE', (data: { resonance: number }) => {
+      handleResonanceUpdate(data.resonance);
+    });
 
     return () => {
-      bus.off(Events.UI_UPDATE_DREAD, handleDreadUpdate);
-      bus.off(Events.UI_UPDATE_HP, handleHpUpdate);
-      bus.off(Events.UI_UPDATE_RESONANCE, handleResonanceUpdate);
+      bus.off('UI_UPDATE_DREAD', handleDreadUpdate);
+      bus.off('UI_UPDATE_HP', handleHpUpdate);
+      bus.off('RESONANCE_UPDATE', handleResonanceUpdate);
     };
   }, []);
 

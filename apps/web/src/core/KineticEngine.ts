@@ -1,168 +1,170 @@
 /**
  * THE AETERNA COVENANT - KINETIC ENGINE
- * 
- * Architect-Tier Physics. The Bronx Standard: g=18.0
- * Heavy gravity, tight controls, no floaty nonsense.
- * 
- * Features:
- * - 4-frame Coyote Time for jumps
- * - Terminal velocity cap
- * - Ground friction
- * - Collision detection
+ * Architect-Tier Physics
+ * g=18.0 - The Bronx Standard. No floaty nonsense.
  */
 
 import { bus } from './EventBus';
-import { Events } from './EventBus';
 
 export interface PhysicsEntity {
-  x: number;
-  y: number;
-  velX: number;
-  velY: number;
-  width: number;
-  height: number;
-  onGround: boolean;
-  coyoteTime: number;
-  canJump: boolean;
+    x: number;
+    y: number;
+    velX: number;
+    velY: number;
+    w?: number;
+    h?: number;
+    onGround: boolean;
+    coyoteTime?: number;
+    maxCoyoteFrames?: number;
 }
 
 export interface Platform {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
 }
 
 export class KineticEngine {
-  // THE BRONX STANDARD - No compromises
-  private readonly gravity: number = 18.0;
-  private readonly friction: number = 0.85;
-  private readonly terminalVelocity: number = 25.0;
-  private readonly coyoteTimeFrames: number = 4; // 4 frames of grace
-  private readonly frameTime: number = 1 / 60; // 60 FPS assumption
+    private gravity: number = 18.0; // BRONX STANDARD - Heavy, deliberate movement
+    private friction: number = 0.85;
+    private maxFallSpeed: number = 25.0;
+    private coyoteTimeFrames: number = 4; // 4-frame window for late jumps
 
-  /**
-   * Apply physics to an entity
-   */
-  applyPhysics(entity: PhysicsEntity, deltaTime: number): void {
-    // Apply gravity if not grounded
-    if (!entity.onGround) {
-      entity.velY += this.gravity * deltaTime;
-      
-      // Cap terminal velocity
-      if (entity.velY > this.terminalVelocity) {
-        entity.velY = this.terminalVelocity;
-      }
-    } else {
-      // Reset coyote time when grounded
-      entity.coyoteTime = this.coyoteTimeFrames;
-      entity.canJump = true;
+    /**
+     * Apply physics to an entity
+     */
+    applyPhysics(entity: PhysicsEntity, dt: number) {
+        // Gravity application
+        if (!entity.onGround) {
+            entity.velY += this.gravity * dt;
+        } else {
+            // Reset coyote time when on ground
+            if (entity.coyoteTime !== undefined) {
+                entity.coyoteTime = this.coyoteTimeFrames;
+            }
+        }
+
+        // Friction on horizontal movement
+        entity.velX *= this.friction;
+
+        // Terminal velocity cap
+        if (entity.velY > this.maxFallSpeed) {
+            entity.velY = this.maxFallSpeed;
+        }
+
+        // Update position
+        entity.x += entity.velX * dt * 60; // Normalize to 60fps
+        entity.y += entity.velY * dt * 60;
+
+        // Coyote time countdown
+        if (entity.coyoteTime !== undefined && entity.coyoteTime > 0 && !entity.onGround) {
+            entity.coyoteTime -= 1;
+        }
+
+        // Emit physics update event
+        bus.emit('PHYSICS_UPDATE', { entity, dt });
     }
 
-    // Apply friction to horizontal movement
-    entity.velX *= this.friction;
+    /**
+     * Check collision between entity and platform
+     */
+    checkCollision(ent: PhysicsEntity, plat: Platform): boolean {
+        if (!ent.w || !ent.h) return false;
 
-    // Update position
-    entity.x += entity.velX * deltaTime * 60; // Normalize to frame rate
-    entity.y += entity.velY * deltaTime * 60;
+        // AABB collision detection
+        if (
+            ent.x < plat.x + plat.w &&
+            ent.x + ent.w > plat.x &&
+            ent.y < plat.y + plat.h &&
+            ent.y + ent.h > plat.y
+        ) {
+            // Determine collision side
+            const overlapX = Math.min(
+                (ent.x + ent.w) - plat.x,
+                (plat.x + plat.w) - ent.x
+            );
+            const overlapY = Math.min(
+                (ent.y + ent.h) - plat.y,
+                (plat.y + plat.h) - ent.y
+            );
 
-    // Update coyote time (countdown when not grounded)
-    if (!entity.onGround && entity.coyoteTime > 0) {
-      entity.coyoteTime -= deltaTime * 60; // Convert to frames
-      if (entity.coyoteTime <= 0) {
-        entity.canJump = false;
-      }
+            if (overlapY < overlapX) {
+                // Top collision (landing on platform)
+                if (ent.velY > 0 && ent.y < plat.y) {
+                    ent.y = plat.y - ent.h;
+                    ent.velY = 0;
+                    ent.onGround = true;
+                    bus.emit('ENTITY_LANDED', { entity: ent, platform: plat });
+                    return true;
+                }
+                // Bottom collision (hitting ceiling)
+                else if (ent.velY < 0 && ent.y > plat.y) {
+                    ent.y = plat.y + plat.h;
+                    ent.velY = 0;
+                    bus.emit('ENTITY_HIT_CEILING', { entity: ent, platform: plat });
+                    return true;
+                }
+            } else {
+                // Side collision
+                if (ent.x < plat.x) {
+                    ent.x = plat.x - ent.w;
+                } else {
+                    ent.x = plat.x + plat.w;
+                }
+                ent.velX = 0;
+                bus.emit('ENTITY_HIT_WALL', { entity: ent, platform: plat });
+                return true;
+            }
+        }
+
+        // No collision
+        if (ent.onGround && ent.y + ent.h < plat.y) {
+            ent.onGround = false;
+        }
+
+        return false;
     }
 
-    // Emit grounded state changes
-    const wasGrounded = entity.onGround;
-    if (wasGrounded !== entity.onGround && entity.onGround) {
-      bus.emit(Events.PLAYER_GROUNDED, { entity });
-    }
-  }
-
-  /**
-   * Check collision between entity and platform
-   */
-  checkCollision(entity: PhysicsEntity, platform: Platform): boolean {
-    const entityRight = entity.x + entity.width;
-    const entityBottom = entity.y + entity.height;
-    const platformRight = platform.x + platform.width;
-    const platformTop = platform.y;
-
-    // AABB collision detection
-    if (
-      entity.x < platformRight &&
-      entityRight > platform.x &&
-      entity.y < platformTop &&
-      entityBottom > platform.y
-    ) {
-      // Top collision (landing on platform)
-      if (entity.velY >= 0 && entity.y < platformTop) {
-        entity.y = platformTop - entity.height;
-        entity.velY = 0;
-        entity.onGround = true;
-        bus.emit(Events.COLLISION_DETECTED, { entity, platform, type: 'top' });
-        return true;
-      }
+    /**
+     * Check if entity can jump (on ground or within coyote time)
+     */
+    canJump(entity: PhysicsEntity): boolean {
+        if (entity.onGround) return true;
+        if (entity.coyoteTime !== undefined && entity.coyoteTime > 0) {
+            return true;
+        }
+        return false;
     }
 
-    entity.onGround = false;
-    return false;
-  }
-
-  /**
-   * Check collision with multiple platforms
-   */
-  checkCollisions(entity: PhysicsEntity, platforms: Platform[]): boolean {
-    let collided = false;
-    for (const platform of platforms) {
-      if (this.checkCollision(entity, platform)) {
-        collided = true;
-      }
+    /**
+     * Apply jump force
+     */
+    jump(entity: PhysicsEntity, jumpForce: number = -15.0) {
+        if (this.canJump(entity)) {
+            entity.velY = jumpForce;
+            entity.onGround = false;
+            if (entity.coyoteTime !== undefined) {
+                entity.coyoteTime = 0; // Consume coyote time
+            }
+            bus.emit('ENTITY_JUMPED', { entity, jumpForce });
+        }
     }
-    return collided;
-  }
 
-  /**
-   * Apply jump force (with coyote time support)
-   */
-  jump(entity: PhysicsEntity, jumpForce: number = -15.0): boolean {
-    if (entity.onGround || (entity.coyoteTime > 0 && entity.canJump)) {
-      entity.velY = jumpForce;
-      entity.onGround = false;
-      entity.coyoteTime = 0; // Consume coyote time
-      entity.canJump = false;
-      bus.emit(Events.PLAYER_JUMP, { entity, jumpForce });
-      return true;
+    /**
+     * Get gravity constant
+     */
+    getGravity(): number {
+        return this.gravity;
     }
-    return false;
-  }
 
-  /**
-   * Apply horizontal movement
-   */
-  move(entity: PhysicsEntity, direction: number, speed: number, deltaTime: number): void {
-    entity.velX = direction * speed;
-  }
-
-  /**
-   * Get gravity constant (read-only)
-   */
-  getGravity(): number {
-    return this.gravity;
-  }
-
-  /**
-   * Reset entity physics state
-   */
-  resetEntity(entity: PhysicsEntity): void {
-    entity.velX = 0;
-    entity.velY = 0;
-    entity.onGround = false;
-    entity.coyoteTime = 0;
-    entity.canJump = false;
-  }
+    /**
+     * Set gravity (for special zones)
+     */
+    setGravity(value: number) {
+        this.gravity = value;
+        bus.emit('GRAVITY_CHANGED', { gravity: this.gravity });
+    }
 }
 
 // Singleton instance

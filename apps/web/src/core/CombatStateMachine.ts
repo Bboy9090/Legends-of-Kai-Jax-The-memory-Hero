@@ -1,233 +1,202 @@
 /**
  * THE AETERNA COVENANT - COMBAT STATE MACHINE
- * 
- * Frame-Data Logic. The combat system that respects timing.
- * 
- * State Cycle:
- *   IDLE → TELEGRAPH (Yellow) → ACTIVE (Cyan) → RECOVERY → IDLE
- * 
- * Frame Data:
- *   - Telegraph: Configurable (typically 8-12 frames)
- *   - Active: 4 frames (hit window)
- *   - Recovery: 12 frames (vulnerable)
+ * Frame-Data Logic - Telegraph → Commit → Active → Recovery
+ * Every attack follows the sacred cycle.
  */
 
 import { bus } from './EventBus';
-import { Events } from './EventBus';
 
 export enum CombatState {
-  IDLE = 'IDLE',
-  TELEGRAPH = 'TELEGRAPH',  // Wind-up (Yellow indicator)
-  ACTIVE = 'ACTIVE',        // Hit window (Cyan flash)
-  RECOVERY = 'RECOVERY',    // Cooldown (vulnerable)
-  HITSTUN = 'HITSTUN',      // Hit reaction
-  BLOCKSTUN = 'BLOCKSTUN'   // Block reaction
+    IDLE = 'IDLE',
+    TELEGRAPH = 'TELEGRAPH',  // Yellow - Warning phase
+    COMMIT = 'COMMIT',        // Wind-up phase
+    ACTIVE = 'ACTIVE',        // Cyan - Hitbox active
+    RECOVERY = 'RECOVERY',    // Vulnerable phase
+    HITSTOP = 'HITSTOP'       // Frame freeze on hit
 }
 
-export interface AttackData {
-  damage: number;
-  knockback: number;
-  hitbox: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  };
-  frameData: {
-    telegraph: number;  // Frames before active
-    active: number;      // Frames of hit window
-    recovery: number;    // Frames of recovery
-  };
+export interface CombatStateConfig {
+    telegraphFrames?: number;
+    commitFrames?: number;
+    activeFrames?: number;
+    recoveryFrames?: number;
+    hitstopFrames?: number;
 }
 
 export class CombatStateMachine {
-  public state: CombatState = CombatState.IDLE;
-  private timer: number = 0;
-  private frameTimer: number = 0;
-  private currentAttack: AttackData | null = null;
-  private hitStopFrames: number = 0;
+    public state: CombatState = CombatState.IDLE;
+    private timer: number = 0;
+    private config: CombatStateConfig = {
+        telegraphFrames: 8,
+        commitFrames: 4,
+        activeFrames: 4,
+        recoveryFrames: 12,
+        hitstopFrames: 6
+    };
+    private hitstopActive: boolean = false;
 
-  /**
-   * Update state machine (call every frame)
-   */
-  update(deltaTime: number): void {
-    // Handle hit-stop (freeze frames on hit)
-    if (this.hitStopFrames > 0) {
-      this.hitStopFrames -= deltaTime * 60; // Convert to frames
-      if (this.hitStopFrames <= 0) {
-        this.hitStopFrames = 0;
-      }
-      return; // Don't advance state during hit-stop
-    }
-
-    // Advance frame timer
-    this.frameTimer += deltaTime * 60; // Convert to frames
-
-    // Check if timer expired
-    if (this.timer > 0) {
-      this.timer -= deltaTime * 60; // Convert to frames
-      if (this.timer <= 0) {
-        this.transition();
-      }
-    }
-  }
-
-  /**
-   * Transition to next state in cycle
-   */
-  private transition(): void {
-    const previousState = this.state;
-
-    switch (this.state) {
-      case CombatState.TELEGRAPH:
-        // Move to active hit window
-        this.state = CombatState.ACTIVE;
-        if (this.currentAttack) {
-          this.timer = this.currentAttack.frameData.active;
-        } else {
-          this.timer = 4; // Default active frames
+    constructor(config?: CombatStateConfig) {
+        if (config) {
+            this.config = { ...this.config, ...config };
         }
-        bus.emit(Events.PLAYER_ATTACK, { 
-          state: this.state, 
-          attack: this.currentAttack,
-          hitbox: this.currentAttack?.hitbox 
-        });
-        break;
+    }
 
-      case CombatState.ACTIVE:
-        // Move to recovery
-        this.state = CombatState.RECOVERY;
-        if (this.currentAttack) {
-          this.timer = this.currentAttack.frameData.recovery;
-        } else {
-          this.timer = 12; // Default recovery frames
+    /**
+     * Update state machine (call every frame)
+     */
+    update(dt: number) {
+        if (this.hitstopActive) {
+            // Hitstop freezes time
+            return;
         }
-        break;
 
-      case CombatState.RECOVERY:
-        // Return to idle
-        this.state = CombatState.IDLE;
-        this.currentAttack = null;
-        this.frameTimer = 0;
-        break;
+        if (this.timer > 0) {
+            this.timer -= dt * 60; // Normalize to 60fps
+            if (this.timer <= 0) {
+                this.transition();
+            }
+            return;
+        }
 
-      case CombatState.HITSTUN:
-      case CombatState.BLOCKSTUN:
-        // Return to idle after stun
-        this.state = CombatState.IDLE;
-        this.currentAttack = null;
-        this.frameTimer = 0;
-        break;
-
-      default:
-        // Already idle or unknown state
-        break;
+        // Auto-transition if state is not IDLE
+        if (this.state !== CombatState.IDLE) {
+            this.transition();
+        }
     }
 
-    // Emit state change
-    if (previousState !== this.state) {
-      bus.emit('COMBAT_STATE_CHANGE', { 
-        from: previousState, 
-        to: this.state,
-        attack: this.currentAttack 
-      });
+    /**
+     * Transition to next state in cycle
+     */
+    private transition() {
+        const prevState = this.state;
+
+        switch (this.state) {
+            case CombatState.TELEGRAPH:
+                this.state = CombatState.COMMIT;
+                this.timer = this.config.commitFrames || 4;
+                bus.emit('COMBAT_STATE_CHANGED', { 
+                    from: prevState, 
+                    to: this.state,
+                    phase: 'commit'
+                });
+                break;
+
+            case CombatState.COMMIT:
+                this.state = CombatState.ACTIVE;
+                this.timer = this.config.activeFrames || 4;
+                bus.emit('COMBAT_STATE_CHANGED', { 
+                    from: prevState, 
+                    to: this.state,
+                    phase: 'active'
+                });
+                bus.emit('HITBOX_ACTIVE', { state: this.state });
+                break;
+
+            case CombatState.ACTIVE:
+                this.state = CombatState.RECOVERY;
+                this.timer = this.config.recoveryFrames || 12;
+                bus.emit('COMBAT_STATE_CHANGED', { 
+                    from: prevState, 
+                    to: this.state,
+                    phase: 'recovery'
+                });
+                bus.emit('HITBOX_INACTIVE', { state: this.state });
+                break;
+
+            case CombatState.RECOVERY:
+                this.state = CombatState.IDLE;
+                this.timer = 0;
+                bus.emit('COMBAT_STATE_CHANGED', { 
+                    from: prevState, 
+                    to: this.state,
+                    phase: 'idle'
+                });
+                break;
+
+            case CombatState.HITSTOP:
+                // Return to previous state after hitstop
+                this.hitstopActive = false;
+                this.state = CombatState.ACTIVE;
+                this.timer = this.config.activeFrames || 4;
+                bus.emit('HITSTOP_END', { state: this.state });
+                break;
+
+            default:
+                this.state = CombatState.IDLE;
+                break;
+        }
     }
-  }
 
-  /**
-   * Trigger an attack
-   */
-  trigger(attack: AttackData): boolean {
-    if (this.state === CombatState.IDLE) {
-      this.state = CombatState.TELEGRAPH;
-      this.currentAttack = attack;
-      this.timer = attack.frameData.telegraph;
-      this.frameTimer = 0;
-      
-      bus.emit(Events.PLAYER_ATTACK, { 
-        state: this.state, 
-        attack: attack,
-        telegraph: true 
-      });
-      
-      return true;
+    /**
+     * Trigger an attack (starts telegraph phase)
+     */
+    trigger(telegraphFrames?: number) {
+        if (this.state === CombatState.IDLE || this.state === CombatState.RECOVERY) {
+            this.state = CombatState.TELEGRAPH;
+            this.timer = telegraphFrames || this.config.telegraphFrames || 8;
+            bus.emit('COMBAT_STATE_CHANGED', { 
+                from: CombatState.IDLE, 
+                to: this.state,
+                phase: 'telegraph'
+            });
+            bus.emit('ATTACK_TELEGRAPHED', { frames: this.timer });
+        }
     }
-    return false; // Can't attack while busy
-  }
 
-  /**
-   * Apply hit-stop (freeze frames on impact)
-   */
-  applyHitStop(frames: number = 6): void {
-    this.hitStopFrames = frames;
-  }
-
-  /**
-   * Enter hitstun state
-   */
-  enterHitstun(frames: number = 20): void {
-    this.state = CombatState.HITSTUN;
-    this.timer = frames;
-    this.currentAttack = null;
-  }
-
-  /**
-   * Enter blockstun state
-   */
-  enterBlockstun(frames: number = 10): void {
-    this.state = CombatState.BLOCKSTUN;
-    this.timer = frames;
-    this.currentAttack = null;
-  }
-
-  /**
-   * Cancel current attack (for special moves)
-   */
-  cancel(): void {
-    if (this.state === CombatState.TELEGRAPH || this.state === CombatState.ACTIVE) {
-      this.state = CombatState.IDLE;
-      this.currentAttack = null;
-      this.timer = 0;
-      this.frameTimer = 0;
+    /**
+     * Trigger hitstop (frame freeze on successful hit)
+     */
+    triggerHitstop() {
+        if (this.state === CombatState.ACTIVE) {
+            this.hitstopActive = true;
+            this.state = CombatState.HITSTOP;
+            this.timer = this.config.hitstopFrames || 6;
+            bus.emit('HITSTOP_START', { frames: this.timer });
+        }
     }
-  }
 
-  /**
-   * Check if attack is in active hit window
-   */
-  isActive(): boolean {
-    return this.state === CombatState.ACTIVE;
-  }
+    /**
+     * Cancel current attack (return to idle)
+     */
+    cancel() {
+        if (this.state !== CombatState.IDLE) {
+            const prevState = this.state;
+            this.state = CombatState.IDLE;
+            this.timer = 0;
+            this.hitstopActive = false;
+            bus.emit('COMBAT_STATE_CHANGED', { 
+                from: prevState, 
+                to: this.state,
+                phase: 'cancelled'
+            });
+        }
+    }
 
-  /**
-   * Check if can attack
-   */
-  canAttack(): boolean {
-    return this.state === CombatState.IDLE;
-  }
+    /**
+     * Get current state
+     */
+    getState(): CombatState {
+        return this.state;
+    }
 
-  /**
-   * Get current attack data
-   */
-  getCurrentAttack(): AttackData | null {
-    return this.currentAttack;
-  }
+    /**
+     * Check if in active hitbox phase
+     */
+    isActive(): boolean {
+        return this.state === CombatState.ACTIVE;
+    }
 
-  /**
-   * Get current frame in attack sequence
-   */
-  getCurrentFrame(): number {
-    return Math.floor(this.frameTimer);
-  }
+    /**
+     * Check if in vulnerable phase
+     */
+    isVulnerable(): boolean {
+        return this.state === CombatState.RECOVERY || this.state === CombatState.COMMIT;
+    }
 
-  /**
-   * Reset to idle
-   */
-  reset(): void {
-    this.state = CombatState.IDLE;
-    this.timer = 0;
-    this.frameTimer = 0;
-    this.currentAttack = null;
-    this.hitStopFrames = 0;
-  }
+    /**
+     * Get remaining frames in current state
+     */
+    getRemainingFrames(): number {
+        return Math.ceil(this.timer);
+    }
 }

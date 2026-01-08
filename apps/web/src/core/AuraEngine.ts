@@ -1,147 +1,133 @@
 /**
  * THE AETERNA COVENANT - AURA ENGINE
- * 
- * The Dread System. Tension builds as enemies approach.
- * At 80%+, the screen glitches. The void is near.
- * 
- * Resonance Formula: R_p = (A_g × W_l) + M_a
- *   R_p = Resonance Power
- *   A_g = Aggression (player actions)
- *   W_l = Will Level (determination)
- *   M_a = Memory Accumulation (story progress)
+ * The Dread System - When the enemy approaches, the screen glitches
+ * Resonance: R_p = (A_g × W_l) + M_a
  */
 
 import { bus } from './EventBus';
-import { Events } from './EventBus';
 
-export interface AuraState {
-  dreadLevel: number;      // 0-100, tension meter
-  resonance: number;       // 0-100, power level
-  willLevel: number;       // 0-100, determination
-  memoryAccumulation: number; // Story progress multiplier
+export interface AuraConfig {
+    maxDreadLevel?: number;
+    proximityThreshold?: number;
+    dreadIncreaseRate?: number;
+    dreadDecreaseRate?: number;
+    glitchThreshold?: number;
 }
 
 export class AuraEngine {
-  private state: AuraState = {
-    dreadLevel: 0,
-    resonance: 0,
-    willLevel: 50, // Start at neutral
-    memoryAccumulation: 0
-  };
-
-  private readonly maxDread: number = 100;
-  private readonly maxResonance: number = 100;
-  private readonly glitchThreshold: number = 80;
-  private readonly decayRate: number = 0.5; // Dread decays when safe
-  private readonly buildRate: number = 2.0;  // Dread builds when threatened
-
-  /**
-   * Update aura system (call every frame)
-   */
-  update(deltaTime: number, enemyProximity: number, playerActions: number = 0): void {
-    // Update Dread based on enemy proximity
-    if (enemyProximity > 200) {
-      // Safe distance - dread decays
-      this.state.dreadLevel = Math.max(0, this.state.dreadLevel - this.decayRate * deltaTime * 60);
-    } else {
-      // Close proximity - dread builds
-      this.state.dreadLevel = Math.min(
-        this.maxDread, 
-        this.state.dreadLevel + this.buildRate * deltaTime * 60
-      );
-    }
-
-    // Calculate Resonance: R_p = (A_g × W_l) + M_a
-    const aggression = playerActions * 0.1; // Scale player actions
-    const resonancePower = (aggression * this.state.willLevel) + this.state.memoryAccumulation;
-    this.state.resonance = Math.min(this.maxResonance, Math.max(0, resonancePower));
-
-    // Check for glitch threshold
-    if (this.state.dreadLevel >= this.glitchThreshold) {
-      bus.emit(Events.VFX_GLITCH_INTENSE, { 
-        intensity: (this.state.dreadLevel - this.glitchThreshold) / (this.maxDread - this.glitchThreshold)
-      });
-    }
-
-    // Emit updates
-    bus.emit(Events.DREAD_UPDATE, { 
-      dreadLevel: this.state.dreadLevel,
-      resonance: this.state.resonance 
-    });
-    
-    bus.emit(Events.UI_UPDATE_DREAD, this.state.dreadLevel);
-    bus.emit(Events.UI_UPDATE_RESONANCE, this.state.resonance);
-  }
-
-  /**
-   * Add will (determination boost)
-   */
-  addWill(amount: number): void {
-    this.state.willLevel = Math.min(100, this.state.willLevel + amount);
-  }
-
-  /**
-   * Reduce will (despair)
-   */
-  reduceWill(amount: number): void {
-    this.state.willLevel = Math.max(0, this.state.willLevel - amount);
-  }
-
-  /**
-   * Add memory accumulation (story progress)
-   */
-  addMemory(amount: number): void {
-    this.state.memoryAccumulation = Math.min(100, this.state.memoryAccumulation + amount);
-  }
-
-  /**
-   * Get current dread level
-   */
-  getDreadLevel(): number {
-    return this.state.dreadLevel;
-  }
-
-  /**
-   * Get current resonance
-   */
-  getResonance(): number {
-    return this.state.resonance;
-  }
-
-  /**
-   * Get full aura state
-   */
-  getState(): AuraState {
-    return { ...this.state };
-  }
-
-  /**
-   * Reset aura state
-   */
-  reset(): void {
-    this.state = {
-      dreadLevel: 0,
-      resonance: 0,
-      willLevel: 50,
-      memoryAccumulation: 0
+    private dreadLevel: number = 0;
+    private resonance: number = 0;
+    private config: AuraConfig = {
+        maxDreadLevel: 100,
+        proximityThreshold: 200, // pixels/units
+        dreadIncreaseRate: 2,
+        dreadDecreaseRate: 1,
+        glitchThreshold: 80
     };
-  }
 
-  /**
-   * Set dread level directly (for boss encounters)
-   */
-  setDreadLevel(level: number): void {
-    this.state.dreadLevel = Math.max(0, Math.min(this.maxDread, level));
-    bus.emit(Events.UI_UPDATE_DREAD, this.state.dreadLevel);
-  }
+    constructor(config?: AuraConfig) {
+        if (config) {
+            this.config = { ...this.config, ...config };
+        }
+    }
 
-  /**
-   * Set resonance directly
-   */
-  setResonance(level: number): void {
-    this.state.resonance = Math.max(0, Math.min(this.maxResonance, level));
-    bus.emit(Events.UI_UPDATE_RESONANCE, this.state.resonance);
-  }
+    /**
+     * Update dread level based on enemy proximity
+     * Resonance: R_p = (A_g × W_l) + M_a
+     * Where:
+     * - A_g = Aggression level
+     * - W_l = Weave level (connection to the Aeterna)
+     * - M_a = Memory anchor strength
+     */
+    update(enemyProximity: number, aggressionLevel: number = 1.0, weaveLevel: number = 1.0, memoryAnchor: number = 0) {
+        // Calculate resonance power
+        const resonancePower = (aggressionLevel * weaveLevel) + memoryAnchor;
+        
+        // Update resonance
+        this.resonance = Math.min(100, Math.max(0, resonancePower * 10));
+
+        // Update dread based on proximity
+        if (enemyProximity < this.config.proximityThreshold!) {
+            // Enemy is close - increase dread
+            this.dreadLevel = Math.min(
+                this.config.maxDreadLevel!,
+                this.dreadLevel + (this.config.dreadIncreaseRate! * (1 - enemyProximity / this.config.proximityThreshold!))
+            );
+        } else {
+            // Enemy is far - decrease dread
+            this.dreadLevel = Math.max(0, this.dreadLevel - this.config.dreadDecreaseRate!);
+        }
+
+        // Emit events based on dread level
+        if (this.dreadLevel > this.config.glitchThreshold!) {
+            bus.emit('VFX_GLITCH_INTENSE', { 
+                intensity: (this.dreadLevel - this.config.glitchThreshold!) / (this.config.maxDreadLevel! - this.config.glitchThreshold!),
+                dreadLevel: this.dreadLevel
+            });
+        }
+
+        if (this.dreadLevel > 90) {
+            bus.emit('VFX_GLITCH_CRITICAL', { dreadLevel: this.dreadLevel });
+        }
+
+        // Update UI
+        bus.emit('UI_UPDATE_DREAD', { 
+            dreadLevel: this.dreadLevel,
+            resonance: this.resonance
+        });
+
+        // Emit resonance update
+        bus.emit('RESONANCE_UPDATE', { 
+            resonance: this.resonance,
+            resonancePower: resonancePower
+        });
+    }
+
+    /**
+     * Get current dread level
+     */
+    getDreadLevel(): number {
+        return this.dreadLevel;
+    }
+
+    /**
+     * Get current resonance
+     */
+    getResonance(): number {
+        return this.resonance;
+    }
+
+    /**
+     * Set dread level directly (for cutscenes/special events)
+     */
+    setDreadLevel(level: number) {
+        this.dreadLevel = Math.min(this.config.maxDreadLevel!, Math.max(0, level));
+        bus.emit('UI_UPDATE_DREAD', { 
+            dreadLevel: this.dreadLevel,
+            resonance: this.resonance
+        });
+    }
+
+    /**
+     * Reset dread to zero
+     */
+    resetDread() {
+        this.dreadLevel = 0;
+        bus.emit('UI_UPDATE_DREAD', { 
+            dreadLevel: this.dreadLevel,
+            resonance: this.resonance
+        });
+    }
+
+    /**
+     * Add resonance (for power scaling)
+     */
+    addResonance(amount: number) {
+        this.resonance = Math.min(100, Math.max(0, this.resonance + amount));
+        bus.emit('RESONANCE_UPDATE', { 
+            resonance: this.resonance
+        });
+    }
 }
 
 // Singleton instance
