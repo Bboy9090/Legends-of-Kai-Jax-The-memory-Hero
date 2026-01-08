@@ -1,14 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Heart, Zap, Activity, Clock, Trophy } from 'lucide-react';
-// Note: GameStateManager requires packages/game to be built
-// import { gameStateManager, MatchState } from '../../packages/game/src/core/GameStateManager';
-
-// Temporary stub until package is available
-type MatchState = any;
-const gameStateManager = {
-  subscribe: (callback: (state: any) => void) => () => {},
-  getState: () => ({ match: null })
-};
+import { bus } from '../core/EventBus';
+import { Events } from '../core/EventBus';
 import '../styles/bronx_grit.css';
 
 /**
@@ -31,27 +24,38 @@ interface MatchOverlayProps {
 }
 
 export const MatchOverlay: React.FC<MatchOverlayProps> = ({ isPaused = false }) => {
-  const [matchState, setMatchState] = useState<MatchState | null>(null);
+  const [player1Hp, setPlayer1Hp] = useState(100);
+  const [player2Hp, setPlayer2Hp] = useState(100);
+  const [player1Resonance, setPlayer1Resonance] = useState(0);
+  const [player2Resonance, setPlayer2Resonance] = useState(0);
+  const [dreadLevel, setDreadLevel] = useState(0); // 0-100
   const [comboCount, setComboCount] = useState(0);
-  const [dreadIntensity, setDreadIntensity] = useState(0); // 0-1 float
   const [dreadPulse, setDreadPulse] = useState(0);
+  const [roundTimer, setRoundTimer] = useState(99);
 
   useEffect(() => {
-    // Subscribe to game state changes
-    const unsubscribe = gameStateManager.subscribe((state) => {
-      setMatchState(state.match);
-      
-      // Update dread intensity (0-100 → 0-1)
-      if (state.match?.p1) {
-        const dreadLevel = state.match.p1.dread || 0;
-        setDreadIntensity(dreadLevel / 100);
-      }
-    });
+    // Subscribe to EventBus updates
+    const handleDreadUpdate = (data: { dreadLevel: number }) => {
+      setDreadLevel(data.dreadLevel);
+    };
 
-    // Initialize with current state
-    setMatchState(gameStateManager.getState().match);
+    const handleHpUpdate = (hp: number) => {
+      setPlayer1Hp(hp);
+    };
 
-    return unsubscribe;
+    const handleResonanceUpdate = (resonance: number) => {
+      setPlayer1Resonance(resonance);
+    };
+
+    bus.on(Events.UI_UPDATE_DREAD, handleDreadUpdate);
+    bus.on(Events.UI_UPDATE_HP, handleHpUpdate);
+    bus.on(Events.UI_UPDATE_RESONANCE, handleResonanceUpdate);
+
+    return () => {
+      bus.off(Events.UI_UPDATE_DREAD, handleDreadUpdate);
+      bus.off(Events.UI_UPDATE_HP, handleHpUpdate);
+      bus.off(Events.UI_UPDATE_RESONANCE, handleResonanceUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -63,17 +67,12 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({ isPaused = false }) 
     return () => clearInterval(interval);
   }, []);
 
-  if (!matchState) {
-    return null; // No match active
-  }
-
-  const { player1, player2, dreadLevel, roundTimer, currentRound } = matchState;
-
   // Calculate percentages
-  const p1HpPercent = (player1.hp / player1.maxHp) * 100;
-  const p2HpPercent = (player2.hp / player2.maxHp) * 100;
-  const p1ResPercent = (player1.resonance / player1.maxResonance) * 100;
-  const p2ResPercent = (player2.resonance / player2.maxResonance) * 100;
+  const p1HpPercent = Math.max(0, Math.min(100, (player1Hp / 100) * 100));
+  const p2HpPercent = Math.max(0, Math.min(100, (player2Hp / 100) * 100));
+  const p1ResPercent = Math.max(0, Math.min(100, (player1Resonance / 100) * 100));
+  const p2ResPercent = Math.max(0, Math.min(100, (player2Resonance / 100) * 100));
+  const dreadIntensity = dreadLevel / 100; // Convert to 0-1
 
   // Dread intensity level (string category)
   const dreadLevelCategory = 
@@ -134,7 +133,7 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({ isPaused = false }) 
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-white font-bold text-sm drop-shadow-lg">
-                  {Math.ceil(player1.hp)}
+                  {Math.ceil(player1Hp)}
                 </span>
               </div>
             </div>
@@ -149,9 +148,9 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({ isPaused = false }) 
               />
             </div>
             
-            {player1.legacyConvergenceActive && (
+            {player1Resonance >= 80 && (
               <div className="mt-1 text-mono-small text-cyan-400 animate-pulse">
-                ⚡ Legacy Convergence Active
+                ⚡ Resonance Peak
               </div>
             )}
           </div>
@@ -159,7 +158,7 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({ isPaused = false }) 
           {/* CENTER: Round Info & Timer */}
           <div className="text-center min-w-[200px]">
             <div className="bg-neutral-900/80 backdrop-blur-md border border-cyan-500/30 rounded px-6 py-3">
-              <p className="text-xs text-neutral-400 uppercase tracking-widest mb-1">Round {currentRound}</p>
+              <p className="text-xs text-neutral-400 uppercase tracking-widest mb-1">Round 1</p>
               <div className="flex items-center justify-center gap-2">
                 <Clock size={16} className="text-white" />
                 <span className={`text-2xl font-bold ${
@@ -201,7 +200,7 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({ isPaused = false }) 
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-white font-bold text-sm drop-shadow-lg">
-                  {Math.ceil(player2.hp)}
+                  {Math.ceil(player2Hp)}
                 </span>
               </div>
             </div>
@@ -218,9 +217,9 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({ isPaused = false }) 
               />
             </div>
             
-            {player2.legacyConvergenceActive && (
+            {player2Resonance >= 80 && (
               <div className="mt-1 text-xs font-bold text-cyan-400 uppercase animate-pulse text-right">
-                Legacy Convergence Active ⚡
+                Resonance Peak ⚡
               </div>
             )}
           </div>
@@ -290,11 +289,6 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({ isPaused = false }) 
         </div>
       )}
 
-      {/* Combat State Indicator (Debug/Training Mode) */}
-      <div className="absolute top-32 left-6 text-xs text-neutral-500 font-mono">
-        <div>P1: {player1.combatState}</div>
-        <div>P2: {player2.combatState}</div>
-      </div>
     </div>
   );
 };
