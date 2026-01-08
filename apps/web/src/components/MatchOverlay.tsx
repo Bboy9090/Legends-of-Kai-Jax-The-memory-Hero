@@ -42,15 +42,13 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({ isPaused = false }) 
       setPlayer1Hp(hp);
     };
 
-    const handleResonanceUpdate = (resonance: number) => {
-      setPlayer1Resonance(resonance);
+    const handleResonanceUpdate = (data: { resonance: number }) => {
+      setPlayer1Resonance(data.resonance);
     };
 
     bus.on('UI_UPDATE_DREAD', handleDreadUpdate);
     bus.on('UI_UPDATE_HP', handleHpUpdate);
-    bus.on('RESONANCE_UPDATE', (data: { resonance: number }) => {
-      handleResonanceUpdate(data.resonance);
-    });
+    bus.on('RESONANCE_UPDATE', handleResonanceUpdate);
 
     return () => {
       bus.off('UI_UPDATE_DREAD', handleDreadUpdate);
