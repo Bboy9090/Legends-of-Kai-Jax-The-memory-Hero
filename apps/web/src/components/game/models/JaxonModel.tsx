@@ -16,6 +16,7 @@ interface JaxonModelProps {
   animTime: number;
   isAttacking: boolean;
   isInvulnerable: boolean;
+  showElectricQuills?: boolean; // Optional: Show electric quills effect
 }
 
 export default function JaxonModel({
@@ -39,12 +40,15 @@ export default function JaxonModel({
   const glowColor = "#FF4500"; // Fire orange-red
   const accentColor = "#FFD700"; // Gold
   
+  // Scale factor: Make character 2.5x larger for better visibility
+  const SCALE = 2.5;
+  
   return (
-    <group ref={bodyRef} position={[0, 0.4, 0]}>
+    <group ref={bodyRef} position={[0, 0.4 * SCALE, 0]} scale={[SCALE, SCALE, SCALE]}>
       {/* Dynamic shadow that follows character */}
-      <DynamicShadow characterY={0.4} groundY={-0.4} maxDistance={3} />
+      <DynamicShadow characterY={0.4 * SCALE} groundY={-0.4 * SCALE} maxDistance={3 * SCALE} />
       
-      {/* HEAD GROUP */}
+      {/* HEAD GROUP - Better proportions (smaller head relative to body) */}
       <group ref={headRef} position={[0, 0.6, 0]}>
         {/* ICONIC RED CAP */}
         <mesh position={[0, 0.2, 0]} castShadow receiveShadow>

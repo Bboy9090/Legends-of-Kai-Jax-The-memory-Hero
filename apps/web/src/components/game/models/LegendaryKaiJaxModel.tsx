@@ -32,6 +32,8 @@ interface LegendaryKaiJaxProps {
   velocityX?: number;
   velocityY?: number;
   health?: number;
+  isTransformed?: boolean; // Optional: Transformation state
+  showThreeTails?: boolean; // Optional: Show 3 Memory Strand Tails
 }
 
 export default function LegendaryKaiJaxModel(props: LegendaryKaiJaxProps) {
@@ -64,6 +66,9 @@ export default function LegendaryKaiJaxModel(props: LegendaryKaiJaxProps) {
     enableFacialAnimation: true,
     enableImpactFrames: true
   });
+  
+  // Scale factor: Make Kai-Jax 2.5x larger for better visibility and presence
+  const SCALE = 2.5;
   
   // Three memory tails (each with 10 bones)
   const tail1Bones = useRef<THREE.Bone[]>([]);
@@ -183,7 +188,7 @@ export default function LegendaryKaiJaxModel(props: LegendaryKaiJaxProps) {
   });
   
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={[SCALE, SCALE, SCALE]}>
       <group ref={bodyRef} position={[0, 0.4, 0]}>
         {/* === HEAD === */}
         <group ref={headRef} position={[0, 0.6, 0]}>

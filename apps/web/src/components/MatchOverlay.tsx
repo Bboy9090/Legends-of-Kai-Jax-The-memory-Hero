@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Heart, Zap, Activity, Clock, Trophy } from 'lucide-react';
-import { gameStateManager, MatchState } from '../../packages/game/src/core/GameStateManager';
+// Note: GameStateManager requires packages/game to be built
+// import { gameStateManager, MatchState } from '../../packages/game/src/core/GameStateManager';
+
+// Temporary stub until package is available
+type MatchState = any;
+const gameStateManager = {
+  subscribe: (callback: (state: any) => void) => () => {},
+  getState: () => ({ match: null })
+};
 import '../styles/bronx_grit.css';
 
 /**
@@ -67,8 +75,8 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({ isPaused = false }) 
   const p1ResPercent = (player1.resonance / player1.maxResonance) * 100;
   const p2ResPercent = (player2.resonance / player2.maxResonance) * 100;
 
-  // Dread intensity
-  const dreadIntensity = 
+  // Dread intensity level (string category)
+  const dreadLevelCategory = 
     dreadLevel >= 80 ? 'extreme' :
     dreadLevel >= 60 ? 'high' :
     dreadLevel >= 40 ? 'medium' : 'low';
@@ -257,9 +265,9 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({ isPaused = false }) 
           
           <p className="text-xs text-grit mt-1">
             {Math.round(dreadIntensity * 100)}% — {
-              dreadIntensity >= 0.8 ? 'EXTREME' :
-              dreadIntensity >= 0.6 ? 'HIGH' :
-              dreadIntensity >= 0.4 ? 'MEDIUM' :
+              dreadLevelCategory === 'extreme' ? 'EXTREME' :
+              dreadLevelCategory === 'high' ? 'HIGH' :
+              dreadLevelCategory === 'medium' ? 'MEDIUM' :
               'LOW'
             }
           </p>

@@ -79,11 +79,16 @@ const AeternaMainMenu: React.FC = () => {
 
       {/* Title */}
       <div className="text-center mb-12 relative z-10">
-        <h1 className="text-legendary text-5xl mb-2 tracking-widest">
-          BEAST-KIN SOVEREIGNTY
+        <h1 className="text-legendary text-6xl mb-2 tracking-widest font-black" style={{ 
+          textShadow: '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.6)',
+          background: 'linear-gradient(180deg, #FFD700 0%, #FFA500 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
+        }}>
+          THE AETERNA COVENANT
         </h1>
-        <h2 className="text-mono-small text-amber-400 mb-4">GENESIS</h2>
-        <p className="text-grit text-sm">THE MEMORY HERO AWAITS</p>
+        <h2 className="text-mono-small text-amber-400 mb-4 text-2xl font-bold">THE MEMORY HERO</h2>
+        <p className="text-grit text-sm text-gray-300">FORGED IN THE BRONX. MASTERED IN THE SILENCE.</p>
       </div>
 
       {/* Menu Items */}

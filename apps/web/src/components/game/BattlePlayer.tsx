@@ -133,6 +133,9 @@ export default function BattlePlayer() {
       movePlayer(moveSpeed, useBattle.getState().playerY);
     }
     
+    // Re-fetch COMPLETE state for Coyote time check
+    const freshState = useBattle.getState();
+    
     // Jump with Coyote Time for Kaison (4-frame window = 0.067s at 60fps)
     if (jump) {
       // Kaison gets 4-frame Coyote time for superior air control
@@ -174,8 +177,7 @@ export default function BattlePlayer() {
       }
     }
     
-    // Re-fetch COMPLETE state after all movements/actions
-    const freshState = useBattle.getState();
+    // Re-fetch COMPLETE state after all movements/actions (already fetched above)
     let currentY = freshState.playerY;
     let velocityY = freshState.playerVelocityY;
     
@@ -392,7 +394,7 @@ export default function BattlePlayer() {
           animTime={animTimeRef.current}
           isAttacking={playerAttacking}
           isInvulnerable={playerInvulnerable}
-          velocityX={playerVelocityY}
+          velocityX={useBattle.getState().playerVelocityX}
           velocityY={useBattle.getState().playerVelocityY}
           health={playerHealth}
           isTransformed={playerTransformed}

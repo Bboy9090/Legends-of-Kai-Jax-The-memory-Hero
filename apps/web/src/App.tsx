@@ -88,7 +88,7 @@ function App() {
     const success = new Audio('/sounds/success.mp3');
     setSuccessSound(success);
 
-    console.log("⚡ SMASH HEROES ULTIMATE - Audio initialized");
+    console.log("⚡ THE AETERNA COVENANT - Audio initialized");
   }, [setBackgroundMusic, setBattleMusic, setHitSound, setSuccessSound]);
 
   // Play background music in menu states

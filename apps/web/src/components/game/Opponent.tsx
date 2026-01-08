@@ -127,7 +127,9 @@ export default function Opponent() {
         if (!opponentAttacking) {
           const attackTypes: ('punch' | 'kick' | 'special')[] = ['punch', 'kick', 'special'];
           const randomAttack = attackTypes[Math.floor(Math.random() * attackTypes.length)];
-          opponentAttack(randomAttack);
+          if (randomAttack) {
+            opponentAttack(randomAttack);
+          }
         }
         break;
         

@@ -97,7 +97,7 @@ function LegendaryLogo() {
         <EnergyRing delay={2} />
       </div>
       
-      {/* Main Title */}
+      {/* Main Title - THE AETERNA COVENANT */}
       <div className="relative z-10">
         <h1 
           className="text-6xl sm:text-7xl md:text-8xl font-black tracking-tighter"
@@ -111,7 +111,7 @@ function LegendaryLogo() {
             textShadow: `0 0 40px rgba(168, 85, 247, 0.8)`,
           }}
         >
-          SMASH
+          THE AETERNA COVENANT
         </h1>
         <h1 
           className="text-5xl sm:text-6xl md:text-7xl font-black tracking-wider -mt-4"
@@ -124,12 +124,12 @@ function LegendaryLogo() {
             filter: `drop-shadow(0 0 ${15 + glow * 15}px rgba(0, 255, 255, ${0.5 + glow * 0.3}))`,
           }}
         >
-          HEROES
+          THE MEMORY HERO
         </h1>
         <div className="flex items-center justify-center gap-2 mt-2">
-          <div className="h-1 w-12 bg-gradient-to-r from-transparent via-yellow-400 to-transparent rounded-full" />
+          <div className="h-1 w-12 bg-gradient-to-r from-transparent via-amber-400 to-transparent rounded-full" />
           <span 
-            className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text"
+            className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text"
             style={{
               background: 'linear-gradient(90deg, #FFD700, #FFA500)',
               WebkitBackgroundClip: 'text',
@@ -137,9 +137,9 @@ function LegendaryLogo() {
               textShadow: '0 0 20px rgba(255, 215, 0, 0.8)',
             }}
           >
-            ULTIMATE
+            FORGED IN THE BRONX. MASTERED IN THE SILENCE.
           </span>
-          <div className="h-1 w-12 bg-gradient-to-r from-transparent via-yellow-400 to-transparent rounded-full" />
+          <div className="h-1 w-12 bg-gradient-to-r from-transparent via-amber-400 to-transparent rounded-full" />
         </div>
       </div>
 
@@ -476,7 +476,7 @@ export default function MainMenu() {
         {/* Version & Copyright */}
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-500">
-            v2.0 LEGENDARY EDITION • © 2024 SMASH HEROES ULTIMATE
+            v1.0 THE IRON-WILL EDITION • © 2026 THE AETERNA COVENANT
           </p>
           <p className="text-xs text-gray-600 mt-1">
             "When two become one, the Memory Hero wakes."
