@@ -1,4 +1,6 @@
-# 🎨 3D CHARACTER MODEL SPECIFICATIONS
+cd apps/web
+pnpm install  # Install dependencies
+pnpm dev      # Start dev server# 🎨 3D CHARACTER MODEL SPECIFICATIONS
 ## Beast-Kin Sovereignty: Genesis - AETERNA COVENANT V1.3
 
 **Project:** PROJECT OMEGA  

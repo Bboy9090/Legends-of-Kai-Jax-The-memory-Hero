@@ -1,4 +1,4 @@
-import { GamepadState, InputAction, InputState } from '@smash-heroes/shared';
+import { GamepadState, InputAction, InputState } from '@beast-kin/shared';
 
 export class GamepadController {
   private state: GamepadState = {

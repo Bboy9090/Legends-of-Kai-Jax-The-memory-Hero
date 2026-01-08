@@ -1,4 +1,4 @@
-import { Vector2D, Vec2 } from '@smash-heroes/shared';
+import { Vector2D, Vec2 } from '@beast-kin/shared';
 
 /**
  * Dynamic Framing Camera - The camera is a character

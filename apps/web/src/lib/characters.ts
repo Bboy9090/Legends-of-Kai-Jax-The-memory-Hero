@@ -14,155 +14,109 @@ export interface Fighter {
 }
 
 export const FIGHTERS: Fighter[] = [
-  // Main Heroes - Jaxon & Kaison (LEGENDARY FUSION DESIGNS!)
+  // GENESIS ROSTER - ORIGINAL BEAST CHARACTERS
+  
+  // KAI-JAX - The Memory King (MAIN PROTAGONIST)
   {
-    id: 'jaxon',
-    name: 'Jaxon',
-    displayName: 'Jaxon',
-    color: '#DC143C', // Deep Crimson Red (Mario)
-    accentColor: '#FF4500', // Fire Orange-Red (Shadow's chaos energy)
-    description: 'Mario meets Shadow! Red cap hero with dark chaos energy!',
-    category: 'heroes',
-    unlocked: true
-  },
-  {
-    id: 'kaison',
-    name: 'Kaison',
-    displayName: 'Kaison',
-    color: '#0066FF', // Bright Blue (Sonic)
-    accentColor: '#00E5FF', // Cyan speed aura (Sonic's trails)
-    description: 'Sonic meets Luigi! Blue speedster with green cap and twin tails!',
-    category: 'heroes',
+    id: 'kai-jax',
+    name: 'KAI-JAX',
+    displayName: 'KAI-JAX',
+    color: '#1A1A2E', // Obsidian charcoal
+    accentColor: '#FFD700', // Golden memory echoes
+    description: 'The Memory King! Star-Slime Chimera with 3 tails and electric quills!',
+    category: 'legends',
     unlocked: true
   },
   
-  // Mario spoof - Marlo the Plumber
+  // Boryx Zenith - The Guardian King
   {
-    id: 'marlo',
-    name: 'Marlo',
-    displayName: 'Marlo',
-    color: '#FF6B6B', // Lighter red than Mario
-    accentColor: '#4ECDC4', // Teal instead of blue
-    description: 'Jumping plumber who loves mushrooms!',
-    category: 'heroes',
+    id: 'boryx-zenith',
+    name: 'Boryx Zenith',
+    displayName: 'Boryx Zenith',
+    color: '#8B4513', // Bronx brown
+    accentColor: '#CD7F32', // Bronze
+    description: 'The Guardian King! Draconic Ursine with chaos-infused source star!',
+    category: 'warriors',
     unlocked: true
   },
   
-  // Luigi spoof - Leonardo
+  // Lunara Solis - The Oracle Sentinel
   {
-    id: 'leonardo',
-    name: 'Leonardo',
-    displayName: 'Leonardo',
-    color: '#95E1D3', // Light green
-    accentColor: '#F38181', // Pink instead of red
-    description: 'Tall jumper and Marlo\'s brother!',
-    category: 'heroes',
-    unlocked: false,
-    unlockRequirement: 500
-  },
-  
-  // Sonic spoof - Speedy the Hedgehog
-  {
-    id: 'speedy',
-    name: 'Speedy',
-    displayName: 'Speedy',
-    color: '#4A90E2', // Bright blue
-    accentColor: '#FFD700', // Gold
-    description: 'The fastest hedgehog alive!',
-    category: 'speedsters',
-    unlocked: true
-  },
-  
-  // Shadow spoof - Midnight
-  {
-    id: 'midnight',
-    name: 'Midnight',
-    displayName: 'Midnight',
-    color: '#2C3E50', // Dark blue-gray
-    accentColor: '#E74C3C', // Red
-    description: 'Dark and mysterious speedster!',
-    category: 'speedsters',
+    id: 'lunara-solis',
+    name: 'Lunara Solis',
+    displayName: 'Lunara Solis',
+    color: '#FFD700', // Gold in sunlight
+    accentColor: '#C0C0C0', // Silver in moonlight
+    description: 'The Oracle Sentinel! 9-tailed Celestial Kitsune with liquid starlight fur!',
+    category: 'legends',
     unlocked: false,
     unlockRequirement: 1000
   },
   
-  // Link spoof - Flynn the Hero
+  // Umbra-Flux - The Velocity Wraith
   {
-    id: 'flynn',
-    name: 'Flynn',
-    displayName: 'Flynn',
-    color: '#27AE60', // Green
-    accentColor: '#F39C12', // Gold
-    description: 'Brave hero with a magic sword!',
-    category: 'warriors',
+    id: 'umbra-flux',
+    name: 'Umbra-Flux',
+    displayName: 'Umbra-Flux',
+    color: '#FFFFFF', // Matte-white metallic
+    accentColor: '#00CED1', // Cyan iridescent
+    description: 'The Velocity Wraith! Star-Wolf with 5 elemental tails and hypersonic speed!',
+    category: 'speedsters',
     unlocked: false,
     unlockRequirement: 750
   },
   
-  // Pikachu spoof - Sparky
+  // Sentinel Vox - The Chrono-Tactician
   {
-    id: 'sparky',
-    name: 'Sparky',
-    displayName: 'Sparky',
-    color: '#F4D03F', // Yellow
-    accentColor: '#E74C3C', // Red
-    description: 'Electric critter with shocking powers!',
-    category: 'legends',
+    id: 'sentinel-vox',
+    name: 'Sentinel Vox',
+    displayName: 'Sentinel Vox',
+    color: '#708090', // Steel gray
+    accentColor: '#FF4500', // Orange-red visor
+    description: 'The Chrono-Tactician! Cybernetic Commander with time-lock abilities!',
+    category: 'warriors',
     unlocked: false,
     unlockRequirement: 1500
   },
   
-  // Kirby spoof - Bubble
+  // Chronos Sere - The Extinction Sovereign
   {
-    id: 'bubble',
-    name: 'Bubble',
-    displayName: 'Bubble',
-    color: '#FF9FF3', // Pink
-    accentColor: '#54A0FF', // Blue
-    description: 'Round and bouncy fighter!',
+    id: 'chronos-sere',
+    name: 'Chronos Sere',
+    displayName: 'Chronos Sere',
+    color: '#4B0082', // Indigo void
+    accentColor: '#9370DB', // Medium purple
+    description: 'The Extinction Sovereign! Time-Wielding Warlord from the Collapse!',
     category: 'legends',
-    unlocked: false,
-    unlockRequirement: 2000
-  },
-  
-  // Bowser spoof - King Spike
-  {
-    id: 'kingspike',
-    name: 'King Spike',
-    displayName: 'King Spike',
-    color: '#E67E22', // Orange
-    accentColor: '#8E44AD', // Purple
-    description: 'Big strong turtle king!',
-    category: 'warriors',
     unlocked: false,
     unlockRequirement: 2500
   },
   
-  // Fox McCloud spoof - Captain Blaze
+  // Silver - The Time Warden (Eternal Triad)
   {
-    id: 'captainblaze',
-    name: 'Captain Blaze',
-    displayName: 'Captain Blaze',
-    color: '#95A5A6', // Gray
-    accentColor: '#3498DB', // Blue
-    description: 'Space pilot with laser blasters!',
-    category: 'warriors',
+    id: 'silver',
+    name: 'SILVER',
+    displayName: 'SILVER',
+    color: '#C0C0C0', // Silver-white
+    accentColor: '#00E5FF', // Cyan chrono-energy
+    description: 'The Time Warden! Psychokinetic time-traveler with ESP!',
+    category: 'legends',
     unlocked: false,
     unlockRequirement: 3000
   },
   
-  // Samus spoof - Nova Knight
+  // Voidonus Imperion - The Void King (ULTIMATE VILLAIN)
   {
-    id: 'novaknight',
-    name: 'Nova Knight',
-    displayName: 'Nova Knight',
-    color: '#E91E63', // Pink/Magenta instead of orange
-    accentColor: '#9C27B0', // Purple
-    description: 'Armored space warrior!',
-    category: 'warriors',
+    id: 'voidonus',
+    name: 'Voidonus Imperion',
+    displayName: 'Voidonus Imperion',
+    color: '#0A0A0A', // Void black
+    accentColor: '#8B00FF', // Neon violet
+    description: 'The Void King! The End of All Things - ultimate darkness!',
+    category: 'legends',
     unlocked: false,
-    unlockRequirement: 3500
-  }
+    unlockRequirement: 5000
+  },
 ];
 
 export function getFighterById(id: string): Fighter | undefined {

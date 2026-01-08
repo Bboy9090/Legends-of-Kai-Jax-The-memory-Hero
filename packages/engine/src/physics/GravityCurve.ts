@@ -1,4 +1,4 @@
-import { RigidBody } from '@smash-heroes/shared';
+import { RigidBody } from '@beast-kin/shared';
 
 /**
  * Variable Gravity Curves - Makes jumping feel snappy on ascent and weighted on descent

@@ -4,7 +4,7 @@ import { useKeyboardControls } from "@react-three/drei";
 import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
-import JaxonModel from "./models/JaxonModel";
+import LegendaryKaiJaxModel from "./models/LegendaryKaiJaxModel";
 import KaisonModel from "./models/KaisonModel";
 
 // Use the same Controls enum as App.tsx
@@ -322,9 +322,9 @@ export default function BattlePlayer() {
   
   // LEGENDARY CHARACTER MODELS - Use specialized designs for Jaxon & Kaison!
   const renderCharacterModel = () => {
-    if (playerFighterId === 'jaxon') {
+    if (playerFighterId === 'jaxon' || playerFighterId === 'kai-jax') {
       return (
-        <JaxonModel 
+        <LegendaryKaiJaxModel 
           bodyRef={bodyRef}
           headRef={headRef}
           leftArmRef={leftArmRef}
@@ -336,6 +336,9 @@ export default function BattlePlayer() {
           animTime={animTimeRef.current}
           isAttacking={playerAttacking}
           isInvulnerable={playerInvulnerable}
+          velocityX={playerVelocityY}
+          velocityY={useBattle.getState().playerVelocityY}
+          health={playerHealth}
         />
       );
     }

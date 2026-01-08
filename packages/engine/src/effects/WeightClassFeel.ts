@@ -1,4 +1,4 @@
-import { Vector2D } from '@smash-heroes/shared';
+import { Vector2D } from '@beast-kin/shared';
 import { ScreenEffects } from './ScreenEffects';
 import { ParticleSystem } from './ParticleSystem';
 

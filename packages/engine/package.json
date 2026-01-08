@@ -1,5 +1,5 @@
 {
-  "name": "@smash-heroes/engine",
+  "name": "@beast-kin/engine",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@smash-heroes/shared": "workspace:*"
+    "@beast-kin/shared": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.6.3"

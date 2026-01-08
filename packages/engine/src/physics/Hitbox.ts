@@ -1,4 +1,4 @@
-import { Hitbox as HitboxType, HitboxType as HitboxTypeEnum, AABB, Vector2D } from '@smash-heroes/shared';
+import { Hitbox as HitboxType, HitboxType as HitboxTypeEnum, AABB, Vector2D } from '@beast-kin/shared';
 
 export class HitboxManager {
   private hitboxes: Map<string, HitboxType> = new Map();

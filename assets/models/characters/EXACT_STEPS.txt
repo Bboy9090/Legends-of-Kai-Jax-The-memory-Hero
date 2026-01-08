@@ -1,0 +1,49 @@
+═══════════════════════════════════════════════════════════════
+  EXACT STEPS - DO THIS IN BLENDER
+═══════════════════════════════════════════════════════════════
+
+STEP 1: BLENDER IS OPEN
+  ✓ Blender should be opening now
+  ✓ Wait for it to fully load
+
+STEP 2: CLICK "TEXT EDITOR" TAB
+  - Look at top of Blender window
+  - See tabs: Layout, Modeling, Sculpting, Text Editor
+  - CLICK "Text Editor" tab
+
+STEP 3: CLICK "NEW" BUTTON
+  - In Text Editor panel
+  - Click "New" button (top left)
+
+STEP 4: CLICK "OPEN" BUTTON
+  - Click "Open" button (or File → Open)
+  - Navigate to: assets/models/characters/blender_scripts/
+  - Open file: quick_test_jaxon.py
+
+STEP 5: PRESS Alt+P
+  - Press Alt key + P key
+  - Script runs!
+  - Watch viewport and console
+
+═══════════════════════════════════════════════════════════════
+
+WHAT YOU SHOULD SEE:
+  ✓ Console: "✅ JAXON BLOCKOUT CREATED!"
+  ✓ Viewport: Electric Blue hedgehog
+  ✓ 7 blue quills on back
+  ✓ 2 green eyes
+
+═══════════════════════════════════════════════════════════════
+
+IF IT WORKS:
+  - Press Home (frame all)
+  - Rotate view (Middle Mouse)
+  - Check from all angles
+  - SUCCESS! ✅
+
+IF IT DOESN'T WORK:
+  - Check console for errors
+  - Check Blender version (need 4.0+)
+  - Check file path
+
+═══════════════════════════════════════════════════════════════

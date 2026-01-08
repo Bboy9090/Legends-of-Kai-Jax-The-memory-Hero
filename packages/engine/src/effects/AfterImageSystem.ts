@@ -1,4 +1,4 @@
-import { Vector2D } from '@smash-heroes/shared';
+import { Vector2D } from '@beast-kin/shared';
 
 /**
  * Omega Protocol: After-Image Shadow System

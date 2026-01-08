@@ -1,4 +1,4 @@
-import { FighterStats, MoveSet } from '@smash-heroes/shared';
+import { FighterStats, MoveSet } from '@beast-kin/shared';
 import { GravityCurveConfig } from '../physics/GravityCurve';
 
 /**

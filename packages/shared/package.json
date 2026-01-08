@@ -1,5 +1,5 @@
 {
-  "name": "@smash-heroes/shared",
+  "name": "@beast-kin/shared",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",

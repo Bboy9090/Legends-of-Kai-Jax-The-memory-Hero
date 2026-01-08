@@ -1,4 +1,4 @@
-import { AttackData } from '@smash-heroes/shared';
+import { AttackData } from '@beast-kin/shared';
 
 /**
  * Frame-Canceling System - Allows high-skill players to string creative combos

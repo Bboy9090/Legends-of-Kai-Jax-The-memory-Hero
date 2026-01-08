@@ -1,6 +1,7 @@
-# 🎮 SMASH HEROES ULTIMATE
+# 🦁 BEAST-KIN SOVEREIGNTY: GENESIS
+## Legends of Kai-Jax - The Memory Hero
 
-> **The Ultimate Fighting Game Engine** - Combining the best of Smash Bros, Marvel Ultimate Alliance, Spider-Man PS5, and Batman Arkham combat systems
+> **Original Platform Fighting RPG** - Combining epic story-driven combat with Genesis Warriors, Resonance Systems, and Celestial Transformations
 
 [![CI](https://github.com/Bboy9090/Smash-Hereos/actions/workflows/ci.yml/badge.svg)](https://github.com/Bboy9090/Smash-Hereos/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
@@ -15,7 +16,7 @@
 
 Build the greatest looking and feeling fighting game engine with:
 
-- **Super Smash Bros Ultimate**: Percentage-based knockback, platform fighting, satisfying hit-stop
+- **Platform Fighting Evolved**: Resonance-based knockback, multi-plane combat, cinematic impact
 - **Marvel Ultimate Alliance**: Hero abilities, ultimate powers, team synergy
 - **Spider-Man PS5**: Fluid momentum-based movement, cinematic finishers
 - **Batman Arkham Series**: Freeflow combat, counter system, rhythm-based combos
@@ -110,7 +111,7 @@ smash-heroes/
 
 ### 💥 Combat System
 
-#### Smash-Style Damage & Knockback
+#### Resonance-Based Damage & Impact System
 
 ```typescript
 // Knockback formula: ((((p/10 + (p*d)/20) * 200/(w+100) * 1.4) + 18) * s) + b) * r
@@ -192,7 +193,7 @@ Balanced fighter with complete moveset:
 **Ground Attacks**
 - Jab Combo (3-hit)
 - Tilts (Forward, Up, Down)
-- Smash Attacks (Forward, Up, Down)
+- Impact Sequences (Forward, Up, Down)
 
 **Aerial Attacks**
 - Neutral Air, Forward Air, Back Air
@@ -243,13 +244,13 @@ pnpm format
 
 ```bash
 # Start web app
-pnpm --filter @smash-heroes/web dev
+pnpm --filter @beast-kin/web dev
 
 # Start mobile app
-pnpm --filter @smash-heroes/mobile dev
+pnpm --filter @beast-kin/mobile dev
 
 # Build specific package
-pnpm --filter @smash-heroes/engine build
+pnpm --filter @beast-kin/engine build
 ```
 
 ### DevContainer
@@ -271,7 +272,7 @@ See [CHARACTER_GUIDE.md](docs/CHARACTER_GUIDE.md) for detailed instructions.
 Quick example:
 
 ```typescript
-import { BaseFighter, MoveSetBuilder } from '@smash-heroes/characters';
+import { BaseFighter, MoveSetBuilder } from '@beast-kin/characters';
 
 export class MyHero extends BaseFighter {
   protected getDefaultStats() {
@@ -411,7 +412,7 @@ MIT License - see [LICENSE](LICENSE) file for details
 ## 🙏 Acknowledgments
 
 Inspired by:
-- Super Smash Bros Ultimate
+- Platform Fighting Genre Pioneers
 - Marvel Ultimate Alliance
 - Spider-Man (PS5)
 - Batman: Arkham Series

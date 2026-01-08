@@ -21,7 +21,7 @@ import '@web/styles/bronx_grit.css';
 
 const Match: React.FC = () => {
   const navigate = useNavigate();
-  const { state } = useContext(GameStateContext);
+  const { state, setState } = useContext(GameStateContext);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [matchTime, setMatchTime] = useState(180); // 3 minutes
   const [gameState, setGameState] = useState({
@@ -59,20 +59,51 @@ const Match: React.FC = () => {
     renderer.shadowMap.type = THREE.PCFShadowShadowMap;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // Lighting setup
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    // Lighting setup - LEGENDARY 3-POINT LIGHTING
+    const ambientLight = new THREE.AmbientLight(0xb4b4ff, 0.2);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffaa00, 0.8);
-    keyLight.position.set(10, 10, 10);
+    // Key light (main directional)
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    keyLight.position.set(5, 8, 5);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.width = 2048;
     keyLight.shadow.mapSize.height = 2048;
+    keyLight.shadow.camera.far = 50;
+    keyLight.shadow.camera.left = -10;
+    keyLight.shadow.camera.right = 10;
+    keyLight.shadow.camera.top = 10;
+    keyLight.shadow.camera.bottom = -10;
+    keyLight.shadow.bias = -0.0001;
     scene.add(keyLight);
 
-    const rimLight = new THREE.DirectionalLight(0x00aaff, 0.3);
-    rimLight.position.set(-10, 5, 5);
+    // Fill light (soft ambient from left)
+    const fillLight = new THREE.DirectionalLight(0x7dd3fc, 0.3);
+    fillLight.position.set(-5, 3, 5);
+    scene.add(fillLight);
+    
+    // Rim light (edge highlight from behind)
+    const rimLight = new THREE.DirectionalLight(0xfbbf24, 0.8);
+    rimLight.position.set(0, 4, -8);
     scene.add(rimLight);
+    
+    // Hemisphere light (sky/ground)
+    const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x654321, 0.4);
+    hemiLight.position.set(0, 50, 0);
+    scene.add(hemiLight);
+    
+    // Accent point lights
+    const pointLight1 = new THREE.PointLight(0xffffff, 0.5, 10, 2);
+    pointLight1.position.set(0, 5, 0);
+    scene.add(pointLight1);
+    
+    const pointLight2 = new THREE.PointLight(0x9d4edd, 0.3, 15, 2);
+    pointLight2.position.set(-5, 2, -5);
+    scene.add(pointLight2);
+    
+    const pointLight3 = new THREE.PointLight(0x00d9ff, 0.3, 15, 2);
+    pointLight3.position.set(5, 2, -5);
+    scene.add(pointLight3);
 
     // Ground plane
     const groundGeometry = new THREE.PlaneGeometry(30, 30);
@@ -234,6 +265,8 @@ const Match: React.FC = () => {
       // Exit (ESC key)
       if (e.key === 'Escape') {
         gameRunning = false;
+        // Reset game state to menu before navigating
+        setState({ ...state, gameState: 'menu' });
         navigate('/');
       }
     };
@@ -380,6 +413,11 @@ const Match: React.FC = () => {
       // Check if match is over
       if (matchStats.winner || matchStats.timeRemaining <= 0) {
         gameRunning = false;
+        // Reset game state when match ends
+        setTimeout(() => {
+          setState({ ...state, gameState: 'menu' });
+          navigate('/');
+        }, 3000); // Give time to see the winner
       }
 
       profiler.updateFrameMetrics();

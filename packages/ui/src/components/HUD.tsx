@@ -1,5 +1,5 @@
 import React from 'react';
-import type { FighterDisplayState } from '@smash-heroes/shared';
+import type { FighterDisplayState } from '@beast-kin/shared';
 
 export interface HUDProps {
   player1: FighterDisplayState;

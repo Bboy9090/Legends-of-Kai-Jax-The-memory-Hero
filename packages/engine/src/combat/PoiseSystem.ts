@@ -1,4 +1,4 @@
-import { Hitbox, DamageType } from '@smash-heroes/shared';
+import { Hitbox, DamageType } from '@beast-kin/shared';
 
 /**
  * Poise and Stagger System - Small hits flinch, heavy hits launch

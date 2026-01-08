@@ -15,16 +15,16 @@ import {
   CancelType,
   ReactionType,
   ActionType,
-} from '@smash-heroes/engine';
+} from '@beast-kin/engine';
 
 import {
   CharacterArchetype,
   LifePath,
   ZodiacSign,
   BaseFighter,
-} from '@smash-heroes/characters';
+} from '@beast-kin/characters';
 
-import { ParticleSystem } from '@smash-heroes/engine';
+import { ParticleSystem } from '@beast-kin/engine';
 
 /**
  * Example: Create a Life Path 9 / Virgo character
