@@ -16,16 +16,44 @@ export interface Fighter {
 export const FIGHTERS: Fighter[] = [
   // GENESIS ROSTER - ORIGINAL BEAST CHARACTERS
   
-  // KAI-JAX - The Memory King (MAIN PROTAGONIST)
+  // JAXON - The Velocity Fracture (SOLO PLAYABLE - Pre-Fusion)
+  {
+    id: 'jaxon',
+    name: 'JAXON',
+    displayName: 'JAXON, The Velocity Fracture',
+    color: '#333333', // Charcoal
+    accentColor: '#00CED1', // Electric cyan/blue
+    description: 'Young beastly hedgehog with long electricity-flowing quills. Very feral but calculated, smart, witty. Solo playable before fusion.',
+    category: 'speedsters',
+    unlocked: true,
+    bookUnlock: 1
+  },
+  
+  // KAISON - The Star-Force Kitsune (SOLO PLAYABLE - Pre-Fusion)
+  {
+    id: 'kaison',
+    name: 'KAISON',
+    displayName: 'KAISON, The Star-Force Kitsune',
+    color: '#444444', // Charcoal with tactical
+    accentColor: '#FFD700', // Golden Star-Force
+    description: 'Young fox/tails/wolf with Spider-Man mobility and web control. Chase Badge sonar system. Jokingly authorized banter. Solo playable before fusion.',
+    category: 'warriors',
+    unlocked: true,
+    bookUnlock: 1
+  },
+  
+  // KAI-JAX - The Memory Hero / Archive King (FUSED FORM)
   {
     id: 'kai-jax',
     name: 'KAI-JAX',
-    displayName: 'KAI-JAX',
+    displayName: 'KAI-JAX, The Memory Hero',
     color: '#1A1A2E', // Obsidian charcoal
     accentColor: '#FFD700', // Golden memory echoes
-    description: 'The Memory King! Star-Slime Chimera with 3 tails and electric quills!',
+    description: 'The Archive King! Star-Slime Chimera with 3 Memory Strand Tails (Jax/Liquid Ink, Kai/Ink Smoke, Father/Anchor). Long electric quills, Sage-Mode eyes.',
     category: 'legends',
-    unlocked: true
+    unlocked: false,
+    unlockRequirement: 50, // Unlocks at 50% Resonance during fusion
+    bookUnlock: 1
   },
   
   // Boryx Zenith - The Guardian King

@@ -1,422 +1,183 @@
-# 🦁 BEAST-KIN SOVEREIGNTY: GENESIS
-## Legends of Kai-Jax - The Memory Hero
+# 🌌 AETERNA COVENANT | THE SILENT ARCHITECT
+### "Forged in the Bronx. Mastered in the Silence."
 
-> **Original Platform Fighting RPG** - Combining epic story-driven combat with Genesis Warriors, Resonance Systems, and Celestial Transformations
+**A Mythic Platform Fighter PWA** - Playable on iPad, Mobile, and PC
 
-[![CI](https://github.com/Bboy9090/Smash-Hereos/actions/workflows/ci.yml/badge.svg)](https://github.com/Bboy9090/Smash-Hereos/actions/workflows/ci.yml)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Omega Protocol](https://img.shields.io/badge/Omega%20Protocol-Certified-gold)](docs/OMEGA_PROTOCOL_COMPLIANCE.md)
-
-## ⚡ Omega Protocol Certified
-
-**This codebase meets "Evolutionary Superiority" standards** as defined by the Omega Protocol game development bible. Every mechanic has been audited and enhanced to **Legendary Level**. See [Omega Protocol Compliance Report](docs/OMEGA_PROTOCOL_COMPLIANCE.md) for full certification details.
-
-## 🌟 Vision
-
-Build the greatest looking and feeling fighting game engine with:
-
-- **Platform Fighting Evolved**: Resonance-based knockback, multi-plane combat, cinematic impact
-- **Marvel Ultimate Alliance**: Hero abilities, ultimate powers, team synergy
-- **Spider-Man PS5**: Fluid momentum-based movement, cinematic finishers
-- **Batman Arkham Series**: Freeflow combat, counter system, rhythm-based combos
-
-**Target Platforms**: Mobile/Tablet (primary), PC/Web (secondary)
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Node.js 20 LTS or higher
-- pnpm 8 or higher
-
-### Installation
-
-```bash
-# Install pnpm if you haven't
-npm install -g pnpm
-
-# Install dependencies
-pnpm install
-
-# Start development
-pnpm dev
-
-# Build for production
-pnpm build
-```
-
-## 📦 Project Structure
-
-This is a modern TypeScript monorepo using pnpm workspaces and Turborepo:
-
-```
-smash-heroes/
-├── apps/
-│   ├── web/              # Web game (Vite + React + R3F)
-│   │   ├── src/          # Game components, pages
-│   │   ├── public/       # Static assets
-│   │   └── vite.config.ts
-│   └── mobile/           # Mobile app (Capacitor + PWA)
-│       ├── src/          # Mobile-specific code
-│       └── capacitor.config.json
-├── packages/
-│   ├── engine/           # Core game engine
-│   │   ├── core/         # GameLoop (60fps), Scene, AssetLoader
-│   │   ├── physics/      # MomentumPhysics, Hitbox, Collision
-│   │   ├── combat/       # CombatEngine, Damage, Knockback
-│   │   ├── input/        # InputManager, InputBuffer (6-frame)
-│   │   ├── animation/    # StateMachine, AnimationController
-│   │   ├── effects/      # Particles, ScreenEffects
-│   │   └── audio/        # AudioManager, SoundPool
-│   ├── characters/       # Fighter implementations
-│   │   ├── base/         # BaseFighter, MoveSet, StateMachine
-│   │   └── heroes/       # Kaison (Fox), Jaxon (Hedgehog), Kaxon (Fusion), Striker
-│   ├── ui/               # React UI components
-│   │   └── components/   # HUD, BattleUI, VirtualJoystick
-│   ├── server/           # Server-side logic
-│   │   └── missions/     # Mission system (100 missions, 10 books)
-│   └── shared/           # Shared types, utils, constants
-│       ├── types/        # TypeScript types for all systems
-│       ├── constants/    # Game configuration
-│       └── utils/        # Utility functions
-├── assets/
-│   ├── sprites/          # 2D sprite assets
-│   ├── audio/            # Sound effects and music
-│   └── models/           # 3D models (.glb files)
-├── docs/                 # Game design documents
-├── legacy_replit/        # Original Replit prototype files
-├── LEGACY_FILES.md       # File mapping from old → new structure
-└── MIGRATION_LOG.md      # Detailed migration tracking
-```
-
-### 📁 Workspace Structure
-
-- **apps/**: Deployable applications (web, mobile)
-- **packages/**: Reusable packages (engine, characters, ui, etc.)
-- **Monorepo tools**: pnpm (package manager), Turborepo (build orchestration)
-
-
-## 🎯 Core Features
-
-### ⚡ Physics System
-
-- **60 FPS Fixed Timestep**: Rock-solid game loop
-- **Momentum-Based Movement**: Spider-Man style fluid movement
-- **Variable Gravity Curves**: Snappy liftoff, floaty peak, weighted falls ✨ NEW
-- **Coyote Time**: Grace period after leaving platform (5 frames)
-- **Jump Buffering**: Remember jump inputs (6 frames)
-- **Variable Jump Height**: Hold for higher jumps
-- **Fast Fall**: Quick descent with down input
-
-### 💥 Combat System
-
-#### Resonance-Based Damage & Impact System
-
-```typescript
-// Knockback formula: ((((p/10 + (p*d)/20) * 200/(w+100) * 1.4) + 18) * s) + b) * r
-KB = f(damage%, attack_damage, weight, growth, base, rage)
-```
-
-- **Percentage Damage**: 0% to 999%
-- **Dynamic Knockback**: Scales with damage
-- **DI (Directional Influence)**: Control knockback direction (±18°)
-- **Rage System**: More knockback at high damage (+15% max)
-- **Poise & Stagger System**: Light hits flinch, heavy hits launch ✨ NEW
-
-#### Arkham-Style Freeflow
-
-- **Attack Chains**: Seamless target switching
-- **Counter Windows**: 8 frames to counter attacks
-- **Parry System**: 3 frame perfect parry (2x damage multiplier)
-- **Combo Multiplier**: Up to 2x damage at high combo count
-- **Rhythm-Based Flow**: Timing-based combo extensions
-- **Frame-Canceling**: Advanced combo system for skilled players ✨ NEW
-
-### 🎮 Input System
-
-Unified input handling for all platforms:
-
-- **Keyboard**: WASD + IJKL/Arrow keys
-- **Gamepad**: Full Xbox/PlayStation controller support
-- **Touch**: Virtual joystick + action buttons
-- **Gestures**: Swipe to jump, tap to attack
-- **6-Frame Buffer**: Never miss an input
-
-### 🎨 Visual Effects
-
-- **Hitlag/Hitstop**: Freeze frames on impact (2-20 frames)
-- **Screen Shake**: Intensity scales with damage
-- **Slow Motion**: Dramatic slow-mo on big hits (30% speed)
-- **Particle System**: Hit sparks, explosions, trails
-- **Visual Juice**: Dust clouds on dash, sparks on parry, movement trails ✨ NEW
-- **Dynamic Camera**: Zoom in for 1v1 tension, zoom out for chaos ✨ NEW
-
-## 🥊 Character System
-
-### Striker - The All-Rounder
-
-Balanced fighter with complete moveset:
-### ⚔️ Playable Characters
-
-#### Kaison 🦊 (Fox)
-**Speed Fighter** - High mobility with quick attacks
-- **Weight**: 80 (Light)
-- **Speed**: 2.4 (Fast runner)
-- **Special**: Fox Blaster, Fox Dash, Fox Fire, Fox Reflector
-- **Playstyle**: Aggressive rushdown with momentum-based combos
-
-#### Jaxon 🦔 (Hedgehog)
-**Speed Demon** - Fastest character with spin attacks
-- **Weight**: 75 (Very light)
-- **Speed**: 3.2 (Fastest)
-- **Special**: Homing Attack, Spin Dash (chargeable), Spring Jump
-- **Playstyle**: Hit-and-run with spin-based multi-hit combos
-
-#### Kaxon ⚡ (Fusion - 3 Tails)
-**Ultimate Form** - Fusion of Kaison and Jaxon
-- **Weight**: 95 (Balanced)
-- **Speed**: 3.5 (Ultimate speed)
-- **Fusion Timer**: 30 seconds
-- **Special**: Fusion Blaster Barrage, Hyper Dash, Triple Tail Tornado
-- **Ultimate**: Chaos Rift (screen-filling attack)
-- **Requires**: 100% Synergy Meter to transform
-
-#### Striker ⚡
-**Balanced Fighter** - All-around balanced moveset
-- **Weight**: 100 (Average)
-- **Speed**: 2.0 (Balanced)
-- **Playstyle**: Versatile with solid fundamentals
-
-### Attack System
-
-**Ground Attacks**
-- Jab Combo (3-hit)
-- Tilts (Forward, Up, Down)
-- Impact Sequences (Forward, Up, Down)
-
-**Aerial Attacks**
-- Neutral Air, Forward Air, Back Air
-- Up Air, Down Air (Spike)
-
-**Special Moves**
-- Neutral Special: Projectile/Power attack
-- Side Special: Dash Strike
-- Up Special: Recovery move
-- Down Special: Counter/Defense
-
-**Tag & Fusion System**
-- Switch between Kaison and Jaxon
-- Build Synergy Meter through combos
-- Transform into Kaxon at 100% meter
-- Cinematic transformation sequence
-
-## 🛠️ Development
-
-### Monorepo Commands
-
-This project uses a pnpm workspace + Turborepo setup:
-
-```bash
-# Install dependencies
-pnpm install
-
-# Build all packages
-pnpm build
-
-# Watch mode (development)
-pnpm dev
-
-# Run linting
-pnpm lint
-
-# Type checking
-pnpm typecheck
-
-# Run tests
-pnpm test
-
-# Format code
-pnpm format
-```
-
-### Running Specific Apps
-
-```bash
-# Start web app
-pnpm --filter @beast-kin/web dev
-
-# Start mobile app
-pnpm --filter @beast-kin/mobile dev
-
-# Build specific package
-pnpm --filter @beast-kin/engine build
-```
-
-### DevContainer
-
-Open in GitHub Codespaces or VS Code with Remote Containers:
-
-```bash
-# The devcontainer includes:
-# - Node.js 20 LTS
-# - pnpm 8+
-# - TypeScript, ESLint, Prettier extensions
-# - Auto-format on save
-```
-
-### Adding a New Character
-
-See [CHARACTER_GUIDE.md](docs/CHARACTER_GUIDE.md) for detailed instructions.
-
-Quick example:
-
-```typescript
-import { BaseFighter, MoveSetBuilder } from '@beast-kin/characters';
-
-export class MyHero extends BaseFighter {
-  protected getDefaultStats() {
-    return {
-      weight: 100,
-      walkSpeed: 1.2,
-      // ... more stats
-    };
-  }
-
-  protected createMoveSet() {
-    return new MoveSetBuilder()
-      .addAttack('jab', { damage: 3, ... })
-      .build();
-  }
-}
-```
-
-## 📚 Documentation
-
-- [Architecture](docs/ARCHITECTURE.md) - System design and architecture
-- [Character Guide](docs/CHARACTER_GUIDE.md) - How to create new characters
-- [Combat System](docs/COMBAT_SYSTEM.md) - Deep dive into combat mechanics
-- [Getting Started](docs/GETTING_STARTED.md) - Detailed setup guide
-- **[Omega Protocol Compliance](docs/OMEGA_PROTOCOL_COMPLIANCE.md) - Certification report ✨ NEW**
-- **[Legendary Mechanics](docs/LEGENDARY_MECHANICS.md) - Advanced "legendary-tier" systems ✨ UPDATED**
-- **[Integration Example](docs/INTEGRATION_EXAMPLE.ts) - Complete usage examples**
-
-## 🌟 Legendary-Tier Features
-
-We've implemented advanced mechanics inspired by the best fighting games, all certified under the Omega Protocol:
-
-### The "Feelability" Protocol ✅
-- **Variable Gravity Curves**: Snappy liftoff, floaty peak, weighted falls
-- **Frame-Canceling**: Advanced combo system with 5 cancel types
-- **Poise & Stagger**: Impact-based reactions (flinch → stagger → launch)
-- **Hit-Stop**: 2-20 frames based on damage
-- **Input Buffering**: 6-frame window for zero missed inputs
-- **Coyote Time**: 5-frame grace period for jumps
-
-### Omega Protocol Enhancements ✨ NEW
-- **Transformation System**: Mid-combat instant transformations with real-time stat/moveset changes
-- **After-Image Shadows**: Speedsters leave ghost trails at 3.0+ speed
-- **Weight Class Feel**: Heavy characters "tear the earth," light characters feel swift
-- **Legendary Blows**: 0.08s freeze, screen desaturation, shockwave ripples for 30+ damage hits
-
-### Visual Superiority ✅
-- **Visual Juice System**: Secondary effects on every action
-  - Dust clouds on dashes
-  - Sparks on parries  
-  - Impact effects scaled by damage
-  - Movement trails for high-speed action
-- **Dynamic Camera**: The camera is a character
-  - Zoom in for tense 1v1 moments (up to 2.0x)
-  - Zoom out for chaotic multi-fighter brawls (down to 0.5x)
-  - Smooth interpolation and auto-framing
-- **Weight-Based Effects**: Ground cracks, tremors, footprints for heavy characters ✨ NEW
-
-### Tactical AI ✅
-NPCs that actually think:
-- **Flanking**: Coordinate with allies to attack from multiple sides
-- **Retreat**: Fall back when health is low
-- **Punish**: Capitalize on player mistakes
-- **Difficulty Scaling**: Easy (50%) to Legendary (95% accuracy)
-- **Personalities**: Aggressive, Defensive, Balanced, Tactical
-
-### Narrative Integration ✅
-- **Character Archetypes**: Life Path (1-9) + Zodiac Sign
-  - Example: Life Path 9 / Virgo = "Disciplined, analytical, devastatingly efficient"
-  - Combat modifiers affect speed, defense, precision, etc.
-  - Each archetype has unique strengths, weaknesses, and special mechanics
-- **Environmental Storytelling**: Character backstories integrated into gameplay
-
-See [LEGENDARY_MECHANICS.md](docs/LEGENDARY_MECHANICS.md) for complete details and usage examples.
-
-## 🎯 Performance Targets
-
-- **Frame Rate**: Stable 60 FPS on mobile devices
-- **Input Latency**: < 3 frames (50ms)
-- **Bundle Size**: < 500KB for core engine
-- **Type Safety**: 100% TypeScript, strict mode
-
-## 🗺️ Roadmap
-
-### Phase 1: Core Engine ✅
-- [x] Game loop (60 FPS fixed timestep)
-- [x] Physics system (momentum, collision)
-- [x] Combat system (damage, knockback, combos)
-- [x] Input system (keyboard, gamepad, touch)
-- [x] Animation & state machine
-- [x] Visual & audio effects
-
-### Phase 2: Characters ✅
-- [x] Base fighter class
-- [x] Fighter state machine
-- [x] Striker character (complete moveset)
-- [x] Character archetype system ✨ NEW
-
-### Phase 2.5: Legendary-Tier Mechanics ✅ NEW
-- [x] Variable gravity curves
-- [x] Frame-canceling system
-- [x] Poise & stagger system
-- [x] Visual juice system
-- [x] Dynamic camera
-- [x] Tactical AI system
-- [x] Character archetypes (Life Path + Zodiac)
-
-### Phase 3: UI & Apps (In Progress)
-- [ ] React UI components
-- [ ] HUD (damage display, combo counter)
-- [ ] Menus (character select, stage select)
-- [ ] Mobile virtual controls
-- [ ] Web application (Vite + React)
-- [ ] Mobile app (Capacitor)
-
-### Phase 4: Content
-- [ ] More playable characters
-- [ ] Multiple stages
-- [ ] Game modes (Stock, Time, Training)
-- [ ] Sound effects & music
-- [ ] Visual polish (shaders, particles)
-
-### Phase 5: Online
-- [ ] Rollback netcode
-- [ ] Matchmaking
-- [ ] Replay system
-- [ ] Leaderboards
-
-## 🤝 Contributing
-
-Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) first.
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) file for details
-
-## 🙏 Acknowledgments
-
-Inspired by:
-- Platform Fighting Genre Pioneers
-- Marvel Ultimate Alliance
-- Spider-Man (PS5)
-- Batman: Arkham Series
+[![Deploy to GitHub Pages](https://github.com/YOUR_USERNAME/Aeterna-Covenant/actions/workflows/deploy.yml/badge.svg)](https://github.com/YOUR_USERNAME/Aeterna-Covenant/actions)
 
 ---
 
-**Made with ❤️ for fighting game enthusiasts**
+## 📜 THE MANIFESTO
+
+I'm a 35-year-old Reflector from the Bronx. I see the gaps, the glitches, and the broken connections in a world designed to lock you out of your own life. People see a bricked phone; I see a soul waiting for a heartbeat.
+
+**Aeterna Covenant** isn't just a game. It's a restoration of sovereignty. We don't ask for permission from gatekeepers. We find the "Secret Rooms," we bypass the "Traps," and we reclaim the hardware. This is for the sons, the brothers, and the legends.
+
+---
+
+## 🎮 PLAY NOW
+
+**Live URL:** `https://YOUR_USERNAME.github.io/Aeterna-Covenant`
+
+**Install on Your Device:**
+- **iPad/iPhone:** Safari → Share → "Add to Home Screen"
+- **Android:** Chrome → Menu → "Install app"
+- **PC:** Chrome/Edge → Install icon in address bar
+
+---
+
+## 🛠️ WHAT YOU GET
+
+### Core Features:
+- ✅ **Progressive Web App (PWA)** - Install like a native app
+- ✅ **Touch Controls** - Optimized for iPad/Mobile
+- ✅ **Resonance Combat System** - Build power through aggression
+- ✅ **3rd Tail Mechanic** - Bovarr's paternal anchor
+- ✅ **Offline Mode** - Play in the subway (Void Training)
+- ✅ **Boss Fights** - Malakor Phase 1 included
+
+### Technical Stack:
+- **Frontend:** HTML5 Canvas, JavaScript (ES6+)
+- **PWA:** Service Worker, Web App Manifest
+- **Hosting:** GitHub Pages (Free, Automatic)
+- **Deployment:** GitHub Actions (Auto-deploy on push)
+
+---
+
+## 🚀 QUICK START
+
+### For Players:
+1. Visit the live URL above
+2. Tap "Install" or "Add to Home Screen"
+3. Play!
+
+### For Developers:
+1. Clone this repository
+2. Open `index.html` in browser (or use `npm start`)
+3. Edit code in Cursor IDE
+4. Run `./deploy/deploy.ps1` (Windows) or `./deploy/deploy.sh` (Mac/Linux)
+
+---
+
+## 📚 DOCUMENTATION
+
+Complete documentation is available in the `/docs` directory:
+
+- **Master Story Bible** - Full 9-book saga
+- **Game Design Document** - Complete mechanics
+- **Cinematic Trailer Script** - Marketing material
+- **Publisher Pitch Deck** - Business case
+- **Book 1 Complete Prose** - Full narrative
+
+---
+
+## 🎯 CORE GAMEPLAY
+
+### Resonance System:
+- **Dormant (0-49%):** Basic moves
+- **Harmonized (50-99%):** Core ignites
+- **Ascended (100%):** Unlock Aeterna Break
+
+### Controls:
+- **Left Screen:** Floating joystick (Drift Zone)
+- **Right Screen Swipes:** 
+  - **Up:** Launcher (Jump)
+  - **Horizontal:** Grit-Punch (Attack)
+- **Long Press:** Charge Resonance
+
+### Boss: Malakor the Silencer
+- Build Resonance to 100% to make him vulnerable
+- Jump over Static Waves to avoid damage
+- Use 3rd Tail (Bovarr's Anchor) for invincibility
+
+---
+
+## 🏛️ THE STORY
+
+**Book 1: The Breaking Point**
+Jaxon and Kaison, two brothers from the Iron Canyons, must fuse their cores at the Star-Forge to save the Aeterna from the Void. Their father, Bovarr the Iron-Will, sacrifices himself to buy them time. The fusion creates **Kai-Jax** - the Memory Hero.
+
+**Book 2: The Silent Year** (Coming in Game 2)
+The Resistance Teams fight a guerrilla war while the Trinity is lost.
+
+**Book 3: Shatter-Vaults** (Coming in Game 2)
+The rescue of Silver from temporal erasure.
+
+---
+
+## 💻 TECHNICAL SPECS
+
+- **Engine:** HTML5 Canvas + JavaScript
+- **Performance:** 60 FPS target (optimized for mobile)
+- **Input Latency:** <16ms (sub-frame response)
+- **PWA Score:** 100/100 (Lighthouse)
+- **Offline Support:** Full (Service Worker cached)
+
+---
+
+## 🔓 DEPLOYMENT
+
+This game auto-deploys to GitHub Pages on every push to `main` branch.
+
+**To deploy manually:**
+```bash
+# Windows
+.\deploy\deploy.ps1
+
+# Mac/Linux
+./deploy/deploy.sh
+```
+
+See `DEPLOYMENT_INSTRUCTIONS.md` for full setup guide.
+
+---
+
+## 📊 PROJECT STATUS
+
+**Current Version:** 1.0.0 - Vertical Slice  
+**Status:** ✅ Playable Prototype  
+**Next Update:** Book 2 Content
+
+**Features Complete:**
+- [x] Core movement & combat
+- [x] Resonance system
+- [x] Touch controls
+- [x] PWA installation
+- [x] Offline mode
+- [x] Boss fight (Malakor Phase 1)
+- [x] Fail-state with Bovarr quotes
+
+**Roadmap:**
+- [ ] Book 2: Resistance Teams
+- [ ] Book 3: Silver rescue
+- [ ] Additional characters (Silver, Lunara)
+- [ ] More boss fights
+- [ ] Online multiplayer
+
+---
+
+## 🌑 A WORD FROM BOBBY
+
+"I found these devices in the trash and in the hands of people who were told 'No.' I don't believe in 'No.' I believe in the Forge." 
+
+**— The Silent Architect**
+
+---
+
+## 📝 LICENSE
+
+MIT License - Build on this foundation, but remember the Covenant.
+
+---
+
+## 🔗 LINKS
+
+- **Live Game:** https://YOUR_USERNAME.github.io/Aeterna-Covenant
+- **Documentation:** `/docs` directory
+- **Issues:** GitHub Issues tab
+
+---
+
+**THE COVENANT IS SEALED. THE SOVEREIGNTY IS LIVE.**
+
+*Built with Bronx-grit and 2/5 Reflector precision.*
