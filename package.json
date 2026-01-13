@@ -6,7 +6,10 @@
   "scripts": {
     "start": "npx serve . -p 3000",
     "deploy": "git add . && git commit -m 'Deploy: Aeterna Covenant' && git push",
-    "test": "echo 'Testing PWA...' && node -e \"console.log('✅ Node.js ready')\""
+    "test": "echo 'Testing PWA...' && node -e \"console.log('✅ Node.js ready')\"",
+    "dev": "vite --host 0.0.0.0 --port 5000",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "keywords": [
     "pwa",
@@ -20,16 +23,34 @@
     "serve": "^14.2.1"
   },
   "dependencies": {
-    "@replit/vite-plugin-runtime-error-modal": "^0.0.4",
+    "@fontsource/inter": "^5.2.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "@react-three/postprocessing": "^3.0.4",
+    "@tailwindcss/postcss": "^4.1.18",
     "@tailwindcss/typography": "^0.5.19",
     "@vitejs/plugin-react": "^5.1.2",
     "@vitejs/plugin-react-swc": "^4.2.2",
+    "autoprefixer": "^10.4.23",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "drizzle-kit": "^0.31.8",
+    "framer-motion": "^12.26.2",
+    "lucide-react": "^0.562.0",
+    "postcss": "^8.5.6",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "tailwindcss-animate": "^1.0.7",
     "terser": "^5.44.1",
+    "three": "^0.182.0",
     "vite": "^6.4.1",
     "vite-plugin-glsl": "^1.3.1",
-    "vite-plugin-pwa": "^1.2.0"
-  }
+    "vite-plugin-pwa": "^1.2.0",
+    "wouter": "^3.9.0",
+    "zustand": "^5.0.10"
+  },
+  "type": "module"
 }
