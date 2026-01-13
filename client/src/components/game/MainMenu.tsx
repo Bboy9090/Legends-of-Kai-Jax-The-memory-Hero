@@ -1,9 +1,8 @@
 import { useRunner } from "../../lib/stores/useRunner";
 import { useAudio } from "../../lib/stores/useAudio";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Play, Settings, Volume2, VolumeX, Shirt, Sparkles, Zap, Gamepad2, Swords, Users } from "lucide-react";
-import { useState } from "react";
+import { Play, Settings, Volume2, VolumeX, Shirt, Sparkles, Zap, Gamepad2, Swords, Brain, Crown, Shield } from "lucide-react";
+import { useState, useMemo } from "react";
 
 export default function MainMenu() {
   const { setGameState } = useRunner();
@@ -33,237 +32,354 @@ export default function MainMenu() {
   const openVersusMode = () => {
     setGameState("versus-select");
   };
+
+  const particles = useMemo(() => 
+    [...Array(20)].map((_, i) => ({
+      size: 4 + (i * 0.4),
+      color: ["#FFD700", "#9333EA", "#06B6D4", "#EC4899", "#10B981"][i % 5],
+      left: (i * 5) % 100,
+      top: (i * 7 + 10) % 100,
+      opacity: 0.4 + (i % 5) * 0.1,
+      delay: i * 0.2,
+      duration: 2 + (i % 4)
+    })), []
+  );
+
+  const streams = useMemo(() => 
+    [...Array(5)].map((_, i) => ({
+      top: 20 + i * 15,
+      duration: 3 + i
+    })), []
+  );
   
   return (
     <div 
       className="min-h-screen w-full flex items-center justify-center relative p-4 overflow-hidden"
       style={{
-        backgroundImage: "url(/menu-bg.png)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed"
+        background: "linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 25%, #0d1f3c 50%, #1a0a2e 75%, #0a0a1a 100%)"
       }}
     >
+      {/* Animated memory particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {particles.map((p, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full animate-pulse"
+            style={{
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              background: p.color,
+              left: `${p.left}%`,
+              top: `${p.top}%`,
+              opacity: p.opacity,
+              animationDelay: `${p.delay}s`,
+              animationDuration: `${p.duration}s`,
+              boxShadow: `0 0 ${10 + i * 2}px currentColor`
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Memory stream effect - horizontal lines */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+        {streams.map((s, i) => (
+          <div
+            key={`stream-${i}`}
+            className="absolute h-px w-full"
+            style={{
+              top: `${s.top}%`,
+              background: "linear-gradient(90deg, transparent, #FFD700, #9333EA, transparent)",
+              animation: `shimmer ${s.duration}s infinite linear`
+            }}
+          />
+        ))}
+      </div>
+
       {/* Mythic Opening Narration Overlay */}
       {showNarration && (
-        <div className="absolute inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-8 animate-in fade-in duration-1000">
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-4 sm:p-8"
+          style={{
+            background: "radial-gradient(ellipse at center, rgba(26, 10, 46, 0.98) 0%, rgba(10, 10, 26, 0.99) 100%)"
+          }}
+        >
           <div className="max-w-3xl text-center">
-            <div className="mb-8 animate-in zoom-in duration-700">
-              <Sparkles className="w-16 h-16 mx-auto text-cyan-400 animate-pulse" />
+            {/* Memory Crown Icon */}
+            <div className="mb-6 sm:mb-8 relative">
+              <Brain className="w-16 h-16 sm:w-20 sm:h-20 mx-auto text-purple-400" 
+                style={{ filter: "drop-shadow(0 0 20px #9333EA)" }} 
+              />
+              <Crown className="w-8 h-8 sm:w-10 sm:h-10 absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 text-yellow-400"
+                style={{ filter: "drop-shadow(0 0 10px #FFD700)" }}
+              />
             </div>
-            <div className="space-y-6 text-white animate-in slide-in-from-bottom duration-1000">
-              <p className="text-lg sm:text-xl italic leading-relaxed">
-                "It was not a sundering of one world, but of all."
+            
+            <div className="space-y-4 sm:space-y-6 text-white">
+              <h2 className="text-2xl sm:text-4xl font-black text-transparent bg-clip-text"
+                style={{ 
+                  backgroundImage: "linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%)",
+                  textShadow: "0 0 30px rgba(255, 215, 0, 0.5)"
+                }}
+              >
+                LEGENDS OF KAI-JAX
+              </h2>
+              
+              <p className="text-base sm:text-xl italic leading-relaxed text-purple-200">
+                "In the realm where memories become power, one hero rises..."
               </p>
-              <p className="text-base sm:text-lg leading-relaxed">
-                The Weave of Reality, the cosmic thread that bound every legend, every hero, 
-                every kingdom into a chorus of light… has been silenced. In its place, a wound. A Void.
+              
+              <p className="text-sm sm:text-lg leading-relaxed text-gray-300">
+                KAI-JAX, the Memory King, holds dominion over forgotten realms. His mind contains 
+                the echoes of a thousand fallen champions. Each memory a weapon. Each thought a shield.
               </p>
-              <p className="text-base sm:text-lg leading-relaxed">
-                From that emptiness, the Echoes poured forth—twisted memories of fallen champions. 
-                Worlds bled into one another. A throne of nothingness has risen.
+              
+              <p className="text-sm sm:text-lg leading-relaxed text-gray-300">
+                The Aeterna Covenant has shattered. Voidonus Imperion awakens from his eternal slumber.
+                Only those who can master the Resonance transformations will survive.
               </p>
-              <p className="text-lg sm:text-xl font-bold text-cyan-400 leading-relaxed">
-                But even in the final dusk, there is a spark. A Nexus. A haven where the last true heroes gather.
-              </p>
-              <p className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-cyan-400 to-blue-500 mt-8">
-                Choose your hero. Build your squad. Become everything.
+              
+              <p className="text-lg sm:text-2xl font-black mt-6 sm:mt-8"
+                style={{
+                  background: "linear-gradient(90deg, #06B6D4, #9333EA, #EC4899)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent"
+                }}
+              >
+                Unlock your memories. Claim your legacy. Become the hero.
               </p>
             </div>
+            
             <Button
               onClick={() => setShowNarration(false)}
-              className="mt-12 px-8 py-6 text-xl font-black bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-700 hover:to-blue-700 text-white border-2 border-cyan-400 shadow-2xl"
-              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+              className="mt-8 sm:mt-12 px-6 sm:px-10 py-4 sm:py-6 text-lg sm:text-xl font-black text-white border-2"
+              style={{ 
+                background: "linear-gradient(135deg, #9333EA 0%, #7C3AED 50%, #6D28D9 100%)",
+                borderColor: "#FFD700",
+                boxShadow: "0 0 30px rgba(147, 51, 234, 0.5), inset 0 0 20px rgba(255, 215, 0, 0.1)"
+              }}
             >
-              ENTER THE MULTIVERSE
+              <Brain className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+              AWAKEN THE MEMORIES
             </Button>
           </div>
         </div>
       )}
       
-      {/* Overlay for menu card visibility */}
-      <div className="absolute inset-0 bg-black bg-opacity-30" />
-      
-      {/* Animated energy elements - RED, BLUE, SILVER, WHITE */}
-      <div className="absolute inset-0">
-        {/* Floating energy particles */}
-        {[...Array(8)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full animate-pulse"
-            style={{
-              width: `${30 + i * 20}px`,
-              height: `${30 + i * 20}px`,
-              background: ["#DC143C", "#1E90FF", "#C0C0C0", "#FFFFFF", "#FF0000", "#4169E1", "#D3D3D3", "#00BFFF"][i],
-              opacity: 0.15,
-              left: `${i * 12.5 + 5}%`,
-              top: `${Math.sin(i) * 20 + 40}%`,
-              filter: "blur(2px)",
-              animationDelay: `${i * 0.3}s`,
-              animationDuration: `${4 + i}s`
-            }}
-          />
-        ))}
-      </div>
-      
       {/* Main menu content */}
-      <div className="relative z-10 text-center max-w-2xl w-full">
-        {/* Logo */}
-        <div className="mb-8 flex justify-center">
-          <img 
-            src="/logo.png" 
-            alt="SMASH HEROES Logo" 
-            className="max-w-md w-full h-auto drop-shadow-2xl"
-            style={{
-              filter: "drop-shadow(0 0 30px rgba(220, 20, 60, 0.8)) drop-shadow(0 0 60px rgba(30, 144, 255, 0.6))"
-            }}
-          />
-        </div>
-        
-        <Card className="bg-white bg-opacity-98 backdrop-blur-md shadow-2xl border-4 border-blue-500">
-          <CardHeader className="p-4 sm:p-8 bg-gradient-to-b from-slate-100 to-white">
-            <CardTitle 
-              className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-blue-600 to-slate-800 mb-3"
-              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif", letterSpacing: '0.05em' }}
-            >
-              SMASH HEROES
-            </CardTitle>
-            <p 
-              className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-700"
-              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
-            >
-              Adventures of Kaison & Jaxon
-            </p>
-            <p 
-              className="text-lg sm:text-xl text-red-600 font-bold mt-3"
-              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
-            >
-              WORLD COLLISION
-            </p>
-            <p className="text-sm sm:text-base text-gray-700 mt-4 font-semibold">
-              The Multiverse Has Cracked. Reality Tears Open. The Void King Rises.
-            </p>
-            <p className="text-xs sm:text-sm text-slate-600 mt-2">
-              Assemble your squad. Explore the fused world. Battle dimensional rifts. Save all reality.
-            </p>
-          </CardHeader>
+      <div className="relative z-10 text-center w-full max-w-lg px-2">
+        {/* Game Title */}
+        <div className="mb-6 sm:mb-10">
+          <div className="relative inline-block">
+            <Brain className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-purple-400"
+              style={{ filter: "drop-shadow(0 0 20px #9333EA)" }}
+            />
+          </div>
           
-          <CardContent className="space-y-4 sm:space-y-5 p-4 sm:p-8 bg-gradient-to-b from-slate-50 to-white">
-            {/* Character icons - RED, BLUE, SILVER */}
-            <div className="flex justify-center gap-6 mb-8">
-              <div className="text-center transform hover:scale-110 transition-transform">
-                <div className="w-20 h-20 bg-gradient-to-br from-cyan-400 to-blue-700 rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg border-4 border-blue-400">
-                  <span className="text-white text-3xl font-black" style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>J</span>
-                </div>
-                <p className="text-base font-bold text-blue-700" style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>JAXON</p>
-                <p className="text-xs font-semibold text-blue-500">Electric Hero</p>
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black mb-2 sm:mb-3 leading-tight"
+            style={{
+              background: "linear-gradient(135deg, #FFD700 0%, #FFA500 30%, #FFD700 50%, #FFEC8B 70%, #FFD700 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              textShadow: "0 0 40px rgba(255, 215, 0, 0.4)"
+            }}
+          >
+            LEGENDS OF KAI-JAX
+          </h1>
+          
+          <p className="text-xl sm:text-2xl md:text-3xl font-bold mb-2"
+            style={{
+              background: "linear-gradient(90deg, #06B6D4, #9333EA)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent"
+            }}
+          >
+            The Memory Hero
+          </p>
+          
+          <p className="text-xs sm:text-sm text-purple-300 font-semibold tracking-widest">
+            GENESIS SAGA - BOOK I
+          </p>
+        </div>
+
+        {/* Main Menu Card */}
+        <div className="rounded-2xl p-4 sm:p-6 border-2"
+          style={{
+            background: "linear-gradient(180deg, rgba(26, 10, 46, 0.95) 0%, rgba(13, 31, 60, 0.95) 100%)",
+            borderColor: "rgba(147, 51, 234, 0.5)",
+            boxShadow: "0 0 40px rgba(147, 51, 234, 0.2), inset 0 0 60px rgba(6, 182, 212, 0.05)"
+          }}
+        >
+          {/* Hero Icons */}
+          <div className="flex justify-center gap-4 sm:gap-8 mb-6 sm:mb-8">
+            <div className="text-center transform hover:scale-110 transition-transform cursor-pointer">
+              <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full mx-auto mb-2 flex items-center justify-center border-3"
+                style={{
+                  background: "linear-gradient(135deg, #9333EA 0%, #7C3AED 100%)",
+                  borderColor: "#FFD700",
+                  boxShadow: "0 0 20px rgba(147, 51, 234, 0.6)"
+                }}
+              >
+                <Brain className="w-7 h-7 sm:w-10 sm:h-10 text-white" />
               </div>
-              
-              <div className="text-center transform hover:scale-110 transition-transform">
-                <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-700 rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg border-4 border-red-400">
-                  <span className="text-white text-3xl font-black" style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>K</span>
-                </div>
-                <p className="text-base font-bold text-red-700" style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>KAISON</p>
-                <p className="text-xs font-semibold text-red-500">Crimson Legend</p>
-              </div>
+              <p className="text-sm sm:text-base font-black text-purple-300">KAI-JAX</p>
+              <p className="text-xs text-yellow-400">Memory King</p>
             </div>
             
-            {/* Nexus Haven Hub - PRIMARY BUTTON */}
+            <div className="text-center transform hover:scale-110 transition-transform cursor-pointer">
+              <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full mx-auto mb-2 flex items-center justify-center border-3"
+                style={{
+                  background: "linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)",
+                  borderColor: "#FFD700",
+                  boxShadow: "0 0 20px rgba(6, 182, 212, 0.6)"
+                }}
+              >
+                <Shield className="w-7 h-7 sm:w-10 sm:h-10 text-white" />
+              </div>
+              <p className="text-sm sm:text-base font-black text-cyan-300">BORYX</p>
+              <p className="text-xs text-yellow-400">Guardian King</p>
+            </div>
+          </div>
+          
+          {/* Menu Buttons */}
+          <div className="space-y-3 sm:space-y-4">
+            {/* Nexus Haven - Primary */}
             <Button 
               onClick={openNexusHaven}
-              className="w-full text-2xl py-7 bg-gradient-to-r from-purple-600 via-cyan-500 to-blue-700 hover:from-purple-700 hover:via-cyan-600 hover:to-blue-800 text-white font-black shadow-xl border-4 border-cyan-300 transform hover:scale-105 transition-transform animate-pulse"
-              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif", letterSpacing: '0.1em' }}
+              className="w-full text-base sm:text-xl py-4 sm:py-6 font-black text-white border-2 transform hover:scale-105 transition-all"
+              style={{ 
+                background: "linear-gradient(90deg, #9333EA 0%, #7C3AED 50%, #6D28D9 100%)",
+                borderColor: "#FFD700",
+                boxShadow: "0 0 20px rgba(147, 51, 234, 0.4)"
+              }}
             >
-              <Sparkles className="w-7 h-7 mr-3" />
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
               NEXUS HAVEN
             </Button>
 
-            {/* STORY MODE - Primary Adventure */}
+            {/* Story Mode */}
             <Button 
               onClick={openStoryMode}
-              className="w-full text-xl py-6 bg-gradient-to-r from-orange-600 via-red-600 to-purple-700 hover:from-orange-700 hover:via-red-700 hover:to-purple-800 text-white font-black shadow-xl border-3 border-yellow-300 transform hover:scale-105 transition-transform"
-              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+              className="w-full text-base sm:text-lg py-4 sm:py-5 font-black text-white border transform hover:scale-105 transition-all"
+              style={{ 
+                background: "linear-gradient(90deg, #DC2626 0%, #B91C1C 50%, #991B1B 100%)",
+                borderColor: "rgba(255, 255, 255, 0.3)"
+              }}
             >
-              <Zap className="w-6 h-6 mr-2" />
-              📖 STORY MODE - 9 ACTS
+              <Zap className="w-5 h-5 mr-2" />
+              STORY MODE - 9 ACTS
             </Button>
 
-            {/* GAME MODES - Endless Fun */}
+            {/* Game Modes */}
             <Button 
               onClick={openGameModes}
-              className="w-full text-xl py-6 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-700 hover:to-blue-800 text-white font-black shadow-xl border-3 border-cyan-300 transform hover:scale-105 transition-transform"
-              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+              className="w-full text-base sm:text-lg py-4 sm:py-5 font-black text-white border transform hover:scale-105 transition-all"
+              style={{ 
+                background: "linear-gradient(90deg, #0891B2 0%, #0E7490 50%, #155E75 100%)",
+                borderColor: "rgba(255, 255, 255, 0.3)"
+              }}
             >
-              <Gamepad2 className="w-6 h-6 mr-2" />
-              🎮 GAME MODES - 12 ADVENTURES
+              <Gamepad2 className="w-5 h-5 mr-2" />
+              GAME MODES - 12 ADVENTURES
             </Button>
 
-            {/* VERSUS MODE - MVC Style */}
+            {/* Versus Mode */}
             <Button 
               onClick={openVersusMode}
-              className="w-full text-xl py-6 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-600 hover:from-yellow-600 hover:via-orange-600 hover:to-red-700 text-white font-black shadow-xl border-3 border-yellow-300 transform hover:scale-105 transition-transform animate-pulse"
-              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+              className="w-full text-base sm:text-lg py-4 sm:py-5 font-black text-white border transform hover:scale-105 transition-all"
+              style={{ 
+                background: "linear-gradient(90deg, #CA8A04 0%, #A16207 50%, #854D0E 100%)",
+                borderColor: "rgba(255, 255, 255, 0.3)"
+              }}
             >
-              <Swords className="w-6 h-6 mr-2" />
-              ⚔️ VERSUS MODE - 59 HEROES
+              <Swords className="w-5 h-5 mr-2" />
+              VERSUS MODE - 59 HEROES
             </Button>
 
-            {/* Quick Battle button */}
+            {/* Quick Battle */}
             <Button 
               onClick={startGame}
-              className="w-full text-lg py-5 bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-700 hover:to-blue-700 text-white font-black shadow-lg border-2 border-white transform hover:scale-105 transition-transform"
-              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+              className="w-full text-sm sm:text-base py-3 sm:py-4 font-bold text-white border transform hover:scale-105 transition-all"
+              style={{ 
+                background: "linear-gradient(90deg, #4B5563 0%, #374151 50%, #1F2937 100%)",
+                borderColor: "rgba(147, 51, 234, 0.5)"
+              }}
             >
-              <Play className="w-5 h-5 mr-2" />
+              <Play className="w-4 h-4 mr-2" />
               QUICK BATTLE
             </Button>
 
-            {/* Customize Characters button - SILVER TO BLUE */}
+            {/* Customize */}
             <Button 
               onClick={openCustomization}
-              className="w-full text-sm py-4 bg-gradient-to-r from-slate-400 via-blue-500 to-blue-600 hover:from-slate-500 hover:via-blue-600 hover:to-blue-700 text-white font-bold shadow-lg border-2 border-slate-300 transform hover:scale-105 transition-transform"
-              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+              className="w-full text-xs sm:text-sm py-3 font-semibold text-gray-300 border transform hover:scale-105 transition-all"
+              style={{ 
+                background: "rgba(31, 41, 55, 0.8)",
+                borderColor: "rgba(107, 114, 128, 0.5)"
+              }}
             >
               <Shirt className="w-4 h-4 mr-2" />
               CUSTOMIZE FIGHTERS
             </Button>
             
-            {/* Settings - RED AND BLUE */}
-            <div className="flex gap-3">
+            {/* Settings Row */}
+            <div className="flex gap-3 pt-2">
               <Button
                 onClick={toggleMute}
-                className="flex-1 text-lg py-5 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-bold shadow-lg border-2 border-blue-300"
-                style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+                className="flex-1 py-3 sm:py-4 font-bold text-white"
+                style={{ 
+                  background: "rgba(55, 65, 81, 0.8)",
+                  borderColor: "rgba(107, 114, 128, 0.5)"
+                }}
               >
                 {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                <span className="ml-2">{isMuted ? "UNMUTE" : "MUTE"}</span>
+                <span className="ml-2 text-sm">{isMuted ? "UNMUTE" : "MUTE"}</span>
               </Button>
               
               <Button 
-                className="px-6 text-lg py-5 bg-gradient-to-r from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white font-bold shadow-lg border-2 border-slate-300"
+                className="px-4 sm:px-6 py-3 sm:py-4"
+                style={{ 
+                  background: "rgba(55, 65, 81, 0.8)",
+                  borderColor: "rgba(107, 114, 128, 0.5)"
+                }}
               >
-                <Settings className="w-5 h-5" />
+                <Settings className="w-5 h-5 text-white" />
               </Button>
             </div>
-            
-            {/* Game features - RED, BLUE, SILVER */}
-            <div className="text-left text-sm font-bold text-gray-800 bg-gradient-to-r from-red-100 via-slate-100 to-blue-100 p-5 rounded-xl border-3 border-blue-400 shadow-lg">
-              <h4 className="text-lg font-black mb-3 text-red-700" style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>⚡ GAME FEATURES:</h4>
-              <ul className="space-y-2">
-                <li>✨ 13 LEGENDARY FIGHTERS!</li>
-                <li>⚡ EPIC PUNCH, KICK & JUMP!</li>
-                <li>🏆 BATTLE IN WILD ARENAS!</li>
-                <li>🎮 EASY FOR ALL AGES!</li>
-                <li>🌟 UNLOCK MORE HEROES!</li>
-              </ul>
-            </div>
-            
-            {/* Instructions - BLUE TO RED */}
-            <div className="text-sm font-bold text-white text-center bg-gradient-to-r from-blue-700 via-blue-800 to-red-700 p-4 rounded-lg border-2 border-white shadow-lg">
-              <p style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>← ARROW KEYS or WASD → MOVE • SPACE JUMP • J PUNCH • K KICK</p>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+          
+          {/* Game Features */}
+          <div className="mt-6 p-3 sm:p-4 rounded-xl text-left text-xs sm:text-sm"
+            style={{
+              background: "rgba(0, 0, 0, 0.4)",
+              border: "1px solid rgba(147, 51, 234, 0.3)"
+            }}
+          >
+            <h4 className="font-black text-purple-300 mb-2 flex items-center gap-2">
+              <Crown className="w-4 h-4 text-yellow-400" />
+              GENESIS FEATURES
+            </h4>
+            <ul className="space-y-1 text-gray-300">
+              <li>59 LEGENDARY BEAST-KIN WARRIORS</li>
+              <li>RESONANCE TRANSFORMATIONS</li>
+              <li>4-HERO SQUAD SYSTEM</li>
+              <li>EPIC BOSS BATTLES</li>
+            </ul>
+          </div>
+          
+          {/* Controls */}
+          <div className="mt-4 py-2 sm:py-3 px-3 sm:px-4 rounded-lg text-xs sm:text-sm font-semibold text-center"
+            style={{
+              background: "linear-gradient(90deg, rgba(147, 51, 234, 0.3), rgba(6, 182, 212, 0.3))",
+              color: "#E5E7EB"
+            }}
+          >
+            WASD MOVE • SPACE JUMP • J ATTACK • K SPECIAL
+          </div>
+        </div>
+        
+        {/* Copyright */}
+        <p className="mt-4 sm:mt-6 text-xs text-gray-500">
+          BEAST-KIN SOVEREIGNTY: GENESIS™ - Original IP
+        </p>
       </div>
     </div>
   );
