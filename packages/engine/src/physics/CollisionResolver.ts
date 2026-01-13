@@ -1,5 +1,5 @@
-import { AABB, Vector2D, RigidBody, CollisionResult, Platform, SurfaceType } from '@smash-heroes/shared';
-import { Vec2, PHYSICS_CONSTANTS } from '@smash-heroes/shared';
+import { AABB, Vector2D, RigidBody, CollisionResult, Platform, SurfaceType } from '@beast-kin/shared';
+import { Vec2, PHYSICS_CONSTANTS } from '@beast-kin/shared';
 
 export class CollisionResolver {
   resolveAABBCollision(bodyBounds: AABB, body: RigidBody, platform: AABB): CollisionResult {

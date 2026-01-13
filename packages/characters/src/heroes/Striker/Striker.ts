@@ -1,4 +1,4 @@
-import { FighterStats, FighterState, MoveSet } from '@smash-heroes/shared';
+import { FighterStats, FighterState, MoveSet } from '@beast-kin/shared';
 import { BaseFighter } from '../../base/BaseFighter';
 import { createStrikerMoveSet } from './StrikerMoves';
 
@@ -9,6 +9,7 @@ export class Striker extends BaseFighter {
 
   protected getDefaultStats(): FighterStats {
     return {
+      id: this.id,
       weight: 100, // Average weight
       walkSpeed: 1.2,
       runSpeed: 2.0,
@@ -19,9 +20,12 @@ export class Striker extends BaseFighter {
       fastFallSpeed: 2.4,
       maxDamage: 999,
       currentDamage: 0,
+      damage: 0,
+      hitstun: 0,
       lives: 3,
       ultimateMeter: 0,
       ultimateCost: 100,
+      velocity: { x: 0, y: 0 }, // Will be synced with physics in BaseFighter
     };
   }
 

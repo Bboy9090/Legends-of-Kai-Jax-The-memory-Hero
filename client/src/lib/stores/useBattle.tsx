@@ -87,6 +87,13 @@ export interface BattleState {
   playerInvulnerable: boolean;
   opponentInvulnerable: boolean;
   
+  // ⚡ LEGENDARY SYNERGY & TRANSFORMATION SYSTEM (Resonance for Jaxon/Kaison -> Kai-Jax)
+  playerSynergy: number;
+  maxSynergy: number;
+  playerTransformed: boolean;
+  transformationTimeRemaining: number;
+  maxTransformationTime: number;
+  
   // Actions
   startBattle: () => void;
   resetRound: () => void;
@@ -130,6 +137,12 @@ export interface BattleState {
   endBattle: (winner: 'player' | 'opponent') => void;
   returnToMenu: () => void;
   setTimeScale: (scale: number) => void;
+  
+  // ⚡ LEGENDARY SYNERGY & TRANSFORMATION
+  addSynergy: (amount: number) => void;
+  triggerTransformation: () => void;
+  updateTransformation: (delta: number) => void;
+  endTransformation: () => void;
   
   // Setup
   setPlayerFighter: (fighterId: string) => void;
@@ -214,6 +227,13 @@ export const useBattle = create<BattleState>((set, get) => ({
   opponentAttackType: null,
   playerInvulnerable: false,
   opponentInvulnerable: false,
+  
+  // ⚡ LEGENDARY SYNERGY & TRANSFORMATION
+  playerSynergy: 0,
+  maxSynergy: 100,
+  playerTransformed: false,
+  transformationTimeRemaining: 0,
+  maxTransformationTime: 30, // 30 seconds of Kai-Jax power!
   
   startBattle: () => {
     console.log("[Battle] Starting battle - Dynamic combat system activated!");
@@ -911,5 +931,91 @@ export const useBattle = create<BattleState>((set, get) => ({
     if (opponentRecoveryFrames > 0) {
       set({ opponentRecoveryFrames: Math.max(0, opponentRecoveryFrames - delta) });
     }
+  },
+  
+  // ⚡ LEGENDARY SYNERGY SYSTEM (Resonance for Jaxon/Kaison -> Kai-Jax)
+  addSynergy: (amount) => {
+    const { playerSynergy, maxSynergy, playerTransformed, playerFighterId } = get();
+    if (playerTransformed || playerFighterId === 'kai-jax') return; // Can't build synergy while transformed or already fused
+    
+    const newSynergy = Math.min(maxSynergy, playerSynergy + amount);
+    const oldSynergy = playerSynergy;
+    set({ playerSynergy: newSynergy });
+    
+    console.log("[Battle] ⚡ Resonance:", newSynergy, "/", maxSynergy, playerFighterId === 'jaxon' || playerFighterId === 'kaison' ? "(Ready to fuse at 50%)" : "");
+    
+    // Flash when ready to transform (50% for Jaxon/Kaison fusion)!
+    const fusionThreshold = 50;
+    if ((playerFighterId === 'jaxon' || playerFighterId === 'kaison')) {
+      if (newSynergy >= fusionThreshold && oldSynergy < fusionThreshold) {
+        console.log("[Battle] 🌟 FUSION READY! Press Transform to fuse into KAI-JAX!");
+      }
+    } else if (newSynergy >= maxSynergy && oldSynergy < maxSynergy) {
+      console.log("[Battle] 🌟 ULTIMATE READY!");
+    }
+  },
+  
+  triggerTransformation: () => {
+    const { playerSynergy, playerTransformed, playerFighterId } = get();
+    
+    // Jaxon/Kaison -> Kai-Jax fusion requires 50% Resonance
+    const fusionThreshold = 50;
+    if (playerTransformed || playerFighterId === 'kai-jax') return;
+    if ((playerFighterId === 'jaxon' || playerFighterId === 'kaison') && playerSynergy < fusionThreshold) return;
+    
+    console.log("[Battle] ⚡⚡⚡ BLOODWARD PROTOCOL: JAXON + KAISON -> KAI-JAX! ⚡⚡⚡");
+    
+    // Enter transformation phase (60-frame hit-stop for core integration)
+    set({ 
+      battlePhase: 'transforming' as any, // Cast to allow transforming phase
+      timeScale: 0.1, // Super slow-mo for cinematic transformation
+      playerFighterId: 'kai-jax', // Switch to Kai-Jax character immediately
+    });
+    
+    // Complete transformation after 2 seconds (60-frame hit-stop at 30fps)
+    setTimeout(() => {
+      set({
+        playerTransformed: true,
+        playerSynergy: Math.max(0, playerSynergy - fusionThreshold), // Consume 50% for fusion
+        transformationTimeRemaining: get().maxTransformationTime,
+        battlePhase: 'fighting',
+        timeScale: 1.0,
+        // Heal on fusion (Bovarr's Anchor stabilizes)
+        playerHealth: Math.min(get().maxHealth, get().playerHealth + 25),
+      });
+      
+      console.log("[Battle] 🦊🦔 KAI-JAX AWAKENED! 3 Memory Strand Tails active! (30 seconds of ULTIMATE POWER)");
+      console.log("[Battle] Voice: 'HOLD. STAND. RISE.' - Bovarr's Anchor engaged");
+    }, 2000);
+  },
+  
+  updateTransformation: (delta) => {
+    const { playerTransformed, transformationTimeRemaining } = get();
+    if (!playerTransformed) return;
+    
+    const newTime = transformationTimeRemaining - delta;
+    set({ transformationTimeRemaining: newTime });
+    
+    // Warning flash at 5 seconds
+    if (newTime <= 5 && transformationTimeRemaining > 5) {
+      console.log("[Battle] ⚠️ Transformation ending soon!");
+    }
+    
+    if (newTime <= 0) {
+      get().endTransformation();
+    }
+  },
+  
+  endTransformation: () => {
+    const { playerFighterId } = get();
+    console.log("[Battle] Transformation ended - reverting from Kai-Jax");
+    
+    // Revert to Jaxon (default) when fusion ends
+    set({
+      playerTransformed: false,
+      transformationTimeRemaining: 0,
+      playerFighterId: playerFighterId === 'kai-jax' ? 'jaxon' : playerFighterId, // Revert to Jaxon
+    });
+    console.log("[Battle] Reverted to Jaxon solo form");
   }
 }));

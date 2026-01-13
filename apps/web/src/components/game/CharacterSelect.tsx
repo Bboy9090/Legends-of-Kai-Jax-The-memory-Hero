@@ -1,21 +1,254 @@
 import { useRunner } from "../../lib/stores/useRunner";
 import { useGame } from "../../lib/stores/useGame";
-import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { ArrowLeft, Lock } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Lock, Zap, Shield, Flame, Wind, Sparkles, Crown, Swords, Star } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { FIGHTERS, Fighter, getFighterById } from "../../lib/characters";
 import CharacterPreview3D from "./CharacterPreview3D";
 
+// ⚡ LEGENDARY PARTICLES
+function SelectParticles() {
+  const [particles, setParticles] = useState<Array<{
+    id: number;
+    x: number;
+    y: number;
+    size: number;
+    duration: number;
+    delay: number;
+    color: string;
+  }>>([]);
+
+  useEffect(() => {
+    const colors = ['#FFD700', '#00FFFF', '#A855F7', '#3B82F6', '#10B981', '#FF6B6B'];
+    setParticles(Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 4 + 2,
+      duration: Math.random() * 10 + 5,
+      delay: Math.random() * 5,
+      color: colors[Math.floor(Math.random() * colors.length)] || '#FFFFFF',
+    })));
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="absolute rounded-full"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: p.size,
+            height: p.size,
+            backgroundColor: p.color,
+            boxShadow: `0 0 ${p.size * 2}px ${p.color}`,
+            animation: `floatParticle ${p.duration}s ease-in-out infinite`,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes floatParticle {
+          0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+          50% { transform: translateY(-30px) translateX(15px); opacity: 0.8; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// 🎮 FIGHTER CARD
+function FighterCard({ 
+  fighter, 
+  selected, 
+  locked, 
+  onSelect, 
+  onHover,
+  onLeave,
+}: { 
+  fighter: Fighter; 
+  selected: boolean; 
+  locked: boolean;
+  onSelect: () => void;
+  onHover: () => void;
+  onLeave: () => void;
+}) {
+  const [isPressed, setIsPressed] = useState(false);
+  
+  return (
+    <div
+      className={`
+        relative cursor-pointer transition-all duration-300 
+        ${locked ? 'opacity-50 cursor-not-allowed' : ''}
+        ${selected ? 'scale-105 z-10' : 'hover:scale-105 hover:z-10'}
+        ${isPressed && !locked ? 'scale-95' : ''}
+      `}
+      onClick={() => !locked && onSelect()}
+      onMouseEnter={() => !locked && onHover()}
+      onMouseLeave={onLeave}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+    >
+      {/* Card Container */}
+      <div 
+        className={`
+          relative rounded-xl overflow-hidden
+          border-3 transition-all duration-300
+          ${selected 
+            ? 'border-yellow-400 shadow-[0_0_30px_rgba(250,204,21,0.8)]' 
+            : 'border-white/20 hover:border-white/50'
+          }
+          ${locked ? 'grayscale' : ''}
+        `}
+        style={{
+          background: selected 
+            ? `linear-gradient(135deg, ${fighter.color}40, ${fighter.accentColor}40)`
+            : 'linear-gradient(135deg, rgba(0,0,0,0.6), rgba(30,30,30,0.6))',
+        }}
+      >
+        {/* Fighter Avatar */}
+        <div className="relative p-3 sm:p-4">
+          <div 
+            className={`
+              w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 
+              rounded-full mx-auto 
+              flex items-center justify-center 
+              shadow-xl
+              transition-all duration-300
+              ${selected ? 'scale-110' : ''}
+            `}
+            style={{ 
+              background: `linear-gradient(135deg, ${fighter.color}, ${fighter.accentColor})`,
+              boxShadow: selected 
+                ? `0 0 40px ${fighter.accentColor}, inset 0 0 20px rgba(255,255,255,0.3)` 
+                : `0 0 20px ${fighter.color}50`,
+            }}
+          >
+            <span className="text-2xl sm:text-3xl md:text-4xl font-black text-white drop-shadow-lg">
+              {fighter.name.charAt(0).toUpperCase()}
+            </span>
+          </div>
+          
+          {/* Lock Overlay */}
+          {locked && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-xl">
+              <div className="text-center">
+                <Lock className="w-8 h-8 text-yellow-400 mx-auto mb-1" />
+                <span className="text-xs text-yellow-400 font-bold">
+                  {fighter.unlockRequirement} PTS
+                </span>
+              </div>
+            </div>
+          )}
+          
+          {/* Selected Badge */}
+          {selected && !locked && (
+            <div 
+              className="absolute -top-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center animate-bounce"
+              style={{
+                background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                boxShadow: '0 0 15px rgba(255,215,0,0.8)',
+              }}
+            >
+              <span className="text-black font-black">✓</span>
+            </div>
+          )}
+        </div>
+        
+        {/* Fighter Info */}
+        <div className="p-2 sm:p-3 text-center bg-black/40">
+          <h3 
+            className={`font-bold text-sm sm:text-base truncate ${selected ? 'text-yellow-300' : 'text-white'}`}
+          >
+            {fighter.displayName}
+          </h3>
+          {!locked && (
+            <p className="text-xs text-gray-400 mt-0.5 hidden sm:block truncate">
+              {fighter.category.toUpperCase()}
+            </p>
+          )}
+        </div>
+        
+        {/* Glow Effect */}
+        {selected && (
+          <div 
+            className="absolute inset-0 rounded-xl pointer-events-none animate-pulse"
+            style={{
+              boxShadow: `inset 0 0 30px ${fighter.accentColor}50`,
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// 📊 FIGHTER STATS
+function FighterStats({ fighter }: { fighter: Fighter }) {
+  const stats = {
+    speed: fighter.id === 'speedy' ? 95 : fighter.id === 'jaxon' ? 85 : fighter.id === 'kaison' ? 88 : 70,
+    power: fighter.id === 'kingspike' ? 95 : fighter.id === 'jaxon' ? 80 : 75,
+    defense: fighter.id === 'novaknight' ? 90 : fighter.id === 'kingspike' ? 85 : 65,
+    technique: fighter.id === 'kaison' ? 90 : fighter.id === 'flynn' ? 88 : 70,
+  };
+
+  const StatBar = ({ label, value, color, icon: Icon }: { 
+    label: string; 
+    value: number; 
+    color: string;
+    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  }) => (
+    <div className="mb-2">
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-1">
+          <Icon className="w-3 h-3" style={{ color }} />
+          <span className="text-xs font-bold text-gray-300">{label}</span>
+        </div>
+        <span className="text-xs font-bold" style={{ color }}>{value}</span>
+      </div>
+      <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+        <div 
+          className="h-full rounded-full transition-all duration-500"
+          style={{ 
+            width: `${value}%`, 
+            background: `linear-gradient(90deg, ${color}, ${color}80)`,
+            boxShadow: `0 0 10px ${color}50`,
+          }}
+        />
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="bg-black/40 rounded-lg p-3 mt-4">
+      <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+        <Sparkles className="w-4 h-4 text-yellow-400" />
+        FIGHTER STATS
+      </h4>
+      <StatBar label="SPEED" value={stats.speed} color="#00FFFF" icon={Wind} />
+      <StatBar label="POWER" value={stats.power} color="#FF6B6B" icon={Flame} />
+      <StatBar label="DEFENSE" value={stats.defense} color="#10B981" icon={Shield} />
+      <StatBar label="TECHNIQUE" value={stats.technique} color="#A855F7" icon={Star} />
+    </div>
+  );
+}
+
+// 🎮 MAIN CHARACTER SELECT
 export default function CharacterSelect() {
   const { selectedCharacter, setCharacter, setGameState, stats } = useRunner();
   const { start } = useGame();
   const [hoveredFighter, setHoveredFighter] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [isStarting, setIsStarting] = useState(false);
   
   const startGame = () => {
-    console.log("Starting battle with fighter:", selectedCharacter);
-    start();
-    setGameState("playing");
+    if (!selectedCharacter) return;
+    setIsStarting(true);
+    setTimeout(() => {
+      start();
+      setGameState("playing");
+    }, 500);
   };
   
   const goBack = () => {
@@ -23,221 +256,231 @@ export default function CharacterSelect() {
   };
   
   const handleFighterSelect = (fighter: Fighter) => {
-    // Check if fighter is unlocked
-    if (!fighter.unlocked && fighter.unlockRequirement && stats.score < fighter.unlockRequirement) {
-      console.log("Fighter locked:", fighter.id);
-      return;
-    }
-    
-    console.log("Fighter selected:", fighter.id);
+    if (isLocked(fighter)) return;
     setCharacter(fighter.id as any);
   };
   
-  const isLocked = (fighter: Fighter) => {
-    return !fighter.unlocked && fighter.unlockRequirement && stats.score < fighter.unlockRequirement;
+  const isLocked = (fighter: Fighter): boolean => {
+    return !fighter.unlocked && !!fighter.unlockRequirement && stats.score < fighter.unlockRequirement;
   };
   
   const categories = [
-    { name: 'Heroes', id: 'heroes' as const, color: 'from-blue-500 to-cyan-500' },
-    { name: 'Speedsters', id: 'speedsters' as const, color: 'from-yellow-500 to-orange-500' },
-    { name: 'Warriors', id: 'warriors' as const, color: 'from-green-500 to-emerald-500' },
-    { name: 'Legends', id: 'legends' as const, color: 'from-purple-500 to-pink-500' }
+    { name: 'ALL', id: null, color: 'from-gray-500 to-gray-600', icon: Swords },
+    { name: 'HEROES', id: 'heroes', color: 'from-blue-500 to-cyan-500', icon: Crown },
+    { name: 'SPEEDSTERS', id: 'speedsters', color: 'from-yellow-500 to-orange-500', icon: Zap },
+    { name: 'WARRIORS', id: 'warriors', color: 'from-green-500 to-emerald-500', icon: Shield },
+    { name: 'LEGENDS', id: 'legends', color: 'from-purple-500 to-pink-500', icon: Star },
   ];
   
-  // Determine which fighter to preview
+  const filteredFighters = categoryFilter 
+    ? FIGHTERS.filter(f => f.category === categoryFilter)
+    : FIGHTERS;
+  
   const previewFighter = hoveredFighter 
     ? getFighterById(hoveredFighter) 
     : selectedCharacter 
       ? getFighterById(selectedCharacter)
-      : FIGHTERS.find(f => f.unlocked); // Default to first unlocked fighter
+      : FIGHTERS.find(f => f.unlocked);
   
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 p-2 sm:p-4">
-      <div className="w-full max-w-7xl mx-auto pb-8 sm:pb-24">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Main character selection panel */}
-          <div className="lg:col-span-2">
-            <Card className="bg-black/40 backdrop-blur-lg border-2 sm:border-4 border-yellow-400">
-          <CardHeader className="text-center relative border-b-2 sm:border-b-4 border-yellow-400/30 p-3 sm:p-6">
-            <Button 
-              variant="outline" 
-              onClick={goBack}
-              className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-red-500 hover:bg-red-600 text-white border-none text-sm sm:text-base p-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline ml-2">Back</span>
-            </Button>
-            
-            <CardTitle className="text-2xl sm:text-3xl md:text-5xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] px-12 sm:px-0">
-              Choose Fighter!
-            </CardTitle>
-            <p className="text-yellow-300 text-sm sm:text-xl mt-1 sm:mt-2 font-bold">
-              {FIGHTERS.filter(f => !isLocked(f)).length} / {FIGHTERS.length} Unlocked
-            </p>
-          </CardHeader>
-          
-          <CardContent className="p-2 sm:p-4 md:p-6">
-            {/* Fighter Categories */}
-            {categories.map(category => {
-              const categoryFighters = FIGHTERS.filter(f => f.category === category.id);
-              
-              return (
-                <div key={category.id} className="mb-4 sm:mb-8">
-                  <h2 className={`text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4 bg-gradient-to-r ${category.color} bg-clip-text text-transparent`}>
-                    {category.name}
-                  </h2>
-                  
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
-                    {categoryFighters.map(fighter => {
-                      const locked = isLocked(fighter);
-                      const selected = selectedCharacter === fighter.id;
-                      
-                      return (
-                        <div
-                          key={fighter.id}
-                          className={`relative cursor-pointer transition-all duration-200 ${
-                            locked ? 'opacity-50' : 'active:scale-95'
-                          }`}
-                          onClick={() => !locked && handleFighterSelect(fighter)}
-                          onMouseEnter={() => !locked && setHoveredFighter(fighter.id)}
-                          onMouseLeave={() => setHoveredFighter(null)}
-                        >
-                          <Card className={`
-                            ${selected ? 'ring-2 sm:ring-4 ring-yellow-400 bg-yellow-400/20' : 'bg-gray-800/50'}
-                            ${locked ? 'grayscale' : ''}
-                            border-2 overflow-hidden
-                          `} style={{ borderColor: fighter.accentColor }}>
-                            <CardContent className="p-2 sm:p-4 text-center">
-                              {/* Fighter Avatar */}
-                              <div 
-                                className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full mx-auto mb-2 sm:mb-3 flex items-center justify-center shadow-lg relative"
-                                style={{ 
-                                  backgroundColor: fighter.color,
-                                  boxShadow: `0 0 20px ${fighter.accentColor}`
-                                }}
-                              >
-                                <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
-                                  {fighter.name.charAt(0).toUpperCase()}
-                                </span>
-                                
-                                {locked && (
-                                  <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center">
-                                    <Lock className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-yellow-400" />
-                                  </div>
-                                )}
-                                
-                                {selected && !locked && (
-                                  <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-yellow-400 rounded-full w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
-                                    <span className="text-black font-bold text-sm sm:text-base">✓</span>
-                                  </div>
-                                )}
-                              </div>
-                              
-                              {/* Fighter Name */}
-                              <h3 className="text-sm sm:text-base md:text-lg font-bold text-white mb-1 line-clamp-1">
-                                {fighter.displayName}
-                              </h3>
-                              
-                              {/* Description or Lock Info */}
-                              {locked ? (
-                                <p className="text-xs text-yellow-400 font-semibold">
-                                  🔒 {fighter.unlockRequirement}
-                                </p>
-                              ) : (
-                                <p className="text-xs text-gray-300 line-clamp-2 hidden sm:block">
-                                  {fighter.description}
-                                </p>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-            
-            {/* Selected Fighter Preview */}
-            <div className="mt-4 sm:mt-8 mb-4 sm:mb-6">
-              <Card className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 border-2 sm:border-4 border-cyan-400">
-                <CardContent className="p-3 sm:p-6">
-                  <div className="flex items-center gap-3 sm:gap-6">
-                    {selectedCharacter && (() => {
-                      const fighter = getFighterById(selectedCharacter);
-                      if (!fighter) return null;
-                      
-                      return (
-                        <>
-                          <div 
-                            className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center shadow-2xl flex-shrink-0"
-                            style={{ 
-                              backgroundColor: fighter.color,
-                              boxShadow: `0 0 30px ${fighter.accentColor}`
-                            }}
-                          >
-                            <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">
-                              {fighter.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 sm:mb-2">
-                              {fighter.displayName}
-                            </h3>
-                            <p className="text-cyan-300 text-sm sm:text-base md:text-lg line-clamp-2">
-                              {fighter.description}
-                            </p>
-                            <div className="mt-1 sm:mt-2">
-                              <span className="inline-block px-2 sm:px-3 py-1 bg-yellow-400 text-black rounded-full text-xs sm:text-sm font-bold">
-                                {fighter.category.toUpperCase()}
-                              </span>
-                            </div>
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* Start Battle Button */}
-            <div className="text-center">
-              <Button 
-                onClick={startGame}
-                className="w-full max-w-md text-lg sm:text-xl md:text-2xl py-4 sm:py-6 md:py-8 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 hover:from-green-600 hover:via-yellow-600 hover:to-red-600 text-white font-bold border-2 sm:border-4 border-yellow-400 shadow-[0_0_30px_rgba(255,255,0,0.5)]"
+    <div 
+      className={`
+        min-h-screen w-full p-2 sm:p-4 relative overflow-hidden
+        transition-all duration-500
+        ${isStarting ? 'scale-110 opacity-0' : 'scale-100 opacity-100'}
+      `}
+      style={{
+        background: `
+          radial-gradient(ellipse at top left, rgba(59,130,246,0.2) 0%, transparent 50%),
+          radial-gradient(ellipse at bottom right, rgba(168,85,247,0.2) 0%, transparent 50%),
+          linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a1a3e 100%)
+        `,
+      }}
+    >
+      {/* Particles */}
+      <SelectParticles />
+      
+      {/* Header */}
+      <div className="relative z-10 text-center mb-4 sm:mb-6">
+        <button
+          onClick={goBack}
+          className="
+            absolute left-2 top-0 
+            flex items-center gap-2 
+            px-4 py-2 rounded-lg
+            bg-gradient-to-r from-red-600 to-red-500
+            hover:from-red-500 hover:to-red-400
+            text-white font-bold
+            transition-all duration-300 hover:scale-105
+            border border-red-400/50
+          "
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="hidden sm:inline">BACK</span>
+        </button>
+        
+        <h1 
+          className="text-4xl sm:text-5xl md:text-6xl font-black"
+          style={{
+            background: 'linear-gradient(135deg, #FFD700, #FF6B6B, #A855F7)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.5))',
+          }}
+        >
+          CHOOSE YOUR FIGHTER
+        </h1>
+        <p className="text-cyan-400 text-lg mt-2 font-medium">
+          {FIGHTERS.filter(f => !isLocked(f)).length} / {FIGHTERS.length} Fighters Unlocked
+        </p>
+      </div>
+      
+      {/* Main Content */}
+      <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        
+        {/* Fighter Grid */}
+        <div className="lg:col-span-2">
+          {/* Category Filter */}
+          <div className="flex flex-wrap gap-2 mb-4 justify-center">
+            {categories.map(cat => (
+              <button
+                key={cat.id || 'all'}
+                onClick={() => setCategoryFilter(cat.id)}
+                className={`
+                  flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-sm
+                  transition-all duration-300
+                  ${categoryFilter === cat.id 
+                    ? `bg-gradient-to-r ${cat.color} text-white shadow-lg scale-105` 
+                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                  }
+                `}
               >
-                🥊 START BATTLE! 🥊
-              </Button>
-            </div>
-            
-            {/* Game Info */}
-            <div className="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-gray-300 bg-black/30 p-3 sm:p-4 rounded-lg">
-              <p className="font-bold text-yellow-300 mb-1 sm:mb-2">🎮 Controls:</p>
-              <p className="hidden sm:block">Arrow Keys = Move • Space = Jump • J = Punch • K = Kick • L = Special</p>
-              <p className="sm:hidden">Touch controls on screen</p>
-              <p className="mt-1 sm:mt-2 text-xs text-gray-400">Win battles to unlock more fighters!</p>
-            </div>
-          </CardContent>
-        </Card>
+                <cat.icon className="w-4 h-4" />
+                {cat.name}
+              </button>
+            ))}
+          </div>
+          
+          {/* Fighter Grid */}
+          <div 
+            className="
+              grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-4 xl:grid-cols-5 
+              gap-2 sm:gap-3 
+              bg-black/30 backdrop-blur-sm 
+              rounded-xl p-3 sm:p-4 
+              border border-white/10
+              max-h-[60vh] overflow-y-auto
+            "
+          >
+            {filteredFighters.map(fighter => (
+              <FighterCard
+                key={fighter.id}
+                fighter={fighter}
+                selected={selectedCharacter === fighter.id}
+                locked={isLocked(fighter)}
+                onSelect={() => handleFighterSelect(fighter)}
+                onHover={() => setHoveredFighter(fighter.id)}
+                onLeave={() => setHoveredFighter(null)}
+              />
+            ))}
+          </div>
+          
+          {/* Start Battle Button */}
+          <div className="mt-4 sm:mt-6 text-center">
+            <button
+              onClick={startGame}
+              disabled={!selectedCharacter}
+              className={`
+                relative px-12 py-4 sm:py-5 rounded-xl 
+                font-black text-xl sm:text-2xl text-white
+                transition-all duration-300
+                ${selectedCharacter 
+                  ? 'bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 hover:from-green-400 hover:via-yellow-400 hover:to-red-400 hover:scale-105 shadow-[0_0_40px_rgba(255,215,0,0.5)]' 
+                  : 'bg-gray-700 cursor-not-allowed opacity-50'
+                }
+                border-3 border-yellow-400
+                overflow-hidden
+              `}
+            >
+              {/* Shimmer */}
+              {selectedCharacter && (
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite]" />
+              )}
+              <span className="relative z-10 flex items-center justify-center gap-3">
+                <Swords className="w-7 h-7" />
+                START BATTLE!
+                <Swords className="w-7 h-7" />
+              </span>
+            </button>
+          </div>
         </div>
         
-        {/* 3D Character Preview Panel - Mortal Kombat Style! */}
-          <div className="lg:col-span-1">
-            <Card className="bg-black/50 backdrop-blur-lg border-2 sm:border-4 border-cyan-400 h-full min-h-[400px] lg:min-h-[600px] sticky top-4">
-              <CardHeader className="text-center border-b-2 border-cyan-400/30 p-3">
-                <CardTitle className="text-xl sm:text-2xl font-bold text-cyan-300">
-                  {previewFighter ? previewFighter.displayName : 'Select Fighter'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 h-[350px] lg:h-[500px]">
-                {previewFighter && <CharacterPreview3D fighter={previewFighter} />}
-              </CardContent>
-            </Card>
+        {/* Preview Panel */}
+        <div className="lg:col-span-1">
+          <div 
+            className="
+              bg-gradient-to-b from-black/60 to-black/80 
+              backdrop-blur-xl rounded-xl 
+              border-2 border-cyan-400/50
+              overflow-hidden
+              h-full min-h-[500px]
+              shadow-[0_0_30px_rgba(0,255,255,0.2)]
+            "
+          >
+            {/* Preview Header */}
+            <div 
+              className="p-4 border-b border-cyan-400/30 text-center"
+              style={{
+                background: previewFighter 
+                  ? `linear-gradient(135deg, ${previewFighter.color}30, ${previewFighter.accentColor}30)`
+                  : 'transparent',
+              }}
+            >
+              <h2 className="text-2xl font-black text-white">
+                {previewFighter?.displayName || 'SELECT FIGHTER'}
+              </h2>
+              {previewFighter && (
+                <span 
+                  className="inline-block mt-1 px-3 py-0.5 rounded-full text-xs font-bold"
+                  style={{
+                    background: `linear-gradient(90deg, ${previewFighter.color}, ${previewFighter.accentColor})`,
+                    color: 'white',
+                  }}
+                >
+                  {previewFighter.category.toUpperCase()}
+                </span>
+              )}
+            </div>
+            
+            {/* 3D Preview */}
+            <div className="h-[300px] lg:h-[350px]">
+              {previewFighter && <CharacterPreview3D fighter={previewFighter} />}
+            </div>
+            
+            {/* Fighter Description & Stats */}
+            {previewFighter && (
+              <div className="p-4">
+                <p className="text-gray-300 text-sm mb-3 text-center">
+                  {previewFighter.description}
+                </p>
+                <FighterStats fighter={previewFighter} />
+              </div>
+            )}
           </div>
         </div>
       </div>
+      
+      {/* Controls Hint */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 hidden md:flex items-center gap-4 text-xs text-gray-500">
+        <span>Click to select • Hover for preview • Unlock fighters by earning points!</span>
+      </div>
+      
+      <style>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
     </div>
   );
 }

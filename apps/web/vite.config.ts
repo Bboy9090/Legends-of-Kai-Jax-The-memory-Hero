@@ -11,10 +11,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "@smash-heroes/engine": path.resolve(__dirname, "../../packages/engine/src"),
-      "@smash-heroes/characters": path.resolve(__dirname, "../../packages/characters/src"),
-      "@smash-heroes/shared": path.resolve(__dirname, "../../packages/shared/src"),
-      "@smash-heroes/ui": path.resolve(__dirname, "../../packages/ui/src"),
+      "@beast-kin/engine": path.resolve(__dirname, "../../packages/engine/src"),
+      "@beast-kin/characters": path.resolve(__dirname, "../../packages/characters/src"),
+      "@beast-kin/shared": path.resolve(__dirname, "../../packages/shared/src"),
+      "@beast-kin/ui": path.resolve(__dirname, "../../packages/ui/src"),
     },
   },
   build: {

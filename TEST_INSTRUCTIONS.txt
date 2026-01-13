@@ -1,0 +1,49 @@
+═══════════════════════════════════════════════════════════════
+  BEAST-KIN MODEL TESTING - QUICK START
+═══════════════════════════════════════════════════════════════
+
+STEP 1: OPEN BLENDER
+  - Launch Blender 4.0+
+  - File → New → General
+
+STEP 2: LOAD TEST SCRIPT
+  - Click "Text Editor" tab (top)
+  - Click "New" → "Open"
+  - Navigate to: assets/models/characters/blender_scripts/
+  - Open: quick_test_jaxon.py
+
+STEP 3: RUN IT!
+  - Press Alt+P
+  - Watch console and viewport
+
+═══════════════════════════════════════════════════════════════
+
+WHAT YOU SHOULD SEE:
+  ✓ Electric Blue hedgehog in viewport
+  ✓ 7 blue quills on back
+  ✓ 2 bright green eyes
+  ✓ Console shows: "✅ JAXON BLOCKOUT CREATED!"
+
+═══════════════════════════════════════════════════════════════
+
+IF IT WORKS:
+  - Press Home (frame all)
+  - Rotate view (Middle Mouse)
+  - Check from all angles
+  - Ready to sculpt!
+
+IF IT DOESN'T WORK:
+  - Check console for errors
+  - Check Blender version (need 4.0+)
+  - Check script file path
+
+═══════════════════════════════════════════════════════════════
+
+TEST ALL CHARACTERS:
+  After Jaxon works, test others:
+  1. Clear scene (Select All → Delete)
+  2. Load next script (generate_kaison_blockout.py, etc.)
+  3. Run (Alt+P)
+  4. Verify
+
+═══════════════════════════════════════════════════════════════

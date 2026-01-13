@@ -4,7 +4,6 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["vite"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -89,12 +88,29 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npx vite --host 0.0.0.0 --port 5000"
+args = "npm run dev"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Tunisian"
+mode = "sequential"
+author = 25499735
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "Npm run electron:build "
+
+[[workflows.workflow]]
+name = "Euh"
+mode = "sequential"
+author = 25499735
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "Node:index.cjs"
 
 [agent]
 integrations = ["javascript_openai:1.0.0"]
-
-[userenv]
-
-[userenv.shared]
-VITE_ALLOWED_HOSTS = "all"

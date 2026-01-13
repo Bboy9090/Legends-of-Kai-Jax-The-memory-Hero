@@ -13,10 +13,10 @@
     "noEmit": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@smash-heroes/engine": ["../../packages/engine/src"],
-      "@smash-heroes/characters": ["../../packages/characters/src"],
-      "@smash-heroes/shared": ["../../packages/shared/src"],
-      "@smash-heroes/ui": ["../../packages/ui/src"]
+      "@beast-kin/engine": ["../../packages/engine/src"],
+      "@beast-kin/characters": ["../../packages/characters/src"],
+      "@beast-kin/shared": ["../../packages/shared/src"],
+      "@beast-kin/ui": ["../../packages/ui/src"]
     }
   },
   "include": ["src"],

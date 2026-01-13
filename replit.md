@@ -1,7 +1,8 @@
-# SMASH HEROES: WORLD COLLISION™
+# BEAST-KIN SOVEREIGNTY: GENESIS™
+## Legends of Kai-Jax - The Memory Hero
 
 ## Overview
-SMASH HEROES: WORLD COLLISION™ is an epic open-world action RPG where a fractured multiverse leads to a collision of iconic realms and heroes. Players assemble 4-hero squads from a roster of 59 legendary fighters to explore a seamless world, battle dimensional rifts, unlock god-tier transformations, and build Nexus Haven—the last bastion against the Void King. The game blends elements of Marvel Ultimate Alliance, Smash, and FF7R, focusing on exploration, battle missions, team synergy, and challenging boss encounters.
+BEAST-KIN SOVEREIGNTY: GENESIS™ is an epic platform fighting RPG featuring 100% original Beast-Kin warriors. Players control Genesis heroes like KAI-JAX (The Memory King), Boryx Zenith (Guardian King), and Lunara Solis (Oracle Sentinel) through story-driven missions. Battle across the Aeterna Covenant, unlock Resonance transformations, and face the ultimate darkness: Voidonus Imperion. The game features original IP, cinematic combat, and deep lore spanning Books 1-3 of the Genesis saga.
 
 ## User Preferences
 - Preferred communication style: Simple, everyday language

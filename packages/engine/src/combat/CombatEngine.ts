@@ -1,4 +1,4 @@
-import { Fighter, Hitbox, HitResult, Vector2D } from '@smash-heroes/shared';
+import { Fighter, Hitbox, HitResult, Vector2D } from '@beast-kin/shared';
 import { KnockbackCalculator } from './KnockbackCalculator';
 import { DamageSystem } from './DamageSystem';
 import { ComboSystem } from './ComboSystem';

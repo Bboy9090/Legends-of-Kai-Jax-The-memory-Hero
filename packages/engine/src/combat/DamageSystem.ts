@@ -1,5 +1,5 @@
-import { HitResult, DamageType } from '@smash-heroes/shared';
-import { COMBAT_CONSTANTS } from '@smash-heroes/shared';
+import { HitResult, DamageType } from '@beast-kin/shared';
+import { COMBAT_CONSTANTS } from '@beast-kin/shared';
 
 export class DamageSystem {
   private damageHistory: Map<string, number[]> = new Map();

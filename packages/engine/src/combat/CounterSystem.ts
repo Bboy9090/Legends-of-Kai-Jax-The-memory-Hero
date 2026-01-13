@@ -1,5 +1,5 @@
-import { CounterWindow } from '@smash-heroes/shared';
-import { COMBAT_CONSTANTS } from '@smash-heroes/shared';
+import { CounterWindow } from '@beast-kin/shared';
+import { COMBAT_CONSTANTS } from '@beast-kin/shared';
 
 export class CounterSystem {
   private counterWindows: Map<string, CounterWindow> = new Map();

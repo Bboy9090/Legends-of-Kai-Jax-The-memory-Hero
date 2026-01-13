@@ -1,5 +1,5 @@
-import { FighterState } from '@smash-heroes/shared';
-import { StateMachine, StateTransition } from '@smash-heroes/engine';
+import { FighterState } from '@beast-kin/shared';
+import { StateMachine, StateTransition } from '@beast-kin/engine';
 
 export class FighterStateMachineBuilder {
   private stateMachine: StateMachine;

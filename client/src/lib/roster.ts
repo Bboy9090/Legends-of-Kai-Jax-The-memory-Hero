@@ -493,54 +493,6 @@ export const SECRET_CHARACTERS: Character[] = [
     ultimates: { level1: 'Lunar Ascension', level2: 'Eclipse Power', level3: 'Cosmic Lunara', level4: 'Infinite Moon' },
     synergies: ['zelda', 'palutena'],
     unlockLevel: 8
-  },
-  {
-    id: 'kaison',
-    name: 'Kaison',
-    title: 'The Fox',
-    role: 'Blitzer',
-    universe: 'Star Fox',
-    stats: { health: 70, attack: 80, defense: 65, speed: 95, special: 80, stamina: 85 },
-    baseDamage: 48,
-    transformations: ['Fox Illusion', 'Fire Kaison', 'Celestial Fox'],
-    abilities: ['Fox Blaster', 'Fox Dash', 'Fox Fire', 'Fox Reflector'],
-    ultimates: { level1: 'Blaster Barrage', level2: 'Illusion Strike', level3: 'Fire Fox Assault', level4: 'Reflector Nova' },
-    synergies: ['jaxon', 'fox', 'tails'],
-    unlockLevel: 6,
-    primaryColor: '#FF6600',
-    accentColor: '#FFFFFF'
-  },
-  {
-    id: 'jaxon',
-    name: 'Jaxon',
-    title: 'The Hedgehog',
-    role: 'Blitzer',
-    universe: 'Sonic',
-    stats: { health: 65, attack: 85, defense: 60, speed: 100, special: 85, stamina: 90 },
-    baseDamage: 52,
-    transformations: ['Super Jaxon', 'Hyper Jaxon', 'Celestial Hedgehog'],
-    abilities: ['Spin Dash', 'Homing Attack', 'Spring Jump', 'Spin Attack'],
-    ultimates: { level1: 'Spin Cyclone', level2: 'Charged Spin Dash', level3: 'Super Speed Assault', level4: 'Chaos Tempest' },
-    synergies: ['kaison', 'sonic', 'shadow'],
-    unlockLevel: 6,
-    primaryColor: '#0066FF',
-    accentColor: '#FFCC00'
-  },
-  {
-    id: 'kaxon',
-    name: 'Kaxon',
-    title: 'The Fusion',
-    role: 'Wildcard',
-    universe: 'Original',
-    stats: { health: 80, attack: 95, defense: 75, speed: 100, special: 95, stamina: 95 },
-    baseDamage: 60,
-    transformations: ['Hyper Fusion', 'Chaos Fusion', 'Ultimate Kaxon'],
-    abilities: ['Fusion Blaster Barrage', 'Hyper Fusion Dash', 'Triple Tail Tornado', 'Fusion Counter Burst'],
-    ultimates: { level1: 'Chaos Rift', level2: 'Triple Tail Storm', level3: 'Fusion Overload', level4: 'Infinite Fusion' },
-    synergies: ['kaison', 'jaxon', 'sonic', 'fox'],
-    unlockLevel: 10,
-    primaryColor: '#9933FF',
-    accentColor: '#FF6600'
   }
 ];
 

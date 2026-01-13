@@ -1,5 +1,5 @@
 {
-  "name": "@smash-heroes/ui",
+  "name": "@beast-kin/ui",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,7 +18,7 @@
     "lint": "eslint src --ext ts,tsx"
   },
   "dependencies": {
-    "@smash-heroes/shared": "workspace:*",
+    "@beast-kin/shared": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

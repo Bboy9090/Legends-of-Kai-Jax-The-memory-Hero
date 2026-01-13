@@ -1,5 +1,5 @@
-import { Vector2D, Hitbox, FighterStats } from '@smash-heroes/shared';
-import { Vec2, MathUtils, COMBAT_CONSTANTS } from '@smash-heroes/shared';
+import { Vector2D, Hitbox, FighterStats } from '@beast-kin/shared';
+import { Vec2, MathUtils, COMBAT_CONSTANTS } from '@beast-kin/shared';
 
 export class KnockbackCalculator {
   /**
