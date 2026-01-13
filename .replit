@@ -91,5 +91,26 @@ task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
 
+[[workflows.workflow]]
+name = "Tunisian"
+mode = "sequential"
+author = 25499735
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "Npm run electron:build "
+
+[[workflows.workflow]]
+name = "Euh"
+mode = "sequential"
+author = 25499735
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "Node:index.cjs"
+
 [agent]
 integrations = ["javascript_openai:1.0.0"]
