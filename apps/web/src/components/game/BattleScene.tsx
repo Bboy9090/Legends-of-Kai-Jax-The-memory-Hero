@@ -9,6 +9,7 @@ import ParticleManager from "./ParticleManager";
 import CameraEffects from "./CameraEffects";
 import AttackTrails from "./AttackTrails";
 import EffectManager from "./EffectManager";
+import { RimLight } from "./EnhancedGraphics";
 
 export default function BattleScene() {
   const { startBattle, updateRoundTimer, battlePhase, playerX, opponentX } = useBattle();
@@ -42,6 +43,9 @@ export default function BattleScene() {
         enableRotate={false}
         target={[cameraX, 2, 0]}  // Lowered from 3 to center fighters on screen
       />
+      
+      {/* Enhanced Lighting System for better character definition */}
+      <RimLight intensity={1.0} />
       
       {/* Battle Arena */}
       <BattleArena />

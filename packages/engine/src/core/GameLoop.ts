@@ -1,5 +1,5 @@
-import { GAME_CONSTANTS } from '@smash-heroes/shared';
-import { DeltaAccumulator } from '@smash-heroes/shared';
+import { GAME_CONSTANTS } from '@beast-kin/shared';
+import { DeltaAccumulator } from '@beast-kin/shared';
 
 export interface GameLoopCallbacks {
   update: (deltaTime: number) => void;

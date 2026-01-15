@@ -1,0 +1,9 @@
+# Blender Starter File for Jaxon
+## This is a text placeholder - actual .blend file would be binary
+
+To create the actual Blender starter file:
+1. Open Blender 4.0+
+2. Set up scene (units, grid, etc.)
+3. Save as: `BLENDER_START.blend`
+
+Or use the Blender template setup guide to configure manually.

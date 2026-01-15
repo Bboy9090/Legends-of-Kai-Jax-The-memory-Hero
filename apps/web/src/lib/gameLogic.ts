@@ -47,11 +47,11 @@ export function generateObstacle(zPosition: number): Obstacle {
   const lanes = [-4, 0, 4];
   const randomLane = lanes[Math.floor(Math.random() * lanes.length)];
   const obstacleTypes = ["car", "barrier", "sign"] as const;
-  const randomType = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+  const randomType = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)] || 'barrier';
   
   return {
     id: `obstacle_${Date.now()}_${Math.random()}`,
-    position: new THREE.Vector3(randomLane, 0, zPosition),
+    position: new THREE.Vector3(randomLane ?? 0, 0, zPosition),
     size: new THREE.Vector3(2, 2, 3),
     type: "obstacle",
     obstacleType: randomType,
@@ -64,11 +64,11 @@ export function generateEnemy(zPosition: number): Enemy {
   const lanes = [-4, 0, 4];
   const randomLane = lanes[Math.floor(Math.random() * lanes.length)];
   const enemyTypes = ["scuttle", "stomper", "goo"] as const;
-  const randomType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+  const randomType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)] || 'scuttle';
   
   return {
     id: `enemy_${Date.now()}_${Math.random()}`,
-    position: new THREE.Vector3(randomLane, 0, zPosition),
+    position: new THREE.Vector3(randomLane ?? 0, 0, zPosition),
     size: new THREE.Vector3(1.5, 1.5, 1.5),
     type: "enemy",
     enemyType: randomType,

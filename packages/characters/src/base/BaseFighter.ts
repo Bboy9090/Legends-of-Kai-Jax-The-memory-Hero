@@ -1,5 +1,5 @@
-import { Fighter, FighterState, FighterStats, MoveSet, RigidBody, Vector2D, Hitbox } from '@smash-heroes/shared';
-import { StateMachine } from '@smash-heroes/engine';
+import { Fighter, FighterState, FighterStats, MoveSet, RigidBody, Vector2D, Hitbox } from '@beast-kin/shared';
+import { StateMachine } from '@beast-kin/engine';
 
 export abstract class BaseFighter implements Fighter {
   id: string;
@@ -28,18 +28,27 @@ export abstract class BaseFighter implements Fighter {
     this.hitboxes = [];
     
     // Initialize stats
-    this.stats = this.getDefaultStats();
+    const defaultStats = this.getDefaultStats();
     
     // Initialize physics
     this.physics = {
       position: { x: 0, y: 0 },
       velocity: { x: 0, y: 0 },
       acceleration: { x: 0, y: 0 },
-      mass: this.stats.weight,
+      mass: defaultStats.weight,
       friction: 0.85,
       restitution: 0,
       isGrounded: false,
       isAirborne: false,
+    };
+    
+    // Ensure stats includes required properties
+    this.stats = {
+      ...defaultStats,
+      id: id, // Ensure id is set
+      damage: defaultStats.currentDamage, // Alias for currentDamage
+      hitstun: defaultStats.hitstun ?? 0, // Initialize hitstun if not provided
+      velocity: this.physics.velocity, // Reference to physics velocity
     };
     
     this.position = this.physics.position;
@@ -60,6 +69,18 @@ export abstract class BaseFighter implements Fighter {
     this.currentFrame++;
     this.stateMachine.update(deltaTime);
     this.updateHitboxes();
+    
+    // Sync stats with physics
+    this.stats.velocity = this.physics.velocity;
+    this.stats.damage = this.stats.currentDamage;
+    
+    // Decrement hitstun if in hitstun state
+    if (this.state === FighterState.HITSTUN && this.stats.hitstun > 0) {
+      this.stats.hitstun = Math.max(0, this.stats.hitstun - 1);
+      if (this.stats.hitstun === 0) {
+        this.changeState(FighterState.IDLE);
+      }
+    }
   }
 
   protected updateHitboxes(): void {
@@ -85,8 +106,15 @@ export abstract class BaseFighter implements Fighter {
     this.facing = facing;
   }
 
-  takeDamage(damage: number): void {
+  takeDamage(damage: number, hitstunFrames: number = 0): void {
     this.stats.currentDamage = Math.min(this.stats.currentDamage + damage, this.stats.maxDamage);
+    this.stats.damage = this.stats.currentDamage;
+    
+    // Apply hitstun if provided
+    if (hitstunFrames > 0) {
+      this.stats.hitstun = hitstunFrames;
+      this.changeState(FighterState.HITSTUN);
+    }
   }
 
   heal(amount: number): void {
@@ -110,9 +138,12 @@ export abstract class BaseFighter implements Fighter {
 
   reset(): void {
     this.stats.currentDamage = 0;
+    this.stats.damage = 0;
+    this.stats.hitstun = 0;
     this.stats.ultimateMeter = 0;
     this.physics.velocity = { x: 0, y: 0 };
     this.physics.acceleration = { x: 0, y: 0 };
+    this.stats.velocity = this.physics.velocity;
     this.state = FighterState.IDLE;
     this.invincible = false;
     this.intangible = false;

@@ -1,4 +1,4 @@
-import { InputAction, KeyboardState, InputState } from '@smash-heroes/shared';
+import { InputAction, KeyboardState, InputState } from '@beast-kin/shared';
 
 export class KeyboardController {
   private state: KeyboardState = {

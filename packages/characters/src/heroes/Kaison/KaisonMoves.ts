@@ -1,4 +1,4 @@
-import { MoveSet } from '@smash-heroes/shared';
+import { MoveSet } from '@beast-kin/shared';
 import { MoveSetBuilder } from '../../base/MoveSet';
 
 /**

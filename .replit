@@ -98,3 +98,12 @@ integrations = ["javascript_openai:1.0.0"]
 
 [userenv.shared]
 VITE_ALLOWED_HOSTS = "all"
+
+[rules]
+
+[rules.formatter]
+
+[rules.formatter.fileExtensions]
+
+[rules.formatter.fileExtensions.".json"]
+id = "module:nodejs-20/formatter:prettier"

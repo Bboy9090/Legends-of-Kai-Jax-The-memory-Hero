@@ -38,6 +38,8 @@ export default function BattlePlayer() {
     playerAttackPhase, // NEW: windup/contact/followthrough/recovery
     playerInvulnerable,
     playerHealth,
+    playerTransformed, // ⚡ For Kai-Jax transformation state
+    playerSynergy, // ⚡ For Resonance tracking
     playerMomentum, // NEW: Forward momentum (0-1)
     playerBalance, // NEW: Center of gravity stability (0-1)
     playerStance, // NEW: Stance data (weight distribution, hip rotation)
@@ -68,6 +70,7 @@ export default function BattlePlayer() {
   const prevYRef = useRef(0.8);
   const hitAnimRef = useRef(0);
   const prevHealthRef = useRef(100);
+  const coyoteTimeRef = useRef(0); // ⚡ Kaison's 4-frame Coyote time window
   
   // LEGENDARY ANIMATION SYSTEM - Attack phases for smooth transitions!
   const attackPhaseRef = useRef<'windup' | 'active' | 'recovery' | null>(null);
@@ -102,11 +105,35 @@ export default function BattlePlayer() {
     }
     
     animTimeRef.current += scaledDelta;
-    const { left, right, jump, punch, kick, special } = getKeys();
+    const { left, right, jump, punch, kick, special, transform } = getKeys();
     
-    // Apply time scale to movement and physics  
-    const moveSpeed = 0.2 * timeScale; // DOUBLED movement speed for visibility!
-    const gravity = -10; // TUNED: Balanced for 0.8s airtime AND 1.8 unit apex!
+    // ⚡ CHARACTER-SPECIFIC PHYSICS (Bronx Grit Standard)
+    // Jaxon Solo: g=9.8 (Standard speed)
+    // Kaison Solo: g=9.8 (Standard speed with 4-frame Coyote time)
+    // Kai-Jax Fused: g=18.0 (Architect Tier - Heavy weight)
+    const getCharacterGravity = () => {
+      if (playerFighterId === 'kai-jax') {
+        return -18.0; // Architect Tier - Heavy weight for fused form
+      }
+      // Jaxon or Kaison solo (or any other character)
+      return -9.8; // Standard gravity
+    };
+    
+    const gravity = getCharacterGravity();
+    
+    // Character-specific move speed
+    const getCharacterMoveSpeed = () => {
+      if (playerFighterId === 'jaxon') {
+        return 0.25 * timeScale; // Jaxon: Fast (Velocity Fracture)
+      } else if (playerFighterId === 'kaison') {
+        return 0.22 * timeScale; // Kaison: Tactical speed
+      } else if (playerFighterId === 'kai-jax') {
+        return 0.18 * timeScale; // Kai-Jax: Slower but heavier (Architect Tier)
+      }
+      return 0.2 * timeScale; // Default
+    };
+    
+    const moveSpeed = getCharacterMoveSpeed();
     
     // Track movement
     isMovingRef.current = (left || right) && !playerAttacking;
@@ -118,18 +145,46 @@ export default function BattlePlayer() {
       movePlayer(moveSpeed, useBattle.getState().playerY);
     }
     
-    // Jump - NOW WORKS!
+    // Jump with Coyote Time for Kaison (4-frame window = 0.067s at 60fps)
     if (jump) {
-      playerJump();
+      const freshState = useBattle.getState();
+      // Kaison gets 4-frame Coyote time for superior air control
+      if (playerFighterId === 'kaison' && !freshState.playerGrounded && coyoteTimeRef.current < 0.067) {
+        coyoteTimeRef.current += scaledDelta;
+        playerJump();
+      } else if (freshState.playerGrounded) {
+        // Normal jump when grounded
+        playerJump();
+        coyoteTimeRef.current = 0; // Reset Coyote time
+      }
+    } else if (useBattle.getState().playerGrounded) {
+      coyoteTimeRef.current = 0; // Reset Coyote time when grounded
     }
     
-    // Attacks - NOW MORE RESPONSIVE!
+    // Attacks - Character-specific movesets
     if (punch && !playerAttacking) {
       playerAttack('punch');
     } else if (kick && !playerAttacking) {
       playerAttack('kick');
     } else if (special && !playerAttacking) {
+      // Jaxon: Flicker-Strike (3f), Kaison: Sky-Anchor (Bungee), Kai-Jax: Memory Strand
       playerAttack('special');
+    }
+    
+    // Transformation Trigger (Jaxon/Kaison -> Kai-Jax fusion)
+    // Only available when playing as Jaxon or Kaison, Resonance >= 50%
+    if (transform && !playerAttacking) {
+      const { playerSynergy, playerTransformed } = useBattle.getState();
+      const fusionThreshold = 50;
+      
+      // Jaxon/Kaison -> Kai-Jax fusion
+      if ((playerFighterId === 'jaxon' || playerFighterId === 'kaison') && 
+          playerSynergy >= fusionThreshold && 
+          !playerTransformed) {
+        console.log("[Battle] 🔄 BLOODWARD PROTOCOL: Fusion triggered!");
+        useBattle.getState().triggerTransformation();
+        // playerFighterId will be set in triggerTransformation
+      }
     }
     
     // Re-fetch COMPLETE state after all movements/actions
@@ -396,6 +451,33 @@ export default function BattlePlayer() {
           animTime={animTimeRef.current}
           isAttacking={playerAttacking}
           isInvulnerable={playerInvulnerable}
+          // Kaison specific: Tactical jacket and tail-blades visible
+          showTacticalJacket={true}
+          showTailBlades={true}
+        />
+      );
+    }
+    
+    // KAI-JAX FUSED FORM (Star-Slime Chimera with 3 Memory Strand Tails)
+    if (playerFighterId === 'kai-jax') {
+      // Use JaxonModel as base for Kai-Jax (will be enhanced with 3 tails)
+      return (
+        <JaxonModel 
+          bodyRef={bodyRef}
+          headRef={headRef}
+          leftArmRef={leftArmRef}
+          rightArmRef={rightArmRef}
+          leftLegRef={leftLegRef}
+          rightLegRef={rightLegRef}
+          emotionIntensity={emotionIntensityRef.current}
+          hitAnim={hitAnimRef.current}
+          animTime={animTimeRef.current}
+          isAttacking={playerAttacking}
+          isInvulnerable={playerInvulnerable}
+          isTransformed={playerTransformed}
+          // Kai-Jax specific: 3 Memory Strand Tails visible
+          showThreeTails={true}
+          showElectricQuills={true} // Long electric quills
         />
       );
     }

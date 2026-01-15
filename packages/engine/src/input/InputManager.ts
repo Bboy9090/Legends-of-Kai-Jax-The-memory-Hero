@@ -1,4 +1,4 @@
-import { InputType, InputAction, InputState } from '@smash-heroes/shared';
+import { InputType, InputAction, InputState } from '@beast-kin/shared';
 import { KeyboardController } from './KeyboardController';
 import { GamepadController } from './GamepadController';
 import { TouchController } from './TouchController';

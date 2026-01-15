@@ -1,5 +1,5 @@
-import { ComboState, HitResult } from '@smash-heroes/shared';
-import { COMBAT_CONSTANTS } from '@smash-heroes/shared';
+import { ComboState, HitResult } from '@beast-kin/shared';
+import { COMBAT_CONSTANTS } from '@beast-kin/shared';
 
 export class ComboSystem {
   private combos: Map<string, ComboState> = new Map();
