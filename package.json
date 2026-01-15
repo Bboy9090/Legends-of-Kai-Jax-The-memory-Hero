@@ -1,12 +1,15 @@
 {
-  "name": "The Legends of Kai-Jax- The Memory Hero",
+  "name": "aeterna-covenant",
   "version": "1.0.0",
-  "description": "The Legends of Kai-Jax- The Memory Hero - A Mythic Platform Fighter PWA",
-  "main": "index.html",
+  "description": "The Legends of Kai-Jax: The Memory Hero - A Mythic Platform Fighter",
+  "type": "module",
   "scripts": {
-    "start": "npx serve . -p 3000",
-    "deploy": "git add . && git commit -m 'Deploy: The Legends of Kai-Jax' && git push",
-    "test": "echo 'Testing PWA...' && node -e \"console.log('✅ Node.js ready')\""
+    "dev": "vite --host 0.0.0.0 --port 5000",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node server/index.js",
+    "db:push": "drizzle-kit push",
+    "test": "echo 'Testing...' && node -e \"console.log('✅ Node.js ready')\""
   },
   "keywords": [
     "pwa",
@@ -36,16 +39,13 @@
     "@tailwindcss/postcss": "^4.1.18",
     "@tanstack/react-query": "^5.90.12",
     "@vitejs/plugin-react": "^5.1.2",
-    "audit": "^0.0.6",
     "autoprefixer": "^10.4.22",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "concurrently": "^9.2.1",
     "drizzle-orm": "^0.45.1",
     "express": "^5.2.1",
-    "fix": "^0.0.3",
     "framer-motion": "^12.23.26",
-    "fund": "^1.0.0",
     "lucide-react": "^0.561.0",
     "postcss": "^8.5.6",
     "react": "^19.2.3",
