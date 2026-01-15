@@ -88,7 +88,7 @@ const CharacterSelect: React.FC = () => {
     const rend = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     rend.setSize(canvas.clientWidth, canvas.clientHeight);
     rend.shadowMap.enabled = true;
-    rend.shadowMap.type = THREE.PCFShadowShadowMap;
+    rend.shadowMap.type = THREE.PCFShadowMap;
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);

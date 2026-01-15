@@ -16,6 +16,8 @@ interface KaisonModelProps {
   animTime: number;
   isAttacking: boolean;
   isInvulnerable: boolean;
+  showTacticalJacket?: boolean; // Optional: Show tactical jacket
+  showTailBlades?: boolean; // Optional: Show tail-blades
 }
 
 export default function KaisonModel({
@@ -39,12 +41,15 @@ export default function KaisonModel({
   const accentColor = "#FFD700"; // Gold rings (Sonic)
   const speedColor = "#00E5FF"; // Cyan speed trail
   
+  // Scale factor: Make character 2.5x larger for better visibility
+  const SCALE = 2.5;
+  
   return (
-    <group ref={bodyRef} position={[0, 0.4, 0]}>
+    <group ref={bodyRef} position={[0, 0.4 * SCALE, 0]} scale={[SCALE, SCALE, SCALE]}>
       {/* Dynamic shadow that follows character */}
-      <DynamicShadow characterY={0.4} groundY={-0.4} maxDistance={3} />
+      <DynamicShadow characterY={0.4 * SCALE} groundY={-0.4 * SCALE} maxDistance={3 * SCALE} />
       
-      {/* HEAD GROUP */}
+      {/* HEAD GROUP - Better proportions */}
       <group ref={headRef} position={[0, 0.6, 0]}>
         {/* GREEN CAP (Luigi-style) with enhanced materials */}
         <mesh position={[0, 0.2, 0]} castShadow receiveShadow>

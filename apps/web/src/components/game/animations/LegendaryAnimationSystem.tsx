@@ -119,6 +119,8 @@ export class SecondaryMotionController {
       const velocity = this.velocities[i];
       
       // Spring force towards rest position
+      if (!bone || !velocity) continue; // Skip if undefined (tailspin fix)
+      
       const restRotation = new THREE.Euler(0, 0, 0);
       const currentRotation = bone.rotation;
       const force = new THREE.Vector3(

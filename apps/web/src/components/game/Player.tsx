@@ -96,22 +96,27 @@ export default function Player() {
     }
     
     // Animate particles
-    if (particleRef.current) {
+    if (particleRef.current?.geometry?.attributes?.position) {
       const positions = particleRef.current.geometry.attributes.position.array as Float32Array;
-      
+      if (positions) {
       for (let i = 0; i < positions.length; i += 3) {
+        const x = positions[i];
+        const y = positions[i + 1];
+        if (x === undefined || y === undefined) continue;
+        
         if (selectedCharacter === "jaxon") {
           // Lightning effect - zigzag movement
-          positions[i] += Math.sin(animationTimeRef.current * 10 + i) * 0.02;
-          positions[i + 1] += Math.cos(animationTimeRef.current * 8 + i) * 0.01;
+          positions[i] = x + Math.sin(animationTimeRef.current * 10 + i) * 0.02;
+          positions[i + 1] = y + Math.cos(animationTimeRef.current * 8 + i) * 0.01;
         } else {
           // Fire effect - upward floating
-          positions[i + 1] += Math.sin(animationTimeRef.current * 5 + i) * 0.02;
-          positions[i] += Math.cos(animationTimeRef.current * 3 + i) * 0.01;
+          positions[i + 1] = y + Math.sin(animationTimeRef.current * 5 + i) * 0.02;
+          positions[i] = x + Math.cos(animationTimeRef.current * 3 + i) * 0.01;
         }
       }
-      
-      particleRef.current.geometry.attributes.position.needsUpdate = true;
+        
+        particleRef.current.geometry.attributes.position.needsUpdate = true;
+      }
     }
   });
   

@@ -144,6 +144,11 @@ export class LegendaryParticleEmitter {
     // Update particles
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
+      if (!p) {
+        this.particles.splice(i, 1);
+        continue; // Remove undefined particles (tailspin fix)
+      }
+      
       p.lifetime += delta;
       
       if (p.lifetime >= p.maxLifetime) {

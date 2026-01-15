@@ -56,7 +56,7 @@ const Match: React.FC = () => {
       powerPreference: 'high-performance',
     });
     renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-    renderer.shadowMap.type = THREE.PCFShadowShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     // Lighting setup - LEGENDARY 3-POINT LIGHTING

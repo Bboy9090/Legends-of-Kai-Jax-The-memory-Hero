@@ -12,7 +12,7 @@ export default defineConfig({
   plugins: [
     react(),
     runtimeErrorOverlay(),
-    glsl(),
+    glsl(), // Add GLSL shader support
   ],
   resolve: {
     alias: {
@@ -25,13 +25,10 @@ export default defineConfig({
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
   },
+  // Add support for large models and audio files
   assetsInclude: ["**/*.gltf", "**/*.glb", "**/*.mp3", "**/*.ogg", "**/*.wav"],
-  server: {
-    host: "0.0.0.0",
-    port: 5000,
-    allowedHosts: [
-      "ccf3650f-78b5-4898-be4f-d5bceeb1cfc6-00-2hmv44d2pewu7.spock.replit.dev",
-      ".replit.dev"
-    ],
+    server: {
+    allowedHosts: true,
   },
 });
+

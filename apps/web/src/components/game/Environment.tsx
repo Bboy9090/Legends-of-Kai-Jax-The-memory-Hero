@@ -132,7 +132,7 @@ export default function Environment({ playerZ }: EnvironmentProps) {
               </mesh>
               {/* Car wheels */}
               {[[-0.4, -0.3], [0.4, -0.3], [-0.4, 0.3], [0.4, 0.3]].map((pos, i) => (
-                <mesh key={i} position={[pos[0], 0.1, pos[1]]} castShadow>
+                <mesh key={i} position={[pos[0] ?? 0, 0.1, pos[1] ?? 0]} castShadow>
                   <cylinderGeometry args={[0.1, 0.1, 0.2]} />
                   <meshLambertMaterial color="#333333" />
                 </mesh>

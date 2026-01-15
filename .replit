@@ -4,6 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
+packages = ["vite"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -15,8 +16,60 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 5173
-externalPort = 9000
+localPort = 32887
+externalPort = 8081
+
+[[ports]]
+localPort = 34367
+externalPort = 3003
+
+[[ports]]
+localPort = 34765
+externalPort = 4200
+
+[[ports]]
+localPort = 36557
+externalPort = 3000
+
+[[ports]]
+localPort = 36803
+externalPort = 8099
+
+[[ports]]
+localPort = 37419
+externalPort = 3001
+
+[[ports]]
+localPort = 37801
+externalPort = 8000
+
+[[ports]]
+localPort = 37967
+externalPort = 5000
+
+[[ports]]
+localPort = 38929
+externalPort = 8080
+
+[[ports]]
+localPort = 39835
+externalPort = 6800
+
+[[ports]]
+localPort = 39971
+externalPort = 5173
+
+[[ports]]
+localPort = 43727
+externalPort = 3002
+
+[[ports]]
+localPort = 43771
+externalPort = 6000
+
+[[ports]]
+localPort = 44017
+externalPort = 8008
 
 [workflows]
 runButton = "Project"
@@ -36,34 +89,21 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
-waitForPort = 5000
-
-[[workflows.workflow]]
-name = "Tunisian"
-mode = "sequential"
-author = 25499735
-
-[[workflows.workflow.tasks]]
-task = "packager.installForAll"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "Npm run electron:build "
-
-[[workflows.workflow]]
-name = "Euh"
-mode = "sequential"
-author = 25499735
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "Node:index.cjs"
+args = "npx vite --host 0.0.0.0 --port 5000"
 
 [agent]
 integrations = ["javascript_openai:1.0.0"]
 
 [userenv]
 
-[userenv.development]
-DANGEROUSLY_DISABLE_HOST_CHECK = "true"
+[userenv.shared]
+VITE_ALLOWED_HOSTS = "all"
+
+[rules]
+
+[rules.formatter]
+
+[rules.formatter.fileExtensions]
+
+[rules.formatter.fileExtensions.".json"]
+id = "module:nodejs-20/formatter:prettier"

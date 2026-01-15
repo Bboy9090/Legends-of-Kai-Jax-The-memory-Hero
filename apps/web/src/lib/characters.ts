@@ -25,8 +25,7 @@ export const FIGHTERS: Fighter[] = [
     accentColor: '#00CED1', // Electric cyan/blue
     description: 'Young beastly hedgehog with long electricity-flowing quills. Very feral but calculated, smart, witty. Solo playable before fusion.',
     category: 'speedsters',
-    unlocked: true,
-    bookUnlock: 1
+    unlocked: true
   },
   
   // KAISON - The Star-Force Kitsune (SOLO PLAYABLE - Pre-Fusion)
@@ -38,8 +37,7 @@ export const FIGHTERS: Fighter[] = [
     accentColor: '#FFD700', // Golden Star-Force
     description: 'Young fox/tails/wolf with Spider-Man mobility and web control. Chase Badge sonar system. Jokingly authorized banter. Solo playable before fusion.',
     category: 'warriors',
-    unlocked: true,
-    bookUnlock: 1
+    unlocked: true
   },
   
   // KAI-JAX - The Memory Hero / Archive King (FUSED FORM)
@@ -52,8 +50,7 @@ export const FIGHTERS: Fighter[] = [
     description: 'The Archive King! Star-Slime Chimera with 3 Memory Strand Tails (Jax/Liquid Ink, Kai/Ink Smoke, Father/Anchor). Long electric quills, Sage-Mode eyes.',
     category: 'legends',
     unlocked: false,
-    unlockRequirement: 50, // Unlocks at 50% Resonance during fusion
-    bookUnlock: 1
+    unlockRequirement: 50 // Unlocks at 50% Resonance during fusion
   },
   
   // Boryx Zenith - The Guardian King

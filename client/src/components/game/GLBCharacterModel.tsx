@@ -41,11 +41,6 @@ const CHARACTER_GLB_MAP: Record<string, string> = {
   'diddy': 'diddy_hero.glb', 'iceclimbers': 'iceclimbers_hero.glb',
 };
 
-export function getModelPath(characterId: string): string | null {
-  const glbFileName = CHARACTER_GLB_MAP[characterId.toLowerCase()];
-  return glbFileName ? `/models/${glbFileName}` : null;
-}
-
 export default function GLBCharacterModel({
   characterId,
   bodyRef,

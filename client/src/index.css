@@ -1,27 +1,22 @@
 @import "tailwindcss";
 
-@theme {
-  --color-background: hsl(222.2 84% 4.9%);
-  --color-foreground: hsl(210 40% 98%);
-  --color-border: hsl(217.2 32.6% 17.5%);
-  --color-primary: hsl(217.2 91.2% 59.8%);
-  --color-secondary: hsl(217.2 32.6% 17.5%);
-  --color-accent: hsl(217.2 32.6% 17.5%);
-  --color-muted: hsl(217.2 32.6% 17.5%);
-  --color-card: hsl(222.2 84% 4.9%);
+:root {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
   --radius: 0.5rem;
 }
 
 * {
-  border-color: var(--color-border);
+  border-color: hsl(var(--border));
 }
 
 body {
   font-family: system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
   margin: 0;
   padding: 0;
   overflow: auto;

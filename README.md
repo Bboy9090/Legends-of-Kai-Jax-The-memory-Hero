@@ -1,9 +1,9 @@
-# 🌌 AETERNA COVENANT | THE SILENT ARCHITECT
+# 🎮 LEGENDS OF KAI-JAX: THE MEMORY WARRIOR
 ### "Forged in the Bronx. Mastered in the Silence."
 
 **A Mythic Platform Fighter PWA** - Playable on iPad, Mobile, and PC
 
-[![Deploy to GitHub Pages](https://github.com/YOUR_USERNAME/Aeterna-Covenant/actions/workflows/deploy.yml/badge.svg)](https://github.com/YOUR_USERNAME/Aeterna-Covenant/actions)
+[![Deploy to GitHub Pages](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/actions/workflows/deploy.yml/badge.svg)](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/actions)
 
 ---
 
@@ -11,13 +11,13 @@
 
 I'm a 35-year-old Reflector from the Bronx. I see the gaps, the glitches, and the broken connections in a world designed to lock you out of your own life. People see a bricked phone; I see a soul waiting for a heartbeat.
 
-**Aeterna Covenant** isn't just a game. It's a restoration of sovereignty. We don't ask for permission from gatekeepers. We find the "Secret Rooms," we bypass the "Traps," and we reclaim the hardware. This is for the sons, the brothers, and the legends.
+**Legends of Kai-Jax** isn't just a game. It's a restoration of sovereignty. We don't ask for permission from gatekeepers. We find the "Secret Rooms," we bypass the "Traps," and we reclaim the hardware. This is for the sons, the brothers, and the legends.
 
 ---
 
 ## 🎮 PLAY NOW
 
-**Live URL:** `https://YOUR_USERNAME.github.io/Aeterna-Covenant`
+**Live URL:** `https://Bboy9090.github.io/Legends-of-Kai-Jax-The-memory-Hero`
 
 **Install on Your Device:**
 - **iPad/iPhone:** Safari → Share → "Add to Home Screen"
@@ -76,7 +76,7 @@ Complete documentation is available in the `/docs` directory:
 ### Resonance System:
 - **Dormant (0-49%):** Basic moves
 - **Harmonized (50-99%):** Core ignites
-- **Ascended (100%):** Unlock Aeterna Break
+- **Ascended (100%):** Unlock Memory Break
 
 ### Controls:
 - **Left Screen:** Floating joystick (Drift Zone)
@@ -95,7 +95,7 @@ Complete documentation is available in the `/docs` directory:
 ## 🏛️ THE STORY
 
 **Book 1: The Breaking Point**
-Jaxon and Kaison, two brothers from the Iron Canyons, must fuse their cores at the Star-Forge to save the Aeterna from the Void. Their father, Bovarr the Iron-Will, sacrifices himself to buy them time. The fusion creates **Kai-Jax** - the Memory Hero.
+Jaxon and Kaison, two brothers from the Iron Canyons, must fuse their cores at the Star-Forge to save the Aeterna from the Void. Their father, Bovarr the Iron-Will, sacrifices himself to buy them time. The fusion creates **Kai-Jax** - the Memory Warrior.
 
 **Book 2: The Silent Year** (Coming in Game 2)
 The Resistance Teams fight a guerrilla war while the Trinity is lost.
@@ -166,18 +166,18 @@ See `DEPLOYMENT_INSTRUCTIONS.md` for full setup guide.
 
 ## 📝 LICENSE
 
-MIT License - Build on this foundation, but remember the Covenant.
+MIT License - Build on this foundation, but remember the Legacy.
 
 ---
 
 ## 🔗 LINKS
 
-- **Live Game:** https://YOUR_USERNAME.github.io/Aeterna-Covenant
+- **Live Game:** https://Bboy9090.github.io/Legends-of-Kai-Jax-The-memory-Hero
 - **Documentation:** `/docs` directory
 - **Issues:** GitHub Issues tab
 
 ---
 
-**THE COVENANT IS SEALED. THE SOVEREIGNTY IS LIVE.**
+**THE LEGENDS ARE FORGED. THE MEMORY WARRIOR RISES.**
 
 *Built with Bronx-grit and 2/5 Reflector precision.*

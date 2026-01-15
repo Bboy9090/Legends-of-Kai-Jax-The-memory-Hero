@@ -1,7 +1,8 @@
 import { useRef, useEffect } from 'react';
 import { useFrame, useThree, extend } from '@react-three/fiber';
-import { EffectComposer, Bloom, ChromaticAberration, Vignette, DepthOfField } from '@react-three/postprocessing';
-import { BlendFunction } from 'postprocessing';
+// Note: Post-processing effects require @react-three/postprocessing package
+// import { EffectComposer, Bloom, ChromaticAberration, Vignette, DepthOfField } from '@react-three/postprocessing';
+// import { BlendFunction } from 'postprocessing';
 import * as THREE from 'three';
 
 /**
@@ -144,9 +145,14 @@ export function LegendaryPostProcessing({
   enableVignette?: boolean;
   enableDOF?: boolean;
 }) {
+  // Note: Post-processing effects require @react-three/postprocessing package
+  // Install with: npm install @react-three/postprocessing postprocessing
+  // For now, returning null - lighting still works via LegendaryLightingRig
+  return null;
+  
+  /* Uncomment when postprocessing is installed:
   return (
     <EffectComposer multisampling={8}>
-      {/* === BLOOM (glowing effects) === */}
       {enableBloom && (
         <Bloom
           intensity={1.5}
@@ -156,16 +162,12 @@ export function LegendaryPostProcessing({
           radius={0.8}
         />
       )}
-      
-      {/* === CHROMATIC ABERRATION (edge distortion) === */}
       {enableChromaticAberration && (
         <ChromaticAberration
           blendFunction={BlendFunction.NORMAL}
           offset={[0.001, 0.001] as [number, number]}
         />
       )}
-      
-      {/* === VIGNETTE (darkened edges) === */}
       {enableVignette && (
         <Vignette
           eskil={false}
@@ -173,8 +175,6 @@ export function LegendaryPostProcessing({
           darkness={0.5}
         />
       )}
-      
-      {/* === DEPTH OF FIELD (cinematic focus) === */}
       {enableDOF && (
         <DepthOfField
           focusDistance={0.02}
@@ -185,6 +185,7 @@ export function LegendaryPostProcessing({
       )}
     </EffectComposer>
   );
+  */
 }
 
 // Screen shake controller

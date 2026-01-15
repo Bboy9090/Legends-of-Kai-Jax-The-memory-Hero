@@ -343,8 +343,10 @@ export function SpeedTrail({
 
   // Note: linewidth is not widely supported in WebGL. For better cross-browser support,
   // consider using a mesh-based line (e.g., THREE.TubeGeometry) or instanced meshes
+  // Note: Three.js Line uses different structure
+  // Convert to Line2 or use LineSegments
   return (
-    <line geometry={geometry}>
+    <lineSegments geometry={geometry}>
       <lineBasicMaterial
         color={color}
         transparent
@@ -352,7 +354,7 @@ export function SpeedTrail({
         depthWrite={false}
         blending={THREE.AdditiveBlending}
       />
-    </line>
+    </lineSegments>
   );
 }
 

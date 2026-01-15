@@ -437,5 +437,207 @@ body {
 }
 
 /* ============================================================================
+   SAGA MODE LAUNCHER STYLES
+   ============================================================================ */
+.saga-container {
+  min-height: 100vh;
+  background: var(--void);
+  padding: 2rem;
+  color: white;
+}
+
+.saga-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem 0;
+}
+
+.book-selector {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.book-tab {
+  background: var(--matte);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.book-tab:hover {
+  border-color: var(--amber);
+  transform: translateY(-2px);
+}
+
+.book-tab.active {
+  border-color: var(--cyan);
+  background: rgba(0, 242, 255, 0.1);
+  box-shadow: var(--cyan-glow);
+}
+
+.chapter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.chapter-card {
+  background: var(--matte);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.chapter-card:hover {
+  border-color: var(--amber);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(255, 191, 0, 0.2);
+}
+
+.chapter-card.selected {
+  border-color: var(--cyan);
+  box-shadow: var(--cyan-glow);
+}
+
+.chapter-card.available {
+  border-color: rgba(0, 242, 255, 0.3);
+}
+
+.chapter-card.completed {
+  border-color: rgba(255, 191, 0, 0.5);
+}
+
+.chapter-card.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chapter-card.locked:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.chapter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.chapter-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+}
+
+.chapter-status {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.chapter-status.available {
+  background: rgba(0, 242, 255, 0.2);
+  color: var(--cyan);
+}
+
+.chapter-status.completed {
+  background: rgba(255, 191, 0, 0.2);
+  color: var(--amber);
+}
+
+.chapter-status.locked {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.chapter-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.resonance-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 12px;
+}
+
+.resonance-display .label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.resonance-display .value {
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.checkpoint-indicator {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-mono);
+}
+
+.locked-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.lock-icon {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+.saga-footer {
+  text-align: center;
+  margin-top: 4rem;
+  padding: 2rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.matte-mythic-bg {
+  background: var(--void);
+  position: relative;
+}
+
+.matte-mythic-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 191, 0, 0.03) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================================
    THE SOURCE REMEMBERS UNITY. BUILD.
    ============================================================================ */
