@@ -6,3 +6,6 @@ export * from './KnockbackCalculator';
 export * from './FrameCancelSystem';
 export * from './PoiseSystem';
 export * from './TransformationSystem';
+export * from './TrinityMeterSystem';
+export * from './HitStopSystem';
+export * from './LegendaryTransformations';

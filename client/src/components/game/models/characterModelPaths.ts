@@ -1,4 +1,33 @@
+/**
+ * OMEGA PROTOCOL: CHARACTER MODEL PATHS
+ * 
+ * Beast-Kin original characters with legendary beast designs
+ * Not blocks, not shapes, not sticks - real life beast-like fighters
+ */
 export const CHARACTER_MODEL_PATHS: Record<string, string> = {
+  // === AXIS TRINITY (Main Protagonists) ===
+  'jaxon': '/models/jaxon_hero.glb',           // Beastly Hedgehog-Lupine Hybrid - Velocity Fracture
+  'kaison': '/models/kaison_hero.glb',         // Saiyan-Kitsune-Lupine - Star-Force Tactician
+  'kai-jax': '/models/kaxon_hero.glb',         // Star-Slime Chimera - Memory King (Fused Form)
+  'kai_jax': '/models/kaxon_hero.glb',
+  'kaxon': '/models/kaxon_hero.glb',
+  'chronos': '/models/silver_hero.glb',        // Matte-White Lupine - Will of Tomorrow
+  'chronos_sere': '/models/silver_hero.glb',
+  'lunara': '/models/lunara_hero.glb',         // 9-tailed Celestial Feline-Avian - Oracle Sentinel
+  'lunara_solis': '/models/lunara_hero.glb',
+  
+  // === VANGUARD (Heavy Hitters) ===
+  'boryx': '/models/bowser_hero.glb',          // Draconic Ursine - Guardian King
+  'boryx_zenith': '/models/bowser_hero.glb',
+  'umbra': '/models/abyss_hero.glb',           // Celestial Lupine - Velocity Wraith
+  'umbra_flux': '/models/abyss_hero.glb',
+  'umbra-flux': '/models/abyss_hero.glb',
+  'vox': '/models/fox_hero.glb',               // Saiyan-Kitsune - Star-Force Pilot
+  'sentinel_vox': '/models/sentinel_hero.glb',
+  'kiro': '/models/kong_hero.glb',             // Augmented Ape-Kin - Primal Breaker
+  'kiro_kong': '/models/kong_hero.glb',
+  
+  // === LEGACY ADAPTATIONS ===
   'mario': '/models/mario_hero.glb',
   'sonic': '/models/velocity_hero.glb',
   'velocity': '/models/velocity_hero.glb',
@@ -36,7 +65,6 @@ export const CHARACTER_MODEL_PATHS: Record<string, string> = {
   'ryu': '/models/ryu_hero.glb',
   'silver': '/models/silver_hero.glb',
   'solaro': '/models/solaro_hero.glb',
-  'lunara': '/models/lunara_hero.glb',
   'diddy': '/models/diddy_hero.glb',
   'terry': '/models/terry_hero.glb',
   'pit': '/models/pit_hero.glb',
@@ -76,9 +104,6 @@ export const CHARACTER_MODEL_PATHS: Record<string, string> = {
   'littlemac': '/models/littlemac_hero.glb',
   'little_mac': '/models/littlemac_hero.glb',
   'shulk': '/models/shulk_hero.glb',
-  'kaison': '/models/kaison_hero.glb',
-  'jaxon': '/models/jaxon_hero.glb',
-  'kaxon': '/models/kaxon_hero.glb'
 };
 
 export function hasGLBModel(characterId: string): boolean {

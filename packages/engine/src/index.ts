@@ -6,3 +6,4 @@ export * from './animation';
 export * from './effects';
 export * from './audio';
 export * from './ai';
+export * from './arena';
