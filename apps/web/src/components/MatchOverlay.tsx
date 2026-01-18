@@ -1,93 +1,141 @@
-import React, { useEffect, useState } from 'react';
-import { Heart, Zap, Activity, Clock, Trophy } from 'lucide-react';
-import { bus } from '../core/EventBus';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Heart, Zap, Activity, Clock, Trophy, Flame, Star, Shield } from 'lucide-react';
 import '../styles/bronx_grit.css';
+import '../styles/legendary-effects.css';
 
 /**
- * MATCH OVERLAY — In-Game HUD (AETERNA COVENANT V1.3)
+ * ⚡ LEGENDARY MATCH OVERLAY ⚡
+ * Ultimate God-Tier HUD for Legends of Kai-Jax
  * 
  * Displays:
- * - HP bars (P1 & P2) with vitality-bar styling
- * - Resonance meters with cyan glow
- * - Dread Pulse meter with 80%+ visual intensity (red glow + shake)
- * - Round timer
+ * - HP bars with vitality styling and legendary effects
+ * - Resonance meters with transformation thresholds
+ * - Transformation indicator with tier display
+ * - Dread Pulse meter with visual intensity
+ * - Round timer with urgency effects
  * - Win indicators
- * - Combo counter
+ * - Combo counter with legendary styling
+ * - Voice line display for transformations
  * 
- * Aesthetic: Bronx Grit with dynamic Dread distortion
- * Dread 80%+: Triggers dread-active class for chromatic aberration + pulse
+ * Aesthetic: Bronx Grit + Legendary God-Tier Effects
  */
 
 interface MatchOverlayProps {
+  p1Hp: number;
+  p2Hp: number;
+  p1Resonance: number;
+  p2Resonance: number;
+  matchTime: number;
+  winner: string | null;
+  p1Name: string;
+  p2Name: string;
+  p1TransformationTier?: number;
+  p2TransformationTier?: number;
   isPaused?: boolean;
+  comboCount?: number;
+  dreadLevel?: number;
+  voiceLine?: string;
 }
 
-export const MatchOverlay: React.FC<MatchOverlayProps> = ({ isPaused = false }) => {
-  const [player1Hp, setPlayer1Hp] = useState(100);
-  const [player2Hp, setPlayer2Hp] = useState(100);
-  const [player1Resonance, setPlayer1Resonance] = useState(0);
-  const [player2Resonance, setPlayer2Resonance] = useState(0);
-  const [dreadLevel, setDreadLevel] = useState(0); // 0-100
-  const [comboCount, setComboCount] = useState(0);
+// Transformation tier names and colors
+const TRANSFORMATION_TIERS = [
+  { name: 'BASE', color: 'rgba(255, 255, 255, 0.5)', glow: 'none' },
+  { name: 'AWAKENED', color: '#c084fc', glow: '0 0 15px rgba(192, 132, 252, 0.6)' },
+  { name: 'SAGE', color: '#fbbf24', glow: '0 0 20px rgba(251, 191, 36, 0.7)' },
+  { name: 'LEGENDARY', color: '#00d9ff', glow: '0 0 25px rgba(0, 217, 255, 0.8)' },
+  { name: 'GOD', color: '#ffffff', glow: '0 0 30px rgba(255, 255, 255, 0.9), 0 0 60px rgba(255, 215, 0, 0.5)' },
+];
+
+export const MatchOverlay: React.FC<MatchOverlayProps> = ({
+  p1Hp,
+  p2Hp,
+  p1Resonance,
+  p2Resonance,
+  matchTime,
+  winner,
+  p1Name,
+  p2Name,
+  p1TransformationTier = 0,
+  p2TransformationTier = 0,
+  isPaused = false,
+  comboCount = 0,
+  dreadLevel = 0,
+  voiceLine,
+}) => {
+  const [showVoiceLine, setShowVoiceLine] = useState(false);
+  const [currentVoiceLine, setCurrentVoiceLine] = useState('');
   const [dreadPulse, setDreadPulse] = useState(0);
-  const [roundTimer, setRoundTimer] = useState(99);
+  const [p1Wins, setP1Wins] = useState(0);
+  const [p2Wins, setP2Wins] = useState(0);
 
+  // Calculate percentages
+  const p1HpPercent = Math.max(0, Math.min(100, p1Hp));
+  const p2HpPercent = Math.max(0, Math.min(100, p2Hp));
+  const p1ResPercent = Math.max(0, Math.min(100, p1Resonance));
+  const p2ResPercent = Math.max(0, Math.min(100, p2Resonance));
+  const dreadIntensity = dreadLevel / 100;
+
+  // Get transformation tier info
+  const p1Tier = TRANSFORMATION_TIERS[p1TransformationTier] || TRANSFORMATION_TIERS[0];
+  const p2Tier = TRANSFORMATION_TIERS[p2TransformationTier] || TRANSFORMATION_TIERS[0];
+
+  // Voice line effect
   useEffect(() => {
-    // Subscribe to EventBus updates
-    const handleDreadUpdate = (data: { dreadLevel: number }) => {
-      setDreadLevel(data.dreadLevel);
-    };
+    if (voiceLine) {
+      setCurrentVoiceLine(voiceLine);
+      setShowVoiceLine(true);
+      const timer = setTimeout(() => setShowVoiceLine(false), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [voiceLine]);
 
-    const handleHpUpdate = (hp: number) => {
-      setPlayer1Hp(hp);
-    };
-
-    const handleResonanceUpdate = (data: { resonance: number }) => {
-      setPlayer1Resonance(data.resonance);
-    };
-
-    bus.on('UI_UPDATE_DREAD', handleDreadUpdate);
-    bus.on('UI_UPDATE_HP', handleHpUpdate);
-    bus.on('RESONANCE_UPDATE', handleResonanceUpdate);
-
-    return () => {
-      bus.off('UI_UPDATE_DREAD', handleDreadUpdate);
-      bus.off('UI_UPDATE_HP', handleHpUpdate);
-      bus.off('RESONANCE_UPDATE', handleResonanceUpdate);
-    };
-  }, []);
-
+  // Dread pulse animation
   useEffect(() => {
-    // Dread pulse animation
     const interval = setInterval(() => {
       setDreadPulse(Math.sin(Date.now() / 500) * 0.5 + 0.5);
-    }, 16); // 60fps
-
+    }, 16);
     return () => clearInterval(interval);
   }, []);
 
-  // Calculate percentages
-  const p1HpPercent = Math.max(0, Math.min(100, (player1Hp / 100) * 100));
-  const p2HpPercent = Math.max(0, Math.min(100, (player2Hp / 100) * 100));
-  const p1ResPercent = Math.max(0, Math.min(100, (player1Resonance / 100) * 100));
-  const p2ResPercent = Math.max(0, Math.min(100, (player2Resonance / 100) * 100));
-  const dreadIntensity = dreadLevel / 100; // Convert to 0-1
-
-  // Dread intensity level (string category)
-  const dreadLevelCategory = 
-    dreadLevel >= 80 ? 'extreme' :
-    dreadLevel >= 60 ? 'high' :
-    dreadLevel >= 40 ? 'medium' : 'low';
-
+  // Format timer display
   const formatTimer = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Get HP bar color based on percentage
+  const getHpBarColor = (percent: number) => {
+    if (percent > 60) return 'linear-gradient(90deg, #22c55e, #16a34a)';
+    if (percent > 30) return 'linear-gradient(90deg, #eab308, #ca8a04)';
+    return 'linear-gradient(90deg, #ef4444, #dc2626)';
+  };
+
+  // Get resonance bar style based on tier
+  const getResonanceBarStyle = (percent: number, tier: number) => {
+    const baseGradient = 'linear-gradient(90deg, #06b6d4, #0891b2)';
+    const tierColors = [
+      baseGradient,
+      'linear-gradient(90deg, #c084fc, #9d4edd)',
+      'linear-gradient(90deg, #fbbf24, #f59e0b)',
+      'linear-gradient(90deg, #00d9ff, #0ea5e9)',
+      'linear-gradient(90deg, #ffffff, #ffd700, #00f2ff)',
+    ];
+    return {
+      background: tierColors[tier] || baseGradient,
+      boxShadow: percent >= 25 ? TRANSFORMATION_TIERS[tier]?.glow || 'none' : 'none',
+    };
+  };
+
+  // Dread level category
+  const dreadLevelCategory = 
+    dreadLevel >= 80 ? 'EXTREME' :
+    dreadLevel >= 60 ? 'HIGH' :
+    dreadLevel >= 40 ? 'MEDIUM' : 'LOW';
+
   return (
     <div 
-      className={`fixed inset-0 pointer-events-none z-50 ${dreadIntensity >= 0.8 ? 'dread-active dread-filter-blur' : ''}`}
+      className={`fixed inset-0 pointer-events-none z-50 ${dreadIntensity >= 0.8 ? 'dread-active' : ''}`}
       style={{
         filter: dreadIntensity > 0.6 ? `contrast(${1 + dreadIntensity / 2})` : 'none',
       }}
@@ -97,197 +145,344 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({ isPaused = false }) 
 
       {/* Pause Overlay */}
       {isPaused && (
-        <div className="absolute inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center pointer-events-auto">
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-lg flex items-center justify-center pointer-events-auto z-[100]">
           <div className="text-center">
-            <h1 className="text-legendary">PAUSED</h1>
-            <p className="text-neutral-400 tracking-widest text-mono-small mt-4">Press ESC to resume</p>
+            <h1 className="text-god-tier text-6xl mb-8">PAUSED</h1>
+            <p className="text-neutral-400 tracking-widest text-mono-small mt-4 uppercase">
+              Press ESC to resume
+            </p>
           </div>
         </div>
       )}
 
-      {/* TOP BAR: HP & Resonance */}
-      <div className="absolute top-0 left-0 right-0 p-6">
-        <div className="flex items-start justify-between gap-8">
+      {/* Winner Overlay */}
+      {winner && (
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center pointer-events-auto z-[100]">
+          <div className="text-center">
+            <h1 className="text-god-tier text-8xl mb-4 animate-pulse">
+              {winner === 'draw' ? 'DRAW!' : 'VICTORY!'}
+            </h1>
+            {winner !== 'draw' && (
+              <p className="text-4xl font-bold text-legendary-gold uppercase tracking-widest">
+                {winner} WINS
+              </p>
+            )}
+            <div className="mt-8 flex items-center justify-center gap-4">
+              <Star className="text-legendary-gold w-8 h-8 animate-spin" />
+              <p className="text-neutral-300 text-lg">Press any key to continue</p>
+              <Star className="text-legendary-gold w-8 h-8 animate-spin" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TOP BAR: HP, Resonance & Transformation */}
+      <div className="absolute top-0 left-0 right-0 p-4 lg:p-6">
+        <div className="flex items-start justify-between gap-4 lg:gap-8">
+          
           {/* PLAYER 1 */}
-          <div className="flex-1">
+          <div className="flex-1 max-w-[40%]">
+            {/* Name & Wins Row */}
             <div className="flex items-center gap-3 mb-2">
-              <Heart size={20} className="text-red-500" />
-              <span className="text-mono-small text-white">
-                {player1.name}
-              </span>
-              <div className="flex gap-1">
-                {Array.from({ length: player1.wins }).map((_, i) => (
-                  <Trophy key={i} size={14} className="text-cyan-400 fill-cyan-400" />
-                ))}
+              <div 
+                className="transformation-icon"
+                style={{
+                  borderColor: p1Tier.color,
+                  boxShadow: p1Tier.glow,
+                }}
+              >
+                <Flame size={24} style={{ color: p1Tier.color }} />
+              </div>
+              <div>
+                <span className="text-mono-small text-white font-bold uppercase tracking-wider">
+                  {p1Name}
+                </span>
+                <div className="flex items-center gap-2 mt-1">
+                  <span 
+                    className="text-xs font-bold uppercase tracking-widest"
+                    style={{ color: p1Tier.color, textShadow: p1Tier.glow }}
+                  >
+                    {p1Tier.name}
+                  </span>
+                  <div className="flex gap-1">
+                    {Array.from({ length: p1Wins }).map((_, i) => (
+                      <Trophy key={i} size={12} className="text-legendary-gold fill-legendary-gold" />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
             
             {/* HP Bar */}
-            <div className="ui-bar relative h-8">
+            <div className="relative h-8 bg-neutral-900/80 backdrop-blur-sm border-2 border-white/20 rounded overflow-hidden">
               <div 
-                className="ui-bar-fill vitality-bar"
+                className="absolute top-0 left-0 h-full transition-all duration-300"
                 style={{
                   width: `${p1HpPercent}%`,
+                  background: getHpBarColor(p1HpPercent),
+                  boxShadow: p1HpPercent < 30 ? '0 0 20px rgba(239, 68, 68, 0.5)' : 'none',
                 }}
               />
+              {/* HP Shimmer */}
+              <div className="absolute inset-0 overflow-hidden">
+                <div 
+                  className="absolute top-0 h-full w-1/4 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                  style={{ animation: 'bar-shimmer 2s linear infinite' }}
+                />
+              </div>
               <div className="absolute inset-0 flex items-center justify-center">
+                <Heart size={14} className="text-white/80 mr-2" />
                 <span className="text-white font-bold text-sm drop-shadow-lg">
-                  {Math.ceil(player1Hp)}
+                  {Math.ceil(p1Hp)}
                 </span>
               </div>
             </div>
 
             {/* Resonance Bar */}
-            <div className="ui-bar relative h-3 mt-1">
+            <div className="relative h-4 bg-neutral-900/60 backdrop-blur-sm border border-cyan-500/30 rounded overflow-hidden mt-2">
               <div 
-                className={`ui-bar-fill resonance-bar ${p1ResPercent > 80 ? 'resonance-glow' : ''}`}
+                className={`absolute top-0 left-0 h-full transition-all duration-200 ${p1ResPercent >= 100 ? 'animate-pulse' : ''}`}
                 style={{
                   width: `${p1ResPercent}%`,
+                  ...getResonanceBarStyle(p1ResPercent, p1TransformationTier),
                 }}
               />
+              {/* Transformation thresholds */}
+              <div className="absolute inset-0 flex">
+                <div className="w-1/4 border-r border-white/20" title="Awakened" />
+                <div className="w-1/4 border-r border-white/30" title="Sage" />
+                <div className="w-1/4 border-r border-white/40" title="Legendary" />
+                <div className="w-1/4" title="God" />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Zap size={10} className="text-white/80 mr-1" />
+                <span className="text-white font-bold text-xs drop-shadow-lg">
+                  {Math.floor(p1Resonance)}%
+                </span>
+              </div>
             </div>
             
-            {player1Resonance >= 80 && (
-              <div className="mt-1 text-mono-small text-cyan-400 animate-pulse">
-                ⚡ Resonance Peak
+            {p1Resonance >= 100 && (
+              <div className="mt-2 text-mono-small text-legendary-gold animate-pulse flex items-center gap-2">
+                <Star size={14} className="fill-legendary-gold" />
+                <span>GOD FORM READY</span>
+                <Star size={14} className="fill-legendary-gold" />
               </div>
             )}
           </div>
 
           {/* CENTER: Round Info & Timer */}
-          <div className="text-center min-w-[200px]">
-            <div className="bg-neutral-900/80 backdrop-blur-md border border-cyan-500/30 rounded px-6 py-3">
-              <p className="text-xs text-neutral-400 uppercase tracking-widest mb-1">Round 1</p>
+          <div className="text-center min-w-[180px] lg:min-w-[220px]">
+            <div className="bg-neutral-900/90 backdrop-blur-lg border-2 border-legendary-gold/30 rounded-lg px-4 lg:px-6 py-3 shadow-lg">
+              <p className="text-xs text-neutral-400 uppercase tracking-widest mb-1 font-bold">
+                THE COVENANT
+              </p>
               <div className="flex items-center justify-center gap-2">
-                <Clock size={16} className="text-white" />
-                <span className={`text-2xl font-bold ${
-                  roundTimer < 10 ? 'text-red-500 animate-pulse' : 'text-white'
+                <Clock size={18} className="text-white" />
+                <span className={`text-3xl lg:text-4xl font-black ${
+                  matchTime < 10 ? 'text-red-500 animate-pulse' : 
+                  matchTime < 30 ? 'text-yellow-500' : 'text-white'
                 }`}>
-                  {formatTimer(roundTimer)}
+                  {formatTimer(matchTime)}
                 </span>
               </div>
+              {matchTime < 30 && (
+                <p className="text-xs text-red-400 uppercase mt-1 animate-pulse">
+                  FINAL MOMENTS
+                </p>
+              )}
             </div>
           </div>
 
           {/* PLAYER 2 */}
-          <div className="flex-1">
+          <div className="flex-1 max-w-[40%]">
+            {/* Name & Wins Row */}
             <div className="flex items-center justify-end gap-3 mb-2">
-              <div className="flex gap-1">
-                {Array.from({ length: player2.wins }).map((_, i) => (
-                  <Trophy key={i} size={14} className="text-cyan-400 fill-cyan-400" />
-                ))}
+              <div>
+                <span className="text-mono-small text-white font-bold uppercase tracking-wider">
+                  {p2Name}
+                </span>
+                <div className="flex items-center justify-end gap-2 mt-1">
+                  <div className="flex gap-1">
+                    {Array.from({ length: p2Wins }).map((_, i) => (
+                      <Trophy key={i} size={12} className="text-legendary-gold fill-legendary-gold" />
+                    ))}
+                  </div>
+                  <span 
+                    className="text-xs font-bold uppercase tracking-widest"
+                    style={{ color: p2Tier.color, textShadow: p2Tier.glow }}
+                  >
+                    {p2Tier.name}
+                  </span>
+                </div>
               </div>
-              <span className="text-sm font-bold text-white uppercase tracking-wider">
-                {player2.name}
-              </span>
-              <Heart size={20} className="text-red-500" />
+              <div 
+                className="transformation-icon"
+                style={{
+                  borderColor: p2Tier.color,
+                  boxShadow: p2Tier.glow,
+                }}
+              >
+                <Flame size={24} style={{ color: p2Tier.color }} />
+              </div>
             </div>
             
             {/* HP Bar */}
-            <div className="relative h-8 bg-neutral-900/80 backdrop-blur-sm border border-white/20 rounded overflow-hidden">
+            <div className="relative h-8 bg-neutral-900/80 backdrop-blur-sm border-2 border-white/20 rounded overflow-hidden">
               <div 
                 className="absolute top-0 right-0 h-full transition-all duration-300"
                 style={{
                   width: `${p2HpPercent}%`,
-                  background: p2HpPercent > 60 
-                    ? 'linear-gradient(270deg, #22c55e, #16a34a)'
-                    : p2HpPercent > 30
-                      ? 'linear-gradient(270deg, #eab308, #ca8a04)'
-                      : 'linear-gradient(270deg, #ef4444, #dc2626)',
+                  background: getHpBarColor(p2HpPercent),
                   boxShadow: p2HpPercent < 30 ? '0 0 20px rgba(239, 68, 68, 0.5)' : 'none',
                 }}
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-white font-bold text-sm drop-shadow-lg">
-                  {Math.ceil(player2Hp)}
+                  {Math.ceil(p2Hp)}
                 </span>
+                <Heart size={14} className="text-white/80 ml-2" />
               </div>
             </div>
 
             {/* Resonance Bar */}
-            <div className="relative h-3 bg-neutral-900/60 backdrop-blur-sm border border-cyan-500/30 rounded overflow-hidden mt-1">
+            <div className="relative h-4 bg-neutral-900/60 backdrop-blur-sm border border-cyan-500/30 rounded overflow-hidden mt-2">
               <div 
-                className="absolute top-0 right-0 h-full transition-all duration-200"
+                className={`absolute top-0 right-0 h-full transition-all duration-200 ${p2ResPercent >= 100 ? 'animate-pulse' : ''}`}
                 style={{
                   width: `${p2ResPercent}%`,
-                  background: 'linear-gradient(270deg, #06b6d4, #0891b2)',
-                  boxShadow: p2ResPercent > 80 ? '0 0 15px rgba(6, 182, 212, 0.8)' : 'none',
+                  ...getResonanceBarStyle(p2ResPercent, p2TransformationTier),
                 }}
               />
+              {/* Transformation thresholds */}
+              <div className="absolute inset-0 flex">
+                <div className="w-1/4 border-r border-white/20" />
+                <div className="w-1/4 border-r border-white/30" />
+                <div className="w-1/4 border-r border-white/40" />
+                <div className="w-1/4" />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-white font-bold text-xs drop-shadow-lg">
+                  {Math.floor(p2Resonance)}%
+                </span>
+                <Zap size={10} className="text-white/80 ml-1" />
+              </div>
             </div>
             
-            {player2Resonance >= 80 && (
-              <div className="mt-1 text-xs font-bold text-cyan-400 uppercase animate-pulse text-right">
-                Resonance Peak ⚡
+            {p2Resonance >= 100 && (
+              <div className="mt-2 text-mono-small text-legendary-gold animate-pulse flex items-center justify-end gap-2">
+                <Star size={14} className="fill-legendary-gold" />
+                <span>GOD FORM READY</span>
+                <Star size={14} className="fill-legendary-gold" />
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* BOTTOM LEFT: Dread Pulse Meter - AETERNA COVENANT V1.3 */}
+      {/* BOTTOM LEFT: Dread Pulse Meter */}
       <div className="absolute bottom-6 left-6">
         <div 
-          className={`bg-neutral-900/80 backdrop-blur-md border rounded p-4 transition-all duration-300 ${dreadIntensity >= 0.8 ? 'shake-intense' : dreadIntensity >= 0.6 ? 'shake-mild' : ''}`}
+          className={`bg-neutral-900/90 backdrop-blur-lg border-2 rounded-lg p-4 transition-all duration-300 ${
+            dreadIntensity >= 0.8 ? 'shake-intense border-red-500' : 
+            dreadIntensity >= 0.6 ? 'shake-mild border-orange-500' : 'border-white/20'
+          }`}
           style={{
-            borderColor: 
-              dreadIntensity >= 0.8 ? 'rgba(239, 68, 68, 0.8)' :
-              dreadIntensity >= 0.6 ? 'rgba(249, 115, 22, 0.6)' :
-              dreadIntensity >= 0.4 ? 'rgba(234, 179, 8, 0.4)' :
-              'rgba(255, 255, 255, 0.2)',
             boxShadow: dreadIntensity > 0.6 
-              ? `0 0 ${20 + dreadPulse * 10}px rgba(239, 68, 68, ${0.3 + dreadPulse * 0.2})`
+              ? `0 0 ${20 + dreadPulse * 15}px rgba(239, 68, 68, ${0.4 + dreadPulse * 0.3})`
               : 'none',
           }}
         >
           <div className="flex items-center gap-2 mb-2">
-            <Activity size={16} className={
-              dreadIntensity >= 0.8 ? 'text-red-500' :
+            <Activity size={18} className={
+              dreadIntensity >= 0.8 ? 'text-red-500 animate-pulse' :
               dreadIntensity >= 0.6 ? 'text-orange-500' :
               dreadIntensity >= 0.4 ? 'text-yellow-500' :
               'text-cyan-400'
             } />
-            <span className="text-mono-small text-white">
+            <span className="text-mono-small text-white font-bold uppercase">
               Dread Pulse
             </span>
           </div>
           
-          <div className="ui-bar w-48 h-4">
+          <div className="relative w-52 h-5 bg-neutral-800 rounded overflow-hidden">
             <div 
-              className={`ui-bar-fill dread-bar ${dreadIntensity >= 0.8 ? 'animate-pulse' : ''}`}
+              className={`absolute top-0 left-0 h-full transition-all duration-200 ${dreadIntensity >= 0.8 ? 'animate-pulse' : ''}`}
               style={{
                 width: `${dreadIntensity * 100}%`,
+                background: dreadIntensity >= 0.8 
+                  ? 'linear-gradient(90deg, #dc2626, #ef4444, #f87171)'
+                  : dreadIntensity >= 0.6 
+                    ? 'linear-gradient(90deg, #ea580c, #f97316)'
+                    : dreadIntensity >= 0.4
+                      ? 'linear-gradient(90deg, #ca8a04, #eab308)'
+                      : 'linear-gradient(90deg, #0891b2, #06b6d4)',
               }}
             />
+            {/* Threshold line at 80% */}
+            <div className="absolute top-0 left-[80%] w-0.5 h-full bg-red-500/50" />
           </div>
           
-          <p className="text-xs text-grit mt-1">
-            {Math.round(dreadIntensity * 100)}% — {
-              dreadLevelCategory === 'extreme' ? 'EXTREME' :
-              dreadLevelCategory === 'high' ? 'HIGH' :
-              dreadLevelCategory === 'medium' ? 'MEDIUM' :
-              'LOW'
-            }
-          </p>
+          <div className="flex justify-between items-center mt-2">
+            <p className="text-xs text-grit">
+              {Math.round(dreadIntensity * 100)}%
+            </p>
+            <p className={`text-xs font-bold uppercase ${
+              dreadLevelCategory === 'EXTREME' ? 'text-red-500 animate-pulse' :
+              dreadLevelCategory === 'HIGH' ? 'text-orange-500' :
+              dreadLevelCategory === 'MEDIUM' ? 'text-yellow-500' :
+              'text-cyan-400'
+            }`}>
+              {dreadLevelCategory}
+            </p>
+          </div>
         </div>
       </div>
 
       {/* BOTTOM RIGHT: Combo Counter */}
       {comboCount > 0 && (
         <div className="absolute bottom-6 right-6">
-          <div className="bg-neutral-900/80 backdrop-blur-md border border-cyan-500/50 rounded px-6 py-4">
+          <div 
+            className="bg-neutral-900/90 backdrop-blur-lg border-2 border-legendary-cyan rounded-lg px-6 py-4"
+            style={{
+              boxShadow: comboCount >= 10 
+                ? '0 0 30px rgba(0, 217, 255, 0.6)' 
+                : '0 0 15px rgba(0, 217, 255, 0.3)',
+            }}
+          >
             <div className="text-center">
-              <span className="text-5xl font-black text-cyan-400 animate-pulse">
+              <span className={`font-black drop-shadow-lg ${
+                comboCount >= 20 ? 'text-7xl text-legendary-gold animate-pulse' :
+                comboCount >= 10 ? 'text-6xl text-legendary-cyan' :
+                'text-5xl text-white'
+              }`}>
                 {comboCount}
               </span>
-              <p className="text-xs text-neutral-400 uppercase tracking-widest mt-1">
-                Combo
+              <p className="text-xs text-neutral-400 uppercase tracking-widest mt-1 font-bold">
+                {comboCount >= 20 ? 'LEGENDARY COMBO!' :
+                 comboCount >= 10 ? 'MEGA COMBO!' :
+                 comboCount >= 5 ? 'GREAT COMBO!' : 'COMBO'}
               </p>
             </div>
           </div>
         </div>
       )}
 
+      {/* BOTTOM CENTER: Controls Hint */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+        <div className="bg-neutral-900/70 backdrop-blur-sm rounded-full px-6 py-2 border border-white/10">
+          <p className="text-mono-small text-amber-400/80 text-xs uppercase tracking-wider">
+            A/D - Move | SPACE - Jump | J - Attack | T - Transform | ESC - Exit
+          </p>
+        </div>
+      </div>
+
+      {/* Voice Line Display */}
+      {showVoiceLine && currentVoiceLine && (
+        <div className="voice-line">
+          "{currentVoiceLine}"
+        </div>
+      )}
     </div>
   );
 };

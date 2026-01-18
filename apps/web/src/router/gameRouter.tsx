@@ -1,11 +1,13 @@
-// Navigation Router Setup
-// Path: apps/web/src/router/gameRouter.tsx
+/**
+ * ⚡ LEGENDS OF KAI-JAX - GAME ROUTER ⚡
+ * Ultimate Navigation System
+ */
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 // Pages
-import AeternaMainMenu from '@web/pages/AeternaMainMenu';
+import LegendaryMainMenu from '@web/components/game/LegendaryMainMenu';
 import CharacterSelect from '@web/pages/CharacterSelect';
 import SagaModeLauncher from '@web/pages/SagaModeLauncher';
 import VersusModeLauncher from '@web/pages/VersusModeLauncher';
@@ -38,8 +40,8 @@ export const GameRouter: React.FC = () => {
     <GameStateContext.Provider value={{ state: gameState, setState: setGameState }}>
       <Router>
         <Routes>
-          {/* Main Entry Point */}
-          <Route path="/" element={<AeternaMainMenu />} />
+          {/* Main Entry Point - Legendary Menu */}
+          <Route path="/" element={<LegendaryMainMenu />} />
 
           {/* Character Selection */}
           <Route path="/character-select" element={<CharacterSelect />} />
