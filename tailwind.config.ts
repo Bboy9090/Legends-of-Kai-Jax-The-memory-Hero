@@ -2,7 +2,7 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-    content: [
+  content: [
     "./apps/web/index.html",
     "./apps/web/src/**/*.{js,ts,jsx,tsx}",
     "./packages/ui/src/**/*.{js,ts,jsx,tsx}",
@@ -92,6 +92,8 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  // Keep root config dependency-light to avoid editor/runtime resolution issues.
+  // `apps/web/tailwind.config.ts` contains the full plugin setup for the web app.
+  plugins: [],
 } satisfies Config;
 
