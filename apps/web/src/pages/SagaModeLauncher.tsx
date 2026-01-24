@@ -21,7 +21,7 @@ const SAGA_CHAPTERS: Chapter[] = [
   { id: 2, book: 1, number: 2, title: 'Memory Shards', opponent: 'Verdant Talon', difficulty: 'NORMAL', locked: false },
   { id: 3, book: 1, number: 3, title: 'Nexus Convergence', opponent: 'Umbra-Flux', difficulty: 'HARD', locked: false },
   // More chapters would go here (18 per book, 3 books = 54 total for Genesis)
-  { id: 4, book: 1, number: 4, title: 'Locked Chapter', opponent: '???', difficulty: 'NORMAL', locked: true },
+  { id: 4, book: 1, number: 4, title: 'Forge District Run', opponent: 'Boryx Zenith', difficulty: 'NORMAL', locked: false },
 ];
 
 const SagaModeLauncher: React.FC = () => {
@@ -31,14 +31,12 @@ const SagaModeLauncher: React.FC = () => {
 
   const handleStartChapter = () => {
     const chapter = SAGA_CHAPTERS[selectedChapter];
-    if (!chapter.locked) {
-      setState({
-        ...state,
-        selectedChapter: chapter.id,
-        opponent: chapter.opponent,
-      });
-      navigate('/match');
-    }
+    setState({
+      ...state,
+      selectedChapter: chapter.id,
+      opponent: chapter.opponent,
+    });
+    navigate('/match');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -77,7 +75,7 @@ const SagaModeLauncher: React.FC = () => {
 
         <div className="w-96 space-y-8">
           {/* Chapter display */}
-          <div className={`p-6 border-2 rounded ${chapter.locked ? 'border-gray-600 opacity-50' : 'border-amber-400'}`}>
+          <div className="p-6 border-2 rounded border-amber-400">
             <div className="text-mono-small mb-2">
               BOOK {chapter.book} - CHAPTER {chapter.number}
             </div>
@@ -85,7 +83,6 @@ const SagaModeLauncher: React.FC = () => {
             <div className="space-y-2 text-grit text-sm">
               <p>OPPONENT: {chapter.opponent}</p>
               <p>DIFFICULTY: {chapter.difficulty}</p>
-              {chapter.locked && <p className="text-gray-500">CHAPTER LOCKED</p>}
             </div>
           </div>
 
@@ -95,19 +92,16 @@ const SagaModeLauncher: React.FC = () => {
               <button
                 key={ch.id}
                 onClick={() => setSelectedChapter(idx)}
-                disabled={ch.locked}
                 className={`
                   w-full px-4 py-3 text-left text-mono-small rounded transition-all
                   ${
                     idx === selectedChapter
                       ? 'bg-amber-400 text-black'
-                      : ch.locked
-                      ? 'bg-gray-900 text-gray-600 cursor-not-allowed'
                       : 'bg-matte text-amber-400 hover:bg-gray-900'
                   }
                 `}
               >
-                {ch.locked ? '🔒' : '▶'} CHAPTER {ch.number}: {ch.title}
+                ▶ CHAPTER {ch.number}: {ch.title}
               </button>
             ))}
           </div>

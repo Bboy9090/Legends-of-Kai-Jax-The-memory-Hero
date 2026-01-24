@@ -45,8 +45,7 @@ export const ARENAS: Arena[] = [
     skyColor: '#B0E0E6', // Powder blue
     platformColor: '#FFB6C1', // Light pink
     accentColor: '#FFD700', // Gold
-    unlocked: false,
-    unlockRequirement: 1000
+    unlocked: true
   },
   {
     id: 'lava-fortress',
@@ -57,8 +56,7 @@ export const ARENAS: Arena[] = [
     skyColor: '#FF4500', // Orange-red
     platformColor: '#696969', // Dim gray
     accentColor: '#FF6347', // Tomato red
-    unlocked: false,
-    unlockRequirement: 2000
+    unlocked: true
   },
   {
     id: 'space-station',
@@ -69,8 +67,7 @@ export const ARENAS: Arena[] = [
     skyColor: '#191970', // Midnight blue
     platformColor: '#778899', // Light slate gray
     accentColor: '#00FFFF', // Cyan
-    unlocked: false,
-    unlockRequirement: 3000
+    unlocked: true
   },
   {
     id: 'jungle-ruins',
@@ -81,8 +78,7 @@ export const ARENAS: Arena[] = [
     skyColor: '#20B2AA', // Light sea green
     platformColor: '#8B7355', // Burlywood
     accentColor: '#FFD700', // Gold
-    unlocked: false,
-    unlockRequirement: 4000
+    unlocked: true
   }
 ];
 
@@ -91,11 +87,9 @@ export function getArenaById(id: string): Arena | undefined {
 }
 
 export function getUnlockedArenas(): Arena[] {
-  return ARENAS.filter(a => a.unlocked);
+  return ARENAS; // all unlocked
 }
 
 export function canUnlockArena(arena: Arena, score: number): boolean {
-  if (arena.unlocked) return false;
-  if (!arena.unlockRequirement) return true;
-  return score >= arena.unlockRequirement;
+  return true;
 }
