@@ -192,9 +192,9 @@ export default function LegendaryKaiJaxModel(props: LegendaryKaiJaxProps) {
       <group ref={bodyRef} position={[0, 0.4, 0]}>
         {/* === HEAD === */}
         <group ref={headRef} position={[0, 0.6, 0]}>
-          {/* Main head sphere - charcoal with nebulae */}
+          {/* Main head - faceted beast skull (less "rolly") */}
           <mesh castShadow receiveShadow>
-            <sphereGeometry args={[0.4, 32, 32]} />
+            <icosahedronGeometry args={[0.38, 1]} />
             <meshStandardMaterial
               color="#1a1a1a"
               metalness={0.2}
@@ -202,6 +202,22 @@ export default function LegendaryKaiJaxModel(props: LegendaryKaiJaxProps) {
             >
               <NebulaeShader time={nebulaeTime.current} />
             </meshStandardMaterial>
+          </mesh>
+
+          {/* Snout */}
+          <mesh position={[0, -0.06, 0.34]} rotation={[0.15, 0, 0]} castShadow receiveShadow>
+            <coneGeometry args={[0.14, 0.26, 10]} />
+            <meshStandardMaterial color="#1a1a1a" metalness={0.15} roughness={0.7} />
+          </mesh>
+
+          {/* Ears */}
+          <mesh position={[-0.22, 0.18, 0.02]} rotation={[0.15, 0, 0.45]} castShadow>
+            <coneGeometry args={[0.09, 0.26, 8]} />
+            <meshStandardMaterial color="#1a1a1a" metalness={0.15} roughness={0.75} />
+          </mesh>
+          <mesh position={[0.22, 0.18, 0.02]} rotation={[0.15, 0, -0.45]} castShadow>
+            <coneGeometry args={[0.09, 0.26, 8]} />
+            <meshStandardMaterial color="#1a1a1a" metalness={0.15} roughness={0.75} />
           </mesh>
           
           {/* === SAGE-MODE EYES (neon gold) === */}
@@ -232,23 +248,33 @@ export default function LegendaryKaiJaxModel(props: LegendaryKaiJaxProps) {
             <meshBasicMaterial color="#000000" />
           </mesh>
           
-          {/* === MOUTH === */}
-          <mesh ref={mouthRef} position={[0, -0.1, 0.35]}>
-            <capsuleGeometry args={[0.05, 0.15, 4, 8]} />
-            <meshStandardMaterial color="#0a0a0a" />
+          {/* === MOUTH / jawline === */}
+          <mesh ref={mouthRef} position={[0, -0.16, 0.30]} rotation={[0.05, 0, 0]}>
+            <boxGeometry args={[0.18, 0.08, 0.14]} />
+            <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
           </mesh>
           
           {/* === ELECTRIC QUILLS === */}
           <ElectricQuills quillsRef={quillsRef} isCharging={isAttacking} />
         </group>
         
-        {/* === BODY (compact, star-slime) === */}
-        <mesh position={[0, -0.1, 0]} castShadow receiveShadow>
-          <sphereGeometry args={[0.5, 32, 32]} />
+        {/* === BODY (biped torso, less spherical) === */}
+        <mesh position={[0, -0.08, 0]} castShadow receiveShadow>
+          <cylinderGeometry args={[0.30, 0.42, 0.85, 10]} />
+          <meshStandardMaterial color="#1a1a1a" metalness={0.25} roughness={0.6}>
+            <NebulaeShader time={nebulaeTime.current * 0.8} />
+          </meshStandardMaterial>
+        </mesh>
+
+        {/* Chest plate / grit armor */}
+        <mesh position={[0, 0.02, 0.26]} castShadow>
+          <boxGeometry args={[0.46, 0.46, 0.08]} />
           <meshStandardMaterial
-            color="#1a1a1a"
-            metalness={0.3}
-            roughness={0.5}
+            color="#0b1020"
+            metalness={0.35}
+            roughness={0.55}
+            emissive="#FFD700"
+            emissiveIntensity={isAttacking ? 0.35 : 0.12}
           />
         </mesh>
         
@@ -273,12 +299,21 @@ export default function LegendaryKaiJaxModel(props: LegendaryKaiJaxProps) {
             <capsuleGeometry args={[0.1, 0.4, 4, 8]} />
             <meshStandardMaterial color="#1a1a1a" />
           </mesh>
+          {/* Foot */}
+          <mesh position={[0.02, -0.33, 0.14]} castShadow>
+            <boxGeometry args={[0.20, 0.10, 0.34]} />
+            <meshStandardMaterial color="#0b1020" metalness={0.25} roughness={0.7} />
+          </mesh>
         </group>
         
         <group ref={rightLegRef} position={[0.2, -0.6, 0]}>
           <mesh castShadow>
             <capsuleGeometry args={[0.1, 0.4, 4, 8]} />
             <meshStandardMaterial color="#1a1a1a" />
+          </mesh>
+          <mesh position={[-0.02, -0.33, 0.14]} castShadow>
+            <boxGeometry args={[0.20, 0.10, 0.34]} />
+            <meshStandardMaterial color="#0b1020" metalness={0.25} roughness={0.7} />
           </mesh>
         </group>
         

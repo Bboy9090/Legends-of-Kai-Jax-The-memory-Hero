@@ -6,16 +6,9 @@ import { ArrowLeft } from "lucide-react";
 
 export default function CustomizationMenu() {
   const { 
-    stats,
     setGameState 
   } = useRunner();
 
-  
-  const isUnlocked = (fighter: typeof FIGHTERS[0]) => {
-    // All characters are free/unlocked in Beast Wars mode
-    return true;
-  };
-  
   const categories = [
     { name: 'Heroes', id: 'heroes' as const, color: 'from-blue-500 to-cyan-500' },
     { name: 'Speedsters', id: 'speedsters' as const, color: 'from-yellow-500 to-orange-500' },
@@ -30,9 +23,9 @@ export default function CustomizationMenu() {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-              Unlock Fighters
+              Fighters
             </h1>
-            <p className="text-gray-300 mt-1">Your Score: {stats.score} points</p>
+            <p className="text-gray-300 mt-1">All fighters are unlocked and ready.</p>
           </div>
           <Button
             onClick={() => setGameState('menu')}
