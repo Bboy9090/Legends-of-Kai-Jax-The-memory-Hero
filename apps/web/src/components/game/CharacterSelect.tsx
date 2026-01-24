@@ -1,6 +1,6 @@
 import { useRunner } from "../../lib/stores/useRunner";
 import { useGame } from "../../lib/stores/useGame";
-import { ArrowLeft, Lock, Zap, Shield, Flame, Wind, Sparkles, Crown, Swords, Star } from "lucide-react";
+import { ArrowLeft, Zap, Shield, Flame, Wind, Sparkles, Crown, Swords, Star } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { FIGHTERS, Fighter, getFighterById } from "../../lib/characters";
 import CharacterPreview3D from "./CharacterPreview3D";
@@ -62,14 +62,12 @@ function SelectParticles() {
 function FighterCard({ 
   fighter, 
   selected, 
-  locked, 
   onSelect, 
   onHover,
   onLeave,
 }: { 
   fighter: Fighter; 
   selected: boolean; 
-  locked: boolean;
   onSelect: () => void;
   onHover: () => void;
   onLeave: () => void;
@@ -80,12 +78,11 @@ function FighterCard({
     <div
       className={`
         relative cursor-pointer transition-all duration-300 
-        ${locked ? 'opacity-50 cursor-not-allowed' : ''}
         ${selected ? 'scale-105 z-10' : 'hover:scale-105 hover:z-10'}
-        ${isPressed && !locked ? 'scale-95' : ''}
+        ${isPressed ? 'scale-95' : ''}
       `}
-      onClick={() => !locked && onSelect()}
-      onMouseEnter={() => !locked && onHover()}
+      onClick={onSelect}
+      onMouseEnter={onHover}
       onMouseLeave={onLeave}
       onMouseDown={() => setIsPressed(true)}
       onMouseUp={() => setIsPressed(false)}
@@ -99,7 +96,6 @@ function FighterCard({
             ? 'border-yellow-400 shadow-[0_0_30px_rgba(250,204,21,0.8)]' 
             : 'border-white/20 hover:border-white/50'
           }
-          ${locked ? 'grayscale' : ''}
         `}
         style={{
           background: selected 
@@ -109,41 +105,36 @@ function FighterCard({
       >
         {/* Fighter Avatar */}
         <div className="relative p-3 sm:p-4">
-          <div 
+          <div
             className={`
               w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 
-              rounded-full mx-auto 
+              mx-auto 
               flex items-center justify-center 
               shadow-xl
               transition-all duration-300
               ${selected ? 'scale-110' : ''}
             `}
             style={{ 
+              // Hex badge feels less "placeholder circle" than round avatars
+              clipPath: 'polygon(25% 6%, 75% 6%, 96% 50%, 75% 94%, 25% 94%, 4% 50%)',
               background: `linear-gradient(135deg, ${fighter.color}, ${fighter.accentColor})`,
               boxShadow: selected 
                 ? `0 0 40px ${fighter.accentColor}, inset 0 0 20px rgba(255,255,255,0.3)` 
                 : `0 0 20px ${fighter.color}50`,
             }}
           >
-            <span className="text-2xl sm:text-3xl md:text-4xl font-black text-white drop-shadow-lg">
-              {fighter.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-          
-          {/* Lock Overlay */}
-          {locked && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-xl">
-              <div className="text-center">
-                <Lock className="w-8 h-8 text-yellow-400 mx-auto mb-1" />
-                <span className="text-xs text-yellow-400 font-bold">
-                  {fighter.unlockRequirement} PTS
-                </span>
+            <div className="text-center">
+              <div className="text-[10px] sm:text-xs font-black tracking-widest text-white/90 drop-shadow-lg">
+                {fighter.name}
+              </div>
+              <div className="text-[8px] sm:text-[10px] font-bold text-white/70">
+                {fighter.category.toUpperCase()}
               </div>
             </div>
-          )}
+          </div>
           
           {/* Selected Badge */}
-          {selected && !locked && (
+          {selected && (
             <div 
               className="absolute -top-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center animate-bounce"
               style={{
@@ -163,11 +154,9 @@ function FighterCard({
           >
             {fighter.displayName}
           </h3>
-          {!locked && (
-            <p className="text-xs text-gray-400 mt-0.5 hidden sm:block truncate">
-              {fighter.category.toUpperCase()}
-            </p>
-          )}
+          <p className="text-xs text-gray-400 mt-0.5 hidden sm:block truncate">
+            {fighter.category.toUpperCase()}
+          </p>
         </div>
         
         {/* Glow Effect */}
@@ -187,10 +176,10 @@ function FighterCard({
 // 📊 FIGHTER STATS
 function FighterStats({ fighter }: { fighter: Fighter }) {
   const stats = {
-    speed: fighter.id === 'speedy' ? 95 : fighter.id === 'jaxon' ? 85 : fighter.id === 'kaison' ? 88 : 70,
-    power: fighter.id === 'kingspike' ? 95 : fighter.id === 'jaxon' ? 80 : 75,
-    defense: fighter.id === 'novaknight' ? 90 : fighter.id === 'kingspike' ? 85 : 65,
-    technique: fighter.id === 'kaison' ? 90 : fighter.id === 'flynn' ? 88 : 70,
+    speed: fighter.baseStats.speed,
+    power: fighter.baseStats.power,
+    defense: fighter.baseStats.defense,
+    technique: Math.round((fighter.baseStats.speed + fighter.baseStats.power + fighter.baseStats.defense) / 3),
   };
 
   const StatBar = ({ label, value, color, icon: Icon }: { 
@@ -256,12 +245,7 @@ export default function CharacterSelect() {
   };
   
   const handleFighterSelect = (fighter: Fighter) => {
-    if (isLocked(fighter)) return;
     setCharacter(fighter.id as any);
-  };
-  
-  const isLocked = (fighter: Fighter): boolean => {
-    return !fighter.unlocked && !!fighter.unlockRequirement && stats.score < fighter.unlockRequirement;
   };
   
   const categories = [
@@ -280,7 +264,7 @@ export default function CharacterSelect() {
     ? getFighterById(hoveredFighter) 
     : selectedCharacter 
       ? getFighterById(selectedCharacter)
-      : FIGHTERS.find(f => f.unlocked);
+      : FIGHTERS[0];
   
   return (
     <div 
@@ -331,7 +315,7 @@ export default function CharacterSelect() {
           CHOOSE YOUR FIGHTER
         </h1>
         <p className="text-cyan-400 text-lg mt-2 font-medium">
-          {FIGHTERS.filter(f => !isLocked(f)).length} / {FIGHTERS.length} Fighters Unlocked
+          ALL FIGHTERS FREE • {FIGHTERS.length} / {FIGHTERS.length} AVAILABLE
         </p>
       </div>
       
@@ -377,7 +361,6 @@ export default function CharacterSelect() {
                 key={fighter.id}
                 fighter={fighter}
                 selected={selectedCharacter === fighter.id}
-                locked={isLocked(fighter)}
                 onSelect={() => handleFighterSelect(fighter)}
                 onHover={() => setHoveredFighter(fighter.id)}
                 onLeave={() => setHoveredFighter(null)}
@@ -472,7 +455,7 @@ export default function CharacterSelect() {
       
       {/* Controls Hint */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 hidden md:flex items-center gap-4 text-xs text-gray-500">
-        <span>Click to select • Hover for preview • Unlock fighters by earning points!</span>
+        <span>Click to select • Hover for preview • All characters are unlocked</span>
       </div>
       
       <style>{`

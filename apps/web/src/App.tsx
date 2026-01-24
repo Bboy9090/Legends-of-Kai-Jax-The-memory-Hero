@@ -17,6 +17,7 @@ import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
 import { useAudio } from "./lib/stores/useAudio";
+import { FIGHTERS } from "./lib/characters";
 import { useEffect } from "react";
 
 // Define control keys for the game
@@ -108,8 +109,8 @@ function App() {
   useEffect(() => {
     if (selectedCharacter && phase === 'playing') {
       setPlayerFighter(selectedCharacter);
-      const opponents = ['speedy', 'marlo', 'leonardo', 'midnight', 'flynn'];
-      const randomOpponent = opponents[Math.floor(Math.random() * opponents.length)] || 'speedy';
+      const opponents = FIGHTERS.map(f => f.id).filter(id => id !== selectedCharacter);
+      const randomOpponent = opponents[Math.floor(Math.random() * opponents.length)] || selectedCharacter;
       setOpponentFighter(randomOpponent);
     }
   }, [selectedCharacter, phase, setPlayerFighter, setOpponentFighter]);

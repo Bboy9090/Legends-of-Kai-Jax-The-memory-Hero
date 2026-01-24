@@ -4,17 +4,9 @@ import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
 import JaxonModel from "./models/JaxonModel";
-import KaisonModel from "./models/KaisonModel";
-import SpeedyModel from "./models/SpeedyModel";
-import MarloModel from "./models/MarloModel";
-import LeonardoModel from "./models/LeonardoModel";
-import MidnightModel from "./models/MidnightModel";
-import FlynnModel from "./models/FlynnModel";
-import SparkyModel from "./models/SparkyModel";
-import BubbleModel from "./models/BubbleModel";
-import KingSpikeModel from "./models/KingSpikeModel";
-import CaptainBlazeModel from "./models/CaptainBlazeModel";
-import NovaKnightModel from "./models/NovaKnightModel";
+import KaisonModel from "./models/KaisonBeastModel";
+import LegendaryKaiJaxModel from "./models/LegendaryKaiJaxModel";
+import ProceduralBeastModel from "./models/ProceduralBeastModel";
 
 export default function Opponent() {
   const { 
@@ -166,7 +158,7 @@ export default function Opponent() {
     }
   });
   
-  // CHARACTER MODELS - All fighters have unique designs!
+  // CHARACTER MODELS - Beast Wars roster (no legacy IDs)
   const renderCharacterModel = () => {
     const modelProps = {
       bodyRef,
@@ -179,299 +171,19 @@ export default function Opponent() {
       hitAnim: 0,
       animTime: animTimeRef.current,
       isAttacking: opponentAttacking,
-      isInvulnerable: false
+      isInvulnerable: false,
     };
 
     switch (opponentFighterId) {
-      case 'jaxon':
+      case "jaxon":
         return <JaxonModel {...modelProps} />;
-      case 'kaison':
+      case "kaison":
         return <KaisonModel {...modelProps} />;
-      case 'speedy':
-        return <SpeedyModel {...modelProps} />;
-      case 'marlo':
-        return <MarloModel {...modelProps} />;
-      case 'leonardo':
-        return <LeonardoModel {...modelProps} />;
-      case 'midnight':
-        return <MidnightModel {...modelProps} />;
-      case 'flynn':
-        return <FlynnModel {...modelProps} />;
-      case 'sparky':
-        return <SparkyModel {...modelProps} />;
-      case 'bubble':
-        return <BubbleModel {...modelProps} />;
-      case 'kingspike':
-        return <KingSpikeModel {...modelProps} />;
-      case 'captainblaze':
-        return <CaptainBlazeModel {...modelProps} />;
-      case 'novaknight':
-        return <NovaKnightModel {...modelProps} />;
+      case "kai-jax":
+        return <LegendaryKaiJaxModel {...modelProps} velocityX={0} velocityY={0} health={100} />;
+      default:
+        return <ProceduralBeastModel fighter={fighter} />;
     }
-    
-    // Fallback generic model for any missing fighters
-    return (
-      <group ref={bodyRef} position={[0, 0.4, 0]}>
-        {/* DETAILED HEAD */}
-        <group ref={headRef} position={[0, 0.6, 0]}>
-          {/* Main head - villain helmet */}
-          <mesh castShadow>
-            <sphereGeometry args={[0.5, 32, 24]} />
-            <meshToonMaterial 
-              color={fighter.color}
-              emissive={fighter.accentColor}
-              emissiveIntensity={opponentHealth < 30 ? 0.8 : 0.3}
-            />
-          </mesh>
-            
-            {/* Helmet menacing glow */}
-            <mesh scale={1.05}>
-              <sphereGeometry args={[0.5, 32, 24]} />
-              <meshBasicMaterial 
-                color={fighter.accentColor}
-                transparent
-                opacity={opponentHealth < 30 ? 0.5 : 0.25}
-                depthWrite={false}
-              />
-            </mesh>
-            
-            {/* Evil eyes - glowing red! */}
-            <mesh position={[0.15, 0.1, 0.45]} castShadow>
-              <boxGeometry args={[0.35, 0.12, 0.1]} />
-              <meshBasicMaterial color={fighter.accentColor} />
-            </mesh>
-            <mesh position={[0.15, 0.1, 0.46]} scale={1.1}>
-              <boxGeometry args={[0.35, 0.12, 0.05]} />
-              <meshBasicMaterial 
-                color={fighter.accentColor}
-                transparent
-                opacity={0.7}
-              />
-            </mesh>
-            
-            {/* Helmet horns/crests */}
-            <mesh position={[-0.3, 0.4, 0]} rotation={[0, 0, -Math.PI / 4]}>
-              <boxGeometry args={[0.15, 0.4, 0.15]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.4}
-              />
-            </mesh>
-            <mesh position={[0.3, 0.4, 0]} rotation={[0, 0, Math.PI / 4]}>
-              <boxGeometry args={[0.15, 0.4, 0.15]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.4}
-              />
-            </mesh>
-          </group>
-          
-          {/* ARMORED TORSO */}
-          <mesh position={[0, -0.1, 0]} castShadow>
-            <boxGeometry args={[0.7, 0.9, 0.5]} />
-            <meshToonMaterial 
-              color={fighter.color}
-              emissive={fighter.color}
-              emissiveIntensity={0.2}
-            />
-          </mesh>
-          
-          {/* Chest armor plate */}
-          <mesh position={[0, 0.1, 0.26]} castShadow>
-            <boxGeometry args={[0.5, 0.5, 0.05]} />
-            <meshToonMaterial 
-              color={fighter.accentColor}
-              emissive={fighter.accentColor}
-              emissiveIntensity={0.6}
-            />
-          </mesh>
-          
-          {/* Power core in chest */}
-          <mesh position={[0, 0.1, 0.28]} castShadow>
-            <sphereGeometry args={[0.15, 16, 12]} />
-            <meshBasicMaterial 
-              color={fighter.accentColor}
-            />
-          </mesh>
-          
-          {/* Belt with buckle */}
-          <mesh position={[0, -0.5, 0]} castShadow>
-            <boxGeometry args={[0.75, 0.15, 0.52]} />
-            <meshToonMaterial color={fighter.accentColor} />
-          </mesh>
-          <mesh position={[0, -0.5, 0.27]} castShadow>
-            <boxGeometry args={[0.2, 0.2, 0.05]} />
-            <meshToonMaterial 
-              color={fighter.color}
-              emissive={fighter.color}
-              emissiveIntensity={0.5}
-            />
-          </mesh>
-          
-          {/* POWERFUL ARMS with spikes */}
-          <group position={[-0.5, 0.1, 0]}>
-            {/* Spiked shoulder */}
-            <mesh position={[0, 0.1, 0]} castShadow>
-              <sphereGeometry args={[0.24, 16, 12]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.5}
-              />
-            </mesh>
-            <mesh position={[0, 0.25, 0]} rotation={[0, 0, Math.PI]}>
-              <coneGeometry args={[0.12, 0.25, 8]} />
-              <meshToonMaterial color={fighter.accentColor} />
-            </mesh>
-            {/* Upper arm */}
-            <mesh position={[0, -0.25, 0]} castShadow>
-              <capsuleGeometry args={[0.13, 0.4, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            {/* Forearm with armor bands */}
-            <mesh position={[0, -0.65, 0]} castShadow>
-              <capsuleGeometry args={[0.11, 0.4, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            <mesh position={[0, -0.55, 0]} castShadow>
-              <cylinderGeometry args={[0.14, 0.14, 0.1, 12]} />
-              <meshToonMaterial color={fighter.accentColor} />
-            </mesh>
-            {/* Clawed gauntlet */}
-            <mesh position={[0, -0.95, 0]} castShadow>
-              <boxGeometry args={[0.20, 0.28, 0.20]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.7}
-              />
-            </mesh>
-          </group>
-          
-          <group position={[0.5, 0.1, 0]}>
-            {/* Spiked shoulder */}
-            <mesh position={[0, 0.1, 0]} castShadow>
-              <sphereGeometry args={[0.24, 16, 12]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.5}
-              />
-            </mesh>
-            <mesh position={[0, 0.25, 0]} rotation={[0, 0, Math.PI]}>
-              <coneGeometry args={[0.12, 0.25, 8]} />
-              <meshToonMaterial color={fighter.accentColor} />
-            </mesh>
-            {/* Upper arm */}
-            <mesh position={[0, -0.25, 0]} castShadow>
-              <capsuleGeometry args={[0.13, 0.4, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            {/* Forearm with armor bands */}
-            <mesh position={[0, -0.65, 0]} castShadow>
-              <capsuleGeometry args={[0.11, 0.4, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            <mesh position={[0, -0.55, 0]} castShadow>
-              <cylinderGeometry args={[0.14, 0.14, 0.1, 12]} />
-              <meshToonMaterial color={fighter.accentColor} />
-            </mesh>
-            {/* Clawed gauntlet */}
-            <mesh position={[0, -0.95, 0]} castShadow>
-              <boxGeometry args={[0.20, 0.28, 0.20]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.7}
-              />
-            </mesh>
-          </group>
-          
-          {/* ARMORED LEGS */}
-          <group position={[-0.2, -0.7, 0]}>
-            {/* Thigh armor */}
-            <mesh position={[0, -0.05, 0]} castShadow>
-              <capsuleGeometry args={[0.15, 0.5, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            {/* Spiked knee pad */}
-            <mesh position={[0, -0.35, 0.1]} castShadow>
-              <sphereGeometry args={[0.2, 16, 12]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.4}
-              />
-            </mesh>
-            <mesh position={[0, -0.35, 0.25]} rotation={[Math.PI / 2, 0, 0]}>
-              <coneGeometry args={[0.08, 0.2, 8]} />
-              <meshToonMaterial color={fighter.accentColor} />
-            </mesh>
-            {/* Lower leg */}
-            <mesh position={[0, -0.65, 0]} castShadow>
-              <capsuleGeometry args={[0.13, 0.45, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            {/* Heavy battle boot */}
-            <mesh position={[0, -1.0, 0.15]} castShadow>
-              <boxGeometry args={[0.30, 0.38, 0.65]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.4}
-              />
-            </mesh>
-          </group>
-          
-          <group position={[0.2, -0.7, 0]}>
-            {/* Thigh armor */}
-            <mesh position={[0, -0.05, 0]} castShadow>
-              <capsuleGeometry args={[0.15, 0.5, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            {/* Spiked knee pad */}
-            <mesh position={[0, -0.35, 0.1]} castShadow>
-              <sphereGeometry args={[0.2, 16, 12]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.4}
-              />
-            </mesh>
-            <mesh position={[0, -0.35, 0.25]} rotation={[Math.PI / 2, 0, 0]}>
-              <coneGeometry args={[0.08, 0.2, 8]} />
-              <meshToonMaterial color={fighter.accentColor} />
-            </mesh>
-            {/* Lower leg */}
-            <mesh position={[0, -0.65, 0]} castShadow>
-              <capsuleGeometry args={[0.13, 0.45, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            {/* Heavy battle boot */}
-            <mesh position={[0, -1.0, 0.15]} castShadow>
-              <boxGeometry args={[0.30, 0.38, 0.65]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.4}
-              />
-            </mesh>
-          </group>
-          
-          {/* MENACING AURA */}
-          <mesh position={[0, 0, 0]} scale={1.3}>
-            <sphereGeometry args={[0.8, 24, 18]} />
-            <meshBasicMaterial 
-              color={fighter?.accentColor || '#FF0000'}
-              transparent
-              opacity={opponentHealth < 30 ? 0.25 : 0.12}
-              depthWrite={false}
-            />
-          </mesh>
-        </group>
-    );
   };
   
   return (

@@ -117,7 +117,7 @@ export interface BattleState {
 export const useBattle = create<BattleState>((set, get) => ({
   // Initial state
   playerFighterId: 'jaxon',
-  opponentFighterId: 'speedy',
+  opponentFighterId: 'kaison',
   selectedArenaId: 'mushroom-plains',
   
   playerHealth: 100,

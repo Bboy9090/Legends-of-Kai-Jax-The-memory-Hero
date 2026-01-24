@@ -6,7 +6,7 @@ import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
 import LegendaryKaiJaxModel from "./models/LegendaryKaiJaxModel";
 import JaxonModel from "./models/JaxonModel";
-import KaisonModel from "./models/KaisonModel";
+import KaisonModel from "./models/KaisonBeastModel";
 
 // Use the same Controls enum as App.tsx
 enum Controls {

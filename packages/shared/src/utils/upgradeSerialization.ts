@@ -4,7 +4,8 @@
  * Functions for saving and loading upgrade state
  */
 
-import { UpgradeManager, type PlayerUpgradeState, type ResourceCost } from '../types/upgrade.types';
+import { UpgradeManager } from './UpgradeManager';
+import type { PlayerUpgradeState, ResourceCost } from '../types/upgrade.types';
 import { ALL_UPGRADES } from '../data/upgrade_data';
 
 /**

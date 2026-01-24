@@ -1,4 +1,5 @@
 // Character dialogue/banter for pre-fight and post-fight
+// Beast Wars roster only (no legacy names)
 
 export interface Dialogue {
   preFight: {
@@ -17,286 +18,176 @@ export const fighterDialogue: Record<string, Dialogue> = {
   jaxon: {
     preFight: {
       taunts: [
-        "Ready to see some superhero moves?",
-        "Let's make this fun!",
-        "Time to save the day!",
-        "I've been training for this!",
-        "You're going down, bad guy!"
+        "Hear the quills crackle. Bronx thunder.",
+        "You want smoke? Step in.",
+        "Speed is a weapon. I'm the blade.",
+        "Say less. We fight.",
+        "I don't chase wins. I take them.",
       ],
-      responses: [
-        "Bring it on!",
-        "I'm ready!",
-        "Let's do this!",
-        "Game on!",
-        "Here we go!"
-      ]
+      responses: ["Run it.", "Bet.", "Let’s go.", "No more talk.", "On sight."],
     },
-    victory: {
-      quotes: [
-        "Superhero victory!",
-        "Good guys win again!",
-        "That was awesome!",
-        "Justice prevails!",
-        "Great battle, friend!"
-      ]
-    },
-    defeat: {
-      quotes: [
-        "I'll get you next time!",
-        "That was tough...",
-        "You're really strong!",
-        "I need more practice!",
-        "Good match!"
-      ]
-    }
+    victory: { quotes: ["Too slow.", "Thunder stays.", "You felt that.", "Next.", "The Bronx remembers."] },
+    defeat: { quotes: ["Again.", "I learn fast.", "Not finished.", "Run it back.", "I’m still standing."] },
   },
+
   kaison: {
     preFight: {
       taunts: [
-        "Let's show them our power!",
-        "Together we're unstoppable!",
-        "Time for teamwork!",
-        "Ready for action!",
-        "This will be epic!"
+        "Star-Force online. Webs ready.",
+        "I see your angle. I counter it.",
+        "Two tails. Two outcomes. You lose both.",
+        "Keep moving—my net is already set.",
+        "Tactics beat rage.",
       ],
-      responses: [
-        "Let's go!",
-        "I'm pumped!",
-        "Bring it!",
-        "Watch this!",
-        "Here I come!"
-      ]
+      responses: ["Locked in.", "I’m ready.", "Try me.", "Watch your step.", "I already mapped this."],
     },
-    victory: {
-      quotes: [
-        "Teamwork makes the dream work!",
-        "We did it!",
-        "That was incredible!",
-        "Victory dance time!",
-        "Great teamwork!"
-      ]
-    },
-    defeat: {
-      quotes: [
-        "We'll train harder!",
-        "You got us this time!",
-        "Respect!",
-        "That was close!",
-        "Good game!"
-      ]
-    }
+    victory: { quotes: ["Calculated.", "Covenant secured.", "You walked into it.", "Clean.", "Next target."] },
+    defeat: { quotes: ["Data collected.", "Good read.", "I’ll adapt.", "You earned that.", "Again—smarter."] },
   },
-  speedy: {
+
+  "kai-jax": {
     preFight: {
       taunts: [
-        "You can't catch the blue blur!",
-        "Gotta go fast!",
-        "Too slow!",
-        "Speed is my superpower!",
-        "Catch me if you can!"
+        "The Archive remembers every strike you’ve ever thrown.",
+        "Three strands. One verdict.",
+        "I don’t fight to win. I fight to end it.",
+        "Breathe. This is your last calm.",
+        "Gods will tremble.",
       ],
-      responses: [
-        "Let's race!",
-        "I'm the fastest!",
-        "Zoom zoom!",
-        "Here we go!",
-        "Time to speed!"
-      ]
+      responses: ["Proceed.", "Confirmed.", "Come.", "Now.", "Witness."],
     },
-    victory: {
-      quotes: [
-        "Speed wins every time!",
-        "Too fast for you!",
-        "That was a blast!",
-        "Sonic boom!",
-        "Winner!"
-      ]
-    },
-    defeat: {
-      quotes: [
-        "You're pretty fast too!",
-        "Whoa, didn't see that coming!",
-        "Good race!",
-        "You got me!",
-        "Respect!"
-      ]
-    }
+    victory: { quotes: ["Recorded.", "Erased.", "The Archive closes.", "Next.", "Tremble."] },
+    defeat: { quotes: ["The memory persists.", "Not… yet.", "Again.", "The Archive rebuilds.", "I return."] },
   },
-  marlo: {
+
+  "boryx-zenith": {
     preFight: {
       taunts: [
-        "Wahoo! Let's-a go!",
-        "It's-a me, ready to battle!",
-        "Mama mia! Here we go!",
-        "Let's-a have fun!",
-        "Time to jump into action!"
+        "I protect what matters—by breaking what threatens it.",
+        "Guardian stance. Dragon wrath.",
+        "You’re in my ring now.",
+        "Step wrong and you shatter.",
+        "Chaos answers my call.",
       ],
-      responses: [
-        "Let's-a go!",
-        "Wahoo!",
-        "Here we go!",
-        "Ready!",
-        "Yahoo!"
-      ]
+      responses: ["Approach.", "Stand down.", "No mercy.", "Try it.", "I’m here."],
     },
-    victory: {
-      quotes: [
-        "Wahoo! Victory!",
-        "Mama mia! We won!",
-        "Let's-a celebrate!",
-        "Yahoo! Great battle!",
-        "Winner winner!"
-      ]
-    },
-    defeat: {
-      quotes: [
-        "Mama mia...",
-        "You're-a pretty good!",
-        "I'll-a get you next time!",
-        "Good game!",
-        "Wahoo... next time!"
-      ]
-    }
+    victory: { quotes: ["Protected.", "Guardian prevails.", "You weren’t ready.", "Hold the line.", "Next."] },
+    defeat: { quotes: ["I failed… not them.", "Again.", "I’ll carry this.", "You’re strong.", "I’ll rise."] },
   },
-  midnight: {
+
+  "lunara-solis": {
     preFight: {
       taunts: [
-        "The shadows are my ally!",
-        "Fear the darkness!",
-        "You cannot escape!",
-        "Prepare for defeat!",
-        "Darkness falls!"
+        "I’ve seen this outcome. You don’t like it.",
+        "Starlight cuts deeper than steel.",
+        "Nine tails, one prophecy.",
+        "Your move was written already.",
+        "Moon veil—then silence.",
       ],
-      responses: [
-        "Face me!",
-        "You dare challenge me?",
-        "Foolish hero!",
-        "This ends now!",
-        "Come!"
-      ]
+      responses: ["Begin.", "As foretold.", "Proceed.", "I’m watching.", "Show me."],
     },
-    victory: {
-      quotes: [
-        "The darkness prevails!",
-        "As expected!",
-        "You were no match!",
-        "Victory is mine!",
-        "Bow before me!"
-      ]
-    },
-    defeat: {
-      quotes: [
-        "This isn't over!",
-        "You got lucky!",
-        "I'll be back!",
-        "Impossible!",
-        "Next time..."
-      ]
-    }
+    victory: { quotes: ["Foretold.", "Starlight remains.", "Timeline holds.", "Next vision.", "Done."] },
+    defeat: { quotes: ["Unexpected…", "A new branch.", "I’ll correct it.", "You surprised me.", "Again."] },
   },
-  flynn: {
+
+  "umbra-flux": {
     preFight: {
       taunts: [
-        "The hero's blade is ready!",
-        "For glory!",
-        "Time to be brave!",
-        "Adventure awaits!",
-        "Let's fight with honor!"
+        "You can’t hit what phases.",
+        "I’m already behind you.",
+        "Wraith speed. Wolf teeth.",
+        "Blink and you’re done.",
+        "Reality is thin tonight.",
       ],
-      responses: [
-        "En garde!",
-        "For honor!",
-        "Let's go!",
-        "Ready!",
-        "Hiyah!"
-      ]
+      responses: ["Try.", "Miss.", "Too late.", "I’m gone.", "Catch me."],
     },
-    victory: {
-      quotes: [
-        "The hero triumphs!",
-        "Victory with honor!",
-        "Well fought!",
-        "Glory achieved!",
-        "Great battle!"
-      ]
-    },
-    defeat: {
-      quotes: [
-        "You are a worthy opponent!",
-        "I'll train harder!",
-        "Well fought!",
-        "You have my respect!",
-        "Good match!"
-      ]
-    }
+    victory: { quotes: ["Vanished.", "Ghosted.", "You swung at air.", "Next.", "Fade."] },
+    defeat: { quotes: ["I mistimed it.", "Again.", "You’re sharp.", "Respect.", "Next run."] },
   },
-  leonardo: {
+
+  "sentinel-vox": {
     preFight: {
       taunts: [
-        "Time to invent a victory!",
-        "Science and skill!",
-        "Let's test my theories!",
-        "Calculated moves only!",
-        "Time to demonstrate genius!"
+        "Systems armed. Time-lock engaged.",
+        "Your future is already logged.",
+        "Tactical matrix: dominant.",
+        "You’ll freeze. Then fall.",
+        "Chrono control is authority.",
       ],
-      responses: [
-        "Fascinating!",
-        "Let's begin!",
-        "Observe!",
-        "Here we go!",
-        "Watch this!"
-      ]
+      responses: ["Confirmed.", "Execute.", "Advance.", "Locking.", "Proceed."],
     },
-    victory: {
-      quotes: [
-        "As calculated!",
-        "Science prevails!",
-        "Theory confirmed!",
-        "Brilliant victory!",
-        "Well executed!"
-      ]
+    victory: { quotes: ["Confirmed.", "Tactical win.", "Time obeys.", "Next.", "Clean execution."] },
+    defeat: { quotes: ["Error… adapting.", "Recalculate.", "You broke pattern.", "Again.", "Noted."] },
+  },
+
+  "chronos-sere": {
+    preFight: {
+      taunts: [
+        "All timelines end here.",
+        "Entropy is the only law.",
+        "You can’t outrun collapse.",
+        "I erase what you are.",
+        "Kneel to extinction.",
+      ],
+      responses: ["Suffer.", "End.", "Silence.", "Fall.", "Disappear."],
     },
-    defeat: {
-      quotes: [
-        "Interesting data!",
-        "Back to the drawing board!",
-        "You're quite skilled!",
-        "I learned something!",
-        "Fascinating!"
-      ]
-    }
-  }
+    victory: { quotes: ["Extinction.", "Erased.", "Inevitable.", "Next.", "Collapse."] },
+    defeat: { quotes: ["Impossible.", "A delay…", "Not the end.", "Again.", "You’ll break."] },
+  },
+
+  silver: {
+    preFight: {
+      taunts: [
+        "The timeline will be protected.",
+        "I don’t fight for pride. I fight for balance.",
+        "Your moment ends here.",
+        "Time bends—so do you.",
+        "Stand down.",
+      ],
+      responses: ["I’m ready.", "Let’s do this.", "Focus.", "Now.", "Move."],
+    },
+    victory: { quotes: ["Timeline secured.", "Balance restored.", "You were a threat.", "Next.", "Time holds."] },
+    defeat: { quotes: ["Time… slipped.", "I’ll fix this.", "Again.", "You earned it.", "Not over."] },
+  },
+
+  voidonus: {
+    preFight: {
+      taunts: [
+        "All will return to the void.",
+        "Hope is a candle. I am the wind.",
+        "Your light ends now.",
+        "I eat worlds.",
+        "Welcome to the end.",
+      ],
+      responses: ["…", "Come.", "Break.", "Fade.", "End."],
+    },
+    victory: { quotes: ["Consumed.", "Silence.", "Nothing remains.", "End.", "Void eternal."] },
+    defeat: { quotes: ["The void… waits.", "Not finished.", "Again.", "You delay the end.", "I return."] },
+  },
 };
 
-// Get random dialogue from array
-export function getRandomDialogue(dialogues: string[]): string {
-  return dialogues[Math.floor(Math.random() * dialogues.length)] || '';
+function pickRandom(items: string[]): string {
+  if (!items.length) return "";
+  return items[Math.floor(Math.random() * items.length)] || items[0] || "";
 }
 
-// Get pre-fight taunt for a fighter
-export function getPreFightTaunt(fighterId: string): string {
-  const dialogue = fighterDialogue[fighterId];
-  if (!dialogue) return "Let's fight!";
-  return getRandomDialogue(dialogue.preFight.taunts);
+function getDialogue(id: string): Dialogue {
+  return fighterDialogue[id] || fighterDialogue["jaxon"]!;
 }
 
-// Get pre-fight response for a fighter
-export function getPreFightResponse(fighterId: string): string {
-  const dialogue = fighterDialogue[fighterId];
-  if (!dialogue) return "Bring it on!";
-  return getRandomDialogue(dialogue.preFight.responses);
+export function getPreFightTaunt(id: string): string {
+  return pickRandom(getDialogue(id).preFight.taunts);
 }
 
-// Get victory quote for a fighter
-export function getVictoryQuote(fighterId: string): string {
-  const dialogue = fighterDialogue[fighterId];
-  if (!dialogue) return "I won!";
-  return getRandomDialogue(dialogue.victory.quotes);
+export function getPreFightResponse(id: string): string {
+  return pickRandom(getDialogue(id).preFight.responses);
 }
 
-// Get defeat quote for a fighter
-export function getDefeatQuote(fighterId: string): string {
-  const dialogue = fighterDialogue[fighterId];
-  if (!dialogue) return "Good match!";
-  return getRandomDialogue(dialogue.defeat.quotes);
+export function getVictoryQuote(id: string): string {
+  return pickRandom(getDialogue(id).victory.quotes);
 }
+
+export function getDefeatQuote(id: string): string {
+  return pickRandom(getDialogue(id).defeat.quotes);
+}
+
