@@ -3,7 +3,7 @@
  * OPTIMIZED GLB LOADER FOR THREE.JS
  * Real GLB loading with animations, LOD, and mobile optimization
  */
-
+ 
 import { useGLTF, useAnimations } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef, useMemo } from 'react';
@@ -32,7 +32,18 @@ export interface GLBModelConfig {
 
 export interface GLBModelProps {
   config: GLBModelConfig;
-  animationState?: 'idle' | 'walk' | 'run' | 'punch' | 'kick' | 'kickHeavy' | 'special' | 'jump' | 'hit' | 'victory' | 'defeat';
+  animationState?:
+    | 'idle'
+    | 'walk'
+    | 'run'
+    | 'punch'
+    | 'kick'
+    | 'kickHeavy'
+    | 'special'
+    | 'jump'
+    | 'hit'
+    | 'victory'
+    | 'defeat';
   isAttacking?: boolean;
   isMoving?: boolean;
   loop?: boolean;
@@ -43,8 +54,8 @@ export interface GLBModelProps {
  * REAL GLB MODEL LOADER with animations
  * Optimized for mobile/tablet/PC
  */
-export function GLBModel({ 
-  config, 
+export function GLBModel({
+  config,
   animationState = 'idle',
   isAttacking = false,
   isMoving = false,
@@ -60,13 +71,13 @@ export function GLBModel({
   // Clone scene for instancing (performance)
   const clonedScene = useMemo(() => {
     const cloned = scene.clone();
-    
+
     // Optimize materials for mobile
     cloned.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         child.castShadow = config.castShadow ?? true;
         child.receiveShadow = config.receiveShadow ?? true;
-        
+
         // Mobile optimization: reduce material complexity
         if (child.material instanceof THREE.MeshStandardMaterial) {
           child.material.needsUpdate = true;
@@ -78,7 +89,7 @@ export function GLBModel({
         }
       }
     });
-    
+
     return cloned;
   }, [scene, config]);
 
@@ -88,7 +99,7 @@ export function GLBModel({
 
     // Determine which animation to play
     let targetAnimation: string | undefined;
-    
+
     if (isAttacking) {
       // Attack animations take priority
       if (animationState === 'punch') targetAnimation = config.animations.punch;
@@ -101,12 +112,13 @@ export function GLBModel({
       targetAnimation = config.animations.run || config.animations.walk;
     } else {
       // Default to idle or specified state
-      targetAnimation = config.animations[animationState] || config.animations.idle;
+      targetAnimation =
+        (config.animations as Record<string, string | undefined>)[animationState] || config.animations.idle;
     }
 
     // Find matching animation action
     const actionName = targetAnimation || 'idle';
-    const action = actions[actionName] || actions[Object.keys(actions)[0]];
+    const action = actions[actionName] || actions[Object.keys(actions)[0] as keyof typeof actions];
 
     if (!action) return;
 
@@ -120,7 +132,7 @@ export function GLBModel({
 
     // Set loop mode
     action.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, 1);
-    
+
     // Handle animation completion
     if (!loop && onAnimationComplete) {
       const handleComplete = () => {
@@ -134,29 +146,20 @@ export function GLBModel({
     previousActionRef.current = actionName;
 
     return () => {
-      if (action) {
-        action.fadeOut(0.2);
-      }
+      action.fadeOut(0.2);
     };
   }, [actions, animationState, isAttacking, isMoving, loop, onAnimationComplete, config.animations]);
 
   // Update animation mixer every frame
-  useFrame((state, delta) => {
-    if (mixer) {
-      mixer.update(delta);
-    }
+  useFrame((_, delta) => {
+    mixer?.update(delta);
   });
 
   // Apply scale and position
   useEffect(() => {
-    if (groupRef.current) {
-      if (config.scale) {
-        groupRef.current.scale.setScalar(config.scale);
-      }
-      if (config.position) {
-        groupRef.current.position.set(...config.position);
-      }
-    }
+    if (!groupRef.current) return;
+    if (config.scale) groupRef.current.scale.setScalar(config.scale);
+    if (config.position) groupRef.current.position.set(...config.position);
   }, [config.scale, config.position]);
 
   return <primitive ref={groupRef} object={clonedScene} />;
@@ -172,9 +175,13 @@ export function preloadGLB(path: string) {
 /**
  * Get optimized GLB path based on device
  */
-export function getOptimizedGLBPath(basePath: string, deviceType: 'mobile' | 'tablet' | 'desktop' = 'desktop'): string {
+export function getOptimizedGLBPath(
+  basePath: string,
+  deviceType: 'mobile' | 'tablet' | 'desktop' = 'desktop'
+): string {
   // For now, use same path - can add LOD variants later
   // Format: /models/characters/{id}/{id}_LOD{0|1|2}.glb
   const lod = deviceType === 'mobile' ? 1 : deviceType === 'tablet' ? 0 : 0;
   return basePath.replace('.glb', `_LOD${lod}.glb`);
 }
+

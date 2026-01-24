@@ -1,4 +1,4 @@
-impimport React, { useRef } from "react";
+import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -7,8 +7,16 @@ import * as THREE from "three";
  * Moving away from "Blocky" into "Sculpted" architecture.
  * Features: Tapered limbs, organic quill clusters, and nebula-depth skin.
  */
-export default function JaxonBeastModel({ emotionIntensity = 0, isAttacking = false }) {
-  const groupRef = useRef();
+export interface JaxonBeastModelProps {
+  emotionIntensity?: number;
+  isAttacking?: boolean;
+}
+
+export default function JaxonBeastModel({
+  emotionIntensity = 0,
+  isAttacking = false,
+}: JaxonBeastModelProps) {
+  const groupRef = useRef<THREE.Group | null>(null);
   
   // Colors for the "Bronx Grit" aesthetic
   const skinColor = "#1a1a1a"; // Charcoal
@@ -16,10 +24,9 @@ export default function JaxonBeastModel({ emotionIntensity = 0, isAttacking = fa
   const capColor = "#8B0000";  // Weathered Crimson
 
   useFrame((state) => {
-    if (groupRef.current) {
-      // Subtle "Breathing" and vibration for quills
-      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.05;
-    }
+    if (!groupRef.current) return;
+    // Subtle "Breathing" and vibration for quills
+    groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.05;
   });
 
   return (

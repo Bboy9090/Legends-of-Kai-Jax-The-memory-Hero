@@ -179,11 +179,17 @@ function LegendaryHealthBar({
             ? 'border-red-500 shadow-[0_0_40px_rgba(239,68,68,0.8)] animate-pulse' 
             : isLow 
               ? 'border-orange-500 shadow-[0_0_30px_rgba(249,115,22,0.6)]' 
-              : `shadow-[0_0_25px_${fighter.accentColor}60]`
+              : ''
           }
           ${isTransformed ? 'border-yellow-400 shadow-[0_0_50px_rgba(255,215,0,0.8)]' : ''}
         `}
-        style={{ borderColor: !isLow && !isCritical && !isTransformed ? fighter.accentColor : undefined }}
+        style={{
+          borderColor: !isLow && !isCritical && !isTransformed ? fighter.accentColor : undefined,
+          boxShadow:
+            !isLow && !isCritical && !isTransformed
+              ? `0 0 25px ${fighter.accentColor}60`
+              : undefined,
+        }}
       >
         {/* Fighter Info Row */}
         <div className={`flex items-center gap-2 mb-2 ${side === 'right' ? 'flex-row-reverse' : ''}`}>

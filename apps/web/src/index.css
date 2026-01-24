@@ -1,3 +1,8 @@
+/* Import legendary design systems */
+@import './styles/design-system.css';
+@import './styles/bronx_grit.css';
+@import './styles/legendary-effects.css';
+
 /**
  * ⚡ LEGENDS OF KAI-JAX - MAIN STYLESHEET ⚡
  * Ultimate God-Tier Visual System
@@ -6,11 +11,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import legendary design systems */
-@import './styles/design-system.css';
-@import './styles/bronx_grit.css';
-@import './styles/legendary-effects.css';
 
 @layer base {
   * {

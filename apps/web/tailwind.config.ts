@@ -5,9 +5,9 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    "../../packages/ui/**/*.{js,ts,jsx,tsx}",
-    "../../packages/shared/**/*.{js,ts,jsx,tsx}",
-    "../../packages/engine/**/*.{js,ts,jsx,tsx}"
+    "../../packages/ui/src/**/*.{js,ts,jsx,tsx}",
+    "../../packages/shared/src/**/*.{js,ts,jsx,tsx}",
+    "../../packages/engine/src/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
     extend: {
