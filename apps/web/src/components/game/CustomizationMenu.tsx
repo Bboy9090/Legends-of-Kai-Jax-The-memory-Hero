@@ -2,7 +2,7 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { FIGHTERS, getFighterById } from "../../lib/characters";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export default function CustomizationMenu() {
   const { 
@@ -12,9 +12,8 @@ export default function CustomizationMenu() {
 
   
   const isUnlocked = (fighter: typeof FIGHTERS[0]) => {
-    if (fighter.unlocked) return true;
-    if (!fighter.unlockRequirement) return true;
-    return stats.score >= fighter.unlockRequirement;
+    // All characters are free/unlocked in Beast Wars mode
+    return true;
   };
   
   const categories = [
@@ -59,7 +58,7 @@ export default function CustomizationMenu() {
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {categoryFighters.map(fighter => {
-                  const unlocked = isUnlocked(fighter);
+                  const unlocked = true;
                   
                   return (
                     <Card
@@ -71,41 +70,30 @@ export default function CustomizationMenu() {
                     >
                       <CardContent className="p-4 text-center">
                         <div 
-                          className="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg relative"
+                          className="w-20 h-20 mx-auto mb-3 flex items-center justify-center shadow-lg relative"
                           style={{ 
                             backgroundColor: fighter.color,
+                            clipPath: 'polygon(25% 6%, 75% 6%, 96% 50%, 75% 94%, 25% 94%, 4% 50%)',
                             boxShadow: unlocked ? `0 0 20px ${fighter.accentColor}` : 'none'
                           }}
                         >
-                          <span className="text-4xl font-bold text-white">
-                            {fighter.name.charAt(0).toUpperCase()}
-                          </span>
-                          
-                          {!unlocked && (
-                            <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center">
-                              <Lock className="w-8 h-8 text-yellow-400" />
+                          <div className="text-center px-2">
+                            <div className="text-[10px] font-black tracking-widest text-white/95">
+                              {fighter.name}
                             </div>
-                          )}
+                            <div className="text-[9px] font-bold text-white/70">
+                              {fighter.category.toUpperCase()}
+                            </div>
+                          </div>
                         </div>
                         
                         <h3 className="text-lg font-bold text-white mb-1">
                           {fighter.displayName}
                         </h3>
                         
-                        {unlocked ? (
-                          <p className="text-xs text-gray-300">
-                            {fighter.description}
-                          </p>
-                        ) : (
-                          <div className="mt-2">
-                            <p className="text-xs text-yellow-400 font-semibold">
-                              🔒 {fighter.unlockRequirement} pts
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              Need {(fighter.unlockRequirement || 0) - stats.score} more
-                            </p>
-                          </div>
-                        )}
+                        <p className="text-xs text-gray-300">
+                          {fighter.description}
+                        </p>
                       </CardContent>
                     </Card>
                   );
@@ -123,16 +111,16 @@ export default function CustomizationMenu() {
                 Unlocked Fighters
               </h3>
               <p className="text-5xl font-bold text-white mb-4">
-                {FIGHTERS.filter(isUnlocked).length} / {FIGHTERS.length}
+                {FIGHTERS.length} / {FIGHTERS.length}
               </p>
               <div className="w-full bg-gray-700 rounded-full h-4 max-w-md mx-auto">
                 <div 
                   className="bg-gradient-to-r from-green-400 via-yellow-400 to-cyan-400 h-4 rounded-full transition-all"
-                  style={{ width: `${(FIGHTERS.filter(isUnlocked).length / FIGHTERS.length) * 100}%` }}
+                  style={{ width: `100%` }}
                 />
               </div>
               <p className="text-gray-300 mt-4">
-                Win battles to earn points and unlock more fighters!
+                All fighters are unlocked and ready.
               </p>
             </div>
           </CardContent>
