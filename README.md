@@ -1,7 +1,7 @@
 # 🎮 LEGENDS OF KAI-JAX: THE MEMORY WARRIOR
 ### "Forged in the Bronx. Mastered in the Silence."
 
-**A Mythic Platform Fighter PWA** - Playable on iPad, Mobile, and PC
+**A Mythic Platform Fighter** - built for family, playable on PC + iPad/iPhone (same Wi‑Fi)
 
 [![Deploy to GitHub Pages](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/actions/workflows/deploy.yml/badge.svg)](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/actions)
 
@@ -15,14 +15,44 @@ I'm a 35-year-old Reflector from the Bronx. I see the gaps, the glitches, and th
 
 ---
 
-## 🎮 PLAY NOW
+## 🎮 PLAY (LOCAL-FIRST)
 
-**Live URL:** `https://Bboy9090.github.io/Legends-of-Kai-Jax-The-memory-Hero`
+Right now this project is set up **for local play only** (no public deployment required). If it ever gets popular later, we can deploy it then.
 
-**Install on Your Device:**
-- **iPad/iPhone:** Safari → Share → "Add to Home Screen"
-- **Android:** Chrome → Menu → "Install app"
-- **PC:** Chrome/Edge → Install icon in address bar
+### Run it on your PC
+
+```powershell
+cd "c:\Users\Bobby\Legends-of-Kai-Jax-The-memory-Hero"
+pnpm install
+pnpm dev
+```
+
+Open what it prints (usually `http://localhost:5173`).
+
+### Play it on your kids’ iPads (same Wi‑Fi)
+
+1. On your PC, run:
+
+```powershell
+pnpm dev
+```
+
+2. Find your PC’s Wi‑Fi IP:
+
+```powershell
+ipconfig
+```
+
+Look for something like `IPv4 Address . . . : 192.168.x.x`.
+
+3. On the iPad (same Wi‑Fi), open Safari and go to:
+
+`http://<YOUR-PC-IP>:5173`
+
+4. Optional “install” shortcut:
+Safari → Share → **Add to Home Screen**
+
+**Note:** true offline/PWA install on iOS generally requires HTTPS. For now, this local method is perfect for home play. When you want “real install/offline”, we’ll either deploy privately (Cloudflare/Vercel) or wrap it as an iOS app (TestFlight).
 
 ---
 
@@ -37,25 +67,24 @@ I'm a 35-year-old Reflector from the Bronx. I see the gaps, the glitches, and th
 - ✅ **Boss Fights** - Malakor Phase 1 included
 
 ### Technical Stack:
-- **Frontend:** HTML5 Canvas, JavaScript (ES6+)
-- **PWA:** Service Worker, Web App Manifest
-- **Hosting:** GitHub Pages (Free, Automatic)
-- **Deployment:** GitHub Actions (Auto-deploy on push)
+- **Frontend:** React + Vite + Three.js / R3F (web)
+- **Monorepo:** PNPM workspaces (`apps/*`, `packages/*`)
+- **Primary local build:** `apps/web`
 
 ---
 
 ## 🚀 QUICK START
 
 ### For Players:
-1. Visit the live URL above
-2. Tap "Install" or "Add to Home Screen"
-3. Play!
+1. Run `pnpm dev` on the PC
+2. Open on PC: `http://localhost:5173`
+3. Open on iPad (same Wi‑Fi): `http://<YOUR-PC-IP>:5173`
 
 ### For Developers:
 1. Clone this repository
-2. Open `index.html` in browser (or use `npm start`)
-3. Edit code in Cursor IDE
-4. Run `./deploy/deploy.ps1` (Windows) or `./deploy/deploy.sh` (Mac/Linux)
+2. Run `pnpm install`
+3. Run `pnpm dev`
+4. Edit in Cursor IDE (`apps/web` is the main game)
 
 ---
 
@@ -117,18 +146,9 @@ The rescue of Silver from temporal erasure.
 
 ## 🔓 DEPLOYMENT
 
-This game auto-deploys to GitHub Pages on every push to `main` branch.
+Deployment is optional. This repo is configured for local play first.
 
-**To deploy manually:**
-```bash
-# Windows
-.\deploy\deploy.ps1
-
-# Mac/Linux
-./deploy/deploy.sh
-```
-
-See `DEPLOYMENT_INSTRUCTIONS.md` for full setup guide.
+When you want it publicly playable later, we’ll pick a host and turn this section back on (Cloudflare Pages / Vercel are good defaults).
 
 ---
 
@@ -172,7 +192,6 @@ MIT License - Build on this foundation, but remember the Legacy.
 
 ## 🔗 LINKS
 
-- **Live Game:** https://Bboy9090.github.io/Legends-of-Kai-Jax-The-memory-Hero
 - **Documentation:** `/docs` directory
 - **Issues:** GitHub Issues tab
 
