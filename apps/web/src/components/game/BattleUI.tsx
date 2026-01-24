@@ -704,6 +704,10 @@ export default function BattleUI() {
                 <kbd className="bg-yellow-500/40 px-2 py-0.5 rounded text-xs font-bold">T</kbd>
                 <span className="text-yellow-300">Transform</span>
               </div>
+              <div className="flex items-center gap-2">
+                <kbd className="bg-white/20 px-2 py-1 rounded">Y</kbd>
+                <span>Taunt</span>
+              </div>
             </div>
           </div>
         </div>

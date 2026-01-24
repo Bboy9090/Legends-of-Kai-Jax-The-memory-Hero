@@ -3,7 +3,7 @@ import { Vec2, MathUtils, COMBAT_CONSTANTS } from '@beast-kin/shared';
 
 export class KnockbackCalculator {
   /**
-   * Calculate knockback using Smash Bros formula:
+   * Calculate knockback using legendary combat formula:
    * KB = ((((((p/10) + (p*d)/20) * 200/(w+100) * 1.4) + 18) * s) + b) * r
    * 
    * Where:
@@ -27,7 +27,7 @@ export class KnockbackCalculator {
     const s = hitbox.knockbackGrowth;
     const b = hitbox.baseKnockback;
 
-    // Smash Bros knockback formula
+    // Legendary knockback formula
     const percentTerm = p / 10 + (p * d) / 20;
     const weightTerm = 200 / (w + 100);
     const scalingTerm = percentTerm * weightTerm * 1.4 + 18;

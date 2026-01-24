@@ -1,5 +1,7 @@
 // SUPER SMASH GRAND SAGA - 100 MISSIONS ACROSS 9 ACTS
 import { ActNumber } from './storyMode';
+import { getUEEMissionById } from './uee_missions';
+import { getStoryMissionById } from './story_missions';
 
 export interface Mission {
   id: string;
@@ -330,5 +332,40 @@ export function getMissionById(id: string): Mission | undefined {
     const found = missions.find(m => m.id === id);
     if (found) return found;
   }
-  return undefined;
+  // Beast Wars Story Missions (30 missions)
+  const story = getStoryMissionById(id);
+  if (story) {
+    return {
+      id: story.id,
+      actNumber: story.actNumber,
+      missionNumber: story.missionNumber,
+      name: story.name,
+      description: story.description,
+      objectives: story.objectives,
+      bossName: story.bossName,
+      bossPhases: story.bossPhases,
+      difficulty: story.difficulty,
+      rewards: { xp: story.rewards.xp, currency: story.rewards.currency, loot: story.rewards.loot },
+      isBoss: !!story.bossName,
+      isFireMoment: !!story.cinematicIntro,
+      cinematicCutscenes: story.cinematicIntro ? [story.cinematicIntro] : [],
+    };
+  }
+  // UEE 10 missions (Ultimate Entertainment Enterprises)
+  const uee = getUEEMissionById(id);
+  if (!uee) return undefined;
+  return {
+    id: uee.id,
+    actNumber: 1,
+    missionNumber: uee.missionNumber,
+    name: uee.name,
+    description: uee.description,
+    objectives: uee.objectives,
+    bossName: uee.bossName,
+    difficulty: uee.difficulty,
+    rewards: { xp: uee.rewards.xp, currency: uee.rewards.currency, loot: uee.rewards.loot },
+    isBoss: !!uee.bossName,
+    isFireMoment: false,
+    cinematicCutscenes: [],
+  };
 }

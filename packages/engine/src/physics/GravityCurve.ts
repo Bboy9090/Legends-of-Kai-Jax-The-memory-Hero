@@ -2,7 +2,7 @@ import { RigidBody } from '@beast-kin/shared';
 
 /**
  * Variable Gravity Curves - Makes jumping feel snappy on ascent and weighted on descent
- * Inspired by Super Smash Bros Ultimate's satisfying jump feel
+ * Legendary jump physics with satisfying weight and momentum
  */
 export class GravityCurve {
   private baseGravity: number;

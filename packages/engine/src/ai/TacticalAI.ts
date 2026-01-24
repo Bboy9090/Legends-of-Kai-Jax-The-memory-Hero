@@ -263,7 +263,7 @@ export class TacticalAI {
     // Use strong attack to punish
     return {
       type: ActionType.ATTACK,
-      attackType: 'smash',
+      attackType: 'heavy',
       direction: this.getDirectionTo(aiFighter, target),
     };
   }

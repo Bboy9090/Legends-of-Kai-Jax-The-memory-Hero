@@ -9,7 +9,6 @@ import { getMissionById } from '../../lib/missions';
 import { getActiveTeamBonuses } from '../../lib/teamSynergy';
 import { useFluidCombat, COMBO_MOVES, getSignatureKit } from '../../lib/stores/useFluidCombat';
 import FluidCombatPlayer from './FluidCombatPlayer';
-import GLBCharacterModel, { getModelPath } from './models/GLBCharacterModel';
 import { Button } from '../ui/button';
 import { Heart, Zap, Shield, Sword, Users, RotateCcw, Target, Flame } from 'lucide-react';
 
