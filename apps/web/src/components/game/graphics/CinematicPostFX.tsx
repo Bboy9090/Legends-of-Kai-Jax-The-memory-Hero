@@ -3,6 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { AfterimagePass } from "three/examples/jsm/postprocessing/AfterimagePass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { FilmPass } from "three/examples/jsm/postprocessing/FilmPass.js";
@@ -26,12 +27,19 @@ export default function CinematicPostFX({
   const { gl, scene, camera, size } = useThree();
   const composerRef = useRef<EffectComposer | null>(null);
   const gradePassRef = useRef<ShaderPass | null>(null);
+  const afterimageRef = useRef<AfterimagePass | null>(null);
   const bloomRef = useRef<UnrealBloomPass | null>(null);
   const rgbRef = useRef<ShaderPass | null>(null);
   const vignetteRef = useRef<ShaderPass | null>(null);
   const filmRef = useRef<FilmPass | null>(null);
   const raysRef = useRef<ShaderPass | null>(null);
+  const sharpenRef = useRef<ShaderPass | null>(null);
   const baseBloomRef = useRef({ strength: 1.1, radius: 0.92, threshold: 0.18 });
+  const prevPunchRef = useRef(0);
+  const impactRef = useRef(0);
+  const initRef = useRef(false);
+  const baseExposureRef = useRef<number | null>(null);
+  const failedRef = useRef(false);
 
   const gradeShader = useMemo(() => {
     return {
@@ -44,6 +52,7 @@ export default function CinematicPostFX({
         uSaturation: { value: 1.15 },
         uContrast: { value: 1.12 },
         uIntensity: { value: 0.85 },
+        uFlash: { value: 0.0 },
         uTime: { value: 0.0 },
         uCosmic: { value: 0.0 },
       },
@@ -64,6 +73,7 @@ export default function CinematicPostFX({
         uniform float uSaturation;
         uniform float uContrast;
         uniform float uIntensity;
+        uniform float uFlash;
         uniform float uTime;
         uniform float uCosmic;
 
@@ -118,6 +128,13 @@ export default function CinematicPostFX({
           }
 
           vec3 outc = mix(c, tinted, uIntensity);
+
+          // hit flash (impact exposure pop) — driven by punch delta so idle scenes don’t smear/flash
+          float f = clamp(uFlash, 0.0, 1.0);
+          if (f > 0.001) {
+            vec3 flashColor = mix(vec3(1.0), uTint, 0.35);
+            outc = clamp(outc + flashColor * (f * 0.75), 0.0, 1.0);
+          }
           gl_FragColor = vec4(outc, src.a);
         }
       `,
@@ -185,73 +202,145 @@ export default function CinematicPostFX({
     };
   }, []);
 
+  const sharpenShader = useMemo(() => {
+    return {
+      uniforms: {
+        tDiffuse: { value: null },
+        uResolution: { value: new THREE.Vector2(1, 1) },
+        uAmount: { value: 0.0 },
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec2 vUv;
+        uniform sampler2D tDiffuse;
+        uniform vec2 uResolution;
+        uniform float uAmount;
+
+        void main() {
+          vec2 texel = 1.0 / max(uResolution, vec2(1.0));
+          vec3 c = texture2D(tDiffuse, vUv).rgb;
+          vec3 n = texture2D(tDiffuse, vUv + vec2(0.0, texel.y)).rgb;
+          vec3 s = texture2D(tDiffuse, vUv - vec2(0.0, texel.y)).rgb;
+          vec3 e = texture2D(tDiffuse, vUv + vec2(texel.x, 0.0)).rgb;
+          vec3 w = texture2D(tDiffuse, vUv - vec2(texel.x, 0.0)).rgb;
+
+          // simple unsharp mask (edge boost)
+          vec3 blur = (n + s + e + w) * 0.25;
+          vec3 detail = c - blur;
+          vec3 outc = c + detail * uAmount;
+          gl_FragColor = vec4(clamp(outc, 0.0, 1.0), 1.0);
+        }
+      `,
+    };
+  }, []);
+
   useEffect(() => {
     const q = getQualitySettings();
     const shouldEnable = enabled && q.postProcessing;
     if (!shouldEnable) return;
 
-    const composer = new EffectComposer(gl);
-    composerRef.current = composer;
-    composer.setSize(size.width, size.height);
-    composer.setPixelRatio(q.pixelRatio);
+    failedRef.current = false;
+    try {
+      // Capture baseline exposure once (lets us do real “camera flash” on hits)
+      if (baseExposureRef.current == null) baseExposureRef.current = (gl as any).toneMappingExposure ?? 1.0;
 
-    const renderPass = new RenderPass(scene, camera);
-    composer.addPass(renderPass);
+      const composer = new EffectComposer(gl);
+      composerRef.current = composer;
+      composer.setSize(size.width, size.height);
+      composer.setPixelRatio(q.pixelRatio);
 
-    // Bloom (the “poster glow”)
-    const bloom = new UnrealBloomPass(
-      new THREE.Vector2(size.width, size.height),
-      1.10, // strength
-      0.92, // radius
-      0.18 // threshold
-    );
-    bloomRef.current = bloom;
-    composer.addPass(bloom);
+      const renderPass = new RenderPass(scene, camera);
+      composer.addPass(renderPass);
 
-    // Color grade (hero identity)
-    const gradePass = new ShaderPass(gradeShader as any);
-    gradePassRef.current = gradePass;
-    composer.addPass(gradePass);
+      // Afterimage (anime ghost trails on impacts) — tuned dynamically in useFrame
+      const after = new AfterimagePass(0.0);
+      afterimageRef.current = after;
+      composer.addPass(after);
 
-    // Core rays (light shafts around core/aura)
-    const rays = new ShaderPass(coreRaysShader as any);
-    raysRef.current = rays;
-    composer.addPass(rays);
+      // Bloom (the “poster glow”)
+      const bloom = new UnrealBloomPass(
+        new THREE.Vector2(size.width, size.height),
+        1.10, // strength
+        0.92, // radius
+        0.18 // threshold
+      );
+      bloomRef.current = bloom;
+      composer.addPass(bloom);
 
-    // Subtle chromatic shift (cinematic lens)
-    const rgb = new ShaderPass(RGBShiftShader);
-    rgb.uniforms["amount"].value = 0.0008;
-    rgbRef.current = rgb;
-    composer.addPass(rgb);
+      // Color grade (hero identity)
+      const gradePass = new ShaderPass(gradeShader as any);
+      gradePassRef.current = gradePass;
+      composer.addPass(gradePass);
 
-    // Vignette (focus)
-    const vignette = new ShaderPass(VignetteShader);
-    vignette.uniforms["offset"].value = 0.25;
-    vignette.uniforms["darkness"].value = 0.9;
-    vignetteRef.current = vignette;
-    composer.addPass(vignette);
+      // Core rays (light shafts around core/aura)
+      const rays = new ShaderPass(coreRaysShader as any);
+      raysRef.current = rays;
+      composer.addPass(rays);
 
-    // Film grain (very subtle)
-    const film = new FilmPass(
-      0.22, // noise intensity
-      0.04, // scanline intensity
-      720, // scanline count
-      false
-    );
-    filmRef.current = film;
-    composer.addPass(film);
+      // Subtle chromatic shift (cinematic lens)
+      const rgb = new ShaderPass(RGBShiftShader);
+      if (rgb.uniforms?.["amount"]) rgb.uniforms["amount"].value = 0.0008;
+      rgbRef.current = rgb;
+      composer.addPass(rgb);
 
-    return () => {
+      // Vignette (focus)
+      const vignette = new ShaderPass(VignetteShader);
+      if (vignette.uniforms?.["offset"]) vignette.uniforms["offset"].value = 0.25;
+      if (vignette.uniforms?.["darkness"]) vignette.uniforms["darkness"].value = 0.9;
+      vignetteRef.current = vignette;
+      composer.addPass(vignette);
+
+      // Film grain (very subtle)
+      const film = new FilmPass(
+        0.22, // noise intensity
+        0.04, // scanline intensity
+        720, // scanline count
+        false
+      );
+      filmRef.current = film;
+      composer.addPass(film);
+
+      // Final sharpen (keeps beasts crisp under bloom)
+      const sharpen = new ShaderPass(sharpenShader as any);
+      sharpenRef.current = sharpen;
+      if (sharpen.uniforms?.uResolution?.value?.set) sharpen.uniforms.uResolution.value.set(size.width * q.pixelRatio, size.height * q.pixelRatio);
+      // base amount is tuned in useFrame (impact + grade)
+      if (sharpen.uniforms?.uAmount) sharpen.uniforms.uAmount.value = 0.0;
+      composer.addPass(sharpen);
+    } catch (err) {
+      // If postFX fails (device/driver differences), fall back to default R3F rendering
+      failedRef.current = true;
       composerRef.current = null;
       gradePassRef.current = null;
+      afterimageRef.current = null;
       bloomRef.current = null;
       rgbRef.current = null;
       vignetteRef.current = null;
       filmRef.current = null;
       raysRef.current = null;
+      sharpenRef.current = null;
+      console.warn("[CinematicPostFX] disabled due to init error", err);
+    }
+
+    return () => {
+      composerRef.current = null;
+      gradePassRef.current = null;
+      afterimageRef.current = null;
+      bloomRef.current = null;
+      rgbRef.current = null;
+      vignetteRef.current = null;
+      filmRef.current = null;
+      raysRef.current = null;
+      sharpenRef.current = null;
       composer.dispose();
     };
-  }, [camera, coreRaysShader, enabled, gl, gradeShader, scene, size.height, size.width]);
+  }, [camera, coreRaysShader, enabled, gl, gradeShader, scene, sharpenShader, size.height, size.width]);
 
   useEffect(() => {
     const pass = gradePassRef.current;
@@ -326,45 +415,82 @@ export default function CinematicPostFX({
     const q = getQualitySettings();
     composer.setSize(size.width, size.height);
     composer.setPixelRatio(q.pixelRatio);
+    const sharpen = sharpenRef.current;
+    if (sharpen?.uniforms?.uResolution?.value?.set) sharpen.uniforms.uResolution.value.set(size.width * q.pixelRatio, size.height * q.pixelRatio);
   }, [size.height, size.width]);
 
   useFrame((_, delta) => {
+    if (failedRef.current) return;
     const composer = composerRef.current;
     if (!composer) return;
-    gl.autoClear = true;
-    const pass = gradePassRef.current;
-    if (pass) pass.uniforms.uTime.value += delta;
+    try {
+      gl.autoClear = true;
+      const pass = gradePassRef.current;
+      if (pass?.uniforms?.uTime) pass.uniforms.uTime.value += delta;
 
-    const spike = THREE.MathUtils.clamp(punch, 0, 1);
+      const spike = THREE.MathUtils.clamp(punch, 0, 1);
+      const dp = initRef.current ? spike - prevPunchRef.current : 0;
+      prevPunchRef.current = spike;
+      initRef.current = true;
+      // Exponential decay so a single hit lingers for a few frames (trailer feel)
+      const decay = Math.exp(-delta * 12.0);
+      impactRef.current = Math.max(impactRef.current * decay, Math.max(0, dp) * 1.4);
+      const impact = THREE.MathUtils.clamp(impactRef.current, 0, 1);
 
-    // Punch bloom/rgb/grain spikes (cinematic hits)
-    const bloom = bloomRef.current;
-    if (bloom) {
-      bloom.strength = baseBloomRef.current.strength * (1.0 + spike * 0.55);
-      bloom.radius = baseBloomRef.current.radius * (1.0 + spike * 0.10);
-      bloom.threshold = baseBloomRef.current.threshold * (1.0 - spike * 0.25);
+      // Hit flash feeds the grade shader (keeps it “cinematic”, not a UI overlay)
+      if (pass?.uniforms?.uFlash) pass.uniforms.uFlash.value = impact;
+
+      // Real exposure “camera flash” (this is what makes hits feel like trailer footage)
+      const baseExposure = baseExposureRef.current ?? (gl as any).toneMappingExposure ?? 1.0;
+      const flashExposure = 1.0 + impact * 0.22 + spike * 0.05;
+      (gl as any).toneMappingExposure = baseExposure * flashExposure;
+
+      // Ghost trail strength (0..1): only rises on impact deltas so steady “punch” doesn’t smear previews
+      const after = afterimageRef.current as any;
+      if (after?.uniforms?.damp) {
+        const maxDamp = grade === "cosmic" ? 0.965 : grade === "ice" ? 0.945 : grade === "ember" ? 0.955 : 0.935;
+        after.uniforms.damp.value = maxDamp * impact;
+      }
+
+      // Punch bloom/rgb/grain spikes (cinematic hits)
+      const bloom = bloomRef.current;
+      if (bloom) {
+        bloom.strength = baseBloomRef.current.strength * (1.0 + spike * 0.55);
+        bloom.radius = baseBloomRef.current.radius * (1.0 + spike * 0.10);
+        bloom.threshold = baseBloomRef.current.threshold * (1.0 - spike * 0.25);
+      }
+
+      const rgb = rgbRef.current;
+      if (rgb?.uniforms?.["amount"]) rgb.uniforms["amount"].value = 0.0008 + spike * 0.0022;
+
+      const vignette = vignetteRef.current;
+      if (vignette?.uniforms?.["darkness"]) vignette.uniforms["darkness"].value = 0.9 + spike * 0.15;
+
+      const film = filmRef.current as any;
+      if (film?.uniforms) {
+        if (film.uniforms["nIntensity"]) film.uniforms["nIntensity"].value = 0.22 + spike * 0.22;
+        if (film.uniforms["sIntensity"]) film.uniforms["sIntensity"].value = 0.04 + spike * 0.05;
+      }
+
+      const rays = raysRef.current as any;
+      if (rays?.uniforms) {
+        if (rays.uniforms.uTime) rays.uniforms.uTime.value += delta;
+        if (rays.uniforms.uPunch) rays.uniforms.uPunch.value = spike;
+        if (rays.uniforms.uStrength) rays.uniforms.uStrength.value = grade === "cosmic" ? 0.75 : grade === "ice" ? 0.58 : grade === "ember" ? 0.66 : 0.48;
+      }
+
+      // Final sharpen amount: small baseline + extra on impacts to make motion read “crisp”
+      const sharpen = sharpenRef.current;
+      if (sharpen?.uniforms?.uAmount) {
+        const baseSharp = grade === "cosmic" ? 0.10 : grade === "ice" ? 0.12 : grade === "ember" ? 0.11 : 0.09;
+        sharpen.uniforms.uAmount.value = baseSharp + impact * 0.22;
+      }
+
+      composer.render(delta);
+    } catch (err) {
+      failedRef.current = true;
+      console.warn("[CinematicPostFX] disabled due to runtime error", err);
     }
-
-    const rgb = rgbRef.current;
-    if (rgb) rgb.uniforms["amount"].value = 0.0008 + spike * 0.0022;
-
-    const vignette = vignetteRef.current;
-    if (vignette) vignette.uniforms["darkness"].value = 0.9 + spike * 0.15;
-
-    const film = filmRef.current as any;
-    if (film?.uniforms) {
-      film.uniforms["nIntensity"].value = 0.22 + spike * 0.22;
-      film.uniforms["sIntensity"].value = 0.04 + spike * 0.05;
-    }
-
-    const rays = raysRef.current;
-    if (rays) {
-      rays.uniforms.uTime.value += delta;
-      rays.uniforms.uPunch.value = spike;
-      rays.uniforms.uStrength.value = grade === "cosmic" ? 0.75 : grade === "ice" ? 0.58 : grade === "ember" ? 0.66 : 0.48;
-    }
-
-    composer.render(delta);
   }, 1);
 
   return null;
