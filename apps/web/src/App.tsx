@@ -2,6 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense, useState } from "react";
 import { KeyboardControls } from "@react-three/drei";
 import "@fontsource/inter";
+import "@fontsource/bebas-neue";
 
 import BattleScene from "./components/game/BattleScene";
 import MobileControls from "./components/game/MobileControls";
@@ -20,6 +21,8 @@ import { useAudio } from "./lib/stores/useAudio";
 import { FIGHTERS } from "./lib/characters";
 import { BRAND } from "./lib/brand";
 import { useEffect } from "react";
+import * as THREE from "three";
+import { getQualitySettings } from "./lib/threejs/PerformanceOptimizer";
 
 // Define control keys for the game
 enum Controls {
@@ -171,8 +174,17 @@ function App() {
                 near: 0.1,
                 far: 1000
               }}
+              onCreated={({ gl }) => {
+                const q = getQualitySettings();
+                gl.setPixelRatio(q.pixelRatio);
+                gl.outputColorSpace = THREE.SRGBColorSpace;
+                gl.toneMapping = THREE.ACESFilmicToneMapping;
+                gl.toneMappingExposure = 1.15;
+                gl.shadowMap.enabled = true;
+                gl.shadowMap.type = q.shadowMap.type;
+              }}
               gl={{
-                antialias: true,
+                antialias: getQualitySettings().antialias,
                 powerPreference: "high-performance"
               }}
             >

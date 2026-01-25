@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { useBattle } from "../../lib/stores/useBattle";
+import { getFighterById } from "../../lib/characters";
 import BattleArena from "./BattleArena";
 import BattlePlayer from "./BattlePlayer";
 import Opponent from "./Opponent";
@@ -10,9 +11,38 @@ import CameraEffects from "./CameraEffects";
 import AttackTrails from "./AttackTrails";
 import EffectManager from "./EffectManager";
 import { RimLight } from "./EnhancedGraphics";
+import { Environment } from "@react-three/drei";
+import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
+import CinematicPostFX from "./graphics/CinematicPostFX";
 
 export default function BattleScene() {
-  const { startBattle, updateRoundTimer, battlePhase, playerX, opponentX } = useBattle();
+  const {
+    startBattle,
+    updateRoundTimer,
+    battlePhase,
+    playerX,
+    opponentX,
+    playerFighterId,
+    screenShake,
+    hitStop,
+    screenFlash,
+    playerAttacking,
+    playerAttackType,
+  } = useBattle();
+  const playerFighter = getFighterById(playerFighterId);
+  const grade =
+    playerFighterId === "kai-jax" ? "cosmic" : playerFighterId === "jaxon" ? "ice" : playerFighterId === "kaison" ? "ember" : "neutral";
+  const accent = playerFighter?.accentColor || "#00f2ff";
+  const bgColor = grade === "cosmic" ? "#050508" : grade === "ice" ? "#061225" : grade === "ember" ? "#1a0707" : "#0b0b12";
+  const fogColor = grade === "cosmic" ? "#070712" : grade === "ice" ? "#0a2a3a" : grade === "ember" ? "#2a0a0a" : "#0b0b12";
+  const punch =
+    Math.min(
+      1,
+      screenShake * 1.6 +
+        (hitStop > 0 ? 0.65 : 0) +
+        (screenFlash ? 0.35 : 0) +
+        (playerAttacking && (playerAttackType === "special" || playerAttackType === "ultimate") ? 0.25 : 0)
+    ) || 0;
   
   // Start battle on mount
   useEffect(() => {
@@ -46,6 +76,12 @@ export default function BattleScene() {
       
       {/* Enhanced Lighting System for better character definition */}
       <RimLight intensity={1.0} />
+      <LegendaryLightingRig />
+      <Environment preset="city" />
+      <CinematicPostFX grade={grade} accent={accent} punch={punch} center={[0.5, 0.44]} />
+
+      {/* Scene background/fog grade (pushes full-frame “poster” mood) */}
+      <color attach="background" args={[bgColor]} />
       
       {/* Battle Arena */}
       <BattleArena />
@@ -69,7 +105,7 @@ export default function BattleScene() {
       <CameraEffects />
       
       {/* Fog for depth */}
-      <fog attach="fog" args={['#87CEEB', 20, 50]} />
+      <fog attach="fog" args={[fogColor, 18, 55]} />
     </>
   );
 }

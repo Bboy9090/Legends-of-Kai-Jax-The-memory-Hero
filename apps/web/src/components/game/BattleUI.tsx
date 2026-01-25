@@ -61,7 +61,7 @@ function SynergyMeter({
       
       {/* Transform Ready Text */}
       {isFull && (
-        <span className="text-xs font-bold text-yellow-400 animate-pulse whitespace-nowrap">
+        <span className="mk-hud text-xs text-yellow-300 animate-pulse whitespace-nowrap">
           FUSION READY!
         </span>
       )}
@@ -110,7 +110,7 @@ function ComboCounter({
       {/* Combo Level Label */}
       {comboLevel && (
         <div 
-          className="text-sm font-black tracking-wider mb-1 animate-pulse"
+          className="mk-hud text-sm mb-1 animate-pulse"
           style={{ color: glowColor, textShadow: `0 0 10px ${glowColor}` }}
         >
           {comboLevel}!
@@ -131,7 +131,7 @@ function ComboCounter({
       </div>
       
       {/* Combo Label */}
-      <div className="text-lg font-bold text-white/80 tracking-widest">
+      <div className="mk-hud text-lg text-white/85">
         COMBO
       </div>
       

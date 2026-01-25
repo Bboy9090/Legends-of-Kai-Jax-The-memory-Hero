@@ -134,8 +134,8 @@ export function getLODLevel(distance: number, deviceType: 'mobile' | 'tablet' | 
  * Code splitting helper - lazy load heavy models
  */
 export async function loadModelLazy(path: string): Promise<THREE.Group> {
-  const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader');
-  const { DRACOLoader } = await import('three/examples/jsm/loaders/DRACOLoader');
+  const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
+  const { DRACOLoader } = await import('three/examples/jsm/loaders/DRACOLoader.js');
   
   const loader = new GLTFLoader();
   const dracoLoader = new DRACOLoader();
@@ -156,10 +156,9 @@ export async function loadModelLazy(path: string): Promise<THREE.Group> {
  * Texture optimization - use KTX2/BasisU
  */
 export async function loadOptimizedTexture(path: string): Promise<THREE.Texture> {
-  const { KTX2Loader } = await import('three/examples/jsm/loaders/KTX2Loader');
-  const { BasisTextureLoader } = await import('three/examples/jsm/loaders/BasisTextureLoader');
+  const { KTX2Loader } = await import('three/examples/jsm/loaders/KTX2Loader.js');
   
-  // Try KTX2 first, fallback to BasisU, then regular
+  // Try KTX2 first, then regular (Basis loader path varies across Three versions)
   try {
     const ktxLoader = new KTX2Loader();
     ktxLoader.setTranscoderPath('/basis/');
@@ -167,16 +166,8 @@ export async function loadOptimizedTexture(path: string): Promise<THREE.Texture>
       ktxLoader.load(path, resolve, undefined, reject);
     });
   } catch {
-    try {
-      const basisLoader = new BasisTextureLoader();
-      basisLoader.setTranscoderPath('/basis/');
-      return await new Promise((resolve, reject) => {
-        basisLoader.load(path, resolve, undefined, reject);
-      });
-    } catch {
-      // Fallback to regular texture loader
-      const loader = new THREE.TextureLoader();
-      return loader.load(path);
-    }
+    // Fallback to regular texture loader
+    const loader = new THREE.TextureLoader();
+    return loader.load(path);
   }
 }

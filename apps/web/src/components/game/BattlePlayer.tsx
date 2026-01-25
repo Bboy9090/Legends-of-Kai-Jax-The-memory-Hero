@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
 import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
+import { useBeastPreset } from "../../lib/stores/useBeastPreset";
 
 // Use the same Controls enum as App.tsx
 enum Controls {
@@ -64,6 +65,7 @@ export default function BattlePlayer() {
   const emotionIntensityRef = useRef(0); // For facial expressions!
   
   const [, getKeys] = useKeyboardControls<Controls>();
+  const beastPreset = useBeastPreset((s) => s.preset);
   
   const fighter = getFighterById(playerFighterId);
   if (!fighter) return null;
@@ -391,6 +393,7 @@ export default function BattlePlayer() {
       isAttacking={playerAttacking}
       isInvulnerable={playerInvulnerable}
       isMoving={isMovingRef.current}
+      presetOverride={beastPreset === "auto" ? null : beastPreset}
     />
   );
   

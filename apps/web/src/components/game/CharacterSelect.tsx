@@ -4,6 +4,7 @@ import { ArrowLeft, Zap, Shield, Flame, Wind, Sparkles, Crown, Swords, Star } fr
 import { useState, useEffect, useRef } from "react";
 import { FIGHTERS, Fighter, getFighterById } from "../../lib/characters";
 import CharacterPreview3D from "./CharacterPreview3D";
+import { useBeastPreset } from "../../lib/stores/useBeastPreset";
 
 // ⚡ LEGENDARY PARTICLES
 function SelectParticles() {
@@ -124,10 +125,10 @@ function FighterCard({
             }}
           >
             <div className="text-center">
-              <div className="text-[10px] sm:text-xs font-black tracking-widest text-white/90 drop-shadow-lg">
+              <div className="mk-hud text-[10px] sm:text-xs text-white/95 drop-shadow-lg">
                 {fighter.name}
               </div>
-              <div className="text-[8px] sm:text-[10px] font-bold text-white/70">
+              <div className="mk-caption text-[8px] sm:text-[10px] text-white/75">
                 {fighter.category.toUpperCase()}
               </div>
             </div>
@@ -227,6 +228,8 @@ function FighterStats({ fighter }: { fighter: Fighter }) {
 export default function CharacterSelect() {
   const { selectedCharacter, setCharacter, setGameState, stats } = useRunner();
   const { start } = useGame();
+  const beastPreset = useBeastPreset((s) => s.preset);
+  const setBeastPreset = useBeastPreset((s) => s.setPreset);
   const [hoveredFighter, setHoveredFighter] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
@@ -303,18 +306,10 @@ export default function CharacterSelect() {
           <span className="hidden sm:inline">BACK</span>
         </button>
         
-        <h1 
-          className="text-4xl sm:text-5xl md:text-6xl font-black"
-          style={{
-            background: 'linear-gradient(135deg, #FFD700, #FF6B6B, #A855F7)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.5))',
-          }}
-        >
+        <h1 className="mk-title mk-title-gradient text-4xl sm:text-5xl md:text-6xl">
           CHOOSE YOUR FIGHTER
         </h1>
-        <p className="text-cyan-400 text-lg mt-2 font-medium">
+        <p className="mk-caption text-cyan-200 text-lg mt-2">
           ALL FIGHTERS FREE • {FIGHTERS.length} / {FIGHTERS.length} AVAILABLE
         </p>
       </div>
@@ -419,7 +414,7 @@ export default function CharacterSelect() {
                   : 'transparent',
               }}
             >
-              <h2 className="text-2xl font-black text-white">
+              <h2 className="mk-hud text-2xl text-white">
                 {previewFighter?.displayName || 'SELECT FIGHTER'}
               </h2>
               {previewFighter && (
@@ -434,10 +429,54 @@ export default function CharacterSelect() {
                 </span>
               )}
             </div>
+
+            {/* Beast Presets */}
+            <div className="p-3 border-b border-white/10 bg-black/30">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-left">
+                  <div className="mk-hud text-sm text-white">BEAST PRESET</div>
+                  <div className="mk-caption text-xs text-white/70">
+                    Forces the model to look like the chosen animal archetype.
+                  </div>
+                </div>
+                <div className="mk-caption text-xs text-cyan-200">
+                  {beastPreset === "auto" ? "AUTO (Roster DNA)" : beastPreset.toUpperCase()}
+                </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {[
+                  { id: "auto", label: "AUTO", grad: "from-slate-600 to-slate-800" },
+                  { id: "wolf", label: "WOLF", grad: "from-indigo-500 to-slate-900" },
+                  { id: "fox", label: "FOX", grad: "from-orange-500 to-red-700" },
+                  { id: "cat", label: "CAT", grad: "from-fuchsia-500 to-purple-900" },
+                  { id: "boar", label: "BOAR", grad: "from-red-600 to-zinc-900" },
+                  { id: "turtle", label: "TURTLE", grad: "from-emerald-500 to-green-900" },
+                  { id: "dragon", label: "DRAGON", grad: "from-amber-500 to-purple-900" },
+                  { id: "bird", label: "BIRD", grad: "from-cyan-400 to-blue-900" },
+                  { id: "reptile", label: "REPTILE", grad: "from-lime-500 to-emerald-900" },
+                  { id: "spider", label: "SPIDER", grad: "from-violet-600 to-black" },
+                ].map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setBeastPreset(p.id as any)}
+                    className={`
+                      rounded-lg px-2 py-2 text-xs font-black tracking-widest
+                      transition-all duration-200
+                      ${beastPreset === (p.id as any) ? "scale-105 border-2 border-yellow-300 shadow-[0_0_18px_rgba(255,215,0,0.25)]" : "border border-white/10 hover:border-white/30"}
+                      bg-gradient-to-br ${p.grad}
+                      text-white
+                    `}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             
             {/* 3D Preview */}
             <div className="h-[300px] lg:h-[350px]">
-              {previewFighter && <CharacterPreview3D fighter={previewFighter} />}
+              {previewFighter && <CharacterPreview3D fighter={previewFighter} preset={beastPreset} />}
             </div>
             
             {/* Fighter Description & Stats */}

@@ -30,7 +30,7 @@
   
   /* Typography */
   --font-mono: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
-  --font-display: 'Inter', 'Arial', sans-serif;
+  --font-display: 'Bebas Neue', 'Impact', 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* ============================================================================

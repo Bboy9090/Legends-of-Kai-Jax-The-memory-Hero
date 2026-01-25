@@ -1,15 +1,21 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { Environment, OrbitControls } from "@react-three/drei";
 import { Suspense, useRef } from "react";
 import { Fighter } from "../../lib/characters";
 import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
 import { Group } from "three";
+import type { BeastPresetKind } from "../../lib/stores/useBeastPreset";
+import * as THREE from "three";
+import CinematicPostFX from "./graphics/CinematicPostFX";
+import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
+import { getQualitySettings } from "../../lib/threejs/PerformanceOptimizer";
 
 interface CharacterPreview3DProps {
   fighter: Fighter;
+  preset?: BeastPresetKind;
 }
 
-export default function CharacterPreview3D({ fighter }: CharacterPreview3DProps) {
+export default function CharacterPreview3D({ fighter, preset = "auto" }: CharacterPreview3DProps) {
   const bodyRef = useRef<Group>(null);
   const headRef = useRef<Group>(null);
   const leftArmRef = useRef<Group>(null);
@@ -30,7 +36,8 @@ export default function CharacterPreview3D({ fighter }: CharacterPreview3DProps)
       hitAnim: 0,
       animTime: 0,
       isAttacking: false,
-      isInvulnerable: false
+      isInvulnerable: false,
+      presetOverride: preset === "auto" ? null : preset
     };
 
     return <AnatomicalBeastModel {...modelProps} />;
@@ -43,20 +50,28 @@ export default function CharacterPreview3D({ fighter }: CharacterPreview3DProps)
           position: [0, 1.5, 4],
           fov: 50
         }}
-        gl={{ antialias: true }}
+        shadows
+        onCreated={({ gl }) => {
+          const q = getQualitySettings();
+          gl.setPixelRatio(q.pixelRatio);
+          gl.outputColorSpace = THREE.SRGBColorSpace;
+          gl.toneMapping = THREE.ACESFilmicToneMapping;
+          gl.toneMappingExposure = 1.2;
+          gl.shadowMap.enabled = true;
+          gl.shadowMap.type = q.shadowMap.type;
+        }}
+        gl={{ antialias: getQualitySettings().antialias, powerPreference: "high-performance" }}
       >
-        <color attach="background" args={["#1a1a2e"]} />
-        
-        {/* Lighting */}
-        <ambientLight intensity={0.6} />
-        <directionalLight
-          position={[5, 8, 5]}
-          intensity={1.0}
-          castShadow
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
+        <color attach="background" args={["#0b0b12"]} />
+
+        <LegendaryLightingRig />
+        <Environment preset="sunset" />
+        <CinematicPostFX
+          grade={fighter.id === "kai-jax" ? "cosmic" : fighter.id === "jaxon" ? "ice" : fighter.id === "kaison" ? "ember" : "neutral"}
+          accent={fighter.accentColor || "#00f2ff"}
+          punch={fighter.id === "kai-jax" ? 0.35 : 0.18}
+          center={[0.5, 0.44]}
         />
-        <pointLight position={[-5, 5, -5]} intensity={0.5} color={fighter.accentColor} />
         
         <Suspense fallback={null}>
           <group position={[0, -1, 0]}>

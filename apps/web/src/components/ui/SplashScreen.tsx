@@ -90,12 +90,7 @@ export default function SplashScreen({
 
         {/* Title */}
         <h1
-          className="text-5xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 mb-4"
-          style={{
-            fontFamily: "'Arial Black', 'Impact', sans-serif",
-            letterSpacing: '0.1em',
-            textShadow: '0 0 30px rgba(136, 208, 255, 0.6)',
-          }}
+          className="mk-title mk-title-gradient text-5xl sm:text-7xl mb-4"
         >
           {title}
         </h1>
@@ -103,14 +98,13 @@ export default function SplashScreen({
         {/* Subtitle */}
         {subtitle && (
           <p
-            className="text-xl sm:text-2xl font-bold text-purple-300"
-            style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+            className="mk-subtitle text-xl sm:text-2xl"
           >
             {subtitle}
           </p>
         )}
 
-        <p className="mt-3 text-xs sm:text-sm text-amber-200/80 font-semibold tracking-[0.25em] uppercase">
+        <p className="mk-caption mt-3 text-xs sm:text-sm text-amber-200/80 uppercase">
           {BRAND.tagline}
         </p>
 

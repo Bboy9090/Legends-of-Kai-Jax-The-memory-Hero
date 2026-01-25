@@ -80,10 +80,10 @@ export default function LegendaryBattleUI({}: LegendaryBattleUIProps = {}) {
           className="absolute top-20 left-1/2 -translate-x-1/2 text-center"
           style={{ color: playerComboColor }}
         >
-          <div className="text-6xl font-bold drop-shadow-[0_0_20px_currentColor] animate-bounce">
+          <div className="mk-hud text-6xl drop-shadow-[0_0_20px_currentColor] animate-bounce">
             {playerComboText}
           </div>
-          <div className="text-2xl mt-2">
+          <div className="mk-hud text-2xl mt-2">
             {playerComboCount} HITS
           </div>
         </div>
@@ -98,7 +98,7 @@ export default function LegendaryBattleUI({}: LegendaryBattleUIProps = {}) {
       {/* Slow Motion Indicator */}
       {timeScale < 1.0 && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className="text-white text-4xl font-bold drop-shadow-[0_0_20px_cyan] animate-pulse">
+          <div className="mk-hud text-white text-4xl drop-shadow-[0_0_20px_cyan] animate-pulse">
             SLOW MOTION
           </div>
         </div>
@@ -116,8 +116,8 @@ function UltimateMeter({ value, max, overflow }: { value: number; max: number; o
   const color = overflowAmount > 0 ? '#FF0000' : '#FFD700';
 
   return (
-    <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 border-2 border-gold shadow-[0_0_30px_rgba(255,215,0,0.6)]">
-      <div className="text-white text-sm font-bold mb-2">ULTIMATE</div>
+    <div className="mk-plate backdrop-blur-sm rounded-lg p-4 border-2 border-gold shadow-[0_0_30px_rgba(255,215,0,0.6)]">
+      <div className="mk-hud text-white text-sm mb-2">ULTIMATE</div>
       <div className="relative w-64 h-8 bg-gray-800 rounded-full overflow-hidden border-2 border-white">
         {/* Base fill */}
         <div

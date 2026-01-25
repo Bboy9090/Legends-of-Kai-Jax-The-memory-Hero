@@ -114,23 +114,17 @@ export default function LegendaryLoadingScreen({
             
             {/* Main logo */}
             <h1
-              className="text-6xl sm:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 relative z-10"
-              style={{
-                fontFamily: "'Arial Black', 'Impact', sans-serif",
-                letterSpacing: '0.1em',
-                textShadow: '0 0 40px rgba(136, 208, 255, 0.8)',
-              }}
+              className="mk-title mk-title-gradient text-6xl sm:text-8xl relative z-10"
             >
               {BRAND.title}
             </h1>
           </div>
           <p
-            className="text-2xl sm:text-3xl font-bold text-purple-300 mt-4"
-            style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+            className="mk-subtitle text-2xl sm:text-3xl mt-4"
           >
             {BRAND.subtitle}
           </p>
-          <p className="text-xs text-amber-200/80 font-semibold tracking-[0.25em] uppercase mt-3">
+          <p className="mk-caption text-xs text-amber-200/80 uppercase mt-3">
             {BRAND.tagline}
           </p>
         </div>

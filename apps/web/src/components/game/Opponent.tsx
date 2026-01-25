@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
 import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
+import { useBeastPreset } from "../../lib/stores/useBeastPreset";
 
 export default function Opponent() {
   const { 
@@ -38,6 +39,7 @@ export default function Opponent() {
   
   const animTimeRef = useRef(0);
   const emotionIntensityRef = useRef(0);
+  const beastPreset = useBeastPreset((s) => s.preset);
   
   const fighter = getFighterById(opponentFighterId);
   if (!fighter) return null;
@@ -170,6 +172,7 @@ export default function Opponent() {
       animTime: animTimeRef.current,
       isAttacking: opponentAttacking,
       isInvulnerable: false,
+      presetOverride: beastPreset === "auto" ? null : beastPreset,
     };
 
     return <AnatomicalBeastModel {...modelProps} />;

@@ -106,44 +106,15 @@ function LegendaryLogo() {
           className="mx-auto mb-4 w-[320px] sm:w-[420px] md:w-[520px] drop-shadow-[0_0_40px_rgba(255,215,0,0.35)]"
           draggable={false}
         />
-        <h1 
-          className="text-6xl sm:text-7xl md:text-8xl font-black tracking-tighter"
-          style={{
-            background: `linear-gradient(135deg, #FFD700 0%, #FF6B6B 25%, #A855F7 50%, #3B82F6 75%, #00FFFF 100%)`,
-            backgroundSize: '200% 200%',
-            animation: 'gradient-shift 3s ease infinite',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            filter: `drop-shadow(0 0 ${20 + glow * 20}px rgba(168, 85, 247, ${0.5 + glow * 0.3}))`,
-            textShadow: `0 0 40px rgba(168, 85, 247, 0.8)`,
-          }}
-        >
+        <h1 className="mk-title mk-title-gradient text-6xl sm:text-7xl md:text-8xl">
           {BRAND.title}
         </h1>
-        <h1 
-          className="text-5xl sm:text-6xl md:text-7xl font-black tracking-wider -mt-4"
-          style={{
-            background: `linear-gradient(135deg, #00FFFF 0%, #3B82F6 25%, #A855F7 50%, #FF6B6B 75%, #FFD700 100%)`,
-            backgroundSize: '200% 200%',
-            animation: 'gradient-shift 3s ease infinite reverse',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            filter: `drop-shadow(0 0 ${15 + glow * 15}px rgba(0, 255, 255, ${0.5 + glow * 0.3}))`,
-          }}
-        >
+        <h1 className="mk-title mk-title-gradient text-5xl sm:text-6xl md:text-7xl -mt-4">
           {BRAND.subtitle}
         </h1>
         <div className="flex items-center justify-center gap-2 mt-2">
           <div className="h-1 w-12 bg-gradient-to-r from-transparent via-amber-400 to-transparent rounded-full" />
-          <span 
-            className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text"
-            style={{
-              background: 'linear-gradient(90deg, #FFD700, #FFA500)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              textShadow: '0 0 20px rgba(255, 215, 0, 0.8)',
-            }}
-          >
+          <span className="mk-subtitle text-xl sm:text-2xl">
             {BRAND.shortTagline}
           </span>
           <div className="h-1 w-12 bg-gradient-to-r from-transparent via-amber-400 to-transparent rounded-full" />
@@ -151,17 +122,9 @@ function LegendaryLogo() {
       </div>
 
       {/* Subtitle */}
-      <p className="text-lg sm:text-xl text-cyan-200 mt-4 font-medium tracking-wide">
+      <p className="mk-caption text-lg sm:text-xl text-cyan-200 mt-4">
         {BRAND.shortTagline}
       </p>
-
-      <style>{`
-        @keyframes gradient-shift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-      `}</style>
     </div>
   );
 }
