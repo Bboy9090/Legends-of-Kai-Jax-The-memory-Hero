@@ -2,10 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { Suspense, useRef } from "react";
 import { Fighter } from "../../lib/characters";
-import JaxonModel from "./models/JaxonModel";
-import KaisonModel from "./models/KaisonBeastModel";
-import LegendaryKaiJaxModel from "./models/LegendaryKaiJaxModel";
-import ProceduralBeastModel from "./models/ProceduralBeastModel";
+import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
 import { Group } from "three";
 
 interface CharacterPreview3DProps {
@@ -22,6 +19,7 @@ export default function CharacterPreview3D({ fighter }: CharacterPreview3DProps)
 
   const renderCharacterModel = () => {
     const modelProps = {
+      fighter,
       bodyRef,
       headRef,
       leftArmRef,
@@ -35,18 +33,7 @@ export default function CharacterPreview3D({ fighter }: CharacterPreview3DProps)
       isInvulnerable: false
     };
 
-    // Render specific character models
-    switch (fighter.id) {
-      case 'jaxon':
-        return <JaxonModel {...modelProps} />;
-      case 'kaison':
-        return <KaisonModel {...modelProps} />;
-      case 'kai-jax':
-        return <LegendaryKaiJaxModel {...modelProps} velocityX={0} velocityY={0} health={100} />;
-    }
-
-    // Beastly fallback (no plain box/sphere humanoid)
-    return <ProceduralBeastModel fighter={fighter} />;
+    return <AnatomicalBeastModel {...modelProps} />;
   };
 
   return (

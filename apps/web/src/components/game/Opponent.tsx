@@ -3,10 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
-import JaxonModel from "./models/JaxonModel";
-import KaisonModel from "./models/KaisonBeastModel";
-import LegendaryKaiJaxModel from "./models/LegendaryKaiJaxModel";
-import ProceduralBeastModel from "./models/ProceduralBeastModel";
+import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
 
 export default function Opponent() {
   const { 
@@ -161,6 +158,7 @@ export default function Opponent() {
   // CHARACTER MODELS - Beast Wars roster (no legacy IDs)
   const renderCharacterModel = () => {
     const modelProps = {
+      fighter,
       bodyRef,
       headRef,
       leftArmRef,
@@ -174,16 +172,7 @@ export default function Opponent() {
       isInvulnerable: false,
     };
 
-    switch (opponentFighterId) {
-      case "jaxon":
-        return <JaxonModel {...modelProps} />;
-      case "kaison":
-        return <KaisonModel {...modelProps} />;
-      case "kai-jax":
-        return <LegendaryKaiJaxModel {...modelProps} velocityX={0} velocityY={0} health={100} />;
-      default:
-        return <ProceduralBeastModel fighter={fighter} />;
-    }
+    return <AnatomicalBeastModel {...modelProps} />;
   };
   
   return (

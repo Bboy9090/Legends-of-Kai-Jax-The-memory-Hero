@@ -4,9 +4,7 @@ import { useKeyboardControls } from "@react-three/drei";
 import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
-import LegendaryKaiJaxModel from "./models/LegendaryKaiJaxModel";
-import JaxonModel from "./models/JaxonModel";
-import KaisonModel from "./models/KaisonBeastModel";
+import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
 
 // Use the same Controls enum as App.tsx
 enum Controls {
@@ -377,300 +375,24 @@ export default function BattlePlayer() {
     prevYRef.current = playerY;
   });
   
-  // LEGENDARY CHARACTER MODELS - Use specialized designs for Jaxon, Kaison, and Kai-Jax!
-  const renderCharacterModel = () => {
-    // KAI-JAX FUSED FORM (Star-Slime Chimera with 3 Memory Strand Tails)
-    if (playerFighterId === 'kai-jax') {
-      return (
-        <LegendaryKaiJaxModel 
-          bodyRef={bodyRef}
-          headRef={headRef}
-          leftArmRef={leftArmRef}
-          rightArmRef={rightArmRef}
-          leftLegRef={leftLegRef}
-          rightLegRef={rightLegRef}
-          emotionIntensity={emotionIntensityRef.current}
-          hitAnim={hitAnimRef.current}
-          animTime={animTimeRef.current}
-          isAttacking={playerAttacking}
-          isInvulnerable={playerInvulnerable}
-          velocityX={useBattle.getState().playerVelocityX}
-          velocityY={useBattle.getState().playerVelocityY}
-          health={playerHealth}
-          isTransformed={playerTransformed}
-          // Kai-Jax specific: 3 Memory Strand Tails visible
-          showThreeTails={true}
-        />
-      );
-    }
-    
-    // JAXON SOLO (Beastly Hedgehog with electric quills)
-    if (playerFighterId === 'jaxon') {
-      return (
-        <JaxonModel 
-          bodyRef={bodyRef}
-          headRef={headRef}
-          leftArmRef={leftArmRef}
-          rightArmRef={rightArmRef}
-          leftLegRef={leftLegRef}
-          rightLegRef={rightLegRef}
-          emotionIntensity={emotionIntensityRef.current}
-          hitAnim={hitAnimRef.current}
-          animTime={animTimeRef.current}
-          isAttacking={playerAttacking}
-          isInvulnerable={playerInvulnerable}
-          // Jaxon specific: Electric quills visible
-          showElectricQuills={true}
-        />
-      );
-    }
-    
-    // KAISON SOLO (Star-Force Kitsune with web control and tactical jacket)
-    if (playerFighterId === 'kaison') {
-      return (
-        <KaisonModel 
-          bodyRef={bodyRef}
-          headRef={headRef}
-          leftArmRef={leftArmRef}
-          rightArmRef={rightArmRef}
-          leftLegRef={leftLegRef}
-          rightLegRef={rightLegRef}
-          emotionIntensity={emotionIntensityRef.current}
-          hitAnim={hitAnimRef.current}
-          animTime={animTimeRef.current}
-          isAttacking={playerAttacking}
-          isInvulnerable={playerInvulnerable}
-          // Kaison specific: Tactical jacket and tail-blades visible
-          showTacticalJacket={true}
-          showTailBlades={true}
-        />
-      );
-    }
-    
-    // Generic model for all other fighters
-    return (
-      <group ref={bodyRef} position={[0, 0.4, 0]}>
-        {/* DETAILED HEAD */}
-        <group ref={headRef} position={[0, 0.6, 0]}>
-          {/* Main head - hero helmet with EMOTION! */}
-          <mesh castShadow>
-            <sphereGeometry args={[0.5, 32, 24]} />
-            <meshToonMaterial 
-              color={fighter.color}
-              emissive={fighter.accentColor}
-              emissiveIntensity={playerInvulnerable ? 0.8 : (0.3 + emotionIntensityRef.current * 0.4)}
-            />
-          </mesh>
-            
-            {/* Helmet glow rim - INTENSIFIES with emotion! */}
-            <mesh scale={1.05 + emotionIntensityRef.current * 0.1}>
-              <sphereGeometry args={[0.5, 32, 24]} />
-              <meshBasicMaterial 
-                color={fighter.accentColor}
-                transparent
-                opacity={0.3 + emotionIntensityRef.current * 0.4}
-                depthWrite={false}
-              />
-            </mesh>
-            
-            {/* Visor/Eyes - BLAZING when emotional! */}
-            <mesh position={[0.15, 0.1, 0.45]} castShadow>
-              <boxGeometry args={[0.35, 0.15, 0.1]} />
-              <meshBasicMaterial 
-                color={fighter.accentColor}
-              />
-            </mesh>
-            <mesh position={[0.15, 0.1, 0.46]} scale={1.1 + emotionIntensityRef.current * 0.3}>
-              <boxGeometry args={[0.35, 0.15, 0.05]} />
-              <meshBasicMaterial 
-                color={hitAnimRef.current > 0 ? '#FF0000' : fighter.accentColor} // RED when hit!
-                transparent
-                opacity={0.6 + emotionIntensityRef.current * 0.4}
-              />
-            </mesh>
-            
-            {/* EMOTION AURA - appears during intense moments! */}
-            {emotionIntensityRef.current > 0.5 && (
-              <mesh scale={1.2 + Math.sin(animTimeRef.current * 10) * 0.1}>
-                <sphereGeometry args={[0.5, 16, 12]} />
-                <meshBasicMaterial 
-                  color={hitAnimRef.current > 0 ? '#FF0000' : fighter.accentColor}
-                  transparent
-                  opacity={emotionIntensityRef.current * 0.3}
-                  depthWrite={false}
-                  blending={THREE.AdditiveBlending}
-                />
-              </mesh>
-            )}
-            
-            {/* Helmet detail stripe */}
-            <mesh position={[0, 0.3, 0]} rotation={[0, 0, Math.PI / 6]}>
-              <boxGeometry args={[0.8, 0.1, 0.6]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.5}
-              />
-            </mesh>
-          </group>
-          
-          {/* MUSCULAR TORSO with costume details */}
-          <mesh position={[0, -0.1, 0]} castShadow>
-            <boxGeometry args={[0.7, 0.9, 0.5]} />
-            <meshToonMaterial 
-              color={fighter.color}
-              emissive={fighter.color}
-              emissiveIntensity={0.2}
-            />
-          </mesh>
-          
-          {/* Chest emblem/logo */}
-          <mesh position={[0, 0, 0.26]} castShadow>
-            <sphereGeometry args={[0.2, 16, 12]} />
-            <meshToonMaterial 
-              color={fighter.accentColor}
-              emissive={fighter.accentColor}
-              emissiveIntensity={1.0}
-            />
-          </mesh>
-          
-          {/* Belt */}
-          <mesh position={[0, -0.5, 0]} castShadow>
-            <boxGeometry args={[0.75, 0.15, 0.52]} />
-            <meshToonMaterial color={fighter.accentColor} />
-          </mesh>
-          
-          {/* ENHANCED ARMS with shoulder pads */}
-          <group ref={leftArmRef} position={[-0.5, 0.1, 0]}>
-            {/* Shoulder pad */}
-            <mesh position={[0, 0.1, 0]} castShadow>
-              <sphereGeometry args={[0.22, 16, 12]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.4}
-              />
-            </mesh>
-            {/* Upper arm */}
-            <mesh position={[0, -0.25, 0]} castShadow>
-              <capsuleGeometry args={[0.12, 0.4, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            {/* Forearm */}
-            <mesh position={[0, -0.65, 0]} castShadow>
-              <capsuleGeometry args={[0.10, 0.4, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            {/* Glowing glove/hand */}
-            <mesh position={[0, -0.95, 0]} castShadow>
-              <boxGeometry args={[0.18, 0.25, 0.18]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.6}
-              />
-            </mesh>
-          </group>
-          
-          <group ref={rightArmRef} position={[0.5, 0.1, 0]}>
-            {/* Shoulder pad */}
-            <mesh position={[0, 0.1, 0]} castShadow>
-              <sphereGeometry args={[0.22, 16, 12]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.4}
-              />
-            </mesh>
-            {/* Upper arm */}
-            <mesh position={[0, -0.25, 0]} castShadow>
-              <capsuleGeometry args={[0.12, 0.4, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            {/* Forearm */}
-            <mesh position={[0, -0.65, 0]} castShadow>
-              <capsuleGeometry args={[0.10, 0.4, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            {/* Glowing glove/hand */}
-            <mesh position={[0, -0.95, 0]} castShadow>
-              <boxGeometry args={[0.18, 0.25, 0.18]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.6}
-              />
-            </mesh>
-          </group>
-          
-          {/* POWERFUL LEGS with knee pads */}
-          <group ref={leftLegRef} position={[-0.2, -0.7, 0]}>
-            {/* Thigh */}
-            <mesh position={[0, -0.05, 0]} castShadow>
-              <capsuleGeometry args={[0.14, 0.5, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            {/* Knee pad */}
-            <mesh position={[0, -0.35, 0.1]} castShadow>
-              <sphereGeometry args={[0.18, 16, 12]} />
-              <meshToonMaterial color={fighter.accentColor} />
-            </mesh>
-            {/* Lower leg */}
-            <mesh position={[0, -0.65, 0]} castShadow>
-              <capsuleGeometry args={[0.12, 0.45, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            {/* EPIC Boot */}
-            <mesh position={[0, -1.0, 0.15]} castShadow>
-              <boxGeometry args={[0.28, 0.35, 0.6]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.3}
-              />
-            </mesh>
-          </group>
-          
-          <group ref={rightLegRef} position={[0.2, -0.7, 0]}>
-            {/* Thigh */}
-            <mesh position={[0, -0.05, 0]} castShadow>
-              <capsuleGeometry args={[0.14, 0.5, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            {/* Knee pad */}
-            <mesh position={[0, -0.35, 0.1]} castShadow>
-              <sphereGeometry args={[0.18, 16, 12]} />
-              <meshToonMaterial color={fighter.accentColor} />
-            </mesh>
-            {/* Lower leg */}
-            <mesh position={[0, -0.65, 0]} castShadow>
-              <capsuleGeometry args={[0.12, 0.45, 12, 16]} />
-              <meshToonMaterial color={fighter.color} />
-            </mesh>
-            {/* EPIC Boot */}
-            <mesh position={[0, -1.0, 0.15]} castShadow>
-              <boxGeometry args={[0.28, 0.35, 0.6]} />
-              <meshToonMaterial 
-                color={fighter.accentColor}
-                emissive={fighter.accentColor}
-                emissiveIntensity={0.3}
-              />
-            </mesh>
-          </group>
-          
-          {/* ENERGY AURA - constantly glowing! */}
-          <mesh position={[0, 0, 0]} scale={1.3}>
-            <sphereGeometry args={[0.8, 24, 18]} />
-            <meshBasicMaterial 
-              color={fighter?.accentColor || '#FFFFFF'}
-              transparent
-              opacity={0.15}
-              depthWrite={false}
-            />
-          </mesh>
-        </group>
-    );
-  };
+  // CHARACTER MODEL: always render the anatomical beast (no circle/square people)
+  const renderCharacterModel = () => (
+    <AnatomicalBeastModel
+      fighter={fighter}
+      bodyRef={bodyRef}
+      headRef={headRef}
+      leftArmRef={leftArmRef}
+      rightArmRef={rightArmRef}
+      leftLegRef={leftLegRef}
+      rightLegRef={rightLegRef}
+      emotionIntensity={emotionIntensityRef.current}
+      hitAnim={hitAnimRef.current}
+      animTime={animTimeRef.current}
+      isAttacking={playerAttacking}
+      isInvulnerable={playerInvulnerable}
+      isMoving={isMovingRef.current}
+    />
+  );
   
   return (
     <group ref={meshRef} position={[playerX, playerY, 0]}>
