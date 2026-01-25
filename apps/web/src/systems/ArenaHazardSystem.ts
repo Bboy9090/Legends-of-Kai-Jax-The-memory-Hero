@@ -1,5 +1,5 @@
 /**
- * THE AETERNA COVENANT - ARENA HAZARD SYSTEM
+ * LEGENDS OF KAI-JAX: THE MEMORY KING - ARENA HAZARD SYSTEM
  * Fracture Pit Logic - Crack Lanes and Rift Bubbles
  * The arena itself becomes the enemy.
  */

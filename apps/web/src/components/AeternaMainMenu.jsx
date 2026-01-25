@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 /**
- * THE AETERNA: LEGENDARY MAIN MENU
+ * LEGENDS OF KAI-JAX: THE MEMORY KING - LEGENDARY MAIN MENU
  * 
  * Aesthetic: Bronx Grit + $200M Cinematic Polish
  * Philosophy: "Easy to navigate, impossible not to stare in awe"
@@ -26,7 +26,7 @@ import {
  * - Beast-like majesty (obsidian geometry, living textures)
  */
 
-const AeternaMainMenu = () => {
+const MemoryKingMainMenu = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [dreadPulse, setDreadPulse] = useState(0);
@@ -49,7 +49,7 @@ const AeternaMainMenu = () => {
       subtitle: 'The Eternal Trial',
       icon: Trophy,
       color: 'red',
-      description: 'Ascend the ladder of resonance. Prove your worthiness to the Aeterna.'
+      description: 'Ascend the ladder of resonance. Prove your worthiness to the Memory King.'
     },
     {
       id: 'resonance-sync',
@@ -169,14 +169,14 @@ const AeternaMainMenu = () => {
       {/* TOP: LEGENDARY TITLE SEQUENCE */}
       <div className="absolute top-0 left-0 right-0 z-50 pt-12 px-16">
         <div className="flex flex-col items-center gap-4">
-          {/* The Aeterna Logo (Text-based for now) */}
+          {/* Memory King Logo (text-based) */}
           <div className="relative">
             <h1 className="text-8xl font-black tracking-tight text-white drop-shadow-2xl"
                 style={{
                   textShadow: '0 0 40px rgba(34, 211, 238, 0.6), 0 0 80px rgba(34, 211, 238, 0.3)',
                   letterSpacing: '0.05em'
                 }}>
-              THE AETERNA
+              THE MEMORY KING
             </h1>
             {/* Glitch effect lines */}
             <div className="absolute -top-1 left-0 w-full h-1 bg-cyan-500 opacity-20 blur-sm" />
@@ -345,7 +345,7 @@ const AeternaMainMenu = () => {
           
           <div className="flex items-center gap-4">
             <ShieldAlert size={16} className="text-neutral-700" />
-            <span>Aeterna Protocol Active</span>
+            <span>Memory King Protocol Active</span>
             <div className="w-32 h-1 bg-neutral-900 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-cyan-500 transition-all duration-1000"
@@ -357,7 +357,7 @@ const AeternaMainMenu = () => {
 
         {/* Copyright */}
         <div className="mt-4 text-center text-[10px] text-neutral-800 tracking-wider">
-          THE AETERNA © 2025 • LEGENDS OF THE MEMORY KING • ALL RIGHTS RESERVED
+          LEGENDS OF KAI-JAX © 2026 • THE MEMORY KING • ALL RIGHTS RESERVED
         </div>
       </div>
 
@@ -380,4 +380,4 @@ const AeternaMainMenu = () => {
   );
 };
 
-export default AeternaMainMenu;
+export default MemoryKingMainMenu;

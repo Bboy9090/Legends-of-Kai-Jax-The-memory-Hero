@@ -1,7 +1,7 @@
 /**
  * ULTIMATE ENTERTAINMENT ENTERPRISES PRESENTS
  * BEAST WARS STORY MODE
- * 30 Cinematic Missions — Marvel Ultimate Alliance meets Super Smash Bros meets Zootopia meets Spider-Man/Batman/Ninja Turtles
+ * 30 Cinematic Missions — feral Beast Wars action, cinematic and playable
  * 
  * Experience the legendary story as you fight through the action!
  */

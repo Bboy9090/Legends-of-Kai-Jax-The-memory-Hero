@@ -1,5 +1,5 @@
 /**
- * THE AETERNA COVENANT - BOSS CONTROLLER
+ * LEGENDS OF KAI-JAX: THE MEMORY KING - BOSS CONTROLLER
  * Rift-Beast AI - Malakor the Silencer
  * 3-Phase Rage Logic with Telegraph Windows
  */

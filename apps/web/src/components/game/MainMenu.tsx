@@ -2,6 +2,7 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { useAudio } from "../../lib/stores/useAudio";
 import { useState, useEffect, useRef } from "react";
 import { Volume2, VolumeX, Zap, Swords, Users, Trophy, Settings, Sparkles, Crown, Gamepad2, BookOpen } from "lucide-react";
+import { BRAND } from "../../lib/brand";
 
 // ⚡ LEGENDARY PARTICLE SYSTEM
 function LegendaryParticles() {
@@ -97,8 +98,14 @@ function LegendaryLogo() {
         <EnergyRing delay={2} />
       </div>
       
-      {/* Main Title - THE AETERNA COVENANT */}
+      {/* Main Title */}
       <div className="relative z-10">
+        <img
+          src="/brand/memory-king-logo.svg"
+          alt={`${BRAND.title}: ${BRAND.subtitle}`}
+          className="mx-auto mb-4 w-[320px] sm:w-[420px] md:w-[520px] drop-shadow-[0_0_40px_rgba(255,215,0,0.35)]"
+          draggable={false}
+        />
         <h1 
           className="text-6xl sm:text-7xl md:text-8xl font-black tracking-tighter"
           style={{
@@ -111,7 +118,7 @@ function LegendaryLogo() {
             textShadow: `0 0 40px rgba(168, 85, 247, 0.8)`,
           }}
         >
-          THE AETERNA COVENANT
+          {BRAND.title}
         </h1>
         <h1 
           className="text-5xl sm:text-6xl md:text-7xl font-black tracking-wider -mt-4"
@@ -124,7 +131,7 @@ function LegendaryLogo() {
             filter: `drop-shadow(0 0 ${15 + glow * 15}px rgba(0, 255, 255, ${0.5 + glow * 0.3}))`,
           }}
         >
-          THE MEMORY HERO
+          {BRAND.subtitle}
         </h1>
         <div className="flex items-center justify-center gap-2 mt-2">
           <div className="h-1 w-12 bg-gradient-to-r from-transparent via-amber-400 to-transparent rounded-full" />
@@ -137,7 +144,7 @@ function LegendaryLogo() {
               textShadow: '0 0 20px rgba(255, 215, 0, 0.8)',
             }}
           >
-            FORGED IN THE BRONX. MASTERED IN THE SILENCE.
+            {BRAND.shortTagline}
           </span>
           <div className="h-1 w-12 bg-gradient-to-r from-transparent via-amber-400 to-transparent rounded-full" />
         </div>
@@ -476,10 +483,10 @@ export default function MainMenu() {
         {/* Version & Copyright */}
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-500">
-            v1.0 THE IRON-WILL EDITION • © 2026 THE AETERNA COVENANT
+            v1.0 THE IRON-WILL EDITION • © 2026 LEGENDS OF KAI-JAX
           </p>
           <p className="text-xs text-gray-600 mt-1">
-            "When two become one, the Memory Hero wakes."
+            "When two become one, the Memory King rises."
           </p>
         </div>
       </div>

@@ -184,7 +184,7 @@ const EXTRA_LEGENDS: Fighter[] = [
     displayName: "Voidonus Imperion, The Void King",
     color: "#0A0A0A",
     accentColor: "#8B00FF",
-    description: "The End of All Things. The final boss of the Covenant.",
+    description: "The End of All Things. Final boss of the Memory King saga.",
     category: "legends",
     unlocked: true,
     baseStats: { power: 100, speed: 95, defense: 100, gravity: 20.0 },

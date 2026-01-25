@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/bronx_grit.css';
 import '../../styles/legendary-effects.css';
+import { BRAND } from '../../lib/brand';
 
 /**
  * ⚡ LEGENDS OF KAI-JAX: THE MEMORY WARRIOR ⚡
@@ -43,8 +44,7 @@ const LegendaryMainMenu: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [titleGlow, setTitleGlow] = useState(0);
 
-  // Check for save file
-  const hasSaveFile = localStorage.getItem('AETERNA_SLOT_1') !== null;
+  const hasSaveFile = localStorage.getItem(BRAND.saveSlotKey) !== null;
 
   // Menu items with legendary styling
   const menuItems: MenuItem[] = [
@@ -65,7 +65,7 @@ const LegendaryMainMenu: React.FC = () => {
     {
       id: 'saga-mode',
       label: 'SAGA MODE',
-      sublabel: '9 Books of the Covenant',
+      sublabel: '9 Books of the Memory King',
       action: () => navigate('/saga-mode')
     },
     {

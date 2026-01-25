@@ -1,5 +1,5 @@
 /**
- * THE AETERNA COVENANT - EVENT BUS
+ * LEGENDS OF KAI-JAX: THE MEMORY KING - EVENT BUS
  * The Communications Hub - All game-wide signals flow through here
  * No memory leaks. No spaghetti code. Pure decoupling.
  */

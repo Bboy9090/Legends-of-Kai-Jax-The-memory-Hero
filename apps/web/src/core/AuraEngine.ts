@@ -1,5 +1,5 @@
 /**
- * THE AETERNA COVENANT - AURA ENGINE
+ * LEGENDS OF KAI-JAX: THE MEMORY KING - AURA ENGINE
  * The Dread System - When the enemy approaches, the screen glitches
  * Resonance: R_p = (A_g × W_l) + M_a
  */
@@ -36,7 +36,7 @@ export class AuraEngine {
      * Resonance: R_p = (A_g × W_l) + M_a
      * Where:
      * - A_g = Aggression level
-     * - W_l = Weave level (connection to the Aeterna)
+     * - W_l = Weave level (connection to the Archive)
      * - M_a = Memory anchor strength
      */
     update(enemyProximity: number, aggressionLevel: number = 1.0, weaveLevel: number = 1.0, memoryAnchor: number = 0) {

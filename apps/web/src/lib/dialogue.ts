@@ -41,7 +41,7 @@ export const fighterDialogue: Record<string, Dialogue> = {
       ],
       responses: ["Locked in.", "I’m ready.", "Try me.", "Watch your step.", "I already mapped this."],
     },
-    victory: { quotes: ["Calculated.", "Covenant secured.", "You walked into it.", "Clean.", "Next target."] },
+    victory: { quotes: ["Calculated.", "Archive secured.", "You walked into it.", "Clean.", "Next target."] },
     defeat: { quotes: ["Data collected.", "Good read.", "I’ll adapt.", "You earned that.", "Again—smarter."] },
   },
 

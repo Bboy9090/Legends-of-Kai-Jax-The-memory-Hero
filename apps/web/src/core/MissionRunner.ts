@@ -1,7 +1,7 @@
 /**
- * THE AETERNA COVENANT - MISSION RUNNER
+ * LEGENDS OF KAI-JAX: THE MEMORY KING - MISSION RUNNER
  * General logic that reads SaveManager snapshots to rebuild match state
- * The Aeterna remembers. The Source rebuilds.
+ * The Archive remembers. The Source rebuilds.
  */
 
 import { saveManager, SaveData } from '../systems/SaveManager';

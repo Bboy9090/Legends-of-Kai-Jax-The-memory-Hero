@@ -1,5 +1,5 @@
 /**
- * THE AETERNA COVENANT - COMBAT STATE MACHINE
+ * LEGENDS OF KAI-JAX: THE MEMORY KING - COMBAT STATE MACHINE
  * Frame-Data Logic - Telegraph → Commit → Active → Recovery
  * Every attack follows the sacred cycle.
  */

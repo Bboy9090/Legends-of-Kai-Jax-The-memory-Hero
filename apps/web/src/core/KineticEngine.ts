@@ -1,5 +1,5 @@
 /**
- * THE AETERNA COVENANT - KINETIC ENGINE
+ * LEGENDS OF KAI-JAX: THE MEMORY KING - KINETIC ENGINE
  * Architect-Tier Physics
  * g=18.0 - The Bronx Standard. No floaty nonsense.
  */

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Zap, Sparkles, Swords, Crown, Star } from "lucide-react";
+import { BRAND } from "../../lib/brand";
 
 interface LoadingScreenProps {
   onComplete: () => void;
@@ -95,9 +96,12 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
             filter: 'drop-shadow(0 0 30px rgba(255,215,0,0.5))',
           }}
         >
-          SMASH HEROES
+          {BRAND.title}
         </h1>
-        <p className="text-2xl text-cyan-400 font-bold mt-2 tracking-widest">ULTIMATE</p>
+        <p className="text-2xl text-cyan-300 font-bold mt-2 tracking-[0.35em]">{BRAND.subtitle}</p>
+        <p className="text-xs sm:text-sm text-yellow-200/80 font-semibold mt-3 tracking-[0.25em]">
+          {BRAND.tagline}
+        </p>
       </div>
       
       {/* Loading Bar */}
@@ -131,9 +135,9 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
       
       {/* Character Silhouettes */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-end gap-8 opacity-30">
-        <div className="text-6xl transform -scale-x-100">🦊</div>
-        <div className="text-8xl">⚡</div>
-        <div className="text-6xl">🦔</div>
+        <div className="text-6xl transform -scale-x-100">🐺</div>
+        <div className="text-8xl">👑</div>
+        <div className="text-6xl">🐉</div>
       </div>
       
       <style>{`
@@ -184,7 +188,7 @@ export function GameIntro({ onComplete }: { onComplete: () => void }) {
               filter: 'drop-shadow(0 0 50px rgba(255,215,0,0.8))',
             }}
           >
-            SMASH
+            LEGENDS
           </h1>
           <h1 
             className="text-5xl sm:text-6xl md:text-7xl font-black -mt-4"
@@ -195,7 +199,7 @@ export function GameIntro({ onComplete }: { onComplete: () => void }) {
               filter: 'drop-shadow(0 0 40px rgba(0,255,255,0.6))',
             }}
           >
-            HEROES
+            OF KAI-JAX
           </h1>
         </div>
       )}
@@ -213,7 +217,7 @@ export function GameIntro({ onComplete }: { onComplete: () => void }) {
               WebkitBackgroundClip: 'text',
             }}
           >
-            THE MEMORY HERO WAKES
+            THE MEMORY KING RISES
           </p>
         </div>
       )}

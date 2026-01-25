@@ -1,5 +1,5 @@
 /**
- * THE AETERNA COVENANT - SAGA MODE LAUNCHER
+ * LEGENDS OF KAI-JAX: THE MEMORY KING - SAGA MODE LAUNCHER
  * 
  * 54-Chapter Navigator with Bronx-grit styling.
  * The 9-Book Cycle interface.
@@ -103,7 +103,7 @@ export const SagaModeLauncher: React.FC<SagaModeLauncherProps> = ({ onSelectChap
     <div className="saga-container matte-mythic-bg">
       <div className="saga-header">
         <h1 className="matte-mythic-text text-legendary">THE 9-BOOK CYCLE</h1>
-        <p className="text-grit">54 Chapters. One Memory. The Aeterna Awaits.</p>
+        <p className="text-grit">54 Chapters. One Memory. The King Awaits.</p>
       </div>
 
       {/* Book Selector */}

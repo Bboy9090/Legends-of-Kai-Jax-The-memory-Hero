@@ -275,7 +275,7 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({
           <div className="text-center min-w-[180px] lg:min-w-[220px]">
             <div className="bg-neutral-900/90 backdrop-blur-lg border-2 border-legendary-gold/30 rounded-lg px-4 lg:px-6 py-3 shadow-lg">
               <p className="text-xs text-neutral-400 uppercase tracking-widest mb-1 font-bold">
-                THE COVENANT
+                THE MEMORY KING
               </p>
               <div className="flex items-center justify-center gap-2">
                 <Clock size={18} className="text-white" />

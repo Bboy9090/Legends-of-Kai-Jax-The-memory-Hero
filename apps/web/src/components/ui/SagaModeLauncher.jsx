@@ -1,5 +1,5 @@
 /**
- * THE AETERNA COVENANT - SAGA MODE LAUNCHER
+ * LEGENDS OF KAI-JAX: THE MEMORY KING - SAGA MODE LAUNCHER
  * 54-Chapter Navigator with Bronx-Grit Styling
  * The 9-Book Cycle awaits.
  */
@@ -37,9 +37,9 @@ const SagaModeLauncher = ({ chapters, onSelect }) => {
         { id: 4, title: 'BOOK 4: THE VOID KING RISES', chapters: 6 },
         { id: 5, title: 'BOOK 5: THE MEMORY WAR', chapters: 6 },
         { id: 6, title: 'BOOK 6: THE BRONX ECHO', chapters: 6 },
-        { id: 7, title: 'BOOK 7: THE AETERNA AWAKENS', chapters: 6 },
+        { id: 7, title: 'BOOK 7: THE ARCHIVE AWAKENS', chapters: 6 },
         { id: 8, title: 'BOOK 8: THE FINAL RESONANCE', chapters: 6 },
-        { id: 9, title: 'BOOK 9: THE COVENANT', chapters: 6 }
+        { id: 9, title: 'BOOK 9: THE MEMORY KING', chapters: 6 }
     ];
 
     const currentBookChapters = chapters?.filter(c => 
@@ -57,7 +57,7 @@ const SagaModeLauncher = ({ chapters, onSelect }) => {
         <div className="saga-container">
             <div className="saga-header">
                 <h1 className="matte-mythic-text">THE 9-BOOK CYCLE</h1>
-                <p className="saga-subtitle">54 Chapters. One Memory Hero.</p>
+                <p className="saga-subtitle">54 Chapters. One Memory King.</p>
                 {saveInfo && saveInfo.exists && (
                     <div className="save-indicator">
                         <span>Last Save: {saveInfo.chapterId}</span>

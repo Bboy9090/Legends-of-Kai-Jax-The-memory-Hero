@@ -1,10 +1,10 @@
 // Updated Main Menu with Navigation
-// Path: apps/web/src/pages/AeternaMainMenu.tsx
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GameStateContext } from '@web/router/gameRouter';
 import '@web/styles/bronx_grit.css';
+import { BRAND } from '@web/lib/brand';
 
 interface MenuItem {
   label: string;
@@ -12,7 +12,7 @@ interface MenuItem {
   description: string;
 }
 
-const AeternaMainMenu: React.FC = () => {
+const MemoryKingMainMenu: React.FC = () => {
   const navigate = useNavigate();
   const { setState } = React.useContext(GameStateContext);
   const [selectedIndex, setSelectedIndex] = React.useState(0);
@@ -79,16 +79,22 @@ const AeternaMainMenu: React.FC = () => {
 
       {/* Title */}
       <div className="text-center mb-12 relative z-10">
+        <img
+          src="/brand/memory-king-logo.svg"
+          alt={`${BRAND.title}: ${BRAND.subtitle}`}
+          className="mx-auto mb-6 w-[360px] sm:w-[480px] drop-shadow-[0_0_35px_rgba(255,215,0,0.35)]"
+          draggable={false}
+        />
         <h1 className="text-legendary text-6xl mb-2 tracking-widest font-black" style={{ 
           textShadow: '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.6)',
           background: 'linear-gradient(180deg, #FFD700 0%, #FFA500 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent'
         }}>
-          THE AETERNA COVENANT
+          {BRAND.title}
         </h1>
-        <h2 className="text-mono-small text-amber-400 mb-4 text-2xl font-bold">THE MEMORY HERO</h2>
-        <p className="text-grit text-sm text-gray-300">FORGED IN THE BRONX. MASTERED IN THE SILENCE.</p>
+        <h2 className="text-mono-small text-amber-300 mb-4 text-2xl font-bold">{BRAND.subtitle}</h2>
+        <p className="text-grit text-sm text-gray-300">{BRAND.shortTagline}</p>
       </div>
 
       {/* Menu Items */}
@@ -119,10 +125,10 @@ const AeternaMainMenu: React.FC = () => {
       {/* Footer */}
       <div className="absolute bottom-4 text-center text-grit text-xs w-full">
         <p>THE SOURCE REMEMBERS UNITY</p>
-        <p className="text-gray-600 mt-1">© 2026 AETERNA COVENANT</p>
+        <p className="text-gray-600 mt-1">© 2026 {BRAND.title}</p>
       </div>
     </div>
   );
 };
 
-export default AeternaMainMenu;
+export default MemoryKingMainMenu;

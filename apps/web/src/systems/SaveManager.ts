@@ -1,7 +1,7 @@
 /**
- * THE AETERNA COVENANT - SAVE MANAGER
+ * LEGENDS OF KAI-JAX: THE MEMORY KING - SAVE MANAGER
  * Memory Slot 1 - Versioned Checkpoints (CP_A through CP_D)
- * The Aeterna remembers. The Source does not forget.
+ * The Archive remembers. The Source does not forget.
  */
 
 export interface SaveData {
@@ -16,7 +16,7 @@ export interface SaveData {
 }
 
 export class SaveManager {
-    private readonly SLOT_KEY = 'AETERNA_SLOT_1';
+    private readonly SLOT_KEY = 'MEMORY_KING_SLOT_1';
     private readonly VERSION = '1.0.0';
     private readonly CHECKPOINTS = ['CP_A', 'CP_B', 'CP_C', 'CP_D'];
 

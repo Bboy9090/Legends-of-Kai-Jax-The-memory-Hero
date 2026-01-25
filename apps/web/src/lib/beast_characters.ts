@@ -2,14 +2,13 @@
  * BEAST CHARACTERS - BRONX BORN MYTHICAL REFORGED
  * 
  * Complete character roster using legendary beast hybrids:
- * - No Super Smash references
  * - All unique beast combinations
  * - Bronx-inspired names
  * - Coolest, most wanted hybrids
  */
 
-import { COMPLETE_BEAST_ROSTER, type LegendaryBeast } from '@legends-of-kai-jax/shared';
-import { getNameWithTitle } from '@legends-of-kai-jax/shared';
+import { COMPLETE_BEAST_ROSTER, type LegendaryBeast } from '@beast-kin/shared';
+import { getNameWithTitle } from '@beast-kin/shared';
 
 export interface BeastFighter {
   id: string;
@@ -44,8 +43,7 @@ function convertToBeastFighter(beast: LegendaryBeast, category: BeastFighter['ca
     archetype: beast.beastHybrid,
     role: beast.role,
     category,
-    unlocked: true, // 🦅 ALL CHARACTERS PLAYABLE - Beast Wars Unlocked!
-    unlockRequirement: beast.unlock.book * 1000 + beast.unlock.chapter * 100,
+    unlocked: true, // ALL CHARACTERS PLAYABLE
     bookUnlock: beast.unlock.book,
     beastHybrid: beast.beastHybrid,
     visualFeatures: beast.visual.features,

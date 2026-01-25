@@ -237,7 +237,7 @@ const SovereigntyUI = () => {
             }`} 
           />
           <span className="text-[8px] font-bold tracking-[0.4em] text-neutral-500 uppercase">
-            Aeterna Protocol Active
+            Memory King Protocol Active
           </span>
           {dread > 70 && (
             <span className="text-[7px] text-red-500 font-bold uppercase tracking-wider">

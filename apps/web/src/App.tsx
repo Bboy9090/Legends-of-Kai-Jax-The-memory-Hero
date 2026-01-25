@@ -18,6 +18,7 @@ import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
 import { useAudio } from "./lib/stores/useAudio";
 import { FIGHTERS } from "./lib/characters";
+import { BRAND } from "./lib/brand";
 import { useEffect } from "react";
 
 // Define control keys for the game
@@ -89,7 +90,7 @@ function App() {
     const success = new Audio('/sounds/success.mp3');
     setSuccessSound(success);
 
-    console.log("⚡ THE AETERNA COVENANT - Audio initialized");
+    console.log(`⚡ ${BRAND.title} - Audio initialized`);
   }, [setBackgroundMusic, setBattleMusic, setHitSound, setSuccessSound]);
 
   // Play background music in menu states
