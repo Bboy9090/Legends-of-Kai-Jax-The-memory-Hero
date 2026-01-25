@@ -135,7 +135,7 @@ export default function Enemy({ enemy }: EnemyProps) {
   const getEnemyConfig = () => {
     switch (enemy.enemyType) {
       case "scuttle": return {
-        primaryColor: "#FF2222", // Bright red like classic Sonic badniks
+        primaryColor: "#FF2222", // Crimson threat
         accentColor: "#CC0000",  // Dark red
         glowColor: "#FF6666",    // Light red glow  
         eyeColor: "#000000"      // Black pupils
@@ -175,7 +175,7 @@ export default function Enemy({ enemy }: EnemyProps) {
   
   return (
     <group ref={meshRef} position={enemy.position}>
-      {/* Sonic-style rounded enemy body */}
+      {/* Beast-kin threat body */}
       <mesh castShadow receiveShadow>
         <capsuleGeometry args={[getEnemySize()[0] * 0.4, getEnemySize()[1] * 0.7]} />
         <meshToonMaterial 

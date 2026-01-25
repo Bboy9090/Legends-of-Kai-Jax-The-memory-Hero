@@ -298,7 +298,7 @@ export default function GameScene() {
         <Collectibles key={collectible.id} collectible={collectible} />
       ))}
       
-      {/* Web Anchor Points - for Spider-Man style swinging */}
+      {/* Web Anchor Points - for web-gear traversal */}
       {webAnchors.map(anchor => (
         <group key={anchor.id} position={anchor.position}>
           {/* Anchor point indicator */}

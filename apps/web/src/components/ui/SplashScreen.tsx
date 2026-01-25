@@ -5,19 +5,22 @@
 
 import { useState, useEffect } from 'react';
 import { Zap, Sparkles } from 'lucide-react';
+import { BRAND } from '../../lib/brand';
 
 interface SplashScreenProps {
   onComplete: () => void;
   title?: string;
   subtitle?: string;
   duration?: number;
+  backgroundImage?: string;
 }
 
 export default function SplashScreen({
   onComplete,
-  title = 'KAI-JAX',
-  subtitle = 'THE MEMORY HERO',
+  title = BRAND.title,
+  subtitle = BRAND.subtitle,
   duration = 1500,
+  backgroundImage = '/brand/kai-jax-vs-architect.png',
 }: SplashScreenProps) {
   const [phase, setPhase] = useState<'enter' | 'hold' | 'exit' | 'done'>('enter');
 
@@ -38,10 +41,18 @@ export default function SplashScreen({
 
   return (
     <div
-      className={`fixed inset-0 z-[9998] bg-gradient-to-br from-[#0a0a0f] via-purple-950 to-[#0a0a0f] flex items-center justify-center transition-opacity duration-500 ${
+      className={`fixed inset-0 z-[9998] flex items-center justify-center transition-opacity duration-500 ${
         phase === 'exit' ? 'opacity-0' : 'opacity-100'
       }`}
+      style={{
+        backgroundImage: `linear-gradient(135deg, rgba(10,10,15,0.92), rgba(25,5,45,0.80)), url('${backgroundImage}')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
     >
+      {/* Film grain / vignette */}
+      <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 180px rgba(0,0,0,0.85)' }} />
+
       {/* Animated particles */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(15)].map((_, i) => (
@@ -98,6 +109,10 @@ export default function SplashScreen({
             {subtitle}
           </p>
         )}
+
+        <p className="mt-3 text-xs sm:text-sm text-amber-200/80 font-semibold tracking-[0.25em] uppercase">
+          {BRAND.tagline}
+        </p>
 
         {/* Sparkles */}
         <div className="flex justify-center gap-2 mt-6">

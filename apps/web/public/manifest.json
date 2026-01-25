@@ -1,7 +1,7 @@
 {
-  "name": "Aeterna Covenant",
-  "short_name": "Aeterna",
-  "description": "PROJECT OMEGA: The Memory King's journey through the 9-book saga. Books 1-3: The Legends Era. Kai-Jax, Lunara Solis, and Umbra-Flux fight to save the Beast-Kin Sovereignty from the Architect's void.",
+  "name": "Legends of Kai-Jax: The Memory King",
+  "short_name": "Kai-Jax",
+  "description": "Legends of Kai-Jax: The Memory King — a Beast-Kin saga forged in the Bronx. Kai and Jax converge into Kai-Jax to face the Architect and end the war for memory itself.",
   "start_url": ".",
   "display": "standalone",
   "orientation": "landscape",
@@ -61,7 +61,7 @@
       "name": "Versus Mode",
       "short_name": "Versus",
       "description": "1v1 Beast-Kin combat",
-      "url": "/versus",
+      "url": "/versus-mode",
       "icons": [
         {
           "src": "/icons/versus-icon.png",

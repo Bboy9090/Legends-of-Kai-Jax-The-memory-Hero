@@ -6,7 +6,8 @@ import { Points, PointMaterial } from "@react-three/drei";
 
 import { useRunner } from "../../lib/stores/useRunner";
 import { getAccessoryById } from "../../lib/cosmetics";
-import HedgehogModel from "./HedgehogModel";
+import { getFighterById, FIGHTERS } from "../../lib/characters";
+import ProceduralBeastModel from "./models/ProceduralBeastModel";
 
 export default function Player() {
   const { player, selectedCharacter, equippedCosmetics } = useRunner();
@@ -28,33 +29,13 @@ export default function Player() {
     config: { tension: 400, friction: 40 }
   });
   
-  // Superhero character color schemes - Spider-Man meets Sonic
-  const characterConfig = {
-    jaxon: {
-      primaryColor: "#DC143C", // Deep Crimson Red
-      accentColor: "#0D0D0D", // Obsidian Black
-      glowColor: "#DC143C",   // Crimson glow
-      particleColor: "#8B008B", // Purple energy
-      muzzleColor: "#FFE4B5", // Cream/peach muzzle
-      eyeColor: "#FFFFFF",    // White eye background
-      pupilColor: "#FFD700",   // FIERY GOLD pupils
-      gloveColor: "#36454F",   // Charcoal gray gauntlets
-      shoeColor: "#36454F"     // Charcoal Gray shoes (NOT black)
-    },
-    kaison: {
-      primaryColor: "#00CED1", // Vibrant Cyan/Turquoise
-      accentColor: "#FF6F00", // Electric Orange
-      glowColor: "#00CED1",   // Cyan glow
-      particleColor: "#FF6F00", // Electric Orange particles
-      muzzleColor: "#FFE4B5", // Cream/peach muzzle
-      eyeColor: "#FFFFFF",    // White eye background
-      pupilColor: "#00FF00",   // BRIGHT GREEN pupils
-      gloveColor: "#C0C0C0",   // Silver gloves
-      shoeColor: "#C0C0C0"     // SILVER shoes (NOT orange)
-    }
+  const fighter = getFighterById(selectedCharacter) || FIGHTERS[0]!;
+  const config = {
+    primaryColor: fighter.color,
+    accentColor: fighter.accentColor,
+    glowColor: fighter.accentColor,
+    particleColor: fighter.accentColor,
   };
-  
-  const config = characterConfig[selectedCharacter] || characterConfig.jaxon; // Fallback to Jaxon if undefined
   
   // Track animation time for effects
   const animationTimeRef = useRef(0);
@@ -123,13 +104,9 @@ export default function Player() {
   return (
     <animated.group position={position as any}>
       <animated.group scale={scale as any} rotation={rotation as any}>
-        {/* Professional 3D Character Model */}
+        {/* Beast-kin Character Model (no legacy hero assets) */}
         <group ref={modelRef}>
-          <HedgehogModel
-            primaryColor={config.primaryColor}
-            accentColor={config.accentColor}
-            glowColor={config.glowColor}
-          />
+          <ProceduralBeastModel fighter={fighter} />
         </group>
         
         {/* Power Effects Particles */}

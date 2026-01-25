@@ -14,11 +14,11 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
   const [fadeOut, setFadeOut] = useState(false);
   
   const tips = [
-    { icon: Zap, text: "Build SYNERGY by landing combos to transform into KAI-JAX!" },
+    { icon: Zap, text: "Build SYNERGY by landing combos—then unleash the Memory King." },
     { icon: Swords, text: "Chain attacks together for devastating combos!" },
-    { icon: Crown, text: "KAI-JAX form grants 1.5x damage and extended range!" },
+    { icon: Crown, text: "Kai‑Jax (Memory King) hits harder—control space and end rounds fast." },
     { icon: Star, text: "Perfect timing on attacks increases synergy gain!" },
-    { icon: Sparkles, text: "The fusion timer lasts 30 seconds - make them count!" },
+    { icon: Sparkles, text: "Fusion lasts 30 seconds—make every hit count." },
   ];
   
   useEffect(() => {
@@ -57,12 +57,15 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
         ${fadeOut ? 'opacity-0' : 'opacity-100'}
       `}
       style={{
-        background: `
-          radial-gradient(ellipse at center, rgba(30,10,60,0.9) 0%, rgba(10,10,30,0.95) 100%),
-          linear-gradient(180deg, #0a0a1a 0%, #1a0a3a 100%)
+        backgroundImage: `
+          linear-gradient(135deg, rgba(10,10,15,0.92), rgba(25,5,45,0.80)),
+          url('/brand/kai-jax-vs-architect.png')
         `,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
       }}
     >
+      <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 220px rgba(0,0,0,0.85)' }} />
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(30)].map((_, i) => (
@@ -137,7 +140,7 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-end gap-8 opacity-30">
         <div className="text-6xl transform -scale-x-100">🐺</div>
         <div className="text-8xl">👑</div>
-        <div className="text-6xl">🐉</div>
+        <div className="text-6xl">🦊</div>
       </div>
       
       <style>{`

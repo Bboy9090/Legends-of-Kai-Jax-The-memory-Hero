@@ -1,9 +1,9 @@
 /**
- * THE AETERNA COVENANT - SERVICE WORKER
- * Offline Shield - The Aeterna remembers even when disconnected
+ * LEGENDS OF KAI-JAX: THE MEMORY KING - SERVICE WORKER
+ * Offline Shield - The Archive remembers even when disconnected
  */
 
-const CACHE = 'aeterna-v1';
+const CACHE = 'memory-king-v1';
 const CACHE_URLS = [
   '/',
   '/index.html',
@@ -14,7 +14,7 @@ const CACHE_URLS = [
 
 // Install event - Cache resources
 self.addEventListener('install', (e) => {
-  console.log('[SW] Installing Aeterna Covenant Service Worker...');
+  console.log('[SW] Installing Memory King Service Worker...');
   e.waitUntil(
     caches.open(CACHE).then((cache) => {
       console.log('[SW] Caching resources...');
@@ -28,7 +28,7 @@ self.addEventListener('install', (e) => {
 
 // Activate event - Clean old caches
 self.addEventListener('activate', (e) => {
-  console.log('[SW] Activating Aeterna Covenant Service Worker...');
+  console.log('[SW] Activating Memory King Service Worker...');
   e.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(

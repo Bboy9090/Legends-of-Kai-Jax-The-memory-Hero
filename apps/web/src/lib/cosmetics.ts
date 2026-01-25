@@ -16,9 +16,9 @@ export const ACCESSORIES: Accessory[] = [
   // Hats
   {
     id: 'cap_red',
-    name: 'Hero Cap',
+    name: 'Bronx Cap',
     type: 'hat',
-    description: 'Classic superhero baseball cap',
+    description: 'Street-worn cap from the Bronx grit line',
     unlockRequirement: 0, // Default unlocked
     characterCompatible: ['both'],
     color: '#DC143C',
@@ -75,9 +75,9 @@ export const ACCESSORIES: Accessory[] = [
   // Capes
   {
     id: 'cape_hero',
-    name: 'Hero Cape',
+    name: 'Memory Cloak',
     type: 'cape',
-    description: 'Classic superhero cape',
+    description: 'A cloak woven with memory-thread patterns',
     unlockRequirement: 2000,
     characterCompatible: ['both'],
     color: '#DC143C',

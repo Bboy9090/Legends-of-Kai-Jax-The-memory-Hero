@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useBattle } from "../../lib/stores/useBattle";
 import { Zap, Sparkles, Star } from "lucide-react";
+import { BRAND } from "../../lib/brand";
 
 // ⚡ LEGENDARY TRANSFORMATION OVERLAY
 // This component shows the epic Kai-Jax fusion sequence!
@@ -137,7 +138,7 @@ export default function TransformationOverlay() {
               <span className="text-lg font-black text-white">FUSION READY!</span>
               <div className="flex items-center gap-2 text-sm text-yellow-100">
                 <kbd className="px-2 py-0.5 bg-black/30 rounded font-bold">T</kbd>
-                <span>to Transform into KAI-JAX</span>
+                <span>to Crown the Memory King</span>
               </div>
             </div>
             <Zap className="w-6 h-6 text-white animate-pulse" />
@@ -175,7 +176,7 @@ export default function TransformationOverlay() {
                 <div className="flex items-center justify-center gap-4">
                   <span className="text-3xl">🦊</span>
                   <Zap className="w-10 h-10 text-yellow-400 animate-bounce" />
-                  <span className="text-3xl">🦔</span>
+                  <span className="text-3xl">🐺</span>
                 </div>
               </div>
             )}
@@ -193,10 +194,10 @@ export default function TransformationOverlay() {
                     filter: 'drop-shadow(0 0 30px rgba(255,215,0,0.8))',
                   }}
                 >
-                  KAI-JAX
+                  KAI‑JAX
                 </div>
                 <div className="text-2xl text-white font-bold tracking-widest">
-                  ⚡ THE MEMORY HERO AWAKENS ⚡
+                  ⚡ {BRAND.subtitle} AWAKENS ⚡
                 </div>
                 <div className="flex items-center justify-center gap-2 mt-4">
                   <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" />

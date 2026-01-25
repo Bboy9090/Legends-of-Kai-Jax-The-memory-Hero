@@ -151,8 +151,8 @@ function LegendaryLogo() {
       </div>
 
       {/* Subtitle */}
-      <p className="text-lg sm:text-xl text-cyan-300 mt-4 font-medium tracking-wide animate-pulse">
-        ⚡ THE LEGENDARY TOURNAMENT AWAITS ⚡
+      <p className="text-lg sm:text-xl text-cyan-200 mt-4 font-medium tracking-wide">
+        {BRAND.shortTagline}
       </p>
 
       <style>{`
@@ -257,9 +257,9 @@ function LegendaryButton({
 // 🏆 CHARACTER PREVIEW ICONS
 function CharacterPreviews() {
   const characters = [
-    { name: 'Jaxon', color: '#DC143C', accent: '#FF4500', symbol: '🦔' },
-    { name: 'Kaison', color: '#0066FF', accent: '#00E5FF', symbol: '🦊' },
-    { name: 'Kai-Jax', color: '#FFD700', accent: '#A855F7', symbol: '⚡' },
+    { name: 'Jaxon', color: '#1a1a1a', accent: '#00FF00', symbol: '⚡' },
+    { name: 'Kaison', color: '#FF8C00', accent: '#00F2FF', symbol: '🦊' },
+    { name: 'Kai‑Jax', color: '#0b1020', accent: '#FFD700', symbol: '👑' },
   ];
 
   return (
@@ -360,13 +360,19 @@ export default function MainMenu() {
         ${introComplete ? 'opacity-100' : 'opacity-0'}
       `}
       style={{
-        background: `
-          radial-gradient(ellipse at top, #1a1a2e 0%, transparent 50%),
-          radial-gradient(ellipse at bottom, #0f0f1a 0%, transparent 50%),
-          linear-gradient(180deg, #0a0a15 0%, #1a0a2e 50%, #0a1a2e 100%)
+        backgroundImage: `
+          radial-gradient(ellipse at top, rgba(26,10,46,0.85) 0%, rgba(0,0,0,0) 55%),
+          radial-gradient(ellipse at bottom, rgba(10,10,15,0.92) 0%, rgba(0,0,0,0) 55%),
+          linear-gradient(180deg, rgba(10,10,15,0.92) 0%, rgba(26,10,46,0.82) 50%, rgba(10,10,15,0.92) 100%),
+          url('/brand/kai-and-jax-before-merge.png')
         `,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
       }}
     >
+      {/* Cinematic vignette */}
+      <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 260px rgba(0,0,0,0.85)' }} />
+
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Gradient Orbs */}
@@ -483,7 +489,7 @@ export default function MainMenu() {
         {/* Version & Copyright */}
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-500">
-            v1.0 THE IRON-WILL EDITION • © 2026 LEGENDS OF KAI-JAX
+            v1.0 • © 2026 {BRAND.title}
           </p>
           <p className="text-xs text-gray-600 mt-1">
             "When two become one, the Memory King rises."

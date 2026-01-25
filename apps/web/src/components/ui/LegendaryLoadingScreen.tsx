@@ -6,12 +6,14 @@
 
 import { useState, useEffect } from 'react';
 import { Zap, Sparkles, Swords, Crown, Star, Flame, Shield, Trophy } from 'lucide-react';
+import { BRAND, getBrandFullTitle } from '../../lib/brand';
 
 interface LegendaryLoadingScreenProps {
   onComplete: () => void;
   duration?: number;
   message?: string;
   showProgress?: boolean;
+  backgroundImage?: string;
 }
 
 export default function LegendaryLoadingScreen({
@@ -19,20 +21,21 @@ export default function LegendaryLoadingScreen({
   duration = 2000,
   message,
   showProgress = true,
+  backgroundImage = '/brand/kai-and-jax-before-merge.png',
 }: LegendaryLoadingScreenProps) {
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<'loading' | 'complete' | 'done'>('loading');
   const [currentTip, setCurrentTip] = useState(0);
 
   const tips = [
-    { icon: Zap, text: 'Build SYNERGY by landing combos to transform into KAI-JAX!', color: 'from-yellow-400 to-orange-500' },
+    { icon: Zap, text: 'Build SYNERGY by landing combos—then unleash the Memory King.', color: 'from-yellow-400 to-orange-500' },
     { icon: Swords, text: 'Chain attacks together for devastating combos!', color: 'from-red-400 to-pink-500' },
-    { icon: Crown, text: 'KAI-JAX form grants 1.5x damage and extended range!', color: 'from-purple-400 to-indigo-500' },
+    { icon: Crown, text: 'Kai‑Jax (Memory King) hits harder—control space and end rounds fast.', color: 'from-purple-400 to-indigo-500' },
     { icon: Star, text: 'Perfect timing on attacks increases synergy gain!', color: 'from-cyan-400 to-blue-500' },
     { icon: Sparkles, text: 'The fusion timer lasts 30 seconds - make them count!', color: 'from-green-400 to-emerald-500' },
     { icon: Flame, text: 'Master flawless combat - arms, feet, punches, kicks!', color: 'from-orange-400 to-red-500' },
     { icon: Shield, text: 'Taunt, smirk, and encourage during battles!', color: 'from-blue-400 to-cyan-500' },
-    { icon: Trophy, text: 'Complete 30 Beast Wars missions to unlock all content!', color: 'from-amber-400 to-yellow-500' },
+    { icon: Trophy, text: 'Run the Saga. Learn the beasts. Crown the Memory King.', color: 'from-amber-400 to-yellow-500' },
   ];
 
   useEffect(() => {
@@ -68,7 +71,15 @@ export default function LegendaryLoadingScreen({
   const CurrentTipIcon = currentTipData.icon;
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-[#0a0a0f] via-purple-950 to-[#0a0a0f] flex items-center justify-center">
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      style={{
+        backgroundImage: `linear-gradient(135deg, rgba(10,10,15,0.90), rgba(25,5,45,0.78)), url('${backgroundImage}')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 220px rgba(0,0,0,0.85)' }} />
       {/* Animated background particles */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(20)].map((_, i) => (
@@ -110,14 +121,17 @@ export default function LegendaryLoadingScreen({
                 textShadow: '0 0 40px rgba(136, 208, 255, 0.8)',
               }}
             >
-              KAI-JAX
+              {BRAND.title}
             </h1>
           </div>
           <p
             className="text-2xl sm:text-3xl font-bold text-purple-300 mt-4"
             style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
           >
-            THE MEMORY HERO
+            {BRAND.subtitle}
+          </p>
+          <p className="text-xs text-amber-200/80 font-semibold tracking-[0.25em] uppercase mt-3">
+            {BRAND.tagline}
           </p>
         </div>
 
@@ -157,7 +171,7 @@ export default function LegendaryLoadingScreen({
 
         {/* UEE Branding */}
         <p className="text-xs text-amber-400/70 font-semibold tracking-wider uppercase mt-8">
-          Ultimate Entertainment Enterprises
+          {getBrandFullTitle()}
         </p>
       </div>
 
