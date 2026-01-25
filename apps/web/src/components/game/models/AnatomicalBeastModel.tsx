@@ -307,12 +307,14 @@ export default function AnatomicalBeastModel({
 
   const furColor = has("charcoal_fur") ? "#1a1a1a" : primary;
   const clothColor = hasTacticalJacket ? "#0b1020" : primary;
-  const hasCinematicJacket =
-    hasTacticalJacket || presetOverride != null || kind === "wolf" || kind === "fox" || kind === "cat";
+  const isHeroTrio = fighter.id === "jaxon" || fighter.id === "kaison" || fighter.id === "kai-jax";
+  // Keep “hero jacket/armor” ONLY for heroes / explicit jacket DNA.
+  // Applying it to all wolves/foxes makes everyone read like blocky robot armor.
+  const hasCinematicJacket = hasTacticalJacket || fighter.id === "jaxon" || fighter.id === "kaison";
 
   // “Fusion core” like the reference art: bright chest energy.
   const hasFusionCore =
-    fighter.id === "kai-jax" || hasInternalNebulae || hasElectricAura || hasThreeMemoryTails || presetOverride != null;
+    fighter.id === "kai-jax" || hasInternalNebulae || hasElectricAura || hasThreeMemoryTails;
 
   // Big aura ribbons/wings like the fused image.
   const hasAuraWings = fighter.id === "kai-jax" || hasThreeMemoryTails || hasInternalNebulae;
@@ -346,10 +348,11 @@ export default function AnatomicalBeastModel({
     if (k === "cat") return { kind: k, ...base, skull: { sx: 1.05, sy: 0.96, sz: 1.05, amp: 0.05, freq: 3.2 }, muzzle: { len: 0.82, amp: 0.045, freq: 3.8 }, ear: { h: 0.95, w: 0.95, amp: 0.035, freq: 3.2 } };
     if (k === "boar") return { kind: k, ...base, skull: { sx: 1.15, sy: 1.02, sz: 1.2, amp: 0.065, freq: 2.4 }, muzzle: { len: 0.95, amp: 0.055, freq: 3.0 }, ear: { h: 0.75, w: 0.95, amp: 0.03, freq: 3.0 }, material: { roughness: 0.78, metalness: 0.10 } };
     if (k === "turtle") return { kind: k, ...base, skull: { sx: 0.98, sy: 0.9, sz: 1.08, amp: 0.05, freq: 2.8 }, muzzle: { len: 0.7, amp: 0.04, freq: 3.0 }, ear: { h: 0.2, w: 0.2, amp: 0.0, freq: 1.0 }, material: { roughness: 0.58, metalness: 0.16 } };
-    if (k === "dragon") return { kind: k, ...base, skull: { sx: 1.1, sy: 1.0, sz: 1.28, amp: 0.075, freq: 2.2 }, muzzle: { len: 1.2, amp: 0.06, freq: 2.6 }, material: { roughness: 0.52, metalness: 0.20 } };
+    // Keep dragons/reptiles organic (too much metal reads “robot”)
+    if (k === "dragon") return { kind: k, ...base, skull: { sx: 1.1, sy: 1.0, sz: 1.28, amp: 0.075, freq: 2.2 }, muzzle: { len: 1.2, amp: 0.06, freq: 2.6 }, material: { roughness: 0.62, metalness: 0.06 } };
     if (k === "bird") return { kind: k, ...base, skull: { sx: 0.95, sy: 0.9, sz: 1.05, amp: 0.05, freq: 3.0 }, material: { roughness: 0.7, metalness: 0.1 } };
-    if (k === "reptile") return { kind: k, ...base, skull: { sx: 1.05, sy: 0.9, sz: 1.28, amp: 0.06, freq: 2.4 }, material: { roughness: 0.62, metalness: 0.16 } };
-    if (k === "spider") return { kind: k, ...base, skull: { sx: 1.0, sy: 0.9, sz: 1.15, amp: 0.06, freq: 3.4 }, material: { roughness: 0.38, metalness: 0.26 } };
+    if (k === "reptile") return { kind: k, ...base, skull: { sx: 1.05, sy: 0.9, sz: 1.28, amp: 0.06, freq: 2.4 }, material: { roughness: 0.66, metalness: 0.05 } };
+    if (k === "spider") return { kind: k, ...base, skull: { sx: 1.0, sy: 0.9, sz: 1.15, amp: 0.06, freq: 3.4 }, material: { roughness: 0.48, metalness: 0.10 } };
     return { kind: k, ...base };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [featureKey, kind]);
@@ -527,8 +530,8 @@ export default function AnatomicalBeastModel({
 
   const scaleMat = useMemo(
     () => ({
-      roughness: preset.kind === "dragon" ? 0.48 : 0.55,
-      metalness: preset.kind === "dragon" ? 0.22 : 0.18,
+      roughness: preset.kind === "dragon" ? 0.62 : 0.65,
+      metalness: preset.kind === "dragon" ? 0.06 : 0.05,
       clearcoat: 0.55,
       clearcoatRoughness: 0.35,
     }),
@@ -537,8 +540,8 @@ export default function AnatomicalBeastModel({
 
   const chitinMat = useMemo(
     () => ({
-      roughness: 0.35,
-      metalness: 0.28,
+      roughness: 0.48,
+      metalness: 0.12,
       clearcoat: 0.65,
       clearcoatRoughness: 0.28,
     }),
@@ -819,8 +822,16 @@ export default function AnatomicalBeastModel({
     }
   });
 
+  const modelScale = useMemo(() => {
+    if (fighter.id === "kai-jax") return 2.85;
+    if (isDragon) return 2.65;
+    if (isBird) return 2.55;
+    if (isTurtle) return 2.45;
+    return 2.5;
+  }, [fighter.id, isBird, isDragon, isTurtle]);
+
   return (
-    <group ref={groupRef} scale={[3.25, 3.25, 3.25]}>
+    <group ref={groupRef} scale={[modelScale, modelScale, modelScale]}>
       <group ref={bodyRef} position={[0, 0.40, 0]}>
         {/* Chest + pelvis (animal proportions) */}
         <mesh castShadow receiveShadow position={[0, 0.18, 0.02]} geometry={chestGeo}>
@@ -936,8 +947,8 @@ export default function AnatomicalBeastModel({
               <sphereGeometry args={[0.10, 16, 12]} />
               <meshStandardMaterial color={furColor} roughness={0.88} metalness={0.06} />
             </mesh>
-            <mesh position={[0, -0.05, 0.04]} castShadow>
-              <boxGeometry args={[0.18, 0.24, 0.06]} />
+            <mesh position={[0, -0.05, 0.04]} castShadow scale={[1.35, 1.0, 0.75]}>
+              <capsuleGeometry args={[0.055, 0.14, 8, 12]} />
               <meshStandardMaterial color={"#07070b"} roughness={0.85} metalness={0.12} emissive={accent} emissiveIntensity={0.03} />
             </mesh>
           </group>
@@ -1295,7 +1306,7 @@ export default function AnatomicalBeastModel({
             <meshStandardMaterial color={"#0b1020"} roughness={0.78} metalness={0.18} />
           </mesh>
           {/* Boot/greave (more “hero” silhouette) */}
-          {!isTurtle && (
+          {hasCinematicJacket && !isTurtle && (
             <mesh position={[0.06, -0.50, 0.30]} rotation={[0.08, 0, 0]} castShadow geometry={bootGeo}>
               <meshStandardMaterial color={"#050508"} roughness={0.55} metalness={0.28} emissive={jacketTrim} emissiveIntensity={0.06} />
             </mesh>
@@ -1324,7 +1335,7 @@ export default function AnatomicalBeastModel({
           <mesh position={[-0.05, -0.48, 0.28]} rotation={[0.10, 0, 0]} castShadow geometry={footGeo}>
             <meshStandardMaterial color={"#0b1020"} roughness={0.78} metalness={0.18} />
           </mesh>
-          {!isTurtle && (
+          {hasCinematicJacket && !isTurtle && (
             <mesh position={[-0.06, -0.50, 0.30]} rotation={[0.08, 0, 0]} castShadow geometry={bootGeo}>
               <meshStandardMaterial color={"#050508"} roughness={0.55} metalness={0.28} emissive={jacketTrim} emissiveIntensity={0.06} />
             </mesh>
