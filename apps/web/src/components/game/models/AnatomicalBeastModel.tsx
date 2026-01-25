@@ -319,6 +319,121 @@ export default function AnatomicalBeastModel({
   // Big aura ribbons/wings like the fused image.
   const hasAuraWings = fighter.id === "kai-jax" || hasThreeMemoryTails || hasInternalNebulae;
 
+  const stats = fighter.baseStats ?? { power: 82, speed: 82, defense: 82, gravity: 9.8 };
+
+  const silhouette = useMemo(() => {
+    // Normalize 60..100 → 0..1
+    const n = (v: number) => THREE.MathUtils.clamp((v - 60) / 40, 0, 1);
+    const bulk = n((stats.power + stats.defense) * 0.5); // 0..1
+    const agile = n(stats.speed); // 0..1
+
+    const lerp = THREE.MathUtils.lerp;
+
+    // Base (biped beast), then kind tweaks.
+    let torsoW = lerp(1.05, 1.26, bulk) * lerp(1.06, 0.98, agile);
+    let torsoH = lerp(1.08, 1.20, bulk) * lerp(1.02, 1.10, agile);
+    let torsoD = lerp(1.02, 1.22, bulk);
+
+    let hipW = lerp(1.02, 1.18, bulk) * lerp(1.04, 0.96, agile);
+    let hipH = lerp(1.00, 1.10, bulk) * lerp(1.00, 1.05, agile);
+    let hipD = lerp(1.06, 1.24, bulk);
+
+    let head = lerp(0.96, 1.10, bulk) * lerp(1.05, 0.95, agile);
+    let limbLen = lerp(0.96, 1.06, bulk) * lerp(1.02, 1.20, agile);
+    let limbRad = lerp(0.92, 1.22, bulk) * lerp(1.00, 0.88, agile);
+    let paw = lerp(0.94, 1.16, bulk);
+
+    let tailLen = lerp(0.95, 1.05, bulk) * lerp(1.05, 1.15, agile);
+    let tailRad = lerp(0.92, 1.15, bulk);
+
+    let spineScale = lerp(0.85, 1.15, bulk) * lerp(1.0, 1.12, agile);
+
+    if (isBird) {
+      // Birds: keel chest + slimmer hips + longer legs/arms see “avian”, not “robot barrel”
+      torsoW *= 0.92;
+      torsoD *= 0.88;
+      torsoH *= 1.05;
+      hipW *= 0.90;
+      hipD *= 0.90;
+      head *= 0.92;
+      limbLen *= 1.10;
+      limbRad *= 0.88;
+      tailLen *= 0.85;
+    }
+
+    if (isDragon) {
+      // Dragons: longer body/depth + heavier tail base; keep head a bit larger.
+      torsoD *= 1.14;
+      torsoW *= 1.06;
+      hipD *= 1.12;
+      head *= 1.08;
+      tailLen *= 1.20;
+      tailRad *= 1.12;
+      limbRad *= 1.02;
+    }
+
+    if (isReptile && !isDragon) {
+      torsoD *= 1.10;
+      hipD *= 1.08;
+      head *= 1.02;
+      tailLen *= 1.18;
+      tailRad *= 1.08;
+    }
+
+    if (isBoar) {
+      // Boar: bulk forward + bigger hips
+      torsoW *= 1.10;
+      torsoD *= 1.18;
+      hipW *= 1.12;
+      hipD *= 1.12;
+      head *= 1.06;
+      paw *= 1.10;
+      limbRad *= 1.12;
+    }
+
+    if (isSpider) {
+      // Spider: lower profile, more compact torso, thinner arms/legs (extra legs do the identity)
+      torsoW *= 0.95;
+      torsoH *= 0.92;
+      torsoD *= 1.02;
+      hipW *= 0.95;
+      hipH *= 0.90;
+      head *= 0.92;
+      limbRad *= 0.86;
+      tailLen *= 0.80;
+      spineScale *= 0.90;
+    }
+
+    if (isTurtle) {
+      torsoW *= 1.05;
+      torsoH *= 0.92;
+      torsoD *= 1.20;
+      hipW *= 1.05;
+      hipH *= 0.90;
+      hipD *= 1.18;
+      head *= 0.92;
+      limbLen *= 0.88;
+      limbRad *= 1.05;
+      tailLen *= 0.70;
+    }
+
+    return {
+      torsoW,
+      torsoH,
+      torsoD,
+      hipW,
+      hipH,
+      hipD,
+      head,
+      limbLen,
+      limbRad,
+      paw,
+      tailLen,
+      tailRad,
+      spineScale,
+    };
+  }, [isBird, isBoar, isDragon, isReptile, isSpider, isTurtle, stats.defense, stats.power, stats.speed]);
+
   const jacketMain = useMemo(() => {
     // Give Jaxon/Kaison a clear “blue/red jacket” vibe like the reference images
     if (fighter.id === "jaxon") return "#0b4dd8";
@@ -359,21 +474,28 @@ export default function AnatomicalBeastModel({
 
   const chestGeo = useMemo(() => {
     const base = new THREE.CapsuleGeometry(0.20, 0.22, 8, 16);
-    base.scale(1.15, 1.35, 1.0);
-    return displaceGeometry(base, seed + 11, { amp: preset.body.chestAmp, freq: preset.body.freq, normalPush: 1.0 });
-  }, [seed, preset.body.chestAmp, preset.body.freq]);
+    base.scale(1.05 * silhouette.torsoW, 1.12 * silhouette.torsoH, 0.95 * silhouette.torsoD);
+    // Keel hint for birds
+    const warped = isBird
+      ? warpGeometry(base, (v) => {
+          const keel = Math.exp(-Math.abs(v.x) * 7.0) * 0.04;
+          v.z += keel * (v.y > 0 ? 1.0 : 0.6);
+        })
+      : base;
+    return displaceGeometry(warped, seed + 11, { amp: preset.body.chestAmp, freq: preset.body.freq, normalPush: 1.0 });
+  }, [isBird, seed, preset.body.chestAmp, preset.body.freq, silhouette.torsoD, silhouette.torsoH, silhouette.torsoW]);
 
   const hipGeo = useMemo(() => {
     const base = new THREE.CapsuleGeometry(0.16, 0.18, 8, 16);
-    base.scale(1.10, 1.15, 1.1);
+    base.scale(1.02 * silhouette.hipW, 1.02 * silhouette.hipH, 1.05 * silhouette.hipD);
     return displaceGeometry(base, seed + 29, { amp: preset.body.hipAmp, freq: preset.body.freq, normalPush: 1.0 });
-  }, [seed, preset.body.hipAmp, preset.body.freq]);
+  }, [seed, preset.body.hipAmp, preset.body.freq, silhouette.hipD, silhouette.hipH, silhouette.hipW]);
 
   const skullGeo = useMemo(() => {
     const base = new THREE.IcosahedronGeometry(0.22, 4);
-    base.scale(preset.skull.sx, preset.skull.sy, preset.skull.sz);
+    base.scale(preset.skull.sx * silhouette.head, preset.skull.sy * silhouette.head, preset.skull.sz * silhouette.head);
     return displaceGeometry(base, seed + 101, { amp: preset.skull.amp, freq: preset.skull.freq, normalPush: 1.0 });
-  }, [seed, preset.skull.amp, preset.skull.freq, preset.skull.sx, preset.skull.sy, preset.skull.sz]);
+  }, [seed, preset.skull.amp, preset.skull.freq, preset.skull.sx, preset.skull.sy, preset.skull.sz, silhouette.head]);
 
   const muzzleGeo = useMemo(() => {
     const base = new THREE.CapsuleGeometry(0.06, 0.16, 6, 12);
@@ -495,28 +617,28 @@ export default function AnatomicalBeastModel({
   }, [seed]);
 
   const limbUpperGeo = useMemo(() => {
-    const base = new THREE.CapsuleGeometry(0.07, 0.22, 8, 14);
+    const base = new THREE.CapsuleGeometry(0.07 * silhouette.limbRad, 0.22 * silhouette.limbLen, 8, 14);
     base.scale(1.0, preset.kind === "bird" ? 0.85 : 1.0, preset.kind === "spider" ? 0.85 : 1.0);
     return displaceGeometry(base, seed + 701, { amp: 0.03, freq: 3.6, normalPush: 0.85, clamp: 0.07 });
-  }, [preset.kind, seed]);
+  }, [preset.kind, seed, silhouette.limbLen, silhouette.limbRad]);
 
   const limbLowerGeo = useMemo(() => {
-    const base = new THREE.CapsuleGeometry(0.055, 0.20, 8, 14);
+    const base = new THREE.CapsuleGeometry(0.055 * silhouette.limbRad, 0.20 * (silhouette.limbLen * 1.04), 8, 14);
     base.scale(1.0, preset.kind === "bird" ? 0.85 : 1.0, preset.kind === "spider" ? 0.85 : 1.0);
     return displaceGeometry(base, seed + 719, { amp: 0.028, freq: 3.9, normalPush: 0.85, clamp: 0.06 });
-  }, [preset.kind, seed]);
+  }, [preset.kind, seed, silhouette.limbLen, silhouette.limbRad]);
 
   const pawGeo = useMemo(() => {
     const base = new THREE.IcosahedronGeometry(0.085, 3);
-    base.scale(1.25, 0.95, 1.35);
+    base.scale(1.10 * silhouette.paw, 0.90 * silhouette.paw, 1.20 * silhouette.paw);
     return displaceGeometry(base, seed + 733, { amp: 0.035, freq: 3.4, normalPush: 1.0, clamp: 0.08 });
-  }, [seed]);
+  }, [seed, silhouette.paw]);
 
   const footGeo = useMemo(() => {
     const base = new THREE.IcosahedronGeometry(0.105, 3);
-    base.scale(1.35, 0.85, 1.65);
+    base.scale(1.10 * silhouette.paw, 0.80 * silhouette.paw, 1.38 * silhouette.paw);
     return displaceGeometry(base, seed + 747, { amp: 0.04, freq: 3.2, normalPush: 1.0, clamp: 0.09 });
-  }, [seed]);
+  }, [seed, silhouette.paw]);
 
   const furMat = useMemo(() => {
     return {
@@ -1401,17 +1523,17 @@ export default function AnatomicalBeastModel({
             {Array.from({ length: quillCount || 6 }).map((_, i) => (
               <mesh
                 key={i}
-                position={[0, 0.02 + i * 0.03, -0.02 - i * 0.05]}
+                position={[0, 0.02 + i * 0.03 * silhouette.spineScale, -0.02 - i * 0.05 * silhouette.spineScale]}
                 rotation={[Math.PI / 2.55, 0, 0]}
                 castShadow
               >
-                <coneGeometry args={[0.028, 0.18 + i * 0.03, 5]} />
+                <coneGeometry args={[0.024 * silhouette.spineScale, (0.16 + i * 0.03) * silhouette.spineScale, 5]} />
                 <meshStandardMaterial
                   color={accent}
                   emissive={accent}
-                  emissiveIntensity={0.22}
-                  roughness={0.35}
-                  metalness={0.35}
+                  emissiveIntensity={0.18}
+                  roughness={0.55}
+                  metalness={0.08}
                 />
               </mesh>
             ))}
@@ -1445,11 +1567,11 @@ export default function AnatomicalBeastModel({
         {!hasThreeMemoryTails && hasTails && !hasTwinMechTails && (
           <group position={[0, 0.14, -0.22]}>
             <mesh position={[0, 0.0, -0.10]} rotation={[0.5, 0, 0]} castShadow>
-              <capsuleGeometry args={[0.035, 0.26, 6, 10]} />
+              <capsuleGeometry args={[0.030 * silhouette.tailRad, 0.24 * silhouette.tailLen, 6, 10]} />
               <meshStandardMaterial color={furColor} roughness={0.85} metalness={0.1} />
             </mesh>
             <mesh position={[0, -0.12, -0.26]} castShadow>
-              <dodecahedronGeometry args={[0.05, 0]} />
+              <dodecahedronGeometry args={[0.045 * silhouette.tailRad, 0]} />
               <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.55} roughness={0.3} />
             </mesh>
           </group>
