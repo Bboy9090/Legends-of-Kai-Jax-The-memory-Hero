@@ -246,11 +246,12 @@ export default function CinematicPostFX({
     if (!shouldEnable) return;
 
     failedRef.current = false;
+    let composer: EffectComposer | null = null;
     try {
       // Capture baseline exposure once (lets us do real “camera flash” on hits)
       if (baseExposureRef.current == null) baseExposureRef.current = (gl as any).toneMappingExposure ?? 1.0;
 
-      const composer = new EffectComposer(gl);
+      composer = new EffectComposer(gl);
       composerRef.current = composer;
       composer.setSize(size.width, size.height);
       composer.setPixelRatio(q.pixelRatio);
@@ -338,7 +339,7 @@ export default function CinematicPostFX({
       filmRef.current = null;
       raysRef.current = null;
       sharpenRef.current = null;
-      composer.dispose();
+      composer?.dispose();
     };
   }, [camera, coreRaysShader, enabled, gl, gradeShader, scene, sharpenShader, size.height, size.width]);
 
