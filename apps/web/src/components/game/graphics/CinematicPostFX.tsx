@@ -9,7 +9,7 @@ import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { FilmPass } from "three/examples/jsm/postprocessing/FilmPass.js";
 import { VignetteShader } from "three/examples/jsm/shaders/VignetteShader.js";
 import { RGBShiftShader } from "three/examples/jsm/shaders/RGBShiftShader.js";
-import { getQualitySettings } from "../../../lib/threejs/PerformanceOptimizer";
+import { getDeviceType, getQualitySettings } from "../../../lib/threejs/PerformanceOptimizer";
 
 export default function CinematicPostFX({
   enabled = true,
@@ -40,6 +40,7 @@ export default function CinematicPostFX({
   const initRef = useRef(false);
   const baseExposureRef = useRef<number | null>(null);
   const failedRef = useRef(false);
+  const postFxPixelRatioRef = useRef<number>(1);
 
   const gradeShader = useMemo(() => {
     return {
@@ -242,6 +243,7 @@ export default function CinematicPostFX({
 
   useEffect(() => {
     const q = getQualitySettings();
+    const deviceType = getDeviceType();
     const shouldEnable = enabled && q.postProcessing;
     if (!shouldEnable) return;
 
@@ -251,18 +253,30 @@ export default function CinematicPostFX({
       // Capture baseline exposure once (lets us do real “camera flash” on hits)
       if (baseExposureRef.current == null) baseExposureRef.current = (gl as any).toneMappingExposure ?? 1.0;
 
+      // PostFX is expensive: cap its internal resolution to avoid crashes and blown highlights.
+      // (We keep the main renderer pixelRatio untouched; this only affects post passes.)
+      const postFxPixelRatio = Math.min(q.pixelRatio, deviceType === "desktop" ? 1.5 : 1.25);
+      postFxPixelRatioRef.current = postFxPixelRatio;
+
       composer = new EffectComposer(gl);
       composerRef.current = composer;
       composer.setSize(size.width, size.height);
-      composer.setPixelRatio(q.pixelRatio);
+      composer.setPixelRatio(postFxPixelRatio);
 
       const renderPass = new RenderPass(scene, camera);
       composer.addPass(renderPass);
 
-      // Afterimage (anime ghost trails on impacts) — tuned dynamically in useFrame
-      const after = new AfterimagePass(0.0);
-      afterimageRef.current = after;
-      composer.addPass(after);
+      // Afterimage can be unstable on some GPUs (HalfFloat render targets).
+      // Keep it desktop-only and optional; if it fails, we skip it.
+      if (deviceType === "desktop") {
+        try {
+          const after = new AfterimagePass(0.0);
+          afterimageRef.current = after;
+          composer.addPass(after);
+        } catch {
+          afterimageRef.current = null;
+        }
+      }
 
       // Bloom (the “poster glow”)
       const bloom = new UnrealBloomPass(
@@ -307,13 +321,18 @@ export default function CinematicPostFX({
       filmRef.current = film;
       composer.addPass(film);
 
-      // Final sharpen (keeps beasts crisp under bloom)
-      const sharpen = new ShaderPass(sharpenShader as any);
-      sharpenRef.current = sharpen;
-      if (sharpen.uniforms?.uResolution?.value?.set) sharpen.uniforms.uResolution.value.set(size.width * q.pixelRatio, size.height * q.pixelRatio);
-      // base amount is tuned in useFrame (impact + grade)
-      if (sharpen.uniforms?.uAmount) sharpen.uniforms.uAmount.value = 0.0;
-      composer.addPass(sharpen);
+      // Final sharpen (nice, but not worth crashing) — desktop-only
+      if (deviceType === "desktop") {
+        const sharpen = new ShaderPass(sharpenShader as any);
+        sharpenRef.current = sharpen;
+        if (sharpen.uniforms?.uResolution?.value?.set)
+          sharpen.uniforms.uResolution.value.set(size.width * postFxPixelRatio, size.height * postFxPixelRatio);
+        // base amount is tuned in useFrame (impact + grade)
+        if (sharpen.uniforms?.uAmount) sharpen.uniforms.uAmount.value = 0.0;
+        composer.addPass(sharpen);
+      } else {
+        sharpenRef.current = null;
+      }
     } catch (err) {
       // If postFX fails (device/driver differences), fall back to default R3F rendering
       failedRef.current = true;
@@ -350,35 +369,35 @@ export default function CinematicPostFX({
     const acc = new THREE.Color(accent);
     pass.uniforms.uTint.value = acc;
 
-    // default
-    pass.uniforms.uLift.value.set(0.0, 0.0, 0.0);
+    // default (lift blacks a touch so arenas don’t crush to black)
+    pass.uniforms.uLift.value.set(0.015, 0.015, 0.015);
     pass.uniforms.uGamma.value.set(1.0, 1.0, 1.0);
     pass.uniforms.uGain.value.set(1.0, 1.0, 1.0);
-    pass.uniforms.uSaturation.value = 1.18;
-    pass.uniforms.uContrast.value = 1.14;
-    pass.uniforms.uIntensity.value = 0.85;
+    pass.uniforms.uSaturation.value = 1.12;
+    pass.uniforms.uContrast.value = 1.08;
+    pass.uniforms.uIntensity.value = 0.78;
     pass.uniforms.uCosmic.value = 0.0;
 
     if (grade === "ice") {
-      pass.uniforms.uLift.value.set(0.02, 0.04, 0.06);
-      pass.uniforms.uGamma.value.set(1.02, 1.03, 0.98);
-      pass.uniforms.uGain.value.set(0.95, 1.02, 1.12);
-      pass.uniforms.uSaturation.value = 1.25;
-      pass.uniforms.uContrast.value = 1.18;
-      pass.uniforms.uIntensity.value = 0.92;
+      pass.uniforms.uLift.value.set(0.03, 0.045, 0.06);
+      pass.uniforms.uGamma.value.set(1.01, 1.02, 0.99);
+      pass.uniforms.uGain.value.set(0.98, 1.02, 1.08);
+      pass.uniforms.uSaturation.value = 1.18;
+      pass.uniforms.uContrast.value = 1.10;
+      pass.uniforms.uIntensity.value = 0.82;
     } else if (grade === "ember") {
-      pass.uniforms.uLift.value.set(0.06, 0.03, 0.01);
-      pass.uniforms.uGamma.value.set(0.98, 1.02, 1.10);
-      pass.uniforms.uGain.value.set(1.18, 1.03, 0.90);
-      pass.uniforms.uSaturation.value = 1.28;
-      pass.uniforms.uContrast.value = 1.20;
-      pass.uniforms.uIntensity.value = 0.92;
+      pass.uniforms.uLift.value.set(0.055, 0.032, 0.018);
+      pass.uniforms.uGamma.value.set(0.99, 1.01, 1.06);
+      pass.uniforms.uGain.value.set(1.10, 1.03, 0.94);
+      pass.uniforms.uSaturation.value = 1.18;
+      pass.uniforms.uContrast.value = 1.10;
+      pass.uniforms.uIntensity.value = 0.82;
     } else if (grade === "cosmic") {
-      pass.uniforms.uLift.value.set(0.02, 0.02, 0.02);
-      pass.uniforms.uGain.value.set(1.05, 1.05, 1.05);
-      pass.uniforms.uSaturation.value = 1.35;
-      pass.uniforms.uContrast.value = 1.18;
-      pass.uniforms.uIntensity.value = 0.95;
+      pass.uniforms.uLift.value.set(0.02, 0.02, 0.03);
+      pass.uniforms.uGain.value.set(1.03, 1.03, 1.03);
+      pass.uniforms.uSaturation.value = 1.22;
+      pass.uniforms.uContrast.value = 1.10;
+      pass.uniforms.uIntensity.value = 0.84;
       pass.uniforms.uCosmic.value = 1.0;
     }
   }, [accent, grade]);
@@ -389,13 +408,13 @@ export default function CinematicPostFX({
 
     // Grade-driven bloom tuning (more “poster”)
     if (grade === "cosmic") {
-      baseBloomRef.current = { strength: 1.55, radius: 1.10, threshold: 0.13 };
+      baseBloomRef.current = { strength: 1.05, radius: 0.95, threshold: 0.18 };
     } else if (grade === "ice") {
-      baseBloomRef.current = { strength: 1.32, radius: 1.02, threshold: 0.16 };
+      baseBloomRef.current = { strength: 0.92, radius: 0.88, threshold: 0.20 };
     } else if (grade === "ember") {
-      baseBloomRef.current = { strength: 1.38, radius: 1.05, threshold: 0.16 };
+      baseBloomRef.current = { strength: 0.96, radius: 0.90, threshold: 0.20 };
     } else {
-      baseBloomRef.current = { strength: 1.10, radius: 0.92, threshold: 0.18 };
+      baseBloomRef.current = { strength: 0.80, radius: 0.75, threshold: 0.22 };
     }
 
     bloom.strength = baseBloomRef.current.strength;
@@ -415,9 +434,12 @@ export default function CinematicPostFX({
     if (!composer) return;
     const q = getQualitySettings();
     composer.setSize(size.width, size.height);
-    composer.setPixelRatio(q.pixelRatio);
+    composer.setPixelRatio(postFxPixelRatioRef.current || Math.min(q.pixelRatio, 1.5));
     const sharpen = sharpenRef.current;
-    if (sharpen?.uniforms?.uResolution?.value?.set) sharpen.uniforms.uResolution.value.set(size.width * q.pixelRatio, size.height * q.pixelRatio);
+    if (sharpen?.uniforms?.uResolution?.value?.set) {
+      const pr = postFxPixelRatioRef.current || Math.min(q.pixelRatio, 1.5);
+      sharpen.uniforms.uResolution.value.set(size.width * pr, size.height * pr);
+    }
   }, [size.height, size.width]);
 
   useFrame((_, delta) => {
@@ -435,7 +457,7 @@ export default function CinematicPostFX({
       initRef.current = true;
       // Exponential decay so a single hit lingers for a few frames (trailer feel)
       const decay = Math.exp(-delta * 12.0);
-      impactRef.current = Math.max(impactRef.current * decay, Math.max(0, dp) * 1.4);
+      impactRef.current = Math.max(impactRef.current * decay, Math.max(0, dp) * 1.0);
       const impact = THREE.MathUtils.clamp(impactRef.current, 0, 1);
 
       // Hit flash feeds the grade shader (keeps it “cinematic”, not a UI overlay)
@@ -443,8 +465,8 @@ export default function CinematicPostFX({
 
       // Real exposure “camera flash” (this is what makes hits feel like trailer footage)
       const baseExposure = baseExposureRef.current ?? (gl as any).toneMappingExposure ?? 1.0;
-      const flashExposure = 1.0 + impact * 0.22 + spike * 0.05;
-      (gl as any).toneMappingExposure = baseExposure * flashExposure;
+      const flashExposure = 1.0 + impact * 0.10 + spike * 0.02;
+      (gl as any).toneMappingExposure = baseExposure * Math.min(1.18, flashExposure);
 
       // Ghost trail strength (0..1): only rises on impact deltas so steady “punch” doesn’t smear previews
       const after = afterimageRef.current as any;
@@ -456,35 +478,35 @@ export default function CinematicPostFX({
       // Punch bloom/rgb/grain spikes (cinematic hits)
       const bloom = bloomRef.current;
       if (bloom) {
-        bloom.strength = baseBloomRef.current.strength * (1.0 + spike * 0.55);
-        bloom.radius = baseBloomRef.current.radius * (1.0 + spike * 0.10);
-        bloom.threshold = baseBloomRef.current.threshold * (1.0 - spike * 0.25);
+        bloom.strength = baseBloomRef.current.strength * (1.0 + spike * 0.25);
+        bloom.radius = baseBloomRef.current.radius * (1.0 + spike * 0.06);
+        bloom.threshold = baseBloomRef.current.threshold * (1.0 - spike * 0.12);
       }
 
       const rgb = rgbRef.current;
       if (rgb?.uniforms?.["amount"]) rgb.uniforms["amount"].value = 0.0008 + spike * 0.0022;
 
       const vignette = vignetteRef.current;
-      if (vignette?.uniforms?.["darkness"]) vignette.uniforms["darkness"].value = 0.9 + spike * 0.15;
+      if (vignette?.uniforms?.["darkness"]) vignette.uniforms["darkness"].value = 0.65 + spike * 0.12;
 
       const film = filmRef.current as any;
       if (film?.uniforms) {
-        if (film.uniforms["nIntensity"]) film.uniforms["nIntensity"].value = 0.22 + spike * 0.22;
-        if (film.uniforms["sIntensity"]) film.uniforms["sIntensity"].value = 0.04 + spike * 0.05;
+        if (film.uniforms["nIntensity"]) film.uniforms["nIntensity"].value = 0.12 + spike * 0.12;
+        if (film.uniforms["sIntensity"]) film.uniforms["sIntensity"].value = 0.02 + spike * 0.03;
       }
 
       const rays = raysRef.current as any;
       if (rays?.uniforms) {
         if (rays.uniforms.uTime) rays.uniforms.uTime.value += delta;
         if (rays.uniforms.uPunch) rays.uniforms.uPunch.value = spike;
-        if (rays.uniforms.uStrength) rays.uniforms.uStrength.value = grade === "cosmic" ? 0.75 : grade === "ice" ? 0.58 : grade === "ember" ? 0.66 : 0.48;
+        if (rays.uniforms.uStrength) rays.uniforms.uStrength.value = grade === "cosmic" ? 0.52 : grade === "ice" ? 0.38 : grade === "ember" ? 0.44 : 0.32;
       }
 
       // Final sharpen amount: small baseline + extra on impacts to make motion read “crisp”
       const sharpen = sharpenRef.current;
       if (sharpen?.uniforms?.uAmount) {
-        const baseSharp = grade === "cosmic" ? 0.10 : grade === "ice" ? 0.12 : grade === "ember" ? 0.11 : 0.09;
-        sharpen.uniforms.uAmount.value = baseSharp + impact * 0.22;
+        const baseSharp = grade === "cosmic" ? 0.06 : grade === "ice" ? 0.07 : grade === "ember" ? 0.065 : 0.05;
+        sharpen.uniforms.uAmount.value = baseSharp + impact * 0.12;
       }
 
       composer.render(delta);

@@ -33,8 +33,9 @@ export default function BattleScene() {
   const grade =
     playerFighterId === "kai-jax" ? "cosmic" : playerFighterId === "jaxon" ? "ice" : playerFighterId === "kaison" ? "ember" : "neutral";
   const accent = playerFighter?.accentColor || "#00f2ff";
-  const bgColor = grade === "cosmic" ? "#050508" : grade === "ice" ? "#061225" : grade === "ember" ? "#1a0707" : "#0b0b12";
-  const fogColor = grade === "cosmic" ? "#070712" : grade === "ice" ? "#0a2a3a" : grade === "ember" ? "#2a0a0a" : "#0b0b12";
+  // Lift the “poster grade” blacks so the arena isn’t swallowed.
+  const bgColor = grade === "cosmic" ? "#0b0b18" : grade === "ice" ? "#0b1d34" : grade === "ember" ? "#2a0d0d" : "#121224";
+  const fogColor = grade === "cosmic" ? "#111128" : grade === "ice" ? "#11384a" : grade === "ember" ? "#3a1410" : "#14142a";
   const punch =
     Math.min(
       1,
@@ -76,6 +77,9 @@ export default function BattleScene() {
       
       {/* Enhanced Lighting System for better character definition */}
       <RimLight intensity={1.0} />
+      {/* Lift ambient so arena + shadows don’t crush to black */}
+      <ambientLight intensity={0.22} />
+      <hemisphereLight intensity={0.28} color={"#ffffff"} groundColor={"#1a1530"} />
       <LegendaryLightingRig />
       <Environment preset="city" />
       <CinematicPostFX grade={grade} accent={accent} punch={punch} center={[0.5, 0.44]} />
