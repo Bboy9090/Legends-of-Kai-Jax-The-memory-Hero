@@ -46,8 +46,10 @@ This repository now has **three foundational authority files** that establish di
 
 ### For Development with GitHub Copilot
 
-1. **GitHub Copilot reads `.github/copilot-instructions.md` automatically**
-   - It sets the behavioral context for all AI assistance
+1. **Reference `.github/copilot-instructions.md` in your prompts and context**
+   - GitHub Copilot Workspace and Chat can read this file when opened or referenced
+   - Explicitly mention it in prompts: "Following copilot-instructions.md, implement..."
+   - This sets the behavioral context for all AI assistance
    - Ensures Copilot acts like a disciplined senior engineer, not autocomplete
 
 2. **Reference `kai_jax.character.json` as the single source of truth**
@@ -59,6 +61,12 @@ This repository now has **three foundational authority files** that establish di
    - Go to GitHub Issues → New Issue → "Build Task (Legendary)"
    - Fill in objective, constraints, and acceptance criteria
    - This structures work clearly for both humans and AI
+
+**Note on GitHub Copilot Integration**:
+- **GitHub Copilot Chat**: Explicitly reference or open these files in your editor
+- **GitHub Copilot Workspace**: These files can be included in the context automatically
+- **Best Practice**: Always mention "According to copilot-instructions.md..." in your prompts
+- The more you reference these files, the more consistent your results will be
 
 ### Example Workflow
 
@@ -93,8 +101,9 @@ Tail physics constraints defined in rigging.extra_bones.tails
 **When Working on Code**:
 1. Read `copilot-instructions.md` to understand the rules
 2. Reference `kai_jax.character.json` for specific requirements
-3. Ask Copilot: "Implement X according to kai_jax.character.json spec"
-4. Copilot will follow the authoritative guidelines
+3. Include these files in your Copilot context (open them or reference them)
+4. Ask Copilot: "Following copilot-instructions.md, implement X according to kai_jax.character.json spec"
+5. Copilot will follow the authoritative guidelines when they're in context
 
 ## Architecture Philosophy
 
