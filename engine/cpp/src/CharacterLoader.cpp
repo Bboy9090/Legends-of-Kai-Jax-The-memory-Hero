@@ -160,9 +160,16 @@ void CharacterLoader::loadMaterials(const json& j, Materials& materials) {
         // Load spikes material
         const auto& spikes = j.at("spikes");
         materials.spikes.material = spikes.at("material").get<std::string>();
-        // Handle emissive field which is a string in JSON ("subtle_event_only")
+        // Handle emissive field which can be boolean or string ("subtle_event_only")
         const auto& spikesEmissive = spikes.at("emissive");
-        materials.spikes.emissive = !spikesEmissive.is_boolean() || spikesEmissive.get<bool>();
+        if (spikesEmissive.is_boolean()) {
+            materials.spikes.emissive = spikesEmissive.get<bool>();
+        } else if (spikesEmissive.is_string()) {
+            // String values like "subtle_event_only" are considered true/enabled
+            materials.spikes.emissive = true;
+        } else {
+            materials.spikes.emissive = false;
+        }
 
         // Load weave energy material
         const auto& weaveEnergy = j.at("weave_energy");

@@ -91,8 +91,7 @@ The test suite validates:
 ## Usage Example
 
 ```cpp
-#include "CharacterSpecification.h"
-#include "CharacterLoader.cpp"
+#include "CharacterLoader.h"
 
 using namespace LegendsEngine;
 
