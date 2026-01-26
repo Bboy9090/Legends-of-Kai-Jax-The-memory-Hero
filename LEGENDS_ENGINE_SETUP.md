@@ -63,9 +63,13 @@ This repository now has **three foundational authority files** that establish di
    - This structures work clearly for both humans and AI
 
 **Note on GitHub Copilot Integration**:
-- **GitHub Copilot Chat**: Explicitly reference or open these files in your editor
+- **GitHub Copilot Chat**: Explicitly reference these files by:
+  - Opening them in your editor before starting a chat
+  - Using @filename syntax if supported (e.g., @copilot-instructions.md)
+  - Mentioning the filename directly in your prompt
 - **GitHub Copilot Workspace**: These files can be included in the context automatically
-- **Best Practice**: Always mention "According to copilot-instructions.md..." in your prompts
+- **Best Practice**: Always start prompts with "Following copilot-instructions.md and kai_jax.character.json..."
+- Example prompt: "Following copilot-instructions.md, implement the combat system according to kai_jax.character.json tail_roles spec"
 - The more you reference these files, the more consistent your results will be
 
 ### Example Workflow
