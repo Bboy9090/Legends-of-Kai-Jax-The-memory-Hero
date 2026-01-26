@@ -39,4 +39,4 @@ You are working on a production-grade, cross-platform game engine and content pi
 - Clear data-driven architecture
 - Comments explaining intent where systems are complex
 
-If a decision conflicts with these rules, the rules win. Stop implementation and seek clarification via issue comments or discussion.
+If a decision conflicts with these rules, the rules win.
