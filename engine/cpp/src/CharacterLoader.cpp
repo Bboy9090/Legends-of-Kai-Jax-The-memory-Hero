@@ -1,5 +1,4 @@
-#include "../include/CharacterSpecification.h"
-#include <nlohmann/json.hpp>
+#include "../include/CharacterLoader.h"
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -8,29 +7,7 @@ using json = nlohmann::json;
 
 namespace LegendsEngine {
 
-/**
- * CharacterLoader - Loads character specifications from JSON files
- * 
- * This class is responsible for:
- * 1. Parsing JSON character specifications
- * 2. Validating the data against engine requirements
- * 3. Populating CharacterSpecification objects
- * 
- * CRITICAL VALIDATIONS:
- * - Kai-Jax MUST have exactly 9 tails (LOCKFILE requirement)
- * - All required fields must be present
- * - Data types must match expected types
- * - Tail roles must match tail count
- */
-class CharacterLoader {
-public:
-    /**
-     * Load a character specification from a JSON file
-     * 
-     * @param filePath Path to the JSON specification file
-     * @return Unique pointer to loaded CharacterSpecification, or nullptr on failure
-     */
-    static std::unique_ptr<CharacterSpecification> loadFromFile(const std::string& filePath) {
+std::unique_ptr<CharacterSpecification> CharacterLoader::loadFromFile(const std::string& filePath) {
         try {
             // Read JSON file
             std::ifstream file(filePath);
@@ -54,13 +31,7 @@ public:
         }
     }
 
-    /**
-     * Load a character specification from parsed JSON data
-     * 
-     * @param jsonData Parsed JSON object
-     * @return Unique pointer to loaded CharacterSpecification
-     */
-    static std::unique_ptr<CharacterSpecification> loadFromJson(const json& jsonData) {
+std::unique_ptr<CharacterSpecification> CharacterLoader::loadFromJson(const json& jsonData) {
         auto spec = std::make_unique<CharacterSpecification>();
 
         try {
@@ -120,14 +91,13 @@ public:
         return spec;
     }
 
-private:
-    static void loadAuthoritativeReference(const json& j, AuthoritativeReference& ref) {
+void CharacterLoader::loadAuthoritativeReference(const json& j, AuthoritativeReference& ref) {
         ref.type = j.at("type").get<std::string>();
         ref.rule = j.at("rule").get<std::string>();
         ref.notes = j.at("notes").get<std::string>();
     }
 
-    static void loadAnatomy(const json& j, Anatomy& anatomy) {
+void CharacterLoader::loadAnatomy(const json& j, Anatomy& anatomy) {
         anatomy.speciesComposite = j.at("species_composite").get<std::vector<std::string>>();
         anatomy.bodyType = j.at("body_type").get<std::string>();
         anatomy.heightMultiplier = j.at("height_multiplier").get<float>();
@@ -139,7 +109,7 @@ private:
         anatomy.tailCount = j.at("tail_count").get<int>();
     }
 
-    static void loadSilhouetteRules(const json& j, SilhouetteRules& rules) {
+void CharacterLoader::loadSilhouetteRules(const json& j, SilhouetteRules& rules) {
         rules.readableInShadow = j.at("readable_in_shadow").get<bool>();
         rules.noMascotProportions = j.at("no_mascot_proportions").get<bool>();
         rules.noCapeSubstitution = j.at("no_cape_substitution").get<bool>();
@@ -147,7 +117,7 @@ private:
         rules.antiDerivativeEnforced = j.at("anti_derivative_enforced").get<bool>();
     }
 
-    static void loadModeling(const json& j, Modeling& modeling) {
+void CharacterLoader::loadModeling(const json& j, Modeling& modeling) {
         modeling.units = j.at("units").get<std::string>();
         modeling.scale = j.at("scale").get<float>();
         modeling.topology = j.at("topology").get<std::string>();
@@ -165,7 +135,7 @@ private:
         modeling.edgeLoopsRequired = j.at("edge_loops_required").get<std::vector<std::string>>();
     }
 
-    static void loadMaterials(const json& j, Materials& materials) {
+void CharacterLoader::loadMaterials(const json& j, Materials& materials) {
         // Load fur material
         const auto& fur = j.at("fur");
         materials.fur.type = fur.at("type").get<std::string>();
@@ -190,7 +160,9 @@ private:
         // Load spikes material
         const auto& spikes = j.at("spikes");
         materials.spikes.material = spikes.at("material").get<std::string>();
-        materials.spikes.emissive = spikes.at("emissive").get<std::string>() != "false";
+        // Handle emissive field which is a string in JSON ("subtle_event_only")
+        const auto& spikesEmissive = spikes.at("emissive");
+        materials.spikes.emissive = !spikesEmissive.is_boolean() || spikesEmissive.get<bool>();
 
         // Load weave energy material
         const auto& weaveEnergy = j.at("weave_energy");
@@ -199,7 +171,7 @@ private:
         materials.weaveEnergy.mobileDisabled = weaveEnergy.at("mobile_disabled").get<bool>();
     }
 
-    static void loadRigging(const json& j, Rigging& rigging) {
+void CharacterLoader::loadRigging(const json& j, Rigging& rigging) {
         rigging.skeletonType = j.at("skeleton_type").get<std::string>();
         rigging.singleSkeletonOnly = j.at("single_skeleton_only").get<bool>();
 
@@ -231,7 +203,7 @@ private:
         rigging.facialSystem.animeExaggeration = facialSystem.at("anime_exaggeration").get<bool>();
     }
 
-    static void loadAnimation(const json& j, Animation& animation) {
+void CharacterLoader::loadAnimation(const json& j, Animation& animation) {
         animation.philosophy = j.at("philosophy").get<std::string>();
         animation.noFloatyMotion = j.at("no_floaty_motion").get<bool>();
         animation.rootMotionOnlyFor = j.at("root_motion_only_for").get<std::vector<std::string>>();
@@ -243,7 +215,7 @@ private:
         animation.frameRules.cancelRules = frameRules.at("cancel_rules").get<std::string>();
     }
 
-    static void loadCombatIdentity(const json& j, CombatIdentity& combat) {
+void CharacterLoader::loadCombatIdentity(const json& j, CombatIdentity& combat) {
         combat.role = j.at("role").get<std::string>();
         combat.scalesFrom = j.at("scales_from").get<std::string>();
         combat.scalesTo = j.at("scales_to").get<std::string>();
@@ -251,7 +223,7 @@ private:
         combat.weaknesses = j.at("weaknesses").get<std::vector<std::string>>();
     }
 
-    static void loadTailRoles(const json& j, std::vector<TailRole>& tailRoles) {
+void CharacterLoader::loadTailRoles(const json& j, std::vector<TailRole>& tailRoles) {
         tailRoles.clear();
         for (const auto& tailJson : j) {
             TailRole role;
@@ -262,7 +234,7 @@ private:
         }
     }
 
-    static void loadEngineIntegration(const json& j, EngineIntegration& engine) {
+void CharacterLoader::loadEngineIntegration(const json& j, EngineIntegration& engine) {
         engine.renderer = j.at("renderer").get<std::string>();
         engine.gpuSkinning = j.at("gpu_skinning").get<bool>();
         engine.physicsBonesEnabled = j.at("physics_bones").get<bool>();
@@ -275,12 +247,12 @@ private:
         engine.lighting.validationLighting = lighting.at("validation_lighting").get<std::string>();
     }
 
-    static void loadMobileProfile(const json& j, MobileProfile& profile) {
+void CharacterLoader::loadMobileProfile(const json& j, MobileProfile& profile) {
         profile.allowedCuts = j.at("allowed_cuts").get<std::vector<std::string>>();
         profile.neverCut = j.at("never_cut").get<std::vector<std::string>>();
     }
 
-    static void loadAcceptanceCriteria(const json& j, AcceptanceCriteria& criteria) {
+void CharacterLoader::loadAcceptanceCriteria(const json& j, AcceptanceCriteria& criteria) {
         criteria.silhouetteMatch = j.at("silhouette_match").get<bool>();
         criteria.tailIndependenceVisible = j.at("tail_independence_visible").get<bool>();
         criteria.armorReadsWorn = j.at("armor_reads_worn").get<bool>();
@@ -288,13 +260,7 @@ private:
         criteria.combatWeightPreserved = j.at("combat_weight_preserved").get<bool>();
     }
 
-    /**
-     * CRITICAL VALIDATION: Tail count consistency check
-     * 
-     * For Kai-Jax, this MUST be 9. This is a LOCKFILE requirement.
-     * All tail-related data (anatomy, rigging, tail_roles) must be consistent.
-     */
-    static void validateTailCount(CharacterSpecification* spec) {
+void CharacterLoader::validateTailCount(CharacterSpecification* spec) {
         const int anatomyTailCount = spec->anatomy.tailCount;
         const int riggingTailCount = spec->rigging.extraBones.tails.count;
         const int tailRolesCount = static_cast<int>(spec->tailRoles.size());
@@ -326,6 +292,5 @@ private:
             }
         }
     }
-};
 
 } // namespace LegendsEngine

@@ -1,5 +1,4 @@
-#include "../include/CharacterSpecification.h"
-#include "../src/CharacterLoader.cpp"
+#include "../include/CharacterLoader.h"
 #include <iostream>
 #include <iomanip>
 
