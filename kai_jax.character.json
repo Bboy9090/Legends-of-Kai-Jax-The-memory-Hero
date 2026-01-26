@@ -1,0 +1,194 @@
+{
+  "character_id": "kai_jax",
+  "display_name": "Kai-Jax",
+  "title": "The Memory Hero",
+  "version": "1.0.0",
+  "authoritative_reference": {
+    "type": "image",
+    "rule": "single_source_of_truth",
+    "notes": "Match silhouette, proportions, materials, and tail count exactly. No reinterpretation."
+  },
+
+  "anatomy": {
+    "species_composite": ["wolf", "fox", "hedgehog", "spider"],
+    "body_type": "humanoid_beast",
+    "height_multiplier": 1.15,
+    "build": "athletic_sinewy_predator",
+    "legs": "digitigrade",
+    "hands": "clawed_tool_capable",
+    "head": "wolf_fox_hybrid_muzzle",
+    "spine": "reinforced_with_ridge",
+    "tail_count": 9
+  },
+
+  "silhouette_rules": {
+    "readable_in_shadow": true,
+    "no_mascot_proportions": true,
+    "no_cape_substitution": true,
+    "tails_must_arc": "crescent",
+    "anti_derivative_enforced": true
+  },
+
+  "modeling": {
+    "units": "meters",
+    "scale": 1.0,
+    "topology": "clean_quads",
+    "lod_targets": {
+      "lod0": { "triangles": [80000, 120000] },
+      "lod1": { "triangles": [50000, 70000] },
+      "lod2": { "triangles": [25000, 35000] }
+    },
+    "edge_loops_required": [
+      "jaw",
+      "eyes",
+      "shoulders",
+      "hips",
+      "tail_bases"
+    ]
+  },
+
+  "materials": {
+    "fur": {
+      "type": "card_or_shell",
+      "pbr": true,
+      "maps": ["albedo", "normal", "roughness"],
+      "notes": "No painted fur. Density varies by region."
+    },
+    "skin": {
+      "pbr": true,
+      "subsurface_scattering": true
+    },
+    "armor": {
+      "material": "worn_foundry_steel",
+      "roughness_range": [0.4, 0.6],
+      "edge_wear": true,
+      "clean_surfaces_disallowed": true
+    },
+    "spikes": {
+      "material": "bone_tech_hybrid",
+      "emissive": "subtle_event_only"
+    },
+    "weave_energy": {
+      "emissive": true,
+      "always_on": false,
+      "mobile_disabled": true
+    }
+  },
+
+  "rigging": {
+    "skeleton_type": "humanoid_extended",
+    "single_skeleton_only": true,
+    "extra_bones": {
+      "tails": {
+        "count": 9,
+        "bones_per_tail": [5, 7],
+        "physics_enabled": true,
+        "constraints": {
+          "swing_limit": true,
+          "twist_limit": true,
+          "noodle_physics": false
+        }
+      },
+      "spine_deformation": true,
+      "jaw": true,
+      "ears": true
+    },
+    "facial_system": {
+      "type": "blendshapes",
+      "required": ["snarl", "focus", "pain", "rage"],
+      "anime_exaggeration": false
+    }
+  },
+
+  "animation": {
+    "philosophy": "mass_and_inertia",
+    "no_floaty_motion": true,
+    "root_motion_only_for": [
+      "finishers",
+      "heavy_knockdowns"
+    ],
+    "required_sets": [
+      "idle_calm",
+      "idle_combat",
+      "walk",
+      "run",
+      "sprint",
+      "light_combo",
+      "heavy_combo",
+      "special_attacks",
+      "dodge_ground",
+      "dodge_air",
+      "parry",
+      "counter",
+      "finisher",
+      "hit_reactions",
+      "death"
+    ],
+    "frame_rules": {
+      "min_frames_per_action": 12,
+      "cancel_rules": "hit_confirm_or_perfect_parry_only"
+    }
+  },
+
+  "combat_identity": {
+    "role": "stance_shifting_battlefield_controller",
+    "scales_from": "1v1",
+    "scales_to": "1v20_plus",
+    "strengths": [
+      "crowd_control",
+      "posture_break",
+      "zone_dominance"
+    ],
+    "weaknesses": [
+      "overextension",
+      "corruption_overuse"
+    ]
+  },
+
+  "tail_roles": [
+    { "index": 1, "name": "bond", "function": "parry_counter_revive" },
+    { "index": 2, "name": "hunter", "function": "dash_pursuit_execute" },
+    { "index": 3, "name": "thread", "function": "web_pull_group" },
+    { "index": 4, "name": "quill", "function": "retaliation_posture_damage" },
+    { "index": 5, "name": "shade", "function": "stealth_threat_reset" },
+    { "index": 6, "name": "anchor", "function": "anti_knockback_root" },
+    { "index": 7, "name": "echo", "function": "after_image_repeat" },
+    { "index": 8, "name": "rift", "function": "reality_tear_aoe" },
+    { "index": 9, "name": "crown", "function": "aura_command" }
+  ],
+
+  "engine_integration": {
+    "renderer": "pbr",
+    "gpu_skinning": true,
+    "physics_bones": true,
+    "lod_system": true,
+    "event_driven_vfx": true,
+    "lighting": {
+      "no_baked_character_lighting": true,
+      "validation_lighting": "neutral_studio"
+    }
+  },
+
+  "mobile_profile": {
+    "allowed_cuts": [
+      "fur_shell_layers",
+      "secondary_emissive",
+      "minor_decals"
+    ],
+    "never_cut": [
+      "silhouette",
+      "tail_count",
+      "animation_timing",
+      "posture_system",
+      "hit_stop"
+    ]
+  },
+
+  "acceptance_criteria": {
+    "silhouette_match": true,
+    "tail_independence_visible": true,
+    "armor_reads_worn": true,
+    "idle_feels_dangerous": true,
+    "combat_weight_preserved": true
+  }
+}
