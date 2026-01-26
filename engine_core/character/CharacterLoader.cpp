@@ -22,9 +22,9 @@
  * - No silent failures or default values for critical fields
  */
 
-// Compile-time validation reminder
-// This ensures developers remember that kai_jax.character.json is a LOCKFILE
-static_assert(true, "kai_jax.character.json must validate before runtime use");
+// IMPORTANT: kai_jax.character.json is a LOCKFILE
+// Any implementation that violates the character spec is INVALID
+// Validation is enforced at runtime in CharacterSpecification::Validate()
 
 namespace LegendsEngine {
 namespace Character {
@@ -456,21 +456,21 @@ void CharacterSpecification::Validate() {
     }
     
     // Enforce design philosophy
-    if (animation.no_floaty_motion != true) {
+    if (!animation.no_floaty_motion) {
         throw std::runtime_error(
             "VALIDATION ERROR: animation.no_floaty_motion must be true. "
             "Mass and inertia matter."
         );
     }
     
-    if (rigging.facial_system.anime_exaggeration != false) {
+    if (rigging.facial_system.anime_exaggeration) {
         throw std::runtime_error(
             "VALIDATION ERROR: facial_system.anime_exaggeration must be false. "
             "No mascot proportions."
         );
     }
     
-    if (rigging.extra_bones.tails.constraints.noodle_physics != false) {
+    if (rigging.extra_bones.tails.constraints.noodle_physics) {
         throw std::runtime_error(
             "VALIDATION ERROR: tail constraints noodle_physics must be false. "
             "Physics must feel grounded."

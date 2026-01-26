@@ -162,7 +162,8 @@ public:
      * Check if this character is Kai-Jax (the canonical flagship character)
      */
     bool IsKaiJax() const {
-        return character_id == "kai_jax";
+        static const std::string kai_jax_id = "kai_jax";
+        return character_id == kai_jax_id;
     }
     
     /**

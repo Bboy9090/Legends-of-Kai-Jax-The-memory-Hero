@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
         std::cout << "Actual Tail Count: " << kai_jax.anatomy.tail_count << "\n";
         
         if (kai_jax.IsKaiJax() && kai_jax.anatomy.tail_count == 9) {
-            std::cout << "✓ Kai-Jax LOCKFILE validation PASSED\n";
+            std::cout << "[PASS] Kai-Jax LOCKFILE validation PASSED\n";
         }
         std::cout << "\n";
         
