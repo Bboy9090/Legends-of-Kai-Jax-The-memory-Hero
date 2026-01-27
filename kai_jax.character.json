@@ -21,6 +21,14 @@
     "tail_count": 9
   },
 
+  "evolution": {
+    "starting_tail_count": 3,
+    "final_tail_count": 9,
+    "unlock_rule": "sequential_only",
+    "skip_unlocks_disallowed": true,
+    "tails_are_permanent": true
+  },
+
   "silhouette_rules": {
     "readable_in_shadow": true,
     "no_mascot_proportions": true,

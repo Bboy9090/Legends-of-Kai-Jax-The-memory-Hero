@@ -1,0 +1,252 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://legends-of-kai-jax.com/data/world/tail_tier_reactions.json",
+  "title": "Tail Tier World Reactions",
+  "description": "Defines how the game world responds to Kai-Jax's tail progression. This makes tail tiers systemically meaningful, not just visual.",
+  "version": "1.0.0",
+  "last_updated": "2026-01-27",
+  "rules": {
+    "application": "All world systems (AI, music, NPCs, environment) MUST respond to current_tail_count",
+    "enforcement": "Build-time validation ensures these reactions are wired into game systems"
+  },
+  "tail_tiers": {
+    "3": {
+      "tier_name": "awakened_hunter",
+      "description": "Starting form. World sees potential but not yet proven power.",
+      "enemy_behavior": {
+        "fodder_confidence": "medium",
+        "fodder_engagement_distance": "normal",
+        "elite_tactics": "test_player_skill",
+        "boss_phase_triggers": "none",
+        "notes": "Enemies engage cautiously but don't flee. Standard combat behavior."
+      },
+      "music_intensity": {
+        "combat_layer": "base",
+        "percussion_intensity": 0.4,
+        "brass_presence": "minimal",
+        "choir_enabled": false,
+        "notes": "Grounded combat theme. No triumphant elements yet."
+      },
+      "npc_reactions": {
+        "default_attitude": "cautious_respect",
+        "dialogue_tone": "careful",
+        "quest_availability": "standard",
+        "fear_level": "none",
+        "worship_level": "none",
+        "notes": "NPCs treat player as competent warrior, not legend."
+      },
+      "world_state": {
+        "descriptor": "contained_threat",
+        "environmental_response": "normal",
+        "unlock_gates": [],
+        "narrative_weight": "chapter_1_protagonist",
+        "notes": "World acknowledges player exists but hasn't changed because of them."
+      }
+    },
+    "4": {
+      "tier_name": "proven_predator",
+      "description": "First evolution. World begins to take notice.",
+      "enemy_behavior": {
+        "fodder_confidence": "medium_low",
+        "fodder_engagement_distance": "slight_retreat_on_aggression",
+        "elite_tactics": "respect_spacing",
+        "boss_phase_triggers": "none",
+        "notes": "Weaker enemies show hesitation when player is aggressive."
+      },
+      "music_intensity": {
+        "combat_layer": "base_plus_rhythm",
+        "percussion_intensity": 0.5,
+        "brass_presence": "emerging",
+        "choir_enabled": false,
+        "notes": "Percussion becomes more prominent. Hints of power theme."
+      },
+      "npc_reactions": {
+        "default_attitude": "wary_respect",
+        "dialogue_tone": "measured",
+        "quest_availability": "standard_plus_challenging",
+        "fear_level": "low",
+        "worship_level": "none",
+        "notes": "NPCs acknowledge player is becoming dangerous."
+      },
+      "world_state": {
+        "descriptor": "rising_force",
+        "environmental_response": "subtle_acknowledgment",
+        "unlock_gates": ["tier_4_challenge_arena"],
+        "narrative_weight": "chapter_2_emerging_threat",
+        "notes": "World systems begin to adapt to player presence."
+      }
+    },
+    "5": {
+      "tier_name": "zone_breaker",
+      "description": "Mid-evolution. Enemies must adapt tactics or die.",
+      "enemy_behavior": {
+        "fodder_confidence": "low",
+        "fodder_engagement_distance": "keep_distance_group_up",
+        "elite_tactics": "coordinate_interrupts",
+        "boss_phase_triggers": "early_desperation_phase",
+        "notes": "Fodder enemies actively avoid 1v1. Elites use team tactics."
+      },
+      "music_intensity": {
+        "combat_layer": "full_combat_intensity",
+        "percussion_intensity": 0.65,
+        "brass_presence": "prominent",
+        "choir_enabled": true,
+        "notes": "Full combat theme with heroic brass. Player is a battlefield force."
+      },
+      "npc_reactions": {
+        "default_attitude": "nervous_deference",
+        "dialogue_tone": "respectful_distant",
+        "quest_availability": "high_risk_unlocked",
+        "fear_level": "medium",
+        "worship_level": "low",
+        "notes": "NPCs keep physical distance. Some begin hero worship."
+      },
+      "world_state": {
+        "descriptor": "battlefield_disruptor",
+        "environmental_response": "combat_zones_clear_faster",
+        "unlock_gates": ["tier_5_elite_trials", "faction_alliance_quests"],
+        "narrative_weight": "chapter_3_legend_forming",
+        "notes": "World reacts to player as a war-changing asset."
+      }
+    },
+    "6": {
+      "tier_name": "myth_in_motion",
+      "description": "High evolution. Player presence changes battlefield dynamics.",
+      "enemy_behavior": {
+        "fodder_confidence": "very_low",
+        "fodder_engagement_distance": "flee_on_sight_unless_cornered",
+        "elite_tactics": "defensive_formations_only",
+        "boss_phase_triggers": "skip_to_final_phase",
+        "notes": "Fodder enemies run. Elites fight defensively. Bosses recognize threat."
+      },
+      "music_intensity": {
+        "combat_layer": "legendary_combat",
+        "percussion_intensity": 0.75,
+        "brass_presence": "triumphant",
+        "choir_enabled": true,
+        "notes": "Music shifts to legendary hero theme. Combat is expected victory."
+      },
+      "npc_reactions": {
+        "default_attitude": "fearful_reverence",
+        "dialogue_tone": "awestruck",
+        "quest_availability": "world_changing_missions",
+        "fear_level": "high",
+        "worship_level": "medium",
+        "notes": "NPCs treat player as living legend. Some shrines appear."
+      },
+      "world_state": {
+        "descriptor": "walking_cataclysm",
+        "environmental_response": "enemies_evacuate_zones",
+        "unlock_gates": ["tier_6_myth_challenges", "world_boss_access"],
+        "narrative_weight": "chapter_4_myth_manifest",
+        "notes": "World systems treat player as a force of nature."
+      }
+    },
+    "7": {
+      "tier_name": "apex_legend",
+      "description": "Near-final evolution. Few can stand against the player.",
+      "enemy_behavior": {
+        "fodder_confidence": "broken",
+        "fodder_engagement_distance": "mass_retreat",
+        "elite_tactics": "last_stand_desperation",
+        "boss_phase_triggers": "immediate_ultimate_form",
+        "notes": "Only bosses and scripted encounters engage willingly."
+      },
+      "music_intensity": {
+        "combat_layer": "apex_dominance",
+        "percussion_intensity": 0.85,
+        "brass_presence": "overwhelming",
+        "choir_enabled": true,
+        "notes": "Music reinforces player as unstoppable. Combat is execution."
+      },
+      "npc_reactions": {
+        "default_attitude": "terror_and_worship",
+        "dialogue_tone": "prayers_and_pleas",
+        "quest_availability": "apocalypse_tier",
+        "fear_level": "extreme",
+        "worship_level": "high",
+        "notes": "NPCs build altars. Some factions seek alliance at any cost."
+      },
+      "world_state": {
+        "descriptor": "inevitable_end",
+        "environmental_response": "zones_empty_on_approach",
+        "unlock_gates": ["tier_7_god_trials", "final_story_arc"],
+        "narrative_weight": "chapter_5_endgame_approach",
+        "notes": "World knows the player is approaching final confrontation."
+      }
+    },
+    "8": {
+      "tier_name": "threshold_of_divinity",
+      "description": "One tail from godhood. The world holds its breath.",
+      "enemy_behavior": {
+        "fodder_confidence": "nonexistent",
+        "fodder_engagement_distance": "will_not_engage",
+        "elite_tactics": "surrender_or_suicide_charge",
+        "boss_phase_triggers": "reality_warping_powers_activated",
+        "notes": "Only final bosses with reality-warping powers remain as threats."
+      },
+      "music_intensity": {
+        "combat_layer": "divine_approach",
+        "percussion_intensity": 0.95,
+        "brass_presence": "reality_bending",
+        "choir_enabled": true,
+        "notes": "Music becomes otherworldly. Combat theme merges with cosmic dread."
+      },
+      "npc_reactions": {
+        "default_attitude": "existential_terror_worship",
+        "dialogue_tone": "prophetic_rambling",
+        "quest_availability": "reality_breaking_missions",
+        "fear_level": "absolute",
+        "worship_level": "cultish",
+        "notes": "NPCs treat player as ascending god. Some lose sanity."
+      },
+      "world_state": {
+        "descriptor": "pre_apotheosis",
+        "environmental_response": "reality_tears_on_presence",
+        "unlock_gates": ["tier_8_cosmic_challenges", "true_ending_path"],
+        "narrative_weight": "chapter_6_final_threshold",
+        "notes": "World systems struggle to process player's existence."
+      }
+    },
+    "9": {
+      "tier_name": "crown_of_memory",
+      "description": "Final form. Kai-Jax complete. The world bends.",
+      "enemy_behavior": {
+        "fodder_confidence": "n/a",
+        "fodder_engagement_distance": "enemies_cease_to_spawn",
+        "elite_tactics": "n/a",
+        "boss_phase_triggers": "scripted_encounters_only",
+        "notes": "No organic enemy encounters. Only story-mandated final bosses remain."
+      },
+      "music_intensity": {
+        "combat_layer": "ascended_form",
+        "percussion_intensity": 1.0,
+        "brass_presence": "transcendent",
+        "choir_enabled": true,
+        "notes": "Music becomes pure power. Combat theme is victory incarnate."
+      },
+      "npc_reactions": {
+        "default_attitude": "silent_worship_or_madness",
+        "dialogue_tone": "none_or_broken_speech",
+        "quest_availability": "finale_only",
+        "fear_level": "incomprehensible",
+        "worship_level": "absolute",
+        "notes": "NPCs cannot process player. Dialogue system breaks intentionally."
+      },
+      "world_state": {
+        "descriptor": "completed_myth",
+        "environmental_response": "reality_warps_to_accommodate",
+        "unlock_gates": ["true_final_boss", "new_game_plus", "cosmic_epilogue"],
+        "narrative_weight": "ending_the_memory_hero_saga",
+        "notes": "World systems recognize player as complete. Game approaches finale."
+      }
+    }
+  },
+  "implementation_notes": {
+    "enemy_ai": "Must check current_tail_count and apply behavior from this file. No hardcoded values.",
+    "music_system": "Must dynamically layer tracks based on tier. Transitions should be smooth.",
+    "npc_dialogue": "Must check tail_count and select dialogue trees accordingly. Fear/worship affects shop prices.",
+    "world_state": "Environmental systems (spawns, events) must reference tier descriptor.",
+    "validation": "Build system must verify all references to tail tiers use this file as source of truth."
+  }
+}
