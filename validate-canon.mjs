@@ -88,4 +88,3 @@ console.log('   - Unlock rule: sequential_only');
 console.log('   - Skip unlocks: disallowed');
 console.log('   - Permanence: true');
 console.log('\n🎮 Franchise governance layer active.\n');
-
