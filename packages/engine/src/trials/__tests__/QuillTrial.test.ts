@@ -2,11 +2,14 @@
  * Quill Trial Tests
  * 
  * Tests for the Quill Trial implementation and state machine.
+ * 
+ * Note: This test suite requires Jest to be configured.
+ * Install: npm install --save-dev jest @types/jest ts-jest
  */
 
 import { QuillTrial, TrialState } from '../QuillTrial';
-import { LegendNodeManager } from '../progression/LegendNodeManager';
-import { LegendNode } from '../progression/LegendNodeTypes';
+import { LegendNodeManager } from '../../progression/LegendNodeManager';
+import { LegendNode } from '../../progression/LegendNodeTypes';
 
 describe('QuillTrial', () => {
   let manager: LegendNodeManager;

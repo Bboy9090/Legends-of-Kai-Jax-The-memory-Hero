@@ -3,11 +3,15 @@
  * 
  * Demonstrates how the Legend Node system components work together.
  * This is a validation example, not part of the production code.
+ * 
+ * To run this example:
+ * 1. Build the engine package: cd packages/engine && npm run build
+ * 2. Run with ts-node: npx ts-node examples/legend_node_integration.example.ts
  */
 
-import { LegendNodeManager } from './progression/LegendNodeManager';
-import { QuillTrial } from './trials/QuillTrial';
-import { WorldState } from './world/WorldState';
+import { LegendNodeManager } from '../src/progression/LegendNodeManager';
+import { QuillTrial } from '../src/trials/QuillTrial';
+import { WorldState } from '../src/world/WorldState';
 
 // Example: Load and complete the Quill Trial
 

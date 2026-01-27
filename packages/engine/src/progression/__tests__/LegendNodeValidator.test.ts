@@ -2,6 +2,9 @@
  * Legend Node Validator Tests
  * 
  * Tests for schema validation and business rules enforcement.
+ * 
+ * Note: This test suite requires Jest to be configured.
+ * Install: npm install --save-dev jest @types/jest ts-jest
  */
 
 import { LegendNodeValidator } from '../LegendNodeValidator';

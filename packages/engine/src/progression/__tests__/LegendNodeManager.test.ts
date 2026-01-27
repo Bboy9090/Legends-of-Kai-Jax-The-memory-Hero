@@ -2,6 +2,9 @@
  * Legend Node Manager Tests
  * 
  * Tests for Legend Node lifecycle management and progression rules.
+ * 
+ * Note: This test suite requires Jest to be configured.
+ * Install: npm install --save-dev jest @types/jest ts-jest
  */
 
 import { LegendNodeManager } from '../LegendNodeManager';
