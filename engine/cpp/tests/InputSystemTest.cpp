@@ -3,6 +3,8 @@
 #include "../include/Character.h"
 #include "../include/CharacterFactory.h"
 #include <iostream>
+#include <string>
+#include <exception>
 
 using namespace LegendsEngine;
 

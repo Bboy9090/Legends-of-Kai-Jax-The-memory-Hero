@@ -29,7 +29,7 @@ AnimationState StateManager::GetNextState(AnimationState current, const InputSta
     // Priority 3: Movement states
     // Check if there's any movement input
     if (HasMovementInput(input)) {
-        // If sprinting, use SPRINT state (mapped to RUN in the enum)
+        // If sprinting, use the dedicated SPRINT animation state
         if (input.sprint && input.moveForward) {
             if (CanTransition(current, AnimationState::SPRINT)) {
                 std::cout << "StateManager: Sprint movement detected, transitioning to SPRINT" << std::endl;

@@ -33,7 +33,7 @@ public:
      * 
      * This method implements the state machine logic:
      * - MOVE_FORWARD + normal speed → WALK
-     * - MOVE_FORWARD + SPRINT → SPRINT (RUN in the enum)
+     * - MOVE_FORWARD + SPRINT → SPRINT
      * - No movement → IDLE_CALM
      * - ATTACK → ATTACK placeholder (LIGHT_COMBO)
      * - JUMP → JUMP placeholder (not in current enum, use DODGE_AIR)
