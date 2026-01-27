@@ -24,6 +24,14 @@ void Character::Update(float deltaTime) {
 void Character::SetAnimationState(AnimationState newState) {
     // Check if the animation state has actually changed
     if (currentAnimationState != newState) {
+        // Verify that the animation exists before transitioning
+        if (!animationComponent.HasAnimation(newState)) {
+            std::cerr << "Warning: Cannot transition to animation state " 
+                      << static_cast<int>(newState) 
+                      << " - animation not loaded" << std::endl;
+            return;
+        }
+        
         // Log the state transition for debugging
         std::cout << "Character animation state changed from: " 
                   << static_cast<int>(currentAnimationState) 

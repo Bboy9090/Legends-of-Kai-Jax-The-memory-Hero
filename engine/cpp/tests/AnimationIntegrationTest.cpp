@@ -32,15 +32,15 @@ int main() {
     }
     
     std::cout << "  Character created successfully" << std::endl;
-    std::cout << "  Initial animation state: " << static_cast<int>(kaiJax->currentAnimationState) << std::endl;
+    std::cout << "  Initial animation state: " << static_cast<int>(kaiJax->GetAnimationState()) << std::endl;
     
-    if (kaiJax->currentAnimationState == AnimationState::IDLE_CALM) {
+    if (kaiJax->GetAnimationState() == AnimationState::IDLE_CALM) {
         std::cout << "  Correct: Initial state is IDLE_CALM" << std::endl;
         testsPassed++;
     } else {
         std::cout << "  ERROR: Initial state should be IDLE_CALM" << std::endl;
     }
-    printTestResult("Initial Animation State", kaiJax->currentAnimationState == AnimationState::IDLE_CALM);
+    printTestResult("Initial Animation State", kaiJax->GetAnimationState() == AnimationState::IDLE_CALM);
 
     // Test 2: Test animation state transition
     totalTests++;
@@ -49,13 +49,13 @@ int main() {
     std::cout << "  Transitioning to WALK state..." << std::endl;
     kaiJax->SetAnimationState(AnimationState::WALK);
     
-    if (kaiJax->currentAnimationState == AnimationState::WALK) {
+    if (kaiJax->GetAnimationState() == AnimationState::WALK) {
         std::cout << "  Correct: State changed to WALK" << std::endl;
         testsPassed++;
     } else {
         std::cout << "  ERROR: State should be WALK" << std::endl;
     }
-    printTestResult("Transition to WALK", kaiJax->currentAnimationState == AnimationState::WALK);
+    printTestResult("Transition to WALK", kaiJax->GetAnimationState() == AnimationState::WALK);
 
     // Test 3: Test redundant state change (should not log)
     totalTests++;
@@ -64,13 +64,13 @@ int main() {
     std::cout << "  Calling SetAnimationState(WALK) again (already in WALK)..." << std::endl;
     kaiJax->SetAnimationState(AnimationState::WALK);
     
-    if (kaiJax->currentAnimationState == AnimationState::WALK) {
+    if (kaiJax->GetAnimationState() == AnimationState::WALK) {
         std::cout << "  Correct: State remains WALK (no redundant transition)" << std::endl;
         testsPassed++;
     } else {
         std::cout << "  ERROR: State should still be WALK" << std::endl;
     }
-    printTestResult("Redundant State Change", kaiJax->currentAnimationState == AnimationState::WALK);
+    printTestResult("Redundant State Change", kaiJax->GetAnimationState() == AnimationState::WALK);
 
     // Test 4: Test multiple state transitions
     totalTests++;
@@ -83,21 +83,21 @@ int main() {
     kaiJax->SetAnimationState(AnimationState::DODGE_GROUND);
     kaiJax->SetAnimationState(AnimationState::IDLE_COMBAT);
     
-    if (kaiJax->currentAnimationState == AnimationState::IDLE_COMBAT) {
+    if (kaiJax->GetAnimationState() == AnimationState::IDLE_COMBAT) {
         std::cout << "  Correct: Final state is IDLE_COMBAT" << std::endl;
         testsPassed++;
     } else {
         std::cout << "  ERROR: Final state should be IDLE_COMBAT" << std::endl;
     }
-    printTestResult("Multiple State Transitions", kaiJax->currentAnimationState == AnimationState::IDLE_COMBAT);
+    printTestResult("Multiple State Transitions", kaiJax->GetAnimationState() == AnimationState::IDLE_COMBAT);
 
     // Test 5: Test Update method doesn't interfere with animation state
     totalTests++;
     std::cout << "\n[Test 5] Testing Update method with animation state..." << std::endl;
     
-    AnimationState stateBefore = kaiJax->currentAnimationState;
+    AnimationState stateBefore = kaiJax->GetAnimationState();
     kaiJax->Update(0.016f);
-    AnimationState stateAfter = kaiJax->currentAnimationState;
+    AnimationState stateAfter = kaiJax->GetAnimationState();
     
     if (stateBefore == stateAfter) {
         std::cout << "  Correct: Update doesn't change animation state" << std::endl;

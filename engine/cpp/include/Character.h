@@ -83,6 +83,13 @@ public:
      */
     void SetAnimationState(AnimationState newState);
 
+    /**
+     * Get the current animation state
+     * 
+     * @return The current animation state
+     */
+    AnimationState GetAnimationState() const { return currentAnimationState; }
+
     // Runtime state
     float health = 100.0f;
     Vector3 position;
@@ -97,6 +104,7 @@ public:
     // Animation component for managing character animations
     AnimationComponent animationComponent;
 
+private:
     // Current animation state tracking
     AnimationState currentAnimationState = AnimationState::IDLE_CALM;
 };
