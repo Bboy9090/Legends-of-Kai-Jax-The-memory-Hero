@@ -3,8 +3,6 @@
 #include <vector>
 #include <memory>
 #include "AnimationComponent.h"
-#include "InputHandler.h"
-#include "StateManager.h"
 
 namespace LegendsEngine {
 
@@ -111,17 +109,10 @@ public:
     AnimationComponent animationComponent;
 
     // Input handler for reading player input
-<<<<<<< HEAD
-    std::unique_ptr<InputHandler> inputHandler;
-
-    // State manager for handling animation state transitions
-    std::unique_ptr<StateManager> stateManager;
-=======
     InputHandler* inputHandler = nullptr;
 
     // State manager for managing animation state transitions
     StateManager* stateManager = nullptr;
->>>>>>> origin/main
 
 private:
     // Current animation state tracking

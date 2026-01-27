@@ -32,13 +32,8 @@ add_library(LegendsEngineCore STATIC
     src/Character.cpp
     src/CharacterFactory.cpp
     src/AnimationComponent.cpp
-<<<<<<< HEAD
-    src/InputHandler.cpp
-    src/StateManager.cpp
-=======
     src/input/InputHandler.cpp
     src/character/StateManager.cpp
->>>>>>> origin/main
 )
 
 target_link_libraries(LegendsEngineCore
@@ -90,10 +85,6 @@ target_link_libraries(InputSystemTest
     PRIVATE LegendsEngineCore
 )
 
-<<<<<<< HEAD
-# Set output directories
-set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest AnimationComponentTest AnimationIntegrationTest InputSystemTest
-=======
 # Test executable for Character Input Integration
 add_executable(CharacterInputIntegrationTest
     tests/CharacterInputIntegrationTest.cpp
@@ -105,7 +96,6 @@ target_link_libraries(CharacterInputIntegrationTest
 
 # Set output directories
 set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest AnimationComponentTest AnimationIntegrationTest InputSystemTest CharacterInputIntegrationTest
->>>>>>> origin/main
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -130,7 +120,4 @@ add_test(NAME CharacterFactoryTest COMMAND CharacterFactoryTest)
 add_test(NAME AnimationComponentTest COMMAND AnimationComponentTest)
 add_test(NAME AnimationIntegrationTest COMMAND AnimationIntegrationTest)
 add_test(NAME InputSystemTest COMMAND InputSystemTest)
-<<<<<<< HEAD
-=======
 add_test(NAME CharacterInputIntegrationTest COMMAND CharacterInputIntegrationTest)
->>>>>>> origin/main

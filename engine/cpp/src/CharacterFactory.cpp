@@ -1,13 +1,8 @@
 #include "../include/CharacterFactory.h"
 #include "../include/CharacterLoader.h"
 #include "../include/CharacterSpecification.h"
-<<<<<<< HEAD
-#include "../include/InputHandler.h"
-#include "../include/StateManager.h"
-=======
 #include "../include/input/InputHandler.h"
 #include "../include/character/StateManager.h"
->>>>>>> origin/main
 #include <iostream>
 
 namespace LegendsEngine {
@@ -53,13 +48,6 @@ std::unique_ptr<Character> CharacterFactory::CreateCharacter(const std::string& 
     auto character = std::make_unique<Character>();
     
     // Step 4: Create and wire input handler and state manager
-<<<<<<< HEAD
-    // These are created as unique_ptr for RAII and automatic memory management
-    character->inputHandler = std::make_unique<InputHandler>();
-    character->stateManager = std::make_unique<StateManager>();
-    
-    std::cout << "CharacterFactory: Created InputHandler and StateManager" << std::endl;
-=======
     // These are created as raw pointers owned by the factory for now
     // TODO: Consider using smart pointers or a proper resource management system
     static InputHandler inputHandler;
@@ -67,7 +55,6 @@ std::unique_ptr<Character> CharacterFactory::CreateCharacter(const std::string& 
     
     character->inputHandler = &inputHandler;
     character->stateManager = &stateManager;
->>>>>>> origin/main
     
     // Step 5: Populate character with simulated assets and initial state
     

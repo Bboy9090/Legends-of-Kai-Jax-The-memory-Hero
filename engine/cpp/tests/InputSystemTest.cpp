@@ -1,17 +1,7 @@
-<<<<<<< HEAD
-#include "../include/InputHandler.h"
-#include "../include/StateManager.h"
-#include "../include/Character.h"
-#include "../include/CharacterFactory.h"
-#include <iostream>
-#include <string>
-#include <exception>
-=======
 #include "../include/input/InputHandler.h"
 #include "../include/character/StateManager.h"
 #include "../include/AnimationComponent.h"
 #include <iostream>
->>>>>>> origin/main
 
 using namespace LegendsEngine;
 
@@ -39,24 +29,6 @@ int main() {
     printTestResult("Create InputHandler", true);
     testsPassed++;
 
-<<<<<<< HEAD
-    // Test 2: Get input state (should return zero input initially)
-    totalTests++;
-    std::cout << "\n[Test 2] Testing InputHandler::GetCurrentInput()..." << std::endl;
-    
-    InputState input = inputHandler.GetCurrentInput();
-    bool inputIsZero = !input.moveForward && !input.moveBackward && 
-                       !input.moveLeft && !input.moveRight &&
-                       !input.sprint && !input.attack && !input.jump;
-    
-    if (inputIsZero) {
-        std::cout << "  Stub correctly returns zero input" << std::endl;
-        printTestResult("Get Zero Input State", true);
-        testsPassed++;
-    } else {
-        std::cout << "  ERROR: Expected zero input state" << std::endl;
-        printTestResult("Get Zero Input State", false);
-=======
     // Test 2: Test GetCurrentInput returns zero state
     totalTests++;
     std::cout << "\n[Test 2] Testing InputHandler.GetCurrentInput()..." << std::endl;
@@ -73,7 +45,6 @@ int main() {
     } else {
         std::cout << "  ERROR: Expected all input flags to be false" << std::endl;
         printTestResult("GetCurrentInput Returns Zero State", false);
->>>>>>> origin/main
     }
 
     // Test 3: Create StateManager
@@ -85,27 +56,6 @@ int main() {
     printTestResult("Create StateManager", true);
     testsPassed++;
 
-<<<<<<< HEAD
-    // Test 4: Test state transitions with no input (should stay IDLE_CALM)
-    totalTests++;
-    std::cout << "\n[Test 4] Testing idle state with no input..." << std::endl;
-    
-    InputState noInput;
-    AnimationState nextState = stateManager.GetNextState(AnimationState::IDLE_CALM, noInput);
-    
-    if (nextState == AnimationState::IDLE_CALM) {
-        std::cout << "  Correctly stays in IDLE_CALM with no input" << std::endl;
-        printTestResult("Idle State No Input", true);
-        testsPassed++;
-    } else {
-        std::cout << "  ERROR: Expected IDLE_CALM state" << std::endl;
-        printTestResult("Idle State No Input", false);
-    }
-
-    // Test 5: Test walk state with forward input
-    totalTests++;
-    std::cout << "\n[Test 5] Testing walk state with forward input..." << std::endl;
-=======
     // Test 4: Test idle state with no input
     totalTests++;
     std::cout << "\n[Test 4] Testing state transition: No input -> IDLE_CALM..." << std::endl;
@@ -125,26 +75,12 @@ int main() {
     // Test 5: Test walk state with forward movement
     totalTests++;
     std::cout << "\n[Test 5] Testing state transition: Move forward -> WALK..." << std::endl;
->>>>>>> origin/main
     
     InputState walkInput;
     walkInput.moveForward = true;
     nextState = stateManager.GetNextState(AnimationState::IDLE_CALM, walkInput);
     
     if (nextState == AnimationState::WALK) {
-<<<<<<< HEAD
-        std::cout << "  Correctly transitions to WALK with forward input" << std::endl;
-        printTestResult("Walk State Transition", true);
-        testsPassed++;
-    } else {
-        std::cout << "  ERROR: Expected WALK state" << std::endl;
-        printTestResult("Walk State Transition", false);
-    }
-
-    // Test 6: Test sprint state with forward + sprint input
-    totalTests++;
-    std::cout << "\n[Test 6] Testing sprint state with forward + sprint input..." << std::endl;
-=======
         std::cout << "  Correctly transitioned from IDLE_CALM to WALK with forward input" << std::endl;
         printTestResult("Walk State Transition", true);
         testsPassed++;
@@ -156,7 +92,6 @@ int main() {
     // Test 6: Test sprint state with forward + sprint
     totalTests++;
     std::cout << "\n[Test 6] Testing state transition: Move forward + Sprint -> SPRINT..." << std::endl;
->>>>>>> origin/main
     
     InputState sprintInput;
     sprintInput.moveForward = true;
@@ -164,19 +99,6 @@ int main() {
     nextState = stateManager.GetNextState(AnimationState::WALK, sprintInput);
     
     if (nextState == AnimationState::SPRINT) {
-<<<<<<< HEAD
-        std::cout << "  Correctly transitions to SPRINT with forward + sprint input" << std::endl;
-        printTestResult("Sprint State Transition", true);
-        testsPassed++;
-    } else {
-        std::cout << "  ERROR: Expected SPRINT state" << std::endl;
-        printTestResult("Sprint State Transition", false);
-    }
-
-    // Test 7: Test attack priority (attack should override movement)
-    totalTests++;
-    std::cout << "\n[Test 7] Testing attack priority over movement..." << std::endl;
-=======
         std::cout << "  Correctly transitioned from WALK to SPRINT with sprint input" << std::endl;
         printTestResult("Sprint State Transition", true);
         testsPassed++;
@@ -188,103 +110,10 @@ int main() {
     // Test 7: Test attack state priority
     totalTests++;
     std::cout << "\n[Test 7] Testing attack input priority..." << std::endl;
->>>>>>> origin/main
     
     InputState attackInput;
     attackInput.moveForward = true;
     attackInput.attack = true;
-<<<<<<< HEAD
-    nextState = stateManager.GetNextState(AnimationState::WALK, attackInput);
-    
-    if (nextState == AnimationState::LIGHT_COMBO) {
-        std::cout << "  Correctly prioritizes attack (LIGHT_COMBO) over movement" << std::endl;
-        printTestResult("Attack Priority", true);
-        testsPassed++;
-    } else {
-        std::cout << "  ERROR: Expected LIGHT_COMBO state" << std::endl;
-        printTestResult("Attack Priority", false);
-    }
-
-    // Test 8: Test jump transition
-    totalTests++;
-    std::cout << "\n[Test 8] Testing jump transition..." << std::endl;
-    
-    InputState jumpInput;
-    jumpInput.jump = true;
-    nextState = stateManager.GetNextState(AnimationState::IDLE_CALM, jumpInput);
-    
-    if (nextState == AnimationState::DODGE_AIR) {
-        std::cout << "  Correctly transitions to DODGE_AIR (placeholder for jump)" << std::endl;
-        printTestResult("Jump Transition", true);
-        testsPassed++;
-    } else {
-        std::cout << "  ERROR: Expected DODGE_AIR state" << std::endl;
-        printTestResult("Jump Transition", false);
-    }
-
-    // Test 9: Test CanTransition validation
-    totalTests++;
-    std::cout << "\n[Test 9] Testing state transition validation..." << std::endl;
-    
-    bool canTransition = stateManager.CanTransition(AnimationState::IDLE_CALM, AnimationState::WALK);
-    bool cannotTransitionFromDeath = stateManager.CanTransition(AnimationState::DEATH, AnimationState::IDLE_CALM);
-    
-    if (canTransition && !cannotTransitionFromDeath) {
-        std::cout << "  Correctly allows valid transitions and blocks invalid ones" << std::endl;
-        std::cout << "  - IDLE_CALM -> WALK: allowed" << std::endl;
-        std::cout << "  - DEATH -> IDLE_CALM: blocked" << std::endl;
-        printTestResult("Transition Validation", true);
-        testsPassed++;
-    } else {
-        std::cout << "  ERROR: Transition validation logic incorrect" << std::endl;
-        printTestResult("Transition Validation", false);
-    }
-
-    // Test 10: Test character integration
-    totalTests++;
-    std::cout << "\n[Test 10] Testing character integration with input system..." << std::endl;
-    
-    auto kaiJax = CharacterFactory::CreateCharacter("kai_jax");
-    
-    if (!kaiJax) {
-        std::cout << "  ERROR: Failed to create character" << std::endl;
-        printTestResult("Character Integration", false);
-    } else if (!kaiJax->inputHandler || !kaiJax->stateManager) {
-        std::cout << "  ERROR: Character missing inputHandler or stateManager" << std::endl;
-        printTestResult("Character Integration", false);
-    } else {
-        std::cout << "  Character has inputHandler: " << (kaiJax->inputHandler != nullptr) << std::endl;
-        std::cout << "  Character has stateManager: " << (kaiJax->stateManager != nullptr) << std::endl;
-        std::cout << "  Initial state: IDLE_CALM" << std::endl;
-        printTestResult("Character Integration", true);
-        testsPassed++;
-    }
-
-    // Test 11: Test character Update with input system
-    totalTests++;
-    std::cout << "\n[Test 11] Testing character Update() with input system..." << std::endl;
-    
-    if (kaiJax) {
-        AnimationState initialState = kaiJax->GetAnimationState();
-        
-        try {
-            // Update should not crash and should maintain or change state based on input
-            kaiJax->Update(0.016f);
-            
-            AnimationState finalState = kaiJax->GetAnimationState();
-            std::cout << "  Update executed successfully" << std::endl;
-            std::cout << "  Initial state: " << static_cast<int>(initialState) << std::endl;
-            std::cout << "  Final state: " << static_cast<int>(finalState) << std::endl;
-            printTestResult("Character Update with Input", true);
-            testsPassed++;
-        } catch (const std::exception& e) {
-            std::cout << "  ERROR: Update threw exception: " << e.what() << std::endl;
-            printTestResult("Character Update with Input", false);
-        }
-    } else {
-        std::cout << "  SKIP: Cannot test without valid character" << std::endl;
-        printTestResult("Character Update with Input", false);
-=======
     nextState = stateManager.GetNextState(AnimationState::IDLE_CALM, attackInput);
     
     if (nextState == AnimationState::LIGHT_COMBO) {
@@ -364,7 +193,6 @@ int main() {
     } else {
         std::cout << "  ERROR: Expected WALK to remain, got " << static_cast<int>(nextState) << std::endl;
         printTestResult("State Remains Same", false);
->>>>>>> origin/main
     }
 
     // Print final results
@@ -375,14 +203,8 @@ int main() {
     
     if (testsPassed == totalTests) {
         std::cout << "\n✓ ALL TESTS PASSED - Input system and state machine working correctly!" << std::endl;
-<<<<<<< HEAD
-        std::cout << "✓ Player input flows: InputHandler → StateManager → Character animations" << std::endl;
-        std::cout << "✓ State transitions validated and logged" << std::endl;
-        std::cout << "✓ Platform-specific input can be plugged in without changing game logic" << std::endl;
-=======
         std::cout << "✓ Player input can drive character animation states" << std::endl;
         std::cout << "✓ State transitions are validated and logged" << std::endl;
->>>>>>> origin/main
         printSeparator();
         return 0;
     } else {
