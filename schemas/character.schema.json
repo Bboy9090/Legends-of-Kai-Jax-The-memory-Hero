@@ -178,12 +178,16 @@
     "mobile_profile": {
       "type": "object",
       "properties": {
+        "allowed_cuts": {
+          "type": "array",
+          "description": "Elements that may be optimized or removed on mobile",
+          "items": {
+            "type": "string"
+          }
+        },
         "never_cut": {
           "type": "array",
-          "description": "Elements that must never be removed on mobile",
-          "contains": {
-            "const": "tail_count"
-          },
+          "description": "Elements that must never be removed on mobile (should include tail_count)",
           "items": {
             "type": "string"
           }
