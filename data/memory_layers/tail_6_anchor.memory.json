@@ -1,0 +1,30 @@
+{
+  "$schema": "../../schemas/memory_layer.schema.json",
+  "memory_id": "memory_anchor_line",
+  "tail_number": 6,
+  "memory_type": "holding_line",
+  "name": "Holding the Line",
+  "description": "Memory of standing when retreat meant death. Choosing immovability.",
+  "read": "If you move, others fall.",
+  "gameplay_effects": {
+    "perception_shifts": [
+      "claimed_space_feels_owned",
+      "crowd_pressure_manageable",
+      "ally_positions_critical"
+    ],
+    "behavior_modifications": [
+      "player_instinctively_claims_space",
+      "retreat_feels_wrong"
+    ],
+    "enemy_reactions": [
+      "allies_rally_without_commands",
+      "enemies_break_formation_near_anchored_kai_jax",
+      "morale_tied_to_kai_jax_position"
+    ],
+    "world_interactions": [
+      "sacred_ground_emerges"
+    ]
+  },
+  "stacking_rule": "cumulative",
+  "persistence": "irreversible"
+}

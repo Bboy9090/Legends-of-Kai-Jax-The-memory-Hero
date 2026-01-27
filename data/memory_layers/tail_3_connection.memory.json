@@ -1,0 +1,30 @@
+{
+  "$schema": "../../schemas/memory_layer.schema.json",
+  "memory_id": "memory_connection_holding",
+  "tail_number": 3,
+  "memory_type": "connection",
+  "name": "Connection",
+  "description": "Memory of holding things together when they should've fallen apart. The beginning of battlefield awareness.",
+  "read": "Nothing stands alone.",
+  "gameplay_effects": {
+    "perception_shifts": [
+      "connected_enemies_glow_subtly",
+      "tether_paths_visible",
+      "environmental_story_readable"
+    ],
+    "behavior_modifications": [
+      "naturally_group_enemies_before_striking",
+      "traversal_routes_feel_obvious"
+    ],
+    "enemy_reactions": [
+      "enemies_group_defensively",
+      "flanking_becomes_riskier"
+    ],
+    "world_interactions": [
+      "environmental_connections_highlighted",
+      "story_hooks_more_apparent"
+    ]
+  },
+  "stacking_rule": "cumulative",
+  "persistence": "irreversible"
+}

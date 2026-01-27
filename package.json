@@ -19,6 +19,7 @@
     "legacy:start": "NODE_ENV=production tsx server/index.ts",
     "db:push": "drizzle-kit push",
     "validate:canon": "node validate-canon.mjs",
+    "validate:memory": "node validate-memory-layers.mjs",
     "test": "echo 'Testing...' && node -e \"console.log('✅ Node.js ready')\""
   },
   "keywords": [

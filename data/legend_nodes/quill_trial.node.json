@@ -31,5 +31,9 @@
       "retaliation_spikes",
       "posture_shred_on_dodge"
     ]
+  },
+  "memory_unsealed": {
+    "memory_id": "memory_pain_remembered",
+    "tail_number": 4
   }
 }

@@ -1,0 +1,26 @@
+{
+  "$schema": "../../schemas/memory_layer.schema.json",
+  "memory_id": "memory_chase_ending",
+  "tail_number": 2,
+  "memory_type": "chase",
+  "name": "The Chase",
+  "description": "Memory of running toward danger, not away. Learning when to close distance decisively.",
+  "read": "End it before it ends you.",
+  "gameplay_effects": {
+    "perception_shifts": [
+      "isolated_enemies_appear_vulnerable",
+      "exit_routes_become_obvious"
+    ],
+    "behavior_modifications": [
+      "executions_feel_intentional_not_automatic",
+      "finishing_cleanly_prioritized"
+    ],
+    "enemy_reactions": [
+      "enemies_flee_sooner_when_isolated",
+      "grouped_enemies_panic"
+    ],
+    "world_interactions": []
+  },
+  "stacking_rule": "cumulative",
+  "persistence": "irreversible"
+}

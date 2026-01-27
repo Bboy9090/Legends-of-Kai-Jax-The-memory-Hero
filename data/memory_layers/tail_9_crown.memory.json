@@ -1,0 +1,34 @@
+{
+  "$schema": "../../schemas/memory_layer.schema.json",
+  "memory_id": "memory_crown_time_paid",
+  "tail_number": 9,
+  "memory_type": "time_paid",
+  "name": "Time Paid",
+  "description": "Full remembrance of the Father's sacrifice. The years he bought. The lives that continued because of it.",
+  "read": "You are the sum of time someone else paid for.",
+  "gameplay_effects": {
+    "perception_shifts": [
+      "enemies_recognize_kai_jax",
+      "authority_changes_outcomes",
+      "conflicts_end_before_beginning",
+      "world_bends_to_will"
+    ],
+    "behavior_modifications": [
+      "command_presence_natural",
+      "decree_feels_inevitable",
+      "choice_becomes_force"
+    ],
+    "enemy_reactions": [
+      "enemies_surrender_without_combat",
+      "npcs_follow_without_question",
+      "world_recognizes_authority"
+    ],
+    "world_interactions": [
+      "collective_memory_accessible",
+      "past_actions_echo_into_present",
+      "sacrifice_honored_globally"
+    ]
+  },
+  "stacking_rule": "cumulative",
+  "persistence": "irreversible"
+}
