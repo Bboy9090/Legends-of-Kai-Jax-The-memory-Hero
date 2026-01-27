@@ -23,3 +23,4 @@ void Character::Render() {
 }
 
 } // namespace LegendsEngine
+

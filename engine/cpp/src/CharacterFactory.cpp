@@ -79,3 +79,4 @@ std::unique_ptr<Character> CharacterFactory::CreateCharacter(const std::string& 
 }
 
 } // namespace LegendsEngine
+
