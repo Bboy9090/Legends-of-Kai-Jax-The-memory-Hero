@@ -7,3 +7,8 @@ export * from './effects';
 export * from './audio';
 export * from './ai';
 export * from './arena';
+export * from './progression/LegendNodeTypes';
+export * from './progression/LegendNodeValidator';
+export * from './progression/LegendNodeManager';
+export * from './trials/QuillTrial';
+export * from './world/WorldState';

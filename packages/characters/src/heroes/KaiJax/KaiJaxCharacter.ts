@@ -32,6 +32,10 @@ export class KaiJaxCharacter extends BaseFighter {
   public tailSystem: TailSystem;
   public combatStats: KaiJaxCombatStats;
   
+  // Legend Node progression tracking (from kai_jax.character.json)
+  public currentTailCount: number = 3; // Start with 3 tails (IMMUTABLE from canon)
+  public unlockedTails: Set<string> = new Set(['bond', 'hunter', 'thread']); // Starting tails
+  
   constructor() {
     super('kai_jax', 'Kai-Jax');
     
@@ -383,6 +387,48 @@ export class KaiJaxCharacter extends BaseFighter {
   }
   
   /**
+   * Unlock a new tail (called by Legend Node completion)
+   * Enforces: tail count never exceeds 9, cannot decrease
+   */
+  public unlockTail(tailName: string, tailNumber: number): void {
+    if (this.unlockedTails.has(tailName)) {
+      throw new Error(`Tail "${tailName}" is already unlocked`);
+    }
+
+    if (tailNumber <= this.currentTailCount) {
+      throw new Error(`Cannot unlock tail ${tailNumber}: must unlock sequentially`);
+    }
+
+    if (tailNumber > 9) {
+      throw new Error('Tail count cannot exceed 9');
+    }
+
+    this.unlockedTails.add(tailName);
+    this.currentTailCount = tailNumber;
+  }
+
+  /**
+   * Get current tail count
+   */
+  public getCurrentTailCount(): number {
+    return this.currentTailCount;
+  }
+
+  /**
+   * Get unlocked tails
+   */
+  public getUnlockedTails(): Set<string> {
+    return new Set(this.unlockedTails);
+  }
+
+  /**
+   * Check if a specific tail is unlocked
+   */
+  public isTailUnlocked(tailName: string): boolean {
+    return this.unlockedTails.has(tailName);
+  }
+  
+  /**
    * Reset character to initial state
    */
   reset(): void {
@@ -401,6 +447,10 @@ export class KaiJaxCharacter extends BaseFighter {
       activeTails: [],
       synergy: 0,
     };
+    
+    // Reset tail progression
+    this.currentTailCount = 3;
+    this.unlockedTails = new Set(['bond', 'hunter', 'thread']);
   }
 }
 
