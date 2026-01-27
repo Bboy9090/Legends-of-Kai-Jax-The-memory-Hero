@@ -6,6 +6,10 @@
 
 namespace LegendsEngine {
 
+// Forward declarations
+class InputHandler;
+class StateManager;
+
 // Mock math types - placeholder until math library is integrated
 struct Vector3 {
     float x = 0.0f;
@@ -103,6 +107,12 @@ public:
 
     // Animation component for managing character animations
     AnimationComponent animationComponent;
+
+    // Input handler for reading player input
+    InputHandler* inputHandler = nullptr;
+
+    // State manager for managing animation state transitions
+    StateManager* stateManager = nullptr;
 
 private:
     // Current animation state tracking
