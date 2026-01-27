@@ -153,6 +153,19 @@
     ]
   },
 
+  "memory_weave": {
+    "enabled": true,
+    "applies_to_all_tails": true,
+    "stacks_progressively": true,
+    "affects": [
+      "player_perception",
+      "combat_decision_making",
+      "enemy_behavior",
+      "world_reaction"
+    ],
+    "cannot_be_removed": true
+  },
+
   "tail_roles": [
     { "index": 1, "name": "bond", "function": "parry_counter_revive" },
     { "index": 2, "name": "hunter", "function": "dash_pursuit_execute" },

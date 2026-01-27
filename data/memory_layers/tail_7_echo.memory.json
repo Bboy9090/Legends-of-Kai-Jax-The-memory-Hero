@@ -1,0 +1,29 @@
+{
+  "$schema": "../../schemas/memory_layer.schema.json",
+  "memory_id": "memory_echo_paths",
+  "tail_number": 7,
+  "memory_type": "alternate_futures",
+  "name": "All the Paths You Could've Taken",
+  "description": "Memory of near-misses and alternate choices. Futures avoided.",
+  "read": "You've already lived this moment.",
+  "gameplay_effects": {
+    "perception_shifts": [
+      "enemy_next_action_feels_predictable",
+      "timing_becomes_intuitive",
+      "combat_feels_rhythmic_musical"
+    ],
+    "behavior_modifications": [
+      "anticipation_before_reaction",
+      "tempo_mastery_emerges",
+      "after_images_feel_inevitable"
+    ],
+    "enemy_reactions": [
+      "attacks_feel_telegraphed",
+      "rhythm_becomes_readable",
+      "prediction_strikes_satisfy"
+    ],
+    "world_interactions": []
+  },
+  "stacking_rule": "cumulative",
+  "persistence": "irreversible"
+}

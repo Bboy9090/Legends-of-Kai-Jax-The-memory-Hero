@@ -6,15 +6,18 @@
  * - Tracks completed nodes per player (immutable set)
  * - Enforces sequential progression rules
  * - Prevents duplicate completions
+ * - Integrates with Memory Weave system for memory layer activation
  */
 
 import { LegendNode } from './LegendNodeTypes';
 import { LegendNodeValidator } from './LegendNodeValidator';
+import { MemoryWeaveManager } from './MemoryWeaveManager';
 
 export class LegendNodeManager {
   private legendNodes: Map<string, LegendNode> = new Map();
   private completedNodes: Set<string> = new Set();
   private unlockedTails: Set<number> = new Set([1, 2, 3]); // Start with 3 tails
+  private memoryWeaveManager?: MemoryWeaveManager;
 
   /**
    * Load a Legend Node and validate it
@@ -62,8 +65,20 @@ export class LegendNodeManager {
   }
 
   /**
+   * Set the Memory Weave Manager for integration
+   */
+  setMemoryWeaveManager(manager: MemoryWeaveManager): void {
+    this.memoryWeaveManager = manager;
+  }
+
+  /**
    * Complete a Legend Node and grant the tail unlock
    * This is irreversible - once complete, cannot be undone
+   * 
+   * Integration with Memory Weave:
+   * 1. Memory layer is activated BEFORE tail count increments
+   * 2. Memory unsealing happens first (perception changes)
+   * 3. Then tail unlock happens (power changes)
    */
   completeNode(nodeId: string): void {
     const node = this.legendNodes.get(nodeId);
@@ -77,11 +92,34 @@ export class LegendNodeManager {
       throw new Error(`Legend Node "${nodeId}" has already been completed. Tail unlocks are irreversible.`);
     }
 
+    // MEMORY WEAVE INTEGRATION:
+    // Activate memory layer BEFORE granting tail (memory before power)
+    if (this.memoryWeaveManager) {
+      try {
+        this.memoryWeaveManager.activateMemoryLayer(node.tail_unlocked);
+      } catch (error) {
+        console.warn(`Failed to activate memory layer for tail ${node.tail_unlocked}:`, error);
+      }
+    }
+
     // Mark as complete (immutable)
     this.completedNodes.add(nodeId);
     
     // Grant the tail unlock (irreversible)
     this.unlockedTails.add(node.tail_unlocked);
+
+    // Verify memory and tail counts are synchronized
+    if (this.memoryWeaveManager) {
+      const memoryCount = this.memoryWeaveManager.getActiveMemoryCount();
+      const tailCount = this.unlockedTails.size;
+      
+      if (memoryCount !== tailCount) {
+        console.error(
+          `CRITICAL: Memory count (${memoryCount}) does not match tail count (${tailCount})! ` +
+          `Memory must always equal tails.`
+        );
+      }
+    }
   }
 
   /**

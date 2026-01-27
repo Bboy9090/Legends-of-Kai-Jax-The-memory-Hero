@@ -37,6 +37,11 @@ export interface LegendNodeReward {
   combat_unlocks: string[];
 }
 
+export interface MemoryUnsealed {
+  memory_id: string;
+  tail_number: number;
+}
+
 export interface LegendNode {
   node_id: string;
   tail_unlocked: 4 | 5 | 6 | 7 | 8 | 9;
@@ -47,6 +52,7 @@ export interface LegendNode {
   victory_conditions: LegendNodeVictoryConditions;
   failure_conditions: LegendNodeFailureConditions;
   reward: LegendNodeReward;
+  memory_unsealed?: MemoryUnsealed;
 }
 
 export interface ValidationResult {

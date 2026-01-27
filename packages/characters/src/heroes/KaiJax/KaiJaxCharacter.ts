@@ -36,6 +36,9 @@ export class KaiJaxCharacter extends BaseFighter {
   public currentTailCount: number = 3; // Start with 3 tails (IMMUTABLE from canon)
   public unlockedTails: Set<string> = new Set(['bond', 'hunter', 'thread']); // Starting tails
   
+  // Memory Weave tracking (immutable, irreversible)
+  public activeMemories: Set<number> = new Set([1, 2, 3]); // Start with first 3 memories
+  
   constructor() {
     super('kai_jax', 'Kai-Jax');
     
@@ -389,6 +392,8 @@ export class KaiJaxCharacter extends BaseFighter {
   /**
    * Unlock a new tail (called by Legend Node completion)
    * Enforces: tail count never exceeds 9, cannot decrease
+   * 
+   * NOTE: Memory activation happens BEFORE this in LegendNodeManager
    */
   public unlockTail(tailName: string, tailNumber: number): void {
     if (this.unlockedTails.has(tailName)) {
@@ -405,6 +410,63 @@ export class KaiJaxCharacter extends BaseFighter {
 
     this.unlockedTails.add(tailName);
     this.currentTailCount = tailNumber;
+    
+    // Memory should already be activated by LegendNodeManager
+    // Verify sync
+    if (!this.activeMemories.has(tailNumber)) {
+      console.warn(
+        `Memory for tail ${tailNumber} not activated! Memory and tail count should be synchronized.`
+      );
+    }
+  }
+
+  /**
+   * Activate a memory layer (called by MemoryWeaveManager via LegendNodeManager)
+   * This happens BEFORE tail unlock - memory before power
+   * Irreversible operation - cannot be undone
+   */
+  public activateMemory(tailNumber: number): void {
+    if (tailNumber < 1 || tailNumber > 9) {
+      throw new Error(`Invalid tail number for memory activation: ${tailNumber}`);
+    }
+    
+    // Activate memory (immutable operation)
+    this.activeMemories.add(tailNumber);
+  }
+
+  /**
+   * Check if a specific memory is active
+   */
+  public isMemoryActive(tailNumber: number): boolean {
+    return this.activeMemories.has(tailNumber);
+  }
+
+  /**
+   * Get all active memories
+   */
+  public getActiveMemories(): Set<number> {
+    return new Set(this.activeMemories);
+  }
+
+  /**
+   * Verify memory count matches tail count
+   * Memory should ALWAYS equal tail count
+   */
+  public verifyMemoryTailSync(): boolean {
+    return this.activeMemories.size === this.currentTailCount;
+  }
+
+  /**
+   * Load active memories from save data
+   * Restores memory state on game load
+   */
+  public loadActiveMemories(memories: number[]): void {
+    this.activeMemories.clear();
+    for (const tailNumber of memories) {
+      if (tailNumber >= 1 && tailNumber <= 9) {
+        this.activeMemories.add(tailNumber);
+      }
+    }
   }
 
   /**
