@@ -1,9 +1,12 @@
 #include "../include/Character.h"
+#include "../include/input/InputHandler.h"
+#include "../include/character/StateManager.h"
 #include <iostream>
 
 namespace LegendsEngine {
 
 void Character::Update(float deltaTime) {
+<<<<<<< HEAD
     // Input-driven state machine update
     // This replaces the old TODO with actual implementation
     
@@ -19,6 +22,21 @@ void Character::Update(float deltaTime) {
             if (nextState != currentAnimationState) {
                 SetAnimationState(nextState);
             }
+=======
+    // Input-driven state machine logic
+    // This is the integration point that wires player input to character animation
+    
+    if (inputHandler && stateManager) {
+        // Step 1: Get current player input
+        InputState input = inputHandler->GetCurrentInput();
+        
+        // Step 2: Determine next animation state based on current state and input
+        AnimationState nextState = stateManager->GetNextState(currentAnimationState, input);
+        
+        // Step 3: Transition to new state if different from current
+        if (nextState != currentAnimationState) {
+            SetAnimationState(nextState);
+>>>>>>> origin/main
         }
     }
     
