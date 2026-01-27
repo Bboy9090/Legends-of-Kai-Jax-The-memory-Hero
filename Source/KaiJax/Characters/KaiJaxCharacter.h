@@ -67,6 +67,9 @@ protected:
 
 public:
     // Tail management
+    // Unlocks the next tail in sequence (3→4→5→6→7→8→9)
+    // Enforces sequential-only unlock per README_CANON.md
+    // Skipping tails is DISALLOWED and will be ignored
     UFUNCTION(BlueprintCallable, Category = "Tails")
     void UnlockTail(int32 TailNumber);
 

@@ -34,7 +34,18 @@ void AKaiJaxCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
-    // Load memory profile from kai_jax.character.json
+    // TODO: Load character data from kai_jax.character.json (lockfile)
+    // This should validate:
+    // - evolution.starting_tail_count == 3
+    // - evolution.final_tail_count == 9
+    // - evolution.unlock_rule == "sequential_only"
+    // - tail_roles array defines all 9 tail functions
+    // For now, using hardcoded values that match the lockfile
+    
+    // Validate initial state matches canon
+    check(ActiveTailCount == 3);  // Per kai_jax.character.json: evolution.starting_tail_count
+    check(TailStates.Num() == 9);  // Per kai_jax.character.json: evolution.final_tail_count
+
     // Activate initial 3 memory layers
     for (int32 i = 0; i < 3; ++i)
     {
@@ -60,6 +71,14 @@ void AKaiJaxCharacter::Tick(float DeltaTime)
 
 void AKaiJaxCharacter::UnlockTail(int32 TailNumber)
 {
+    // Enforce sequential unlock: 3→4→5→6→7→8→9 (per README_CANON.md)
+    // Can only unlock the next tail in sequence
+    if (TailNumber != ActiveTailCount)
+    {
+        // Attempting to skip tails or unlock out of order - DISALLOWED
+        return;
+    }
+
     if (TailNumber >= 0 && TailNumber < 9)
     {
         if (TailStates[TailNumber] == ETailState::Inactive)
@@ -76,6 +95,13 @@ void AKaiJaxCharacter::UpdateTailVisuals()
     // Enable/disable tail mesh components based on ActiveTailCount
     // Drive emissive intensity via material dynamic instance
     // Called whenever tail count changes or memory layer activates
+    
+    // TODO: Trigger world reactions based on tail tier
+    // Reference: data/world/tail_tier_reactions.json
+    // - Update enemy AI behavior (fodder_confidence, elite_tactics)
+    // - Adjust music intensity (combat_layer, percussion_intensity)
+    // - Trigger NPC dialogue changes (default_attitude, fear_level)
+    // - Modify world state (environmental_response, unlock_gates)
 }
 
 void AKaiJaxCharacter::ActivateMemoryLayer(int32 LayerNumber)
