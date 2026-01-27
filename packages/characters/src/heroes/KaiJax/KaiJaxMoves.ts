@@ -1,32 +1,76 @@
 /**
- * OMEGA PROTOCOL: KAI-JAX MOVE SET
+ * AUTHORITATIVE: KAI-JAX MOVE SET
  * 
- * The Archive King - Star-Slime Chimera with 3 Memory Strand Tails
+ * Based on kai_jax.character.json (LOCKFILE)
  * 
- * Archetype: Memory manipulation, authority-based control
- * Philosophy: "Kai-Jax wins by control and inevitability"
+ * The Memory Hero - Wolf/Fox/Hedgehog/Spider Hybrid with 9 Tails
  * 
- * Playstyle:
- * - Slower startup, heavier commitment than speed characters
- * - Wide arcs, space denial, high resonance gain
- * - Memory Strand abilities allow timeline manipulation
+ * Archetype: Stance-shifting battlefield controller
+ * Philosophy: "Mass, inertia, and recovery matter"
  * 
- * Three Tail Strands:
- * - Jax Strand (Velocity/Liquid Ink): Hard-light echoes, after-images
- * - Kai Strand (Shielding/Ink Smoke): Solid-state barriers, web-tethers
- * - Father's Strand (Anchor): Prevents reality collapse, legacy power
+ * Combat Identity:
+ * - Scales from 1v1 to 1v20+ without rule changes
+ * - Strengths: Crowd control, posture break, zone dominance
+ * - Weaknesses: Overextension, corruption overuse
+ * 
+ * Nine Tails:
+ * 1. Bond: Parry/Counter/Revive
+ * 2. Hunter: Dash/Pursuit/Execute
+ * 3. Thread: Web/Pull/Group
+ * 4. Quill: Retaliation/Posture Damage
+ * 5. Shade: Stealth/Threat Reset
+ * 6. Anchor: Anti-Knockback/Root
+ * 7. Echo: After-Image/Repeat
+ * 8. Rift: Reality Tear/AOE
+ * 9. Crown: Aura/Command
+ * 
+ * Animation Rules:
+ * - Minimum 12 frames per action
+ * - Cancel rules: Hit confirm or perfect parry only
+ * - No floaty motion
  */
 
-import { AttackData, FrameData, HitboxData } from '@beast-kin/shared';
+import { AttackData } from '@beast-kin/shared';
 
-export interface KaiJaxMove extends AttackData {
-  strandType?: 'jax' | 'kai' | 'father' | 'combined';
-  memoryEcho?: boolean;
-  trinityGain?: {
-    synergy?: number;
-    resonance?: number;
-    dread?: number;
-  };
+// Extended frame data for detailed move properties
+export interface FrameData {
+  startup: number;
+  active: number;
+  recovery: number;
+  hitstun: number;
+  hitlag: number;
+  shieldstun: number;
+  landingLag?: number;
+  autocancel?: { early: number; late: number };
+}
+
+// Hitbox data for attack collision
+export interface HitboxData {
+  id: string;
+  type: 'hitbox' | 'hurtbox' | 'grabbox';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+// Kai-Jax specific move data
+export interface KaiJaxMove {
+  id: string;
+  name: string;
+  type: 'normal' | 'tilt' | 'smash' | 'aerial' | 'special';
+  damage: number;
+  knockbackAngle: number;
+  knockbackBase: number;
+  knockbackGrowth: number;
+  frameData: FrameData;
+  hitboxes: HitboxData[];
+  tailRole?: 'bond' | 'hunter' | 'thread' | 'quill' | 'shade' | 'anchor' | 'echo' | 'rift' | 'crown';
+  combatProperty?: 'crowd_control' | 'posture_break' | 'zone_dominance';
+  postureBreak?: number; // Amount of posture damage dealt
+  corruptionCost?: number; // Corruption gained from using ability
+  zoneRadius?: number; // Area of effect in meters
+  scalesWithEnemies?: boolean; // Scales from 1v1 to 1v20+
   cancelFlags?: {
     dash?: boolean;
     jump?: boolean;
@@ -49,9 +93,9 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     knockbackBase: 20,
     knockbackGrowth: 5,
     frameData: {
-      startup: 5,
+      startup: 6,
       active: 3,
-      recovery: 10,
+      recovery: 12, // Min 12 frames per action
       hitstun: 12,
       hitlag: 4,
       shieldstun: 6,
@@ -59,9 +103,8 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     hitboxes: [
       { id: 'jab_hit', type: 'hitbox', x: 0.8, y: 0.5, width: 0.6, height: 0.4 },
     ],
-    strandType: 'jax',
-    trinityGain: { synergy: 2 },
-    cancelFlags: { dash: true, jump: true, onHitOnly: true },
+    tailRole: 'bond',
+    cancelFlags: { dash: true, jump: true, onHitOnly: true }, // Hit confirm only
   });
 
   moves.set('jab_2', {
@@ -73,7 +116,7 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     knockbackBase: 25,
     knockbackGrowth: 6,
     frameData: {
-      startup: 4,
+      startup: 5,
       active: 3,
       recovery: 12,
       hitstun: 14,
@@ -83,9 +126,7 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     hitboxes: [
       { id: 'jab2_hit', type: 'hitbox', x: 0.9, y: 0.5, width: 0.7, height: 0.45 },
     ],
-    strandType: 'jax',
-    memoryEcho: true,
-    trinityGain: { synergy: 3 },
+    tailRole: 'echo',
     cancelFlags: { dash: true, jump: true, onHitOnly: true },
   });
 
@@ -108,16 +149,16 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     hitboxes: [
       { id: 'jab3_hit', type: 'hitbox', x: 1.0, y: 0.5, width: 0.9, height: 0.6 },
     ],
-    strandType: 'combined',
-    memoryEcho: true,
-    trinityGain: { synergy: 5, resonance: 2 },
+    tailRole: 'crown',
+    postureBreak: 15,
+    combatProperty: 'posture_break',
     cancelFlags: {},
   });
 
   // ========== TILT ATTACKS ==========
   moves.set('ftilt', {
     id: 'ftilt',
-    name: 'Strand Lash',
+    name: 'Thread Lash',
     type: 'tilt',
     damage: 10,
     knockbackAngle: 40,
@@ -134,14 +175,15 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     hitboxes: [
       { id: 'ftilt_hit', type: 'hitbox', x: 1.2, y: 0.4, width: 1.1, height: 0.5 },
     ],
-    strandType: 'jax',
-    trinityGain: { synergy: 4 },
+    tailRole: 'thread',
+    combatProperty: 'zone_dominance',
+    zoneRadius: 2.5,
     cancelFlags: { special: true, onHitOnly: true },
   });
 
   moves.set('utilt', {
     id: 'utilt',
-    name: 'Archive Column',
+    name: 'Crown Ascent',
     type: 'tilt',
     damage: 9,
     knockbackAngle: 85,
@@ -158,14 +200,14 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     hitboxes: [
       { id: 'utilt_hit', type: 'hitbox', x: 0.3, y: 1.0, width: 0.8, height: 1.0 },
     ],
-    strandType: 'kai',
-    trinityGain: { synergy: 3, resonance: 2 },
+    tailRole: 'crown',
+    combatProperty: 'crowd_control',
     cancelFlags: { jump: true, onHitOnly: true },
   });
 
   moves.set('dtilt', {
     id: 'dtilt',
-    name: 'Memory Sweep',
+    name: 'Hunter Sweep',
     type: 'tilt',
     damage: 7,
     knockbackAngle: 25,
@@ -182,15 +224,14 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     hitboxes: [
       { id: 'dtilt_hit', type: 'hitbox', x: 0.9, y: -0.1, width: 1.0, height: 0.3 },
     ],
-    strandType: 'jax',
-    trinityGain: { synergy: 3 },
+    tailRole: 'hunter',
     cancelFlags: { dash: true, onHitOnly: true },
   });
 
   // ========== SMASH ATTACKS ==========
   moves.set('fsmash', {
     id: 'fsmash',
-    name: 'Chronicle Slam',
+    name: 'Quill Barrage',
     type: 'smash',
     damage: 18,
     knockbackAngle: 35,
@@ -207,15 +248,15 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     hitboxes: [
       { id: 'fsmash_hit', type: 'hitbox', x: 1.4, y: 0.5, width: 1.2, height: 0.8 },
     ],
-    strandType: 'combined',
-    memoryEcho: true,
-    trinityGain: { synergy: 8, resonance: 3 },
+    tailRole: 'quill',
+    combatProperty: 'posture_break',
+    postureBreak: 30,
     cancelFlags: {},
   });
 
   moves.set('usmash', {
     id: 'usmash',
-    name: 'Archive Pillar',
+    name: 'Rift Pillar',
     type: 'smash',
     damage: 16,
     knockbackAngle: 88,
@@ -232,14 +273,15 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     hitboxes: [
       { id: 'usmash_hit', type: 'hitbox', x: 0.2, y: 1.2, width: 1.0, height: 1.2 },
     ],
-    strandType: 'father',
-    trinityGain: { synergy: 6, resonance: 4 },
+    tailRole: 'rift',
+    combatProperty: 'zone_dominance',
+    zoneRadius: 3.0,
     cancelFlags: {},
   });
 
   moves.set('dsmash', {
     id: 'dsmash',
-    name: 'Memory Quake',
+    name: 'Anchor Quake',
     type: 'smash',
     damage: 15,
     knockbackAngle: 30,
@@ -257,16 +299,16 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
       { id: 'dsmash_front', type: 'hitbox', x: 1.0, y: 0.1, width: 1.1, height: 0.5 },
       { id: 'dsmash_back', type: 'hitbox', x: -1.0, y: 0.1, width: 1.1, height: 0.5 },
     ],
-    strandType: 'combined',
-    memoryEcho: true,
-    trinityGain: { synergy: 7, resonance: 2 },
+    tailRole: 'anchor',
+    combatProperty: 'crowd_control',
+    scalesWithEnemies: true,
     cancelFlags: {},
   });
 
   // ========== AERIAL ATTACKS ==========
   moves.set('nair', {
     id: 'nair',
-    name: 'Strand Spiral',
+    name: 'Echo Spiral',
     type: 'aerial',
     damage: 11,
     knockbackAngle: 50,
@@ -285,15 +327,14 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     hitboxes: [
       { id: 'nair_hit', type: 'hitbox', x: 0, y: 0.3, width: 1.4, height: 1.4 },
     ],
-    strandType: 'jax',
-    memoryEcho: true,
-    trinityGain: { synergy: 4 },
+    tailRole: 'echo',
+    combatProperty: 'zone_dominance',
     cancelFlags: {},
   });
 
   moves.set('fair', {
     id: 'fair',
-    name: 'Chronicle Arc',
+    name: 'Thread Arc',
     type: 'aerial',
     damage: 13,
     knockbackAngle: 40,
@@ -312,8 +353,7 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     hitboxes: [
       { id: 'fair_hit', type: 'hitbox', x: 1.3, y: 0.3, width: 1.0, height: 0.8 },
     ],
-    strandType: 'kai',
-    trinityGain: { synergy: 5, resonance: 2 },
+    tailRole: 'thread',
     cancelFlags: {},
   });
 
@@ -338,14 +378,13 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     hitboxes: [
       { id: 'bair_hit', type: 'hitbox', x: -1.2, y: 0.3, width: 0.9, height: 0.6 },
     ],
-    strandType: 'father',
-    trinityGain: { synergy: 5, resonance: 3 },
+    tailRole: 'anchor',
     cancelFlags: {},
   });
 
   moves.set('uair', {
     id: 'uair',
-    name: 'Memory Ascent',
+    name: 'Crown Ascent',
     type: 'aerial',
     damage: 12,
     knockbackAngle: 80,
@@ -364,14 +403,13 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     hitboxes: [
       { id: 'uair_hit', type: 'hitbox', x: 0.1, y: 1.1, width: 1.0, height: 0.8 },
     ],
-    strandType: 'kai',
-    trinityGain: { synergy: 4, resonance: 2 },
+    tailRole: 'crown',
     cancelFlags: {},
   });
 
   moves.set('dair', {
     id: 'dair',
-    name: 'Archive Meteor',
+    name: 'Rift Meteor',
     type: 'aerial',
     damage: 15,
     knockbackAngle: -80,
@@ -390,39 +428,41 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
     hitboxes: [
       { id: 'dair_hit', type: 'hitbox', x: 0.2, y: -0.8, width: 0.8, height: 0.8 },
     ],
-    strandType: 'father',
-    trinityGain: { synergy: 6, resonance: 3 },
+    tailRole: 'rift',
+    combatProperty: 'zone_dominance',
     cancelFlags: {},
   });
 
-  // ========== SPECIAL MOVES ==========
+  // ========== SPECIAL MOVES - 9 TAIL SYSTEM ==========
+  
+  // Neutral Special: Bond Tail - Parry/Counter/Revive
   moves.set('neutral_special', {
     id: 'neutral_special',
-    name: 'Memory Rewind',
+    name: 'Bond Parry',
     type: 'special',
     damage: 0,
     knockbackAngle: 0,
     knockbackBase: 0,
     knockbackGrowth: 0,
     frameData: {
-      startup: 15,
-      active: 1,
-      recovery: 35,
+      startup: 12,
+      active: 24, // Parry window
+      recovery: 28,
       hitstun: 0,
       hitlag: 0,
       shieldstun: 0,
     },
     hitboxes: [],
-    strandType: 'combined',
-    memoryEcho: true,
-    trinityGain: { resonance: -30 }, // Costs 30% resonance
+    tailRole: 'bond',
+    combatProperty: 'posture_break',
     cancelFlags: {},
-    // Special: Rewinds personal timeline 3 seconds
+    // Special: Successful parry leads to counter with 1.5x damage
   });
 
+  // Side Special: Thread Tail - Web/Pull/Group
   moves.set('side_special', {
     id: 'side_special',
-    name: 'Strand Tether',
+    name: 'Thread Web',
     type: 'special',
     damage: 8,
     knockbackAngle: 45,
@@ -437,17 +477,20 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
       shieldstun: 8,
     },
     hitboxes: [
-      { id: 'tether_hit', type: 'hitbox', x: 2.0, y: 0.3, width: 0.4, height: 0.4 },
+      { id: 'thread_hit', type: 'hitbox', x: 2.0, y: 0.3, width: 0.4, height: 0.4 },
     ],
-    strandType: 'kai',
-    trinityGain: { synergy: 4, resonance: 3 },
+    tailRole: 'thread',
+    combatProperty: 'crowd_control',
+    scalesWithEnemies: true, // Can pull multiple enemies
+    zoneRadius: 4.0,
     cancelFlags: { jump: true },
-    // Special: Web-tether to any point, can pull or swing
+    // Special: Web-tether to enemies, can pull or group them
   });
 
+  // Up Special: Hunter Tail - Dash/Pursuit/Execute
   moves.set('up_special', {
     id: 'up_special',
-    name: 'Chronicle Burst',
+    name: 'Hunter Dash',
     type: 'special',
     damage: 6,
     knockbackAngle: 75,
@@ -462,70 +505,243 @@ export function createKaiJaxMoveSet(): Map<string, KaiJaxMove> {
       shieldstun: 6,
     },
     hitboxes: [
-      { id: 'up_b_hit', type: 'hitbox', x: 0, y: 0.5, width: 1.2, height: 1.2 },
+      { id: 'hunter_hit', type: 'hitbox', x: 0, y: 0.5, width: 1.2, height: 1.2 },
     ],
-    strandType: 'jax',
-    memoryEcho: true,
-    trinityGain: { synergy: 3 },
+    tailRole: 'hunter',
     cancelFlags: {},
-    // Recovery move with invincibility
+    // Recovery move with pursuit capability
   });
 
+  // Down Special: Shade Tail - Stealth/Threat Reset
   moves.set('down_special', {
     id: 'down_special',
-    name: 'Archive Counter',
+    name: 'Shade Cloak',
     type: 'special',
     damage: 0,
     knockbackAngle: 0,
     knockbackBase: 0,
     knockbackGrowth: 0,
     frameData: {
-      startup: 5,
-      active: 20,
+      startup: 12,
+      active: 30, // Stealth duration
+      recovery: 20,
+      hitstun: 0,
+      hitlag: 0,
+      shieldstun: 0,
+    },
+    hitboxes: [],
+    tailRole: 'shade',
+    corruptionCost: 10, // Corruption gained from use
+    cancelFlags: {},
+    // Special: Stealth mode, resets enemy threat
+  });
+
+  return moves;
+}
+
+// ========== TAIL-SPECIFIC ABILITIES ==========
+// Additional functions for the remaining tails
+
+/**
+ * Quill Tail: Retaliation/Posture Damage
+ * Passive retaliation when hit
+ */
+export function createQuillRetaliation(): KaiJaxMove {
+  return {
+    id: 'quill_retaliation',
+    name: 'Quill Retaliation',
+    type: 'special',
+    damage: 5,
+    knockbackAngle: 90,
+    knockbackBase: 30,
+    knockbackGrowth: 10,
+    frameData: {
+      startup: 3, // Very fast retaliation
+      active: 2,
+      recovery: 8,
+      hitstun: 10,
+      hitlag: 3,
+      shieldstun: 5,
+    },
+    hitboxes: [
+      { id: 'quill_hit', type: 'hitbox', x: 0, y: 0.5, width: 1.5, height: 1.5 },
+    ],
+    tailRole: 'quill',
+    combatProperty: 'posture_break',
+    postureBreak: 20,
+  };
+}
+
+/**
+ * Anchor Tail: Anti-Knockback/Root
+ * Prevents knockback when active
+ */
+export function createAnchorRoot(): KaiJaxMove {
+  return {
+    id: 'anchor_root',
+    name: 'Anchor Root',
+    type: 'special',
+    damage: 0,
+    knockbackAngle: 0,
+    knockbackBase: 0,
+    knockbackGrowth: 0,
+    frameData: {
+      startup: 8,
+      active: 60, // Long duration
+      recovery: 15,
+      hitstun: 0,
+      hitlag: 0,
+      shieldstun: 0,
+    },
+    hitboxes: [],
+    tailRole: 'anchor',
+    corruptionCost: 5,
+    // Special: Prevents all knockback, roots in place
+  };
+}
+
+/**
+ * Echo Tail: After-Image/Repeat
+ * Creates after-images that repeat last action
+ */
+export function createEchoImage(): KaiJaxMove {
+  return {
+    id: 'echo_image',
+    name: 'Echo After-Image',
+    type: 'special',
+    damage: 0, // Echo deals damage of repeated move
+    knockbackAngle: 0,
+    knockbackBase: 0,
+    knockbackGrowth: 0,
+    frameData: {
+      startup: 10,
+      active: 1,
+      recovery: 20,
+      hitstun: 0,
+      hitlag: 0,
+      shieldstun: 0,
+    },
+    hitboxes: [],
+    tailRole: 'echo',
+    corruptionCost: 15,
+    // Special: Creates after-image that repeats last attack
+  };
+}
+
+/**
+ * Rift Tail: Reality Tear/AOE
+ * Creates AOE zone that damages over time
+ */
+export function createRiftTear(): KaiJaxMove {
+  return {
+    id: 'rift_tear',
+    name: 'Reality Rift',
+    type: 'special',
+    damage: 20, // Total damage over duration
+    knockbackAngle: 90,
+    knockbackBase: 60,
+    knockbackGrowth: 30,
+    frameData: {
+      startup: 20, // Slow startup
+      active: 60, // Long lasting AOE
+      recovery: 40,
+      hitstun: 25,
+      hitlag: 12,
+      shieldstun: 15,
+    },
+    hitboxes: [
+      { id: 'rift_zone', type: 'hitbox', x: 0, y: 0, width: 4.0, height: 4.0 },
+    ],
+    tailRole: 'rift',
+    combatProperty: 'zone_dominance',
+    zoneRadius: 4.0,
+    scalesWithEnemies: true,
+    corruptionCost: 25, // High corruption cost
+  };
+}
+
+/**
+ * Crown Tail: Aura/Command
+ * Buffs allies and debuffs enemies in radius
+ */
+export function createCrownAura(): KaiJaxMove {
+  return {
+    id: 'crown_aura',
+    name: 'Crown Command',
+    type: 'special',
+    damage: 0,
+    knockbackAngle: 0,
+    knockbackBase: 0,
+    knockbackGrowth: 0,
+    frameData: {
+      startup: 15,
+      active: 120, // Long lasting aura
       recovery: 25,
       hitstun: 0,
       hitlag: 0,
       shieldstun: 0,
     },
     hitboxes: [],
-    strandType: 'father',
-    trinityGain: { resonance: 15 }, // Gain 15% resonance on successful counter
-    cancelFlags: {},
-    // Counter: Reflects 1.3x damage on success
-  });
-
-  return moves;
+    tailRole: 'crown',
+    combatProperty: 'crowd_control',
+    zoneRadius: 6.0, // Large aura radius
+    scalesWithEnemies: true,
+    corruptionCost: 20,
+  };
 }
 
 export const KAI_JAX_CHARACTER_DATA = {
-  id: 'kai-jax',
+  id: 'kai_jax',
   name: 'Kai-Jax',
-  displayName: 'KAI-JAX, The Memory Hero',
-  description: 'The Archive King! Star-Slime Chimera with 3 Memory Strand Tails.',
+  displayName: 'Kai-Jax, The Memory Hero',
+  description: 'Wolf/Fox/Hedgehog/Spider hybrid with 9 independent tails. Stance-shifting battlefield controller.',
   
-  // Base stats
-  weight: 85,
-  walkSpeed: 1.2,
-  runSpeed: 1.8,
-  airSpeed: 1.1,
-  jumpHeight: 14,
+  // Base stats aligned with JSON spec
+  weight: 95, // Medium-heavy for crowd control
+  walkSpeed: 1.15,
+  runSpeed: 1.75,
+  airSpeed: 1.05,
+  jumpHeight: 13.5,
   airJumps: 1,
-  fallSpeed: 1.6,
-  fastFallSpeed: 2.4,
+  fallSpeed: 1.65,
+  fastFallSpeed: 2.5,
   gravity: 0.098,
   
-  // Combat identity
-  archetype: 'CONTROL_AUTHORITY',
-  strengths: ['Space control', 'Combo extension', 'Edge guarding', 'Memory manipulation'],
-  weaknesses: ['Slower startup', 'Commitment heavy', 'Linear recovery'],
+  // Combat identity from JSON
+  archetype: 'STANCE_SHIFTING_BATTLEFIELD_CONTROLLER',
+  strengths: ['Crowd control', 'Posture break', 'Zone dominance'],
+  weaknesses: ['Overextension', 'Corruption overuse'],
   
-  // Trinity affinity
-  trinityAffinity: {
-    synergy: 0.8,    // Good synergy gain
-    resonance: 1.2,  // Excellent resonance gain (defensive mastery)
-    dread: 0.6,      // Low dread accumulation (stays calm)
+  // Scales from 1v1 to 1v20+
+  scalesFrom: '1v1',
+  scalesTo: '1v20_plus',
+  
+  // 9 Tail System
+  tailCount: 9,
+  tails: [
+    { index: 1, name: 'Bond', function: 'parry_counter_revive' },
+    { index: 2, name: 'Hunter', function: 'dash_pursuit_execute' },
+    { index: 3, name: 'Thread', function: 'web_pull_group' },
+    { index: 4, name: 'Quill', function: 'retaliation_posture_damage' },
+    { index: 5, name: 'Shade', function: 'stealth_threat_reset' },
+    { index: 6, name: 'Anchor', function: 'anti_knockback_root' },
+    { index: 7, name: 'Echo', function: 'after_image_repeat' },
+    { index: 8, name: 'Rift', function: 'reality_tear_aoe' },
+    { index: 9, name: 'Crown', function: 'aura_command' },
+  ],
+  
+  // Anatomy from JSON
+  anatomy: {
+    speciesComposite: ['wolf', 'fox', 'hedgehog', 'spider'],
+    bodyType: 'humanoid_beast',
+    heightMultiplier: 1.15,
+    build: 'athletic_sinewy_predator',
+    legs: 'digitigrade',
   },
   
-  // Transformation tier
-  transformations: ['kai_jax_awakening', 'kai_jax_apex'],
+  // Animation philosophy from JSON
+  animationPhilosophy: 'mass_and_inertia',
+  noFloatyMotion: true,
+  minFramesPerAction: 12,
+  cancelRules: 'hit_confirm_or_perfect_parry_only',
 };
