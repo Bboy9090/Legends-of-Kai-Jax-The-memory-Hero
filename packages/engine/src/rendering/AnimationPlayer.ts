@@ -56,16 +56,19 @@ export class AnimationPlayer {
   private lodLevel: LODLevel = LODLevel.LOD0;
   private tailPhysicsConfig: TailPhysicsConfig;
   private frameCount: number = 0;
+  private debug: boolean = false;
 
   constructor(
     character: THREE.Group,
     animations?: Map<AnimationStateType, THREE.AnimationClip>,
-    lodLevel: LODLevel = LODLevel.LOD0
+    lodLevel: LODLevel = LODLevel.LOD0,
+    debug: boolean = false
   ) {
     this.character = character;
     this.mixer = new THREE.AnimationMixer(character);
     this.animations = animations || new Map();
     this.lodLevel = lodLevel;
+    this.debug = debug;
 
     // Initialize tail physics per kai_jax.character.json
     this.tailPhysicsConfig = {
@@ -125,7 +128,9 @@ export class AnimationPlayer {
     // Get animation clip (with LOD fallback)
     const clip = this.getAnimationClip(state);
     if (!clip) {
-      console.warn(`[AnimationPlayer] No animation clip for state: ${state}`);
+      if (this.debug) {
+        console.warn(`[AnimationPlayer] No animation clip for state: ${state}`);
+      }
       return;
     }
 
@@ -158,7 +163,9 @@ export class AnimationPlayer {
     this.currentState = state;
     this.frameCount = 0;
 
-    console.log(`[AnimationPlayer] Playing: ${state} (blend: ${metadata.blendDuration}s)`);
+    if (this.debug) {
+      console.log(`[AnimationPlayer] Playing: ${state} (blend: ${metadata.blendDuration}s)`);
+    }
   }
 
   /**
@@ -311,7 +318,9 @@ export class AnimationPlayer {
    */
   public setLODLevel(level: LODLevel): void {
     this.lodLevel = level;
-    console.log(`[AnimationPlayer] LOD level set to: ${level}`);
+    if (this.debug) {
+      console.log(`[AnimationPlayer] LOD level set to: ${level}`);
+    }
   }
 
   /**
@@ -319,6 +328,13 @@ export class AnimationPlayer {
    */
   public setTailPhysicsEnabled(enabled: boolean): void {
     this.tailPhysicsConfig.enabled = enabled;
+  }
+
+  /**
+   * Set debug mode
+   */
+  public setDebug(enabled: boolean): void {
+    this.debug = enabled;
   }
 
   /**

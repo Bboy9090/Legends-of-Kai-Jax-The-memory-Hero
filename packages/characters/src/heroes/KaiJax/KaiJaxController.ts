@@ -18,6 +18,25 @@ import { AnimationStateMachine, AnimationStateType } from '@beast-kin/engine/cha
 import { KaiJaxCharacter } from './KaiJaxCharacter';
 import { InputAction } from '@beast-kin/shared';
 
+// Constants
+const COMBO_WINDOW_MS = 250; // Time window for combo continuation
+const COMBAT_IDLE_TIMEOUT_MS = 2000; // Time before returning to calm idle
+const COMBO_RESET_TIMEOUT_MS = 500; // Time before resetting combo count
+
+/**
+ * Check if animation state is an attack state
+ */
+function isAttackState(state: AnimationStateType): boolean {
+  return (
+    state === AnimationStateType.ATTACK_1 ||
+    state === AnimationStateType.ATTACK_2 ||
+    state === AnimationStateType.ATTACK_3 ||
+    state === AnimationStateType.ATTACK_HEAVY ||
+    state === AnimationStateType.AERIAL_LIGHT ||
+    state === AnimationStateType.AERIAL_HEAVY
+  );
+}
+
 /**
  * Controller state for tracking input and animation
  */
@@ -241,21 +260,16 @@ export class KaiJaxController {
       this.state.isGrounded = false;
     }
 
-    // Combo window check (250ms between attacks)
+    // Combo window check
     const now = performance.now();
-    if (now - this.state.lastAttackTime > 250) {
+    if (now - this.state.lastAttackTime > COMBO_WINDOW_MS) {
       this.state.canCombo = false;
     }
 
     // Reset combo if not attacking
     const currentState = this.animationStateMachine.getCurrentState();
-    if (
-      !currentState.includes('attack') &&
-      currentState !== AnimationStateType.ATTACK_1 &&
-      currentState !== AnimationStateType.ATTACK_2 &&
-      currentState !== AnimationStateType.ATTACK_3
-    ) {
-      if (now - this.state.lastAttackTime > 500) {
+    if (!isAttackState(currentState)) {
+      if (now - this.state.lastAttackTime > COMBO_RESET_TIMEOUT_MS) {
         this.state.comboCount = 0;
       }
     }
@@ -363,7 +377,7 @@ export class KaiJaxController {
         currentState === AnimationStateType.SPRINT)
     ) {
       // Return to combat idle if was moving, calm idle otherwise
-      if (this.state.comboCount > 0 || this.state.lastAttackTime > performance.now() - 2000) {
+      if (this.state.comboCount > 0 || this.state.lastAttackTime > performance.now() - COMBAT_IDLE_TIMEOUT_MS) {
         this.animationStateMachine.transitionTo(AnimationStateType.IDLE_COMBAT);
       } else {
         this.animationStateMachine.transitionTo(AnimationStateType.IDLE_CALM);

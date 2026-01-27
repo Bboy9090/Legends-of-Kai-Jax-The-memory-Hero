@@ -310,10 +310,13 @@ export class MobileInputHandler {
         Math.pow(touch2.clientY - touch1.clientY, 2)
     );
 
+    // Use special ID for pinch gesture tracking
+    const PINCH_GESTURE_ID = -1;
+
     // Store initial distance on first pinch detection
-    if (!this.activeTouches.has(-1)) {
-      this.activeTouches.set(-1, {
-        id: -1,
+    if (!this.activeTouches.has(PINCH_GESTURE_ID)) {
+      this.activeTouches.set(PINCH_GESTURE_ID, {
+        id: PINCH_GESTURE_ID,
         startX: distance,
         startY: 0,
         currentX: distance,
@@ -324,7 +327,7 @@ export class MobileInputHandler {
       return;
     }
 
-    const pinchData = this.activeTouches.get(-1);
+    const pinchData = this.activeTouches.get(PINCH_GESTURE_ID);
     if (!pinchData) return;
 
     const deltaDistance = distance - pinchData.startX;

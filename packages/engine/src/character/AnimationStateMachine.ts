@@ -143,12 +143,14 @@ export class AnimationStateMachine {
   private frameCount: number = 0;
   private stateMetadata: Map<AnimationStateType, AnimationStateMetadata>;
   private validTransitions: Map<AnimationStateType, Set<AnimationStateType>>;
+  private debug: boolean = false;
   
   // Event callbacks
   private onEnterCallbacks: Map<AnimationStateType, Set<StateChangeCallback>> = new Map();
   private onExitCallbacks: Map<AnimationStateType, Set<StateChangeCallback>> = new Map();
   
-  constructor() {
+  constructor(debug: boolean = false) {
+    this.debug = debug;
     this.stateMetadata = this.initializeStateMetadata();
     this.validTransitions = this.initializeValidTransitions();
   }
@@ -625,7 +627,9 @@ export class AnimationStateMachine {
     if (!force) {
       const validation = this.validateTransition(this.currentState, toState);
       if (!validation.valid) {
-        console.warn(`[AnimationSM] Transition rejected: ${validation.reason}`);
+        if (this.debug) {
+          console.warn(`[AnimationSM] Transition rejected: ${validation.reason}`);
+        }
         return false;
       }
     }
@@ -633,7 +637,9 @@ export class AnimationStateMachine {
     // Get metadata
     const toMetadata = this.stateMetadata.get(toState);
     if (!toMetadata) {
-      console.error(`[AnimationSM] Unknown state: ${toState}`);
+      if (this.debug) {
+        console.error(`[AnimationSM] Unknown state: ${toState}`);
+      }
       return false;
     }
 
@@ -658,8 +664,17 @@ export class AnimationStateMachine {
       });
     }
 
-    console.log(`[AnimationSM] Transition: ${this.previousState} → ${toState}`);
+    if (this.debug) {
+      console.log(`[AnimationSM] Transition: ${this.previousState} → ${toState}`);
+    }
     return true;
+  }
+
+  /**
+   * Set debug mode
+   */
+  public setDebug(enabled: boolean): void {
+    this.debug = enabled;
   }
 
   /**
