@@ -1,0 +1,176 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://legends-of-kai-jax.com/schemas/legend_node.schema.json",
+  "title": "Legend Node Schema",
+  "description": "JSON Schema for Legend Node definitions. Legend Nodes are irreversible behavioral trials that gate tail unlocks in Legends of Kai-Jax.",
+  "type": "object",
+  "required": [
+    "node_id",
+    "tail_unlocked",
+    "name",
+    "location",
+    "unlock_conditions",
+    "trial_rules",
+    "victory_conditions",
+    "failure_conditions",
+    "reward"
+  ],
+  "properties": {
+    "node_id": {
+      "type": "string",
+      "description": "Unique identifier for the Legend Node",
+      "pattern": "^legend_node_[a-z_]+$"
+    },
+    "tail_unlocked": {
+      "type": "integer",
+      "description": "Exact tail number unlocked by completing this node (4-9 only, as tails 1-3 are starting)",
+      "enum": [4, 5, 6, 7, 8, 9]
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name for the Legend Node trial"
+    },
+    "location": {
+      "type": "string",
+      "description": "Zone name where this Legend Node is located"
+    },
+    "unlock_conditions": {
+      "type": "object",
+      "description": "Conditions required to attempt this Legend Node",
+      "required": [
+        "starting_tail_count_required",
+        "no_skip_allowed"
+      ],
+      "properties": {
+        "starting_tail_count_required": {
+          "type": "integer",
+          "description": "Player must have exactly this many tails to attempt (enforces sequential progression)",
+          "minimum": 3,
+          "maximum": 8
+        },
+        "no_skip_allowed": {
+          "type": "boolean",
+          "const": true,
+          "description": "Legend Nodes cannot be skipped (IMMUTABLE)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "trial_rules": {
+      "type": "object",
+      "description": "Rules that govern the trial behavior",
+      "required": [
+        "healing_disabled",
+        "revives_disabled",
+        "environmental_kills_allowed",
+        "difficulty_scaling"
+      ],
+      "properties": {
+        "healing_disabled": {
+          "type": "boolean",
+          "description": "Whether healing abilities are disabled during trial"
+        },
+        "revives_disabled": {
+          "type": "boolean",
+          "description": "Whether revive abilities are disabled during trial"
+        },
+        "environmental_kills_allowed": {
+          "type": "boolean",
+          "description": "Whether environmental kills count toward victory"
+        },
+        "difficulty_scaling": {
+          "type": "string",
+          "description": "How trial difficulty scales with player progression",
+          "enum": ["fixed", "adaptive"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "victory_conditions": {
+      "type": "object",
+      "description": "Conditions that must be met to succeed in the trial",
+      "properties": {
+        "perfect_dodges_required": {
+          "type": "integer",
+          "description": "Number of perfect dodges required",
+          "minimum": 0
+        },
+        "posture_breaks_required": {
+          "type": "integer",
+          "description": "Number of enemy posture breaks required",
+          "minimum": 0
+        },
+        "damage_taken_threshold": {
+          "type": "number",
+          "description": "Maximum damage taken as percentage (0-1)",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "time_limit_seconds": {
+          "type": "integer",
+          "description": "Optional time limit for completion",
+          "minimum": 1
+        },
+        "enemies_defeated_required": {
+          "type": "integer",
+          "description": "Number of enemies that must be defeated",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "failure_conditions": {
+      "type": "object",
+      "description": "Conditions that cause trial failure",
+      "required": [
+        "health_depleted",
+        "excessive_damage_taken"
+      ],
+      "properties": {
+        "health_depleted": {
+          "type": "boolean",
+          "description": "Whether health reaching 0 causes failure"
+        },
+        "excessive_damage_taken": {
+          "type": "boolean",
+          "description": "Whether exceeding damage threshold causes failure"
+        },
+        "time_limit_exceeded": {
+          "type": "boolean",
+          "description": "Whether exceeding time limit causes failure"
+        }
+      },
+      "additionalProperties": false
+    },
+    "reward": {
+      "type": "object",
+      "description": "Reward granted upon successful completion",
+      "required": [
+        "tail",
+        "visual_change",
+        "combat_unlocks"
+      ],
+      "properties": {
+        "tail": {
+          "type": "string",
+          "description": "Name of the tail being unlocked",
+          "pattern": "^[a-z_]+$"
+        },
+        "visual_change": {
+          "type": "string",
+          "description": "Diegetic description of the visual transformation"
+        },
+        "combat_unlocks": {
+          "type": "array",
+          "description": "Combat abilities or mechanics unlocked with this tail",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
