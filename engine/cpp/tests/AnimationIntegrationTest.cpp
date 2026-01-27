@@ -91,21 +91,26 @@ int main() {
     }
     printTestResult("Multiple State Transitions", kaiJax->GetAnimationState() == AnimationState::IDLE_COMBAT);
 
-    // Test 5: Test Update method doesn't interfere with animation state
+    // Test 5: Test Update method drives animation state from input
     totalTests++;
     std::cout << "\n[Test 5] Testing Update method with animation state..." << std::endl;
     
     AnimationState stateBefore = kaiJax->GetAnimationState();
+    std::cout << "  State before Update: " << static_cast<int>(stateBefore) << std::endl;
+    
     kaiJax->Update(0.016f);
     AnimationState stateAfter = kaiJax->GetAnimationState();
+    std::cout << "  State after Update: " << static_cast<int>(stateAfter) << std::endl;
     
-    if (stateBefore == stateAfter) {
-        std::cout << "  Correct: Update doesn't change animation state" << std::endl;
+    // With the new input system, Update() now processes input and updates state
+    // Since GetCurrentInput() returns zero (no input), it should transition to IDLE_CALM
+    if (stateAfter == AnimationState::IDLE_CALM) {
+        std::cout << "  Correct: Update transitions to IDLE_CALM with no input" << std::endl;
         testsPassed++;
     } else {
-        std::cout << "  ERROR: Update should not change animation state" << std::endl;
+        std::cout << "  ERROR: Expected IDLE_CALM, got state " << static_cast<int>(stateAfter) << std::endl;
     }
-    printTestResult("Update Preserves State", stateBefore == stateAfter);
+    printTestResult("Update Drives State from Input", stateAfter == AnimationState::IDLE_CALM);
 
     // Print final results
     printSeparator();
