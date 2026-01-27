@@ -5,6 +5,10 @@
  * World state changes are irreversible once committed to save file.
  */
 
+// Constants for tail progression (from kai_jax.character.json)
+const STARTING_TAIL_COUNT = 3;
+const MAX_TAIL_COUNT = 9;
+
 /**
  * World state data structure
  */
@@ -43,7 +47,7 @@ export interface WorldState {
  */
 export function createDefaultWorldState(): WorldState {
   return {
-    current_tail_count: 3,
+    current_tail_count: STARTING_TAIL_COUNT,
     completed_legend_nodes: [],
     unlocked_abilities: ['bond', 'hunter', 'thread'], // Starting tails
     discovered_zones: [],
@@ -88,8 +92,8 @@ export class WorldStateManager {
       );
     }
 
-    if (newCount < 3 || newCount > 9) {
-      throw new Error(`Invalid tail count: ${newCount}. Must be between 3 and 9.`);
+    if (newCount < STARTING_TAIL_COUNT || newCount > MAX_TAIL_COUNT) {
+      throw new Error(`Invalid tail count: ${newCount}. Must be between ${STARTING_TAIL_COUNT} and ${MAX_TAIL_COUNT}.`);
     }
 
     // Sequential progression check
@@ -119,9 +123,9 @@ export class WorldStateManager {
    * Update NPC reactions based on tail count (from tail_tier_reactions.json)
    */
   private updateNPCReactions(tailCount: number): void {
-    // Map tail count to fear/worship levels
+    // Map tail count to fear/worship levels (from tail_tier_reactions.json)
     const reactionMap: Record<number, { fear: number; worship: number }> = {
-      3: { fear: 0, worship: 0 },
+      [STARTING_TAIL_COUNT]: { fear: 0, worship: 0 },
       4: { fear: 1, worship: 0 },
       5: { fear: 2, worship: 1 },
       6: { fear: 3, worship: 2 },
@@ -237,13 +241,13 @@ export class WorldStateManager {
     const errors: string[] = [];
 
     // Validate tail count
-    if (this.worldState.current_tail_count < 3 || this.worldState.current_tail_count > 9) {
+    if (this.worldState.current_tail_count < STARTING_TAIL_COUNT || this.worldState.current_tail_count > MAX_TAIL_COUNT) {
       errors.push(`Invalid tail count: ${this.worldState.current_tail_count}`);
     }
 
     // Validate sequential progression
     const completedNodes = this.worldState.completed_legend_nodes.length;
-    const expectedTailCount = 3 + completedNodes;
+    const expectedTailCount = STARTING_TAIL_COUNT + completedNodes;
     if (this.worldState.current_tail_count !== expectedTailCount) {
       errors.push(
         `Tail count mismatch: have ${this.worldState.current_tail_count} tails but ` +
@@ -252,7 +256,7 @@ export class WorldStateManager {
     }
 
     // Validate ability unlocks match tail count
-    const startingAbilities = 3; // bond, hunter, thread
+    const startingAbilities = STARTING_TAIL_COUNT; // bond, hunter, thread
     const minAbilities = startingAbilities + completedNodes;
     if (this.worldState.unlocked_abilities.length < minAbilities) {
       errors.push(

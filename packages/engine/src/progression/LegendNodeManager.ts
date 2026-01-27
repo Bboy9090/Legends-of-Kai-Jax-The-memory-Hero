@@ -9,6 +9,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+// Constants for tail progression (from kai_jax.character.json)
+const STARTING_TAIL_COUNT = 3;
+
 /**
  * Legend Node definition
  */
@@ -265,7 +268,7 @@ export class LegendNodeManager {
     const allNodes = this.loadAllLegendNodes();
     
     // Build expected progression path
-    const expectedPath: number[] = [3]; // Starting tails
+    const expectedPath: number[] = [STARTING_TAIL_COUNT]; // Starting tails
     
     for (const node of allNodes) {
       if (playerState.completed_legend_nodes.includes(node.node_id)) {
