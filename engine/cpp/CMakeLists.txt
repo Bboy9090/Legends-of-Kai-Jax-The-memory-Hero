@@ -29,6 +29,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 # Library target
 add_library(LegendsEngineCore STATIC
     src/CharacterLoader.cpp
+    src/Character.cpp
+    src/CharacterFactory.cpp
 )
 
 target_link_libraries(LegendsEngineCore
@@ -44,8 +46,17 @@ target_link_libraries(CharacterLoaderTest
     PRIVATE LegendsEngineCore
 )
 
+# Test executable for CharacterFactory
+add_executable(CharacterFactoryTest
+    tests/CharacterFactoryTest.cpp
+)
+
+target_link_libraries(CharacterFactoryTest
+    PRIVATE LegendsEngineCore
+)
+
 # Set output directories
-set_target_properties(LegendsEngineCore CharacterLoaderTest
+set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -66,3 +77,4 @@ install(DIRECTORY include/
 # Enable testing
 enable_testing()
 add_test(NAME CharacterLoaderTest COMMAND CharacterLoaderTest)
+add_test(NAME CharacterFactoryTest COMMAND CharacterFactoryTest)
