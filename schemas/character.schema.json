@@ -1,0 +1,198 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://legends-of-kai-jax.com/schemas/character.schema.json",
+  "title": "Legends Character Schema",
+  "description": "JSON Schema for character definitions in Legends of Kai-Jax. Enforces canon requirements including evolution constraints.",
+  "type": "object",
+  "required": [
+    "character_id",
+    "display_name",
+    "version",
+    "anatomy",
+    "evolution"
+  ],
+  "properties": {
+    "character_id": {
+      "type": "string",
+      "description": "Unique identifier for the character",
+      "pattern": "^[a-z_]+$"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Human-readable character name"
+    },
+    "title": {
+      "type": "string",
+      "description": "Character's title or epithet"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of character definition",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "authoritative_reference": {
+      "type": "object",
+      "description": "Reference to source of truth for visual design"
+    },
+    "anatomy": {
+      "type": "object",
+      "required": ["tail_count"],
+      "properties": {
+        "species_composite": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "body_type": {
+          "type": "string"
+        },
+        "height_multiplier": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 3.0
+        },
+        "build": {
+          "type": "string"
+        },
+        "legs": {
+          "type": "string"
+        },
+        "hands": {
+          "type": "string"
+        },
+        "head": {
+          "type": "string"
+        },
+        "spine": {
+          "type": "string"
+        },
+        "tail_count": {
+          "type": "integer",
+          "description": "Current number of tails (must match evolution rules)",
+          "minimum": 1,
+          "maximum": 9
+        }
+      }
+    },
+    "evolution": {
+      "type": "object",
+      "description": "Evolution system configuration (IMMUTABLE RULES)",
+      "required": [
+        "starting_tail_count",
+        "final_tail_count",
+        "unlock_rule",
+        "skip_unlocks_disallowed",
+        "tails_are_permanent"
+      ],
+      "properties": {
+        "starting_tail_count": {
+          "type": "integer",
+          "const": 3,
+          "description": "All characters start with exactly 3 tails (IMMUTABLE)"
+        },
+        "final_tail_count": {
+          "type": "integer",
+          "const": 9,
+          "description": "Maximum tail count is exactly 9 (IMMUTABLE)"
+        },
+        "unlock_rule": {
+          "type": "string",
+          "enum": ["sequential_only"],
+          "description": "Tails must unlock in sequential order: 3→4→5→6→7→8→9 (IMMUTABLE)"
+        },
+        "skip_unlocks_disallowed": {
+          "type": "boolean",
+          "const": true,
+          "description": "Players cannot skip tail unlocks (IMMUTABLE)"
+        },
+        "tails_are_permanent": {
+          "type": "boolean",
+          "const": true,
+          "description": "Tails cannot be removed or reset after unlock (IMMUTABLE)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "silhouette_rules": {
+      "type": "object"
+    },
+    "modeling": {
+      "type": "object"
+    },
+    "materials": {
+      "type": "object"
+    },
+    "rigging": {
+      "type": "object",
+      "properties": {
+        "extra_bones": {
+          "type": "object",
+          "properties": {
+            "tails": {
+              "type": "object",
+              "required": ["count"],
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "description": "Number of tails to rig (must match anatomy.tail_count)",
+                  "minimum": 1,
+                  "maximum": 9
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "animation": {
+      "type": "object"
+    },
+    "combat_identity": {
+      "type": "object"
+    },
+    "tail_roles": {
+      "type": "array",
+      "description": "Functional role of each tail",
+      "items": {
+        "type": "object",
+        "required": ["index", "name", "function"],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9
+          },
+          "name": {
+            "type": "string"
+          },
+          "function": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "engine_integration": {
+      "type": "object"
+    },
+    "mobile_profile": {
+      "type": "object",
+      "properties": {
+        "never_cut": {
+          "type": "array",
+          "description": "Elements that must never be removed on mobile",
+          "contains": {
+            "const": "tail_count"
+          },
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "acceptance_criteria": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}
