@@ -3,12 +3,6 @@
 
 namespace LegendsEngine {
 
-Character::~Character() {
-    // Clean up owned resources
-    delete inputHandler;
-    delete stateManager;
-}
-
 void Character::Update(float deltaTime) {
     // Input-driven state machine update
     // This replaces the old TODO with actual implementation

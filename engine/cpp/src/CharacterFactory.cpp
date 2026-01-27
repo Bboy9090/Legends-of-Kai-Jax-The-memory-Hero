@@ -48,10 +48,9 @@ std::unique_ptr<Character> CharacterFactory::CreateCharacter(const std::string& 
     auto character = std::make_unique<Character>();
     
     // Step 4: Create and wire input handler and state manager
-    // These are created as raw pointers owned by the character
-    // TODO: Consider using smart pointers for better memory management
-    character->inputHandler = new InputHandler();
-    character->stateManager = new StateManager();
+    // These are created as unique_ptr for RAII and automatic memory management
+    character->inputHandler = std::make_unique<InputHandler>();
+    character->stateManager = std::make_unique<StateManager>();
     
     std::cout << "CharacterFactory: Created InputHandler and StateManager" << std::endl;
     

@@ -55,7 +55,7 @@ struct Material {
 class Character {
 public:
     Character() = default;
-    ~Character();
+    ~Character() = default;
 
     // Disable copy/move to enforce single ownership
     Character(const Character&) = delete;
@@ -107,10 +107,10 @@ public:
     AnimationComponent animationComponent;
 
     // Input handler for reading player input
-    InputHandler* inputHandler = nullptr;
+    std::unique_ptr<InputHandler> inputHandler;
 
     // State manager for handling animation state transitions
-    StateManager* stateManager = nullptr;
+    std::unique_ptr<StateManager> stateManager;
 
 private:
     // Current animation state tracking

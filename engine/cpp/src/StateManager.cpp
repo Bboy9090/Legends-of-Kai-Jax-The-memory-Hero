@@ -77,9 +77,10 @@ bool StateManager::CanTransition(AnimationState from, AnimationState to) {
         return false;
     }
 
-    // Rule 2: Cannot transition to the same state (already there)
+    // Rule 2: Staying in the same state is always allowed (no-op)
+    // This is not considered a "transition" but rather maintaining current state
     if (from == to) {
-        return false;
+        return true;
     }
 
     // TODO: Implement more comprehensive transition validation:
