@@ -1,0 +1,130 @@
+{
+  "$schema": "../../schemas/boss_design_bible.schema.json",
+  "title": "Boss Design Bible",
+  "description": "Defines boss expectations per tail tier. Bosses never invalidate prior tails; they require them.",
+  "version": "1.0.0",
+  "last_updated": "2026-01-27",
+  "design_law": "Bosses never invalidate prior tails; they require them",
+  "boss_tiers": {
+    "tier_3_4": {
+      "tier_name": "Proven Predator",
+      "tail_range": [3, 4],
+      "expects": [
+        "perfect_dodge",
+        "posture_break",
+        "combo_completion"
+      ],
+      "punishes": [
+        "spam_attacks",
+        "panic_dodging",
+        "ignoring_posture"
+      ],
+      "weak_to": [
+        "retaliation_windows",
+        "parry_counters",
+        "stamina_breaks"
+      ],
+      "philosophy": "Boss validates player mastery of fundamentals: timing, posture, and retaliation."
+    },
+    "tier_5": {
+      "tier_name": "Zone Breaker",
+      "tail_range": [5, 5],
+      "expects": [
+        "stealth_angle_control",
+        "threat_reset",
+        "backstab_timing"
+      ],
+      "punishes": [
+        "overcommit",
+        "frontal_assault_spam",
+        "ignoring_threat_state"
+      ],
+      "weak_to": [
+        "backstab_timing",
+        "threat_manipulation",
+        "stealth_repositioning"
+      ],
+      "philosophy": "Boss forces player to use Shade Trial mechanics: threat, stealth, positioning over brute force."
+    },
+    "tier_6": {
+      "tier_name": "Myth in Motion",
+      "tail_range": [6, 6],
+      "expects": [
+        "anchor_control",
+        "space_denial",
+        "anti_displacement"
+      ],
+      "punishes": [
+        "kiting",
+        "passive_play",
+        "running_from_pressure"
+      ],
+      "weak_to": [
+        "root_and_shatter",
+        "stance_holding",
+        "zone_dominance"
+      ],
+      "philosophy": "Boss demands player control space and refuse displacement. Anchor turns defense into offense."
+    },
+    "tier_7": {
+      "tier_name": "Apex Legend",
+      "tail_range": [7, 7],
+      "expects": [
+        "tempo_mastery",
+        "after_image_baits",
+        "action_economy"
+      ],
+      "punishes": [
+        "hesitation",
+        "reactive_play_only",
+        "wasted_actions"
+      ],
+      "weak_to": [
+        "after_image_baits",
+        "tempo_control",
+        "prediction_reversals"
+      ],
+      "philosophy": "Boss tests player's ability to control combat flow. Echo tail enables proactive counterplay."
+    },
+    "tier_8": {
+      "tier_name": "Threshold of Divinity",
+      "tail_range": [8, 8],
+      "expects": [
+        "risk_management",
+        "execution_chains",
+        "reality_manipulation"
+      ],
+      "punishes": [
+        "greed",
+        "dropped_combos",
+        "hesitation_on_openings"
+      ],
+      "weak_to": [
+        "execution_chains",
+        "rift_zone_control",
+        "reality_tear_setups"
+      ],
+      "philosophy": "Boss demands perfection under pressure. Rift tail enables high-risk, high-reward plays."
+    },
+    "tier_9": {
+      "tier_name": "Crown of Memory",
+      "tail_range": [9, 9],
+      "expects": [
+        "authority",
+        "mastery_of_all_tails",
+        "battlefield_command"
+      ],
+      "punishes": [
+        "mistakes_still_matter",
+        "underestimating_final_boss",
+        "relying_on_single_tail"
+      ],
+      "weak_to": [
+        "player_choice",
+        "complete_toolkit",
+        "nine_tail_synergy"
+      ],
+      "philosophy": "Final boss validates player's journey. Every tail matters. Crown unifies them all."
+    }
+  }
+}

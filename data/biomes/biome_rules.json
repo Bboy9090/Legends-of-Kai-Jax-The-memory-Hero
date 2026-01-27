@@ -1,0 +1,47 @@
+{
+  "$schema": "../../schemas/biome_rules.schema.json",
+  "title": "Biome Rules and Gameplay Profiles",
+  "description": "Defines gameplay complexity scaling per biome. Biomes are NOT cosmetic—they define encounter rules, visibility systems, and enemy behavior.",
+  "version": "1.0.0",
+  "last_updated": "2026-01-27",
+  "biomes": {
+    "ashbone_district": {
+      "biome_id": "ashbone_district",
+      "display_name": "Ashbone District",
+      "verticality": "medium",
+      "visibility": "clear",
+      "enemy_density": "moderate",
+      "encounter_bias": ["bruiser", "swarmer"],
+      "music_profile": "industrial_tension",
+      "description": "Urban combat zone with medium verticality. Clear sightlines favor aggressive play."
+    },
+    "blackreach_underpass": {
+      "biome_id": "blackreach_underpass",
+      "display_name": "Blackreach Underpass",
+      "verticality": "high",
+      "visibility": "low_dynamic",
+      "enemy_density": "high_but_queued",
+      "encounter_bias": ["swarmer", "disruptor", "elite"],
+      "music_profile": "subterranean_hunt",
+      "systems_enabled": ["stealth", "threat_reset"],
+      "description": "Subterranean ruins with high verticality and dynamic lighting. Stealth and threat manipulation are critical."
+    }
+  },
+  "hard_rules": {
+    "density_scaling": {
+      "rule": "Density increases only with attack queues, never swarm spam",
+      "rationale": "Player must be able to read threats and respond. Overwhelming through numbers violates combat philosophy.",
+      "enforcement": "high_but_queued density caps simultaneous active enemies and queues reinforcements."
+    },
+    "visibility_as_gameplay": {
+      "rule": "Visibility affects lights, shadows, sound propagation—not just cosmetics",
+      "rationale": "Stealth systems require meaningful visibility mechanics. Players must be able to break line of sight.",
+      "enforcement": "low_dynamic visibility enables floodlight avoidance, shadow positioning, and sound-based detection."
+    },
+    "mobile_optimization": {
+      "rule": "Mobile profile cuts translucency effects only, never silhouettes or gameplay-critical elements",
+      "rationale": "Gameplay integrity is non-negotiable. Visual fidelity can scale, mechanics cannot.",
+      "enforcement": "Silhouette clarity, enemy outlines, and visibility zones are preserved on all platforms."
+    }
+  }
+}

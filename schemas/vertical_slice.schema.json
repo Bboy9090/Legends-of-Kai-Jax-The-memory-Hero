@@ -1,0 +1,162 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://legends-of-kai-jax.com/schemas/vertical_slice.schema.json",
+  "title": "Vertical Slice Schema",
+  "description": "JSON Schema for vertical slice definitions. Vertical slices are polished gameplay segments showcasing progression.",
+  "type": "object",
+  "required": [
+    "slice_id",
+    "name",
+    "description",
+    "playtime_target_minutes",
+    "player_state",
+    "zone",
+    "mission_flow",
+    "end_state"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "slice_id": {
+      "type": "string",
+      "description": "Unique identifier for the vertical slice",
+      "pattern": "^vertical_slice_[a-z_]+$"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Slice overview"
+    },
+    "playtime_target_minutes": {
+      "type": "integer",
+      "description": "Expected completion time in minutes",
+      "minimum": 1
+    },
+    "player_state": {
+      "type": "object",
+      "description": "Player's starting state for this slice",
+      "required": ["starting_tails", "abilities_locked"],
+      "properties": {
+        "starting_tails": {
+          "type": "integer",
+          "description": "Number of tails player starts with",
+          "minimum": 3,
+          "maximum": 9
+        },
+        "abilities_locked": {
+          "type": "array",
+          "description": "Abilities not yet unlocked",
+          "items": {
+            "type": "string",
+            "enum": ["quill", "shade", "anchor", "echo", "rift", "crown"]
+          }
+        }
+      }
+    },
+    "zone": {
+      "type": "object",
+      "description": "Zone configuration",
+      "required": ["name", "biome"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "biome": {
+          "type": "string"
+        },
+        "verticality": {
+          "type": "string",
+          "enum": ["low", "medium", "high"]
+        },
+        "streaming_chunks": {
+          "type": "boolean"
+        }
+      }
+    },
+    "mission_flow": {
+      "type": "array",
+      "description": "Ordered sequence of mission phases",
+      "items": {
+        "type": "object",
+        "required": ["phase", "type", "objective"],
+        "properties": {
+          "phase": {
+            "type": "integer",
+            "description": "Phase number in sequence",
+            "minimum": 1
+          },
+          "type": {
+            "type": "string",
+            "description": "Mission phase type",
+            "enum": ["stealth_exploration", "hybrid_combat", "elite_duel", "legend_node", "boss_fight"]
+          },
+          "objective": {
+            "type": "string",
+            "description": "Phase objective description"
+          },
+          "enemy_waves": {
+            "type": "integer",
+            "description": "Number of enemy waves (combat phases)",
+            "minimum": 0
+          },
+          "max_enemies_simultaneous": {
+            "type": "integer",
+            "description": "Max enemies active at once (combat phases)",
+            "minimum": 0
+          },
+          "boss_name": {
+            "type": "string",
+            "description": "Boss name (for elite_duel/boss_fight)"
+          },
+          "legend_node_id": {
+            "type": "string",
+            "description": "Legend node identifier (for legend_node phase)"
+          },
+          "mechanics": {
+            "type": "array",
+            "description": "Key mechanics tested in this phase",
+            "items": {
+              "type": "string"
+            }
+          },
+          "duration_minutes": {
+            "type": "integer",
+            "description": "Expected phase duration",
+            "minimum": 0
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "end_state": {
+      "type": "object",
+      "description": "Expected state after slice completion",
+      "required": ["tail_unlocked", "world_state_updated"],
+      "properties": {
+        "tail_unlocked": {
+          "type": "integer",
+          "description": "Tail count after completion",
+          "minimum": 4,
+          "maximum": 9
+        },
+        "world_state_updated": {
+          "type": "boolean",
+          "description": "Whether world state changes"
+        },
+        "narrative_beat": {
+          "type": "string",
+          "description": "Story moment at completion"
+        }
+      }
+    },
+    "validation_criteria": {
+      "type": "object",
+      "description": "Validation rules for slice"
+    }
+  },
+  "additionalProperties": false
+}

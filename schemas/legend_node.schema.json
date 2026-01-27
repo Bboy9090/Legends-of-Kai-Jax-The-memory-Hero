@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://legends-of-kai-jax.com/schemas/legend_node.schema.json",
+  "title": "Legend Node Schema",
+  "description": "JSON Schema for Legend Node definitions. Legend Nodes are story-critical trials that unlock new tails.",
+  "type": "object",
+  "required": [
+    "node_id",
+    "node_name",
+    "tail_unlocked",
+    "starting_tail_count_required",
+    "location",
+    "trial_rules",
+    "victory_conditions",
+    "failure_conditions",
+    "reward"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to JSON Schema"
+    },
+    "node_id": {
+      "type": "string",
+      "description": "Unique identifier for the legend node",
+      "pattern": "^legend_node_[a-z_]+$"
+    },
+    "node_name": {
+      "type": "string",
+      "description": "Human-readable name for the trial"
+    },
+    "tail_unlocked": {
+      "type": "integer",
+      "description": "Tail number unlocked upon completion (4-9)",
+      "minimum": 4,
+      "maximum": 9
+    },
+    "starting_tail_count_required": {
+      "type": "integer",
+      "description": "Minimum tail count to attempt this trial (3-8)",
+      "minimum": 3,
+      "maximum": 8
+    },
+    "location": {
+      "type": "string",
+      "description": "Physical location of the trial"
+    },
+    "description": {
+      "type": "string",
+      "description": "Trial description and purpose"
+    },
+    "trial_rules": {
+      "type": "object",
+      "description": "Special rules that modify gameplay during the trial",
+      "properties": {
+        "minimap_disabled": {
+          "type": "boolean"
+        },
+        "lock_on_disabled": {
+          "type": "boolean"
+        },
+        "healing_disabled": {
+          "type": "boolean"
+        },
+        "environmental_kills_allowed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "victory_conditions": {
+      "type": "object",
+      "description": "Conditions required to complete the trial",
+      "properties": {
+        "stealth_strikes_required": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "threat_resets_required": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "detected_time_seconds_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "enemies_defeated_required": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "time_limit_seconds": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "failure_conditions": {
+      "type": "array",
+      "description": "Conditions that cause trial failure",
+      "items": {
+        "type": "string",
+        "enum": [
+          "health_depleted",
+          "detected_time_exceeded",
+          "time_limit_exceeded",
+          "trial_arena_exit"
+        ]
+      }
+    },
+    "reward": {
+      "type": "object",
+      "description": "Rewards granted upon trial completion",
+      "required": ["tail_name", "tail_function"],
+      "properties": {
+        "tail_name": {
+          "type": "string",
+          "description": "Name of the tail unlocked"
+        },
+        "tail_function": {
+          "type": "string",
+          "description": "Functional role of the new tail"
+        },
+        "visual_change": {
+          "type": "string",
+          "description": "Visual transformation description"
+        },
+        "narrative_weight": {
+          "type": "string",
+          "description": "Story significance of this unlock"
+        }
+      }
+    },
+    "combat_unlocks": {
+      "type": "array",
+      "description": "New combat abilities unlocked by this tail",
+      "items": {
+        "type": "string"
+      }
+    },
+    "lore": {
+      "type": "object",
+      "description": "Story context for the trial",
+      "properties": {
+        "trial_giver": {
+          "type": "string"
+        },
+        "trial_purpose": {
+          "type": "string"
+        },
+        "completion_dialogue": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
