@@ -78,6 +78,9 @@ std::unique_ptr<Character> CharacterFactory::CreateCharacter(const std::string& 
     std::cout << "  Anatomy: " << anatomy.bodyType 
               << ", Tail count: " << anatomy.tailCount << std::endl;
     
+    // Initialize with default animation state (IDLE_CALM)
+    character->SetAnimationState(AnimationState::IDLE_CALM);
+    
     // Step 5: Return the fully initialized character
     return character;
 }
