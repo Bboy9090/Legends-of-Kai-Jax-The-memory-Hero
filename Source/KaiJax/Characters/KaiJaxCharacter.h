@@ -58,6 +58,9 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
     float PostureHealth = 50.0f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+    float MaxPostureHealth = 50.0f;
+
     // Skeletal mesh components for tails
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Tails")
     class USkeletalMeshComponent* TailMesh;
@@ -67,7 +70,9 @@ protected:
 
 public:
     // Tail management
-    // Unlocks the next tail in sequence (3→4→5→6→7→8→9)
+    // Unlocks the next tail in sequence (count progression: 3→4→5→6→7→8→9)
+    // TailNumber is 0-indexed (0-8), pass ActiveTailCount as the next tail to unlock
+    // E.g., with 3 active tails, call UnlockTail(3) to unlock 4th tail
     // Enforces sequential-only unlock per README_CANON.md
     // Skipping tails is DISALLOWED and will be ignored
     UFUNCTION(BlueprintCallable, Category = "Tails")
@@ -87,6 +92,9 @@ public:
     bool HasMemory(int32 LayerNumber) const { return ActiveMemories.Contains(LayerNumber); }
 
     // Combat
+    // Note: This is a custom damage function. For full UE5 damage system integration,
+    // override AActor::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
+    // AController* EventInstigator, AActor* DamageCauser)
     UFUNCTION(BlueprintCallable, Category = "Combat")
     void TakeDamage(float DamageAmount);
 
@@ -97,5 +105,5 @@ public:
     float GetHealthPercent() const { return Health / MaxHealth; }
 
     UFUNCTION(BlueprintPure, Category = "Combat")
-    float GetPostureHealthPercent() const { return PostureHealth / 100.0f; }
+    float GetPostureHealthPercent() const { return PostureHealth / MaxPostureHealth; }
 };
