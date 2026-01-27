@@ -75,6 +75,14 @@ public:
      */
     void Render();
 
+    /**
+     * Set the animation state for the character
+     * Updates the current animation state and triggers animation playback if different.
+     * 
+     * @param newState The new animation state to transition to
+     */
+    void SetAnimationState(AnimationState newState);
+
     // Runtime state
     float health = 100.0f;
     Vector3 position;
@@ -88,6 +96,9 @@ public:
 
     // Animation component for managing character animations
     AnimationComponent animationComponent;
+
+    // Current animation state tracking
+    AnimationState currentAnimationState = AnimationState::IDLE_CALM;
 };
 
 } // namespace LegendsEngine
