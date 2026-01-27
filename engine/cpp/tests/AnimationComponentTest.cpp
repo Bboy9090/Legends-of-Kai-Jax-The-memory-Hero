@@ -182,7 +182,7 @@ int main() {
         
         if (allLoaded) {
             std::cout << "  All required animations loaded successfully" << std::endl;
-            std::cout << "  Total animations loaded: " << requiredAnims.size() << "+" << std::endl;
+            std::cout << "  Verified " << requiredAnims.size() << " key animations (more available in specification)" << std::endl;
             testsPassed++;
         } else {
             std::cout << "  ERROR: Some required animations are missing" << std::endl;

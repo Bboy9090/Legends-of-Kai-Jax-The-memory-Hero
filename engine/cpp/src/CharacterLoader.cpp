@@ -63,7 +63,7 @@ std::unique_ptr<CharacterSpecification> CharacterLoader::loadFromJson(const json
             loadAnimation(jsonData.at("animation"), spec->animation);
 
             // Load animation spec with animation sets
-            loadAnimationSpec(jsonData.at("animation"), spec->animationSpec);
+            loadAnimationSpec(jsonData.at("animation"), spec->animationSpec, spec->characterId);
 
             // Load combat identity
             loadCombatIdentity(jsonData.at("combat_identity"), spec->combatIdentity);
@@ -225,7 +225,7 @@ void CharacterLoader::loadAnimation(const json& j, Animation& animation) {
         animation.frameRules.cancelRules = frameRules.at("cancel_rules").get<std::string>();
     }
 
-void CharacterLoader::loadAnimationSpec(const json& j, AnimationSpec& animationSpec) {
+void CharacterLoader::loadAnimationSpec(const json& j, AnimationSpec& animationSpec, const std::string& characterId) {
         // Load base animation data
         animationSpec.philosophy = j.at("philosophy").get<std::string>();
         animationSpec.noFloatyMotion = j.at("no_floaty_motion").get<bool>();
@@ -238,13 +238,13 @@ void CharacterLoader::loadAnimationSpec(const json& j, AnimationSpec& animationS
         animationSpec.frameRules.cancelRules = frameRules.at("cancel_rules").get<std::string>();
 
         // Generate animation sets from required_sets
-        // Create placeholder paths for each required animation set
+        // Create placeholder paths for each required animation set using the character ID
         for (const auto& setName : animationSpec.requiredSets) {
             AnimationSet animSet;
             animSet.name = setName;
-            // Generate path based on animation set name
-            // Format: ./assets/anims/kai_jax_<set_name>.anim
-            animSet.path = "./assets/anims/kai_jax_" + setName + ".anim";
+            // Generate path based on character ID and animation set name
+            // Format: ./assets/anims/<character_id>_<set_name>.anim
+            animSet.path = "./assets/anims/" + characterId + "_" + setName + ".anim";
             animationSpec.sets.push_back(animSet);
         }
     }
