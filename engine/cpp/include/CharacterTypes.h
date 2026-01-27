@@ -113,7 +113,23 @@ struct FrameRules {
     std::string cancelRules;
 };
 
-// Animation specifications
+// Animation set - represents a single animation with name and path
+struct AnimationSet {
+    std::string name;  // e.g., "idle_calm", "walk", "run"
+    std::string path;  // e.g., "./assets/anims/kai_jax_idle_calm.anim"
+};
+
+// Animation specifications - includes both metadata and animation sets
+struct AnimationSpec {
+    std::string philosophy;
+    bool noFloatyMotion;
+    std::vector<std::string> rootMotionOnlyFor;
+    std::vector<std::string> requiredSets;
+    FrameRules frameRules;
+    std::vector<AnimationSet> sets;  // Actual animation file paths
+};
+
+// Legacy Animation structure for backward compatibility
 struct Animation {
     std::string philosophy;
     bool noFloatyMotion;

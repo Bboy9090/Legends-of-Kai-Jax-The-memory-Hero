@@ -47,6 +47,10 @@ std::unique_ptr<Character> CharacterFactory::CreateCharacter(const std::string& 
     
     // Step 4: Populate character with simulated assets and initial state
     
+    // Load animation sets into the animation component
+    const auto& animationSpec = spec->getAnimationSpec();
+    character->animationComponent.LoadAnimationSets(animationSpec);
+    
     // TODO: Assign loaded assets when AssetManager is available
     // character->mesh = mesh;
     // character->skeleton = skeleton;

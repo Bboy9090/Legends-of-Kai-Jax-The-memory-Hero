@@ -49,6 +49,7 @@ private:
     static void loadMaterials(const json& j, Materials& materials);
     static void loadRigging(const json& j, Rigging& rigging);
     static void loadAnimation(const json& j, Animation& animation);
+    static void loadAnimationSpec(const json& j, AnimationSpec& animationSpec, const std::string& characterId);
     static void loadCombatIdentity(const json& j, CombatIdentity& combat);
     static void loadTailRoles(const json& j, std::vector<TailRole>& tailRoles);
     static void loadEngineIntegration(const json& j, EngineIntegration& engine);
