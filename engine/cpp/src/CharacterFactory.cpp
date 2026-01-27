@@ -1,6 +1,8 @@
 #include "../include/CharacterFactory.h"
 #include "../include/CharacterLoader.h"
 #include "../include/CharacterSpecification.h"
+#include "../include/InputHandler.h"
+#include "../include/StateManager.h"
 #include <iostream>
 
 namespace LegendsEngine {
@@ -45,7 +47,15 @@ std::unique_ptr<Character> CharacterFactory::CreateCharacter(const std::string& 
     // Step 3: Create Character instance
     auto character = std::make_unique<Character>();
     
-    // Step 4: Populate character with simulated assets and initial state
+    // Step 4: Create and wire input handler and state manager
+    // These are created as raw pointers owned by the character
+    // TODO: Consider using smart pointers for better memory management
+    character->inputHandler = new InputHandler();
+    character->stateManager = new StateManager();
+    
+    std::cout << "CharacterFactory: Created InputHandler and StateManager" << std::endl;
+    
+    // Step 5: Populate character with simulated assets and initial state
     
     // Load animation sets into the animation component
     const auto& animationSpec = spec->getAnimationSpec();
@@ -81,7 +91,7 @@ std::unique_ptr<Character> CharacterFactory::CreateCharacter(const std::string& 
     // Initialize with default animation state (IDLE_CALM)
     character->SetAnimationState(AnimationState::IDLE_CALM);
     
-    // Step 5: Return the fully initialized character
+    // Step 6: Return the fully initialized character
     return character;
 }
 

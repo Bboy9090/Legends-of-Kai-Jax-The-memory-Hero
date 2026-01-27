@@ -3,17 +3,32 @@
 
 namespace LegendsEngine {
 
+Character::~Character() {
+    // Clean up owned resources
+    delete inputHandler;
+    delete stateManager;
+}
+
 void Character::Update(float deltaTime) {
-    // TODO: Integration point for physics and input handling
-    // Future: Input system will call SetAnimationState based on player actions
-    // Future: Physics system will influence animation blending (air vs ground, etc.)
+    // Input-driven state machine update
+    // This replaces the old TODO with actual implementation
     
-    // Animation playback is handled through SetAnimationState calls
-    // which trigger immediate animation changes via animationComponent.PlayAnimation
+    // Step 1: Get current input from InputHandler
+    if (inputHandler) {
+        InputState input = inputHandler->GetCurrentInput();
+        
+        // Step 2: Determine next animation state based on input and current state
+        if (stateManager) {
+            AnimationState nextState = stateManager->GetNextState(currentAnimationState, input);
+            
+            // Step 3: Transition to new state if different from current
+            if (nextState != currentAnimationState) {
+                SetAnimationState(nextState);
+            }
+        }
+    }
     
-    // TODO: Implement additional character update logic
-    // - Process input
-    // - Update animation state machine
+    // TODO: Additional character update logic
     // - Apply physics
     // - Update tail physics
     // - Handle combat state transitions

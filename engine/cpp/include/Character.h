@@ -3,6 +3,8 @@
 #include <vector>
 #include <memory>
 #include "AnimationComponent.h"
+#include "InputHandler.h"
+#include "StateManager.h"
 
 namespace LegendsEngine {
 
@@ -53,7 +55,7 @@ struct Material {
 class Character {
 public:
     Character() = default;
-    ~Character() = default;
+    ~Character();
 
     // Disable copy/move to enforce single ownership
     Character(const Character&) = delete;
@@ -103,6 +105,12 @@ public:
 
     // Animation component for managing character animations
     AnimationComponent animationComponent;
+
+    // Input handler for reading player input
+    InputHandler* inputHandler = nullptr;
+
+    // State manager for handling animation state transitions
+    StateManager* stateManager = nullptr;
 
 private:
     // Current animation state tracking

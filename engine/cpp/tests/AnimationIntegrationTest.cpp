@@ -91,21 +91,28 @@ int main() {
     }
     printTestResult("Multiple State Transitions", kaiJax->GetAnimationState() == AnimationState::IDLE_COMBAT);
 
-    // Test 5: Test Update method doesn't interfere with animation state
+    // Test 5: Test Update method drives state changes via input system
     totalTests++;
-    std::cout << "\n[Test 5] Testing Update method with animation state..." << std::endl;
+    std::cout << "\n[Test 5] Testing Update method with input-driven state changes..." << std::endl;
     
+    // Character is in IDLE_COMBAT from previous test
+    // With zero input from InputHandler stub, should transition to IDLE_CALM
     AnimationState stateBefore = kaiJax->GetAnimationState();
-    kaiJax->Update(0.016f);
-    AnimationState stateAfter = kaiJax->GetAnimationState();
+    std::cout << "  State before Update: " << static_cast<int>(stateBefore) << " (IDLE_COMBAT)" << std::endl;
     
-    if (stateBefore == stateAfter) {
-        std::cout << "  Correct: Update doesn't change animation state" << std::endl;
+    kaiJax->Update(0.016f);
+    
+    AnimationState stateAfter = kaiJax->GetAnimationState();
+    std::cout << "  State after Update: " << static_cast<int>(stateAfter) << " (should be IDLE_CALM)" << std::endl;
+    
+    // With zero input (stub implementation), StateManager should transition to IDLE_CALM
+    if (stateAfter == AnimationState::IDLE_CALM) {
+        std::cout << "  Correct: Update drove state change from IDLE_COMBAT to IDLE_CALM (no input)" << std::endl;
         testsPassed++;
     } else {
-        std::cout << "  ERROR: Update should not change animation state" << std::endl;
+        std::cout << "  ERROR: Expected IDLE_CALM state after Update with no input" << std::endl;
     }
-    printTestResult("Update Preserves State", stateBefore == stateAfter);
+    printTestResult("Update Drives State Changes", stateAfter == AnimationState::IDLE_CALM);
 
     // Print final results
     printSeparator();
