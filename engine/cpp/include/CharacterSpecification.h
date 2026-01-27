@@ -43,6 +43,7 @@ public:
     const Materials& getMaterials() const { return materials; }
     const Rigging& getRigging() const { return rigging; }
     const Animation& getAnimation() const { return animation; }
+    const AnimationSpec& getAnimationSpec() const { return animationSpec; }
     const CombatIdentity& getCombatIdentity() const { return combatIdentity; }
     const std::vector<TailRole>& getTailRoles() const { return tailRoles; }
     const EngineIntegration& getEngineIntegration() const { return engineIntegration; }
@@ -71,6 +72,7 @@ private:
     Materials materials;
     Rigging rigging;
     Animation animation;
+    AnimationSpec animationSpec;
     CombatIdentity combatIdentity;
     std::vector<TailRole> tailRoles;
     EngineIntegration engineIntegration;

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <memory>
+#include "AnimationComponent.h"
 
 namespace LegendsEngine {
 
@@ -84,6 +85,9 @@ public:
     Mesh* mesh = nullptr;
     Skeleton* skeleton = nullptr;
     std::vector<Material*> materials;
+
+    // Animation component for managing character animations
+    AnimationComponent animationComponent;
 };
 
 } // namespace LegendsEngine

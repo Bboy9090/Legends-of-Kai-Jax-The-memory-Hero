@@ -31,6 +31,7 @@ add_library(LegendsEngineCore STATIC
     src/CharacterLoader.cpp
     src/Character.cpp
     src/CharacterFactory.cpp
+    src/AnimationComponent.cpp
 )
 
 target_link_libraries(LegendsEngineCore
@@ -55,8 +56,17 @@ target_link_libraries(CharacterFactoryTest
     PRIVATE LegendsEngineCore
 )
 
+# Test executable for AnimationComponent
+add_executable(AnimationComponentTest
+    tests/AnimationComponentTest.cpp
+)
+
+target_link_libraries(AnimationComponentTest
+    PRIVATE LegendsEngineCore
+)
+
 # Set output directories
-set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest
+set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest AnimationComponentTest
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -78,3 +88,4 @@ install(DIRECTORY include/
 enable_testing()
 add_test(NAME CharacterLoaderTest COMMAND CharacterLoaderTest)
 add_test(NAME CharacterFactoryTest COMMAND CharacterFactoryTest)
+add_test(NAME AnimationComponentTest COMMAND AnimationComponentTest)

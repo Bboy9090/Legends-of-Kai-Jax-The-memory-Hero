@@ -62,6 +62,9 @@ std::unique_ptr<CharacterSpecification> CharacterLoader::loadFromJson(const json
             // Load animation
             loadAnimation(jsonData.at("animation"), spec->animation);
 
+            // Load animation spec with animation sets
+            loadAnimationSpec(jsonData.at("animation"), spec->animationSpec);
+
             // Load combat identity
             loadCombatIdentity(jsonData.at("combat_identity"), spec->combatIdentity);
 
@@ -220,6 +223,30 @@ void CharacterLoader::loadAnimation(const json& j, Animation& animation) {
         const auto& frameRules = j.at("frame_rules");
         animation.frameRules.minFramesPerAction = frameRules.at("min_frames_per_action").get<int>();
         animation.frameRules.cancelRules = frameRules.at("cancel_rules").get<std::string>();
+    }
+
+void CharacterLoader::loadAnimationSpec(const json& j, AnimationSpec& animationSpec) {
+        // Load base animation data
+        animationSpec.philosophy = j.at("philosophy").get<std::string>();
+        animationSpec.noFloatyMotion = j.at("no_floaty_motion").get<bool>();
+        animationSpec.rootMotionOnlyFor = j.at("root_motion_only_for").get<std::vector<std::string>>();
+        animationSpec.requiredSets = j.at("required_sets").get<std::vector<std::string>>();
+
+        // Load frame rules
+        const auto& frameRules = j.at("frame_rules");
+        animationSpec.frameRules.minFramesPerAction = frameRules.at("min_frames_per_action").get<int>();
+        animationSpec.frameRules.cancelRules = frameRules.at("cancel_rules").get<std::string>();
+
+        // Generate animation sets from required_sets
+        // Create placeholder paths for each required animation set
+        for (const auto& setName : animationSpec.requiredSets) {
+            AnimationSet animSet;
+            animSet.name = setName;
+            // Generate path based on animation set name
+            // Format: ./assets/anims/kai_jax_<set_name>.anim
+            animSet.path = "./assets/anims/kai_jax_" + setName + ".anim";
+            animationSpec.sets.push_back(animSet);
+        }
     }
 
 void CharacterLoader::loadCombatIdentity(const json& j, CombatIdentity& combat) {
