@@ -70,6 +70,17 @@ const trial = new QuillTrial(
   manager
 );
 
+// Register event handler for trial events
+trial.onEvent((event) => {
+  if (event.type === 'failure') {
+    console.log(`\n⚠️  Trial Event: ${event.message}`);
+    console.log('   Effects:');
+    if (event.effects.cameraTighten) console.log('   - Camera tightening');
+    if (event.effects.soundDampen) console.log('   - Sound dampening');
+    if (event.effects.quillFlicker) console.log('   - Quill shadows flickering');
+  }
+});
+
 trial.start(100); // Player has 100 max health
 console.log('✅ Trial started');
 

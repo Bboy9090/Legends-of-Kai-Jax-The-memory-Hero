@@ -141,9 +141,9 @@ export class WorldState {
     this.playerLevel = data.playerLevel || 1;
     this.discoveredZones = new Set(data.discoveredZones || []);
 
-    // Validate consistency
+    // Validate consistency - auto-correct if mismatch
     if (this.unlockedTails.size !== this.currentTailCount) {
-      console.warn('Warning: Tail count mismatch in save data. Correcting...');
+      // Auto-correct: use actual unlocked tail count as source of truth
       this.currentTailCount = this.unlockedTails.size;
     }
   }

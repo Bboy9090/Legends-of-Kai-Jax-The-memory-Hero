@@ -189,15 +189,22 @@ describe('QuillTrial', () => {
       expect(trial.getState()).toBe(TrialState.FAILURE);
     });
 
-    it('should output failure message', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+    it('should emit failure event with diegetic effects', () => {
+      const eventCallback = jest.fn();
+      trial.onEvent(eventCallback);
 
       trial.onDamageTaken(100);
       trial.update(0.016);
 
-      expect(consoleSpy).toHaveBeenCalledWith('You flinch. The world does not.');
-      
-      consoleSpy.mockRestore();
+      expect(eventCallback).toHaveBeenCalledWith({
+        type: 'failure',
+        message: 'You flinch. The world does not.',
+        effects: {
+          cameraTighten: true,
+          soundDampen: true,
+          quillFlicker: true,
+        },
+      });
     });
   });
 

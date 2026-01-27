@@ -28,6 +28,18 @@ export interface TrialStats {
   elapsedTime: number;
 }
 
+export interface TrialEvent {
+  type: 'failure';
+  message: string;
+  effects: {
+    cameraTighten: boolean;
+    soundDampen: boolean;
+    quillFlicker: boolean;
+  };
+}
+
+export type TrialEventCallback = (event: TrialEvent) => void;
+
 export class QuillTrial {
   private state: TrialState = TrialState.SETUP;
   private stats: TrialStats;
@@ -36,6 +48,7 @@ export class QuillTrial {
   private arenaLocked: boolean = false;
   private consecutiveDodgeFrames: number = 0;
   private lastDamageTime: number = 0;
+  private eventCallbacks: TrialEventCallback[] = [];
   
   // Victory condition thresholds from node data
   private readonly PERFECT_DODGE_FRAMES_REQUIRED = 15; // ~0.25 seconds at 60fps
@@ -237,13 +250,33 @@ export class QuillTrial {
   private handleFailure(): void {
     this.state = TrialState.FAILURE;
     
-    // Diegetic feedback (no UI)
-    // - Camera tightens (handled by renderer)
-    // - Sound dampens (handled by audio system)
-    // - Quill shadows flicker on spine and fade (handled by character renderer)
-    
-    // Output message
-    console.log('You flinch. The world does not.');
+    // Emit event for systems to handle diegetic feedback
+    // - Camera system will tighten camera
+    // - Audio system will dampen sound
+    // - Character renderer will flicker quill shadows and fade
+    this.emitEvent({
+      type: 'failure',
+      message: 'You flinch. The world does not.',
+      effects: {
+        cameraTighten: true,
+        soundDampen: true,
+        quillFlicker: true,
+      },
+    });
+  }
+
+  /**
+   * Register a callback for trial events
+   */
+  onEvent(callback: TrialEventCallback): void {
+    this.eventCallbacks.push(callback);
+  }
+
+  /**
+   * Emit an event to all registered callbacks
+   */
+  private emitEvent(event: TrialEvent): void {
+    this.eventCallbacks.forEach(callback => callback(event));
   }
 
   /**
