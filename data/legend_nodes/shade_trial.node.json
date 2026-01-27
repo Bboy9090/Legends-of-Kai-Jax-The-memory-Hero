@@ -1,0 +1,39 @@
+{
+  "$schema": "../../schemas/legend_node.schema.json",
+  "node_id": "legend_node_shade",
+  "node_name": "Shade Trial",
+  "tail_unlocked": 5,
+  "starting_tail_count_required": 4,
+  "location": "Blackreach Underpass",
+  "description": "Master stealth, threat manipulation, and backstab timing to prove you are more than predator—you are shadow.",
+  "trial_rules": {
+    "minimap_disabled": true,
+    "lock_on_disabled": true,
+    "healing_disabled": true,
+    "environmental_kills_allowed": true
+  },
+  "victory_conditions": {
+    "stealth_strikes_required": 6,
+    "threat_resets_required": 3,
+    "detected_time_seconds_max": 18
+  },
+  "failure_conditions": [
+    "health_depleted",
+    "detected_time_exceeded"
+  ],
+  "reward": {
+    "tail_name": "shade",
+    "tail_function": "stealth_threat_reset",
+    "visual_change": "shadow_slick_tail_emerges",
+    "narrative_weight": "zone_breaker"
+  },
+  "combat_unlocks": [
+    "threat_reset_on_stealth_hit",
+    "short_blink_backstab"
+  ],
+  "lore": {
+    "trial_giver": "Unknown Voice in Darkness",
+    "trial_purpose": "To master the art of becoming nothing, then becoming death.",
+    "completion_dialogue": "The shadows remember your name. They always will."
+  }
+}

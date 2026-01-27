@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://legends-of-kai-jax.com/schemas/boss_design_bible.schema.json",
+  "title": "Boss Design Bible Schema",
+  "description": "JSON Schema for boss design rules per tail tier. Defines what bosses expect, punish, and are weak to.",
+  "type": "object",
+  "required": ["title", "description", "version", "design_law", "boss_tiers"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "last_updated": {
+      "type": "string"
+    },
+    "design_law": {
+      "type": "string",
+      "description": "Core design principle for all bosses"
+    },
+    "boss_tiers": {
+      "type": "object",
+      "description": "Boss definitions per tail tier",
+      "patternProperties": {
+        "^tier_[0-9_]+$": {
+          "type": "object",
+          "required": ["tier_name", "tail_range", "expects", "punishes", "weak_to", "philosophy"],
+          "properties": {
+            "tier_name": {
+              "type": "string",
+              "description": "Name of this boss tier"
+            },
+            "tail_range": {
+              "type": "array",
+              "description": "Tail count range for this tier [min, max]",
+              "items": {
+                "type": "integer",
+                "minimum": 3,
+                "maximum": 9
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "expects": {
+              "type": "array",
+              "description": "Player mechanics the boss expects and validates",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "punishes": {
+              "type": "array",
+              "description": "Player behaviors the boss punishes",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "weak_to": {
+              "type": "array",
+              "description": "Mechanics the boss is vulnerable to",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "philosophy": {
+              "type": "string",
+              "description": "Design philosophy for this tier"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

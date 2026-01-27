@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://legends-of-kai-jax.com/schemas/biome_rules.schema.json",
+  "title": "Biome Rules Schema",
+  "description": "JSON Schema for biome gameplay rules. Biomes define encounter complexity, visibility, and enemy behavior.",
+  "type": "object",
+  "required": ["title", "description", "version", "biomes"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "last_updated": {
+      "type": "string"
+    },
+    "biomes": {
+      "type": "object",
+      "description": "Map of biome definitions",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "required": [
+            "biome_id",
+            "display_name",
+            "verticality",
+            "visibility",
+            "enemy_density",
+            "encounter_bias",
+            "music_profile"
+          ],
+          "properties": {
+            "biome_id": {
+              "type": "string",
+              "pattern": "^[a-z_]+$"
+            },
+            "display_name": {
+              "type": "string"
+            },
+            "verticality": {
+              "type": "string",
+              "enum": ["low", "medium", "high"],
+              "description": "Vertical complexity of the environment"
+            },
+            "visibility": {
+              "type": "string",
+              "enum": ["clear", "low_dynamic", "occluded"],
+              "description": "Visibility conditions affecting stealth and combat"
+            },
+            "enemy_density": {
+              "type": "string",
+              "enum": ["sparse", "moderate", "high_but_queued"],
+              "description": "Enemy encounter density (never swarm spam)"
+            },
+            "encounter_bias": {
+              "type": "array",
+              "description": "Enemy types favored in this biome",
+              "items": {
+                "type": "string",
+                "enum": ["bruiser", "swarmer", "disruptor", "elite", "ranged"]
+              },
+              "minItems": 1
+            },
+            "music_profile": {
+              "type": "string",
+              "description": "Audio atmosphere identifier"
+            },
+            "systems_enabled": {
+              "type": "array",
+              "description": "Optional gameplay systems active in this biome",
+              "items": {
+                "type": "string",
+                "enum": ["stealth", "threat_reset", "verticality_bonuses", "environmental_hazards"]
+              }
+            },
+            "description": {
+              "type": "string",
+              "description": "Biome gameplay description"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "hard_rules": {
+      "type": "object",
+      "description": "Non-negotiable design rules for biomes"
+    }
+  },
+  "additionalProperties": false
+}

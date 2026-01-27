@@ -1,0 +1,61 @@
+{
+  "$schema": "../../schemas/vertical_slice.schema.json",
+  "slice_id": "vertical_slice_blackreach",
+  "name": "Blackreach Descent",
+  "description": "30-minute vertical slice showcasing Tail 4→5 progression through stealth, hybrid combat, elite duel, and Legend Node trial.",
+  "playtime_target_minutes": 30,
+  "player_state": {
+    "starting_tails": 4,
+    "abilities_locked": ["anchor", "echo", "rift", "crown"]
+  },
+  "zone": {
+    "name": "Blackreach Underpass",
+    "biome": "subterranean_ruins",
+    "verticality": "high",
+    "streaming_chunks": true
+  },
+  "mission_flow": [
+    {
+      "phase": 1,
+      "type": "stealth_exploration",
+      "objective": "Navigate floodlit passages without triggering alarms",
+      "mechanics": ["floodlight_avoidance", "shadow_positioning", "sound_management"],
+      "duration_minutes": 8
+    },
+    {
+      "phase": 2,
+      "type": "hybrid_combat",
+      "objective": "Defeat enemy patrol waves using stealth transitions",
+      "enemy_waves": 4,
+      "max_enemies_simultaneous": 10,
+      "mechanics": ["stealth_to_combat_transitions", "threat_manipulation", "backstab_executions"],
+      "duration_minutes": 10
+    },
+    {
+      "phase": 3,
+      "type": "elite_duel",
+      "objective": "Defeat the Shade Warden in 1v1 combat",
+      "boss_name": "Shade Warden",
+      "mechanics": ["dodge_timing", "posture_break", "retaliation_windows"],
+      "duration_minutes": 7
+    },
+    {
+      "phase": 4,
+      "type": "legend_node",
+      "objective": "Complete the Shade Trial to unlock Tail 5",
+      "legend_node_id": "legend_node_shade",
+      "mechanics": ["stealth_strikes", "threat_resets", "time_pressure"],
+      "duration_minutes": 5
+    }
+  ],
+  "end_state": {
+    "tail_unlocked": 5,
+    "world_state_updated": true,
+    "narrative_beat": "Kai-Jax embraces the shadows. The zone breaker is born."
+  },
+  "validation_criteria": {
+    "must_complete_in_order": true,
+    "cannot_skip_phases": true,
+    "tail_5_locked_until_trial_complete": true
+  }
+}
