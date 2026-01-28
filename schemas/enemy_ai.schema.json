@@ -1,0 +1,218 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://legends-of-kai-jax.com/schemas/enemy_ai.schema.json",
+  "title": "Enemy AI System Schema",
+  "description": "Schema for enemy AI behavior and configuration in Legends of Kai-Jax. Must integrate with tail_tier_reactions.json",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["enemy_id", "enemy_type", "tier", "ai_behavior"],
+  "properties": {
+    "enemy_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$",
+      "description": "Unique identifier for the enemy type"
+    },
+    "enemy_type": {
+      "type": "string",
+      "description": "Display name of enemy type"
+    },
+    "tier": {
+      "type": "string",
+      "enum": ["fodder", "elite", "boss"],
+      "description": "Enemy tier affecting AI complexity and behavior"
+    },
+    "base_stats": {
+      "type": "object",
+      "required": ["health", "damage", "speed"],
+      "properties": {
+        "health": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Base health points"
+        },
+        "damage": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Base damage per attack"
+        },
+        "speed": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Movement speed"
+        },
+        "defense": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Damage reduction"
+        }
+      }
+    },
+    "ai_behavior": {
+      "type": "object",
+      "required": ["base_behavior"],
+      "properties": {
+        "base_behavior": {
+          "$ref": "#/definitions/behavior_pattern"
+        },
+        "tail_tier_adaptations": {
+          "type": "object",
+          "description": "How AI adapts based on player tail count (references tail_tier_reactions.json)",
+          "properties": {
+            "3": {"$ref": "#/definitions/tier_adaptation"},
+            "4": {"$ref": "#/definitions/tier_adaptation"},
+            "5": {"$ref": "#/definitions/tier_adaptation"},
+            "6": {"$ref": "#/definitions/tier_adaptation"},
+            "7": {"$ref": "#/definitions/tier_adaptation"},
+            "8": {"$ref": "#/definitions/tier_adaptation"},
+            "9": {"$ref": "#/definitions/tier_adaptation"}
+          }
+        }
+      }
+    },
+    "combat_capabilities": {
+      "type": "object",
+      "properties": {
+        "attack_types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/attack_definition"
+          }
+        },
+        "can_block": {
+          "type": "boolean",
+          "description": "Whether enemy can block attacks"
+        },
+        "can_dodge": {
+          "type": "boolean",
+          "description": "Whether enemy can dodge attacks"
+        },
+        "can_counter": {
+          "type": "boolean",
+          "description": "Whether enemy can counter-attack"
+        }
+      }
+    },
+    "spawn_rules": {
+      "type": "object",
+      "properties": {
+        "group_size_min": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minimum number in spawn group"
+        },
+        "group_size_max": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number in spawn group"
+        },
+        "requires_tail_tier": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 9,
+          "description": "Minimum player tail tier before this enemy can spawn"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "behavior_pattern": {
+      "type": "object",
+      "required": ["engagement_style", "aggression_level"],
+      "properties": {
+        "engagement_style": {
+          "type": "string",
+          "enum": ["aggressive", "defensive", "tactical", "berserker"],
+          "description": "Primary combat approach"
+        },
+        "aggression_level": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "How aggressive the enemy is (0 = passive, 1 = relentless)"
+        },
+        "engagement_range": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Preferred combat distance"
+        },
+        "retreat_threshold": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Health percentage at which enemy considers retreating"
+        },
+        "group_coordination": {
+          "type": "boolean",
+          "description": "Whether enemy coordinates with allies"
+        }
+      }
+    },
+    "tier_adaptation": {
+      "type": "object",
+      "description": "AI behavior modifications based on player tail tier",
+      "properties": {
+        "confidence_modifier": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 2.0,
+          "description": "Multiplier for aggression (< 1.0 = fearful, > 1.0 = overconfident)"
+        },
+        "engagement_distance_modifier": {
+          "type": "number",
+          "description": "Added/subtracted from base engagement range"
+        },
+        "flee_on_sight": {
+          "type": "boolean",
+          "description": "Whether enemy flees immediately when player approaches"
+        },
+        "spawn_disabled": {
+          "type": "boolean",
+          "description": "Whether enemy stops spawning at this tier"
+        },
+        "tactics_override": {
+          "type": "string",
+          "enum": ["aggressive", "defensive", "tactical", "berserker", "desperate"],
+          "description": "Override engagement style for this tier"
+        }
+      }
+    },
+    "attack_definition": {
+      "type": "object",
+      "required": ["attack_id", "damage_multiplier", "cooldown"],
+      "properties": {
+        "attack_id": {
+          "type": "string",
+          "description": "Unique identifier for this attack"
+        },
+        "attack_name": {
+          "type": "string",
+          "description": "Display name of attack"
+        },
+        "damage_multiplier": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Multiplier applied to base damage"
+        },
+        "cooldown": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Cooldown in seconds before attack can be used again"
+        },
+        "range": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Attack range"
+        },
+        "windup_time": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Time before attack executes (telegraphing)"
+        },
+        "can_be_interrupted": {
+          "type": "boolean",
+          "description": "Whether attack can be interrupted"
+        }
+      }
+    }
+  }
+}

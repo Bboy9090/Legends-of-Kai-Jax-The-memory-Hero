@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://legends-of-kai-jax.com/schemas/story_mode.schema.json",
+  "title": "Story Mode Configuration Schema",
+  "description": "Schema for Story Mode systems in Legends of Kai-Jax. Defines districts, quests, and progression.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["version", "game_world", "districts"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of story mode configuration"
+    },
+    "game_world": {
+      "type": "object",
+      "required": ["name", "setting"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the game world"
+        },
+        "setting": {
+          "type": "string",
+          "description": "Brief description of the setting"
+        }
+      }
+    },
+    "districts": {
+      "type": "array",
+      "description": "List of districts in the game world",
+      "items": {
+        "$ref": "#/definitions/district"
+      },
+      "minItems": 1
+    }
+  },
+  "definitions": {
+    "district": {
+      "type": "object",
+      "required": ["id", "name", "traversal_features", "zones"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$",
+          "description": "Unique identifier for the district"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the district"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the district"
+        },
+        "unlock_requirement": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["story_progress", "tail_count", "quest_complete"],
+              "description": "Type of requirement to unlock this district"
+            },
+            "value": {
+              "oneOf": [
+                {"type": "string"},
+                {"type": "number"}
+              ],
+              "description": "Value required (quest ID, tail count, etc.)"
+            }
+          }
+        },
+        "traversal_features": {
+          "type": "object",
+          "required": ["verticality_enabled", "rooftop_access", "interior_transitions"],
+          "properties": {
+            "verticality_enabled": {
+              "type": "boolean",
+              "description": "Whether vertical traversal is available"
+            },
+            "rooftop_access": {
+              "type": "boolean",
+              "description": "Whether rooftops are accessible"
+            },
+            "interior_transitions": {
+              "type": "boolean",
+              "description": "Whether interior/exterior transitions exist"
+            },
+            "movement_style": {
+              "type": "string",
+              "enum": ["agile", "standard", "parkour"],
+              "description": "Primary movement style for this district"
+            }
+          }
+        },
+        "zones": {
+          "type": "array",
+          "description": "Sub-zones within the district",
+          "items": {
+            "$ref": "#/definitions/zone"
+          },
+          "minItems": 1
+        },
+        "main_quests": {
+          "type": "array",
+          "description": "Main story quests in this district",
+          "items": {
+            "type": "string"
+          }
+        },
+        "side_quests": {
+          "type": "array",
+          "description": "Side quests available in this district",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "zone": {
+      "type": "object",
+      "required": ["id", "name", "zone_type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$",
+          "description": "Unique identifier for the zone"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the zone"
+        },
+        "zone_type": {
+          "type": "string",
+          "enum": ["combat", "exploration", "safe", "boss_arena"],
+          "description": "Type of zone"
+        },
+        "enemy_spawn_enabled": {
+          "type": "boolean",
+          "description": "Whether enemies can spawn in this zone"
+        },
+        "npc_interactions": {
+          "type": "array",
+          "description": "NPCs available for interaction in this zone",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

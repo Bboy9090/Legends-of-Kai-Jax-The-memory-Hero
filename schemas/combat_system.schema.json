@@ -1,0 +1,230 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://legends-of-kai-jax.com/schemas/combat_system.schema.json",
+  "title": "Unified Combat System Schema",
+  "description": "Schema for the unified combat system in Legends of Kai-Jax. Platform-agnostic, tail-tier integrated.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["version", "combat_rules", "movement_mechanics"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "combat_rules": {
+      "type": "object",
+      "required": ["philosophy", "core_mechanics"],
+      "properties": {
+        "philosophy": {
+          "type": "object",
+          "properties": {
+            "focus": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["speed", "precision", "momentum", "agility"]
+              }
+            },
+            "punish_spamming": {
+              "type": "boolean",
+              "const": true,
+              "description": "System must punish button mashing"
+            },
+            "reward_precision": {
+              "type": "boolean",
+              "const": true,
+              "description": "System must reward precise timing"
+            }
+          }
+        },
+        "core_mechanics": {
+          "type": "object",
+          "properties": {
+            "hit_stop_enabled": {
+              "type": "boolean",
+              "description": "Whether hit-stop freeze frames are enabled"
+            },
+            "hit_stop_duration_ms": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 500,
+              "description": "Hit-stop duration in milliseconds"
+            },
+            "combo_system_enabled": {
+              "type": "boolean",
+              "description": "Whether combo tracking is enabled"
+            },
+            "parry_enabled": {
+              "type": "boolean",
+              "description": "Whether parry mechanic exists"
+            },
+            "counter_enabled": {
+              "type": "boolean",
+              "description": "Whether counter-attack mechanic exists"
+            }
+          }
+        }
+      }
+    },
+    "movement_mechanics": {
+      "type": "object",
+      "required": ["base_movement", "agility_features"],
+      "properties": {
+        "base_movement": {
+          "type": "object",
+          "properties": {
+            "walk_speed": {
+              "type": "number",
+              "minimum": 0
+            },
+            "run_speed": {
+              "type": "number",
+              "minimum": 0
+            },
+            "sprint_speed": {
+              "type": "number",
+              "minimum": 0
+            },
+            "mass_affects_momentum": {
+              "type": "boolean",
+              "const": true,
+              "description": "Mass and inertia must matter (canon requirement)"
+            }
+          }
+        },
+        "agility_features": {
+          "type": "object",
+          "properties": {
+            "instant_direction_change": {
+              "type": "boolean",
+              "description": "Whether character can instantly change direction"
+            },
+            "air_control_enabled": {
+              "type": "boolean",
+              "description": "Whether player has control while airborne"
+            },
+            "dodge_types": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["ground_roll", "air_dash", "sidestep", "backstep"]
+              }
+            },
+            "wall_interaction": {
+              "type": "object",
+              "properties": {
+                "wall_run_enabled": {
+                  "type": "boolean"
+                },
+                "wall_jump_enabled": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "tail_tier_combat_modifiers": {
+      "type": "object",
+      "description": "How combat abilities scale with tail progression",
+      "properties": {
+        "3": {"$ref": "#/definitions/tier_combat_modifier"},
+        "4": {"$ref": "#/definitions/tier_combat_modifier"},
+        "5": {"$ref": "#/definitions/tier_combat_modifier"},
+        "6": {"$ref": "#/definitions/tier_combat_modifier"},
+        "7": {"$ref": "#/definitions/tier_combat_modifier"},
+        "8": {"$ref": "#/definitions/tier_combat_modifier"},
+        "9": {"$ref": "#/definitions/tier_combat_modifier"}
+      }
+    },
+    "attack_types": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/attack_type"
+      }
+    }
+  },
+  "definitions": {
+    "tier_combat_modifier": {
+      "type": "object",
+      "properties": {
+        "damage_multiplier": {
+          "type": "number",
+          "minimum": 0.1,
+          "description": "Damage multiplier at this tail tier"
+        },
+        "speed_multiplier": {
+          "type": "number",
+          "minimum": 0.1,
+          "description": "Attack speed multiplier"
+        },
+        "available_attacks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Attack IDs available at this tier"
+        },
+        "unlocked_abilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Special abilities unlocked at this tier"
+        }
+      }
+    },
+    "attack_type": {
+      "type": "object",
+      "required": ["id", "name", "category", "damage", "execution_frames"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of attack"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["light", "heavy", "special", "finisher"],
+          "description": "Attack category"
+        },
+        "damage": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Base damage value"
+        },
+        "execution_frames": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of frames to execute attack"
+        },
+        "recovery_frames": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of frames before next action possible"
+        },
+        "can_cancel_into": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Attack IDs this can be canceled into"
+        },
+        "requires_tail_tier": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 9,
+          "description": "Minimum tail tier to use this attack"
+        },
+        "momentum_based": {
+          "type": "boolean",
+          "description": "Whether attack damage scales with momentum"
+        }
+      }
+    }
+  }
+}
