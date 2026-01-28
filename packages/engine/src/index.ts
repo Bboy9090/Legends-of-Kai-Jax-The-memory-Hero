@@ -12,3 +12,4 @@ export * from './progression/LegendNodeValidator';
 export * from './progression/LegendNodeManager';
 export * from './trials/QuillTrial';
 export * from './world/WorldState';
+export * from './story';
