@@ -31,7 +31,7 @@ struct FTailTierReaction
     FString EliteTactics;
 
     UPROPERTY(BlueprintReadOnly, Category = "Enemy Behavior")
-    FString BossPhaseTrigers;
+    FString BossPhaseTriggers;
 
     // Music Intensity
     UPROPERTY(BlueprintReadOnly, Category = "Music")

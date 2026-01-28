@@ -223,7 +223,7 @@ bool UKaiJaxCharacterData::ParseTailTierReactions(const TSharedPtr<FJsonObject>&
             Reaction.FodderConfidence = (*EnemyBehaviorObj)->GetStringField(TEXT("fodder_confidence"));
             Reaction.FodderEngagementDistance = (*EnemyBehaviorObj)->GetStringField(TEXT("fodder_engagement_distance"));
             Reaction.EliteTactics = (*EnemyBehaviorObj)->GetStringField(TEXT("elite_tactics"));
-            Reaction.BossPhaseTrigers = (*EnemyBehaviorObj)->GetStringField(TEXT("boss_phase_triggers"));
+            Reaction.BossPhaseTriggers = (*EnemyBehaviorObj)->GetStringField(TEXT("boss_phase_triggers"));
         }
         
         // Parse music_intensity
