@@ -105,7 +105,15 @@ target_link_libraries(StoryModeTest
 )
 
 # Set output directories
-set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest AnimationComponentTest AnimationIntegrationTest InputSystemTest CharacterInputIntegrationTest StoryModeTest
+set_target_properties(
+    LegendsEngineCore
+    CharacterLoaderTest
+    CharacterFactoryTest
+    AnimationComponentTest
+    AnimationIntegrationTest
+    InputSystemTest
+    CharacterInputIntegrationTest
+    StoryModeTest
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"

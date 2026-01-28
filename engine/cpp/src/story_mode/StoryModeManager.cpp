@@ -30,6 +30,11 @@ bool StoryModeManager::LoadConfiguration(
         json story_json;
         story_file >> story_json;
 
+        // TODO: Load tail_tier_reactions_path for centralized NPC/enemy reaction rules
+        // For now, tail tier reactions are embedded in individual NPC/enemy JSON files
+        // Future implementation will load tail_tier_reactions.json and apply globally
+        (void)tail_tier_reactions_path; // Suppress unused parameter warning
+
         // Parse story mode data
         world_.version = story_json["version"];
         world_.world_name = story_json["game_world"]["name"];
@@ -131,9 +136,12 @@ void StoryModeManager::StartNewGame() {
 void StoryModeManager::Update(float deltaTime) {
     // Update quest timers, NPC states, etc.
     // This would be called every frame
+    (void)deltaTime; // Suppress unused parameter warning - will be used in future
     
     // Check for district unlocks
     UpdateDistrictUnlocks();
+    
+    // Future: Update quest timers, NPC movement, dynamic events, etc.
 }
 
 void StoryModeManager::SetPlayerTailCount(int tail_count) {
@@ -413,10 +421,19 @@ bool StoryModeManager::CheckQuestRequirements(const Quest& quest) const {
 }
 
 void StoryModeManager::ApplyTailTierReactionsToNPC(NPC& npc, int tail_count) {
-    // This function applies tail tier reactions from tail_tier_reactions.json
-    // For now, the data is loaded directly in the NPC JSON files
-    // In a full implementation, this would read from tail_tier_reactions.json
-    // and apply the appropriate modifiers
+    // Apply tail tier reactions from tail_tier_reactions.json
+    // Currently, tail tier reactions are embedded in NPC JSON files directly.
+    // In a future implementation, this function would:
+    // 1. Load tail_tier_reactions.json centrally
+    // 2. Apply global NPC reaction rules based on tier
+    // 3. Merge with NPC-specific overrides
+    // 
+    // For now, NPC files contain their own tail_tier_reactions which are
+    // already loaded and accessible via npc.tail_tier_reactions map.
+    // This function serves as a hook for future centralized reaction management.
+    
+    (void)npc;        // Suppress unused parameter warning
+    (void)tail_count; // Suppress unused parameter warning
 }
 
 } // namespace StoryMode

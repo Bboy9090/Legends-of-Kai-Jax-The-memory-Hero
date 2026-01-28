@@ -81,7 +81,8 @@
         "7": {"$ref": "#/definitions/tier_reaction"},
         "8": {"$ref": "#/definitions/tier_reaction"},
         "9": {"$ref": "#/definitions/tier_reaction"}
-      }
+      },
+      "additionalProperties": false
     },
     "quests": {
       "type": "array",

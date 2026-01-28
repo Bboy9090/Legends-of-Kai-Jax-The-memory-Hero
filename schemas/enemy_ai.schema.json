@@ -65,7 +65,8 @@
             "7": {"$ref": "#/definitions/tier_adaptation"},
             "8": {"$ref": "#/definitions/tier_adaptation"},
             "9": {"$ref": "#/definitions/tier_adaptation"}
-          }
+          },
+          "additionalProperties": false
         }
       }
     },

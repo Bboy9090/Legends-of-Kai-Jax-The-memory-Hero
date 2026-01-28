@@ -104,7 +104,8 @@ int main() {
 
     // Test 6: Update Loop
     std::cout << "\nTest 6: Update loop..." << std::endl;
-    story_manager.Update(0.016f); // Simulate one frame at 60 FPS
+    // Simulate one frame at 60 FPS (1/60 ≈ 0.01667 seconds)
+    story_manager.Update(0.01667f);
     std::cout << "✓ Update completed without crash" << std::endl;
 
     // Test 7: Platform-Agnostic Verification

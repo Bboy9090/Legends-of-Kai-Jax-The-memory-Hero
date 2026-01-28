@@ -136,7 +136,8 @@
         "7": {"$ref": "#/definitions/tier_combat_modifier"},
         "8": {"$ref": "#/definitions/tier_combat_modifier"},
         "9": {"$ref": "#/definitions/tier_combat_modifier"}
-      }
+      },
+      "additionalProperties": false
     },
     "attack_types": {
       "type": "array",
