@@ -121,13 +121,13 @@ bool UKaiJaxCharacterData::ParseTailRoles(const TSharedPtr<FJsonObject>& JsonObj
     TailRoles.Empty();
     for (const TSharedPtr<FJsonValue>& Value : *TailRolesArray)
     {
-        const TSharedPtr<FJsonObject>* RoleObj;
-        if (Value->TryGetObject(RoleObj))
+        TSharedPtr<FJsonObject> RoleObj;
+        if (Value->TryGetObject(RoleObj) && RoleObj.IsValid())
         {
             FTailRole Role;
-            Role.Index = (*RoleObj)->GetIntegerField(TEXT("index"));
-            Role.Name = (*RoleObj)->GetStringField(TEXT("name"));
-            Role.Function = (*RoleObj)->GetStringField(TEXT("function"));
+            Role.Index = RoleObj->GetIntegerField(TEXT("index"));
+            Role.Name = RoleObj->GetStringField(TEXT("name"));
+            Role.Function = RoleObj->GetStringField(TEXT("function"));
             TailRoles.Add(Role);
         }
     }
