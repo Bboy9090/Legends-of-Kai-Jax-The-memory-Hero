@@ -114,7 +114,7 @@
 - ✅ No command injection vectors
 - ✅ No deserialization attacks
 - ✅ Memory-safe (uses managed memory)
-- ✅ Thread-safe (singleton pattern with lazy init)
+- ⚠️ Not inherently thread-safe; UKaiJaxCharacterData::Get() uses lazy-init singleton semantics without cross-thread locking and must only be used from the game thread
 
 ## Conclusion
 
