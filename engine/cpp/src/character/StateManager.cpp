@@ -79,62 +79,221 @@ bool StateManager::CanTransition(AnimationState from, AnimationState to) {
         return false;
     }
 
-    // TODO: Implement state interruption logic
-    // - Attack animations should not be interruptible mid-combo
-    // - Finisher animations must complete
-    // - Parry/counter windows have specific timing
-    // - Hit reactions can be interrupted by certain actions
-    // 
-    // Example rules:
-    // - LIGHT_COMBO can be interrupted after first attack frame window
-    // - HEAVY_COMBO cannot be interrupted once started
-    // - FINISHER cannot be interrupted
-    // - PARRY has a specific window
-    // - COUNTER must complete
-    // - HIT_REACTIONS can be interrupted by invincibility frames
+    // Check if we can interrupt the current state
+    return CanInterrupt(from, to, currentProgress);
+}
 
-    // TODO: Implement animation blending rules
-    // - Movement transitions should blend smoothly
-    // - Attack to movement needs proper exit frames
-    // - Idle to movement should have anticipation
-    // - Sprint entry/exit needs transition time
-    //
-    // Example blending:
-    // - WALK ↔ SPRINT: 0.2s blend time
-    // - IDLE_CALM → WALK: 0.1s blend time
-    // - WALK → IDLE_CALM: 0.15s blend time
-    // - ATTACK → WALK: wait for recovery frames
+bool StateManager::CanInterrupt(AnimationState currentState, AnimationState desiredState, 
+                                const AnimationProgress& progress) {
+    // Get priority levels
+    int currentPriority = GetStatePriority(currentState);
+    int desiredPriority = GetStatePriority(desiredState);
 
-    // For now, allow most transitions
-    // Exception: Combat states have restrictions
-    switch (from) {
+    // Higher priority states can always interrupt lower priority
+    if (desiredPriority > currentPriority) {
+        return true;
+    }
+
+    // Same priority states can interrupt if the current is interruptible
+    if (desiredPriority == currentPriority) {
+        return IsStateInterruptible(currentState, progress);
+    }
+
+    // Lower priority cannot interrupt higher priority unless animation is complete
+    return progress.isComplete || IsStateInterruptible(currentState, progress);
+}
+
+int StateManager::GetStatePriority(AnimationState state) const {
+    // Priority levels (higher = more important):
+    // 5: Critical states (death, finisher)
+    // 4: Combat actions (attack, parry, counter)
+    // 3: Evasive actions (dodge, jump)
+    // 2: Movement (walk, run, sprint)
+    // 1: Idle states
+    
+    switch (state) {
+        case AnimationState::DEATH:
+        case AnimationState::FINISHER:
+            return 5;
+            
         case AnimationState::LIGHT_COMBO:
         case AnimationState::HEAVY_COMBO:
         case AnimationState::SPECIAL_ATTACKS:
-            // Combat animations can only transition to other combat states or idle
-            // This is a simplified rule; real implementation would check animation progress
-            return (to == AnimationState::IDLE_CALM || 
-                    to == AnimationState::IDLE_COMBAT ||
-                    to == AnimationState::LIGHT_COMBO ||
-                    to == AnimationState::HEAVY_COMBO ||
-                    to == AnimationState::SPECIAL_ATTACKS);
-
-        case AnimationState::FINISHER:
         case AnimationState::PARRY:
         case AnimationState::COUNTER:
-            // These states must complete before transitioning
-            // In a real implementation, this would check animation completion percentage
-            return false;
-
+            return 4;
+            
+        case AnimationState::DODGE_GROUND:
+        case AnimationState::DODGE_AIR:
+            return 3;
+            
+        case AnimationState::WALK:
+        case AnimationState::RUN:
+        case AnimationState::SPRINT:
+            return 2;
+            
+        case AnimationState::IDLE_CALM:
+        case AnimationState::IDLE_COMBAT:
         case AnimationState::HIT_REACTIONS:
-            // Hit reactions can only transition to idle or death
-            return (to == AnimationState::IDLE_CALM || 
-                    to == AnimationState::IDLE_COMBAT ||
-                    to == AnimationState::DEATH);
-
+            return 1;
+            
         default:
-            // All other states (idle, movement) can freely transition
+            return 0;
+    }
+}
+
+bool StateManager::IsStateInterruptible(AnimationState state, 
+                                       const AnimationProgress& progress) const {
+    switch (state) {
+        case AnimationState::LIGHT_COMBO:
+            // Light attacks can be interrupted after 40% completion (hit confirm window)
+            return progress.GetNormalizedProgress() >= 0.4f;
+            
+        case AnimationState::HEAVY_COMBO:
+            // Heavy attacks can only be interrupted after 70% completion
+            return progress.GetNormalizedProgress() >= 0.7f;
+            
+        case AnimationState::SPECIAL_ATTACKS:
+            // Special attacks can be interrupted in recovery window (after 80%)
+            return progress.GetNormalizedProgress() >= 0.8f;
+            
+        case AnimationState::PARRY:
+            // Parry has a specific window (20-60% of animation)
+            return progress.IsInWindow(0.2f, 0.6f);
+            
+        case AnimationState::COUNTER:
+        case AnimationState::FINISHER:
+            // These must complete fully
+            return false;
+            
+        case AnimationState::DODGE_GROUND:
+        case AnimationState::DODGE_AIR:
+            // Dodges can be interrupted after 50% (allows for combat flow)
+            return progress.GetNormalizedProgress() >= 0.5f;
+            
+        case AnimationState::HIT_REACTIONS:
+            // Hit reactions can be interrupted after 60% (stagger recovery)
+            return progress.GetNormalizedProgress() >= 0.6f;
+            
+        case AnimationState::WALK:
+        case AnimationState::RUN:
+        case AnimationState::SPRINT:
+        case AnimationState::IDLE_CALM:
+        case AnimationState::IDLE_COMBAT:
+            // Movement and idle states can always be interrupted
             return true;
+            
+        case AnimationState::DEATH:
+            // Death cannot be interrupted
+            return false;
+            
+        default:
+            return false;
+    }
+}
+
+void StateManager::UpdateProgress(float deltaTime) {
+    if (!currentProgress.isComplete) {
+        currentProgress.currentTime += deltaTime;
+        
+        if (currentProgress.currentTime >= currentProgress.duration) {
+            currentProgress.isComplete = true;
+        }
+    }
+}
+
+void StateManager::SetAnimationDuration(AnimationState state, float duration) {
+    trackedState = state;
+    currentProgress.currentTime = 0.0f;
+    currentProgress.duration = duration;
+    currentProgress.isComplete = false;
+}
+
+float StateManager::GetBlendTime(AnimationState from, AnimationState to) const {
+    // Define blend times for different transition types
+    // Based on animation philosophy: mass and inertia matter
+    
+    // Same state = no blend
+    if (from == to) {
+        return 0.0f;
+    }
+    
+    // Movement to movement transitions
+    if ((from == AnimationState::WALK || from == AnimationState::RUN || from == AnimationState::SPRINT) &&
+        (to == AnimationState::WALK || to == AnimationState::RUN || to == AnimationState::SPRINT)) {
+        return 0.2f; // 200ms blend for movement speed changes
+    }
+    
+    // Idle to movement
+    if ((from == AnimationState::IDLE_CALM || from == AnimationState::IDLE_COMBAT) &&
+        (to == AnimationState::WALK || to == AnimationState::RUN || to == AnimationState::SPRINT)) {
+        return 0.1f; // 100ms blend for movement start (anticipation)
+    }
+    
+    // Movement to idle
+    if ((from == AnimationState::WALK || from == AnimationState::RUN || from == AnimationState::SPRINT) &&
+        (to == AnimationState::IDLE_CALM || to == AnimationState::IDLE_COMBAT)) {
+        return 0.15f; // 150ms blend for stopping (deceleration)
+    }
+    
+    // Combat to movement (must wait for recovery frames)
+    if ((from == AnimationState::LIGHT_COMBO || from == AnimationState::HEAVY_COMBO || 
+         from == AnimationState::SPECIAL_ATTACKS) &&
+        (to == AnimationState::WALK || to == AnimationState::RUN || to == AnimationState::SPRINT)) {
+        return 0.25f; // 250ms blend for combat exit (recovery)
+    }
+    
+    // Movement to combat (quick transitions for responsive feel)
+    if ((from == AnimationState::WALK || from == AnimationState::RUN || from == AnimationState::SPRINT) &&
+        (to == AnimationState::LIGHT_COMBO || to == AnimationState::HEAVY_COMBO)) {
+        return 0.1f; // 100ms blend for attack startup
+    }
+    
+    // Dodge transitions (fast for evasive actions)
+    if (to == AnimationState::DODGE_GROUND || to == AnimationState::DODGE_AIR) {
+        return 0.05f; // 50ms blend for dodge (must be responsive)
+    }
+    
+    // Parry and counter (instant for timing precision)
+    if (to == AnimationState::PARRY || to == AnimationState::COUNTER) {
+        return 0.0f; // No blend for precise timing actions
+    }
+    
+    // Hit reactions (instant to preserve impact feel)
+    if (to == AnimationState::HIT_REACTIONS) {
+        return 0.0f; // No blend for hit reactions
+    }
+    
+    // Finisher (smooth entry for cinematic feel)
+    if (to == AnimationState::FINISHER) {
+        return 0.3f; // 300ms blend for finisher entry
+    }
+    
+    // Death (no blend, immediate)
+    if (to == AnimationState::DEATH) {
+        return 0.0f;
+    }
+    
+    // Default blend time for uncategorized transitions
+    return 0.15f;
+}
+
+void StateManager::StartBlend(AnimationState from, AnimationState to) {
+    blendState.fromState = from;
+    blendState.toState = to;
+    blendState.blendTime = GetBlendTime(from, to);
+    blendState.currentBlendTime = 0.0f;
+    blendState.isBlending = (blendState.blendTime > 0.0f);
+}
+
+void StateManager::UpdateBlend(float deltaTime) {
+    if (blendState.isBlending) {
+        blendState.currentBlendTime += deltaTime;
+        
+        if (blendState.currentBlendTime >= blendState.blendTime) {
+            blendState.isBlending = false;
+            blendState.currentBlendTime = blendState.blendTime;
+        }
     }
 }
 

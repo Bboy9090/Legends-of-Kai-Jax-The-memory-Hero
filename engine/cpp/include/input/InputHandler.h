@@ -3,6 +3,17 @@
 namespace LegendsEngine {
 
 /**
+ * Platform - Enum representing different platform types
+ * Used to select appropriate input handling strategy
+ */
+enum class Platform {
+    PC,           // Desktop (keyboard/mouse)
+    CONSOLE,      // Console (gamepad)
+    TABLET,       // Tablet (gamepad or touch)
+    MOBILE        // Mobile (touch)
+};
+
+/**
  * InputAction - Enum representing different player input actions
  * These are platform-agnostic actions that can be mapped to any input device
  */
@@ -51,7 +62,12 @@ struct InputState {
  */
 class InputHandler {
 public:
-    InputHandler() = default;
+    /**
+     * Construct InputHandler with platform detection
+     * 
+     * @param platform The platform to use for input handling (default: PC)
+     */
+    explicit InputHandler(Platform platform = Platform::PC);
     ~InputHandler() = default;
 
     // Disable copy/move
@@ -69,6 +85,21 @@ public:
      * @return Current state of all player inputs
      */
     InputState GetCurrentInput();
+
+    /**
+     * Get the current platform
+     * 
+     * @return The platform type this handler is configured for
+     */
+    Platform GetPlatform() const { return currentPlatform; }
+
+private:
+    Platform currentPlatform;
+
+    // Platform-specific input reading methods
+    InputState ReadKeyboardInput();
+    InputState ReadGamepadInput();
+    InputState ReadTouchInput();
 };
 
 } // namespace LegendsEngine
