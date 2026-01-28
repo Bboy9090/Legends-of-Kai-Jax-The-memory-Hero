@@ -34,6 +34,7 @@ add_library(LegendsEngineCore STATIC
     src/AnimationComponent.cpp
     src/input/InputHandler.cpp
     src/character/StateManager.cpp
+    src/story_mode/StoryModeManager.cpp
 )
 
 target_link_libraries(LegendsEngineCore
