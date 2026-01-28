@@ -5,11 +5,13 @@ import "@fontsource/inter";
 import "@fontsource/bebas-neue";
 
 import BattleScene from "./components/game/BattleScene";
+import OpenWorldCombat from "./components/game/OpenWorldCombat";
 import MobileControls from "./components/game/MobileControls";
 import BattleUI from "./components/game/BattleUI";
 import DialogueDisplay from "./components/game/DialogueDisplay";
 import MainMenu from "./components/game/MainMenu";
 import CharacterSelect from "./components/game/CharacterSelect";
+import UEEMissionSelect from "./components/game/UEEMissionSelect";
 import TransformationOverlay from "./components/game/TransformationOverlay";
 import ScreenEffects from "./components/game/ScreenEffects";
 import { GameIntro } from "./components/game/LoadingScreen";
@@ -147,12 +149,27 @@ function App() {
         {/* Main Menu */}
         {phase === 'ready' && gameState === 'menu' && !showIntro && <MainMenu />}
         
-        {/* Story Mode - redirect to character select for now */}
+        {/* Story Mode - Show mission selection */}
         {phase === 'ready' && gameState === 'story-mode-select' && (
+          <div className="w-full min-h-screen">
+            <UEEMissionSelect 
+              onSelectMission={(missionId) => {
+                console.log("Mission selected:", missionId);
+                // Store selected mission and go to character select
+                setGameState('mission-team-select');
+              }}
+              onBack={() => setGameState('menu')}
+              completedMissions={[]}
+            />
+          </div>
+        )}
+        
+        {/* Mission Team Select - Choose your character for the mission */}
+        {phase === 'ready' && gameState === 'mission-team-select' && (
           <CharacterSelect />
         )}
         
-        {/* Versus Mode - redirect to character select for now */}
+        {/* Versus Mode - Show character select for arcade-style fighting */}
         {phase === 'ready' && gameState === 'versus-select' && (
           <CharacterSelect />
         )}
@@ -191,7 +208,14 @@ function App() {
               <color attach="background" args={["#1a1a2e"]} />
               
               <Suspense fallback={null}>
-                <BattleScene />
+                {/* Render different combat modes based on game state */}
+                {(gameState === 'mission-gameplay' || gameState === 'story-mode-select') ? (
+                  // RPG Open-World Combat for Story/Mission Mode
+                  <OpenWorldCombat missionId={selectedCharacter} />
+                ) : (
+                  // Arcade-Style 1v1 for Versus/Quick Battle
+                  <BattleScene />
+                )}
               </Suspense>
             </Canvas>
             
