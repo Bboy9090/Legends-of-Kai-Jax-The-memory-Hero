@@ -241,7 +241,10 @@ export function getCombatIdentity(): typeof kaiJaxData.combat_identity {
  */
 const logger = {
   log: (msg: string) => {
-    if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production') {
+    const nodeProcess = (globalThis as any).process as
+      | { env?: { NODE_ENV?: string } }
+      | undefined;
+    if (nodeProcess?.env?.NODE_ENV !== 'production') {
       console.log(msg);
     }
   },
