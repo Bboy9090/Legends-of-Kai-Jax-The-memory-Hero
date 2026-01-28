@@ -13,7 +13,9 @@ public class KaiJax : ModuleRules
             "Engine", 
             "InputCore",
             "EnhancedInput",
-            "GameplayTasks"
+            "GameplayTasks",
+            "Json",
+            "JsonUtilities"
         });
 
         PrivateDependencyModuleNames.AddRange(new string[] { });
