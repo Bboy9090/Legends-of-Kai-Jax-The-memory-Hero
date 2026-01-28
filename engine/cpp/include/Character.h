@@ -117,6 +117,12 @@ public:
 private:
     // Current animation state tracking
     AnimationState currentAnimationState = AnimationState::IDLE_CALM;
+    
+    // Animation progress tracking for state interruption logic
+    float animationProgressTime = 0.0f;
+    
+    // Helper method to get estimated animation duration
+    float GetEstimatedAnimationDuration(AnimationState state) const;
 };
 
 } // namespace LegendsEngine

@@ -94,8 +94,35 @@ target_link_libraries(CharacterInputIntegrationTest
     PRIVATE LegendsEngineCore
 )
 
+# Test executable for State Interruption Logic
+add_executable(StateInterruptionTest
+    tests/StateInterruptionTest.cpp
+)
+
+target_link_libraries(StateInterruptionTest
+    PRIVATE LegendsEngineCore
+)
+
+# Test executable for Animation Blending
+add_executable(AnimationBlendingTest
+    tests/AnimationBlendingTest.cpp
+)
+
+target_link_libraries(AnimationBlendingTest
+    PRIVATE LegendsEngineCore
+)
+
+# Test executable for Platform Input Mapping
+add_executable(PlatformInputTest
+    tests/PlatformInputTest.cpp
+)
+
+target_link_libraries(PlatformInputTest
+    PRIVATE LegendsEngineCore
+)
+
 # Set output directories
-set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest AnimationComponentTest AnimationIntegrationTest InputSystemTest CharacterInputIntegrationTest
+set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest AnimationComponentTest AnimationIntegrationTest InputSystemTest CharacterInputIntegrationTest StateInterruptionTest AnimationBlendingTest PlatformInputTest
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -121,3 +148,6 @@ add_test(NAME AnimationComponentTest COMMAND AnimationComponentTest)
 add_test(NAME AnimationIntegrationTest COMMAND AnimationIntegrationTest)
 add_test(NAME InputSystemTest COMMAND InputSystemTest)
 add_test(NAME CharacterInputIntegrationTest COMMAND CharacterInputIntegrationTest)
+add_test(NAME StateInterruptionTest COMMAND StateInterruptionTest)
+add_test(NAME AnimationBlendingTest COMMAND AnimationBlendingTest)
+add_test(NAME PlatformInputTest COMMAND PlatformInputTest)
