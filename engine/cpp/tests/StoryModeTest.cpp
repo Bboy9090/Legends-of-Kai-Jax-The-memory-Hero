@@ -21,10 +21,20 @@ int main() {
 
     // Test 1: Load Configuration
     std::cout << "\nTest 1: Loading configuration..." << std::endl;
-    bool loaded = story_manager.LoadConfiguration(
-        "../../data/story_mode/roaring_city.json",
-        "../../data/world/tail_tier_reactions.json"
-    );
+    
+    // Try multiple possible paths (depending on where test is run from)
+    const char* possible_paths[][2] = {
+        {"../../../../data/story_mode/roaring_city.json", "../../../../data/world/tail_tier_reactions.json"},
+        {"../../../data/story_mode/roaring_city.json", "../../../data/world/tail_tier_reactions.json"},
+        {"../../data/story_mode/roaring_city.json", "../../data/world/tail_tier_reactions.json"},
+        {"data/story_mode/roaring_city.json", "data/world/tail_tier_reactions.json"},
+    };
+    
+    bool loaded = false;
+    for (const auto& paths : possible_paths) {
+        loaded = story_manager.LoadConfiguration(paths[0], paths[1]);
+        if (loaded) break;
+    }
 
     if (!loaded) {
         std::cerr << "Failed to load configuration. Test skipped (data files may not exist in test environment)." << std::endl;
