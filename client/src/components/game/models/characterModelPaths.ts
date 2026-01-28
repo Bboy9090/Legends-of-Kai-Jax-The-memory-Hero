@@ -7,7 +7,7 @@
 export const CHARACTER_MODEL_PATHS: Record<string, string> = {
   // === AXIS TRINITY (Main Protagonists) ===
   'jaxon': '/models/jaxon_hero.glb',           // Beastly Hedgehog-Lupine Hybrid - Velocity Fracture
-  'kaison': '/models/kaison_hero.glb',         // Saiyan-Kitsune-Lupine - Star-Force Tactician (9-tailed)
+  'kaison': '/models/kaison_hero.glb',         // Saiyan-Kitsune-Lupine - Star-Force Tactician  
   'kai-jax': '/models/kai_jax_hero.glb',       // The Memory Hero - Perfect Fusion (9 tails, canonical)
   'kai_jax': '/models/kai_jax_hero.glb',       // Canonical model path
   'kaxon': '/models/kai_jax_hero.glb',         // Legacy alias

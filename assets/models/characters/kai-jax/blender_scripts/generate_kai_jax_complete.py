@@ -28,9 +28,20 @@ import os
 from mathutils import Vector, Matrix, Euler
 
 # Configuration
-REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../'))
+# NOTE: These paths use relative navigation from script location to repo root.
+# If you move this script, update the path traversal accordingly or set REPO_ROOT
+# via environment variable: export LEGENDS_REPO_ROOT=/path/to/repo
+if 'LEGENDS_REPO_ROOT' in os.environ:
+    REPO_ROOT = os.environ['LEGENDS_REPO_ROOT']
+else:
+    REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../'))
+
 CHARACTER_JSON_PATH = os.path.join(REPO_ROOT, 'kai_jax.character.json')
-OUTPUT_PATH = os.path.join(REPO_ROOT, 'server/public/models/kai_jax_hero.glb')
+OUTPUT_DIR = os.path.join(REPO_ROOT, 'server/public/models')
+OUTPUT_PATH = os.path.join(OUTPUT_DIR, 'kai_jax_hero.glb')
+
+# Ensure output directory exists
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Load canonical character data
 print(f"Loading character data from: {CHARACTER_JSON_PATH}")

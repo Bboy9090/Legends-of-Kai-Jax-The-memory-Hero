@@ -128,11 +128,15 @@ class AKaiJaxCharacter : public ACharacter {
 ```cpp
 void AKaiJaxCharacter::UnlockTail(int32 TailNumber) {
     // Enforce canonical sequential unlock rule: 3→4→5→6→7→8→9
-    if (ActiveTailCount >= 9) return;  // Max tails reached
-    if (TailNumber != ActiveTailCount) return;  // Must be sequential
+    // TailNumber is the target tail count (4, 5, 6, 7, 8, or 9)
+    // ActiveTailCount is current count (3, 4, 5, 6, 7, or 8)
     
-    // Unlock next tail
-    TailStates[TailNumber] = ETailState::Active;
+    if (ActiveTailCount >= 9) return;  // Max tails reached
+    if (TailNumber != ActiveTailCount + 1) return;  // Must be sequential
+    
+    // Unlock next tail (use 0-based array indexing)
+    int32 arrayIndex = ActiveTailCount;  // Array is 0-indexed, so index 3 is the 4th tail
+    TailStates[arrayIndex] = ETailState::Active;
     ActiveTailCount++;
     
     // Trigger world reactions

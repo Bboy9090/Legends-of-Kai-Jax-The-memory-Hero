@@ -16,10 +16,45 @@ import characterSchema from '../../../../schemas/character.schema.json';
 import tailTierReactions from '../../../../data/world/tail_tier_reactions.json';
 
 /**
+ * Character data structure from lockfile
+ */
+interface CharacterData {
+  evolution: {
+    starting_tail_count: number;
+    final_tail_count: number;
+    unlock_rule: string;
+    skip_unlocks_disallowed: boolean;
+    tails_are_permanent: boolean;
+  };
+  anatomy: {
+    tail_count: number;
+  };
+  tail_roles: Array<{
+    index: number;
+    name: string;
+    function: string;
+  }>;
+  rigging?: {
+    extra_bones?: {
+      tails?: {
+        count: number;
+      };
+    };
+  };
+  animation: {
+    required_sets: string[];
+  };
+  modeling: any;
+  materials: any;
+  combat_identity: any;
+  [key: string]: any;
+}
+
+/**
  * Validate character data against schema
  * @throws Error if validation fails
  */
-function validateCharacterData(data: any): void {
+function validateCharacterData(data: CharacterData): void {
   // Basic validation (full JSON schema validation would require ajv)
   if (!data.evolution) {
     throw new Error('Missing evolution object in character data');
@@ -65,9 +100,46 @@ function validateCharacterData(data: any): void {
 }
 
 /**
+ * Tail tier reaction data structure
+ */
+export interface TailTierReaction {
+  tier_name: string;
+  description: string;
+  enemy_behavior: {
+    fodder_confidence: string;
+    fodder_engagement_distance: string;
+    elite_tactics: string;
+    boss_phase_triggers: string;
+    notes: string;
+  };
+  music_intensity: {
+    combat_layer: string;
+    percussion_intensity: number;
+    brass_presence: string;
+    choir_enabled: boolean;
+    notes: string;
+  };
+  npc_reactions: {
+    default_attitude: string;
+    dialogue_tone: string;
+    quest_availability: string;
+    fear_level: string;
+    worship_level: string;
+    notes: string;
+  };
+  world_state: {
+    descriptor: string;
+    environmental_response: string;
+    unlock_gates: string[];
+    narrative_weight: string;
+    notes: string;
+  };
+}
+
+/**
  * Get tail tier reaction data for current tail count
  */
-export function getTailTierReaction(currentTailCount: number): any {
+export function getTailTierReaction(currentTailCount: number): TailTierReaction {
   const tierKey = currentTailCount.toString();
   
   if (!(tierKey in tailTierReactions.tail_tiers)) {
@@ -102,9 +174,18 @@ export function canUnlockTail(currentTailCount: number, targetTailCount: number)
 }
 
 /**
+ * Tail role data structure
+ */
+export interface TailRole {
+  index: number;
+  name: string;
+  function: string;
+}
+
+/**
  * Get tail role data for specific tail index (1-9)
  */
-export function getTailRole(tailIndex: number): any {
+export function getTailRole(tailIndex: number): TailRole {
   if (tailIndex < 1 || tailIndex > 9) {
     throw new Error(`Invalid tail index: ${tailIndex} (must be 1-9)`);
   }
@@ -126,37 +207,60 @@ export function getRequiredAnimations(): string[] {
 }
 
 /**
+ * LOD target structure
+ */
+export interface LODTargets {
+  [key: string]: {
+    triangles: [number, number];
+  };
+}
+
+/**
  * Get modeling LOD targets
  */
-export function getLODTargets(): any {
+export function getLODTargets(): LODTargets {
   return kaiJaxData.modeling.lod_targets;
 }
 
 /**
  * Get material specifications
  */
-export function getMaterialSpecs(): any {
+export function getMaterialSpecs(): typeof kaiJaxData.materials {
   return kaiJaxData.materials;
 }
 
 /**
  * Get combat identity
  */
-export function getCombatIdentity(): any {
+export function getCombatIdentity(): typeof kaiJaxData.combat_identity {
   return kaiJaxData.combat_identity;
 }
+
+/**
+ * Logger utility (replace with proper logging framework in production)
+ */
+const logger = {
+  log: (msg: string) => {
+    if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+      console.log(msg);
+    }
+  },
+  error: (msg: string, error?: unknown) => {
+    console.error(msg, error);
+  }
+};
 
 /**
  * Validate and load Kai-Jax character data
  */
 export function loadKaiJaxCharacter() {
-  console.log('[KaiJax Loader] Validating canonical character data...');
+  logger.log('[KaiJax Loader] Validating canonical character data...');
   
   try {
-    validateCharacterData(kaiJaxData);
-    console.log('[KaiJax Loader] ✓ Validation passed');
+    validateCharacterData(kaiJaxData as CharacterData);
+    logger.log('[KaiJax Loader] ✓ Validation passed');
   } catch (error) {
-    console.error('[KaiJax Loader] ✗ Validation failed:', error);
+    logger.error('[KaiJax Loader] ✗ Validation failed:', error);
     throw error;
   }
   
@@ -243,9 +347,9 @@ export const RAW_DATA = {
 
 // Validate on module load
 try {
-  validateCharacterData(kaiJaxData);
-  console.log('[KaiJax Module] ✓ Canonical data validated on load');
+  validateCharacterData(kaiJaxData as CharacterData);
+  logger.log('[KaiJax Module] ✓ Canonical data validated on load');
 } catch (error) {
-  console.error('[KaiJax Module] ✗ CRITICAL: Canonical data validation failed:', error);
+  logger.error('[KaiJax Module] ✗ CRITICAL: Canonical data validation failed:', error);
   throw new Error('Kai-Jax canonical data validation failed - cannot proceed');
 }

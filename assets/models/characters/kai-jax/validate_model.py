@@ -16,6 +16,7 @@ Usage:
 import sys
 import json
 import struct
+import os
 from pathlib import Path
 
 # Color codes for terminal output
@@ -35,11 +36,17 @@ def warning(msg):
 
 def load_canonical_data():
     """Load canonical character data"""
-    repo_root = Path(__file__).parent.parent.parent.parent.parent
+    # Try environment variable first, then relative path
+    if 'LEGENDS_REPO_ROOT' in os.environ:
+        repo_root = Path(os.environ['LEGENDS_REPO_ROOT'])
+    else:
+        repo_root = Path(__file__).parent.parent.parent.parent.parent
+    
     char_json = repo_root / 'kai_jax.character.json'
     
     if not char_json.exists():
         error(f"Canonical data not found: {char_json}")
+        error("Tip: Set LEGENDS_REPO_ROOT environment variable to repo root path")
         sys.exit(1)
     
     with open(char_json) as f:
@@ -93,10 +100,23 @@ def validate_skeleton(gltf, expected_tail_count):
         if joint_idx < len(nodes):
             node = nodes[joint_idx]
             name = node.get('name', '')
-            if 'Tail_' in name and not name.endswith('_Base'):
-                tail_bones.append(name)
+            # Match bones that start with "Tail_" and are numbered segments (not _Base)
+            if name.startswith('Tail_') and not name.endswith('_Base'):
+                # Extract tail number from name pattern like "Tail_01_03" or "Tail_1_3"
+                parts = name.split('_')
+                if len(parts) >= 3:  # Has tail index and segment index
+                    tail_bones.append(name)
     
-    tail_count = len([b for b in tail_bones if '_01' in b or '_1' in b])
+    # Count unique tails by looking for base bones or first segments
+    unique_tails = set()
+    for bone_name in tail_bones:
+        parts = bone_name.split('_')
+        if len(parts) >= 2:
+            # Extract tail number (e.g., "01" from "Tail_01_03")
+            tail_num = parts[1]
+            unique_tails.add(tail_num)
+    
+    tail_count = len(unique_tails)
     
     if tail_count == expected_tail_count:
         success(f"Tail count: {tail_count} (matches canonical {expected_tail_count})")
@@ -216,7 +236,11 @@ def main():
     if len(sys.argv) > 1:
         model_path = Path(sys.argv[1])
     else:
-        repo_root = Path(__file__).parent.parent.parent.parent.parent
+        # Try environment variable first, then relative path
+        if 'LEGENDS_REPO_ROOT' in os.environ:
+            repo_root = Path(os.environ['LEGENDS_REPO_ROOT'])
+        else:
+            repo_root = Path(__file__).parent.parent.parent.parent.parent
         model_path = repo_root / 'server/public/models/kai_jax_hero.glb'
     
     print(f"\nModel path: {model_path}")
