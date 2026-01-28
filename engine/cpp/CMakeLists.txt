@@ -34,6 +34,7 @@ add_library(LegendsEngineCore STATIC
     src/AnimationComponent.cpp
     src/input/InputHandler.cpp
     src/character/StateManager.cpp
+    src/story_mode/StoryModeManager.cpp
 )
 
 target_link_libraries(LegendsEngineCore
@@ -94,8 +95,17 @@ target_link_libraries(CharacterInputIntegrationTest
     PRIVATE LegendsEngineCore
 )
 
+# Test executable for Story Mode
+add_executable(StoryModeTest
+    tests/StoryModeTest.cpp
+)
+
+target_link_libraries(StoryModeTest
+    PRIVATE LegendsEngineCore
+)
+
 # Set output directories
-set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest AnimationComponentTest AnimationIntegrationTest InputSystemTest CharacterInputIntegrationTest
+set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest AnimationComponentTest AnimationIntegrationTest InputSystemTest CharacterInputIntegrationTest StoryModeTest
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -121,3 +131,4 @@ add_test(NAME AnimationComponentTest COMMAND AnimationComponentTest)
 add_test(NAME AnimationIntegrationTest COMMAND AnimationIntegrationTest)
 add_test(NAME InputSystemTest COMMAND InputSystemTest)
 add_test(NAME CharacterInputIntegrationTest COMMAND CharacterInputIntegrationTest)
+add_test(NAME StoryModeTest COMMAND StoryModeTest)
