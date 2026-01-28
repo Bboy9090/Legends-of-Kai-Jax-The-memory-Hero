@@ -32,6 +32,33 @@ struct AnimationProgress {
 };
 
 /**
+ * AnimationBlendState - Tracks blending between two animation states
+ * Used for smooth transitions between animations
+ */
+struct AnimationBlendState {
+    AnimationState fromState = AnimationState::IDLE_CALM;
+    AnimationState toState = AnimationState::IDLE_CALM;
+    float blendTime = 0.0f;          // Total time for blend
+    float currentBlendTime = 0.0f;   // Current blend progress
+    bool isBlending = false;         // True if currently blending
+    
+    /**
+     * Get the blend weight (0.0 = fully fromState, 1.0 = fully toState)
+     */
+    float GetBlendWeight() const {
+        if (blendTime <= 0.0f || !isBlending) return 1.0f;
+        return currentBlendTime / blendTime;
+    }
+    
+    /**
+     * Check if blend is complete
+     */
+    bool IsComplete() const {
+        return !isBlending || currentBlendTime >= blendTime;
+    }
+};
+
+/**
  * StateManager - Manages character state transitions based on input
  * 
  * This class determines which animation state a character should be in
@@ -136,9 +163,39 @@ public:
      */
     void SetAnimationDuration(AnimationState state, float duration);
 
+    /**
+     * Get the blend time for a specific state transition
+     * 
+     * @param from The state transitioning from
+     * @param to The state transitioning to
+     * @return The blend time in seconds
+     */
+    float GetBlendTime(AnimationState from, AnimationState to) const;
+
+    /**
+     * Start a blend transition between two states
+     * 
+     * @param from The state transitioning from
+     * @param to The state transitioning to
+     */
+    void StartBlend(AnimationState from, AnimationState to);
+
+    /**
+     * Update blend state
+     * 
+     * @param deltaTime Time elapsed since last frame in seconds
+     */
+    void UpdateBlend(float deltaTime);
+
+    /**
+     * Get current blend state
+     */
+    const AnimationBlendState& GetBlendState() const { return blendState; }
+
 private:
     AnimationProgress currentProgress;
     AnimationState trackedState = AnimationState::IDLE_CALM;
+    AnimationBlendState blendState;
 
     /**
      * Get the priority level of a state (higher = more important)

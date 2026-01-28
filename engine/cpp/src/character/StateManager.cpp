@@ -209,4 +209,92 @@ void StateManager::SetAnimationDuration(AnimationState state, float duration) {
     currentProgress.isComplete = false;
 }
 
+float StateManager::GetBlendTime(AnimationState from, AnimationState to) const {
+    // Define blend times for different transition types
+    // Based on animation philosophy: mass and inertia matter
+    
+    // Same state = no blend
+    if (from == to) {
+        return 0.0f;
+    }
+    
+    // Movement to movement transitions
+    if ((from == AnimationState::WALK || from == AnimationState::RUN || from == AnimationState::SPRINT) &&
+        (to == AnimationState::WALK || to == AnimationState::RUN || to == AnimationState::SPRINT)) {
+        return 0.2f; // 200ms blend for movement speed changes
+    }
+    
+    // Idle to movement
+    if ((from == AnimationState::IDLE_CALM || from == AnimationState::IDLE_COMBAT) &&
+        (to == AnimationState::WALK || to == AnimationState::RUN || to == AnimationState::SPRINT)) {
+        return 0.1f; // 100ms blend for movement start (anticipation)
+    }
+    
+    // Movement to idle
+    if ((from == AnimationState::WALK || from == AnimationState::RUN || from == AnimationState::SPRINT) &&
+        (to == AnimationState::IDLE_CALM || to == AnimationState::IDLE_COMBAT)) {
+        return 0.15f; // 150ms blend for stopping (deceleration)
+    }
+    
+    // Combat to movement (must wait for recovery frames)
+    if ((from == AnimationState::LIGHT_COMBO || from == AnimationState::HEAVY_COMBO || 
+         from == AnimationState::SPECIAL_ATTACKS) &&
+        (to == AnimationState::WALK || to == AnimationState::RUN || to == AnimationState::SPRINT)) {
+        return 0.25f; // 250ms blend for combat exit (recovery)
+    }
+    
+    // Movement to combat (quick transitions for responsive feel)
+    if ((from == AnimationState::WALK || from == AnimationState::RUN || from == AnimationState::SPRINT) &&
+        (to == AnimationState::LIGHT_COMBO || to == AnimationState::HEAVY_COMBO)) {
+        return 0.1f; // 100ms blend for attack startup
+    }
+    
+    // Dodge transitions (fast for evasive actions)
+    if (to == AnimationState::DODGE_GROUND || to == AnimationState::DODGE_AIR) {
+        return 0.05f; // 50ms blend for dodge (must be responsive)
+    }
+    
+    // Parry and counter (instant for timing precision)
+    if (to == AnimationState::PARRY || to == AnimationState::COUNTER) {
+        return 0.0f; // No blend for precise timing actions
+    }
+    
+    // Hit reactions (instant to preserve impact feel)
+    if (to == AnimationState::HIT_REACTIONS) {
+        return 0.0f; // No blend for hit reactions
+    }
+    
+    // Finisher (smooth entry for cinematic feel)
+    if (to == AnimationState::FINISHER) {
+        return 0.3f; // 300ms blend for finisher entry
+    }
+    
+    // Death (no blend, immediate)
+    if (to == AnimationState::DEATH) {
+        return 0.0f;
+    }
+    
+    // Default blend time for uncategorized transitions
+    return 0.15f;
+}
+
+void StateManager::StartBlend(AnimationState from, AnimationState to) {
+    blendState.fromState = from;
+    blendState.toState = to;
+    blendState.blendTime = GetBlendTime(from, to);
+    blendState.currentBlendTime = 0.0f;
+    blendState.isBlending = (blendState.blendTime > 0.0f);
+}
+
+void StateManager::UpdateBlend(float deltaTime) {
+    if (blendState.isBlending) {
+        blendState.currentBlendTime += deltaTime;
+        
+        if (blendState.currentBlendTime >= blendState.blendTime) {
+            blendState.isBlending = false;
+            blendState.currentBlendTime = blendState.blendTime;
+        }
+    }
+}
+
 } // namespace LegendsEngine
