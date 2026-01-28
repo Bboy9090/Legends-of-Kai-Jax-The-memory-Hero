@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useRunner } from "../../lib/stores/useRunner";
@@ -32,10 +32,23 @@ interface Enemy {
   isActive: boolean;
 }
 
+// Combat logic component that can use useFrame
+function OpenWorldCombatLogic() {
+  const { battlePhase, updateRoundTimer } = useBattle();
+  
+  // Update combat timer every frame
+  useFrame((state, delta) => {
+    if (battlePhase === 'fighting') {
+      updateRoundTimer(delta);
+    }
+  });
+  
+  return null;
+}
+
 export default function OpenWorldCombat({ missionId }: { missionId?: string }) {
   const {
     startBattle,
-    updateRoundTimer,
     battlePhase,
     playerX,
     screenShake,
@@ -45,8 +58,6 @@ export default function OpenWorldCombat({ missionId }: { missionId?: string }) {
     playerAttackType,
     playerFighterId,
   } = useBattle();
-  
-  const { gameState } = useRunner();
   
   // Track multiple enemies for open-world combat
   const [enemies, setEnemies] = useState<Enemy[]>([
@@ -94,21 +105,12 @@ export default function OpenWorldCombat({ missionId }: { missionId?: string }) {
     }, 1000);
   }, [startBattle, missionId]);
   
-  // Update combat timer every frame
-  useFrame((state, delta) => {
-    if (battlePhase === 'fighting') {
-      updateRoundTimer(delta);
-    }
-  });
-  
   // Open-world camera - wider view to see multiple enemies and environment
   const activeEnemies = enemies.filter(e => e.isActive);
   const avgEnemyX = activeEnemies.length > 0 
     ? activeEnemies.reduce((sum, e) => sum + e.position[0], 0) / activeEnemies.length 
     : 5;
-  const cameraX = (playerX + avgEnemyX) / 2;
-  const cameraY = 7;  // Higher to see more of the battlefield
-  const cameraZ = 18; // Further back for open-world view
+  const cameraTargetX = (playerX + avgEnemyX) / 2;
   
   return (
     <>
@@ -117,8 +119,11 @@ export default function OpenWorldCombat({ missionId }: { missionId?: string }) {
         enableZoom={false}
         enablePan={false}
         enableRotate={false}
-        target={[cameraX, 2, 0]}
+        target={[cameraTargetX, 2, 0]}
       />
+      
+      {/* Combat logic that uses useFrame */}
+      <OpenWorldCombatLogic />
       
       {/* Enhanced Lighting System */}
       <RimLight intensity={1.0} />
@@ -138,24 +143,31 @@ export default function OpenWorldCombat({ missionId }: { missionId?: string }) {
       <BattlePlayer />
       
       {/* Multiple Enemies - Open-world RPG style */}
-      {activeEnemies.map((enemy) => (
-        <group key={enemy.id} position={enemy.position}>
-          {/* Simplified enemy representation - in a full impl, use actual models */}
-          <mesh castShadow>
-            <boxGeometry args={[1, 2, 1]} />
-            <meshStandardMaterial color="#ff3333" />
-          </mesh>
-          {/* Health bar above enemy */}
-          <mesh position={[0, 2.5, 0]}>
-            <planeGeometry args={[2, 0.2]} />
-            <meshBasicMaterial color="#ff0000" />
-          </mesh>
-          <mesh position={[-(1 - enemy.health / enemy.maxHealth), 2.5, 0.01]}>
-            <planeGeometry args={[2 * (enemy.health / enemy.maxHealth), 0.2]} />
-            <meshBasicMaterial color="#00ff00" />
-          </mesh>
-        </group>
-      ))}
+      {activeEnemies.map((enemy) => {
+        const healthPercentage = enemy.health / enemy.maxHealth;
+        return (
+          <group key={enemy.id} position={enemy.position}>
+            {/* Simplified enemy representation - in a full impl, use actual models */}
+            <mesh castShadow>
+              <boxGeometry args={[1, 2, 1]} />
+              <meshStandardMaterial color="#ff3333" />
+            </mesh>
+            {/* Health bar above enemy */}
+            <group position={[0, 2.5, 0]}>
+              {/* Background bar */}
+              <mesh position={[0, 0, 0]}>
+                <planeGeometry args={[2, 0.2]} />
+                <meshBasicMaterial color="#ff0000" />
+              </mesh>
+              {/* Foreground health bar - scaled instead of positioned */}
+              <mesh position={[-(1 - healthPercentage), 0, 0.01]} scale={[healthPercentage, 1, 1]}>
+                <planeGeometry args={[2, 0.2]} />
+                <meshBasicMaterial color="#00ff00" />
+              </mesh>
+            </group>
+          </group>
+        );
+      })}
       
       {/* EPIC Particle Effects! ✨💥 */}
       <ParticleManager />

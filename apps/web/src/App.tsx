@@ -209,9 +209,9 @@ function App() {
               
               <Suspense fallback={null}>
                 {/* Render different combat modes based on game state */}
-                {(gameState === 'mission-gameplay' || gameState === 'story-mode-select') ? (
+                {gameState === 'mission-gameplay' ? (
                   // RPG Open-World Combat for Story/Mission Mode
-                  <OpenWorldCombat missionId={selectedCharacter} />
+                  <OpenWorldCombat missionId="placeholder-mission" />
                 ) : (
                   // Arcade-Style 1v1 for Versus/Quick Battle
                   <BattleScene />

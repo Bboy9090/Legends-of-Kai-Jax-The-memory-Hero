@@ -94,8 +94,9 @@ Main Menu
 ## Technical Notes
 
 - `gameState` determines combat mode:
-  - `'mission-gameplay'` → OpenWorldCombat
+  - `'mission-gameplay'` → OpenWorldCombat (RPG open-world)
   - `'playing'` → BattleScene (arcade 1v1)
+- Mission ID tracking will be added in next phase (currently using placeholder)
 - Character stats and abilities are consistent across both modes
 - Camera positioning is the main visual difference
 - Both modes use the same UI overlays (BattleUI, MobileControls, etc.)
