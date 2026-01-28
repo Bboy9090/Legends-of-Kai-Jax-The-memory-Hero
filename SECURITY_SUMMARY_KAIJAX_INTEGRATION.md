@@ -29,12 +29,12 @@
 - No custom or unsafe JSON parsing
 - Proper error handling for malformed JSON
 - No deserialization of untrusted objects
-- Data validated against schema after parsing
+- Parsed data is validated via explicit field and range checks after parsing
 
 ### 3. Input Validation
 **Status**: ✅ SECURE
 
-- All loaded data validated against canonical schema rules
+- All loaded data passes explicit validation consistent with the canonical rules
 - Tail counts enforced to be within valid range (3-9)
 - Sequential unlock rule validated
 - Array bounds checked before access
