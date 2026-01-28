@@ -274,9 +274,9 @@ bool UKaiJaxCharacterData::ParseTailTierReactions(const TSharedPtr<FJsonObject>&
 
 FTailTierReaction UKaiJaxCharacterData::GetTailTierReaction(int32 TailCount) const
 {
-    if (TailTierReactions.Contains(TailCount))
+    if (const FTailTierReaction* const FoundReaction = TailTierReactions.Find(TailCount))
     {
-        return TailTierReactions[TailCount];
+        return *FoundReaction;
     }
     
     UE_LOG(LogTemp, Warning, TEXT("[KaiJax] No reaction data for tail count: %d"), TailCount);
