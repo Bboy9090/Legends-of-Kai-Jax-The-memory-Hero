@@ -121,8 +121,17 @@ target_link_libraries(PlatformInputTest
     PRIVATE LegendsEngineCore
 )
 
+# Test executable for End-to-End Integration
+add_executable(EndToEndIntegrationTest
+    tests/EndToEndIntegrationTest.cpp
+)
+
+target_link_libraries(EndToEndIntegrationTest
+    PRIVATE LegendsEngineCore
+)
+
 # Set output directories
-set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest AnimationComponentTest AnimationIntegrationTest InputSystemTest CharacterInputIntegrationTest StateInterruptionTest AnimationBlendingTest PlatformInputTest
+set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest AnimationComponentTest AnimationIntegrationTest InputSystemTest CharacterInputIntegrationTest StateInterruptionTest AnimationBlendingTest PlatformInputTest EndToEndIntegrationTest
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -151,3 +160,4 @@ add_test(NAME CharacterInputIntegrationTest COMMAND CharacterInputIntegrationTes
 add_test(NAME StateInterruptionTest COMMAND StateInterruptionTest)
 add_test(NAME AnimationBlendingTest COMMAND AnimationBlendingTest)
 add_test(NAME PlatformInputTest COMMAND PlatformInputTest)
+add_test(NAME EndToEndIntegrationTest COMMAND EndToEndIntegrationTest)
