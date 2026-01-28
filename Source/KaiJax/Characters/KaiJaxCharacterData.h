@@ -169,8 +169,8 @@ public:
     FCharacterEvolution GetEvolutionRules() const { return EvolutionRules; }
 
     /**
-     * Validate that current implementation matches lockfile
-     * Throws error if validation fails
+     * Validate that current implementation matches lockfile/schema
+     * Returns true if validation passes, false if validation fails (errors are logged)
      */
     UFUNCTION(BlueprintCallable, Category = "Character Data")
     bool ValidateCharacterData() const;
