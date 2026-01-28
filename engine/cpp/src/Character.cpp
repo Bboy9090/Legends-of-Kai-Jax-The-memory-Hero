@@ -154,8 +154,8 @@ void Character::Render() {
     
     // Render tail physics
     // In a production engine, this would render the 9 tails with physics-driven bone transforms
-    // According to kai_jax.character.json: 9 tails, each with 5-7 physics bones
-    // std::cout << "[Render] Rendering 9 tail physics bones" << std::endl;
+    // According to kai_jax.character.json: 9 tails, each with 5-7 bones per tail (45-63 bones total)
+    // std::cout << "[Render] Rendering tail physics (9 tails, 45-63 bones total)" << std::endl;
     
     // Render VFX
     // In a production engine, this would render particle effects, emissive materials, etc.
@@ -205,11 +205,11 @@ void Character::Render() {
     std::cout << "  - Tail 1 (bond): parry/counter/revive" << std::endl;
     std::cout << "  - Tail 2 (hunter): dash/pursuit/execute" << std::endl;
     std::cout << "  - Tail 3 (thread): web/pull/group" << std::endl;
-    std::cout << "  - Tail 4 (quill): retaliation/posture damage" << std::endl;
-    std::cout << "  - Tail 5 (shade): stealth/threat reset" << std::endl;
-    std::cout << "  - Tail 6 (anchor): anti-knockback/root" << std::endl;
-    std::cout << "  - Tail 7 (echo): after-image/repeat" << std::endl;
-    std::cout << "  - Tail 8 (rift): reality tear AOE" << std::endl;
+    std::cout << "  - Tail 4 (quill): retaliation/posture/damage" << std::endl;
+    std::cout << "  - Tail 5 (shade): stealth/threat/reset" << std::endl;
+    std::cout << "  - Tail 6 (anchor): anti/knockback/root" << std::endl;
+    std::cout << "  - Tail 7 (echo): after/image/repeat" << std::endl;
+    std::cout << "  - Tail 8 (rift): reality/tear/aoe" << std::endl;
     std::cout << "  - Tail 9 (crown): aura/command" << std::endl;
     
     // Hit/hurt boxes visualization
