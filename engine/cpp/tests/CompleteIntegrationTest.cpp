@@ -161,11 +161,19 @@ int main() {
     InputState consoleInput = consoleHandler.GetCurrentInput();
     InputState mobileInput = mobileHandler.GetCurrentInput();
     
-    // All should return valid InputState structures
-    bool platformsWork = true;
-    std::cout << "  PC, Console, and Mobile handlers all return valid states" << std::endl;
-    printTestResult("Platform Input Routing", platformsWork);
-    testsPassed++;
+    // All should return valid InputState structures with zero input (stub)
+    bool platformsWork = (!pcInput.moveForward && !pcInput.attack) &&
+                        (!consoleInput.moveForward && !consoleInput.attack) &&
+                        (!mobileInput.moveForward && !mobileInput.attack);
+    
+    if (platformsWork) {
+        std::cout << "  PC, Console, and Mobile handlers all return valid states" << std::endl;
+        printTestResult("Platform Input Routing", true);
+        testsPassed++;
+    } else {
+        std::cout << "  ERROR: Platform input validation failed" << std::endl;
+        printTestResult("Platform Input Routing", false);
+    }
 
     // Test 9: Consistent behavior across platforms
     totalTests++;
@@ -211,14 +219,20 @@ int main() {
         testCharacter.Update(0.016f);
     }
     
-    // Character should still be in a valid state
+    // Character should still be in IDLE_CALM (no input provided)
     AnimationState finalState = testCharacter.GetAnimationState();
-    bool validFinalState = true;
+    bool validFinalState = (finalState == AnimationState::IDLE_CALM);
     
-    std::cout << "  Character survived 10 update cycles" << std::endl;
-    std::cout << "  Final state: " << static_cast<int>(finalState) << std::endl;
-    printTestResult("Complete Update Cycle", validFinalState);
-    testsPassed++;
+    if (validFinalState) {
+        std::cout << "  Character survived 10 update cycles" << std::endl;
+        std::cout << "  Final state: IDLE_CALM (expected with no input)" << std::endl;
+        printTestResult("Complete Update Cycle", true);
+        testsPassed++;
+    } else {
+        std::cout << "  ERROR: Character should remain in IDLE_CALM with no input" << std::endl;
+        std::cout << "  Final state: " << static_cast<int>(finalState) << std::endl;
+        printTestResult("Complete Update Cycle", false);
+    }
 
     // Print final results
     printSeparator();

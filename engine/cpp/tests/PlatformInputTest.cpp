@@ -93,53 +93,92 @@ int main() {
     std::cout << "\n[Test 6] Testing PC input returns valid state..." << std::endl;
     
     InputState pcState = pcHandler.GetCurrentInput();
-    bool validState = true;
-    // Just verify it doesn't crash and returns a valid structure
-    std::cout << "  PC handler returned valid InputState structure" << std::endl;
-    printTestResult("PC Input Returns Valid State", validState);
-    testsPassed++;
+    // Verify stub implementation returns all false (no input)
+    bool validState = !pcState.moveForward && !pcState.moveBackward &&
+                      !pcState.moveLeft && !pcState.moveRight &&
+                      !pcState.sprint && !pcState.attack && !pcState.jump;
+    if (validState) {
+        std::cout << "  PC handler returned valid InputState structure" << std::endl;
+        printTestResult("PC Input Returns Valid State", validState);
+        testsPassed++;
+    } else {
+        std::cout << "  ERROR: PC input state should be all false (stub)" << std::endl;
+        printTestResult("PC Input Returns Valid State", false);
+    }
 
     // Test 7: Verify Console handler returns valid input state
     totalTests++;
     std::cout << "\n[Test 7] Testing Console input returns valid state..." << std::endl;
     
     InputState consoleState = consoleHandler.GetCurrentInput();
-    validState = true;
-    std::cout << "  Console handler returned valid InputState structure" << std::endl;
-    printTestResult("Console Input Returns Valid State", validState);
-    testsPassed++;
+    validState = !consoleState.moveForward && !consoleState.moveBackward &&
+                 !consoleState.moveLeft && !consoleState.moveRight &&
+                 !consoleState.sprint && !consoleState.attack && !consoleState.jump;
+    if (validState) {
+        std::cout << "  Console handler returned valid InputState structure" << std::endl;
+        printTestResult("Console Input Returns Valid State", validState);
+        testsPassed++;
+    } else {
+        std::cout << "  ERROR: Console input state should be all false (stub)" << std::endl;
+        printTestResult("Console Input Returns Valid State", false);
+    }
 
     // Test 8: Verify Tablet handler returns valid input state
     totalTests++;
     std::cout << "\n[Test 8] Testing Tablet input returns valid state..." << std::endl;
     
     InputState tabletState = tabletHandler.GetCurrentInput();
-    validState = true;
-    std::cout << "  Tablet handler returned valid InputState structure" << std::endl;
-    printTestResult("Tablet Input Returns Valid State", validState);
-    testsPassed++;
+    validState = !tabletState.moveForward && !tabletState.moveBackward &&
+                 !tabletState.moveLeft && !tabletState.moveRight &&
+                 !tabletState.sprint && !tabletState.attack && !tabletState.jump;
+    if (validState) {
+        std::cout << "  Tablet handler returned valid InputState structure" << std::endl;
+        printTestResult("Tablet Input Returns Valid State", validState);
+        testsPassed++;
+    } else {
+        std::cout << "  ERROR: Tablet input state should be all false (stub)" << std::endl;
+        printTestResult("Tablet Input Returns Valid State", false);
+    }
 
     // Test 9: Verify Mobile handler returns valid input state
     totalTests++;
     std::cout << "\n[Test 9] Testing Mobile input returns valid state..." << std::endl;
     
     InputState mobileState = mobileHandler.GetCurrentInput();
-    validState = true;
-    std::cout << "  Mobile handler returned valid InputState structure" << std::endl;
-    printTestResult("Mobile Input Returns Valid State", validState);
-    testsPassed++;
+    validState = !mobileState.moveForward && !mobileState.moveBackward &&
+                 !mobileState.moveLeft && !mobileState.moveRight &&
+                 !mobileState.sprint && !mobileState.attack && !mobileState.jump;
+    if (validState) {
+        std::cout << "  Mobile handler returned valid InputState structure" << std::endl;
+        printTestResult("Mobile Input Returns Valid State", validState);
+        testsPassed++;
+    } else {
+        std::cout << "  ERROR: Mobile input state should be all false (stub)" << std::endl;
+        printTestResult("Mobile Input Returns Valid State", false);
+    }
 
     // Test 10: Test that all platforms return consistent InputState structure
     totalTests++;
     std::cout << "\n[Test 10] Testing platform-agnostic InputState structure..." << std::endl;
     
-    // All handlers return the same InputState type with the same fields
-    // This ensures game logic is truly platform-agnostic
-    bool structureConsistent = true;
-    std::cout << "  All platforms return identical InputState structure" << std::endl;
-    std::cout << "  Game logic sees unified input regardless of platform" << std::endl;
-    printTestResult("Platform-Agnostic Structure", structureConsistent);
-    testsPassed++;
+    // All handlers should return zero state (stub implementation)
+    // And all should have the same structure
+    bool allConsistent = (pcState.moveForward == consoleState.moveForward &&
+                         consoleState.moveForward == tabletState.moveForward &&
+                         tabletState.moveForward == mobileState.moveForward &&
+                         pcState.sprint == consoleState.sprint &&
+                         consoleState.sprint == tabletState.sprint &&
+                         tabletState.sprint == mobileState.sprint);
+    
+    if (allConsistent) {
+        std::cout << "  All platforms return identical InputState structure" << std::endl;
+        std::cout << "  Game logic sees unified input regardless of platform" << std::endl;
+        printTestResult("Platform-Agnostic Structure", true);
+        testsPassed++;
+    } else {
+        std::cout << "  ERROR: Platform input states are inconsistent" << std::endl;
+        printTestResult("Platform-Agnostic Structure", false);
+    }
 
     // Print final results
     printSeparator();

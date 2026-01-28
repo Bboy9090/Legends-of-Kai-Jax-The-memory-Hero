@@ -19,7 +19,8 @@ struct AnimationProgress {
      */
     float GetNormalizedProgress() const {
         if (duration <= 0.0f) return 1.0f;
-        return currentTime / duration;
+        float progress = currentTime / duration;
+        return progress > 1.0f ? 1.0f : progress; // Clamp to [0.0, 1.0]
     }
     
     /**
@@ -47,7 +48,8 @@ struct AnimationBlendState {
      */
     float GetBlendWeight() const {
         if (blendTime <= 0.0f || !isBlending) return 1.0f;
-        return currentBlendTime / blendTime;
+        float weight = currentBlendTime / blendTime;
+        return weight > 1.0f ? 1.0f : weight; // Clamp to [0.0, 1.0]
     }
     
     /**
