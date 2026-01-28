@@ -194,7 +194,7 @@ export class AIService {
    */
   canSpawnAtCurrentTier(enemyConfigId: string): boolean {
     const config = this.enemyConfigs.get(enemyConfigId);
-    if (!config) return false;
+    if (!config || !config.spawn_rules) return false;
 
     // Check spawn tier requirement
     if (this.playerTailCount < config.spawn_rules.requires_tail_tier) {
@@ -453,6 +453,8 @@ export class AIService {
 
     // Check cooldown
     const firstAttack = config.combat_capabilities.attack_types[0];
+    if (!firstAttack) return false;
+    
     return enemy.last_attack_time <= 0 || enemy.state_timer >= firstAttack.cooldown;
   }
 

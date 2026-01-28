@@ -302,7 +302,14 @@ export interface EnemyAIConfig {
   base_stats: EnemyStats;
   base_behavior: BehaviorPattern;
   combat_capabilities: EnemyCombatCapabilities;
+  spawn_rules: SpawnRules;
   tail_tier_adaptations: { [tailTier: number]: TailTierAdaptation };
+}
+
+export interface SpawnRules {
+  group_size_min: number;
+  group_size_max: number;
+  requires_tail_tier: number;
 }
 
 export interface EnemyInstance {

@@ -130,9 +130,11 @@ export class StoryModeService {
     // Set starting district
     if (this.state.districts.length > 0) {
       const startingDistrict = this.state.districts[0];
-      this.state.player.current_district = startingDistrict.district_id;
-      if (startingDistrict.zones.length > 0) {
-        this.state.player.current_zone = startingDistrict.zones[0].zone_id;
+      if (startingDistrict) {
+        this.state.player.current_district = startingDistrict.district_id;
+        if (startingDistrict.zones && startingDistrict.zones.length > 0) {
+          this.state.player.current_zone = startingDistrict.zones[0].zone_id;
+        }
       }
     }
 
@@ -226,8 +228,11 @@ export class StoryModeService {
     this.state.player.current_district = districtId;
     
     // Set to first zone
-    if (district.zones.length > 0) {
-      this.state.player.current_zone = district.zones[0].zone_id;
+    if (district.zones && district.zones.length > 0) {
+      const firstZone = district.zones[0];
+      if (firstZone) {
+        this.state.player.current_zone = firstZone.zone_id;
+      }
     }
 
     console.log(`Traveled to district: ${district.district_name}`);
