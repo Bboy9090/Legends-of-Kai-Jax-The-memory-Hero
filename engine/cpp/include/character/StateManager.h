@@ -6,6 +6,32 @@
 namespace LegendsEngine {
 
 /**
+ * AnimationProgress - Tracks the current progress of an animation
+ * Used to determine if a state can be interrupted
+ */
+struct AnimationProgress {
+    float currentTime = 0.0f;      // Current playback time in seconds
+    float duration = 1.0f;         // Total animation duration in seconds
+    bool isComplete = false;       // True if animation has finished playing
+    
+    /**
+     * Get the normalized progress (0.0 to 1.0)
+     */
+    float GetNormalizedProgress() const {
+        if (duration <= 0.0f) return 1.0f;
+        return currentTime / duration;
+    }
+    
+    /**
+     * Check if animation is in a specific progress window
+     */
+    bool IsInWindow(float minProgress, float maxProgress) const {
+        float progress = GetNormalizedProgress();
+        return progress >= minProgress && progress <= maxProgress;
+    }
+};
+
+/**
  * StateManager - Manages character state transitions based on input
  * 
  * This class determines which animation state a character should be in
@@ -26,6 +52,12 @@ namespace LegendsEngine {
  * - Some states can be interrupted (e.g., movement)
  * - Some states must complete (e.g., attack animations)
  * - Some transitions are invalid (e.g., death to any other state)
+ * 
+ * STATE INTERRUPTION:
+ * - Priority-based: Higher priority actions can interrupt lower priority
+ * - Window-based: Some animations have interruptible windows
+ * - Attack combos can be interrupted after hit confirmation
+ * - Movement can always be interrupted
  */
 class StateManager {
 public:
@@ -69,6 +101,54 @@ public:
      * @return true if the transition is valid, false otherwise
      */
     bool CanTransition(AnimationState from, AnimationState to);
+
+    /**
+     * Check if a state can be interrupted based on animation progress
+     * 
+     * Determines if the current state can be interrupted by a new state,
+     * taking into account animation progress and priority rules.
+     * 
+     * @param currentState The current animation state
+     * @param desiredState The desired animation state
+     * @param progress The current animation progress
+     * @return true if the state can be interrupted, false otherwise
+     */
+    bool CanInterrupt(AnimationState currentState, AnimationState desiredState, 
+                     const AnimationProgress& progress);
+
+    /**
+     * Update animation progress tracking
+     * 
+     * @param deltaTime Time elapsed since last frame in seconds
+     */
+    void UpdateProgress(float deltaTime);
+
+    /**
+     * Get current animation progress
+     */
+    const AnimationProgress& GetCurrentProgress() const { return currentProgress; }
+
+    /**
+     * Set animation progress (called when transitioning to a new state)
+     * 
+     * @param state The state to set progress for
+     * @param duration The duration of the animation in seconds
+     */
+    void SetAnimationDuration(AnimationState state, float duration);
+
+private:
+    AnimationProgress currentProgress;
+    AnimationState trackedState = AnimationState::IDLE_CALM;
+
+    /**
+     * Get the priority level of a state (higher = more important)
+     */
+    int GetStatePriority(AnimationState state) const;
+
+    /**
+     * Check if a state is interruptible at the current progress
+     */
+    bool IsStateInterruptible(AnimationState state, const AnimationProgress& progress) const;
 };
 
 } // namespace LegendsEngine
