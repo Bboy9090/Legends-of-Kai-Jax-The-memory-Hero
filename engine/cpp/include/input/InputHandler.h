@@ -3,6 +3,16 @@
 namespace LegendsEngine {
 
 /**
+ * PlatformType - Platform-specific input device detection
+ * Used to determine which input mapping to apply
+ */
+enum class PlatformType {
+    PC,        // Keyboard + Mouse
+    GAMEPAD,   // Console/Tablet gamepad
+    TOUCH      // Mobile touch controls
+};
+
+/**
  * InputAction - Enum representing different player input actions
  * These are platform-agnostic actions that can be mapped to any input device
  */
@@ -69,6 +79,31 @@ public:
      * @return Current state of all player inputs
      */
     InputState GetCurrentInput();
+
+    /**
+     * Set the platform type for input mapping
+     * 
+     * Configures which input device mapping to use. This should be called
+     * during initialization based on the target platform.
+     * 
+     * @param platform The platform type to use for input mapping
+     */
+    void SetPlatform(PlatformType platform) { currentPlatform = platform; }
+
+    /**
+     * Get the current platform type
+     * 
+     * @return The current platform type being used for input mapping
+     */
+    PlatformType GetPlatform() const { return currentPlatform; }
+
+private:
+    PlatformType currentPlatform = PlatformType::PC;
+
+    // Platform-specific input reading methods
+    InputState ReadKeyboardInput();
+    InputState ReadGamepadInput();
+    InputState ReadTouchInput();
 };
 
 } // namespace LegendsEngine

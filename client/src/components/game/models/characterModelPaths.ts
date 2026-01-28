@@ -7,10 +7,10 @@
 export const CHARACTER_MODEL_PATHS: Record<string, string> = {
   // === AXIS TRINITY (Main Protagonists) ===
   'jaxon': '/models/jaxon_hero.glb',           // Beastly Hedgehog-Lupine Hybrid - Velocity Fracture
-  'kaison': '/models/kaison_hero.glb',         // Saiyan-Kitsune-Lupine - Star-Force Tactician
-  'kai-jax': '/models/kaxon_hero.glb',         // Star-Slime Chimera - Memory King (Fused Form)
-  'kai_jax': '/models/kaxon_hero.glb',
-  'kaxon': '/models/kaxon_hero.glb',
+  'kaison': '/models/kaison_hero.glb',         // Saiyan-Kitsune-Lupine - Star-Force Tactician  
+  'kai-jax': '/models/kai_jax_hero.glb',       // The Memory Hero - Perfect Fusion (9 tails, canonical)
+  'kai_jax': '/models/kai_jax_hero.glb',       // Canonical model path
+  'kaxon': '/models/kai_jax_hero.glb',         // Legacy alias
   'chronos': '/models/silver_hero.glb',        // Matte-White Lupine - Will of Tomorrow
   'chronos_sere': '/models/silver_hero.glb',
   'lunara': '/models/lunara_hero.glb',         // 9-tailed Celestial Feline-Avian - Oracle Sentinel
