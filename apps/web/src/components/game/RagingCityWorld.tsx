@@ -43,8 +43,8 @@ export default function RagingCityWorld({ onEncounter, onDistrictChange }: { onE
   
   const [, getKeys] = useKeyboardControls();
   
-  const MOVE_SPEED = 15;
-  const WORLD_SIZE = 300;
+  const MOVE_SPEED = 20; // Slightly faster for demo feel
+  const WORLD_SIZE = 400; // Larger demo space
   
   const generateEncounters = useMemo(() => {
     const zones: EncounterZone[] = [];
@@ -110,14 +110,14 @@ export default function RagingCityWorld({ onEncounter, onDistrictChange }: { onE
     
     setPlayerPos([playerRef.current.position.x, 0, playerRef.current.position.z]);
     
-    const camOffset = new THREE.Vector3(0, 12, 18);
+    const camOffset = new THREE.Vector3(0, 15, 25);
     camera.position.lerp(
       new THREE.Vector3(
         playerRef.current.position.x + camOffset.x,
         camOffset.y,
         playerRef.current.position.z + camOffset.z
       ),
-      0.08
+      0.1
     );
     camera.lookAt(playerRef.current.position);
     

@@ -360,7 +360,7 @@ export default function MainMenu() {
             className="group relative h-20 w-full overflow-hidden border border-white/20 bg-gradient-to-r from-orange-900/80 to-orange-600/80 text-3xl font-black italic tracking-widest text-white shadow-[0_0_30px_rgba(234,88,12,0.3)] transition-all hover:scale-105"
           >
             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            STORY MODE
+            OPEN WORLD DEMO
           </button>
 
           <button 
