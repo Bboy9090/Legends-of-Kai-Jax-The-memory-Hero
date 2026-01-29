@@ -4,14 +4,45 @@
 ## Overview
 LEGENDS OF KAI-JAX is an open-world action RPG set in the post-apocalyptic Bronx war zone known as "Raging City." The game follows the Sabertooth Lineage saga across 9 books.
 
+### THE FOUR FIRST SABERTOOTH GODS
+*"The First Sabertooths did not rule the world. They taught it how to survive without them."*
+
+1. **Kar-Voth, The First Fang** - Hunger / Initiation / Becoming
+   - Symbol: Twin elongated fangs crossing
+   - Quote: "If you hesitate, you are already dead."
+   - All Sabertooth beings carry Kar-Voth's Hunger
+
+2. **Thryxen, The Storm Sovereign** - Law / Pressure / Authority
+   - Symbol: Crown of wind and lightning
+   - Quote: "Power that must shout has already lost control."
+   - The Sabertooth Lion Aspect (Stormmane, Air Pressure, Sovereignty)
+   - Mortal Echo: Boryx Zenith
+
+3. **Pyraxis, The Bloodward Titan** - Sacrifice / Endurance / Shield
+   - Symbol: A fang split down the center, glowing ember-orange
+   - Quote: "I will break so you do not have to."
+   - The Sabertooth Tiger Aspect (Raw Heat, Overwhelming Endurance, Final Stands)
+   - Mortal Echo: Boryn
+
+4. **Myrr'Kai, The Memory Eater** - Continuity / Adaptation / Fusion
+   - Symbol: Three interwoven tails marked with ink
+   - Quote: "What survives is not what is strongest — it is what remembers how to become again."
+   - The Fusion God (Hybrids, Chimera, Kai-Jax)
+
+### THE SABERTOOTH LAW
+Each descendant carries one dominant echo and one suppressed echo.
+Fusion happens when Hunger + Law + Sacrifice + Memory align without conflict.
+That alignment is Kai-Jax.
+
 ### Core Characters
-- **Pyraxis** - God-ancestor of the Sabertooth Tiger lineage (divine figure)
-- **Thryxen** - God-ancestor of the Sabertooth Lion lineage (divine figure)
-- **Borax** - Sabertooth Tiger warrior blessed by Pyraxis, warm father figure who sacrifices himself (Book 1)
-- **Boryn** - Sabertooth Lion warrior blessed by Thryxen, cold mentor who takes over training (Book 2)
+- **Boryn** - Pyraxis remembered correctly, Sabertooth Tiger warrior, warm father who sacrifices himself (Book 1)
+- **Boryx Zenith** - Thryxen's closest living echo, Sabertooth Lion warrior, cold mentor (Book 2)
 - **Jaxon** - Hedgehog-Lupine hybrid orphan with electric quills
 - **Kaison** - Arachnid-Kitsune-Wolf hybrid orphan with spider-sense
-- **Kai-Jax** - Fusion form of Jaxon & Kaison, Star-Slime Chimera Memory King with 3 Memory Strand Tails
+- **Kai-Jax** - Fusion form of Jaxon & Kaison, Star-Slime Chimera Memory King with 3 Memory Strand Tails:
+  1. Electric Velocity Strand (⚡) - Jaxon's heritage
+  2. Web-Ink Anchor Strand (🕷️) - Kaison's heritage
+  3. Ember-Memory Strand (🔥) - Pyraxis's sacrifice through Boryn
 
 All characters are bipedal humanoid Beast-Kin with urban apocalyptic Bronx streetwear aesthetic (hoodies, tactical gear, cosmic galaxy tails, Oversized Fangs as Sabertooth lineage mark).
 
