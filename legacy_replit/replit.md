@@ -1,4 +1,4 @@
-# Super Smash Heroes: Battle Royale
+# Legends of Kai-Jax: Battle Royale
 
 ## Overview
 

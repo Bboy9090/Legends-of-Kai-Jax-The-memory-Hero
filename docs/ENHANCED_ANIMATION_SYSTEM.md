@@ -1,6 +1,6 @@
 # Enhanced Animation & Graphics System
 
-This document describes the enhanced 3D character animation and graphics systems added to Smash Heroes.
+This document describes the enhanced 3D character animation and graphics systems added to Legends of Kai-Jax.
 
 ## Overview
 

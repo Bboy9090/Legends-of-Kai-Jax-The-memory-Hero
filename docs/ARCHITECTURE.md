@@ -2,7 +2,7 @@
 
 ## Overview
 
-Smash Heroes Ultimate is built as a TypeScript monorepo using pnpm workspaces and Turborepo. The architecture is modular, with clear separation of concerns.
+Legends of Kai-Jax is built as a TypeScript monorepo using pnpm workspaces and Turborepo. The architecture is modular, with clear separation of concerns.
 
 ## Packages
 
