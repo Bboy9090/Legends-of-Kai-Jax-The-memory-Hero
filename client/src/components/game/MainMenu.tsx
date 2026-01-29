@@ -120,8 +120,8 @@ export default function MainMenu() {
           />
         </div>
         
-        <Card className="bg-white bg-opacity-98 backdrop-blur-md shadow-2xl border-4 border-blue-500">
-          <CardHeader className="p-4 sm:p-8 bg-gradient-to-b from-slate-100 to-white">
+        <Card className="bg-slate-900 bg-opacity-95 backdrop-blur-md shadow-2xl border-2 border-cyan-500/50">
+          <CardHeader className="p-4 sm:p-8 bg-gradient-to-b from-slate-900 to-slate-800">
             <CardTitle 
               className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-amber-500 mb-3"
               style={{ fontFamily: "'Arial Black', 'Impact', sans-serif", letterSpacing: '0.05em' }}
@@ -132,39 +132,64 @@ export default function MainMenu() {
               className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-red-600"
               style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
             >
-              THE MEMORY HERO
+              THE MEMORY KING
             </p>
             <p 
-              className="text-lg sm:text-xl text-cyan-600 font-bold mt-3"
+              className="text-lg sm:text-xl text-cyan-400 font-bold mt-4 tracking-widest"
               style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
             >
-              OF RAGING CITY
+              FORGED IN THE BRONX.
             </p>
-            <p className="text-sm sm:text-base text-gray-700 mt-4 font-semibold">
-              Explore the open world. Unlock your Memory Strands. Face the ultimate darkness.
-            </p>
-            <p className="text-xs sm:text-sm text-slate-600 mt-2">
-              Train with Pyraxis and Thryxen. Master your abilities. Become the Memory King.
+            <p 
+              className="text-lg sm:text-xl text-cyan-400 font-bold tracking-widest"
+              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+            >
+              CROWNED BY MEMORY.
             </p>
           </CardHeader>
           
-          <CardContent className="space-y-4 sm:space-y-5 p-4 sm:p-8 bg-gradient-to-b from-slate-50 to-white">
-            {/* Character icons - RED, BLUE, SILVER */}
-            <div className="flex justify-center gap-6 mb-8">
+          <CardContent className="space-y-4 sm:space-y-5 p-4 sm:p-8 bg-gradient-to-b from-slate-800 to-slate-900">
+            {/* Character icons - Jaxon, Kaison, Kai-Jax */}
+            <div className="flex justify-center gap-8 mb-6">
               <div className="text-center transform hover:scale-110 transition-transform">
-                <div className="w-20 h-20 bg-gradient-to-br from-cyan-400 to-blue-700 rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg border-4 border-blue-400">
-                  <span className="text-white text-3xl font-black" style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>J</span>
+                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full mx-auto mb-2 flex items-center justify-center shadow-lg border-3 border-green-300">
+                  <span className="text-2xl">⚡</span>
                 </div>
-                <p className="text-base font-bold text-blue-700" style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>JAXON</p>
-                <p className="text-xs font-semibold text-blue-500">Electric Hero</p>
+                <p className="text-sm font-bold text-white">Jaxon</p>
               </div>
               
               <div className="text-center transform hover:scale-110 transition-transform">
-                <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-700 rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg border-4 border-red-400">
-                  <span className="text-white text-3xl font-black" style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>K</span>
+                <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full mx-auto mb-2 flex items-center justify-center shadow-lg border-3 border-cyan-300">
+                  <span className="text-2xl">🦊</span>
                 </div>
-                <p className="text-base font-bold text-red-700" style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}>KAISON</p>
-                <p className="text-xs font-semibold text-red-500">Crimson Legend</p>
+                <p className="text-sm font-bold text-white">Kaison</p>
+              </div>
+              
+              <div className="text-center transform hover:scale-110 transition-transform">
+                <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full mx-auto mb-2 flex items-center justify-center shadow-lg border-3 border-amber-300">
+                  <span className="text-2xl">👑</span>
+                </div>
+                <p className="text-sm font-bold text-white">Kai-Jax</p>
+              </div>
+            </div>
+            
+            {/* Stats row */}
+            <div className="flex justify-center gap-6 mb-6 text-amber-400">
+              <div className="text-center">
+                <p className="text-lg font-bold">12+</p>
+                <p className="text-xs text-gray-400">FIGHTERS</p>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-bold">8</p>
+                <p className="text-xs text-gray-400">ARENAS</p>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-bold">100+</p>
+                <p className="text-xs text-gray-400">MISSIONS</p>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-bold">∞</p>
+                <p className="text-xs text-gray-400">COMBOS</p>
               </div>
             </div>
             
