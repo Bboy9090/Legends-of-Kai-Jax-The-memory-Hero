@@ -544,11 +544,11 @@ function FluidBattleScene({
       <spotLight position={[0, 20, 15]} angle={0.4} penumbra={0.5} intensity={1.2} castShadow />
 
       {/* Arena Floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[50, 50]} />
         <meshStandardMaterial color="#0a0a15" metalness={0.5} roughness={0.4} />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.48, 0]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
         <circleGeometry args={[15, 64]} />
         <meshStandardMaterial 
           color="#1a1a2e" 
