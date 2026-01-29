@@ -124,7 +124,7 @@ A complete, playable district demonstrating all systems:
 - **Language:** C++17
 - **Dependencies:** nlohmann/json (auto-fetched)
 - **Build System:** CMake 3.15+
-- **Testing:** CTest (7/7 tests passing)
+- **Testing:** CTest (11/11 tests passing)
 
 ### Code Structure
 ```
@@ -230,7 +230,7 @@ Build: 100% (all targets built)
 Warnings: Only unused parameter warnings (safe)
 ```
 
-### Tests: ✅ 7/7 PASSING
+### Tests: ✅ 11/11 PASSING
 ```
 1. CharacterLoaderTest .............. PASSED
 2. CharacterFactoryTest ............. PASSED
@@ -238,7 +238,11 @@ Warnings: Only unused parameter warnings (safe)
 4. AnimationIntegrationTest ......... PASSED
 5. InputSystemTest .................. PASSED
 6. CharacterInputIntegrationTest .... PASSED
-7. StoryModeTest .................... PASSED
+7. StateInterruptionTest ............ PASSED
+8. AnimationBlendingTest ............ PASSED
+9. PlatformInputTest ................ PASSED
+10. EndToEndIntegrationTest ......... PASSED
+11. StoryModeTest ................... PASSED
 ```
 
 ### CodeQL: ✅ CLEAN
