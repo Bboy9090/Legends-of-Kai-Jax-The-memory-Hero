@@ -21,7 +21,8 @@
     "validate:canon": "node validate-canon.mjs",
     "validate:memory": "node validate-memory-layers.mjs",
     "validate:model": "python3 assets/models/characters/kai-jax/validate_model.py",
-    "test": "echo 'Testing...' && node -e \"console.log('✅ Node.js ready')\""
+    "test": "echo 'Testing...' && node -e \"console.log('✅ Node.js ready')\"",
+    "start": "serve -s apps/web/dist -l 5000"
   },
   "keywords": [
     "pwa",
@@ -67,6 +68,7 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-router-dom": "^7.10.1",
+    "serve": "^14.2.5",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "three": "^0.182.0",
