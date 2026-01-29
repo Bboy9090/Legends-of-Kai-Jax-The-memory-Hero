@@ -21,12 +21,14 @@ import MissionGameplay from "./components/game/MissionGameplay";
 import FluidBattleArena from "./components/game/FluidBattleArena";
 import ChapterSelect from "./components/game/ChapterSelect";
 import ChapterMissionSelect from "./components/game/ChapterMissionSelect";
+import CinematicPlayer from "./components/game/CinematicPlayer";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
 import { useAudio } from "./lib/stores/useAudio";
 import { useCampaign } from "./lib/stores/useCampaign";
 import { type ChapterNumber } from "./lib/ragingCityCampaign";
+import { getSceneByMissionId, type CinematicScene } from "./lib/cinematicStory";
 import { useEffect, useState } from "react";
 
 // Define control keys for the game (also works with touch)
@@ -83,6 +85,8 @@ function App() {
   
   const [currentChapter, setCurrentChapter] = useState<ChapterNumber>(0);
   const [campaignMissionId, setCampaignMissionId] = useState<string | null>(null);
+  const [currentCinematic, setCurrentCinematic] = useState<CinematicScene | null>(null);
+  const [showingCinematic, setShowingCinematic] = useState(false);
   const campaignStore = useCampaign();
 
   // Initialize audio on mount
@@ -160,13 +164,20 @@ function App() {
         )}
         
         {/* NEW: Chapter Mission Select */}
-        {phase === 'ready' && gameState === 'chapter-missions' && currentChapter !== null && !campaignMissionId && (
+        {phase === 'ready' && gameState === 'chapter-missions' && currentChapter !== null && !campaignMissionId && !showingCinematic && (
           <ChapterMissionSelect
             chapterNumber={currentChapter}
             onSelectMission={(missionId) => {
               setCampaignMissionId(missionId);
               campaignStore.setCurrentMission(missionId);
-              setGameState('campaign-team-select');
+              const scene = getSceneByMissionId(missionId);
+              if (scene) {
+                setCurrentCinematic(scene);
+                setShowingCinematic(true);
+                setGameState('cinematic');
+              } else {
+                setGameState('campaign-team-select');
+              }
             }}
             onBack={() => {
               setCurrentChapter(0);
@@ -175,8 +186,29 @@ function App() {
           />
         )}
         
+        {/* Cinematic Player - Story plays out before gameplay */}
+        {phase === 'ready' && gameState === 'cinematic' && showingCinematic && currentCinematic && (
+          <CinematicPlayer
+            scene={currentCinematic}
+            onComplete={() => {
+              setShowingCinematic(false);
+              setCurrentCinematic(null);
+              if (currentCinematic.triggersGameplay) {
+                setGameState('campaign-team-select');
+              } else {
+                setGameState('chapter-missions');
+              }
+            }}
+            onSkip={() => {
+              setShowingCinematic(false);
+              setCurrentCinematic(null);
+              setGameState('campaign-team-select');
+            }}
+          />
+        )}
+        
         {/* Campaign Team Select */}
-        {phase === 'ready' && gameState === 'campaign-team-select' && campaignMissionId && (
+        {phase === 'ready' && gameState === 'campaign-team-select' && campaignMissionId && !showingCinematic && (
           <MVCCharacterSelect
             mode="mission"
             maxTeamSize={4}

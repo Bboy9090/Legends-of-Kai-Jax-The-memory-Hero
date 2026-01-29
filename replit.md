@@ -209,6 +209,20 @@ This is a legacy game. You don't win by being strongest. You win by being unforg
 - **4 Pillars**: Hunger (orange), Law (cyan), Sacrifice (red), Memory (purple)
 - **Beta Scope**: Prologue + Chapters 1-3 playable, Chapters 4-8 locked
 
+### Cinematic Story System (NEW)
+- **cinematicStory.ts**: Cinematic scene data with story beats, dialogue, narration, and visual effects
+- **CinematicPlayer.tsx**: Playable cinematic experience component with:
+  - Typewriter text animation
+  - Speaker dialogue with character colors
+  - Narration and action descriptions
+  - Visual effects (flash, darken, ember, lightning, memory_swirl)
+  - Camera effects (shake, zoom, pan, fade)
+  - Weather overlays (rain, ember rain, fog)
+  - Click to advance or auto-advance for narration
+  - Skip button for impatient players
+- **Story Flow**: Mission Select → Cinematic → Team Select → Battle
+- **Story Beats**: Prologue + Chapters 1-3 have full cinematics with character introductions
+
 ### External Dependencies
 - **Database & Backend**: Drizzle ORM (PostgreSQL)
 - **API**: Express.js with TypeScript
