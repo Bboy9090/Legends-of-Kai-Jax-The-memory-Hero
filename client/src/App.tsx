@@ -19,10 +19,14 @@ import GameModesMenu from "./components/game/GameModesMenu";
 import MissionSelect from "./components/game/MissionSelect";
 import MissionGameplay from "./components/game/MissionGameplay";
 import FluidBattleArena from "./components/game/FluidBattleArena";
+import ChapterSelect from "./components/game/ChapterSelect";
+import ChapterMissionSelect from "./components/game/ChapterMissionSelect";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
 import { useAudio } from "./lib/stores/useAudio";
+import { useCampaign } from "./lib/stores/useCampaign";
+import { type ChapterNumber } from "./lib/ragingCityCampaign";
 import { useEffect, useState } from "react";
 
 // Define control keys for the game (also works with touch)
@@ -76,6 +80,10 @@ function App() {
   const [completedActs, setCompletedActs] = useState<(1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9)[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<string[]>([]);
   const [battleMode, setBattleMode] = useState<'story' | 'versus' | 'mission'>('story');
+  
+  const [currentChapter, setCurrentChapter] = useState<ChapterNumber>(0);
+  const [campaignMissionId, setCampaignMissionId] = useState<string | null>(null);
+  const campaignStore = useCampaign();
 
   // Initialize audio on mount
   useEffect(() => {
@@ -138,8 +146,74 @@ function App() {
         {/* Main Menu */}
         {phase === 'ready' && gameState === 'menu' && <MainMenu />}
         
-        {/* Mission Selection - Skip story select, go straight to missions */}
-        {phase === 'ready' && (gameState === 'story-mode-select' || gameState === 'mission-select') && !currentMissionId && (
+        {/* NEW: Chapter Select (Raging City Campaign) */}
+        {phase === 'ready' && gameState === 'story-mode-select' && !currentChapter && (
+          <ChapterSelect
+            onSelectChapter={(chapterNum) => {
+              setCurrentChapter(chapterNum as ChapterNumber);
+              campaignStore.setCurrentChapter(chapterNum as ChapterNumber);
+              setGameState('chapter-missions');
+            }}
+            onBack={() => setGameState('menu')}
+            completedChapters={campaignStore.completedChapters}
+          />
+        )}
+        
+        {/* NEW: Chapter Mission Select */}
+        {phase === 'ready' && gameState === 'chapter-missions' && currentChapter !== null && !campaignMissionId && (
+          <ChapterMissionSelect
+            chapterNumber={currentChapter}
+            onSelectMission={(missionId) => {
+              setCampaignMissionId(missionId);
+              campaignStore.setCurrentMission(missionId);
+              setGameState('campaign-team-select');
+            }}
+            onBack={() => {
+              setCurrentChapter(0);
+              setGameState('story-mode-select');
+            }}
+          />
+        )}
+        
+        {/* Campaign Team Select */}
+        {phase === 'ready' && gameState === 'campaign-team-select' && campaignMissionId && (
+          <MVCCharacterSelect
+            mode="mission"
+            maxTeamSize={4}
+            onTeamComplete={(team) => {
+              setSelectedTeam(team);
+              setGameState('campaign-battle');
+            }}
+            onBack={() => {
+              setCampaignMissionId(null);
+              setGameState('chapter-missions');
+            }}
+          />
+        )}
+        
+        {/* Campaign Battle */}
+        {phase === 'ready' && gameState === 'campaign-battle' && campaignMissionId && (
+          <FluidBattleArena
+            missionId={campaignMissionId}
+            playerTeam={selectedTeam}
+            onBattleComplete={(success: boolean) => {
+              if (success) {
+                campaignStore.completeMission(campaignMissionId);
+              }
+              setCampaignMissionId(null);
+              setSelectedTeam([]);
+              setGameState('chapter-missions');
+            }}
+            onBack={() => {
+              setCampaignMissionId(null);
+              setSelectedTeam([]);
+              setGameState('chapter-missions');
+            }}
+          />
+        )}
+        
+        {/* Legacy Mission Selection */}
+        {phase === 'ready' && gameState === 'mission-select' && !currentMissionId && (
           <MissionSelect
             actNumber={currentActNumber}
             onSelectMission={(missionId) => {

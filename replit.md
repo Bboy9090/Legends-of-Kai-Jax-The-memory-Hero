@@ -190,7 +190,8 @@ This is a legacy game. You don't win by being strongest. You win by being unforg
 - **Rendering**: Role-based body types, 37+ visual features, post-processing effects
 
 ### Data Layer
-- **characterSpecs.ts**: Authentic specifications with legal safeguards (NEW)
+- **ragingCityCampaign.ts**: Chapter-based campaign structure (Prologue + 8 Chapters + Finale)
+- **characterSpecs.ts**: Authentic specifications with legal safeguards
 - **roster.ts**: 59 characters with copyright-safe modifications integrated
 - **missions.ts**: 100 story missions across 9 acts
 - **bosses.ts**: Multi-phase boss encounters
@@ -199,6 +200,14 @@ This is a legacy game. You don't win by being strongest. You win by being unforg
 - **teamSystem.ts**: 4-hero squads with synergies
 - **storyMode.ts**: 9-act narrative structure
 - **teamSynergy.ts**: 100+ unique team bonuses
+
+### Campaign System (NEW)
+- **useCampaign.ts**: Zustand store for campaign state with persistence
+- **ChapterSelect.tsx**: Chapter browsing UI with pillar theming
+- **ChapterMissionSelect.tsx**: Mission selection within chapters
+- **GameHUD.tsx**: In-game HUD with health, dread, and fusion meters
+- **4 Pillars**: Hunger (orange), Law (cyan), Sacrifice (red), Memory (purple)
+- **Beta Scope**: Prologue + Chapters 1-3 playable, Chapters 4-8 locked
 
 ### External Dependencies
 - **Database & Backend**: Drizzle ORM (PostgreSQL)
