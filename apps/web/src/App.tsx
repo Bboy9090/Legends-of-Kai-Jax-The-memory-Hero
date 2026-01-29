@@ -235,7 +235,7 @@ function App() {
                 gl.setPixelRatio(q.pixelRatio);
                 gl.outputColorSpace = THREE.SRGBColorSpace;
                 gl.toneMapping = THREE.ACESFilmicToneMapping;
-                gl.toneMappingExposure = 1.15;
+                gl.toneMappingExposure = 1.5;
                 gl.shadowMap.enabled = true;
                 gl.shadowMap.type = q.shadowMap.type;
               }}
