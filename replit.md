@@ -46,6 +46,51 @@ That alignment is Kai-Jax.
 
 All characters are bipedal humanoid Beast-Kin with urban apocalyptic Bronx streetwear aesthetic (hoodies, tactical gear, cosmic galaxy tails, Oversized Fangs as Sabertooth lineage mark).
 
+### GAME RULE (LOCKED)
+Everything in the game is governed by four forces:
+1. Hunger (Kar-Voth)
+2. Law (Thryxen)
+3. Sacrifice (Pyraxis)
+4. Memory (Myrr'Kai)
+
+Every system—combat, story, bosses, UI—answers to these forces.
+
+### THE RAGING CITY - 8 DISTRICTS
+
+**Act I - The Age of Protection:**
+1. Ashblock Heights - Vertical rooftops, Fang Syndicate control, teaches movement
+2. Sector-7 Outskirts - Collapsed infrastructure, first fusion ignites here
+
+**Act II - The Age of Law:**
+3. Neon Ward - Colorful/deceptive, speed-focused, Versus Mode arenas
+4. Iron Market - Black-market, moral choice quests, tests restraint
+5. The Undercrown - Ancient ruins, Sabertooth myths revealed
+
+**Act III - The Age of Memory:**
+6. The Zenith Spires - Gravity-distorted towers, Lion legacy tested
+7. The Erasure Fields - Reality deletion zones, only Kaijax survives
+8. The Memory Nexus - All timelines converge, Architect endgame
+
+### BOSS MAP (8 Philosophy-Testing Bosses)
+1. Fang Enforcer "The Check" - Tests movement discipline
+2. Blood Broker "The Deal" - Tests hunger vs morality
+3. Architect Scout "The Probe" - First fusion ignition
+4. Neon Prince "The Flash" - Tests speed control
+5. Undercrown Sentinel "The Ancient" - Memory as weapon
+6. Boryx Zenith "Shadow of Law" - Perfect mastery required
+7. Erasure Choir "The Deletion" - HUD disappears mid-fight
+8. Hollow Architect "The Overwrite" - Final boss, legacy defeats control
+
+### UI COLOR LANGUAGE
+- 🔥 Orange = Sacrifice / Father (Pyraxis)
+- ⚡ Cyan = Law / Sabertooth Lion (Thryxen)
+- 🕷️ Purple = Memory / Fusion (Myrr'Kai)
+- ⚫ Black = Erasure / Architect
+
+### CORE THEME
+*"Power fades. Memory survives."*
+This is a legacy game. You don't win by being strongest. You win by being unforgettable.
+
 ## User Preferences
 - Preferred communication style: Simple, everyday language
 - Legal approach: Copyright-safe parody with minor name/color modifications while keeping characters recognizable
