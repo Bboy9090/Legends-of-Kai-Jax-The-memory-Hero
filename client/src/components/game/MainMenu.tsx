@@ -112,7 +112,7 @@ export default function MainMenu() {
         <div className="mb-8 flex justify-center">
           <img 
             src="/logo.png" 
-            alt="SMASH HEROES Logo" 
+            alt="AETERNA COVENANT Logo" 
             className="max-w-md w-full h-auto drop-shadow-2xl"
             style={{
               filter: "drop-shadow(0 0 30px rgba(220, 20, 60, 0.8)) drop-shadow(0 0 60px rgba(30, 144, 255, 0.6))"
@@ -123,22 +123,22 @@ export default function MainMenu() {
         <Card className="bg-white bg-opacity-98 backdrop-blur-md shadow-2xl border-4 border-blue-500">
           <CardHeader className="p-4 sm:p-8 bg-gradient-to-b from-slate-100 to-white">
             <CardTitle 
-              className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-blue-600 to-slate-800 mb-3"
+              className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-red-600 to-purple-700 mb-3"
               style={{ fontFamily: "'Arial Black', 'Impact', sans-serif", letterSpacing: '0.05em' }}
             >
-              SMASH HEROES
+              AETERNA COVENANT
             </CardTitle>
             <p 
-              className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-700"
+              className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-700"
               style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
             >
-              Adventures of Kaison & Jaxon
+              GENESIS ARENA PLATFORM
             </p>
             <p 
-              className="text-lg sm:text-xl text-red-600 font-bold mt-3"
+              className="text-lg sm:text-xl text-amber-600 font-bold mt-3"
               style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
             >
-              WORLD COLLISION
+              THE SABERTOOTH LINEAGE
             </p>
             <p className="text-sm sm:text-base text-gray-700 mt-4 font-semibold">
               The Multiverse Has Cracked. Reality Tears Open. The Void King Rises.
