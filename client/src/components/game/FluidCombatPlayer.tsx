@@ -429,8 +429,8 @@ export default function FluidCombatPlayer({ character, onDamageDealt }: FluidCom
   }, [currentAttack, attackPhase, playerRotation, accentColor]);
   
   // Y offset to place character on ground (accounts for model height when centered)
-  // Floor is at y = 0, so this offset moves character up from center to stand on ground
-  const CHARACTER_Y_OFFSET = 1.0;
+  // Floor is at y = 0, GLB models are scaled 2.5x so need more offset to stand on ground
+  const CHARACTER_Y_OFFSET = 2.5;
   
   // Calculate movement speed for animation
   const moveInput = useFluidCombat.getState().moveInput;
