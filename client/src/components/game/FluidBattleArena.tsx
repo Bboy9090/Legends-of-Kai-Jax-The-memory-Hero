@@ -543,13 +543,14 @@ function FluidBattleScene({
       <pointLight position={[0, 15, 0]} intensity={0.6} color="#ffd93d" />
       <spotLight position={[0, 20, 15]} angle={0.4} penumbra={0.5} intensity={1.2} castShadow />
 
-      {/* Arena Floor */}
+      {/* Open World Ground - Raging City */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-        <planeGeometry args={[50, 50]} />
-        <meshStandardMaterial color="#0a0a15" metalness={0.5} roughness={0.4} />
+        <planeGeometry args={[300, 300]} />
+        <meshStandardMaterial color="#1a1a2e" metalness={0.3} roughness={0.6} />
       </mesh>
+      {/* Central plaza */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-        <circleGeometry args={[15, 64]} />
+        <circleGeometry args={[30, 64]} />
         <meshStandardMaterial 
           color="#1a1a2e" 
           emissive="#4ecdc4" 
@@ -559,19 +560,23 @@ function FluidBattleScene({
         />
       </mesh>
 
-      {/* Grid Lines */}
-      {[...Array(20)].map((_, i) => (
+      {/* City Grid - Roads */}
+      {[...Array(15)].map((_, i) => (
         <group key={i}>
-          <mesh position={[-25 + i * 2.5, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[0.05, 50]} />
-            <meshBasicMaterial color="#4ecdc4" transparent opacity={0.3} />
+          {/* Main roads */}
+          <mesh position={[-70 + i * 10, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[2, 200]} />
+            <meshBasicMaterial color="#2a2a4a" transparent opacity={0.8} />
           </mesh>
-          <mesh position={[0, 0.03, -25 + i * 2.5]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[50, 0.05]} />
-            <meshBasicMaterial color="#ff6b6b" transparent opacity={0.3} />
+          <mesh position={[0, 0.03, -70 + i * 10]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[200, 2]} />
+            <meshBasicMaterial color="#2a2a4a" transparent opacity={0.8} />
           </mesh>
         </group>
       ))}
+      
+      {/* City buildings/structures scattered around - Raging City */}
+      <CityBuildings />
 
       {/* Sparkles */}
       <Sparkles count={100} scale={[30, 20, 30]} size={3} speed={0.5} color="#4ecdc4" opacity={0.6} />
@@ -619,16 +624,25 @@ function FluidBattleScene({
 }
 
 function CameraController() {
-  const { playerX, playerZ } = useFluidCombat();
+  const { playerX, playerY, playerZ, playerRotation } = useFluidCombat();
   
   useFrame(({ camera }) => {
-    // Smooth camera follow
-    const targetX = playerX * 0.3;
-    const targetZ = playerZ * 0.2 + 18;
+    // Open-world third-person camera - follows behind and above the player
+    const cameraDistance = 15;
+    const cameraHeight = 12;
     
-    camera.position.x += (targetX - camera.position.x) * 0.05;
-    camera.position.z += (targetZ - camera.position.z) * 0.05;
-    camera.lookAt(playerX * 0.5, 2, playerZ * 0.3);
+    // Position camera behind player based on their rotation
+    const targetX = playerX - Math.sin(playerRotation) * cameraDistance;
+    const targetY = playerY + cameraHeight;
+    const targetZ = playerZ - Math.cos(playerRotation) * cameraDistance;
+    
+    // Smooth camera follow
+    camera.position.x += (targetX - camera.position.x) * 0.08;
+    camera.position.y += (targetY - camera.position.y) * 0.08;
+    camera.position.z += (targetZ - camera.position.z) * 0.08;
+    
+    // Look at the player
+    camera.lookAt(playerX, playerY + 2, playerZ);
   });
   
   return null;
@@ -699,6 +713,40 @@ function EnemyFighter({ position, health }: { position: [number, number, number]
           </div>
         </div>
       </Html>
+    </group>
+  );
+}
+
+// Pre-calculated building data for Raging City - static so no re-renders
+const CITY_BUILDINGS = Array.from({ length: 30 }, (_, i) => {
+  const angle = (i / 30) * Math.PI * 2;
+  const distance = 45 + (i % 4) * 18;
+  const height = 8 + ((i * 7) % 20);
+  const width = 6 + ((i * 3) % 8);
+  const depth = 6 + ((i * 5) % 8);
+  return {
+    x: Math.cos(angle) * distance,
+    z: Math.sin(angle) * distance,
+    height,
+    width,
+    depth,
+    color: i % 3 === 0 ? "#1a1a3a" : i % 3 === 1 ? "#2a2a4a" : "#252540",
+  };
+});
+
+function CityBuildings() {
+  return (
+    <group>
+      {CITY_BUILDINGS.map((building, i) => (
+        <mesh
+          key={`building-${i}`}
+          position={[building.x, building.height / 2, building.z]}
+          castShadow
+        >
+          <boxGeometry args={[building.width, building.height, building.depth]} />
+          <meshStandardMaterial color={building.color} />
+        </mesh>
+      ))}
     </group>
   );
 }
