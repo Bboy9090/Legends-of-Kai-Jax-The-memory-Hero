@@ -6,12 +6,13 @@ import "@fontsource/bebas-neue";
 
 import BattleScene from "./components/game/BattleScene";
 import OpenWorldCombat from "./components/game/OpenWorldCombat";
+import RagingCityWorld from "./components/game/RagingCityWorld";
+import ExplorationUI from "./components/game/ExplorationUI";
 import MobileControls from "./components/game/MobileControls";
 import BattleUI from "./components/game/BattleUI";
 import DialogueDisplay from "./components/game/DialogueDisplay";
 import MainMenu from "./components/game/MainMenu";
 import CharacterSelect from "./components/game/CharacterSelect";
-import UEEMissionSelect from "./components/game/UEEMissionSelect";
 import TransformationOverlay from "./components/game/TransformationOverlay";
 import ScreenEffects from "./components/game/ScreenEffects";
 import { GameIntro } from "./components/game/LoadingScreen";
