@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@fontsource/bebas-neue':
+        specifier: ^5.2.7
+        version: 5.2.7
       '@fontsource/inter':
         specifier: ^5.2.8
         version: 5.2.8
