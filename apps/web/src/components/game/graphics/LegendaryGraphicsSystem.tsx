@@ -44,7 +44,7 @@ export function LegendaryLightingRig() {
       <directionalLight
         ref={keyLightRef}
         position={[5, 8, 5]}
-        intensity={1.5}
+        intensity={0.7}
         color="#ffffff"
         castShadow
         shadow-mapSize-width={2048}
@@ -69,7 +69,7 @@ export function LegendaryLightingRig() {
       <directionalLight
         ref={rimLightRef}
         position={[0, 4, -8]}
-        intensity={0.8}
+        intensity={0.4}
         color="#fbbf24"
       />
       
@@ -155,7 +155,7 @@ export function LegendaryPostProcessing({
     <EffectComposer multisampling={8}>
       {enableBloom && (
         <Bloom
-          intensity={1.5}
+          intensity={0.7}
           luminanceThreshold={0.4}
           luminanceSmoothing={0.9}
           mipmapBlur

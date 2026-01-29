@@ -22,7 +22,7 @@ export default function BattleArena() {
       <color attach="background" args={[arena.skyColor]} />
       
       {/* Lighting */}
-      <ambientLight intensity={0.6} />
+      <ambientLight intensity={0.25} />
       <directionalLight 
         position={[10, 20, 10]} 
         intensity={0.8} 
