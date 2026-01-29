@@ -11,30 +11,12 @@
  * - Game engine (rendering, physics, AI)
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-
-// Load JSON files at runtime to avoid build configuration issues
-const kaiJaxData = JSON.parse(
-  fs.readFileSync(
-    path.resolve(__dirname, '../../../../kai_jax.character.json'),
-    'utf-8',
-  ),
-) as CharacterData;
-
-const characterSchema = JSON.parse(
-  fs.readFileSync(
-    path.resolve(__dirname, '../../../../schemas/character.schema.json'),
-    'utf-8',
-  ),
-);
-
-const tailTierReactions = JSON.parse(
-  fs.readFileSync(
-    path.resolve(__dirname, '../../../../data/world/tail_tier_reactions.json'),
-    'utf-8',
-  ),
-);
+// Import JSON files using TypeScript's resolveJsonModule feature
+// tsconfig.base.json has resolveJsonModule: true configured correctly
+// This approach works for both Node.js and browser environments via bundlers (Vite)
+import kaiJaxData from '../../../../kai_jax.character.json';
+import characterSchema from '../../../../schemas/character.schema.json';
+import tailTierReactions from '../../../../data/world/tail_tier_reactions.json';
 
 /**
  * Character data structure from lockfile
