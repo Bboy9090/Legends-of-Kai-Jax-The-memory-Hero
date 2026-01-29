@@ -1,5 +1,5 @@
 # CURSOR DEPLOYMENT GUIDE
-## The Aeterna Covenant - Complete Setup
+## Legends of Kai-Jax - Complete Setup
 
 **Purpose:** Deploy your PWA game to production using Cursor IDE  
 **Target:** GitHub Pages (Free Hosting)  
@@ -31,14 +31,14 @@ npm run deploy
 1. Go to GitHub Repo Settings
 2. Pages → Source: GitHub Actions
 3. Wait 2-3 minutes for deployment
-4. Visit: `https://YOUR_USERNAME.github.io/Aeterna-Covenant`
+4. Visit: `https://YOUR_USERNAME.github.io/Legends-of-Kai-Jax-The-memory-Hero`
 
 ---
 
 ## 📂 PROJECT STRUCTURE
 
 ```
-/Aeterna-Covenant
+/Legends-of-Kai-Jax-The-memory-Hero
 ├── index.html              # Main game file
 ├── manifest.json           # PWA manifest
 ├── sw.js                   # Service Worker

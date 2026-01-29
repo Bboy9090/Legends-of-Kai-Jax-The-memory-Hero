@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# AETERNA COVENANT - DEPLOYMENT SCRIPT
+# LEGENDS OF KAI-JAX - DEPLOYMENT SCRIPT
 # Mac/Linux Bash Deployment Script
 
-echo "🌌 AETERNA COVENANT - DEPLOYMENT INITIALIZED"
+echo "🎮 LEGENDS OF KAI-JAX - DEPLOYMENT INITIALIZED"
 echo "============================================="
 echo ""
 
@@ -50,7 +50,7 @@ git add .
 
 # Commit with timestamp
 timestamp=$(date "+%Y-%m-%d %H:%M:%S")
-commit_message="Deploy: Aeterna Covenant PWA - $timestamp"
+commit_message="Deploy: Legends of Kai-Jax PWA - $timestamp"
 
 echo "💾 Committing changes..."
 git commit -m "$commit_message"
@@ -62,7 +62,7 @@ if ! git remote | grep -q "origin"; then
     echo "Please run: git remote add origin YOUR_GITHUB_REPO_URL"
     echo ""
     echo "Example:"
-    echo "git remote add origin https://github.com/YOUR_USERNAME/Aeterna-Covenant.git"
+    echo "git remote add origin https://github.com/YOUR_USERNAME/Legends-of-Kai-Jax-The-memory-Hero.git"
     echo ""
     echo "Then run this script again to push."
     exit 0
@@ -78,11 +78,11 @@ if [ $? -eq 0 ]; then
     echo "============================================="
     echo ""
     echo "Your game will be live at:"
-    echo "https://YOUR_USERNAME.github.io/Aeterna-Covenant"
+    echo "https://YOUR_USERNAME.github.io/Legends-of-Kai-Jax-The-memory-Hero"
     echo ""
     echo "⏳ Wait 2-3 minutes for GitHub Pages to build."
     echo ""
-    echo "🔓 THE COVENANT IS SEALED. THE SOVEREIGNTY IS LIVE."
+    echo "🎮 THE LEGEND IS LIVE!"
 else
     echo ""
     echo "❌ Deployment failed. Check your git remote configuration."

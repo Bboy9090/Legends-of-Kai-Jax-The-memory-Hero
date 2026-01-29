@@ -1,7 +1,7 @@
-# AETERNA COVENANT - DEPLOYMENT SCRIPT
+# LEGENDS OF KAI-JAX - DEPLOYMENT SCRIPT
 # Windows PowerShell Deployment Script
 
-Write-Host "🌌 AETERNA COVENANT - DEPLOYMENT INITIALIZED" -ForegroundColor Cyan
+Write-Host "🎮 LEGENDS OF KAI-JAX - DEPLOYMENT INITIALIZED" -ForegroundColor Cyan
 Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -48,7 +48,7 @@ git add .
 
 # Commit with timestamp
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-$commitMessage = "Deploy: Aeterna Covenant PWA - $timestamp"
+$commitMessage = "Deploy: Legends of Kai-Jax PWA - $timestamp"
 
 Write-Host "💾 Committing changes..." -ForegroundColor Cyan
 git commit -m $commitMessage
@@ -62,7 +62,7 @@ if (-not $remoteExists) {
     Write-Host "Please run: git remote add origin YOUR_GITHUB_REPO_URL" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "Example:" -ForegroundColor Cyan
-    Write-Host "git remote add origin https://github.com/YOUR_USERNAME/Aeterna-Covenant.git" -ForegroundColor Cyan
+    Write-Host "git remote add origin https://github.com/YOUR_USERNAME/Legends-of-Kai-Jax-The-memory-Hero.git" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "Then run this script again to push." -ForegroundColor Yellow
     exit 0
@@ -78,11 +78,11 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "=============================================" -ForegroundColor Green
     Write-Host ""
     Write-Host "Your game will be live at:" -ForegroundColor Cyan
-    Write-Host "https://YOUR_USERNAME.github.io/Aeterna-Covenant" -ForegroundColor Yellow
+    Write-Host "https://YOUR_USERNAME.github.io/Legends-of-Kai-Jax-The-memory-Hero" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "⏳ Wait 2-3 minutes for GitHub Pages to build." -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "🔓 THE COVENANT IS SEALED. THE SOVEREIGNTY IS LIVE." -ForegroundColor Magenta
+    Write-Host "🎮 THE LEGEND IS LIVE!" -ForegroundColor Magenta
 } else {
     Write-Host ""
     Write-Host "❌ Deployment failed. Check your git remote configuration." -ForegroundColor Red

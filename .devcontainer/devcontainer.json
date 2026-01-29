@@ -1,5 +1,5 @@
 {
-  "name": "Smash Heroes Ultimate Dev Container",
+  "name": "Legends of Kai-Jax Dev Container",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
   "features": {
     "ghcr.io/devcontainers-contrib/features/pnpm:2": {

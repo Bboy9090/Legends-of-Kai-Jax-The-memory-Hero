@@ -32,9 +32,7 @@
 ## CHANGES NEEDED
 
 ### Old Title References
-- "THE AETERNA COVENANT"
 - "The Memory Hero"
-- "AETERNA COVENANT"
 
 ### New Title
 - "Legends of Kai-Jax: The Memory Warrior"

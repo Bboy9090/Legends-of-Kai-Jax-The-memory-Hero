@@ -1,6 +1,6 @@
 {
-  "appId": "com.smashheroes.game",
-  "appName": "Smash Heroes",
+  "appId": "com.legendsofkaijax.game",
+  "appName": "Legends of Kai-Jax",
   "webDir": "dist",
   "bundledWebRuntime": false,
   "plugins": {

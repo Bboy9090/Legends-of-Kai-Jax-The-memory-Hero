@@ -1,5 +1,5 @@
 # ✅ DEPLOYMENT PACKAGE COMPLETE
-## Aeterna Covenant - Ready to Ship
+## Legends of Kai-Jax - Ready to Ship
 
 **Status:** 🟢 **READY FOR DEPLOYMENT**  
 **Package Date:** 2025  
@@ -51,7 +51,7 @@ https://github.com/new
 
 # 2. Connect git (in Cursor Terminal)
 git init
-git remote add origin https://github.com/YOUR_USERNAME/Aeterna-Covenant.git
+git remote add origin https://github.com/YOUR_USERNAME/Legends-of-Kai-Jax-The-memory-Hero.git
 git branch -M main
 
 # 3. Run deployment script
@@ -63,7 +63,7 @@ git branch -M main
 Settings → Pages → Source: GitHub Actions
 
 # 5. Play your game!
-https://YOUR_USERNAME.github.io/Aeterna-Covenant
+https://YOUR_USERNAME.github.io/Legends-of-Kai-Jax-The-memory-Hero
 ```
 
 ---
@@ -79,7 +79,7 @@ https://YOUR_USERNAME.github.io/Aeterna-Covenant
 
 ### GitHub Setup:
 - [ ] GitHub account created
-- [ ] Repository created: `Aeterna-Covenant`
+- [ ] Repository created: `Legends-of-Kai-Jax-The-memory-Hero`
 - [ ] Repository set to **Public** (required for free Pages)
 
 ---
@@ -151,15 +151,15 @@ Script handles: staging, commit, and push.
 
 **To verify deployment:**
 1. GitHub Repo → **Actions** tab
-2. Look for "Deploy Aeterna Covenant" workflow
+2. Look for "Deploy Legends of Kai-Jax" workflow
 3. Green checkmark = Success ✅
 4. Red X = Check logs for errors
 
 ---
 
-## 🏛️ THE SILENT ARCHITECT'S FINAL WORD
+## 🏛️ FORGED IN THE BRONX
 
-**"You've built the foundation. You've mapped the lore. Now deploy the legend. The Covenant is ready to be sealed in code and delivered to the world."**
+**"You've built the foundation. You've mapped the lore. Now deploy the legend. The Memory Warrior is ready to be shared with the world."**
 
 ---
 
