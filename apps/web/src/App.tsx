@@ -77,6 +77,14 @@ function App() {
   
   // ⚡ LEGENDARY INTRO SYSTEM
   const [showIntro, setShowIntro] = useState(true);
+  
+  // Open-world exploration state
+  const [currentDistrict, setCurrentDistrict] = useState("Ashblock Heights");
+  const [encounterAlert, setEncounterAlert] = useState<{
+    type: 'battle' | 'boss' | 'story' | 'loot';
+    district: string;
+    level: number;
+  } | null>(null);
 
   // Initialize audio on mount
   useEffect(() => {
@@ -150,24 +158,50 @@ function App() {
         {/* Main Menu */}
         {phase === 'ready' && gameState === 'menu' && !showIntro && <MainMenu />}
         
-        {/* Story Mode - Show mission selection */}
+        {/* OPEN WORLD EXPLORATION - Pokemon-style walk around Raging City */}
         {phase === 'ready' && gameState === 'story-mode-select' && (
-          <div className="w-full min-h-screen">
-            <UEEMissionSelect 
-              onSelectMission={(missionId) => {
-                console.log("Mission selected:", missionId);
-                // Store selected mission and go to character select
-                setGameState('mission-team-select');
+          <>
+            <Canvas
+              shadows
+              camera={{
+                position: [0, 12, 18],
+                fov: 60,
+                near: 0.1,
+                far: 500
               }}
-              onBack={() => setGameState('menu')}
-              completedMissions={[]}
+              onCreated={({ gl }) => {
+                gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                gl.outputColorSpace = THREE.SRGBColorSpace;
+                gl.toneMapping = THREE.ACESFilmicToneMapping;
+                gl.toneMappingExposure = 0.8;
+                gl.shadowMap.enabled = true;
+              }}
+              gl={{ antialias: true, powerPreference: "high-performance" }}
+            >
+              <Suspense fallback={null}>
+                <RagingCityWorld 
+                  onEncounter={(enc) => {
+                    console.log("Encounter triggered:", enc);
+                    setEncounterAlert({
+                      type: enc.type,
+                      district: enc.district,
+                      level: enc.enemyLevel
+                    });
+                  }}
+                />
+              </Suspense>
+            </Canvas>
+            <ExplorationUI 
+              currentDistrict={currentDistrict}
+              encounterAlert={encounterAlert}
+              onDismissAlert={() => {
+                if (encounterAlert?.type === 'battle' || encounterAlert?.type === 'boss') {
+                  setGameState('versus-select');
+                }
+                setEncounterAlert(null);
+              }}
             />
-          </div>
-        )}
-        
-        {/* Mission Team Select - Choose your character for the mission */}
-        {phase === 'ready' && gameState === 'mission-team-select' && (
-          <CharacterSelect />
+          </>
         )}
         
         {/* Versus Mode - Show character select for arcade-style fighting */}

@@ -121,7 +121,7 @@ export default function RagingCityWorld({ onEncounter }: { onEncounter: (encount
     );
     camera.lookAt(playerRef.current.position);
     
-    let nearestDistrict = DISTRICTS[0];
+    let nearestDistrict: District = DISTRICTS[0]!;
     let nearestDist = Infinity;
     DISTRICTS.forEach(d => {
       const dist = Math.sqrt(
@@ -133,7 +133,7 @@ export default function RagingCityWorld({ onEncounter }: { onEncounter: (encount
         nearestDistrict = d;
       }
     });
-    if (nearestDistrict.name !== currentDistrict) {
+    if (nearestDistrict && nearestDistrict.name !== currentDistrict) {
       setCurrentDistrict(nearestDistrict.name);
     }
     
@@ -148,7 +148,10 @@ export default function RagingCityWorld({ onEncounter }: { onEncounter: (encount
       if (dist < enc.radius) {
         setEncounters(prev => {
           const updated = [...prev];
-          updated[idx] = { ...updated[idx], triggered: true };
+          const existing = updated[idx];
+          if (existing) {
+            updated[idx] = { ...existing, triggered: true };
+          }
           return updated;
         });
         onEncounter(enc);
@@ -166,7 +169,7 @@ export default function RagingCityWorld({ onEncounter }: { onEncounter: (encount
       const width = 6 + Math.random() * 10;
       const depth = 6 + Math.random() * 10;
       
-      let district = DISTRICTS[0];
+      let district: District = DISTRICTS[0]!;
       DISTRICTS.forEach(d => {
         const dist = Math.sqrt(Math.pow(x - d.center[0], 2) + Math.pow(z - d.center[2], 2));
         if (dist < d.radius) district = d;
@@ -175,7 +178,7 @@ export default function RagingCityWorld({ onEncounter }: { onEncounter: (encount
       b.push({
         pos: [x, height / 2, z],
         size: [width, height, depth],
-        color: district.color,
+        color: district?.color || "#4a4a4a",
         damaged: Math.random() > 0.4
       });
     }
