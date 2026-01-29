@@ -112,10 +112,10 @@ export default function MainMenu() {
         <div className="mb-8 flex justify-center">
           <img 
             src="/logo.png" 
-            alt="AETERNA COVENANT Logo" 
+            alt="Legends of Kai-Jax Logo" 
             className="max-w-md w-full h-auto drop-shadow-2xl"
             style={{
-              filter: "drop-shadow(0 0 30px rgba(220, 20, 60, 0.8)) drop-shadow(0 0 60px rgba(30, 144, 255, 0.6))"
+              filter: "drop-shadow(0 0 30px rgba(147, 51, 234, 0.8)) drop-shadow(0 0 60px rgba(6, 182, 212, 0.6))"
             }}
           />
         </div>
@@ -123,28 +123,28 @@ export default function MainMenu() {
         <Card className="bg-white bg-opacity-98 backdrop-blur-md shadow-2xl border-4 border-blue-500">
           <CardHeader className="p-4 sm:p-8 bg-gradient-to-b from-slate-100 to-white">
             <CardTitle 
-              className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-red-600 to-purple-700 mb-3"
+              className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-amber-500 mb-3"
               style={{ fontFamily: "'Arial Black', 'Impact', sans-serif", letterSpacing: '0.05em' }}
             >
-              AETERNA COVENANT
+              LEGENDS OF KAI-JAX
             </CardTitle>
             <p 
-              className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-700"
+              className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-red-600"
               style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
             >
-              GENESIS ARENA PLATFORM
+              THE MEMORY HERO
             </p>
             <p 
-              className="text-lg sm:text-xl text-amber-600 font-bold mt-3"
+              className="text-lg sm:text-xl text-cyan-600 font-bold mt-3"
               style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
             >
-              THE SABERTOOTH LINEAGE
+              OF RAGING CITY
             </p>
             <p className="text-sm sm:text-base text-gray-700 mt-4 font-semibold">
-              The Multiverse Has Cracked. Reality Tears Open. The Void King Rises.
+              Explore the open world. Unlock your Memory Strands. Face the ultimate darkness.
             </p>
             <p className="text-xs sm:text-sm text-slate-600 mt-2">
-              Assemble your squad. Explore the fused world. Battle dimensional rifts. Save all reality.
+              Train with Pyraxis and Thryxen. Master your abilities. Become the Memory King.
             </p>
           </CardHeader>
           
