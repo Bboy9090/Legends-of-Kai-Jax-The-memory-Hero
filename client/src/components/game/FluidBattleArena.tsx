@@ -537,40 +537,44 @@ function FluidBattleScene({
     <>
       {/* Lighting */}
       <ambientLight intensity={0.5} />
-      <directionalLight position={[10, 20, 10]} intensity={1.5} castShadow shadow-mapSize={[2048, 2048]} />
-      <pointLight position={[-10, 10, -10]} intensity={0.8} color="#ff6b6b" />
-      <pointLight position={[10, 10, 10]} intensity={0.8} color="#4ecdc4" />
-      <pointLight position={[0, 15, 0]} intensity={0.6} color="#ffd93d" />
-      <spotLight position={[0, 20, 15]} angle={0.4} penumbra={0.5} intensity={1.2} castShadow />
+      {/* Apocalyptic war zone lighting - dim, orange/red haze */}
+      <directionalLight position={[10, 20, 10]} intensity={0.8} castShadow shadow-mapSize={[2048, 2048]} color="#ff9966" />
+      <pointLight position={[-30, 15, -30]} intensity={0.6} color="#ff4400" />
+      <pointLight position={[30, 15, 30]} intensity={0.5} color="#ff6600" />
+      <pointLight position={[0, 20, 0]} intensity={0.4} color="#ffaa00" />
+      <spotLight position={[0, 25, 15]} angle={0.5} penumbra={0.8} intensity={0.8} castShadow color="#ff8833" />
+      {/* Distant fire glow */}
+      <pointLight position={[-60, 8, -40]} intensity={1.2} color="#ff3300" distance={50} />
+      <pointLight position={[50, 8, 60]} intensity={1.0} color="#ff4400" distance={40} />
 
-      {/* Open World Ground - Raging City */}
+      {/* Open World Ground - Raging City Bronx War Zone */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[300, 300]} />
-        <meshStandardMaterial color="#1a1a2e" metalness={0.3} roughness={0.6} />
+        <meshStandardMaterial color="#1a1510" metalness={0.1} roughness={0.95} />
       </mesh>
-      {/* Central plaza */}
+      {/* Cracked asphalt central area */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
         <circleGeometry args={[30, 64]} />
         <meshStandardMaterial 
-          color="#1a1a2e" 
-          emissive="#4ecdc4" 
-          emissiveIntensity={0.1 + comboCount * 0.02}
+          color="#252015" 
+          emissive="#ff4400" 
+          emissiveIntensity={0.05 + comboCount * 0.01}
           metalness={0.6} 
           roughness={0.3} 
         />
       </mesh>
 
-      {/* City Grid - Roads */}
-      {[...Array(15)].map((_, i) => (
+      {/* Cracked Streets - War Zone Roads */}
+      {[...Array(12)].map((_, i) => (
         <group key={i}>
-          {/* Main roads */}
-          <mesh position={[-70 + i * 10, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[2, 200]} />
-            <meshBasicMaterial color="#2a2a4a" transparent opacity={0.8} />
+          {/* Broken roads with cracks */}
+          <mesh position={[-55 + i * 10, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[3, 200]} />
+            <meshBasicMaterial color="#1a1a1a" transparent opacity={0.9} />
           </mesh>
-          <mesh position={[0, 0.03, -70 + i * 10]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[200, 2]} />
-            <meshBasicMaterial color="#2a2a4a" transparent opacity={0.8} />
+          <mesh position={[0, 0.03, -55 + i * 10]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[200, 3]} />
+            <meshBasicMaterial color="#1a1a1a" transparent opacity={0.9} />
           </mesh>
         </group>
       ))}
@@ -578,9 +582,9 @@ function FluidBattleScene({
       {/* City buildings/structures scattered around - Raging City */}
       <CityBuildings />
 
-      {/* Sparkles */}
-      <Sparkles count={100} scale={[30, 20, 30]} size={3} speed={0.5} color="#4ecdc4" opacity={0.6} />
-      <Sparkles count={50} scale={[25, 15, 25]} size={4} speed={0.3} color="#ff6b6b" opacity={0.4} />
+      {/* Embers and ash floating in the air */}
+      <Sparkles count={150} scale={[80, 30, 80]} size={2} speed={0.8} color="#ff4400" opacity={0.5} />
+      <Sparkles count={100} scale={[60, 20, 60]} size={1} speed={0.3} color="#888888" opacity={0.3} />
 
       {/* Player Character */}
       {!battleOver && (
@@ -717,36 +721,146 @@ function EnemyFighter({ position, health }: { position: [number, number, number]
   );
 }
 
-// Pre-calculated building data for Raging City - static so no re-renders
-const CITY_BUILDINGS = Array.from({ length: 30 }, (_, i) => {
-  const angle = (i / 30) * Math.PI * 2;
-  const distance = 45 + (i % 4) * 18;
-  const height = 8 + ((i * 7) % 20);
-  const width = 6 + ((i * 3) % 8);
-  const depth = 6 + ((i * 5) % 8);
+// Pre-calculated building data for Raging City - Bronx apocalyptic war zone
+const CITY_BUILDINGS = Array.from({ length: 50 }, (_, i) => {
+  const angle = (i / 50) * Math.PI * 2 + (i % 3) * 0.2;
+  const distance = 35 + (i % 5) * 15 + ((i * 7) % 20);
+  const height = 4 + ((i * 7) % 18);
+  const width = 5 + ((i * 3) % 10);
+  const depth = 5 + ((i * 5) % 10);
+  const damaged = i % 4 === 0;
+  const collapsed = i % 7 === 0;
+  return {
+    x: Math.cos(angle) * distance + ((i * 13) % 10) - 5,
+    z: Math.sin(angle) * distance + ((i * 17) % 10) - 5,
+    height: collapsed ? height * 0.3 : height,
+    width,
+    depth,
+    rotY: ((i * 23) % 30) * 0.01,
+    tiltX: damaged ? 0.08 : 0,
+    tiltZ: damaged ? 0.05 : 0,
+    // Bronx apocalypse colors - burnt brick, ash gray, rust, charred
+    color: i % 5 === 0 ? "#2d1810" : i % 5 === 1 ? "#3d3d3d" : i % 5 === 2 ? "#4a2c1a" : i % 5 === 3 ? "#1a1a1a" : "#5c3a21",
+    damaged,
+    collapsed,
+  };
+});
+
+// Rubble and debris scattered around
+const RUBBLE_PIECES = Array.from({ length: 80 }, (_, i) => {
+  const angle = (i / 80) * Math.PI * 2;
+  const distance = 20 + (i % 6) * 12;
+  return {
+    x: Math.cos(angle) * distance + ((i * 11) % 20) - 10,
+    z: Math.sin(angle) * distance + ((i * 13) % 20) - 10,
+    scale: 0.3 + ((i * 7) % 10) * 0.1,
+    rotY: ((i * 17) % 360) * 0.0174,
+    color: i % 3 === 0 ? "#3d3d3d" : i % 3 === 1 ? "#4a3020" : "#2a2a2a",
+  };
+});
+
+// Burnt-out vehicles
+const WRECKED_VEHICLES = Array.from({ length: 15 }, (_, i) => {
+  const angle = (i / 15) * Math.PI * 2;
+  const distance = 25 + (i % 3) * 20;
   return {
     x: Math.cos(angle) * distance,
     z: Math.sin(angle) * distance,
-    height,
-    width,
-    depth,
-    color: i % 3 === 0 ? "#1a1a3a" : i % 3 === 1 ? "#2a2a4a" : "#252540",
+    rotY: ((i * 47) % 360) * 0.0174,
+    flipped: i % 4 === 0,
   };
 });
 
 function CityBuildings() {
   return (
     <group>
+      {/* Damaged/collapsed buildings */}
       {CITY_BUILDINGS.map((building, i) => (
+        <group key={`building-${i}`} position={[building.x, 0, building.z]}>
+          <mesh
+            position={[0, building.height / 2, 0]}
+            rotation={[building.tiltX, building.rotY, building.tiltZ]}
+            castShadow
+          >
+            <boxGeometry args={[building.width, building.height, building.depth]} />
+            <meshStandardMaterial 
+              color={building.color} 
+              roughness={0.9}
+              metalness={0.1}
+            />
+          </mesh>
+          {/* Damage marks / holes on some buildings */}
+          {building.damaged && (
+            <mesh position={[building.width * 0.3, building.height * 0.6, building.depth * 0.51]}>
+              <circleGeometry args={[1.5, 8]} />
+              <meshBasicMaterial color="#0a0a0a" />
+            </mesh>
+          )}
+        </group>
+      ))}
+      
+      {/* Rubble and debris */}
+      {RUBBLE_PIECES.map((rubble, i) => (
         <mesh
-          key={`building-${i}`}
-          position={[building.x, building.height / 2, building.z]}
+          key={`rubble-${i}`}
+          position={[rubble.x, rubble.scale * 0.5, rubble.z]}
+          rotation={[0, rubble.rotY, 0]}
           castShadow
         >
-          <boxGeometry args={[building.width, building.height, building.depth]} />
-          <meshStandardMaterial color={building.color} />
+          <dodecahedronGeometry args={[rubble.scale, 0]} />
+          <meshStandardMaterial color={rubble.color} roughness={1} />
         </mesh>
       ))}
+      
+      {/* Burnt-out wrecked vehicles */}
+      {WRECKED_VEHICLES.map((vehicle, i) => (
+        <group 
+          key={`vehicle-${i}`} 
+          position={[vehicle.x, vehicle.flipped ? 1.2 : 0.6, vehicle.z]}
+          rotation={[vehicle.flipped ? Math.PI : 0, vehicle.rotY, vehicle.flipped ? 0.2 : 0]}
+        >
+          {/* Car body */}
+          <mesh castShadow>
+            <boxGeometry args={[2.5, 1.2, 4]} />
+            <meshStandardMaterial color="#1a1a1a" roughness={0.95} />
+          </mesh>
+          {/* Burnt cabin */}
+          <mesh position={[0, 0.8, -0.3]} castShadow>
+            <boxGeometry args={[2, 0.8, 2]} />
+            <meshStandardMaterial color="#0d0d0d" roughness={1} />
+          </mesh>
+        </group>
+      ))}
+      
+      {/* Smoke columns from fires */}
+      {[0, 1, 2, 3, 4].map((i) => {
+        const angle = (i / 5) * Math.PI * 2;
+        const distance = 50 + i * 15;
+        return (
+          <mesh 
+            key={`smoke-${i}`}
+            position={[Math.cos(angle) * distance, 15, Math.sin(angle) * distance]}
+          >
+            <cylinderGeometry args={[3, 1, 30, 8]} />
+            <meshBasicMaterial color="#2a2a2a" transparent opacity={0.4} />
+          </mesh>
+        );
+      })}
+      
+      {/* Broken street lamps */}
+      {Array.from({ length: 20 }, (_, i) => {
+        const x = -80 + (i % 10) * 18;
+        const z = i < 10 ? -30 : 30;
+        const bent = i % 3 === 0;
+        return (
+          <group key={`lamp-${i}`} position={[x, 0, z]}>
+            <mesh position={[0, 3, 0]} rotation={[bent ? 0.5 : 0, 0, bent ? 0.3 : 0]}>
+              <cylinderGeometry args={[0.15, 0.2, 6, 8]} />
+              <meshStandardMaterial color="#2a2a2a" roughness={0.8} />
+            </mesh>
+          </group>
+        );
+      })}
     </group>
   );
 }
