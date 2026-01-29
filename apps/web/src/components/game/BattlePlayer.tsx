@@ -4,7 +4,7 @@ import { useKeyboardControls } from "@react-three/drei";
 import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
-import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
+import OptimizedBeastModel from "./models/OptimizedBeastModel";
 import { useBeastPreset } from "../../lib/stores/useBeastPreset";
 
 // Use the same Controls enum as App.tsx
@@ -377,23 +377,18 @@ export default function BattlePlayer() {
     prevYRef.current = playerY;
   });
   
-  // CHARACTER MODEL: always render the anatomical beast (no circle/square people)
+  // CHARACTER MODEL: always render the optimized beast GLB
   const renderCharacterModel = () => (
-    <AnatomicalBeastModel
-      fighter={fighter}
+    <OptimizedBeastModel
+      beast={fighter}
       bodyRef={bodyRef}
       headRef={headRef}
-      leftArmRef={leftArmRef}
-      rightArmRef={rightArmRef}
-      leftLegRef={leftLegRef}
-      rightLegRef={rightLegRef}
       emotionIntensity={emotionIntensityRef.current}
       hitAnim={hitAnimRef.current}
       animTime={animTimeRef.current}
       isAttacking={playerAttacking}
       isInvulnerable={playerInvulnerable}
       isMoving={isMovingRef.current}
-      presetOverride={beastPreset === "auto" ? null : beastPreset}
     />
   );
   
