@@ -22,15 +22,15 @@ export default function BattleArena() {
       <color attach="background" args={[arena.skyColor]} />
       
       {/* Lighting */}
-      <ambientLight intensity={0.25} />
+      <ambientLight intensity={0.1} />
       <directionalLight 
         position={[10, 20, 10]} 
-        intensity={0.8} 
+        intensity={0.35} 
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
       />
-      <pointLight position={[0, 10, 5]} intensity={0.3} color={arena.accentColor} />
+      <pointLight position={[0, 10, 5]} intensity={0.15} color={arena.accentColor} />
       
       {/* Main Ground Platform */}
       <mesh 

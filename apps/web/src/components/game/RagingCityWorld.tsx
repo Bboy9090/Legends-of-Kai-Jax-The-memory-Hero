@@ -1,6 +1,6 @@
-import { useRef, useState, useEffect, useMemo } from "react";
+import { useRef, useState, useEffect, useMemo, Suspense } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useKeyboardControls } from "@react-three/drei";
+import { useKeyboardControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
 interface EncounterZone {
@@ -32,7 +32,7 @@ const DISTRICTS: District[] = [
   { name: "Memory Nexus", center: [0, 0, 0], radius: 30, color: "#9932cc", description: "All timelines converge" }
 ];
 
-export default function RagingCityWorld({ onEncounter }: { onEncounter: (encounter: EncounterZone) => void }) {
+export default function RagingCityWorld({ onEncounter, onDistrictChange }: { onEncounter: (encounter: EncounterZone) => void; onDistrictChange?: (district: string) => void }) {
   const playerRef = useRef<THREE.Group>(null);
   const { camera } = useThree();
   
@@ -135,6 +135,7 @@ export default function RagingCityWorld({ onEncounter }: { onEncounter: (encount
     });
     if (nearestDistrict && nearestDistrict.name !== currentDistrict) {
       setCurrentDistrict(nearestDistrict.name);
+      onDistrictChange?.(nearestDistrict.name);
     }
     
     encounters.forEach((enc, idx) => {
@@ -269,60 +270,129 @@ export default function RagingCityWorld({ onEncounter }: { onEncounter: (encount
       ))}
       
       {encounters.filter(e => !e.triggered).map((enc) => (
-        <group key={enc.id} position={enc.position}>
-          <mesh position={[0, 0.5, 0]}>
-            <sphereGeometry args={[enc.radius * 0.3, 16, 16]} />
-            <meshBasicMaterial 
-              color={
-                enc.type === 'boss' ? '#ff0000' :
-                enc.type === 'story' ? '#9932cc' :
-                enc.type === 'loot' ? '#ffd700' : '#ff6600'
-              }
-              transparent
-              opacity={0.4 + Math.sin(Date.now() * 0.003) * 0.2}
-            />
-          </mesh>
-          <pointLight 
-            position={[0, 2, 0]} 
-            intensity={0.3} 
-            color={
-              enc.type === 'boss' ? '#ff0000' :
-              enc.type === 'story' ? '#9932cc' :
-              enc.type === 'loot' ? '#ffd700' : '#ff6600'
-            }
-            distance={enc.radius * 2}
-          />
-        </group>
+        <EncounterMarker key={enc.id} encounter={enc} />
       ))}
       
       <group ref={playerRef} position={[0, 0, 0]}>
-        <group position={[0, 1.2, 0]}>
-          <mesh castShadow>
-            <capsuleGeometry args={[0.4, 1.2, 8, 16]} />
-            <meshStandardMaterial color="#1a1a2e" roughness={0.3} metalness={0.6} />
-          </mesh>
-          <mesh position={[0, 0.9, 0]}>
-            <sphereGeometry args={[0.35, 16, 16]} />
-            <meshStandardMaterial color="#e0c8b0" roughness={0.5} />
-          </mesh>
-          <mesh position={[0.15, 0.95, 0.25]}>
-            <sphereGeometry args={[0.08, 8, 8]} />
-            <meshBasicMaterial color="#00ffff" />
-          </mesh>
-          <mesh position={[-0.15, 0.95, 0.25]}>
-            <sphereGeometry args={[0.08, 8, 8]} />
-            <meshBasicMaterial color="#00ffff" />
-          </mesh>
-          <mesh position={[0, 0.5, 0]}>
-            <boxGeometry args={[0.8, 0.1, 0.5]} />
-            <meshStandardMaterial color="#ff6600" emissive="#ff3300" emissiveIntensity={0.3} />
-          </mesh>
-          <pointLight position={[0, 0, 0.5]} intensity={0.5} color="#00ffff" distance={3} />
-        </group>
+        <BeastKinPlayer />
       </group>
       
       <DistrictHUD district={currentDistrict} playerPos={playerPos} />
     </>
+  );
+}
+
+function GLBPlayerModel() {
+  const groupRef = useRef<THREE.Group>(null);
+  const { scene } = useGLTF('/models/kaison_hero.glb');
+  
+  const clonedScene = useMemo(() => {
+    const clone = scene.clone();
+    clone.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+    return clone;
+  }, [scene]);
+  
+  useFrame((state) => {
+    if (groupRef.current) {
+      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.05;
+    }
+  });
+  
+  return (
+    <group ref={groupRef} position={[0, 0, 0]} scale={[2.5, 2.5, 2.5]}>
+      <primitive object={clonedScene} />
+      <pointLight position={[0, 1.5, 0.5]} intensity={0.4} color="#ff6600" distance={5} />
+    </group>
+  );
+}
+
+function BeastKinPlayerFallback() {
+  const bodyRef = useRef<THREE.Group>(null);
+  
+  useFrame((state) => {
+    if (bodyRef.current) {
+      bodyRef.current.position.y = 1.2 + Math.sin(state.clock.elapsedTime * 4) * 0.02;
+    }
+  });
+  
+  return (
+    <group ref={bodyRef} position={[0, 1.2, 0]}>
+      <mesh castShadow>
+        <capsuleGeometry args={[0.35, 0.9, 12, 16]} />
+        <meshStandardMaterial color="#c4a67a" roughness={0.8} />
+      </mesh>
+      <mesh castShadow position={[0, 0.65, 0]}>
+        <sphereGeometry args={[0.32, 16, 16]} />
+        <meshStandardMaterial color="#c4a67a" roughness={0.8} />
+      </mesh>
+      <mesh position={[0.18, 0.9, 0]} rotation={[0, 0, -0.3]}>
+        <coneGeometry args={[0.08, 0.2, 8]} />
+        <meshStandardMaterial color="#c4a67a" roughness={0.8} />
+      </mesh>
+      <mesh position={[-0.18, 0.9, 0]} rotation={[0, 0, 0.3]}>
+        <coneGeometry args={[0.08, 0.2, 8]} />
+        <meshStandardMaterial color="#c4a67a" roughness={0.8} />
+      </mesh>
+      <mesh position={[0.08, 0.68, 0.28]}>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshBasicMaterial color="#ffcc00" />
+      </mesh>
+      <mesh position={[-0.08, 0.68, 0.28]}>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshBasicMaterial color="#ffcc00" />
+      </mesh>
+      <mesh position={[0.05, 0.52, 0.28]} rotation={[0.2, 0, 0.1]}>
+        <coneGeometry args={[0.015, 0.12, 6]} />
+        <meshStandardMaterial color="#fffff0" roughness={0.2} />
+      </mesh>
+      <mesh position={[-0.05, 0.52, 0.28]} rotation={[0.2, 0, -0.1]}>
+        <coneGeometry args={[0.015, 0.12, 6]} />
+        <meshStandardMaterial color="#fffff0" roughness={0.2} />
+      </mesh>
+      <mesh position={[0, 0.3, 0.2]}>
+        <boxGeometry args={[0.55, 0.45, 0.25]} />
+        <meshStandardMaterial color="#ff6600" roughness={0.4} />
+      </mesh>
+      <pointLight position={[0, 0, 0.5]} intensity={0.3} color="#ff6600" distance={4} />
+    </group>
+  );
+}
+
+function BeastKinPlayer() {
+  return (
+    <Suspense fallback={<BeastKinPlayerFallback />}>
+      <GLBPlayerModel />
+    </Suspense>
+  );
+}
+
+function EncounterMarker({ encounter }: { encounter: EncounterZone }) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  
+  useFrame((state) => {
+    if (meshRef.current && meshRef.current.material) {
+      const mat = meshRef.current.material as THREE.MeshBasicMaterial;
+      mat.opacity = 0.4 + Math.sin(state.clock.elapsedTime * 3) * 0.2;
+    }
+  });
+  
+  const color = encounter.type === 'boss' ? '#ff0000' :
+                encounter.type === 'story' ? '#9932cc' :
+                encounter.type === 'loot' ? '#ffd700' : '#ff6600';
+  
+  return (
+    <group position={encounter.position}>
+      <mesh ref={meshRef} position={[0, 0.5, 0]}>
+        <sphereGeometry args={[encounter.radius * 0.3, 16, 16]} />
+        <meshBasicMaterial color={color} transparent opacity={0.5} />
+      </mesh>
+      <pointLight position={[0, 2, 0]} intensity={0.3} color={color} distance={encounter.radius * 2} />
+    </group>
   );
 }
 

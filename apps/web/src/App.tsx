@@ -188,6 +188,10 @@ function App() {
                       level: enc.enemyLevel
                     });
                   }}
+                  onDistrictChange={(district) => {
+                    console.log("District changed:", district);
+                    setCurrentDistrict(district);
+                  }}
                 />
               </Suspense>
             </Canvas>
