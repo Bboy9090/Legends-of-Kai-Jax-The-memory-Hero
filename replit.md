@@ -217,11 +217,31 @@ This is a legacy game. You don't win by being strongest. You win by being unforg
   - Narration and action descriptions
   - Visual effects (flash, darken, ember, lightning, memory_swirl)
   - Camera effects (shake, zoom, pan, fade)
-  - Weather overlays (rain, ember rain, fog)
+  - Weather overlays (rain, storm, ember rain, fog)
   - Click to advance or auto-advance for narration
   - Skip button for impatient players
-- **Story Flow**: Mission Select → Cinematic → Team Select → Battle
-- **Story Beats**: Prologue + Chapters 1-3 have full cinematics with character introductions
+
+### Exploration World System (NEW - Pokemon Style)
+- **worldDialogue.ts**: NPC dialogue data with natural speech (no game-y language)
+  - NPCs give hints like "I saw lightning in that alley..."
+  - Hints point players toward story triggers naturally
+- **ExplorationWorld.tsx**: 3D explorable world with:
+  - WASD movement through Raging City districts
+  - Third-person camera following player
+  - Procedurally placed buildings and city environment
+- **WorldNPC.tsx**: Interactive NPCs you can walk up to and talk to
+  - Proximity detection for interaction
+  - Visual indicators for NPCs with hints (cyan glow)
+- **DialogueBox.tsx**: Natural conversation display
+  - Typewriter text, click to advance
+  - NPC name and description shown
+- **TriggerZone.tsx**: Story event triggers in the world
+  - Walk into glowing zones to trigger cutscenes
+  - Different colors: orange=cutscene, red=battle, green=dialogue
+- **HintIndicator.tsx**: Collapsible hint display showing where to go
+- **Story Flow Options**:
+  1. **Explore Raging City**: Walk around, talk to NPCs, discover story naturally
+  2. **Chapter Select**: Traditional mission-based progression with cinematics
 
 ### External Dependencies
 - **Database & Backend**: Drizzle ORM (PostgreSQL)
