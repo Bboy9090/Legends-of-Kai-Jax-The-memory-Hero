@@ -1,8 +1,8 @@
-# BEAST-KIN SOVEREIGNTY: GENESIS™
-## Legends of Kai-Jax - The Memory Hero
+# LEGENDS OF KAI-JAX
+## The Memory Hero of Raging City
 
 ## Overview
-BEAST-KIN SOVEREIGNTY: GENESIS™ is an epic platform fighting RPG featuring 100% original Beast-Kin warriors. Players control Genesis heroes like KAI-JAX (The Memory King), Boryx Zenith (Guardian King), and Lunara Solis (Oracle Sentinel) through story-driven missions. Battle across the Aeterna Covenant, unlock Resonance transformations, and face the ultimate darkness: Voidonus Imperion. The game features original IP, cinematic combat, and deep lore spanning Books 1-3 of the Genesis saga.
+LEGENDS OF KAI-JAX is an open-world action RPG set in the post-apocalyptic Bronx war zone known as "Raging City." The game follows the Sabertooth Lineage saga across 9 books, featuring Pyraxis (Sabertooth Tiger Father who sacrificed himself), Thryxen (Sabertooth Lion Sovereign cold mentor), and two orphans they train: Jaxon (Hedgehog-Lupine hybrid with electric quills) and Kaison (Arachnid-Kitsune-Wolf hybrid with spider-sense). When fused, they become Kai-Jax (Star-Slime Chimera Memory King with 3 Memory Strand Tails). All characters are bipedal humanoid Beast-Kin with urban apocalyptic Bronx streetwear aesthetic (hoodies, tactical gear, cosmic galaxy tails, Oversized Fangs as Sabertooth lineage mark).
 
 ## User Preferences
 - Preferred communication style: Simple, everyday language
@@ -44,7 +44,22 @@ BEAST-KIN SOVEREIGNTY: GENESIS™ is an epic platform fighting RPG featuring 100
   - Third Party: Snake, Bayonetta, Cloud, Sephiroth, Sora, Simon, Joker, Steve, Kazuya, Terry, Hero, Ridley, Inkling, Pac-Man
   - Original: Solaro, Lunara, Impa, Palutena
 
-**PHASE 4: Fluid Combat System (Spider-Man Style)** - COMPLETED (Current Session)
+**PHASE 5: Open World Raging City** - COMPLETED (Current Session)
+- ✅ Updated game title to "Legends of Kai-Jax: The Memory Hero of Raging City"
+- ✅ Converted arena to open-world exploration:
+  - Expanded world bounds from ±10 to ±100 units
+  - Third-person camera follows behind player
+  - Free movement in all directions (WASD)
+- ✅ Created Bronx apocalyptic war zone environment:
+  - 50 damaged/collapsed buildings with tilt and damage holes
+  - 80 rubble and debris pieces scattered
+  - 15 burnt-out wrecked vehicles (some flipped)
+  - Smoke columns from distant fires
+  - 20 broken street lamps
+  - Cracked asphalt streets
+  - Orange/red fire lighting with ember particles
+
+**PHASE 4: Fluid Combat System (Spider-Man Style)** - COMPLETED
 - ✅ Created useFluidCombat.ts Zustand store with:
   - Free 3D WASD movement with smooth acceleration
   - Light attack chain (light1→light2→light3→light4→light5)
