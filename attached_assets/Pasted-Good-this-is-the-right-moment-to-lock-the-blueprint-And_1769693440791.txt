@@ -1,0 +1,188 @@
+Good — this is the right moment to lock the blueprint. And I’m going to be blunt: beta succeeds when we ship a complete loop, not a complete universe. We build the spine first. The muscles come after.
+
+You already have the myth-core: 8 districts + 4 Sabertooth Gods + mission pillars (Hunger / Law / Sacrifice / Memory). What you don’t want is a beautiful bible that can’t be played.
+
+Below is the final-phase planning blueprint that turns your paper plan into a build-ready beta.
+
+⸻
+
+A) Beta Definition (What “Done” Means)
+
+Beta is successful if a player can:
+	1.	Start in the home town
+	2.	Learn movement + combat + “memory” systems
+	3.	Travel across the map (district gates + fast travel later)
+	4.	Clear a district arc (boss + lore payoff)
+	5.	Grow noticeably (new ability + new traversal)
+	6.	Reach a “final destination” mission that feels like an ending
+
+Beta is not: every side quest, every city, every boss, every cutscene. That’s how games die young.
+
+Beta content target:
+	•	Home Town + 3 fully playable districts (vertical slice that feels like the full game)
+	•	The remaining 5 districts can exist as blocked gates + teaser encounters + skybox silhouettes.
+
+⸻
+
+B) The World Model (8 Districts as a “Memory Atlas”)
+
+Even without final district names yet, the structure should be identical across all 8 so production stays sane.
+
+Each District gets 7 locked components
+	1.	District Identity: visual theme + sound + “law of nature”
+	2.	Hub Node: safe area with NPCs, upgrades, lore wall
+	3.	3 Landmarks: your postcard locations (players remember these)
+	4.	Memory Fragment Set: collectibles that actually matter (not junk)
+	5.	Threat Ecology: 3 enemy families + 1 roaming elite
+	6.	District Trial: one signature gameplay challenge (unique mechanic)
+	7.	District Sovereign Fight: the boss that teaches the god pillar
+
+Memory Fragments (make them gameplay, not trivia)
+
+Fragments should unlock one of these per set:
+	•	A movement skill (dash variant, wall-run, web-swing upgrade, glide)
+	•	A combat style node (parry window, tail ability, counter follow-up)
+	•	A crafting recipe (gear, charm, talisman)
+	•	A world permission (open a gate, speak to an order, enter a ruin)
+	•	A truth reveal (cutscene / playable memory echo)
+
+Rule: every fragment causes a visible change. No museum tours.
+
+⸻
+
+C) Story Path (9 Books / Acts) — Built for Open World
+
+You mentioned: Boryn’s sacrifice → final battle with the Hollow Architect. That’s a clean arc. Here’s the build-ready act spine:
+
+Book 1 — The Spark in the Home Town
+
+Tutorial disguised as story. First threat. First fragment. First vow.
+
+Book 2 — The First District Opens
+
+You learn the world is governed by an ancient lineage law (Sabertooth doctrine). First “pillar” test.
+
+Book 3 — The Second District: The Cost
+
+Difficulty rises. NPC choices appear. Your first Sacrifice moment (lose something to gain something).
+
+Book 4 — The Third District: The Lie
+
+A faction twists the gods. Your “Law” pillar becomes morally sharp.
+
+Book 5 — Midpoint Break: The Map Rewrites
+
+A major reveal: fragments aren’t history — they’re keys. The world shifts. New routes open. Old routes become dangerous.
+
+Book 6 — The Fourth/Fifth District: Hunger Turns Wild
+
+Hunger isn’t “food.” Hunger is obsession, corruption, evolution. It starts infecting characters and zones.
+
+Book 7 — The Sixth District: Memory War
+
+You fight echoes, false timelines, identity fractures. Bosses punish sloppy play and reward mastery.
+
+Book 8 — The Seventh District: The Lineage Gate
+
+All pillars converge. Your build matters. Side allies matter. You become “worthy” or you don’t pass.
+
+Book 9 — Final Destination: The Hollow Architect
+
+Not just a boss — a reality editor. The final mission tests: traversal + combat + choices + memory.
+
+Beta uses Books 1–3 fully and teases 4–9 via locked gates + vision sequences.
+
+⸻
+
+D) Mission Types (Your Four Pillars as Playable Systems)
+
+This is the biggest win: every mission should clearly be one pillar, so the game feels authored, not random.
+
+1) Hunger Missions (Chase / Consume / Dominate)
+
+Gameplay: tracking, pursuit, ambush, “predator mode” challenges
+	•	Trail mechanics, scent/echo vision, time pressure
+	•	Reward: aggression tools (burst, finisher, tail strike, rage meter control)
+
+2) Law Missions (Order / Judgment / Code)
+
+Gameplay: puzzle logic, faction rules, patrol zones, “do it right” constraints
+	•	Non-lethal routes, timed sequences, witness systems
+	•	Reward: defense and control (parry upgrades, bindings, shields, counters)
+
+3) Sacrifice Missions (Trade / Loss / Burden)
+
+Gameplay: deliberate debuffs, escort with penalties, lose HP to unlock doors, choose who to save
+	•	You give something up, and the game remembers
+	•	Reward: huge unlocks (district access, myth gear, ally commitment)
+
+4) Memory Missions (Echo / Reconstruction / Truth)
+
+Gameplay: playable flashback shards, time-slice arenas, “rebuild the event” mysteries
+	•	Environmental storytelling with mechanics: place objects, follow ghost paths
+	•	Reward: narrative truth + permanent abilities + world-state shifts
+
+Blunt rule: if a mission can’t be labeled as one of the four pillars in one sentence, it gets cut or rewritten.
+
+⸻
+
+E) Progression & Growth (Pokémon-like Feel, Without Pokéballs)
+
+You want that “moving through the world, growing with the journey” vibe. Here’s how we get it:
+
+Player Growth Loop (simple, addictive)
+	•	XP = mastery, not numbers
+	•	Fragments = evolution (new tails, new movement, new combat branch)
+	•	District Trials = proofs (you earn legitimacy)
+
+Your “Starter Town” Equivalent
+
+Instead of picking a creature, you pick a Path Oath:
+	•	Oath of Hunger (offense + chase tools)
+	•	Oath of Law (parry/control + discipline)
+	•	Oath of Sacrifice (support + durability + high-risk unlocks)
+	•	Oath of Memory (utility + traversal + truth powers)
+
+It’s basically “starter choice,” but it fits your myth.
+
+⸻
+
+F) Systems We Must Lock for Beta (No Exceptions)
+
+If these aren’t locked, the beta will feel like a tech demo.
+	1.	World Map + District Gate Logic (what opens what, and why)
+	2.	Quest State Machine (main quest + district quest + pillar quest)
+	3.	Memory Fragment Inventory (collect → apply → world reacts)
+	4.	Movement Baseline (run/climb/dodge + one signature traversal)
+	5.	Combat Baseline (light/heavy, dodge, parry, counter, finisher)
+	6.	One Craft/Upgrade Station (keep it minimal but real)
+	7.	Save/Load (nothing kills trust faster)
+
+⸻
+
+G) Practical Build Plan (Final Phase = Three Deliverables)
+
+This is what we produce now so dev and art can build without guessing.
+
+Deliverable 1 — “8 District Cards” (one page each)
+	•	Theme, landmarks, enemies, trial, boss, fragment rewards, gate conditions
+
+Deliverable 2 — “9 Book Spine” (one page total)
+	•	Act beats + what unlocks after each act
+
+Deliverable 3 — “Mission Palette”
+	•	10 mission templates per pillar (40 total)
+So designers can stamp missions quickly without losing identity.
+
+⸻
+
+H) My Straight Recommendation
+
+For beta: Home Town + 3 districts + one mid-boss + one “Architect teaser” finale.
+Ship the loop. Let players taste the legend. Don’t try to serve the whole feast while the kitchen’s still being built.
+
+And no — we don’t need “Autonomous mode.” We need discipline. (Autonomous mode is what people say when they want to hide chaos under a fancy label.)
+
+⸻
+
+If you want the next step immediately, I’ll generate the 8 District Cards as a fill-ready blueprint (with placeholder district names you can replace later) and the Books 1–3 beta main questline mapped mission-by-mission using Hunger/Law/Sacrifice/Memory tags.

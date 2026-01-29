@@ -1,0 +1,188 @@
+Locked. Public-facing = one story.
+UI label = Chapters.
+In-world term = District Trials. (NPCs say “Trial,” UI says “Chapter.” Classic and clean.)
+
+Now here’s the Campaign Blueprint v1 you can build the beta from.
+
+⸻
+
+Campaign Structure (What Players See)
+
+Prologue + 8 Chapters + Finale
+	•	Prologue: Home Town (tutorial + inciting threat)
+	•	Chapters 1–8: One per district arc
+	•	Finale: Final destination mission (Hollow Architect reveal / first confrontation)
+
+⸻
+
+Chapter-by-Chapter Spine (One Story, Eight Districts)
+
+I’m using placeholder district names you can swap later without breaking structure.
+
+PROLOGUE — Home Town: “The First Fracture”
+
+Goal: teach movement + combat + “Memory Fragment” concept
+Key beats:
+	•	Boryn’s sacrifice is felt (not narrated): a playable moment or aftermath
+	•	First Memory Fragment found (gives a small but real upgrade)
+	•	First gate appears on the map (world is bigger than the town)
+Unlock: World Map + Chapter 1 path
+
+⸻
+
+CHAPTER 1 — District Trial I: The Hungry Edge (HUNGER)
+
+Landmarks:
+	•		1.	Wind-cut ridge / predator nests
+	•		2.	Ruined watchtower
+	•		3.	“Echo Spring” (memory water)
+Enemies: scavenger pack + stalker elite
+District Trial mechanic: tracking + chase route
+Boss: “The Ravel Fang” (fast predator, teaches dodge/counter)
+Reward: Traversal 1 (short burst dash / web tug) + Gate Key I
+
+⸻
+
+CHAPTER 2 — District Trial II: The Iron Order (LAW)
+
+Landmarks:
+	•		1.	Walled checkpoint city
+	•		2.	Clockwork plaza
+	•		3.	Tribunal stairs (vertical arena)
+Enemies: patrol units + snare casters
+District Trial mechanic: “Do it right” constraints (stealth route / witness meter)
+Boss: “The Marshal of Codes” (parry timing + punish windows)
+Reward: Defense 1 (parry upgrade / bind counter) + Gate Key II
+
+⸻
+
+CHAPTER 3 — District Trial III: The Broken Bridge (SACRIFICE)
+
+Landmarks:
+	•		1.	Collapsed highway over abyss
+	•		2.	Refuge camp hub
+	•		3.	Salvage cathedral
+Enemies: raiders + corruption husks
+District Trial mechanic: trade-off mission (escort with debuff / give up resource to pass)
+Boss: “The Burden Keeper” (area denial, forces discipline)
+Reward: Upgrade Station unlocked (craft/augment) + Gate Key III
+
+⸻
+
+CHAPTER 4 — District Trial IV: The Glass Archive (MEMORY)
+
+Landmarks:
+	•		1.	Mirror ruins
+	•		2.	Memory vault halls
+	•		3.	Echo amphitheater
+Enemies: timeline echoes + false clones
+District Trial mechanic: playable flashback shard + reconstruction puzzle
+Boss: “The Archivist Echo” (predictive patterns, punishes spam)
+Reward: Memory Power 1 (echo-vision / recall step) + Gate Key IV
+
+⸻
+
+CHAPTER 5 — District Trial V: The Wild Hunger (HUNGER ➜ CORRUPTION)
+
+Landmarks: fungal forest / molten root caves / hunter shrine
+Enemies: corrupted beasts + berserk elites
+Trial mechanic: survival loop (limited heals, escalating hunt)
+Boss: “The Starved Crown” (rage phases)
+Reward: Tail Growth 1 (3 ➜ 4 tails for Kai-Jax, or equivalent skill branch) + Gate Key V
+
+⸻
+
+CHAPTER 6 — District Trial VI: The Law That Lies (LAW ➜ MORAL CHOICE)
+
+Landmarks: propaganda mural boulevard / prison yard / oath chamber
+Enemies: zealots + enforcers
+Trial mechanic: choice-driven outcomes that change patrol routes + NPC trust
+Boss: “The False Judge” (counter-baiting, mind games)
+Reward: Faction Access (ally vendor / hidden routes) + Gate Key VI
+
+⸻
+
+CHAPTER 7 — District Trial VII: The Weight of Blood (SACRIFICE ➜ LEGACY)
+
+Landmarks: ancestral pit / oathfire bridge / lineage altar
+Enemies: lineage guardians + oathbreakers
+Trial mechanic: you choose what to lose to gain passage (perk, item, ally support, time)
+Boss: “The Lineage Warden” (multi-stage, tests mastery)
+Reward: Myth Gear Slot + Gate Key VII
+
+⸻
+
+CHAPTER 8 — District Trial VIII: Memory Warfront (MEMORY ➜ REALITY SHIFT)
+
+Landmarks: fractured city blocks / floating streets / hollow sky rift
+Enemies: architect constructs + memory predators
+Trial mechanic: world state shifts mid-mission (routes change live)
+Boss: “The Hollow Hand” (architect’s avatar, first true ‘editor’ fight)
+Reward: Final Gate Access + Reveal of the Hollow Architect
+
+⸻
+
+FINALE — Final Destination: “The Hollow Architect”
+
+Structure: multi-phase mission (travel + trial + boss attempt + escape or victory beat depending on your ending)
+Promise: this is where your campaign feels earned, not told.
+
+⸻
+
+Beta Slice (What We Actually Ship First)
+
+To keep it real: for beta, we ship the full loop, not the whole myth.
+
+Beta Content = Prologue + Chapters 1–3
+	•	Home Town (Prologue)
+	•	District I (Hunger)
+	•	District II (Law)
+	•	District III (Sacrifice)
+	•	End of Beta: a Memory teaser event that opens Chapter 4 gate but blocks entry (clean cliffhanger)
+
+Beta must include:
+	•	Map + gates
+	•	Save/load
+	•	One upgrade station
+	•	Memory fragments that visibly change gameplay
+	•	One roaming elite enemy in each district
+
+⸻
+
+Mission Template Palette (Fast, Buildable)
+
+Here are 12 templates (3 per pillar) you can stamp across districts:
+
+Hunger
+	1.	Track & Break: follow trail → ambush elite → extract fragment
+	2.	Predator Run: timed chase through hazard lanes
+	3.	Nest Purge: clear 3 nests → boss spawns
+
+Law
+	4.	Silent Passage: reach objective without alerting patrol tiers
+	5.	Witness Trial: solve sequence puzzle while under pursuit
+	6.	Code Duel: parry-only challenge to unlock a gate
+
+Sacrifice
+	7.	Weighted Escort: escort while you’re debuffed (slow, low stamina)
+	8.	Gate Trade: sacrifice item/perk to open path
+	9.	Choose the Saved: two objectives, only one can be completed in time
+
+Memory
+	10.	Echo Reconstruction: place 3 “truth anchors” to reveal the real scene
+	11.	Flashback Arena: fight a past event with altered rules
+	12.	Timeline Stitch: route changes live; choose correct branch via clues
+
+⸻
+
+Naming Lock (Final)
+	•	UI: Story Mode → Chapters
+	•	NPC Lore: “You must face the District Trial.”
+	•	Collectibles: Memory Fragments
+	•	Bosses: Sovereigns (or “Trial Sovereigns”)
+
+If you want me to push this from blueprint into “build sheets,” next I’ll output:
+	•	8 District Cards (one-page each, copy/paste ready)
+	•	Prologue + Chapter 1 mission-by-mission list (with rewards and unlock flags)
+
+Say “District Cards” or “Mission List” and I’ll drop the next artifact immediately.
