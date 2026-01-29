@@ -30,7 +30,7 @@ export interface MainPath {
   title: string;
   subtitle: string;
   description: string;
-  focusCharacter: 'pyraxis' | 'thryxen' | 'jaxon' | 'kaison' | 'kaijax' | 'all';
+  focusCharacter: 'borax' | 'boryn' | 'jaxon' | 'kaison' | 'kaijax' | 'all';
   chapters: PathChapter[];
   unlockRequirement?: string;
 }
@@ -239,7 +239,7 @@ export const RAGING_CITY_ZONES: RagingCityZone[] = [
     id: 'pelham_wastes',
     name: 'Pelham Wastes',
     subtitle: 'The Burning Frontier',
-    description: 'The northeastern district is a scorched wasteland. Pyraxis\'s final sacrifice left eternal flames that both protect and destroy. Only the worthy survive here.',
+    description: 'The northeastern district is a scorched wasteland where Borax made his final sacrifice, channeling the divine fire of Pyraxis. The eternal flames both protect and destroy. Only the worthy survive here.',
     dangerLevel: 5,
     controlledBy: 'void',
     regions: [
@@ -247,9 +247,9 @@ export const RAGING_CITY_ZONES: RagingCityZone[] = [
         id: 'pw_fire_fields',
         name: 'Eternal Fire Fields',
         type: 'industrial',
-        description: 'Flames that never die, remnants of Pyraxis\'s ultimate attack. Void creatures fear them.',
+        description: 'Flames that never die, remnants of Borax\'s ultimate attack channeling Pyraxis\'s power. Void creatures fear them.',
         enemies: ['Fire Wraiths', 'Void Champions'],
-        resources: ['Eternal Flame Essence', 'Pyraxis Ash']
+        resources: ['Eternal Flame Essence', 'Divine Tiger Ash']
       },
       {
         id: 'pw_void_fortress',
@@ -261,16 +261,16 @@ export const RAGING_CITY_ZONES: RagingCityZone[] = [
       },
       {
         id: 'pw_pyraxis_shrine',
-        name: 'Shrine of the Fallen Tiger',
+        name: 'Shrine of Pyraxis',
         type: 'residential',
-        description: 'Where Pyraxis made his last stand. His spirit may still linger...',
+        description: 'An ancient shrine to the god-ancestor Pyraxis, where Borax made his last stand. Divine presence still lingers...',
         enemies: [],
-        resources: ['Pyraxis\'s Blessing', 'Tiger Spirit Essence']
+        resources: ['Pyraxis\'s Divine Blessing', 'Tiger Spirit Essence']
       }
     ],
-    landmarks: ['Pyraxis\'s Last Stand', 'Void Fortress Omega', 'The Eternal Flame', 'The Edge of Reality'],
+    landmarks: ['Borax\'s Last Stand', 'Void Fortress Omega', 'Pyraxis\'s Eternal Flame', 'The Edge of Reality'],
     hazards: ['Extreme Heat', 'Void Corruption', 'Reality Tears', 'Fire Storms'],
-    secrets: ['Pyraxis\'s True Form', 'The Void King\'s Weakness', 'Memory of the Before-Time'],
+    secrets: ['Pyraxis\'s Divine Form', 'The Void King\'s Weakness', 'Memory of the Before-Time'],
     unlockRequirement: 'Complete Book 6'
   }
 ];
@@ -282,18 +282,18 @@ export const STORY_PATHS: MainPath[] = [
     id: 'book_1',
     bookNumber: 1,
     title: 'The Shield\'s Warmth',
-    subtitle: 'Pyraxis and the Orphans',
-    description: 'In the chaos of the first Void invasion, a mighty Sabertooth Tiger named Pyraxis discovers two orphaned children with extraordinary abilities. He takes them under his protection, becoming the father they never had.',
-    focusCharacter: 'pyraxis',
+    subtitle: 'Borax and the Orphans',
+    description: 'In the chaos of the first Void invasion, Borax - a mighty Sabertooth Tiger warrior blessed by the god-ancestor Pyraxis - discovers two orphaned children with extraordinary abilities. He takes them under his protection, becoming the father they never had.',
+    focusCharacter: 'borax',
     chapters: [
       {
         id: 'b1_c1',
         chapterNumber: 1,
         name: 'The Day the Sky Fell',
-        description: 'Raging City was once the Bronx. Then the Rift opened. Play as Pyraxis as he witnesses the apocalypse begin.',
+        description: 'Raging City was once the Bronx. Then the Rift opened. Play as Borax as he witnesses the apocalypse begin.',
         objectives: ['Witness the Rift opening', 'Survive the initial Void wave', 'Find shelter'],
         location: 'sector_7',
-        rewards: { xp: 200, currency: 100, items: ['Pyraxis\'s Cloak Fragment'] },
+        rewards: { xp: 200, currency: 100, items: ['Borax\'s Cloak Fragment'] },
         isFireMoment: true,
         cinematicIntro: 'the_sky_falls'
       },
@@ -301,7 +301,7 @@ export const STORY_PATHS: MainPath[] = [
         id: 'b1_c2',
         chapterNumber: 2,
         name: 'The Electric Child',
-        description: 'Pyraxis finds Jaxon, a young Hedgehog-Lupine hybrid with electric quills, defending himself against Void creatures.',
+        description: 'Borax finds Jaxon, a young Hedgehog-Lupine hybrid with electric quills, defending himself against Void creatures.',
         objectives: ['Rescue Jaxon', 'Defeat the Void Pack', 'Earn Jaxon\'s trust'],
         location: 'sector_7',
         rewards: { xp: 250, currency: 150, items: ['Electric Quill'], unlocksCharacter: 'jaxon' },
@@ -312,7 +312,7 @@ export const STORY_PATHS: MainPath[] = [
         id: 'b1_c3',
         chapterNumber: 3,
         name: 'Spider-Sense Awakening',
-        description: 'In the subway tunnels, Pyraxis discovers Kaison, an Arachnid-Kitsune-Wolf hybrid whose spider-sense warned him of the invasion.',
+        description: 'In the subway tunnels, Borax discovers Kaison, an Arachnid-Kitsune-Wolf hybrid whose spider-sense warned him of the invasion.',
         objectives: ['Navigate the dark tunnels', 'Find Kaison', 'Escape the tunnel collapse'],
         location: 'fordham_depths',
         rewards: { xp: 250, currency: 150, items: ['Web Strand'], unlocksCharacter: 'kaison' },
@@ -323,7 +323,7 @@ export const STORY_PATHS: MainPath[] = [
         id: 'b1_c4',
         chapterNumber: 4,
         name: 'Building a Family',
-        description: 'Pyraxis brings both orphans to a safe haven. He begins their training, teaching them the ways of the Sabertooth Lineage.',
+        description: 'Borax brings both orphans to a safe haven. He begins their training, teaching them the ancient ways passed down from the god-ancestor Pyraxis.',
         objectives: ['Establish a base', 'Complete first training session', 'Defend against Void scouts'],
         location: 'sector_7',
         rewards: { xp: 300, currency: 200, items: ['Training Manual', 'Family Bond Token'] },
@@ -333,7 +333,7 @@ export const STORY_PATHS: MainPath[] = [
         id: 'b1_c5',
         chapterNumber: 5,
         name: 'The Lineage Mark',
-        description: 'Pyraxis performs an ancient ritual, granting both orphans the Oversized Fangs - the mark of the Sabertooth Lineage.',
+        description: 'Borax performs an ancient ritual passed down from Pyraxis, granting both orphans the Oversized Fangs - the mark of the Sabertooth Lineage.',
         objectives: ['Gather ritual components', 'Complete the Lineage ritual', 'Manifest the Fangs'],
         location: 'sector_7',
         boss: {
@@ -364,17 +364,17 @@ export const STORY_PATHS: MainPath[] = [
         id: 'b1_c7',
         chapterNumber: 7,
         name: 'Father\'s Pride',
-        description: 'Pyraxis watches his adopted children grow stronger. A quiet moment before the storm.',
-        objectives: ['Train with Pyraxis', 'Learn advanced techniques', 'Share a family meal'],
+        description: 'Borax watches his adopted children grow stronger. A quiet moment before the storm.',
+        objectives: ['Train with Borax', 'Learn advanced techniques', 'Share a family meal'],
         location: 'sector_7',
-        rewards: { xp: 300, currency: 200, items: ['Pyraxis\'s Teaching', 'Family Photo'] },
+        rewards: { xp: 300, currency: 200, items: ['Borax\'s Teaching', 'Family Photo'] },
         isFireMoment: false
       },
       {
         id: 'b1_c8',
         chapterNumber: 8,
         name: 'The Void Generals Approach',
-        description: 'Intelligence reveals that three Void Generals are converging on Raging City. Pyraxis must act.',
+        description: 'Intelligence reveals that three Void Generals are converging on Raging City. Borax must act.',
         objectives: ['Scout enemy positions', 'Plan the defense', 'Rally the survivors'],
         location: 'hunts_point',
         rewards: { xp: 350, currency: 200, items: ['Battle Plans', 'General\'s Location'] },
@@ -385,7 +385,7 @@ export const STORY_PATHS: MainPath[] = [
         id: 'b1_c9',
         chapterNumber: 9,
         name: 'The Shield Rises',
-        description: 'Pyraxis leads the defense of Sector-7, holding the line while civilians evacuate.',
+        description: 'Borax leads the defense of Sector-7, holding the line while civilians evacuate.',
         objectives: ['Hold position for 5 minutes', 'Protect evacuation routes', 'Face the first General'],
         location: 'sector_7',
         boss: {
@@ -395,13 +395,13 @@ export const STORY_PATHS: MainPath[] = [
         },
         rewards: { xp: 500, currency: 300, items: ['General\'s Core', 'Hero\'s Medal'] },
         isFireMoment: true,
-        cinematicIntro: 'pyraxis_stands'
+        cinematicIntro: 'borax_stands'
       },
       {
         id: 'b1_c10',
         chapterNumber: 10,
         name: 'The Ultimate Sacrifice',
-        description: 'Pyraxis faces all three Void Generals alone to buy time for his children to escape. His flames will burn eternal.',
+        description: 'Borax faces all three Void Generals alone to buy time for his children to escape. Channeling the spirit of Pyraxis, his flames will burn eternal.',
         objectives: ['Face the three Generals', 'Protect Jaxon and Kaison', 'Make the ultimate sacrifice'],
         location: 'pelham_wastes',
         boss: {
@@ -409,9 +409,9 @@ export const STORY_PATHS: MainPath[] = [
           phases: 5,
           description: 'Malachar, Vexoth, and Kragnar - together, they are nearly unstoppable.'
         },
-        rewards: { xp: 1000, currency: 500, items: ['Pyraxis\'s Spirit Essence', 'Eternal Flame Shard'], unlocksAbility: 'pyraxis_blessing' },
+        rewards: { xp: 1000, currency: 500, items: ['Borax\'s Spirit Essence', 'Eternal Flame Shard'], unlocksAbility: 'pyraxis_blessing' },
         isFireMoment: true,
-        cinematicIntro: 'pyraxis_sacrifice'
+        cinematicIntro: 'borax_sacrifice'
       }
     ]
   },
@@ -419,27 +419,27 @@ export const STORY_PATHS: MainPath[] = [
     id: 'book_2',
     bookNumber: 2,
     title: 'The Mentor\'s Vigil',
-    subtitle: 'Thryxen Takes Command',
-    description: 'With Pyraxis fallen, his rival-turned-ally Thryxen, the Sabertooth Lion Sovereign, takes the orphans under his cold but effective tutelage. His methods are harsh, but necessary.',
-    focusCharacter: 'thryxen',
+    subtitle: 'Boryn Takes Command',
+    description: 'With Borax fallen, his rival-turned-ally Boryn - the Sabertooth Lion warrior blessed by the god-ancestor Thryxen - takes the orphans under his cold but effective tutelage. His methods are harsh, but necessary.',
+    focusCharacter: 'boryn',
     unlockRequirement: 'Complete Book 1',
     chapters: [
       {
         id: 'b2_c1',
         chapterNumber: 1,
         name: 'The Cold Teacher',
-        description: 'Thryxen arrives at Sector-7. His training methods are nothing like Pyraxis\'s warmth.',
-        objectives: ['Meet Thryxen', 'Endure the first harsh training', 'Don\'t give up'],
+        description: 'Boryn arrives at Sector-7. His training methods are nothing like Borax\'s warmth.',
+        objectives: ['Meet Boryn', 'Endure the first harsh training', 'Don\'t give up'],
         location: 'sector_7',
-        rewards: { xp: 250, currency: 150, items: ['Thryxen\'s Expectation'] },
+        rewards: { xp: 250, currency: 150, items: ['Boryn\'s Expectation'] },
         isFireMoment: true,
-        cinematicIntro: 'thryxen_arrives'
+        cinematicIntro: 'boryn_arrives'
       },
       {
         id: 'b2_c2',
         chapterNumber: 2,
         name: 'Strength Through Struggle',
-        description: 'Thryxen pushes both orphans to their limits. They must find inner strength.',
+        description: 'Boryn pushes both orphans to their limits. They must find inner strength.',
         objectives: ['Complete grueling exercises', 'Overcome personal doubt', 'Unlock new power'],
         location: 'sector_7',
         rewards: { xp: 300, currency: 200, items: ['Second Wind Token'], unlocksAbility: 'endurance_boost' },
@@ -449,7 +449,7 @@ export const STORY_PATHS: MainPath[] = [
         id: 'b2_c3',
         chapterNumber: 3,
         name: 'Electric Evolution',
-        description: 'Jaxon\'s electric powers begin to evolve. Thryxen guides him to channel this energy.',
+        description: 'Jaxon\'s electric powers begin to evolve. Boryn guides him to channel this energy.',
         objectives: ['Master electric channeling', 'Create the Electric Web', 'Light the Yankee Heights'],
         location: 'yankee_heights',
         rewards: { xp: 350, currency: 200, items: ['Electric Evolution Gem'], unlocksAbility: 'electric_web' },
@@ -459,7 +459,7 @@ export const STORY_PATHS: MainPath[] = [
         id: 'b2_c4',
         chapterNumber: 4,
         name: 'Spider-Sense Mastery',
-        description: 'Kaison\'s spider-sense can see further than ever. Thryxen teaches him to trust it completely.',
+        description: 'Kaison\'s spider-sense can see further than ever. Boryn teaches him to trust it completely.',
         objectives: ['Navigate blindfolded', 'Predict enemy attacks', 'Sense the Void General'],
         location: 'fordham_depths',
         rewards: { xp: 350, currency: 200, items: ['Spider-Sense Crystal'], unlocksAbility: 'danger_prediction' },
@@ -469,8 +469,8 @@ export const STORY_PATHS: MainPath[] = [
         id: 'b2_c5',
         chapterNumber: 5,
         name: 'The Rivalry Lesson',
-        description: 'Thryxen reveals his history with Pyraxis. Rivals who became brothers.',
-        objectives: ['Listen to Thryxen\'s story', 'Understand the bond', 'Honor Pyraxis\'s memory'],
+        description: 'Boryn reveals his history with Borax - and the ancient tale of how Pyraxis and Thryxen, the god-ancestors, were once rivals who became brothers.',
+        objectives: ['Listen to Boryn\'s story', 'Learn of Pyraxis and Thryxen', 'Honor Borax\'s memory'],
         location: 'pelham_wastes',
         rewards: { xp: 300, currency: 200, items: ['Memory of Brotherhood'] },
         isFireMoment: true,
@@ -504,25 +504,25 @@ export const STORY_PATHS: MainPath[] = [
       {
         id: 'b2_c8',
         chapterNumber: 8,
-        name: 'Thryxen\'s Test',
-        description: 'Thryxen faces both orphans in combat. Only by defeating him will they be ready.',
-        objectives: ['Face Thryxen together', 'Use teamwork', 'Land a decisive blow'],
+        name: 'Boryn\'s Test',
+        description: 'Boryn faces both orphans in combat. Only by defeating him will they be ready.',
+        objectives: ['Face Boryn together', 'Use teamwork', 'Land a decisive blow'],
         location: 'sector_7',
         boss: {
-          name: 'Thryxen (Sparring)',
+          name: 'Boryn (Sparring)',
           phases: 3,
-          description: 'The Sabertooth Lion fights at full power. This is the final test.'
+          description: 'The Sabertooth Lion warrior fights at full power. This is the final test.'
         },
-        rewards: { xp: 500, currency: 300, items: ['Thryxen\'s Approval', 'Lion\'s Courage'] },
+        rewards: { xp: 500, currency: 300, items: ['Boryn\'s Approval', 'Lion\'s Courage'] },
         isFireMoment: true,
-        cinematicIntro: 'thryxen_test'
+        cinematicIntro: 'boryn_test'
       },
       {
         id: 'b2_c9',
         chapterNumber: 9,
         name: 'The Vigil Continues',
-        description: 'Thryxen acknowledges their growth. But the Void grows stronger too.',
-        objectives: ['Receive Thryxen\'s blessing', 'Plan the next campaign', 'Prepare for Book 3'],
+        description: 'Boryn acknowledges their growth, channeling the blessing of Thryxen. But the Void grows stronger too.',
+        objectives: ['Receive Boryn\'s blessing', 'Plan the next campaign', 'Prepare for Book 3'],
         location: 'sector_7',
         rewards: { xp: 400, currency: 250, items: ['Mentor\'s Blessing'], unlocksAbility: 'lion_roar' },
         isFireMoment: true,
@@ -532,8 +532,8 @@ export const STORY_PATHS: MainPath[] = [
         id: 'b2_c10',
         chapterNumber: 10,
         name: 'Sovereign\'s Stand',
-        description: 'Void forces assault Sector-7. Thryxen leads the defense, showing his true power.',
-        objectives: ['Defend Sector-7', 'Support Thryxen', 'Witness the Lion\'s might'],
+        description: 'Void forces assault Sector-7. Boryn leads the defense, channeling Thryxen\'s divine power.',
+        objectives: ['Defend Sector-7', 'Support Boryn', 'Witness the Lion\'s might'],
         location: 'sector_7',
         boss: {
           name: 'Void General Vexoth',
@@ -677,14 +677,14 @@ export const SIDE_QUESTS: SideQuest[] = [
   {
     id: 'sq_pyraxis_shrine',
     name: 'Pilgrimage to Fire',
-    giver: 'Thryxen',
-    giverDescription: 'The Sabertooth Lion Sovereign.',
+    giver: 'Boryn',
+    giverDescription: 'The Sabertooth Lion mentor, blessed by Thryxen.',
     location: 'pelham_wastes',
     type: 'memory',
-    description: 'Visit the shrine where Pyraxis fell. Honor his sacrifice and receive his blessing.',
-    objectives: ['Reach the Shrine of the Fallen Tiger', 'Defeat the Guardians', 'Meditate at the shrine'],
+    description: 'Visit the ancient shrine of Pyraxis, the god-ancestor of the Sabertooth Tiger lineage. Channel his eternal fire.',
+    objectives: ['Reach the Shrine of Pyraxis', 'Defeat the Shrine Guardians', 'Commune with the god-ancestor'],
     difficulty: 4,
-    rewards: { xp: 400, currency: 300, items: ['Pyraxis\'s Blessing'], reputation: 25, unlocksAbility: 'fire_spirit' },
+    rewards: { xp: 400, currency: 300, items: ['Pyraxis\'s Divine Blessing'], reputation: 25, unlocksAbility: 'fire_spirit' },
     repeatable: false,
     prerequisiteQuest: 'Complete Book 1'
   },

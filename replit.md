@@ -2,7 +2,18 @@
 ## The Memory Hero of Raging City
 
 ## Overview
-LEGENDS OF KAI-JAX is an open-world action RPG set in the post-apocalyptic Bronx war zone known as "Raging City." The game follows the Sabertooth Lineage saga across 9 books, featuring Pyraxis (Sabertooth Tiger Father who sacrificed himself), Thryxen (Sabertooth Lion Sovereign cold mentor), and two orphans they train: Jaxon (Hedgehog-Lupine hybrid with electric quills) and Kaison (Arachnid-Kitsune-Wolf hybrid with spider-sense). When fused, they become Kai-Jax (Star-Slime Chimera Memory King with 3 Memory Strand Tails). All characters are bipedal humanoid Beast-Kin with urban apocalyptic Bronx streetwear aesthetic (hoodies, tactical gear, cosmic galaxy tails, Oversized Fangs as Sabertooth lineage mark).
+LEGENDS OF KAI-JAX is an open-world action RPG set in the post-apocalyptic Bronx war zone known as "Raging City." The game follows the Sabertooth Lineage saga across 9 books.
+
+### Core Characters
+- **Pyraxis** - God-ancestor of the Sabertooth Tiger lineage (divine figure)
+- **Thryxen** - God-ancestor of the Sabertooth Lion lineage (divine figure)
+- **Borax** - Sabertooth Tiger warrior blessed by Pyraxis, warm father figure who sacrifices himself (Book 1)
+- **Boryn** - Sabertooth Lion warrior blessed by Thryxen, cold mentor who takes over training (Book 2)
+- **Jaxon** - Hedgehog-Lupine hybrid orphan with electric quills
+- **Kaison** - Arachnid-Kitsune-Wolf hybrid orphan with spider-sense
+- **Kai-Jax** - Fusion form of Jaxon & Kaison, Star-Slime Chimera Memory King with 3 Memory Strand Tails
+
+All characters are bipedal humanoid Beast-Kin with urban apocalyptic Bronx streetwear aesthetic (hoodies, tactical gear, cosmic galaxy tails, Oversized Fangs as Sabertooth lineage mark).
 
 ## User Preferences
 - Preferred communication style: Simple, everyday language
