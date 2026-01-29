@@ -562,11 +562,11 @@ function FluidBattleScene({
       {/* Grid Lines */}
       {[...Array(20)].map((_, i) => (
         <group key={i}>
-          <mesh position={[-25 + i * 2.5, -0.47, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <mesh position={[-25 + i * 2.5, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
             <planeGeometry args={[0.05, 50]} />
             <meshBasicMaterial color="#4ecdc4" transparent opacity={0.3} />
           </mesh>
-          <mesh position={[0, -0.47, -25 + i * 2.5]} rotation={[-Math.PI / 2, 0, 0]}>
+          <mesh position={[0, 0.03, -25 + i * 2.5]} rotation={[-Math.PI / 2, 0, 0]}>
             <planeGeometry args={[50, 0.05]} />
             <meshBasicMaterial color="#ff6b6b" transparent opacity={0.3} />
           </mesh>
@@ -585,8 +585,8 @@ function FluidBattleScene({
         />
       )}
 
-      {/* Enemy - raised to sit on ground surface */}
-      <EnemyFighter position={[6, 6.0, 0]} health={enemyHealth} />
+      {/* Enemy - on ground surface */}
+      <EnemyFighter position={[6, 0, 0]} health={enemyHealth} />
 
       {/* Floating Damage Numbers */}
       {damageNumbers.map((dn) => (
