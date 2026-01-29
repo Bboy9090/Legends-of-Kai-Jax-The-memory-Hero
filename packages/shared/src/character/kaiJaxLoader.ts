@@ -12,7 +12,7 @@
  */
 
 // Import JSON files using TypeScript's resolveJsonModule feature
-// tsconfig.base.json has resolveJsonModule: true configured correctly
+// Both root tsconfig.json and tsconfig.base.json have resolveJsonModule: true configured
 // This approach works for both Node.js and browser environments via bundlers (Vite)
 import kaiJaxData from '../../../../kai_jax.character.json';
 import characterSchema from '../../../../schemas/character.schema.json';
