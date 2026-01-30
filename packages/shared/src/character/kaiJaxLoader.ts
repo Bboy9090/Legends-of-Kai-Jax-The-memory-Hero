@@ -11,6 +11,9 @@
  * - Game engine (rendering, physics, AI)
  */
 
+// Import JSON files using TypeScript's resolveJsonModule feature
+// Both root tsconfig.json and tsconfig.base.json have resolveJsonModule: true configured
+// This approach works for both Node.js and browser environments via bundlers (Vite)
 import kaiJaxData from '../../../../kai_jax.character.json';
 import characterSchema from '../../../../schemas/character.schema.json';
 import tailTierReactions from '../../../../data/world/tail_tier_reactions.json';

@@ -47,3 +47,4 @@ temp/
 ## Project-specific caches
 .upgrade-cache/
 .upgrade-state/
+*.tsbuildinfo
