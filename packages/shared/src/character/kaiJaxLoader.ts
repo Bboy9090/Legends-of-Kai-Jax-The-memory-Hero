@@ -11,6 +11,9 @@
  * - Game engine (rendering, physics, AI)
  */
 
+// Import JSON files using TypeScript's resolveJsonModule feature
+// Both root tsconfig.json and tsconfig.base.json have resolveJsonModule: true configured
+// This approach works for both Node.js and browser environments via bundlers (Vite)
 import kaiJaxData from '../../../../kai_jax.character.json';
 import characterSchema from '../../../../schemas/character.schema.json';
 import tailTierReactions from '../../../../data/world/tail_tier_reactions.json';
@@ -140,7 +143,7 @@ export interface TailTierReaction {
  * Get tail tier reaction data for current tail count
  */
 export function getTailTierReaction(currentTailCount: number): TailTierReaction {
-  const tierKey = currentTailCount.toString();
+  const tierKey = currentTailCount.toString() as keyof typeof tailTierReactions.tail_tiers;
   
   if (!(tierKey in tailTierReactions.tail_tiers)) {
     throw new Error(`No tail tier reaction data for tail count: ${currentTailCount}`);
@@ -218,7 +221,7 @@ export interface LODTargets {
 /**
  * Get modeling LOD targets
  */
-export function getLODTargets(): LODTargets {
+export function getLODTargets(): typeof kaiJaxData.modeling.lod_targets {
   return kaiJaxData.modeling.lod_targets;
 }
 
@@ -241,7 +244,10 @@ export function getCombatIdentity(): typeof kaiJaxData.combat_identity {
  */
 const logger = {
   log: (msg: string) => {
-    if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+    const nodeProcess = (globalThis as any).process as
+      | { env?: { NODE_ENV?: string } }
+      | undefined;
+    if (nodeProcess?.env?.NODE_ENV !== 'production') {
       console.log(msg);
     }
   },

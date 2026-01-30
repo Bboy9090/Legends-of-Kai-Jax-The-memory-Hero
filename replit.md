@@ -2,7 +2,94 @@
 ## The Memory Hero of Raging City
 
 ## Overview
-LEGENDS OF KAI-JAX is an open-world action RPG set in the post-apocalyptic Bronx war zone known as "Raging City." The game follows the Sabertooth Lineage saga across 9 books, featuring Pyraxis (Sabertooth Tiger Father who sacrificed himself), Thryxen (Sabertooth Lion Sovereign cold mentor), and two orphans they train: Jaxon (Hedgehog-Lupine hybrid with electric quills) and Kaison (Arachnid-Kitsune-Wolf hybrid with spider-sense). When fused, they become Kai-Jax (Star-Slime Chimera Memory King with 3 Memory Strand Tails). All characters are bipedal humanoid Beast-Kin with urban apocalyptic Bronx streetwear aesthetic (hoodies, tactical gear, cosmic galaxy tails, Oversized Fangs as Sabertooth lineage mark).
+LEGENDS OF KAI-JAX is an open-world action RPG set in the post-apocalyptic Bronx war zone known as "Raging City." The game follows the Sabertooth Lineage saga across 9 books.
+
+### THE FOUR FIRST SABERTOOTH GODS
+*"The First Sabertooths did not rule the world. They taught it how to survive without them."*
+
+1. **Kar-Voth, The First Fang** - Hunger / Initiation / Becoming
+   - Symbol: Twin elongated fangs crossing
+   - Quote: "If you hesitate, you are already dead."
+   - All Sabertooth beings carry Kar-Voth's Hunger
+
+2. **Thryxen, The Storm Sovereign** - Law / Pressure / Authority
+   - Symbol: Crown of wind and lightning
+   - Quote: "Power that must shout has already lost control."
+   - The Sabertooth Lion Aspect (Stormmane, Air Pressure, Sovereignty)
+   - Mortal Echo: Boryx Zenith
+
+3. **Pyraxis, The Bloodward Titan** - Sacrifice / Endurance / Shield
+   - Symbol: A fang split down the center, glowing ember-orange
+   - Quote: "I will break so you do not have to."
+   - The Sabertooth Tiger Aspect (Raw Heat, Overwhelming Endurance, Final Stands)
+   - Mortal Echo: Boryn
+
+4. **Myrr'Kai, The Memory Eater** - Continuity / Adaptation / Fusion
+   - Symbol: Three interwoven tails marked with ink
+   - Quote: "What survives is not what is strongest — it is what remembers how to become again."
+   - The Fusion God (Hybrids, Chimera, Kai-Jax)
+
+### THE SABERTOOTH LAW
+Each descendant carries one dominant echo and one suppressed echo.
+Fusion happens when Hunger + Law + Sacrifice + Memory align without conflict.
+That alignment is Kai-Jax.
+
+### Core Characters
+- **Boryn** - Pyraxis remembered correctly, Sabertooth Tiger warrior, warm father who sacrifices himself (Book 1)
+- **Boryx Zenith** - Thryxen's closest living echo, Sabertooth Lion warrior, cold mentor (Book 2)
+- **Jaxon** - Hedgehog-Lupine hybrid orphan with electric quills
+- **Kaison** - Arachnid-Kitsune-Wolf hybrid orphan with spider-sense
+- **Kai-Jax** - Fusion form of Jaxon & Kaison, Star-Slime Chimera Memory King with 3 Memory Strand Tails:
+  1. Electric Velocity Strand (⚡) - Jaxon's heritage
+  2. Web-Ink Anchor Strand (🕷️) - Kaison's heritage
+  3. Ember-Memory Strand (🔥) - Pyraxis's sacrifice through Boryn
+
+All characters are bipedal humanoid Beast-Kin with urban apocalyptic Bronx streetwear aesthetic (hoodies, tactical gear, cosmic galaxy tails, Oversized Fangs as Sabertooth lineage mark).
+
+### GAME RULE (LOCKED)
+Everything in the game is governed by four forces:
+1. Hunger (Kar-Voth)
+2. Law (Thryxen)
+3. Sacrifice (Pyraxis)
+4. Memory (Myrr'Kai)
+
+Every system—combat, story, bosses, UI—answers to these forces.
+
+### THE RAGING CITY - 8 DISTRICTS
+
+**Act I - The Age of Protection:**
+1. Ashblock Heights - Vertical rooftops, Fang Syndicate control, teaches movement
+2. Sector-7 Outskirts - Collapsed infrastructure, first fusion ignites here
+
+**Act II - The Age of Law:**
+3. Neon Ward - Colorful/deceptive, speed-focused, Versus Mode arenas
+4. Iron Market - Black-market, moral choice quests, tests restraint
+5. The Undercrown - Ancient ruins, Sabertooth myths revealed
+
+**Act III - The Age of Memory:**
+6. The Zenith Spires - Gravity-distorted towers, Lion legacy tested
+7. The Erasure Fields - Reality deletion zones, only Kaijax survives
+8. The Memory Nexus - All timelines converge, Architect endgame
+
+### BOSS MAP (8 Philosophy-Testing Bosses)
+1. Fang Enforcer "The Check" - Tests movement discipline
+2. Blood Broker "The Deal" - Tests hunger vs morality
+3. Architect Scout "The Probe" - First fusion ignition
+4. Neon Prince "The Flash" - Tests speed control
+5. Undercrown Sentinel "The Ancient" - Memory as weapon
+6. Boryx Zenith "Shadow of Law" - Perfect mastery required
+7. Erasure Choir "The Deletion" - HUD disappears mid-fight
+8. Hollow Architect "The Overwrite" - Final boss, legacy defeats control
+
+### UI COLOR LANGUAGE
+- 🔥 Orange = Sacrifice / Father (Pyraxis)
+- ⚡ Cyan = Law / Sabertooth Lion (Thryxen)
+- 🕷️ Purple = Memory / Fusion (Myrr'Kai)
+- ⚫ Black = Erasure / Architect
+
+### CORE THEME
+*"Power fades. Memory survives."*
+This is a legacy game. You don't win by being strongest. You win by being unforgettable.
 
 ## User Preferences
 - Preferred communication style: Simple, everyday language
@@ -103,7 +190,8 @@ LEGENDS OF KAI-JAX is an open-world action RPG set in the post-apocalyptic Bronx
 - **Rendering**: Role-based body types, 37+ visual features, post-processing effects
 
 ### Data Layer
-- **characterSpecs.ts**: Authentic specifications with legal safeguards (NEW)
+- **ragingCityCampaign.ts**: Chapter-based campaign structure (Prologue + 8 Chapters + Finale)
+- **characterSpecs.ts**: Authentic specifications with legal safeguards
 - **roster.ts**: 59 characters with copyright-safe modifications integrated
 - **missions.ts**: 100 story missions across 9 acts
 - **bosses.ts**: Multi-phase boss encounters
@@ -112,6 +200,48 @@ LEGENDS OF KAI-JAX is an open-world action RPG set in the post-apocalyptic Bronx
 - **teamSystem.ts**: 4-hero squads with synergies
 - **storyMode.ts**: 9-act narrative structure
 - **teamSynergy.ts**: 100+ unique team bonuses
+
+### Campaign System (NEW)
+- **useCampaign.ts**: Zustand store for campaign state with persistence
+- **ChapterSelect.tsx**: Chapter browsing UI with pillar theming
+- **ChapterMissionSelect.tsx**: Mission selection within chapters
+- **GameHUD.tsx**: In-game HUD with health, dread, and fusion meters
+- **4 Pillars**: Hunger (orange), Law (cyan), Sacrifice (red), Memory (purple)
+- **Beta Scope**: Prologue + Chapters 1-3 playable, Chapters 4-8 locked
+
+### Cinematic Story System (NEW)
+- **cinematicStory.ts**: Cinematic scene data with story beats, dialogue, narration, and visual effects
+- **CinematicPlayer.tsx**: Playable cinematic experience component with:
+  - Typewriter text animation
+  - Speaker dialogue with character colors
+  - Narration and action descriptions
+  - Visual effects (flash, darken, ember, lightning, memory_swirl)
+  - Camera effects (shake, zoom, pan, fade)
+  - Weather overlays (rain, storm, ember rain, fog)
+  - Click to advance or auto-advance for narration
+  - Skip button for impatient players
+
+### Exploration World System (NEW - Pokemon Style)
+- **worldDialogue.ts**: NPC dialogue data with natural speech (no game-y language)
+  - NPCs give hints like "I saw lightning in that alley..."
+  - Hints point players toward story triggers naturally
+- **ExplorationWorld.tsx**: 3D explorable world with:
+  - WASD movement through Raging City districts
+  - Third-person camera following player
+  - Procedurally placed buildings and city environment
+- **WorldNPC.tsx**: Interactive NPCs you can walk up to and talk to
+  - Proximity detection for interaction
+  - Visual indicators for NPCs with hints (cyan glow)
+- **DialogueBox.tsx**: Natural conversation display
+  - Typewriter text, click to advance
+  - NPC name and description shown
+- **TriggerZone.tsx**: Story event triggers in the world
+  - Walk into glowing zones to trigger cutscenes
+  - Different colors: orange=cutscene, red=battle, green=dialogue
+- **HintIndicator.tsx**: Collapsible hint display showing where to go
+- **Story Flow Options**:
+  1. **Explore Raging City**: Walk around, talk to NPCs, discover story naturally
+  2. **Chapter Select**: Traditional mission-based progression with cinematics
 
 ### External Dependencies
 - **Database & Backend**: Drizzle ORM (PostgreSQL)

@@ -6,6 +6,61 @@
 namespace LegendsEngine {
 
 /**
+ * AnimationProgress - Tracks the current progress of an animation
+ * Used to determine if a state can be interrupted
+ */
+struct AnimationProgress {
+    float currentTime = 0.0f;      // Current playback time in seconds
+    float duration = 1.0f;         // Total animation duration in seconds
+    bool isComplete = false;       // True if animation has finished playing
+    
+    /**
+     * Get the normalized progress (0.0 to 1.0)
+     */
+    float GetNormalizedProgress() const {
+        if (duration <= 0.0f) return 1.0f;
+        float progress = currentTime / duration;
+        return progress > 1.0f ? 1.0f : progress; // Clamp to [0.0, 1.0]
+    }
+    
+    /**
+     * Check if animation is in a specific progress window
+     */
+    bool IsInWindow(float minProgress, float maxProgress) const {
+        float progress = GetNormalizedProgress();
+        return progress >= minProgress && progress <= maxProgress;
+    }
+};
+
+/**
+ * AnimationBlendState - Tracks blending between two animation states
+ * Used for smooth transitions between animations
+ */
+struct AnimationBlendState {
+    AnimationState fromState = AnimationState::IDLE_CALM;
+    AnimationState toState = AnimationState::IDLE_CALM;
+    float blendTime = 0.0f;          // Total time for blend
+    float currentBlendTime = 0.0f;   // Current blend progress
+    bool isBlending = false;         // True if currently blending
+    
+    /**
+     * Get the blend weight (0.0 = fully fromState, 1.0 = fully toState)
+     */
+    float GetBlendWeight() const {
+        if (blendTime <= 0.0f || !isBlending) return 1.0f;
+        float weight = currentBlendTime / blendTime;
+        return weight > 1.0f ? 1.0f : weight; // Clamp to [0.0, 1.0]
+    }
+    
+    /**
+     * Check if blend is complete
+     */
+    bool IsComplete() const {
+        return !isBlending || currentBlendTime >= blendTime;
+    }
+};
+
+/**
  * StateManager - Manages character state transitions based on input
  * 
  * This class determines which animation state a character should be in
@@ -26,6 +81,12 @@ namespace LegendsEngine {
  * - Some states can be interrupted (e.g., movement)
  * - Some states must complete (e.g., attack animations)
  * - Some transitions are invalid (e.g., death to any other state)
+ * 
+ * STATE INTERRUPTION:
+ * - Priority-based: Higher priority actions can interrupt lower priority
+ * - Window-based: Some animations have interruptible windows
+ * - Attack combos can be interrupted after hit confirmation
+ * - Movement can always be interrupted
  */
 class StateManager {
 public:
@@ -71,6 +132,18 @@ public:
     bool CanTransition(AnimationState from, AnimationState to);
 
     /**
+     * Check if a state can be interrupted based on animation progress
+     * 
+     * Determines if the current state can be interrupted by a new state,
+     * taking into account animation progress and priority rules.
+     * 
+     * @param currentState The current animation state
+     * @param desiredState The desired animation state
+     * @param progress The current animation progress
+     * @return true if the state can be interrupted, false otherwise
+     */
+    bool CanInterrupt(AnimationState currentState, AnimationState desiredState, 
+                     const AnimationProgress& progress);
      * Get the blend time for transitioning between two states
      * 
      * Returns the time in seconds that should be used to blend from one
@@ -85,6 +158,68 @@ public:
     /**
      * Update animation progress tracking
      * 
+
+     * @param deltaTime Time elapsed since last frame in seconds
+     */
+    void UpdateProgress(float deltaTime);
+
+    /**
+     * Get current animation progress
+     */
+    const AnimationProgress& GetCurrentProgress() const { return currentProgress; }
+
+    /**
+     * Set animation progress (called when transitioning to a new state)
+     * 
+     * @param state The state to set progress for
+     * @param duration The duration of the animation in seconds
+     */
+    void SetAnimationDuration(AnimationState state, float duration);
+
+    /**
+     * Get the blend time for a specific state transition
+     * 
+     * @param from The state transitioning from
+     * @param to The state transitioning to
+     * @return The blend time in seconds
+     */
+    float GetBlendTime(AnimationState from, AnimationState to) const;
+
+    /**
+     * Start a blend transition between two states
+     * 
+     * @param from The state transitioning from
+     * @param to The state transitioning to
+     */
+    void StartBlend(AnimationState from, AnimationState to);
+
+    /**
+     * Update blend state
+     * 
+     * @param deltaTime Time elapsed since last frame in seconds
+     */
+    void UpdateBlend(float deltaTime);
+
+    /**
+     * Get current blend state
+     */
+    const AnimationBlendState& GetBlendState() const { return blendState; }
+
+private:
+    AnimationProgress currentProgress;
+    AnimationState trackedState = AnimationState::IDLE_CALM;
+    AnimationBlendState blendState;
+
+    /**
+     * Get the priority level of a state (higher = more important)
+     */
+    int GetStatePriority(AnimationState state) const;
+
+    /**
+     * Check if a state is interruptible at the current progress
+     */
+    bool IsStateInterruptible(AnimationState state, const AnimationProgress& progress) const;
+
      * Updates the internal tracking of animation progress, which is used
      * for determining if states can be interrupted.
      * 
@@ -108,6 +243,7 @@ private:
     // Animation progress tracking (0.0 to 1.0)
     float currentAnimationProgress = 0.0f;
     AnimationState trackedState = AnimationState::IDLE_CALM;
+
 };
 
 } // namespace LegendsEngine

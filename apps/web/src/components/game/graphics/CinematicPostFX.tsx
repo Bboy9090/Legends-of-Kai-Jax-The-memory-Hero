@@ -34,7 +34,7 @@ export default function CinematicPostFX({
   const filmRef = useRef<FilmPass | null>(null);
   const raysRef = useRef<ShaderPass | null>(null);
   const sharpenRef = useRef<ShaderPass | null>(null);
-  const baseBloomRef = useRef({ strength: 1.1, radius: 0.92, threshold: 0.18 });
+  const baseBloomRef = useRef({ strength: 0.5, radius: 0.92, threshold: 0.18 });
   const prevPunchRef = useRef(0);
   const impactRef = useRef(0);
   const initRef = useRef(false);
@@ -281,7 +281,7 @@ export default function CinematicPostFX({
       // Bloom (the “poster glow”)
       const bloom = new UnrealBloomPass(
         new THREE.Vector2(size.width, size.height),
-        1.10, // strength
+        0.5, // strength
         0.92, // radius
         0.18 // threshold
       );
@@ -408,13 +408,13 @@ export default function CinematicPostFX({
 
     // Grade-driven bloom tuning (more “poster”)
     if (grade === "cosmic") {
-      baseBloomRef.current = { strength: 1.05, radius: 0.95, threshold: 0.18 };
+      baseBloomRef.current = { strength: 0.5, radius: 0.95, threshold: 0.18 };
     } else if (grade === "ice") {
-      baseBloomRef.current = { strength: 0.92, radius: 0.88, threshold: 0.20 };
+      baseBloomRef.current = { strength: 0.45, radius: 0.88, threshold: 0.20 };
     } else if (grade === "ember") {
-      baseBloomRef.current = { strength: 0.96, radius: 0.90, threshold: 0.20 };
+      baseBloomRef.current = { strength: 0.45, radius: 0.90, threshold: 0.20 };
     } else {
-      baseBloomRef.current = { strength: 0.80, radius: 0.75, threshold: 0.22 };
+      baseBloomRef.current = { strength: 0.4, radius: 0.75, threshold: 0.22 };
     }
 
     bloom.strength = baseBloomRef.current.strength;
