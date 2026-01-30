@@ -1,4 +1,4 @@
-// SUPER SMASH GRAND SAGA — STORY MODE STRUCTURE
+// AETERNA COVENANT: GENESIS ARENA — STORY MODE STRUCTURE
 // 9 Acts + 12 Game Modes with Marvel Ultimate Alliance-style synergy
 
 export type ActNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;

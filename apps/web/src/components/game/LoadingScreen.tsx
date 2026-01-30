@@ -57,16 +57,22 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
         ${fadeOut ? 'opacity-0' : 'opacity-100'}
       `}
       style={{
-        backgroundImage: `
-          linear-gradient(135deg, rgba(10,10,15,0.92), rgba(25,5,45,0.80)),
-          url('/brand/kai-jax-vs-architect.png')
-        `,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        background: 'linear-gradient(to bottom, #0a0a1a, #1a0a2e)',
       }}
     >
       <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 220px rgba(0,0,0,0.85)' }} />
-      {/* Animated Background */}
+      
+      {/* Background Images - Two sides based on assets */}
+      <div className="absolute inset-0 flex overflow-hidden opacity-40">
+        <div className="w-1/2 h-full bg-cover bg-center" style={{ backgroundImage: "url('https://replit.com/api/v1/projects/self/assets/attached_assets/IMG_2571_1769690060866.png')" }}>
+           <div className="absolute inset-0 bg-gradient-to-r from-[#FF4500]/20 to-transparent" />
+        </div>
+        <div className="w-1/2 h-full bg-cover bg-center" style={{ backgroundImage: "url('https://replit.com/api/v1/projects/self/assets/attached_assets/IMG_2571_1769690060866.png')", backgroundPosition: 'right' }}>
+           <div className="absolute inset-0 bg-gradient-to-l from-[#00CED1]/20 to-transparent" />
+        </div>
+      </div>
+
+      {/* Animated Particles */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(30)].map((_, i) => (
           <div
@@ -86,43 +92,33 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
         ))}
       </div>
       
-      {/* Logo */}
-      <div className="relative z-10 text-center mb-12">
-        <h1 
-          className="text-5xl sm:text-6xl md:text-7xl font-black"
-          style={{
-            background: 'linear-gradient(135deg, #FFD700, #FF6B6B, #A855F7, #00FFFF)',
-            backgroundSize: '300% 300%',
-            animation: 'gradient-shift 3s ease infinite',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0 0 30px rgba(255,215,0,0.5))',
-          }}
-        >
-          {BRAND.title}
-        </h1>
-        <p className="text-2xl text-cyan-300 font-bold mt-2 tracking-[0.35em]">{BRAND.subtitle}</p>
-        <p className="text-xs sm:text-sm text-yellow-200/80 font-semibold mt-3 tracking-[0.25em]">
-          {BRAND.tagline}
-        </p>
-      </div>
-      
-      {/* Loading Bar */}
-      <div className="relative z-10 w-80 sm:w-96 mb-8">
-        <div className="h-3 bg-gray-800 rounded-full overflow-hidden border border-gray-700">
+      {/* Loading Bar Center - Ouroboros Progress Style */}
+      <div className="relative z-10 w-full max-w-2xl px-12 mt-auto mb-20">
+        <div className="flex justify-between items-end mb-2">
+           <span className="text-cyan-400 font-black tracking-tighter text-sm uppercase">Ouroboros Progress</span>
+           <span className="text-yellow-400 font-black text-xl">{Math.round(progress)}%</span>
+        </div>
+        <div className="h-4 bg-black/60 rounded-full overflow-hidden border border-white/10 p-0.5 backdrop-blur-md">
           <div 
-            className="h-full bg-gradient-to-r from-yellow-400 via-purple-500 to-cyan-400 transition-all duration-100"
+            className="h-full bg-gradient-to-r from-orange-600 via-purple-500 to-cyan-400 rounded-full transition-all duration-100 relative"
             style={{ 
               width: `${progress}%`,
-              boxShadow: '0 0 20px rgba(255,215,0,0.5)',
+              boxShadow: '0 0 20px rgba(0, 255, 255, 0.4)',
             }}
-          />
-        </div>
-        <div className="flex justify-between mt-2 text-sm">
-          <span className="text-gray-400">Loading...</span>
-          <span className="text-yellow-400 font-bold">{Math.round(progress)}%</span>
+          >
+            <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.2)_75%,transparent_75%,transparent)] bg-[length:20px_20px] animate-[shimmer_2s_linear_infinite]" />
+          </div>
         </div>
       </div>
+      
+      {/* Logo/Titles */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+        <div className="flex gap-12 items-center justify-center mb-8">
+           <div className="text-orange-500 font-black text-4xl tracking-tighter opacity-80 uppercase">The Shield's Warmth</div>
+           <div className="text-cyan-400 font-black text-4xl tracking-tighter opacity-80 uppercase">The Mentor's Vigil</div>
+        </div>
+      </div>
+
       
       {/* Tip Display */}
       <div className="relative z-10 max-w-md text-center">

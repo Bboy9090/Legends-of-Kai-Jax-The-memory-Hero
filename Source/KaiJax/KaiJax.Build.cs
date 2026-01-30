@@ -16,6 +16,9 @@ public class KaiJax : ModuleRules
             "GameplayTasks",
             "Json",
             "JsonUtilities"
+            "ControlRig",
+            "RigVM",
+            "AnimGraphRuntime"
         });
 
         PrivateDependencyModuleNames.AddRange(new string[] { });

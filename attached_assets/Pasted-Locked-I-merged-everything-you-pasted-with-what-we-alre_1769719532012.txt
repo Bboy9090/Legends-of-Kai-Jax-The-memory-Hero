@@ -1,0 +1,577 @@
+Locked. I merged everything you pasted with what we already mapped, cut duplicates, tightened language, and made it studio-readable + buildable + future-proof.
+
+Below is the single authoritative master blueprint. If it’s in here, it’s canon. If it’s not in here, it’s optional.
+
+⸻
+
+LEGENDS OF KAI-JAX: THE MEMORY KING
+
+Forged in the Raging City · Crowned by Memory
+
+1) Core Identity Lock
+	•	Genre: Open-World Action RPG / Fighter
+	•	Vibe: Mythic + Bronx grit (bright on the surface, deep underneath)
+	•	Audience: All-ages readable, grown-up meaning
+	•	Theme: Power fades. Memory survives.
+	•	Promise: Looks fun. Hits hard. Means something.
+
+Hard Rule
+
+This is one story (public).
+Internally we use Acts (production lanes), but players never see “books.”
+
+⸻
+
+2) The Four Forces (The Rule of the Game)
+
+Everything answers to these four pillars:
+	1.	Hunger — Kar-Voth
+	2.	Law — Thryxen
+	3.	Sacrifice — Pyraxis
+	4.	Memory — Myrr’Kai
+
+Combat, bosses, UI, upgrades, story beats: all trace back to a pillar.
+
+⸻
+
+3) World Model Lock — The Raging City (8 Districts)
+
+One massive city-world, divided into Districts (each is a philosophy + gameplay identity).
+
+ACT I ZONES (Beginning Game)
+	1.	Ashblock Heights
+	•	Vertical rooftops, fire escapes, street survival
+	•	Fang Syndicate control
+	•	Teaches movement discipline + survival
+	2.	Sector-7 Outskirts
+	•	Collapsed infrastructure, early erasure pressure pockets
+	•	Fusion awakening occurs here
+	•	First “the world is not safe” moment
+
+ACT II ZONES (Mid Game)
+	3.	Neon Ward
+	•	Bright, deceptive, speed-focused threats
+	•	Unlocks Versus arenas (clean, skill-only)
+	4.	Iron Market
+	•	Black-market augments + moral choice quests
+	•	Tests restraint vs hunger
+	5.	The Undercrown
+	•	Ancient ruins beneath the city
+	•	Sabertooth mythology becomes real
+	•	Major memory visions / pattern-based trials
+
+ACT III ZONES (End Game)
+	6.	The Zenith Spires
+	•	Gravity distortions, heavy Architect influence
+	•	Legacy test zone; discipline becomes life-or-death
+	7.	The Erasure Fields
+	•	Reality deletion zones
+	•	NPCs vanish mid-quest
+	•	Only Kaijax can remain coherent
+	8.	The Memory Nexus
+	•	Final open space
+	•	Timelines converge
+	•	Architect endgame
+
+⸻
+
+4) Story Arc Lock (Player-Facing: “Chapters,” Internally: Acts)
+
+ACT I — The Age of Protection
+	•	Play as Kai and Jax separately
+	•	Raised by Boryn (Sabertooth Tiger)
+	•	Street survival and identity formation
+	•	Ends with Boryn’s sacrifice
+
+Unlocks:
+	•	Dual-character switching
+	•	Base Sabertooth traits
+
+ACT II — The Age of Law
+	•	Borax/Boryx (Sabertooth Lion) takes over training (cold, brutal, exact)
+	•	Fusion is denied repeatedly until discipline is earned
+	•	Truth of the First Sabertooth Gods revealed
+	•	Stormmane/pressure zones begin appearing
+
+Unlocks:
+	•	Controlled Fusion
+	•	Survival Mode access
+	•	Pressure mechanics expand
+
+ACT III — The Age of Memory
+	•	Architect begins active erasure
+	•	NPCs forget you; locations disappear
+	•	Kaijax becomes the Memory King (not god mode — sovereignty under collapse)
+
+Unlocks:
+	•	Full fusion mastery
+	•	Architect resistance (incompatible with deletion)
+	•	Final gauntlet
+
+⸻
+
+5) Game Modes Lock
+
+Story Mode (Main)
+	•	Open world + quests + cinematic boss fights + canon narrative
+
+Versus Mode
+	•	1v1 local/online
+	•	Clean arenas, no lore interference
+	•	Tournament readable
+	•	Characters unlock via Story progress
+
+Quick Battle
+	•	Instant fights + random modifiers (fun-first)
+
+Survival / Gauntlet
+	•	Endless waves + rising gravity + corruption modifiers + leaderboards
+	•	High skill ceiling
+
+⸻
+
+6) Progression Systems Lock
+
+Character Growth (Skill > Numbers)
+	•	Movement mastery, cancels, counters, air control
+	•	No “stat inflation” as the main fantasy
+
+Sabertooth Overlay
+	•	Passive lineage traits
+	•	Activate only under pressure
+	•	Never always-on (no permanent god mode)
+
+Memory System
+	•	Failure teaches; death doesn’t erase progress
+	•	Memory unlocks abilities, not grind levels
+	•	The world reacts to what you’ve endured
+
+⸻
+
+7) UI / HUD Philosophy Lock
+
+Core UI Rules
+	1.	Readable at a glance
+	2.	Colorful, not noisy
+	3.	Disappears during mastery
+	4.	Reacts to pressure
+
+HUD Layout
+	•	Top Left: Health (thick, bold; shakes on heavy hits; ember-orange near death)
+	•	Top Right: Dread/Pressure meter (no numbers; pulses under Architect influence)
+	•	Bottom Center: Resonance/Fusion meter (fills under danger; visibly “locks” when denied)
+	•	Minimal icons; environmental cues > arrows
+	•	Versus UI: flat, clean, lore-free, tournament-ready
+
+Color Language
+	•	🔥 Orange = Sacrifice / Father
+	•	⚡ Cyan = Law / Sabertooth Lion
+	•	🕷️ Purple = Memory / Fusion
+	•	⚫ Black = Erasure / Architect
+
+⸻
+
+8) Boss Map Lock (By District / Philosophy)
+
+These are NOT HP sponges. Each boss tests an idea.
+
+ACT I
+	1.	Fang Syndicate Enforcer — “The Check” (Ashblock)
+	•	Punishes mash, breaks space, fusion denied
+	•	Mentor intervention moment possible (rare)
+	2.	The Blood Broker (Iron Market early access)
+	•	Hunger vs morality choice
+	•	Shortcuts cost long-term stability (memory flags it)
+	3.	Architect Scout Engine (Sector-7)
+	•	Partial erasure pockets
+	•	Fusion ignites first time here
+	•	“Real enemy revealed” setpiece
+
+ACT II
+	4.	The Neon Prince (Neon Ward)
+	•	Speed control > speed obsession
+	•	Timing beats flash
+	5.	Undercrown Sentinel (Undercrown)
+	•	Memory endurance
+	•	Pattern recognition under pressure
+	6.	BORAX ZENITH — Shadow of the Law (Zenith Spires)
+	•	Mentor-as-trial
+	•	No healing, no fusion, perfect play demanded
+	•	“Worthy of legacy” proof
+
+ACT III
+	7.	The Erasure Choir (Erasure Fields)
+	•	Deletes mechanics mid-fight; HUD elements vanish
+	•	Kaijax remains functional
+	8.	The Hollow Architect (Memory Nexus)
+	•	Tries to erase Kai & Jax separately
+	•	Fails against Memory Fusion
+	•	Final lesson: Legacy defeats control
+
+⸻
+
+9) Movement System Lock (Kaijax Evolution)
+
+Design Truth: Kaijax starts as a predator of streets, evolves into a predator of space.
+Hard Rule: He never floats. He commits.
+
+Phase 1 — Apex Street Predator (Early)
+	•	Sprint (accel-based), Burst Step, Precision Dodge
+	•	Short Wall Run + Wall Kick (single reset)
+	•	One air dash max
+
+Phase 2 — Webbed Evasion (Myrr’Kai stirs)
+	•	Web Evade (tether snap; cancels downward momentum; anchors to ledges/poles/wall edges/enemies)
+	•	No invincibility; punishes panic
+
+Phase 3 — Predator Chain (Nightcrawler logic)
+	•	Chain Reposition (short-range blink; requires lock or anchor; harsh recovery if sloppy)
+
+Phase 4 — Web Swing (Late only)
+	•	Space-limited, momentum-driven, hard landing recovery
+	•	Used for combat positioning, not traversal spam
+
+Phase 5 — Memory Step (Fusion-only apex)
+	•	Micro-teleport through remembered space
+	•	Activates only under high dread + stable fusion
+	•	Ignores erasure logic briefly
+	•	Rare, mythic, controlled
+
+Canon line: “Kaijax does not escape danger. He repositions inside it.”
+
+⸻
+
+10) Mentor Presence System Lock (Borax / Law)
+
+Rule: Borax never replaces the player. He changes reality, not outcomes.
+Borax is a pressure field, not a helper.
+
+Manifest Conditions (rare)
+	•	Power abuse, panic spam, forced fusion attempts, surviving the impossible
+
+Effects (no UI explanation)
+	•	Heavier feel (micro input resistance), sound compression, dust/wind shifts
+	•	Precision windows tighten; sloppy play punished harder
+	•	Enemies hesitate half-beats (they feel judged)
+
+Intervention (extremely rare)
+	•	One strike, one motion, fight ends
+	•	No loot, no praise, no dialogue
+	•	Just law.
+
+⸻
+
+11) Enemy Factions Lock
+
+Fang Syndicate (Street predators)
+	•	Fang Runners (hyena/jackal): swarm pressure
+	•	Bone Crackers (boar/croc): space control, grabs
+	•	Chain Stalkers (panther/snake): punish predictable movement
+	•	Fang Enforcers: arena manipulation + fusion denial moments
+
+The Void Fang Covenant (true believers)
+
+Motto: “Memory rots. Design endures.”
+Goal: harvest Sabertooth relics, engineer synthetic apex creatures, erase legacy bloodlines.
+
+Elite Commanders (locked):
+	•	Varkesh the Grafted (croc/war-toad): regenerates unless precision-killed
+	•	Sybeth, the Choir Mother (serpent/bat): sonic erasure fields; deletes UI elements mid-fight
+	•	Korthyx Prime (synthetic apex): adapts every 30 seconds; variation or death
+
+⸻
+
+12) Allies Lock — The Fracture Circle
+
+Not a faction. Survivors whose paths collide. Optional quests. Can die if ignored.
+Their survival preserves possibility, not raw power.
+	•	Mirek the Burrowed (mole/tortoise): tunnels, undercity routes, guilt (once helped Fangforge)
+	•	Sable Nine (raven/cat): outcome flashes; warns without explaining
+	•	Rikka the Ember-Tiny (salamander): crafting, hope, refuses optimization (Ulgorr hates her)
+	•	Old Moss (bear/ent): terrain shaping, history, grief; calls Kaijax “Child of Three Fathers”
+
+⸻
+
+13) The Big Bad Lock — Ulgorr (Design vs Memory)
+
+Ulgorr, the Fangless Architect / World-Eater
+Belief: inheritance is flawed; engineered survival is pure.
+
+What makes him terrifying
+	•	He doesn’t delete. He overwrites.
+	•	Cities become factories. Wild zones become breeding pits. Creatures become units.
+
+His plan (clean, scary)
+	1.	Harvest Sabertooth fangs (memory resonance)
+	2.	Grind into catalysts
+	3.	Implant into engineered beasts
+	4.	Create Fangforged predators that obey perfectly, adapt instantly, and never remember love or loss
+
+Franchise truth: “The world does not end because monsters rise. It ends when memory is replaced by design.”
+
+⸻
+
+14) Kaijax Nine-Tail Ascent (FINAL CANON)
+
+Truth: Kaijax doesn’t grow tails by leveling up. He grows them by surviving what should have ended him.
+More tails = more options, not more safety.
+
+Tails 1–3 — Core Strands (Early–Mid)
+	1.	⚡ Electric Velocity (Kar-Voth echo)
+	2.	🕷️ Web-Ink Anchor (Myrr’Kai echo)
+	3.	🔥 Ember Memory (Pyraxis echo)
+
+Tails 4–6 — Disciplines (Mid–Late)
+	4.	🌪️ Storm Law Tail (Thryxen) — passive space control; slows enemy recovery near Kaijax
+	5.	🩸 Bloodward Tail — converts damage taken into delayed power; rewards standing ground
+	6.	🧠 Memory Thread Tail — briefly recalls a mechanic/move that was erased; direct counter to design logic
+
+Tails 7–9 — Sovereign State (Endgame only)
+	7.	🕳️ Void-Walk Tail — short memory-step teleport; ignores erasure zones; costs massive momentum
+	8.	🦷 First Fang Tail — one decisive opening strike per encounter; miss = catastrophic punishment
+	9.	👑 Crown Tail (The Ninth) — appears only when alignment is earned; temporarily equalizes Kaijax with world threats (not god mode)
+
+Design-side punishment rule: if the player relies on the same 3 tails constantly, design adapts and punishes. This forces expression.
+
+⸻
+
+15) Final Boss Structure (Ulgorr Endgame)
+	•	Stage I: The world fights you (arena reshapes, gravity shifts, terrain attacks)
+	•	Stage II: The beasts fight you (synthetic apexes counter specific strands; rotate playstyle)
+	•	Stage III: Ulgorr reveals himself (direct combat via massive body parts; erasure spikes)
+	•	Final: Memory overrides design (UI fades; only animation + timing remain)
+
+Ulgorr’s line: “You should not exist.”
+Kaijax doesn’t answer. He moves.
+
+⸻
+
+Implementation Bookmark (So it’s buildable)
+
+If you hand this to a studio, the build breaks into these non-negotiable systems:
+	1.	District gate logic (act progression)
+	2.	Pillar mission templates (Hunger/Law/Sacrifice/Memory)
+	3.	Fusion stability + denial (pressure-driven, not spam)
+	4.	Tail loadout + tail unlock events (story + survival milestones)
+	5.	Erasure system (UI deletion, mechanic suppression, NPC vanish logic)
+	6.	Mentor pressure field (Borax presence rules)
+	7.	Boss philosophy tests (not HP sponges)
+
+⸻
+
+Next Move (No voting, I’m choosing the best sequence)
+
+To make this truly “hand-to-studio,” the next output should be:
+	1.	District-by-district mission template pack (10 per district; pillar-tagged)
+	2.	Tail ability sheet (each tail: function, signature move, unlock condition, counters, UI icon rules)
+	3.	Erasure rules matrix (what can be deleted, when, and how Kaijax resists it)
+
+If you say “Do it”, I’ll drop #1 immediately and keep rolling in order. Locked. These are good corrections — they sharpen the myth and the player’s emotional “birth moment.”
+
+Canon Corrections (Now Official)
+	1.	Kai-Jax becomes the Memory Hero first.
+	2.	He becomes the Memory King only when the 9th Tail crowns.
+So:
+
+	•	3–8 tails = Memory Hero (ascending)
+	•	9th tail = Memory King (crowned state, rare, endgame)
+
+Boryn’s Sacrifice (Correct Intent)
+
+Boryn doesn’t die to “make a speech.” He dies to buy time.
+	•	He sacrifices himself believing:
+	•	Kai and Jax will keep escaping
+	•	they’ll regroup later
+	•	they’ll survive
+
+Then comes the twist: they don’t regroup. They fuse.
+
+The Fusion Trigger (Tear-Impact Event) — Locked Scene Beat
+
+This is the moment that creates your franchise identity:
+	•	Kai and Jax are screaming—anger, sorrow, disbelief.
+	•	The first tears hit the ground.
+	•	The tear impact becomes a Memory Anchor:
+	•	the floor ignites in every elemental color
+	•	the area forms an Elemental Memory Sphere
+	•	it’s not “magic power up,” it’s grief + legacy + survival law becoming real
+
+Then it happens:
+
+“The Hero Hatch”
+
+A new warrior forms inside the sphere—
+not born, forged.
+	•	the sphere bursts like a supernova shell
+	•	a silhouette rises too tall, too clean, too legendary
+	•	then the landing:
+
+“The Greatest Superhero Landing”
+
+Not a cliché crouch. A signature.
+	•	Tail 1 slams into the ground like a spear-anchor
+	•	Tail 2 whips outward to create a wide safety ring (dust + light spiral)
+	•	Tail 3 snaps behind him as a stabilizer, keeping him from “floating” (your gravity rule stays intact)
+
+He stands up slow. The world feels the new rule:
+Memory can create a warrior.
+
+The 3 Tails — Fun, Creative, Effective (Early Kit Identity)
+
+Since you want it playful and readable, here’s the 3-tail combat identity right out of the hatch:
+
+Tail 1 — Electric Velocity (⚡)
+	•	Burst Step becomes a short “snap dash”
+	•	first hit after movement gets a crack of armor-break
+	•	miss = brutal recovery (stays honest)
+
+Tail 2 — Web-Ink Anchor (🕷️)
+	•	quick tether snaps: pull enemy, cancel fall, or pin yourself to a wall edge
+	•	creates ink “zones” that slow enemies only (no cheap slow on player)
+
+Tail 3 — Ember Memory (🔥)
+	•	when hit hard, he doesn’t become tanky—he becomes stubborn
+	•	“Memory Hold”: at lethal damage, he clings to 1 HP for a heartbeat
+	•	gives you one last counter chance (mythic, not free)
+
+Visual rule: the three tails move like three fighting styles arguing and then agreeing.
+
+What This Changes in the Campaign Blueprint
+	•	The Fusion Awakening is now the emotional turning point of Act I.
+	•	The player’s first “I am legendary” moment happens right after loss, not after grinding.
+
+Micro-lock for the next page (so implementation stays clean)
+	•	This fusion event is the first true cinematic transformation in the game.
+	•	It unlocks:
+	•	Kai-Jax playable state (3-tail Memory Hero)
+	•	Fusion meter (but still denial-capable by Borax later)
+	•	Tail-based traversal/combat tutorial mission immediately after
+
+If you want, I’ll write the exact Prologue/Act I mission sequence that delivers this scene with gameplay (not just cutscene), including the “post-landing tutorial fight” where the player learns each tail in 30 seconds without realizing it’s a tutorial. Locked. That’s the true coronation: not a trophy, not a UI popup — a father’s echo, approving the son he died to protect.
+
+Here’s the canon + buildable version of the crowning moment.
+
+⸻
+
+Crown Event Canon Lock
+
+Kaijax becomes Memory King only when:
+	1.	The 9th Tail manifests (alignment achieved, not grind)
+	2.	Boryn’s Spiritual Echo appears to acknowledge him
+	3.	The Echo crowns him — the world recognizes the new law
+
+Memory Hero → Memory King is not a stat change.
+It’s a state change: rare, mythic, and earned.
+
+⸻
+
+Trigger Conditions (So it’s earned, not random)
+
+This moment should only fire when all three are true:
+
+A) Alignment
+	•	Player has proven Hunger + Law + Sacrifice + Memory in real missions
+	•	Not “completed quests,” but passed philosophy tests
+
+B) Stability
+	•	Fusion is stable under dread (player doesn’t panic-spam)
+	•	The game knows you can hold form without cheating
+
+C) Legacy Proof
+	•	The player has made at least one irreversible Sacrifice choice that favored others over power
+
+When those are true… the 9th Tail appears.
+And THEN Boryn’s Echo arrives.
+
+⸻
+
+The Boryn Echo Crown Scene (Beat-by-Beat)
+
+1) The world goes quiet
+	•	HUD fades to near-zero (not fully gone — just respectful)
+	•	Sound compresses, the city “holds its breath”
+	•	The Dread meter stops pulsing — like something higher has overridden fear
+
+2) The 9th Tail manifests
+	•	It doesn’t “grow.” It unfurls like a banner made of memory-light
+	•	The tail doesn’t whip — it settles, controlled, sovereign
+
+3) Boryn’s Spiritual Echo arrives
+
+Not a ghost-hologram. A pressure of presence:
+	•	embers lift from the ground
+	•	dust spirals upward like it’s reversing gravity
+	•	the air warms, but doesn’t burn
+
+He says one line (keep it short, legendary, repeatable):
+
+“You carried what I couldn’t.”
+
+(Or if you want it more blunt:)
+
+“Stand. Be remembered.”
+
+4) The Crown Act
+
+Boryn doesn’t place a crown on Kaijax’s head like royalty.
+He does it the Sabertooth way — by declaring the law.
+	•	Boryn touches the 9th Tail’s base (near the spine)
+	•	The tail flares into the four pillar colors for a heartbeat
+	•	A “sigil” forms briefly behind Kaijax (not UI — environmental symbol)
+
+Then it locks:
+	•	The 9th Tail becomes the Crown Tail
+	•	Kaijax is now The Memory King (state unlocked)
+
+5) Exit without sentimentality
+
+No long goodbye. No speech.
+Boryn fades like a candle finally allowed to rest.
+
+The player is left with:
+	•	power
+	•	weight
+	•	responsibility
+
+⸻
+
+What the Player Gets (Gameplay Effects)
+
+This must feel insane — but not break the game.
+
+Memory King State (Timed, Rare)
+	•	Duration: short (30–60 seconds), extended only by perfect play
+	•	Activation: automatic the first time (story crown), then later by extreme conditions
+
+Effects (readable and fair)
+	•	Erasure cannot delete your core controls during this state
+	•	One “Overwrite Denial” per activation (cancel a forced mechanic removal once)
+	•	Tail Harmony: all tails sync — combos become cleaner, not safer
+	•	No free tanking: you still die if you play sloppy
+
+Design rule: King state increases expression, not invincibility.
+
+⸻
+
+UI Treatment (Kiddy-friendly, myth-deep)
+	•	No “YOU ARE KING” text.
+	•	The only UI sign is:
+	•	Fusion meter becomes a crown-shaped frame
+	•	Color shifts to a calm gold-purple blend
+	•	Minimal icon appears: a tiny crown sigil by the tails
+
+Kids: “Cool crown mode!”
+Adults: “Oh… Boryn recognized him.”
+
+⸻
+
+Permanent Unlock After Coronation
+
+Even when King state ends, you keep:
+	•	Crown Tail as an equipped slot
+	•	Memory Step reliability improves (still rare, still costly)
+	•	New dialogue across the world: NPCs don’t fully understand why, but they feel you can’t be erased.
+
+⸻
+
+If you want, I’ll write the full playable coronation mission (not just the cutscene): the final approach, the trial, the 9th tail manifest, and the post-crown boss phase where the Architect tries to erase Kai and Jax separately — and fails because Boryn’s crown anchors them.
