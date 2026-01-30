@@ -14,6 +14,8 @@ public class KaiJax : ModuleRules
             "InputCore",
             "EnhancedInput",
             "GameplayTasks",
+            "Json",
+            "JsonUtilities"
             "ControlRig",
             "RigVM",
             "AnimGraphRuntime"

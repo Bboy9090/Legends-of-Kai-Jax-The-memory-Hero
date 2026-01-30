@@ -95,6 +95,15 @@ target_link_libraries(CharacterInputIntegrationTest
     PRIVATE LegendsEngineCore
 )
 
+# Test executable for Platform-Specific Input
+add_executable(PlatformInputTest
+    tests/PlatformInputTest.cpp
+)
+
+target_link_libraries(PlatformInputTest
+    PRIVATE LegendsEngineCore
+)
+
 # Test executable for State Interruption Logic
 add_executable(StateInterruptionTest
     tests/StateInterruptionTest.cpp
@@ -113,6 +122,12 @@ target_link_libraries(AnimationBlendingTest
     PRIVATE LegendsEngineCore
 )
 
+# Test executable for Complete Integration
+add_executable(CompleteIntegrationTest
+    tests/CompleteIntegrationTest.cpp
+)
+
+target_link_libraries(CompleteIntegrationTest
 # Test executable for Platform Input Mapping
 add_executable(PlatformInputTest
     tests/PlatformInputTest.cpp
@@ -141,6 +156,7 @@ target_link_libraries(StoryModeTest
 )
 
 # Set output directories
+set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest AnimationComponentTest AnimationIntegrationTest InputSystemTest CharacterInputIntegrationTest PlatformInputTest StateInterruptionTest AnimationBlendingTest CompleteIntegrationTest
 set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest AnimationComponentTest AnimationIntegrationTest InputSystemTest CharacterInputIntegrationTest StateInterruptionTest AnimationBlendingTest PlatformInputTest EndToEndIntegrationTest StoryModeTest
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -167,6 +183,10 @@ add_test(NAME AnimationComponentTest COMMAND AnimationComponentTest)
 add_test(NAME AnimationIntegrationTest COMMAND AnimationIntegrationTest)
 add_test(NAME InputSystemTest COMMAND InputSystemTest)
 add_test(NAME CharacterInputIntegrationTest COMMAND CharacterInputIntegrationTest)
+add_test(NAME PlatformInputTest COMMAND PlatformInputTest)
+add_test(NAME StateInterruptionTest COMMAND StateInterruptionTest)
+add_test(NAME AnimationBlendingTest COMMAND AnimationBlendingTest)
+add_test(NAME CompleteIntegrationTest COMMAND CompleteIntegrationTest)
 add_test(NAME StateInterruptionTest COMMAND StateInterruptionTest)
 add_test(NAME AnimationBlendingTest COMMAND AnimationBlendingTest)
 add_test(NAME PlatformInputTest COMMAND PlatformInputTest)
