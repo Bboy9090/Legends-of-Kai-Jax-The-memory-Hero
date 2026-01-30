@@ -1,12 +1,16 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
+  "name": "Legends-of-Kai-Jax-The-memory-Hero",
   "build": {
-    "builder": "NIXPACKS"
+    "builder": "NIXPACKS",
+    "buildCommand": "pnpm install && pnpm run build"
   },
   "deploy": {
-    "startCommand": "npm start",
+    "startCommand": "pnpm start",
+    "numReplicas": 1,
+    "sleepApplication": false,
+    "restartPolicyType": "ON_FAILURE",
     "healthcheckPath": "/",
-    "healthcheckTimeout": 100,
-    "restartPolicyType": "ON_FAILURE"
+    "healthcheckTimeout": 100
   }
 }
