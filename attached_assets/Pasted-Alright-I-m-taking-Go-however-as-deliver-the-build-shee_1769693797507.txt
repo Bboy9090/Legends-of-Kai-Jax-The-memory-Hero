@@ -1,0 +1,340 @@
+Alright — I’m taking “Go however” as: deliver the build sheets now so your team can implement without guessing.
+
+Below are (1) the 8 District Cards and (2) the Prologue + Chapter 1 mission list with unlock flags.
+
+⸻
+
+1) The 8 District Cards (Copy/Paste Build Sheets)
+
+DISTRICT 0 — HOME TOWN (PROLOGUE HUB)
+
+Public Chapter: Prologue
+In-world Trial Name: The First Fracture
+Visual: warm home streets → storm-scarred outskirts → first rift glow
+Hub Node: Home Square (shops/mentor/quest board)
+3 Landmarks:
+	1.	Boryn’s Memorial Steps
+	2.	Old Rail Bridge (tutorial traversal)
+	3.	Edgefield (first wild zone)
+Threat Ecology: street thugs (minor), wild prowlers (minor), Rift Wisp (intro anomaly)
+Memory Fragments: 3 total (tutorial set)
+District Trial Mechanic: “Learn by doing” (movement + combat + fragment pickup)
+Boss/Setpiece: Rift Surge Event (mini “boss” encounter)
+Core Reward: Map unlocked + Fragment Slot enabled
+Gate Condition: Complete Prologue mission chain
+Fast Travel: Locked (unlocks later)
+
+Dev Flags
+	•	WORLD_MAP_ENABLED=true
+	•	FRAGMENT_SYSTEM_ENABLED=true
+	•	CHAPTER_1_GATE_UNLOCKED=true
+
+⸻
+
+DISTRICT 1 — THE HUNGRY EDGE (HUNGER)
+
+Public Chapter: Chapter 1
+In-world Trial Name: Trial of the Hunt
+Visual: wind ridges + predator dens + red sky streaks
+Hub Node: Ridge Camp (scout NPCs + basic crafting)
+3 Landmarks:
+	1.	Ruined Watchtower
+	2.	Echo Spring
+	3.	The Bone Run (chase corridor)
+Threat Ecology: scavenger pack / stalkers / burrower ambushers + Roaming Elite: Rift Prowler
+Memory Fragments: 9 total (3 main, 6 optional)
+Trial Mechanic: tracking + chase + ambush timing
+Sovereign Boss: The Ravel Fang (teaches dodge → counter)
+Core Reward: Traversal 1 (Burst Dash OR Web Tug) + Gate Key I
+Gate Condition: Defeat Sovereign + place fragment at Trial Stone
+Fast Travel: 1 node unlocked (Camp ↔ Home Town)
+
+Dev Flags
+	•	TRAVERSAL_1_GRANTED=true
+	•	GATE_KEY_1=true
+	•	FAST_TRAVEL_NODE_RIDGECAMP=true
+
+⸻
+
+DISTRICT 2 — THE IRON ORDER (LAW)
+
+Public Chapter: Chapter 2
+In-world Trial Name: Trial of the Code
+Visual: walled city, banners, clockwork gates, searchlights
+Hub Node: Checkpoint Bazaar (repair + training arena)
+3 Landmarks:
+	1.	Tribunal Stairs (parry trial)
+	2.	Clockwork Plaza
+	3.	Detention Yard
+Threat Ecology: patrol units / snare casters / shield bearers + Roaming Elite: Code Enforcer
+Memory Fragments: 9 total
+Trial Mechanic: constraints + witness meter + precision timing
+Sovereign Boss: Marshal of Codes (parry windows matter)
+Core Reward: Defense 1 (Parry upgrade + Bind Counter) + Gate Key II
+Gate Condition: Clear Trial without exceeding Witness Tier 3 (or pay consequence)
+Fast Travel: 2 nodes
+
+Dev Flags
+	•	PARRY_UPGRADE=true
+	•	GATE_KEY_2=true
+
+⸻
+
+DISTRICT 3 — THE BROKEN BRIDGE (SACRIFICE)
+
+Public Chapter: Chapter 3
+In-world Trial Name: Trial of Burden
+Visual: abyss bridge ruins, refugee camp lights, salvage storms
+Hub Node: Refuge Camp (first real choices)
+3 Landmarks:
+	1.	Collapsed Skyway
+	2.	Salvage Cathedral
+	3.	Burden Gate (sacrifice altar)
+Threat Ecology: raiders / corruption husks / artillery scavengers + Roaming Elite: Burden Brute
+Memory Fragments: 9 total
+Trial Mechanic: trade-offs (debuff escort / resource sacrifice / timed rescue)
+Sovereign Boss: The Burden Keeper
+Core Reward: Upgrade Station (craft/augment) + Gate Key III
+Gate Condition: Make a Sacrifice Choice (locks one option)
+Fast Travel: 2 nodes
+
+Dev Flags
+	•	UPGRADE_STATION_UNLOCKED=true
+	•	SACRIFICE_CHOICE_LOCKED=true
+	•	GATE_KEY_3=true
+
+⸻
+
+DISTRICT 4 — THE GLASS ARCHIVE (MEMORY)
+
+Public Chapter: Chapter 4
+In-world Trial Name: Trial of Truth
+Visual: mirror ruins, glass halls, echo voices
+Hub Node: Archive Foyer (lore + memory console)
+3 Landmarks:
+	1.	Mirror Corridor
+	2.	Vault Halls
+	3.	Echo Amphitheater
+Threat Ecology: timeline echoes / false clones / phase traps + Roaming Elite: Archivist Shade
+Memory Fragments: 12 total (bigger memory zone)
+Trial Mechanic: reconstruction puzzle + playable flashback shard
+Sovereign Boss: Archivist Echo
+Core Reward: Memory Power 1 (Echo-Vision / Recall Step) + Gate Key IV
+Gate Condition: Complete reconstruction with 80% truth score
+Fast Travel: 3 nodes
+
+Dev Flags
+	•	MEMORY_POWER_1=true
+	•	GATE_KEY_4=true
+
+⸻
+
+DISTRICT 5 — THE WILD HUNGER (HUNGER → CORRUPTION)
+
+Public Chapter: Chapter 5
+In-world Trial Name: Trial of Starvation
+Visual: fungal forest, molten roots, corrupted wildlife
+Hub Node: Hunter Shrine (ritual upgrades)
+3 Landmarks:
+	1.	Spore Glade
+	2.	Rootfire Caverns
+	3.	Hunger Pit
+Threat Ecology: corrupted beasts / berserk elites / spore casters + Roaming Elite: Starved Stag
+Fragments: 12 total
+Trial Mechanic: survival escalation (limited heals, aggression meter)
+Sovereign Boss: The Starved Crown
+Core Reward: Tail Growth 1 (3→4 tails / equivalent evolution node) + Gate Key V
+Gate Condition: Survive 3 waves then win Sovereign
+Fast Travel: 3 nodes
+
+Dev Flags
+	•	TAIL_GROWTH_1=true
+	•	GATE_KEY_5=true
+
+⸻
+
+DISTRICT 6 — THE LAW THAT LIES (LAW → MORAL SPLIT)
+
+Public Chapter: Chapter 6
+In-world Trial Name: Trial of Judgment
+Visual: propaganda city, prison routes, oath chambers
+Hub Node: Split Market (two factions)
+3 Landmarks:
+	1.	Oath Chamber
+	2.	Prison Tunnels
+	3.	Banner Boulevard
+Threat Ecology: zealots / enforcers / informants + Roaming Elite: False Witness
+Fragments: 12 total
+Trial Mechanic: moral choice changes patrols + vendors + routes
+Sovereign Boss: The False Judge
+Core Reward: Faction Access (ally vendor + hidden route) + Gate Key VI
+Gate Condition: Choose a faction stance (locks the other for now)
+Fast Travel: 3 nodes (one faction-locked)
+
+Dev Flags
+	•	FACTION_A_OR_B_LOCKED=true
+	•	GATE_KEY_6=true
+
+⸻
+
+DISTRICT 7 — WEIGHT OF BLOOD (SACRIFICE → LEGACY)
+
+Public Chapter: Chapter 7
+In-world Trial Name: Trial of Lineage
+Visual: ancestral pits, oathfire bridges, storm altar
+Hub Node: Lineage Camp (legacy NPCs)
+3 Landmarks:
+	1.	Ancestral Pit
+	2.	Oathfire Bridge
+	3.	Lineage Altar
+Threat Ecology: lineage guardians / oathbreakers / relic beasts + Roaming Elite: Warden Hound
+Fragments: 12 total
+Trial Mechanic: you sacrifice something permanent-ish (perk slot / resource cap / ally aid)
+Sovereign Boss: The Lineage Warden
+Core Reward: Myth Gear Slot + Gate Key VII
+Gate Condition: Complete sacrifice + defeat boss
+Fast Travel: 4 nodes
+
+Dev Flags
+	•	MYTH_GEAR_SLOT=true
+	•	GATE_KEY_7=true
+
+⸻
+
+DISTRICT 8 — MEMORY WARFRONT (MEMORY → REALITY SHIFT)
+
+Public Chapter: Chapter 8
+In-world Trial Name: Trial of the Hollow
+Visual: fractured city blocks, floating roads, rift sky
+Hub Node: Warfront Shelter (endgame prep)
+3 Landmarks:
+	1.	Floating Street
+	2.	Hollow Spire Approach
+	3.	Fracture Square
+Threat Ecology: architect constructs / memory predators / phase artillery + Roaming Elite: Hollow Hunter
+Fragments: 15 total
+Trial Mechanic: world shifts mid-mission (live route reroutes)
+Sovereign Boss: The Hollow Hand (Architect avatar)
+Core Reward: Final Gate Access + Architect reveal
+Gate Condition: complete 2 shifting missions + defeat boss
+Fast Travel: 4 nodes
+
+Dev Flags
+	•	FINAL_GATE_ACCESS=true
+	•	ARCHITECT_REVEALED=true
+
+⸻
+
+2) Prologue + Chapter 1 Mission List (Build-Ready)
+
+PROLOGUE — Mission Chain (Home Town)
+
+P0-1: “Wake to the Rift”
+
+Objective: reach Home Square
+Teaches: basic movement, camera, sprint
+Reward: Map stub (town only)
+Flags: TUTORIAL_MOVEMENT_DONE=true
+
+P0-2: “First Contact”
+
+Objective: defeat 5 prowlers near Edgefield
+Teaches: light/heavy, dodge, lock-on
+Reward: Health vial unlock
+Flags: COMBAT_BASIC_DONE=true
+
+P0-3: “Boryn’s Aftermath”
+
+Objective: investigate memorial steps → cinematic → collect Fragment 01
+Teaches: memory pickup + UI
+Reward: Fragment Slot opens
+Flags: FRAGMENT_SLOT=true
+
+P0-4: “The Map Opens”
+
+Objective: speak to mentor NPC → accept first Trial
+Teaches: quest tracking + world map
+Reward: World Map unlock
+Flags: WORLD_MAP_ENABLED=true
+
+P0-5: “Gate to the Hungry Edge”
+
+Objective: travel to Chapter 1 gate
+Teaches: travel + waypoint
+Reward: Chapter 1 unlocked
+Flags: CHAPTER_1_GATE_UNLOCKED=true
+
+⸻
+
+CHAPTER 1 — District 1 Mission Chain (Hunger)
+
+C1-1: “Ridge Camp Arrival”
+
+Objective: reach Ridge Camp + register
+Reward: Camp node + vendor opens
+Flags: RIDGECAMP_ACTIVE=true, FAST_TRAVEL_NODE_RIDGECAMP=true
+
+C1-2: “Scent of the Hunt”
+
+Objective: track the Ravel Fang trail to Watchtower
+Mechanic: trail markers / echo scent pulses
+Reward: Fragment A
+Flags: C1_FRAGMENT_A=true
+
+C1-3: “The Bone Run”
+
+Objective: timed chase through Bone Run corridor
+Mechanic: sprint management + dodge hazards
+Reward: stamina micro-upgrade
+Flags: BONE_RUN_CLEARED=true
+
+C1-4: “Nest Purge”
+
+Objective: clear 3 nests (mini arenas)
+Reward: crafting ingredient type unlock
+Flags: NESTS_CLEARED=3
+
+C1-5: “Echo Spring”
+
+Objective: cleanse Echo Spring (defend zone) + claim Fragment B
+Mechanic: defend + counter timing
+Reward: Fragment B
+Flags: C1_FRAGMENT_B=true
+
+C1-6: “Roaming Elite Hunt” (Optional but recommended)
+
+Objective: defeat Rift Prowler elite
+Reward: rare augment material + brag marker on map
+Flags: ELITE_RIFT_PROWLER_DOWN=true
+
+C1-7: “Trial Stone: Hunger”
+
+Objective: place fragments at Trial Stone → unlock Sovereign arena
+Reward: Trial access
+Flags: HUNGER_TRIAL_READY=true
+
+C1-8: “Sovereign: The Ravel Fang”
+
+Objective: defeat Sovereign
+Teaches: dodge → counter windows
+Reward: Traversal 1 (Burst Dash/Web Tug) + Gate Key I
+Flags: TRAVERSAL_1_GRANTED=true, GATE_KEY_1=true, CHAPTER_2_GATE_UNLOCKED=true
+
+C1-9: “Return to Ridge Camp”
+
+Objective: debrief + receive next route marker
+Reward: Chapter 2 route pinned
+Flags: CHAPTER_1_COMPLETE=true
+
+⸻
+
+Beta Lock (So You Ship Clean)
+
+Beta = Prologue + Chapter 1–3
+End Beta with:
+	•	Chapter 4 gate visible but blocked
+	•	1 Memory teaser cutscene from the Glass Archive (player wants more)
+
+⸻
+
+If you want the next “no-confusion” drop, I’ll output Chapter 2 + Chapter 3 mission lists in the same format (IDs, flags, rewards) so your quest system can be implemented straight from text.

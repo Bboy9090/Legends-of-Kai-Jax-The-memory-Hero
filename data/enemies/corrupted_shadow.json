@@ -1,0 +1,88 @@
+{
+  "enemy_id": "corrupted_shadow",
+  "enemy_type": "Corrupted Shadow",
+  "tier": "fodder",
+  "base_stats": {
+    "health": 50,
+    "damage": 5,
+    "speed": 4.0,
+    "defense": 0
+  },
+  "ai_behavior": {
+    "base_behavior": {
+      "engagement_style": "aggressive",
+      "aggression_level": 0.7,
+      "engagement_range": 5.0,
+      "retreat_threshold": 0.1,
+      "group_coordination": true
+    },
+    "tail_tier_adaptations": {
+      "3": {
+        "confidence_modifier": 1.0,
+        "engagement_distance_modifier": 0.0,
+        "flee_on_sight": false,
+        "spawn_disabled": false
+      },
+      "4": {
+        "confidence_modifier": 0.8,
+        "engagement_distance_modifier": 1.0,
+        "flee_on_sight": false,
+        "spawn_disabled": false,
+        "tactics_override": "defensive"
+      },
+      "5": {
+        "confidence_modifier": 0.5,
+        "engagement_distance_modifier": 2.0,
+        "flee_on_sight": false,
+        "spawn_disabled": false,
+        "tactics_override": "defensive"
+      },
+      "6": {
+        "confidence_modifier": 0.3,
+        "engagement_distance_modifier": 3.0,
+        "flee_on_sight": true,
+        "spawn_disabled": false,
+        "tactics_override": "desperate"
+      },
+      "7": {
+        "confidence_modifier": 0.1,
+        "engagement_distance_modifier": 5.0,
+        "flee_on_sight": true,
+        "spawn_disabled": false
+      },
+      "8": {
+        "confidence_modifier": 0.0,
+        "engagement_distance_modifier": 0.0,
+        "flee_on_sight": true,
+        "spawn_disabled": true
+      },
+      "9": {
+        "confidence_modifier": 0.0,
+        "engagement_distance_modifier": 0.0,
+        "flee_on_sight": true,
+        "spawn_disabled": true
+      }
+    }
+  },
+  "combat_capabilities": {
+    "attack_types": [
+      {
+        "attack_id": "shadow_slash",
+        "attack_name": "Shadow Slash",
+        "damage_multiplier": 1.0,
+        "cooldown": 1.5,
+        "range": 1.5,
+        "windup_time": 0.3,
+        "can_be_interrupted": true
+      }
+    ],
+    "can_block": false,
+    "can_dodge": true,
+    "can_counter": false
+  },
+  "spawn_rules": {
+    "group_size_min": 2,
+    "group_size_max": 4,
+    "requires_tail_tier": 3
+  }
+}

@@ -144,10 +144,21 @@ public:
      */
     bool CanInterrupt(AnimationState currentState, AnimationState desiredState, 
                      const AnimationProgress& progress);
+     * Get the blend time for transitioning between two states
+     * 
+     * Returns the time in seconds that should be used to blend from one
+     * animation state to another for smooth transitions.
+     * 
+     * @param from The current animation state
+     * @param to The desired animation state
+     * @return Blend time in seconds
+     */
+    float GetBlendTime(AnimationState from, AnimationState to) const;
 
     /**
      * Update animation progress tracking
      * 
+
      * @param deltaTime Time elapsed since last frame in seconds
      */
     void UpdateProgress(float deltaTime);
@@ -208,6 +219,31 @@ private:
      * Check if a state is interruptible at the current progress
      */
     bool IsStateInterruptible(AnimationState state, const AnimationProgress& progress) const;
+
+     * Updates the internal tracking of animation progress, which is used
+     * for determining if states can be interrupted.
+     * 
+     * @param state The current animation state
+     * @param progress Animation progress (0.0 = start, 1.0 = complete)
+     */
+    void UpdateAnimationProgress(AnimationState state, float progress);
+
+    /**
+     * Check if the current state can be interrupted based on animation progress
+     * 
+     * Some states can only be interrupted during specific windows in the animation.
+     * This method checks if the current progress allows interruption.
+     * 
+     * @param state The animation state to check
+     * @return true if the state can be interrupted at current progress
+     */
+    bool CanInterruptAtCurrentProgress(AnimationState state) const;
+
+private:
+    // Animation progress tracking (0.0 to 1.0)
+    float currentAnimationProgress = 0.0f;
+    AnimationState trackedState = AnimationState::IDLE_CALM;
+
 };
 
 } // namespace LegendsEngine

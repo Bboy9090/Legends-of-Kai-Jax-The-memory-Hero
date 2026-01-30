@@ -1,4 +1,4 @@
-// SUPER SMASH GRAND SAGA - COMPLETE CHARACTER ROSTER
+// AETERNA COVENANT: GENESIS ARENA - COMPLETE CHARACTER ROSTER
 // Features authentic character specifications with legal safeguards
 // Names/colors modified for copyright compliance while maintaining recognition
 import { TeamBonus } from './teamSynergy';

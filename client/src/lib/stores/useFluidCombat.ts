@@ -710,9 +710,9 @@ export const useFluidCombat = create<FluidCombatState>((set, get) => ({
       set({ playerGrounded: true });
     }
     
-    // Arena bounds
-    newX = Math.max(-10, Math.min(10, newX));
-    newZ = Math.max(-8, Math.min(8, newZ));
+    // Open world bounds - much larger area for exploration
+    newX = Math.max(-100, Math.min(100, newX));
+    newZ = Math.max(-100, Math.min(100, newZ));
     
     // Update dash cooldown
     let newDashCooldown = Math.max(0, dashCooldown - delta);

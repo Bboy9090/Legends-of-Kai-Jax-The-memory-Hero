@@ -1,0 +1,43 @@
+{
+  "quest_id": "first_awakening",
+  "quest_type": "main",
+  "name": "The First Awakening",
+  "description": "Elder Kaito senses your potential. Prove yourself by mastering basic traversal and defeating corrupted shadows in Memory Alley.",
+  "giver_npc_id": "elder_kaito",
+  "requirements": {
+    "min_tail_count": 3,
+    "prerequisite_quests": []
+  },
+  "objectives": [
+    {
+      "id": "reach_rooftops",
+      "type": "reach_location",
+      "description": "Reach the Forgotten Rooftops using vertical traversal",
+      "target": "forgotten_rooftops",
+      "count": 1
+    },
+    {
+      "id": "defeat_shadows",
+      "type": "defeat_enemies",
+      "description": "Defeat 5 Corrupted Shadows in Memory Alley",
+      "target": "corrupted_shadow",
+      "count": 5
+    },
+    {
+      "id": "return_to_elder",
+      "type": "interact_npc",
+      "description": "Return to Elder Kaito",
+      "target": "elder_kaito",
+      "count": 1
+    }
+  ],
+  "rewards": {
+    "experience": 100,
+    "unlocks": ["memory_trial"]
+  },
+  "dialogue": {
+    "intro": "Young one, I sense the Memory Weave stirs within you. Your three tails mark only the beginning. Prove your agility on the rooftops, and face the shadows that corrupt our streets.",
+    "progress": "The rooftops await. Trust in your instincts, and the shadows will fall before you.",
+    "completion": "Well done. Your movements carry the grace of legends past. The path ahead grows darker, but you are ready."
+  }
+}

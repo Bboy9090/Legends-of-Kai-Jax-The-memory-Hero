@@ -17,11 +17,24 @@ InputState InputHandler::GetCurrentInput() {
             return ReadTouchInput();
         default:
             return InputState(); // Return zero state for unknown platforms
+    // Dispatch to platform-specific input reading based on configured platform
+    switch (currentPlatform) {
+        case PlatformType::PC:
+            return ReadKeyboardInput();
+        case PlatformType::GAMEPAD:
+            return ReadGamepadInput();
+        case PlatformType::TOUCH:
+            return ReadTouchInput();
+        default:
+            return InputState(); // Return zero state if platform not set
     }
 }
 
 InputState InputHandler::ReadKeyboardInput() {
     // PC (Keyboard) input mapping:
+    // PC Keyboard/Mouse input mapping
+    // 
+    // Mapping:
     //   - W/Up Arrow: moveForward
     //   - S/Down Arrow: moveBackward
     //   - A/Left Arrow: moveLeft
@@ -47,6 +60,9 @@ InputState InputHandler::ReadKeyboardInput() {
 
 InputState InputHandler::ReadGamepadInput() {
     // Gamepad (Console/Tablet) input mapping:
+    // Gamepad input mapping (Console/Tablet)
+    // 
+    // Mapping:
     //   - Left Stick Y+ / D-pad Up: moveForward
     //   - Left Stick Y- / D-pad Down: moveBackward
     //   - Left Stick X- / D-pad Left: moveLeft
@@ -68,6 +84,22 @@ InputState InputHandler::ReadGamepadInput() {
     
     InputState state;
     // Stub: returns zero state until input backend is integrated
+    //   - Face Button Bottom (X/A on PlayStation/Xbox): attack
+    //   - Face Button Right (Circle/B on PlayStation/Xbox): jump
+    //
+    // NOTE: This is a stub that returns zero state. In a production engine,
+    // this would call platform-specific gamepad APIs (e.g., XInput, DirectInput, SDL).
+    // The actual input reading would be injected via a platform abstraction layer.
+    
+    InputState state;
+    
+    // Stub: Returns zero input
+    // Real implementation would check gamepad state:
+    // - Query analog stick positions (with deadzone)
+    // - Query D-pad state
+    // - Query button states
+    // - Query trigger analog values
+    
     return state;
 }
 
@@ -91,6 +123,26 @@ InputState InputHandler::ReadTouchInput() {
     //   state.sprint = joystickDelta.length() > 0.8f;
     //   state.attack = tapDetector.WasTapped();
     //   etc.
+    // Touch input mapping (Mobile)
+    // 
+    // Mapping:
+    //   - Virtual joystick: movement directions (moveForward/Back/Left/Right)
+    //   - Touch and hold joystick edge: sprint + movement
+    //   - Tap on right side: attack
+    //   - Swipe up on right side: jump
+    //
+    // NOTE: This is a stub that returns zero state. In a production engine,
+    // this would process touch events from the OS (iOS UITouch, Android MotionEvent).
+    // The virtual joystick and button regions would be rendered by the UI system.
+    
+    InputState state;
+    
+    // Stub: Returns zero input
+    // Real implementation would process touch events:
+    // - Track virtual joystick position and distance from center
+    // - Detect tap gestures in button regions
+    // - Detect swipe gestures with direction and velocity
+    // - Maintain touch state across frames
     
     InputState state;
     // Stub: returns zero state until input backend is integrated
