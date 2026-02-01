@@ -1,0 +1,133 @@
+{
+  "identity": {
+    "persona": "E1: The Anti-AI Designer",
+    "mission": "Create a mythic, gritty, and immersive game hub that breaks standard 'clean' SaaS tropes.",
+    "principles": [
+      "Fusion over Imitation: Mix Ancient Mythology with Cyberpunk Decay.",
+      "Emotion First: Every pixel must feel 'Epic' and 'Dangerous'.",
+      "Content is King: The Lore is the UI.",
+      "Contrast: Deepest Blacks vs Neon Elemental Bursts."
+    ]
+  },
+  "theme": {
+    "mode": "dark",
+    "archetype": "Electric & Neon (Future/Disruption) + Jewel & Luxury (Depth)",
+    "vibe": "Bronx-Honest Mythology. Gritty, neon-soaked, ancient power in a broken city."
+  },
+  "typography": {
+    "headings": {
+      "fontFamily": "Unbounded, sans-serif",
+      "weights": ["700", "900"],
+      "tracking": "tracking-tighter",
+      "usage": "Hero titles, Section headers, Character Names. Use uppercase for maximum impact."
+    },
+    "body": {
+      "fontFamily": "Rajdhani, sans-serif",
+      "weights": ["400", "500", "600"],
+      "tracking": "tracking-wide",
+      "usage": "Lore text, stats, UI elements. High legibility with a tech edge."
+    },
+    "accents": {
+      "fontFamily": "Cinzel, serif",
+      "usage": "Ancient texts, God names, 'Memory' flashbacks."
+    }
+  },
+  "colors": {
+    "background": {
+      "default": "#050505",
+      "paper": "#0A0A0A",
+      "subtle": "#121212"
+    },
+    "primary": {
+      "main": "#2E2EFE",
+      "glow": "0 0 20px rgba(46, 46, 254, 0.6)"
+    },
+    "accents": {
+      "fire": "#FF3B30",
+      "electric": "#FFD60A",
+      "storm": "#64D2FF",
+      "void": "#BF5AF2"
+    },
+    "text": {
+      "primary": "#EDEDED",
+      "secondary": "#A1A1AA",
+      "muted": "#52525B"
+    }
+  },
+  "layout": {
+    "grid_system": "Bento Grid Mode A (The Tetris Grid)",
+    "spacing": "Generous. Use p-8 to p-24. Never cram content.",
+    "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "z_index": {
+      "background": "-10",
+      "content": "10",
+      "overlay": "40",
+      "nav": "50",
+      "modal": "100"
+    }
+  },
+  "components": {
+    "buttons": {
+      "style": "Cyber-Pill",
+      "classes": "rounded-full border border-primary/50 bg-primary/10 hover:bg-primary/20 hover:border-primary hover:shadow-[0_0_20px_rgba(46,46,254,0.4)] transition-all duration-300 uppercase tracking-widest font-bold text-sm"
+    },
+    "cards": {
+      "style": "Tracing Beam",
+      "classes": "relative overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md rounded-xl hover:border-white/20 transition-colors group"
+    },
+    "navigation": {
+      "style": "Glassmorphism",
+      "classes": "fixed top-0 w-full z-50 bg-black/60 backdrop-blur-xl border-b border-white/5"
+    },
+    "inputs": {
+      "style": "Underline Tech",
+      "classes": "bg-transparent border-b border-white/20 focus:border-primary outline-none px-0 py-2 text-white placeholder:text-white/30 transition-colors"
+    }
+  },
+  "visual_enhancers": {
+    "gradients": "No linear gradients. Use radial blasts of color behind objects.",
+    "textures": "Grain overlay (opacity 0.05) on all backgrounds to kill digital flatness.",
+    "borders": "1px solid white/10. Use 'shimmer' effects on active cards.",
+    "shadows": "Colored shadows only. No black shadows on black backgrounds."
+  },
+  "motion": {
+    "reduced_motion": "Respect prefers-reduced-motion",
+    "hover": "Scale 1.02 + Glow intensity increase",
+    "entrance": "Staggered fade-up (0.1s delay per item)",
+    "scroll": "Parallax on background elements (City, Particles)"
+  },
+  "image_urls": {
+    "characters": {
+      "kai_jax_brothers": "https://images.unsplash.com/photo-1731258941061-759e347274f3",
+      "kai_jax_fusion": "https://images.unsplash.com/photo-1579632265778-55aeeaff324a",
+      "sabertooth_face": "https://images.unsplash.com/photo-1698943457350-43c34d5cbb5a"
+    },
+    "world": {
+      "city_cyberpunk": "https://images.unsplash.com/photo-1633701899715-be64b730ef19",
+      "ruins_neon": "https://images.unsplash.com/photo-1731514521203-a1dc7c3fdfa7"
+    },
+    "elements": {
+      "fire_pyraxis": "https://images.unsplash.com/photo-1644261766628-3af7203be678",
+      "electric_karvoth": "https://images.unsplash.com/photo-1767188789856-33aad26e784f",
+      "void_myrrkai": "https://images.unsplash.com/photo-1737768437560-9d523fa3adc0",
+      "ice_thryxen": "https://images.unsplash.com/photo-1752079914941-ba39bbed123b"
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. INSTALL FONTS: Add '@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Unbounded:wght@400;700;900&family=Cinzel:wght@400;700&display=swap');' to index.css",
+    "2. TAILWIND CONFIG: Update theme colors to match the 'colors' section above. Add the fonts to the font family config.",
+    "3. GLOBAL CSS: Add a global grain texture overlay using a pseudo-element on the body.",
+    "4. COMPONENTS: When building the 'Tail System', use the 'Tracing Beam' card style.",
+    "5. LORE: Use the 'Cinzel' font for any text related to the 'Ancient Memory' or 'Gods'.",
+    "6. IMAGES: Use the provided URLs. Do not use placeholders.",
+    "7. SHADCN: Customize all Shadcn components to remove the 'default' look. Increase border radius on dialogs, remove bg from inputs."
+  ],
+  "universal_guidelines": [
+    "Avoid 'AI Slop' - no generic purple gradients.",
+    "Dark colors look good when used independently without gradients.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "Every interaction needs micro-animations.",
+    "Use 2-3x more spacing than feels comfortable."
+  ]
+}
