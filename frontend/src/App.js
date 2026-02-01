@@ -187,7 +187,7 @@ const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
   };
 
   const displayImage = generatedImage || referenceImages[character.id];
-  const showGenerating = isLocalGenerating || (isGenerating && !generatedImage);
+  const showGenerating = isLocalGenerating;
 
   const borderColors = {
     kai: 'border-fire/30 hover:border-fire',
