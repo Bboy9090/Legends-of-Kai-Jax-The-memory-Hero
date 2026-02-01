@@ -744,22 +744,22 @@ const RegionsSection = () => {
 
 // Bible Section - Complete Game Documentation
 const BibleSection = () => {
-  const [bibleData, setBibleData] = useState(null);
+  const [blueprint, setBlueprint] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchBible = async () => {
+    const fetchBlueprint = async () => {
       try {
-        const response = await axios.get(`${API}/bible/full`);
-        setBibleData(response.data);
+        const response = await axios.get(`${API}/blueprint`);
+        setBlueprint(response.data);
         setLoading(false);
       } catch (e) {
-        console.error('Failed to fetch bible:', e);
+        console.error('Failed to fetch blueprint:', e);
         setLoading(false);
       }
     };
-    fetchBible();
+    fetchBlueprint();
   }, []);
 
   if (loading) {
@@ -771,330 +771,341 @@ const BibleSection = () => {
   }
 
   const tabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'narrative', label: 'Narrative Bible' },
-    { id: 'art', label: 'Art & UX' },
-    { id: 'engineering', label: 'Engineering' },
-    { id: 'production', label: 'Production' },
-    { id: 'endings', label: 'Endings' }
+    { id: 'overview', label: 'Overview', icon: '📕' },
+    { id: 'story', label: 'Story & Lore', icon: '📕' },
+    { id: 'systems', label: 'Game Systems', icon: '📘' },
+    { id: 'enemies', label: 'Enemies', icon: '📗' },
+    { id: 'acts', label: 'Act Structure', icon: '📙' },
+    { id: 'modes', label: 'Game Modes', icon: '📒' }
   ];
 
   const renderOverview = () => (
     <div className="space-y-8">
-      <div className="card-beam p-8 text-center">
-        <h3 className="font-heading text-3xl text-primary mb-2">{bibleData?.title}</h3>
-        <p className="font-lore text-xl text-electric mb-4">{bibleData?.subtitle}</p>
-        <p className="text-white/60 italic text-lg">"{bibleData?.franchise_pillar}"</p>
+      <div className="card-beam p-8 text-center bg-gradient-to-b from-primary/10 to-transparent">
+        <h3 className="font-heading text-3xl text-primary mb-2">{blueprint?.title}</h3>
+        <p className="font-lore text-xl text-electric mb-6">{blueprint?.subtitle}</p>
+        <p className="text-white/50 text-sm mb-4">Version: {blueprint?.version}</p>
+        <div className="max-w-2xl mx-auto p-6 bg-black/40 rounded-xl">
+          <p className="font-lore text-lg text-storm italic">
+            "{blueprint?.franchise_spine}"
+          </p>
+        </div>
       </div>
       
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="card-beam p-6">
-          <h4 className="font-heading text-xl text-fire mb-4">Status</h4>
-          <div className="space-y-2">
-            {bibleData?.status && Object.entries(bibleData.status).map(([key, value]) => (
-              <div key={key} className="flex justify-between text-sm">
-                <span className="text-white/50 capitalize">{key.replace('_', ' ')}</span>
-                <span className="text-primary">{value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="card-beam p-6">
-          <h4 className="font-heading text-xl text-storm mb-4">The Coronation</h4>
-          <p className="text-white/60 text-sm mb-4">When alignment is complete, the Ninth Tail manifests. Boryn's Spiritual Echo appears.</p>
-          <p className="font-lore text-electric italic">"You carried what I couldn't."</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderNarrative = () => (
-    <div className="space-y-6">
       <div className="card-beam p-6">
-        <h4 className="font-heading text-xl text-primary mb-4">Core Narrative Law</h4>
-        <p className="text-fire font-bold mb-2">{bibleData?.narrative_bible?.core_law?.rule}</p>
-        <p className="text-white/60">{bibleData?.narrative_bible?.core_law?.detail}</p>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="card-beam p-6">
-          <h4 className="font-heading text-lg text-storm mb-4">Allowed Tone</h4>
-          <ul className="space-y-1">
-            {bibleData?.narrative_bible?.tone_rules?.allowed?.map((item, i) => (
-              <li key={i} className="text-white/60 text-sm flex items-center gap-2">
-                <span className="text-storm">✓</span> {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="card-beam p-6">
-          <h4 className="font-heading text-lg text-fire mb-4">Forbidden Tone</h4>
-          <ul className="space-y-1">
-            {bibleData?.narrative_bible?.tone_rules?.forbidden?.map((item, i) => (
-              <li key={i} className="text-white/60 text-sm flex items-center gap-2">
-                <span className="text-fire">✗</span> {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      <div className="card-beam p-6">
-        <h4 className="font-heading text-lg text-void mb-4">Two-Father Doctrine</h4>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="bg-black/40 p-4 rounded-lg">
-            <p className="text-electric font-bold">BORYN</p>
-            <p className="text-white/60 text-sm">{bibleData?.narrative_bible?.two_father_doctrine?.boryn}</p>
-          </div>
-          <div className="bg-black/40 p-4 rounded-lg">
-            <p className="text-storm font-bold">BORAX</p>
-            <p className="text-white/60 text-sm">{bibleData?.narrative_bible?.two_father_doctrine?.borax}</p>
-          </div>
-        </div>
-        <p className="text-white/40 text-xs mt-4 italic">{bibleData?.narrative_bible?.two_father_doctrine?.rule}</p>
-      </div>
-
-      <div className="card-beam p-6">
-        <h4 className="font-heading text-lg text-primary mb-4">Dialogue Density Limits</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <p className="text-2xl font-heading text-white/80">2-3</p>
-            <p className="text-xs text-white/40">Regular NPC</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-heading text-white/80">4-5</p>
-            <p className="text-xs text-white/40">Major Characters</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-heading text-fire">0</p>
-            <p className="text-xs text-white/40">Gods</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-heading text-electric">1</p>
-            <p className="text-xs text-white/40">Boryn's Echo</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="card-beam p-6 bg-gradient-to-r from-fire/10 to-transparent">
-        <p className="font-lore text-center text-fire italic">
-          "{bibleData?.narrative_bible?.narrative_truth}"
-        </p>
-      </div>
-    </div>
-  );
-
-  const renderArtUX = () => (
-    <div className="space-y-6">
-      <div className="card-beam p-6">
-        <h4 className="font-heading text-xl text-primary mb-4">Visual Prime Directive</h4>
-        <div className="grid md:grid-cols-3 gap-4 mb-4">
-          {bibleData?.art_ux_bible?.prime_directive?.rules?.map((rule, i) => (
-            <div key={i} className="bg-black/40 p-4 rounded-lg text-center">
-              <p className="text-storm font-bold">{rule}</p>
-            </div>
-          ))}
-        </div>
-        <p className="text-white/60 text-sm">{bibleData?.art_ux_bible?.prime_directive?.goal}</p>
-      </div>
-
-      <div className="card-beam p-6">
-        <h4 className="font-heading text-xl text-electric mb-4">Color Law</h4>
-        <p className="text-white/40 text-sm mb-4">{bibleData?.art_ux_bible?.color_law?.principle}</p>
+        <h4 className="font-heading text-xl text-fire mb-4">Studio Handoff Structure</h4>
+        <p className="text-primary font-bold mb-4">{blueprint?.studio_handoff?.status}</p>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {bibleData?.art_ux_bible?.color_law?.colors && Object.entries(bibleData.art_ux_bible.color_law.colors).map(([color, data]) => (
-            <div key={color} className="text-center p-3 rounded-lg" style={{ backgroundColor: `${color === 'orange' ? '#FF3B30' : color === 'cyan' ? '#64D2FF' : color === 'purple' ? '#BF5AF2' : color === 'black' ? '#1a1a1a' : '#FFD60A'}20` }}>
-              <div className="w-6 h-6 rounded-full mx-auto mb-2" style={{ backgroundColor: color === 'orange' ? '#FF3B30' : color === 'cyan' ? '#64D2FF' : color === 'purple' ? '#BF5AF2' : color === 'black' ? '#333' : '#FFD60A' }} />
-              <p className="text-xs text-white/80 font-bold uppercase">{color}</p>
-              <p className="text-xs text-white/50">{data.meaning}</p>
+          {blueprint?.studio_handoff?.deliverables?.map((item, i) => (
+            <div key={i} className="bg-black/40 p-3 rounded-lg text-center">
+              <p className="text-white/80 text-sm font-bold">{item.bible}</p>
+              <p className="text-white/40 text-xs">→ {item.team}</p>
             </div>
           ))}
         </div>
       </div>
+    </div>
+  );
 
-      <div className="card-beam p-6">
-        <h4 className="font-heading text-xl text-void mb-4">Animation Philosophy</h4>
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <p className="text-sm text-white/40 mb-2">Movement Feel</p>
-            <ul className="space-y-1">
-              {bibleData?.art_ux_bible?.animation_philosophy?.movement_feel?.map((item, i) => (
-                <li key={i} className="text-white/60 text-sm">• {item}</li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <p className="text-sm text-white/40 mb-2">Attack Rules</p>
-            <ul className="space-y-1">
-              {bibleData?.art_ux_bible?.animation_philosophy?.attacks?.map((item, i) => (
-                <li key={i} className="text-white/60 text-sm">• {item}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <p className="text-fire text-sm mt-4 italic">{bibleData?.art_ux_bible?.animation_philosophy?.note}</p>
+  const renderStoryLore = () => (
+    <div className="space-y-6">
+      <div className="card-beam p-6 text-center bg-gradient-to-r from-fire/10 to-transparent">
+        <h4 className="font-heading text-2xl text-fire mb-2">📕 {blueprint?.story_lore_bible?.title}</h4>
+        <p className="text-white/50">{blueprint?.story_lore_bible?.subtitle}</p>
       </div>
 
-      <div className="card-beam p-6 bg-gradient-to-r from-void/10 to-transparent">
-        <p className="font-lore text-center text-void italic">
-          "{bibleData?.art_ux_bible?.art_ux_truth}"
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-primary mb-4">Core Thesis</h4>
+        <p className="font-lore text-xl text-electric italic text-center">
+          "{blueprint?.story_lore_bible?.core_thesis}"
         </p>
       </div>
-    </div>
-  );
-
-  const renderEngineering = () => (
-    <div className="space-y-6">
-      <div className="card-beam p-6">
-        <h4 className="font-heading text-xl text-electric mb-4">Tail Expression Engine</h4>
-        <p className="text-white/60 mb-4">{bibleData?.engineering_specs?.tail_expression_engine?.principle}</p>
-        
-        <div className="bg-black/40 p-4 rounded-lg mb-4">
-          <p className="text-xs text-white/40 uppercase mb-2">Active Tail Limits</p>
-          <div className="grid grid-cols-4 gap-2 text-center">
-            <div>
-              <p className="text-xl font-heading text-fire">3</p>
-              <p className="text-xs text-white/40">Early</p>
-            </div>
-            <div>
-              <p className="text-xl font-heading text-electric">4-6</p>
-              <p className="text-xs text-white/40">Mid</p>
-            </div>
-            <div>
-              <p className="text-xl font-heading text-storm">~</p>
-              <p className="text-xs text-white/40">End</p>
-            </div>
-            <div>
-              <p className="text-xl font-heading text-primary">9</p>
-              <p className="text-xs text-white/40">Event</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-black/40 p-4 rounded-lg">
-          <p className="text-xs text-white/40 uppercase mb-2">Ninth Tail Conditions</p>
-          <ul className="space-y-1">
-            {bibleData?.engineering_specs?.tail_expression_engine?.ninth_tail_logic?.conditions?.map((c, i) => (
-              <li key={i} className="text-white/60 text-sm flex items-center gap-2">
-                <span className="text-primary">◆</span> {c}
-              </li>
-            ))}
-          </ul>
-          <p className="text-storm text-sm mt-3 italic">{bibleData?.engineering_specs?.tail_expression_engine?.ninth_tail_logic?.note}</p>
-        </div>
-      </div>
 
       <div className="card-beam p-6">
-        <h4 className="font-heading text-xl text-void mb-4">Memory Save System</h4>
-        <div className="grid md:grid-cols-3 gap-3 mb-4">
-          {bibleData?.engineering_specs?.memory_save_system?.philosophy?.map((p, i) => (
-            <div key={i} className="bg-black/40 p-3 rounded-lg text-center">
-              <p className="text-white/60 text-sm">{p}</p>
-            </div>
-          ))}
-        </div>
-        
-        <div className="bg-black/40 p-4 rounded-lg">
-          <p className="text-xs text-white/40 uppercase mb-2">Memory Flags Represent</p>
-          <div className="flex flex-wrap gap-2">
-            {bibleData?.engineering_specs?.memory_save_system?.memory_flags?.represent?.map((f, i) => (
-              <span key={i} className="text-xs px-2 py-1 rounded-full bg-void/20 text-void">{f}</span>
-            ))}
-          </div>
-          <p className="text-white/40 text-xs mt-3 italic">{bibleData?.engineering_specs?.memory_save_system?.memory_flags?.note}</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderProduction = () => (
-    <div className="space-y-6">
-      <div className="card-beam p-6">
-        <h4 className="font-heading text-xl text-fire mb-4">Team Structure</h4>
-        <p className="text-white/60 mb-4">{bibleData?.production_plan?.staffing_model?.principle}</p>
-        <p className="text-storm font-bold">{bibleData?.production_plan?.staffing_model?.team_size}</p>
-      </div>
-
-      <div className="card-beam p-6">
-        <h4 className="font-heading text-xl text-electric mb-4">Tech Stack</h4>
-        <div className="bg-black/40 p-4 rounded-lg mb-4">
-          <p className="text-2xl font-heading text-primary mb-2">{bibleData?.production_plan?.tech_stack?.engine}</p>
-          <div className="flex flex-wrap gap-2">
-            {bibleData?.production_plan?.tech_stack?.why_unity?.map((reason, i) => (
-              <span key={i} className="text-xs px-2 py-1 rounded-full bg-primary/20 text-primary">{reason}</span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="card-beam p-6">
-        <h4 className="font-heading text-xl text-storm mb-4">Milestones</h4>
-        <div className="space-y-4">
-          {bibleData?.production_plan?.milestones && Object.entries(bibleData.production_plan.milestones).map(([phase, data]) => (
-            <div key={phase} className="bg-black/40 p-4 rounded-lg">
-              <div className="flex justify-between items-center mb-2">
-                <p className="font-heading text-lg uppercase" style={{ color: phase === 'alpha' ? '#64D2FF' : phase === 'beta' ? '#BF5AF2' : '#FF3B30' }}>{phase}</p>
-                <span className="text-xs text-white/40">{data.time}</span>
-              </div>
-              <p className="text-white/60 text-sm italic mb-2">"{data.question}"</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="card-beam p-6">
-        <h4 className="font-heading text-xl text-void mb-4">Execution Rules</h4>
+        <h4 className="font-heading text-xl text-storm mb-4">The World</h4>
+        <p className="text-white/70 mb-4">{blueprint?.story_lore_bible?.the_world?.description}</p>
         <ul className="space-y-2">
-          {bibleData?.production_plan?.execution_rules?.map((rule, i) => (
-            <li key={i} className="text-white/60 text-sm flex items-start gap-2">
-              <span className="text-fire font-bold">{i + 1}.</span> {rule}
+          {blueprint?.story_lore_bible?.the_world?.rules?.map((rule, i) => (
+            <li key={i} className="text-white/50 text-sm flex items-center gap-2">
+              <span className="text-storm">◆</span> {rule}
             </li>
           ))}
         </ul>
       </div>
+
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-void mb-4">Mythology</h4>
+        <p className="text-white/60 italic mb-4">{blueprint?.story_lore_bible?.mythology?.principle}</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {blueprint?.story_lore_bible?.mythology?.gods?.map((god, i) => (
+            <div key={i} className="bg-black/40 p-4 rounded-lg text-center" style={{ borderLeft: `3px solid ${god.color}` }}>
+              <p className="font-heading text-lg" style={{ color: god.color }}>{god.name}</p>
+              <p className="text-white/50 text-xs">{god.domain}</p>
+              <p className="text-white/30 text-xs">{god.element}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-white/40 text-sm italic mt-4 text-center">{blueprint?.story_lore_bible?.mythology?.note}</p>
+      </div>
+
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-electric mb-4">{blueprint?.story_lore_bible?.two_father_doctrine?.title}</h4>
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <div className="bg-black/40 p-4 rounded-lg border-l-2 border-fire">
+            <p className="font-heading text-lg text-fire mb-2">BORYN</p>
+            <p className="text-white/50 text-sm mb-2">{blueprint?.story_lore_bible?.two_father_doctrine?.boryn?.title}</p>
+            <ul className="space-y-1">
+              {blueprint?.story_lore_bible?.two_father_doctrine?.boryn?.traits?.map((t, i) => (
+                <li key={i} className="text-white/40 text-xs">• {t}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="bg-black/40 p-4 rounded-lg border-l-2 border-storm">
+            <p className="font-heading text-lg text-storm mb-2">BORAX</p>
+            <p className="text-white/50 text-sm mb-2">{blueprint?.story_lore_bible?.two_father_doctrine?.borax?.title}</p>
+            <ul className="space-y-1">
+              {blueprint?.story_lore_bible?.two_father_doctrine?.borax?.traits?.map((t, i) => (
+                <li key={i} className="text-white/40 text-xs">• {t}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <p className="text-center text-primary italic">{blueprint?.story_lore_bible?.two_father_doctrine?.truth}</p>
+      </div>
     </div>
   );
 
-  const renderEndings = () => (
+  const renderSystems = () => (
     <div className="space-y-6">
+      <div className="card-beam p-6 text-center bg-gradient-to-r from-storm/10 to-transparent">
+        <h4 className="font-heading text-2xl text-storm mb-2">📘 {blueprint?.game_systems_bible?.title}</h4>
+        <p className="text-white/50">{blueprint?.game_systems_bible?.subtitle}</p>
+      </div>
+
       <div className="card-beam p-6 text-center">
-        <p className="font-lore text-xl text-primary mb-2">{bibleData?.multiple_endings?.principle}</p>
-        <div className="flex justify-center gap-4 mt-4">
-          {bibleData?.multiple_endings?.axes_tracked?.map((axis, i) => (
-            <span key={i} className="text-xs px-3 py-1 rounded-full bg-white/5 text-white/40">{axis}</span>
+        <h4 className="font-heading text-xl text-primary mb-4">Core Gameplay Loop</h4>
+        <div className="flex justify-center items-center gap-2 flex-wrap">
+          {blueprint?.game_systems_bible?.core_loop?.split(' → ').map((step, i, arr) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="px-4 py-2 bg-primary/20 rounded-full text-primary font-bold">{step}</span>
+              {i < arr.length - 1 && <span className="text-white/30">→</span>}
+            </div>
           ))}
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {bibleData?.multiple_endings?.endings?.map((ending, i) => (
-          <div key={i} className="card-beam p-6" style={{ borderColor: i === 0 ? '#FFD60A40' : i === 1 ? '#64D2FF40' : i === 2 ? '#FF3B3040' : '#BF5AF240' }}>
-            <h4 className="font-heading text-lg mb-3" style={{ color: i === 0 ? '#FFD60A' : i === 1 ? '#64D2FF' : i === 2 ? '#FF3B30' : '#BF5AF2' }}>
-              {ending.name}
-            </h4>
-            <div className="mb-3">
-              <p className="text-xs text-white/40 uppercase mb-1">Requirements</p>
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-electric mb-4">{blueprint?.game_systems_bible?.nine_tail_system?.title}</h4>
+        
+        <div className="grid md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-black/40 p-4 rounded-lg">
+            <p className="text-xs text-white/40 uppercase mb-2">Rules</p>
+            <ul className="space-y-1">
+              {blueprint?.game_systems_bible?.nine_tail_system?.rules?.map((r, i) => (
+                <li key={i} className="text-white/60 text-sm">• {r}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="bg-black/40 p-4 rounded-lg">
+            <p className="text-xs text-white/40 uppercase mb-2">Progression</p>
+            <ul className="space-y-1">
+              {blueprint?.game_systems_bible?.nine_tail_system?.progression?.map((p, i) => (
+                <li key={i} className="text-white/60 text-sm">• {p}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="bg-black/40 p-4 rounded-lg">
+            <p className="text-xs text-white/40 uppercase mb-2">The Ninth Tail</p>
+            <p className="text-primary text-sm mb-2">{blueprint?.game_systems_bible?.nine_tail_system?.ninth_tail?.truth}</p>
+            <p className="text-electric italic text-sm">{blueprint?.game_systems_bible?.nine_tail_system?.ninth_tail?.moment}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-4 gap-2">
+          {blueprint?.game_systems_bible?.nine_tail_system?.milestones?.map((m, i) => (
+            <div key={i} className="bg-black/40 p-3 rounded-lg text-center" style={{ borderTop: `2px solid ${i === 3 ? '#FFD60A' : i === 2 ? '#FF3B30' : i === 1 ? '#64D2FF' : '#BF5AF2'}` }}>
+              <p className="text-2xl font-heading text-white/80">{m.tails}</p>
+              <p className="text-xs text-white/50">{m.stage}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-void mb-4">Memory vs Design</h4>
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <div className="bg-black/40 p-4 rounded-lg border-l-2 border-primary">
+            <p className="font-heading text-primary mb-2">MEMORY (Player)</p>
+            <p className="text-xs text-white/40 mb-2">Rewards: {blueprint?.game_systems_bible?.memory_vs_design?.memory?.rewards?.join(', ')}</p>
+            <ul className="space-y-1">
+              {blueprint?.game_systems_bible?.memory_vs_design?.memory?.effects?.map((e, i) => (
+                <li key={i} className="text-white/50 text-xs">✓ {e}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="bg-black/40 p-4 rounded-lg border-l-2 border-fire">
+            <p className="font-heading text-fire mb-2">DESIGN (Enemy)</p>
+            <ul className="space-y-1">
+              {blueprint?.game_systems_bible?.memory_vs_design?.design?.behavior?.map((b, i) => (
+                <li key={i} className="text-white/50 text-xs">✗ {b}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <p className="text-center text-storm italic text-sm">{blueprint?.game_systems_bible?.memory_vs_design?.truth}</p>
+      </div>
+
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-fire mb-4">Movement Philosophy</h4>
+        <div className="flex flex-wrap gap-2 mb-4 justify-center">
+          {blueprint?.game_systems_bible?.movement_philosophy?.principles?.map((p, i) => (
+            <span key={i} className="px-3 py-1 rounded-full bg-fire/20 text-fire text-sm">{p}</span>
+          ))}
+        </div>
+        <p className="text-center text-white/60 italic">"{blueprint?.game_systems_bible?.movement_philosophy?.feel}"</p>
+      </div>
+    </div>
+  );
+
+  const renderEnemies = () => (
+    <div className="space-y-6">
+      <div className="card-beam p-6 text-center bg-gradient-to-r from-void/10 to-transparent">
+        <h4 className="font-heading text-2xl text-void mb-2">📗 {blueprint?.enemy_faction_bible?.title}</h4>
+        <p className="text-white/50">{blueprint?.enemy_faction_bible?.subtitle}</p>
+      </div>
+
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-fire mb-4">The Void Fang Covenant</h4>
+        <p className="text-white/60 mb-2">{blueprint?.enemy_faction_bible?.void_fang_covenant?.description}</p>
+        <p className="text-fire italic mb-4">"{blueprint?.enemy_faction_bible?.void_fang_covenant?.belief}"</p>
+        
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <div className="bg-black/40 p-4 rounded-lg">
+            <p className="text-xs text-white/40 uppercase mb-2">Goals</p>
+            <ul className="space-y-1">
+              {blueprint?.enemy_faction_bible?.void_fang_covenant?.goals?.map((g, i) => (
+                <li key={i} className="text-white/60 text-sm">• {g}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="bg-black/40 p-4 rounded-lg">
+            <p className="text-xs text-white/40 uppercase mb-2">Elite Commanders</p>
+            {blueprint?.enemy_faction_bible?.void_fang_covenant?.elite_commanders?.map((c, i) => (
+              <div key={i} className="mb-2">
+                <p className="text-void text-sm font-bold">{c.name}</p>
+                <p className="text-white/40 text-xs">{c.specialty}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="text-center text-white/40 italic">{blueprint?.enemy_faction_bible?.void_fang_covenant?.note}</p>
+      </div>
+
+      <div className="card-beam p-6 bg-gradient-to-b from-fire/5 to-transparent">
+        <h4 className="font-heading text-xl text-fire mb-2">{blueprint?.enemy_faction_bible?.ulgorr?.title}</h4>
+        <p className="text-white/40 text-sm mb-4">{blueprint?.enemy_faction_bible?.ulgorr?.role}</p>
+        
+        <p className="text-white/60 mb-4">{blueprint?.enemy_faction_bible?.ulgorr?.description}</p>
+        
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <div className="bg-black/40 p-4 rounded-lg">
+            <p className="text-xs text-white/40 uppercase mb-2">Traits</p>
+            <ul className="space-y-1">
+              {blueprint?.enemy_faction_bible?.ulgorr?.traits?.map((t, i) => (
+                <li key={i} className="text-white/60 text-sm">• {t}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="bg-black/40 p-4 rounded-lg">
+            <p className="text-xs text-white/40 uppercase mb-2">His Plan</p>
+            <ul className="space-y-1">
+              {blueprint?.enemy_faction_bible?.ulgorr?.plan?.map((p, i) => (
+                <li key={i} className="text-white/60 text-sm">• {p}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="bg-black/60 p-4 rounded-lg text-center">
+          <p className="text-fire italic mb-2">"{blueprint?.enemy_faction_bible?.ulgorr?.belief}"</p>
+          <p className="text-storm text-sm">{blueprint?.enemy_faction_bible?.ulgorr?.weakness}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderActs = () => (
+    <div className="space-y-6">
+      <div className="card-beam p-6 text-center bg-gradient-to-r from-electric/10 to-transparent">
+        <h4 className="font-heading text-2xl text-electric mb-2">📙 {blueprint?.act_structure?.title}</h4>
+        <p className="text-white/50">{blueprint?.act_structure?.subtitle}</p>
+      </div>
+
+      <div className="space-y-4">
+        {blueprint?.act_structure?.acts?.map((act, i) => {
+          const colors = ['#FF3B30', '#64D2FF', '#BF5AF2', '#FFD60A', '#2E2EFE'];
+          return (
+            <div key={i} className="card-beam p-6" style={{ borderLeft: `4px solid ${colors[i]}` }}>
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <p className="text-white/40 text-xs uppercase">Act {act.number}</p>
+                  <h4 className="font-heading text-xl" style={{ color: colors[i] }}>{act.title}</h4>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: `${colors[i]}20`, color: colors[i] }}>
+                  {act.theme}
+                </span>
+              </div>
               <ul className="space-y-1">
-                {ending.requirements?.map((req, j) => (
-                  <li key={j} className="text-white/60 text-xs">• {req}</li>
+                {act.events?.map((e, j) => (
+                  <li key={j} className="text-white/60 text-sm">• {e}</li>
                 ))}
               </ul>
             </div>
-            <p className="text-white/50 text-sm mb-2">{ending.outcome}</p>
-            <p className="text-white/30 text-xs italic">{ending.note}</p>
-          </div>
-        ))}
+          );
+        })}
+      </div>
+
+      <div className="card-beam p-8 text-center bg-gradient-to-b from-primary/10 to-transparent">
+        <p className="font-lore text-lg text-primary italic">
+          "{blueprint?.act_structure?.end_truth}"
+        </p>
+      </div>
+    </div>
+  );
+
+  const renderModes = () => (
+    <div className="space-y-6">
+      <div className="card-beam p-6 text-center bg-gradient-to-r from-electric/10 to-transparent">
+        <h4 className="font-heading text-2xl text-electric mb-2">📒 {blueprint?.mode_breakdown?.title}</h4>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-6">
+        {blueprint?.mode_breakdown?.modes?.map((mode, i) => {
+          const colors = ['#2E2EFE', '#FF3B30', '#64D2FF'];
+          return (
+            <div key={i} className="card-beam p-6" style={{ borderTop: `3px solid ${colors[i]}` }}>
+              <h4 className="font-heading text-xl mb-4" style={{ color: colors[i] }}>{mode.name}</h4>
+              <ul className="space-y-2">
+                {mode.features?.map((f, j) => (
+                  <li key={j} className="text-white/60 text-sm flex items-center gap-2">
+                    <span style={{ color: colors[i] }}>◆</span> {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'narrative': return renderNarrative();
-      case 'art': return renderArtUX();
-      case 'engineering': return renderEngineering();
-      case 'production': return renderProduction();
-      case 'endings': return renderEndings();
+      case 'story': return renderStoryLore();
+      case 'systems': return renderSystems();
+      case 'enemies': return renderEnemies();
+      case 'acts': return renderActs();
+      case 'modes': return renderModes();
       default: return renderOverview();
     }
   };
@@ -1103,12 +1114,12 @@ const BibleSection = () => {
     <section className="min-h-screen py-24" data-testid="bible-section">
       <div className="container-game">
         <div className="text-center mb-12">
-          <p className="font-lore text-primary text-sm tracking-[0.3em] mb-4">THE DOCUMENTATION</p>
+          <p className="font-lore text-primary text-sm tracking-[0.3em] mb-4">MASTER BLUEPRINT</p>
           <h2 className="font-heading text-4xl md:text-5xl font-black mb-4">
             GAME <span className="text-primary">BIBLE</span>
           </h2>
           <p className="text-white/60 max-w-2xl mx-auto">
-            The complete canon, systems, and production documentation.
+            The complete studio-grade documentation. Canon locked. AAA-ready.
           </p>
         </div>
 
@@ -1118,14 +1129,14 @@ const BibleSection = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
                 activeTab === tab.id 
                   ? 'bg-primary text-white' 
                   : 'bg-white/5 text-white/50 hover:bg-white/10'
               }`}
               data-testid={`bible-tab-${tab.id}`}
             >
-              {tab.label}
+              <span>{tab.icon}</span> {tab.label}
             </button>
           ))}
         </div>
