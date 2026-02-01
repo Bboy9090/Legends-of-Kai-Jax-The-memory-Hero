@@ -868,6 +868,8 @@ function App() {
         return <GodsSection />;
       case 'regions':
         return <RegionsSection />;
+      case 'bible':
+        return <BibleSection />;
       default:
         return <HeroSection onNavigate={setActiveSection} />;
     }
