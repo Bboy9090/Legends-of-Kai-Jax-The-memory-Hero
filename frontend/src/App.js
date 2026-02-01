@@ -143,6 +143,15 @@ const HeroSection = ({ onNavigate }) => {
 const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
   const [generatedImage, setGeneratedImage] = useState(null);
 
+  // Reference images from user's art
+  const referenceImages = {
+    kai: null, // Will use AI generation
+    jax: null, // Will use AI generation  
+    kaijax: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/htuxfqte_9660FF22-E010-4DF5-A321-DDFE60ADB8CB.png",
+    boryn: null,
+    borax: null
+  };
+
   const handleGenerate = async () => {
     const prompts = {
       kai: "Anthropomorphic hedgehog-fox beast warrior, bipedal, fiery orange fur on top with blackish-grey bottom, spiky wild hair, athletic muscular build, wearing a cool streetwear jacket, SHOOTING WEBS from hands, web graffiti tags on walls behind him, playful confident pose, hanging upside down from web hammock, electric sparks on webs, urban cyberpunk city alley background, game character art style, hyper detailed, dynamic action pose, 4K",
@@ -157,6 +166,8 @@ const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
       setGeneratedImage(result);
     }
   };
+
+  const displayImage = generatedImage || referenceImages[character.id];
 
   const borderColors = {
     kai: 'border-fire/30 hover:border-fire',
