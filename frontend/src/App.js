@@ -871,6 +871,403 @@ const BibleSection = () => {
   );
 };
 
+// Bible Section - Complete Game Documentation
+const BibleSection = () => {
+  const [bibleData, setBibleData] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBible = async () => {
+      try {
+        const response = await axios.get(`${API}/bible/full`);
+        setBibleData(response.data);
+        setLoading(false);
+      } catch (e) {
+        console.error('Failed to fetch bible:', e);
+        setLoading(false);
+      }
+    };
+    fetchBible();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="min-h-screen py-24 flex items-center justify-center">
+        <div className="spinner" />
+      </section>
+    );
+  }
+
+  const tabs = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'narrative', label: 'Narrative Bible' },
+    { id: 'art', label: 'Art & UX' },
+    { id: 'engineering', label: 'Engineering' },
+    { id: 'production', label: 'Production' },
+    { id: 'endings', label: 'Endings' }
+  ];
+
+  const renderOverview = () => (
+    <div className="space-y-8">
+      <div className="card-beam p-8 text-center">
+        <h3 className="font-heading text-3xl text-primary mb-2">{bibleData?.title}</h3>
+        <p className="font-lore text-xl text-electric mb-4">{bibleData?.subtitle}</p>
+        <p className="text-white/60 italic text-lg">"{bibleData?.franchise_pillar}"</p>
+      </div>
+      
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="card-beam p-6">
+          <h4 className="font-heading text-xl text-fire mb-4">Status</h4>
+          <div className="space-y-2">
+            {bibleData?.status && Object.entries(bibleData.status).map(([key, value]) => (
+              <div key={key} className="flex justify-between text-sm">
+                <span className="text-white/50 capitalize">{key.replace('_', ' ')}</span>
+                <span className="text-primary">{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="card-beam p-6">
+          <h4 className="font-heading text-xl text-storm mb-4">The Coronation</h4>
+          <p className="text-white/60 text-sm mb-4">When alignment is complete, the Ninth Tail manifests. Boryn's Spiritual Echo appears.</p>
+          <p className="font-lore text-electric italic">"You carried what I couldn't."</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderNarrative = () => (
+    <div className="space-y-6">
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-primary mb-4">Core Narrative Law</h4>
+        <p className="text-fire font-bold mb-2">{bibleData?.narrative_bible?.core_law?.rule}</p>
+        <p className="text-white/60">{bibleData?.narrative_bible?.core_law?.detail}</p>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="card-beam p-6">
+          <h4 className="font-heading text-lg text-storm mb-4">Allowed Tone</h4>
+          <ul className="space-y-1">
+            {bibleData?.narrative_bible?.tone_rules?.allowed?.map((item, i) => (
+              <li key={i} className="text-white/60 text-sm flex items-center gap-2">
+                <span className="text-storm">✓</span> {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="card-beam p-6">
+          <h4 className="font-heading text-lg text-fire mb-4">Forbidden Tone</h4>
+          <ul className="space-y-1">
+            {bibleData?.narrative_bible?.tone_rules?.forbidden?.map((item, i) => (
+              <li key={i} className="text-white/60 text-sm flex items-center gap-2">
+                <span className="text-fire">✗</span> {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-lg text-void mb-4">Two-Father Doctrine</h4>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="bg-black/40 p-4 rounded-lg">
+            <p className="text-electric font-bold">BORYN</p>
+            <p className="text-white/60 text-sm">{bibleData?.narrative_bible?.two_father_doctrine?.boryn}</p>
+          </div>
+          <div className="bg-black/40 p-4 rounded-lg">
+            <p className="text-storm font-bold">BORAX</p>
+            <p className="text-white/60 text-sm">{bibleData?.narrative_bible?.two_father_doctrine?.borax}</p>
+          </div>
+        </div>
+        <p className="text-white/40 text-xs mt-4 italic">{bibleData?.narrative_bible?.two_father_doctrine?.rule}</p>
+      </div>
+
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-lg text-primary mb-4">Dialogue Density Limits</h4>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="text-center">
+            <p className="text-2xl font-heading text-white/80">2-3</p>
+            <p className="text-xs text-white/40">Regular NPC</p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-heading text-white/80">4-5</p>
+            <p className="text-xs text-white/40">Major Characters</p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-heading text-fire">0</p>
+            <p className="text-xs text-white/40">Gods</p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-heading text-electric">1</p>
+            <p className="text-xs text-white/40">Boryn's Echo</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="card-beam p-6 bg-gradient-to-r from-fire/10 to-transparent">
+        <p className="font-lore text-center text-fire italic">
+          "{bibleData?.narrative_bible?.narrative_truth}"
+        </p>
+      </div>
+    </div>
+  );
+
+  const renderArtUX = () => (
+    <div className="space-y-6">
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-primary mb-4">Visual Prime Directive</h4>
+        <div className="grid md:grid-cols-3 gap-4 mb-4">
+          {bibleData?.art_ux_bible?.prime_directive?.rules?.map((rule, i) => (
+            <div key={i} className="bg-black/40 p-4 rounded-lg text-center">
+              <p className="text-storm font-bold">{rule}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-white/60 text-sm">{bibleData?.art_ux_bible?.prime_directive?.goal}</p>
+      </div>
+
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-electric mb-4">Color Law</h4>
+        <p className="text-white/40 text-sm mb-4">{bibleData?.art_ux_bible?.color_law?.principle}</p>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {bibleData?.art_ux_bible?.color_law?.colors && Object.entries(bibleData.art_ux_bible.color_law.colors).map(([color, data]) => (
+            <div key={color} className="text-center p-3 rounded-lg" style={{ backgroundColor: `${color === 'orange' ? '#FF3B30' : color === 'cyan' ? '#64D2FF' : color === 'purple' ? '#BF5AF2' : color === 'black' ? '#1a1a1a' : '#FFD60A'}20` }}>
+              <div className="w-6 h-6 rounded-full mx-auto mb-2" style={{ backgroundColor: color === 'orange' ? '#FF3B30' : color === 'cyan' ? '#64D2FF' : color === 'purple' ? '#BF5AF2' : color === 'black' ? '#333' : '#FFD60A' }} />
+              <p className="text-xs text-white/80 font-bold uppercase">{color}</p>
+              <p className="text-xs text-white/50">{data.meaning}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-void mb-4">Animation Philosophy</h4>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <p className="text-sm text-white/40 mb-2">Movement Feel</p>
+            <ul className="space-y-1">
+              {bibleData?.art_ux_bible?.animation_philosophy?.movement_feel?.map((item, i) => (
+                <li key={i} className="text-white/60 text-sm">• {item}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-sm text-white/40 mb-2">Attack Rules</p>
+            <ul className="space-y-1">
+              {bibleData?.art_ux_bible?.animation_philosophy?.attacks?.map((item, i) => (
+                <li key={i} className="text-white/60 text-sm">• {item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <p className="text-fire text-sm mt-4 italic">{bibleData?.art_ux_bible?.animation_philosophy?.note}</p>
+      </div>
+
+      <div className="card-beam p-6 bg-gradient-to-r from-void/10 to-transparent">
+        <p className="font-lore text-center text-void italic">
+          "{bibleData?.art_ux_bible?.art_ux_truth}"
+        </p>
+      </div>
+    </div>
+  );
+
+  const renderEngineering = () => (
+    <div className="space-y-6">
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-electric mb-4">Tail Expression Engine</h4>
+        <p className="text-white/60 mb-4">{bibleData?.engineering_specs?.tail_expression_engine?.principle}</p>
+        
+        <div className="bg-black/40 p-4 rounded-lg mb-4">
+          <p className="text-xs text-white/40 uppercase mb-2">Active Tail Limits</p>
+          <div className="grid grid-cols-4 gap-2 text-center">
+            <div>
+              <p className="text-xl font-heading text-fire">3</p>
+              <p className="text-xs text-white/40">Early</p>
+            </div>
+            <div>
+              <p className="text-xl font-heading text-electric">4-6</p>
+              <p className="text-xs text-white/40">Mid</p>
+            </div>
+            <div>
+              <p className="text-xl font-heading text-storm">~</p>
+              <p className="text-xs text-white/40">End</p>
+            </div>
+            <div>
+              <p className="text-xl font-heading text-primary">9</p>
+              <p className="text-xs text-white/40">Event</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-black/40 p-4 rounded-lg">
+          <p className="text-xs text-white/40 uppercase mb-2">Ninth Tail Conditions</p>
+          <ul className="space-y-1">
+            {bibleData?.engineering_specs?.tail_expression_engine?.ninth_tail_logic?.conditions?.map((c, i) => (
+              <li key={i} className="text-white/60 text-sm flex items-center gap-2">
+                <span className="text-primary">◆</span> {c}
+              </li>
+            ))}
+          </ul>
+          <p className="text-storm text-sm mt-3 italic">{bibleData?.engineering_specs?.tail_expression_engine?.ninth_tail_logic?.note}</p>
+        </div>
+      </div>
+
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-void mb-4">Memory Save System</h4>
+        <div className="grid md:grid-cols-3 gap-3 mb-4">
+          {bibleData?.engineering_specs?.memory_save_system?.philosophy?.map((p, i) => (
+            <div key={i} className="bg-black/40 p-3 rounded-lg text-center">
+              <p className="text-white/60 text-sm">{p}</p>
+            </div>
+          ))}
+        </div>
+        
+        <div className="bg-black/40 p-4 rounded-lg">
+          <p className="text-xs text-white/40 uppercase mb-2">Memory Flags Represent</p>
+          <div className="flex flex-wrap gap-2">
+            {bibleData?.engineering_specs?.memory_save_system?.memory_flags?.represent?.map((f, i) => (
+              <span key={i} className="text-xs px-2 py-1 rounded-full bg-void/20 text-void">{f}</span>
+            ))}
+          </div>
+          <p className="text-white/40 text-xs mt-3 italic">{bibleData?.engineering_specs?.memory_save_system?.memory_flags?.note}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderProduction = () => (
+    <div className="space-y-6">
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-fire mb-4">Team Structure</h4>
+        <p className="text-white/60 mb-4">{bibleData?.production_plan?.staffing_model?.principle}</p>
+        <p className="text-storm font-bold">{bibleData?.production_plan?.staffing_model?.team_size}</p>
+      </div>
+
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-electric mb-4">Tech Stack</h4>
+        <div className="bg-black/40 p-4 rounded-lg mb-4">
+          <p className="text-2xl font-heading text-primary mb-2">{bibleData?.production_plan?.tech_stack?.engine}</p>
+          <div className="flex flex-wrap gap-2">
+            {bibleData?.production_plan?.tech_stack?.why_unity?.map((reason, i) => (
+              <span key={i} className="text-xs px-2 py-1 rounded-full bg-primary/20 text-primary">{reason}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-storm mb-4">Milestones</h4>
+        <div className="space-y-4">
+          {bibleData?.production_plan?.milestones && Object.entries(bibleData.production_plan.milestones).map(([phase, data]) => (
+            <div key={phase} className="bg-black/40 p-4 rounded-lg">
+              <div className="flex justify-between items-center mb-2">
+                <p className="font-heading text-lg uppercase" style={{ color: phase === 'alpha' ? '#64D2FF' : phase === 'beta' ? '#BF5AF2' : '#FF3B30' }}>{phase}</p>
+                <span className="text-xs text-white/40">{data.time}</span>
+              </div>
+              <p className="text-white/60 text-sm italic mb-2">"{data.question}"</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="card-beam p-6">
+        <h4 className="font-heading text-xl text-void mb-4">Execution Rules</h4>
+        <ul className="space-y-2">
+          {bibleData?.production_plan?.execution_rules?.map((rule, i) => (
+            <li key={i} className="text-white/60 text-sm flex items-start gap-2">
+              <span className="text-fire font-bold">{i + 1}.</span> {rule}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+
+  const renderEndings = () => (
+    <div className="space-y-6">
+      <div className="card-beam p-6 text-center">
+        <p className="font-lore text-xl text-primary mb-2">{bibleData?.multiple_endings?.principle}</p>
+        <div className="flex justify-center gap-4 mt-4">
+          {bibleData?.multiple_endings?.axes_tracked?.map((axis, i) => (
+            <span key={i} className="text-xs px-3 py-1 rounded-full bg-white/5 text-white/40">{axis}</span>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        {bibleData?.multiple_endings?.endings?.map((ending, i) => (
+          <div key={i} className="card-beam p-6" style={{ borderColor: i === 0 ? '#FFD60A40' : i === 1 ? '#64D2FF40' : i === 2 ? '#FF3B3040' : '#BF5AF240' }}>
+            <h4 className="font-heading text-lg mb-3" style={{ color: i === 0 ? '#FFD60A' : i === 1 ? '#64D2FF' : i === 2 ? '#FF3B30' : '#BF5AF2' }}>
+              {ending.name}
+            </h4>
+            <div className="mb-3">
+              <p className="text-xs text-white/40 uppercase mb-1">Requirements</p>
+              <ul className="space-y-1">
+                {ending.requirements?.map((req, j) => (
+                  <li key={j} className="text-white/60 text-xs">• {req}</li>
+                ))}
+              </ul>
+            </div>
+            <p className="text-white/50 text-sm mb-2">{ending.outcome}</p>
+            <p className="text-white/30 text-xs italic">{ending.note}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'narrative': return renderNarrative();
+      case 'art': return renderArtUX();
+      case 'engineering': return renderEngineering();
+      case 'production': return renderProduction();
+      case 'endings': return renderEndings();
+      default: return renderOverview();
+    }
+  };
+
+  return (
+    <section className="min-h-screen py-24" data-testid="bible-section">
+      <div className="container-game">
+        <div className="text-center mb-12">
+          <p className="font-lore text-primary text-sm tracking-[0.3em] mb-4">THE DOCUMENTATION</p>
+          <h2 className="font-heading text-4xl md:text-5xl font-black mb-4">
+            GAME <span className="text-primary">BIBLE</span>
+          </h2>
+          <p className="text-white/60 max-w-2xl mx-auto">
+            The complete canon, systems, and production documentation.
+          </p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex flex-wrap justify-center gap-2 mb-12">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider transition-all ${
+                activeTab === tab.id 
+                  ? 'bg-primary text-white' 
+                  : 'bg-white/5 text-white/50 hover:bg-white/10'
+              }`}
+              data-testid={`bible-tab-${tab.id}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="max-w-4xl mx-auto">
+          {renderContent()}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 // Footer
 const Footer = () => (
   <footer className="py-12 border-t border-white/5" data-testid="footer">
