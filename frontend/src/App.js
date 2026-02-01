@@ -183,9 +183,9 @@ const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
       data-testid={`character-card-${character.id}`}
     >
       <div className="aspect-square mb-4 rounded-lg overflow-hidden bg-black/60 relative">
-        {generatedImage ? (
+        {displayImage ? (
           <img 
-            src={`data:image/png;base64,${generatedImage}`} 
+            src={generatedImage ? `data:image/png;base64,${generatedImage}` : displayImage} 
             alt={character.name}
             className="w-full h-full object-cover"
           />
@@ -211,7 +211,7 @@ const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
       <p className="text-primary text-sm mb-3 font-lore">{character.title}</p>
       <p className="text-white/60 text-sm mb-4 leading-relaxed">{character.description}</p>
       <div className="flex flex-wrap gap-2">
-        {character.abilities?.slice(0, 3).map((ability, i) => (
+        {character.abilities?.slice(0, 4).map((ability, i) => (
           <span key={i} className="text-xs px-2 py-1 rounded-full bg-white/5 text-white/40">
             {ability}
           </span>
