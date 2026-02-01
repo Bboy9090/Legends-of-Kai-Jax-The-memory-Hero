@@ -103,6 +103,235 @@ async def get_status_checks():
             check['timestamp'] = datetime.fromisoformat(check['timestamp'])
     return status_checks
 
+# ========== MASTER BLUEPRINT - COMPLETE SET ==========
+
+MASTER_BLUEPRINT = {
+    "title": "LEGENDS OF KAI-JAX: THE MEMORY KING",
+    "subtitle": "MASTER BLUEPRINT — COMPLETE SET",
+    "version": "Final Delivery — Canon Locked",
+    "franchise_spine": "The First Sabertooths did not rule the world. They taught it how to survive without them.",
+    
+    # 📕 STORY & LORE BIBLE
+    "story_lore_bible": {
+        "title": "STORY & LORE BIBLE",
+        "subtitle": "Narrative Authority",
+        "core_thesis": "Survival without memory is extinction with better design.",
+        "the_world": {
+            "description": "A mythic megacity fractured by forgotten gods and engineered extinction",
+            "rules": [
+                "Urban verticality is symbolic: climb = survive, fall = erasure",
+                "The world reacts to memory, not morality"
+            ]
+        },
+        "mythology": {
+            "principle": "The First Sabertooth Gods do not intervene. They echo.",
+            "gods": [
+                {"name": "Kar-Voth", "domain": "Hunger / Initiation", "element": "Electric", "color": "#FFD60A"},
+                {"name": "Thryxen", "domain": "Law / Sovereignty", "element": "Storm / Ice", "color": "#64D2FF"},
+                {"name": "Pyraxis", "domain": "Sacrifice / Endurance", "element": "Fire", "color": "#FF3B30"},
+                {"name": "Myrr'Kai", "domain": "Memory / Adaptation", "element": "Web / Void", "color": "#BF5AF2"}
+            ],
+            "note": "They are not characters. They are principles."
+        },
+        "two_father_doctrine": {
+            "title": "The Two-Father Doctrine (Emotional Spine)",
+            "boryn": {
+                "title": "The Father (Shield)",
+                "traits": ["Street survival, ruthless love", "Dies buying time", "Lives on as Ember Memory"]
+            },
+            "borax": {
+                "title": "The Sabertooth (Law)",
+                "traits": ["Legendary apex", "Emotionally distant", "Trains without comfort", "Never replaces the father"]
+            },
+            "truth": "Kaijax is born from love + law + memory, not power."
+        }
+    },
+    
+    # 📘 GAME SYSTEMS BIBLE
+    "game_systems_bible": {
+        "title": "GAME SYSTEMS BIBLE",
+        "subtitle": "Mechanics Authority",
+        "core_loop": "Move → Fight → Remember → Adapt",
+        "nine_tail_system": {
+            "title": "The Nine-Tail Memory System (Final)",
+            "rules": [
+                "Kai-Jax always has 9 tails",
+                "Expression is contextual, not additive",
+                "Tails = loadout + movement + memory powers"
+            ],
+            "progression": [
+                "Story chapters unlock tail tiers",
+                "Skill mastery upgrades tail behavior",
+                "Memory fragments unlock abilities"
+            ],
+            "milestones": [
+                {"tails": "3", "stage": "Base Fusion", "description": "Memory Hero born"},
+                {"tails": "4-6", "stage": "Discipline & Evolution", "description": "Law shapes power"},
+                {"tails": "7-8", "stage": "Crisis & Sacrifice", "description": "Choices define legacy"},
+                {"tails": "9", "stage": "Alignment", "description": "Memory King crowned"}
+            ],
+            "ninth_tail": {
+                "truth": "Appears only when inner conflict ends",
+                "properties": ["No spectacle", "No escalation", "The world stops correcting him"],
+                "moment": "The Ninth Tail settles."
+            }
+        },
+        "movement_philosophy": {
+            "principles": ["Momentum-based", "Precision restores flow", "Sloppiness punished", "No float, no spam, no god-mode"],
+            "feel": "A predator who knows exactly where he will land."
+        },
+        "memory_vs_design": {
+            "title": "Memory vs Design (Systemic War)",
+            "memory": {
+                "alignment": "Player",
+                "rewards": ["Variation", "Protection", "Sacrifice"],
+                "effects": ["Expands control windows", "Stabilizes fusion"]
+            },
+            "design": {
+                "alignment": "Enemy",
+                "behavior": ["Learns habits", "Compresses inputs", "Deletes mechanics"]
+            },
+            "truth": "Erasure deletes everything except Kaijax. He is incompatible with deletion."
+        }
+    },
+    
+    # 📗 ENEMY & FACTION BIBLE
+    "enemy_faction_bible": {
+        "title": "ENEMY & FACTION BIBLE",
+        "subtitle": "Opposition Authority",
+        "void_fang_covenant": {
+            "description": "A cult of outcomes.",
+            "belief": "Memory rots. Design endures.",
+            "goals": [
+                "Harvest Sabertooth relics",
+                "Create synthetic apexes",
+                "Prevent the Ninth Tail"
+            ],
+            "elite_commanders": [
+                {"name": "Varkesh the Grafted", "specialty": "Regeneration & targeting"},
+                {"name": "Sybeth the Choir Mother", "specialty": "Sensory/UI denial"},
+                {"name": "Korthyx Prime", "specialty": "Adaptive combat intelligence"}
+            ],
+            "note": "They are tests, not bosses."
+        },
+        "ulgorr": {
+            "title": "Ulgorr — The Fangless Architect",
+            "role": "Final Antagonist",
+            "description": "Ancient amphibian–reptilian behemoth",
+            "traits": ["Wears stolen Sabertooth fangs", "Designs extinction"],
+            "belief": "Memory is an evolutionary flaw.",
+            "plan": [
+                "Convert Sabertooth fangs into catalysts",
+                "Engineer obedient apex predators",
+                "End memory-based survival"
+            ],
+            "weakness": "He fears Kaijax because: Kaijax adapts with memory."
+        }
+    },
+    
+    # 📙 ACT STRUCTURE
+    "act_structure": {
+        "title": "ACT STRUCTURE",
+        "subtitle": "Story + Game Flow",
+        "acts": [
+            {
+                "number": 1,
+                "title": "THE FATHER ERA",
+                "events": ["Kai & Jax as cubs", "Brutal survival training", "No prophecy", "Father dies buying time"],
+                "theme": "Protection"
+            },
+            {
+                "number": 2,
+                "title": "THE SHADOW WATCHER",
+                "events": ["Borax observes, judges", "Fusion teased but denied", "World grows hostile"],
+                "theme": "Discipline"
+            },
+            {
+                "number": 3,
+                "title": "THE FRACTURE",
+                "events": ["Sector-7 collapse", "Fusion under death pressure", "3 tails active"],
+                "theme": "Survival through memory"
+            },
+            {
+                "number": 4,
+                "title": "THE MEMORY WAR",
+                "events": ["Void Fang Covenant exposed", "Tails 4–8 unlocked", "Aurelion & Selene appear", "Erasure becomes common"],
+                "theme": "Adaptation"
+            },
+            {
+                "number": 5,
+                "title": "THE MEMORY KING",
+                "events": ["Ulgorr revealed fully", "Synthetic apex war", "Ninth Tail crowns Kaijax"],
+                "theme": "Alignment"
+            }
+        ],
+        "end_truth": "The world survives not because Kaijax wins — but because it remembers why it should."
+    },
+    
+    # 📒 MODE BREAKDOWN
+    "mode_breakdown": {
+        "title": "MODE BREAKDOWN",
+        "modes": [
+            {
+                "name": "Story Mode",
+                "features": ["Full narrative", "Tail progression", "World reaction"]
+            },
+            {
+                "name": "Survival / Gauntlet",
+                "features": ["Forces tail rotation", "Punishes habits", "Tests mastery"]
+            },
+            {
+                "name": "Versus",
+                "features": ["Limited tail sets", "No Ninth Tail", "Balance through restraint"]
+            }
+        ]
+    },
+    
+    # HANDOFF STRUCTURE
+    "studio_handoff": {
+        "title": "How This Hands Off to a Studio",
+        "deliverables": [
+            {"bible": "Narrative Bible", "team": "Writers"},
+            {"bible": "Systems Bible", "team": "Engineers"},
+            {"bible": "Enemy Bible", "team": "Combat designers"},
+            {"bible": "Act Map", "team": "Producers"},
+            {"bible": "Visual prompts", "team": "Artists"}
+        ],
+        "status": "AAA-ready"
+    }
+}
+
+# Updated API endpoint for complete master blueprint
+@api_router.get("/blueprint")
+async def get_master_blueprint():
+    """Get the complete Master Blueprint"""
+    return MASTER_BLUEPRINT
+
+@api_router.get("/blueprint/story")
+async def get_story_lore_bible():
+    """Get Story & Lore Bible"""
+    return MASTER_BLUEPRINT["story_lore_bible"]
+
+@api_router.get("/blueprint/systems")
+async def get_game_systems_bible():
+    """Get Game Systems Bible"""
+    return MASTER_BLUEPRINT["game_systems_bible"]
+
+@api_router.get("/blueprint/enemies")
+async def get_enemy_faction_bible():
+    """Get Enemy & Faction Bible"""
+    return MASTER_BLUEPRINT["enemy_faction_bible"]
+
+@api_router.get("/blueprint/acts")
+async def get_act_structure():
+    """Get Act Structure"""
+    return MASTER_BLUEPRINT["act_structure"]
+
+@api_router.get("/blueprint/modes")
+async def get_mode_breakdown():
+    """Get Mode Breakdown"""
+    return MASTER_BLUEPRINT["mode_breakdown"]
+
 # ========== FULL GAME BIBLE DATA ==========
 
 NARRATIVE_BIBLE = {
