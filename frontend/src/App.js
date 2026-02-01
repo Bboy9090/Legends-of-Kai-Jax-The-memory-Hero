@@ -253,12 +253,18 @@ const CharactersSection = ({ onGenerateImage, isGenerating }) => {
     fetchCharacters();
   }, []);
 
-  // All reference art gallery
+  // All reference art gallery - LOCKED IMAGE CANON
   const galleryImages = [
     {
+      id: 'full-cast',
+      title: 'LOCKED IMAGE CANON - Full Cast',
+      description: 'Kai (fire) + Jax (ice) vs Borax (Tank King) + Boryn (Hunter General). Production canon locked.',
+      url: 'https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/qfhn7od0_F5ACDADF-FD25-4E9D-ACF2-658700CB2C84.png'
+    },
+    {
       id: 'brothers-training',
-      title: 'The Shield\'s Warmth & The Mentor\'s Vigil',
-      description: 'Kai and Jax sparring while Boryn watches protectively. Borax observes from the shadows.',
+      title: 'The Brothers Training',
+      description: 'Kai and Jax sparring in their youth, before the fall.',
       url: 'https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/wqaylhx5_IMG_2571.png'
     },
     {
