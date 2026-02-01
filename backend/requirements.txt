@@ -72,7 +72,7 @@ platformdirs==4.5.1
 pluggy==1.6.0
 propcache==0.4.1
 proto-plus==1.27.0
-protobuf==5.29.5
+protobuf==6.33.5
 pyasn1==0.6.2
 pyasn1_modules==0.4.2
 pycodestyle==2.14.0
