@@ -103,6 +103,148 @@ async def get_status_checks():
             check['timestamp'] = datetime.fromisoformat(check['timestamp'])
     return status_checks
 
+# ========== CHARACTER SELECT + UI + CODEX SYSTEM ==========
+
+CHARACTER_SELECT = {
+    "title": "CHARACTER SELECT SCREEN",
+    "design_philosophy": "The character select screen is not a toy box. It is a hierarchy of survival. Players should feel who matters before they read anything.",
+    "layout": {
+        "center": {
+            "description": "Large, animated model",
+            "features": ["Idle breathing", "Subtle tail motion", "One tail faintly active, others dormant"]
+        },
+        "left_column": {
+            "title": "HEROES",
+            "characters": [
+                {"name": "Kai-Jax", "status": "Default highlight"},
+                {"name": "Kai", "status": "Locked early"},
+                {"name": "Jax", "status": "Locked early"},
+                {"name": "Aurelion", "status": "Unlock mid-late"},
+                {"name": "Selene", "status": "Support / Oracle"}
+            ]
+        },
+        "right_column": {
+            "title": "OPPOSITION",
+            "characters": [
+                {"name": "Ulgorr", "status": "Locked until endgame"},
+                {"name": "Korthyx Prime", "status": "Available"},
+                {"name": "Sybeth", "status": "Available"},
+                {"name": "Varkesh", "status": "Available"},
+                {"name": "Covenant Elites", "status": "Variants"}
+            ]
+        },
+        "bottom_bar": ["Mode toggle: Story / Survival / Versus", "Tail Loadout (icons only)", "Difficulty indicator reacts to tail count"]
+    },
+    "visual_rules": ["No bright arcade colors", "Muted mythic palette", "Motion is subtle, never flashy", "Ninth Tail never visible here"],
+    "hover_behavior": {
+        "effects": ["Camera tightens", "Ambient audio shifts", "A single word appears (not a bio)"],
+        "examples": [
+            {"character": "Kai-Jax", "word": "REMEMBERS"},
+            {"character": "Borax", "word": "JUDGES"},
+            {"character": "Ulgorr", "word": "DESIGNS"},
+            {"character": "Boryn", "word": "PROTECTS"},
+            {"character": "Korthyx", "word": "ADAPTS"}
+        ]
+    }
+}
+
+MATCHUP_ART_PROMPTS = [
+    {
+        "title": "KAI-JAX vs ULGORR",
+        "subtitle": "MEMORY vs DESIGN",
+        "prompt": "A cinematic split-frame illustration showing Kai-Jax in the foreground, calm and grounded with one dark memory tail faintly arcing behind him, facing a colossal amphibian-reptilian titan looming in the background. Ulgorr's body reshapes the environment with cold, geometric precision while Kai-Jax stands unaffected. The contrast is organic memory versus engineered extinction. Mythic scale, restrained color, dramatic lighting.",
+        "color": "#2E2EFE"
+    },
+    {
+        "title": "BORAX vs KORTHYX PRIME",
+        "subtitle": "LAW vs ADAPTATION",
+        "prompt": "A towering sabertooth lion mentor standing perfectly still as a sleek synthetic reptilian warrior lunges toward him mid-adaptation. Lightning arcs subtly around Borax's mane while Korthyx's armor shifts shape. The moment freezes before impact, emphasizing restraint versus calculation. Cold steel tones versus storm-charged gold.",
+        "color": "#FFD60A"
+    },
+    {
+        "title": "BORYN vs VARKESH",
+        "subtitle": "SACRIFICE vs THEFT",
+        "prompt": "A brutal close-quarters battle between a battered sabertooth tiger guardian and a grotesque crocodile-toad monster covered in stolen fangs. Boryn stands wounded but unyielding, blocking an attack meant for unseen cubs behind him. Ember glow clashes against sickly green regeneration. Emotional, grounded, visceral.",
+        "color": "#FF3B30"
+    },
+    {
+        "title": "AURELION vs SYBETH",
+        "subtitle": "WARNING vs ERASURE",
+        "prompt": "A fractured time-scarred silver warrior clashing with a floating serpent-bat entity whose sonic waves distort reality. Light cracks through Aurelion's body while Sybeth's presence warps perception itself. The scene feels unstable and desperate, as if reality may collapse at any moment.",
+        "color": "#BF5AF2"
+    }
+]
+
+CODEX_SYSTEM = {
+    "title": "THE MEMORY LEDGER",
+    "description": "This replaces boring lore dumps.",
+    "unlock_rules": ["Witnessed events", "Lost NPCs", "Tail awakenings", "Boss encounters"],
+    "never": "Never through menus alone.",
+    "structure": {
+        "tabs": [
+            {"name": "KNOWN", "description": "What the world believes"},
+            {"name": "REMEMBERED", "description": "What actually happened"},
+            {"name": "LOST", "description": "What cannot be recovered"},
+            {"name": "PLAYER NOTE", "description": "One short line reflecting player choices"}
+        ]
+    },
+    "example_entries": [
+        {
+            "entry": "KAI-JAX",
+            "known": "A fused sabertooth anomaly.",
+            "remembered": "Two brothers who refused to forget each other.",
+            "lost": "The life they would have had.",
+            "player_note": "I stopped running."
+        },
+        {
+            "entry": "THE NINTH TAIL",
+            "known": "A myth. A legend. A lie.",
+            "remembered": "Alignment without conflict.",
+            "lost": "Nothing.",
+            "player_note": "The world went quiet."
+        },
+        {
+            "entry": "BORYN",
+            "known": "A sabertooth guardian. Deceased.",
+            "remembered": "A father who bought time with his life.",
+            "lost": "The future he wanted for them.",
+            "player_note": "He never looked away."
+        },
+        {
+            "entry": "ULGORR",
+            "known": "The Architect of Design.",
+            "remembered": "A god who forgot what survival meant.",
+            "lost": "His own memory.",
+            "player_note": "He couldn't adapt."
+        }
+    ],
+    "tail_codex_ui": {
+        "display": "Tails shown as inked silhouettes",
+        "rules": [
+            "Only active tails are solid",
+            "Dormant tails pulse faintly",
+            "Ninth Tail never labeled by name"
+        ],
+        "hover": "Shows function, not lore. Lore unlocks later, if at all."
+    }
+}
+
+# API Endpoints for UI/Codex
+@api_router.get("/ui/character-select")
+async def get_character_select():
+    """Get Character Select Screen specs"""
+    return CHARACTER_SELECT
+
+@api_router.get("/ui/matchups")
+async def get_matchup_prompts():
+    """Get Matchup Art Prompts"""
+    return MATCHUP_ART_PROMPTS
+
+@api_router.get("/ui/codex")
+async def get_codex_system():
+    """Get Codex System specs"""
+    return CODEX_SYSTEM
+
 # ========== MASTER BLUEPRINT - COMPLETE SET ==========
 
 MASTER_BLUEPRINT = {
