@@ -139,37 +139,37 @@ CHARACTERS_DATA = [
     CharacterData(
         id="kai",
         name="KAI",
-        title="The Fierce Heart",
-        description="The elder Sabertooth brother. A powerful bipedal tiger-beast with burning orange fur, massive fangs, and eyes like molten fire. Quick to anger, quicker to protect. His muscular frame radiates heat, and his roar shakes the foundations of the city.",
-        abilities=["Ember Strike", "Rage Ignition", "Protective Fury", "Heart of Fire"]
+        title="The Web Weaver",
+        description="The elder brother - a fiery orange and blackish-grey hedgehog-fox beast with spiky fur heavy on top and athletic build. Always playing with his webs - shooting graffiti tags, creating hammocks, hanging upside down. His webs can pull, push, slam, dodge, and channel electricity, ice, or fire through them. Wears his signature jacket everywhere.",
+        abilities=["Web Shot", "Electric Web", "Fire Web", "Ice Web", "Graffiti Tag", "Web Slam", "Hammock Hang"]
     ),
     CharacterData(
         id="jax",
         name="JAX",
-        title="The Calculated Mind",
-        description="The younger Sabertooth brother. A sleek bipedal tiger-beast with cool silver-blue fur, sharp calculating eyes, and frost patterns across his coat. Patient and strategic, his lean powerful form moves with deadly precision.",
-        abilities=["Storm Analysis", "Tactical Strike", "Mind's Eye", "Frozen Precision"]
+        title="The Storm Fox",
+        description="The younger brother - a sleek silver-blue fox beast with a magnificent fluffy tail. Cool, calculated, always three moves ahead. Ice and lightning crackle around him. Where Kai is chaos, Jax is precision. His frost patterns shift with his mood.",
+        abilities=["Storm Strike", "Ice Shard", "Lightning Dash", "Frost Shield", "Thunder Clap"]
     ),
     CharacterData(
         id="kaijax",
         name="KAI-JAX",
         title="The Memory King",
-        description="The legendary fusion - a towering bipedal Sabertooth beast with fur that shifts between fire-orange and storm-blue. Nine magnificent tails swirl behind him, each blazing with different elemental power. His eyes hold the memory of two souls, his fangs gleam with sovereign light. The Memory Warrior who cannot be erased.",
-        abilities=["Nine-Tail Mastery", "Memory Weave", "Fusion State", "Architect's Denial", "Sovereign Crown"]
+        description="The legendary fusion - a towering dark shadowy beast with glowing yellow eyes that pierce through reality. Nine magnificent elemental tails swirl behind him - fire, lightning, ice, void, earth, water, nature, light, and memory. Armored in battle-worn gear, he embodies the combined power of two brothers. Neither Kai nor Jax - something far greater. The beast who cannot be erased.",
+        abilities=["Nine-Tail Mastery", "Memory Weave", "Fusion State", "Architect's Denial", "Sovereign Crown", "Reality Warp"]
     ),
     CharacterData(
         id="boryn",
         name="BORYN",
-        title="The Shield Father",
-        description="A weathered Sabertooth warrior with battle-scarred grey fur and kind amber eyes. Bipedal and broad-shouldered, his protective stance speaks of countless fights survived. Foster guardian to Kai and Jax, his sacrifice bought time for legends to be born.",
-        abilities=["Iron Defense", "Paternal Shield", "Sacrifice"]
+        title="The Shield's Warmth",
+        description="A massive protective tiger beast - the foster father who raised Kai and Jax on the streets. Warm amber eyes, battle-worn orange fur, sits watch while the brothers train and play. His presence means safety. His sacrifice bought time for legends to be born.",
+        abilities=["Iron Defense", "Paternal Shield", "Sacrifice", "Warm Embrace"]
     ),
     CharacterData(
         id="borax",
         name="BORAX",
-        title="The Sabertooth Law",
-        description="The apex of all Sabertooths - a massive bipedal beast towering above all others. His ancient white fur is streaked with battle marks, his fangs are legendary, his presence commands absolute respect. Cold, distant, unmovable. He is the Law itself.",
-        abilities=["Law Enforcement", "Discipline Strike", "Apex Judgment"]
+        title="The Mentor's Vigil",
+        description="A TOWERING armored lion warrior - the apex Sabertooth who watches from the shadows of the cyberpunk city. Ancient battle armor covers his massive frame. Cold, distant, but always watching. He is the Law itself. His presence makes even the bravest hesitate.",
+        abilities=["Law Enforcement", "Discipline Strike", "Apex Judgment", "Silent Vigil", "Iron Will"]
     ),
 ]
 
