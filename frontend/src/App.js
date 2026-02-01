@@ -237,6 +237,40 @@ const CharactersSection = ({ onGenerateImage, isGenerating }) => {
     fetchCharacters();
   }, []);
 
+  // All reference art gallery
+  const galleryImages = [
+    {
+      id: 'brothers-training',
+      title: 'The Shield\'s Warmth & The Mentor\'s Vigil',
+      description: 'Kai and Jax sparring while Boryn watches protectively. Borax observes from the shadows.',
+      url: 'https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/wqaylhx5_IMG_2571.png'
+    },
+    {
+      id: 'kaijax-dark',
+      title: 'Kai-Jax: Shadow Form',
+      description: 'The dark fusion with glowing yellow eyes and elemental tails in Sector-7.',
+      url: 'https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/xtev4z4g_IMG_2562.png'
+    },
+    {
+      id: 'kaijax-protector',
+      title: 'Kai-Jax: The Protector',
+      description: 'Defending the innocent with fire and web tails blazing.',
+      url: 'https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/jedvy626_IMG_2623.png'
+    },
+    {
+      id: 'kaijax-king',
+      title: 'Kai-Jax: The Memory King',
+      description: 'Full 9-tail armored form - the ultimate fusion state.',
+      url: 'https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/htuxfqte_9660FF22-E010-4DF5-A321-DDFE60ADB8CB.png'
+    },
+    {
+      id: 'brothers-fusion',
+      title: 'Brothers & Fusion',
+      description: 'Kai (red jacket), Jax (blue jacket), and their legendary fusion form.',
+      url: 'https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/qg2yruaf_D3D596A4-184F-4AE1-8009-15784FB7D51F.png'
+    }
+  ];
+
   return (
     <section className="min-h-screen py-24" data-testid="characters-section">
       <div className="container-game">
@@ -250,7 +284,8 @@ const CharactersSection = ({ onGenerateImage, isGenerating }) => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Main Characters Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
           {characters.map((char) => (
             <CharacterCard 
               key={char.id} 
@@ -259,6 +294,41 @@ const CharactersSection = ({ onGenerateImage, isGenerating }) => {
               isGenerating={isGenerating}
             />
           ))}
+        </div>
+
+        {/* Art Gallery Section */}
+        <div className="mt-20">
+          <div className="text-center mb-12">
+            <p className="font-lore text-fire text-sm tracking-[0.3em] mb-4">THE GALLERY</p>
+            <h3 className="font-heading text-3xl md:text-4xl font-black mb-4">
+              CHARACTER <span className="text-fire">ART</span>
+            </h3>
+            <p className="text-white/60">Concept art and character variations</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {galleryImages.map((img, index) => (
+              <div 
+                key={img.id}
+                className="card-beam overflow-hidden group"
+                style={{ animationDelay: `${index * 0.1}s` }}
+                data-testid={`gallery-${img.id}`}
+              >
+                <div className="aspect-video relative overflow-hidden">
+                  <img 
+                    src={img.url} 
+                    alt={img.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-60" />
+                </div>
+                <div className="p-4">
+                  <h4 className="font-heading text-lg text-primary mb-1">{img.title}</h4>
+                  <p className="text-white/50 text-sm">{img.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
