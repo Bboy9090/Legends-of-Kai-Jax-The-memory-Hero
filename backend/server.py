@@ -697,37 +697,37 @@ CHARACTERS_DATA = [
     CharacterData(
         id="kai",
         name="KAI",
-        title="The Web Weaver",
-        description="The elder brother - a fiery orange and blackish-grey hedgehog-fox beast with spiky fur heavy on top and athletic build. Always playing with his webs - shooting graffiti tags, creating hammocks, hanging upside down. His webs can pull, push, slam, dodge, and channel electricity, ice, or fire through them. Wears his signature jacket everywhere.",
-        abilities=["Web Shot", "Electric Web", "Fire Web", "Ice Web", "Graffiti Tag", "Web Slam", "Hammock Hang"]
+        title="Prime Hero",
+        description="The elder brother - coal black and burnt orange fur with ember gold accents. Vivid green eyes that pierce through darkness. Molten amber claws that burn with every strike. Forward lunge posture, broad chest, natural leader. Always wearing his signature jacket.",
+        abilities=["Fire Claws", "Ember Strike", "Web Shot", "Graffiti Tag", "Protective Fury"]
     ),
     CharacterData(
         id="jax",
         name="JAX",
-        title="The Storm Fox",
-        description="The younger brother - a sleek silver-blue fox beast with a magnificent fluffy tail. Cool, calculated, always three moves ahead. Ice and lightning crackle around him. Where Kai is chaos, Jax is precision. His frost patterns shift with his mood.",
-        abilities=["Storm Strike", "Ice Shard", "Lightning Dash", "Frost Shield", "Thunder Clap"]
+        title="Prime Striker",
+        description="The younger brother - pitch black fur with electric blue accents. Solid ember gold eyes that calculate every move. Ice-blue steel claws crackling with lightning. Sharp quills swept back that glow blue on movement. Speed, menace, precision incarnate.",
+        abilities=["Ice Claws", "Lightning Dash", "Thunder Strike", "Storm Analysis", "Frozen Precision"]
     ),
     CharacterData(
         id="kaijax",
         name="KAI-JAX",
         title="The Memory King",
-        description="The legendary fusion - a towering dark shadowy beast with glowing yellow eyes that pierce through reality. Nine magnificent elemental tails swirl behind him - fire, lightning, ice, void, earth, water, nature, light, and memory. Armored in battle-worn gear, he embodies the combined power of two brothers. Neither Kai nor Jax - something far greater. The beast who cannot be erased.",
-        abilities=["Nine-Tail Mastery", "Memory Weave", "Fusion State", "Architect's Denial", "Sovereign Crown", "Reality Warp"]
-    ),
-    CharacterData(
-        id="boryn",
-        name="BORYN",
-        title="The Shield's Warmth",
-        description="A massive protective tiger beast - the foster father who raised Kai and Jax on the streets. Warm amber eyes, battle-worn orange fur, sits watch while the brothers train and play. His presence means safety. His sacrifice bought time for legends to be born.",
-        abilities=["Iron Defense", "Paternal Shield", "Sacrifice", "Warm Embrace"]
+        description="The legendary fusion - split palette of ember gold/orange (Kai side) and electric blue (Jax side). Heterochromia eyes - one green, one gold. THREE TAILS: Tail 1 (flame/amber), Tail 2 (ice/blue), Tail 3 (bond tail - neutral dark, reacts to emotion). Evolves up to 9 tails. Only 1-2 tails glow at a time. The 9th tail crowns him as both fathers' echoes appear.",
+        abilities=["Dual Element Mastery", "Fusion State", "Nine-Tail Evolution", "Memory Weave", "Architect's Denial", "Sovereign Crown"]
     ),
     CharacterData(
         id="borax",
         name="BORAX",
-        title="The Mentor's Vigil",
-        description="A TOWERING armored lion warrior - the apex Sabertooth who watches from the shadows of the cyberpunk city. Ancient battle armor covers his massive frame. Cold, distant, but always watching. He is the Law itself. His presence makes even the bravest hesitate.",
-        abilities=["Law Enforcement", "Discipline Strike", "Apex Judgment", "Silent Vigil", "Iron Will"]
+        title="Sabertooth Tank King",
+        description="FINAL BOSS - A massive sabertooth LION beast. Rust red, ash, and scorched iron palette. Apocalyptic militia armor, heavy and scarred. Deep molten red eyes that burn with dominance. Wide, immovable silhouette - the king of ruins. Brute force incarnate.",
+        abilities=["Titan Slam", "Scorched Earth", "Iron Fortress", "Dominance Roar", "Extinction Strike"]
+    ),
+    CharacterData(
+        id="boryn",
+        name="BORYN",
+        title="Sabertooth Hunter General",
+        description="ELITE BOSS - A lethal sabertooth TIGER. Bone white fur with charcoal and dried blood accents. Martial gi pants only, shirtless warrior. Cold pale gold eyes. Tall, lean, blade-like silhouette. Discipline, lethal calm, assassin general. The hunter who never misses.",
+        abilities=["Silent Strike", "Blade Dance", "Hunter's Mark", "Lethal Precision", "Death's Patience"]
     ),
 ]
 
