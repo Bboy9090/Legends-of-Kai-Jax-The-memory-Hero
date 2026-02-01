@@ -158,6 +158,7 @@ const HeroSection = ({ onNavigate }) => {
 // Character Card Component
 const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
   const [generatedImage, setGeneratedImage] = useState(null);
+  const [isLocalGenerating, setIsLocalGenerating] = useState(false);
 
   // Reference images from user's art - LOCKED IMAGE CANON
   const referenceImages = {
@@ -177,13 +178,16 @@ const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
       borax: "TOWERING armored lion warrior beast, bipedal MASSIVE frame, ancient battle-worn heavy armor with spikes, cold piercing eyes, watching from cyberpunk city rooftop at night, neon signs in background, absolute authority presence, the apex predator, mentor figure, dark intimidating silhouette, game boss character art, hyper detailed, dramatic noir lighting, 4K"
     };
 
+    setIsLocalGenerating(true);
     const result = await onGenerateImage(character.id, prompts[character.id] || prompts.kaijax);
     if (result) {
       setGeneratedImage(result);
     }
+    setIsLocalGenerating(false);
   };
 
   const displayImage = generatedImage || referenceImages[character.id];
+  const showGenerating = isLocalGenerating || (isGenerating && !generatedImage);
 
   const borderColors = {
     kai: 'border-fire/30 hover:border-fire',
@@ -198,23 +202,47 @@ const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
       className={`card-beam p-6 ${borderColors[character.id] || ''}`}
       data-testid={`character-card-${character.id}`}
     >
-      <div className="aspect-square mb-4 rounded-lg overflow-hidden bg-black/60 relative">
+      <div className="aspect-square mb-4 rounded-lg overflow-hidden bg-black/60 relative group">
         {displayImage ? (
-          <img 
-            src={generatedImage ? `data:image/png;base64,${generatedImage}` : displayImage} 
-            alt={character.name}
-            className="w-full h-full object-cover"
-          />
+          <>
+            <img 
+              src={generatedImage ? `data:image/png;base64,${generatedImage}` : displayImage} 
+              alt={character.name}
+              className="w-full h-full object-cover transition-opacity duration-300"
+              style={{ opacity: showGenerating ? 0.3 : 1 }}
+            />
+            {/* Generate/Regenerate overlay */}
+            <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${showGenerating ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} bg-black/60`}>
+              <button
+                onClick={handleGenerate}
+                disabled={showGenerating}
+                className="btn-cyber text-xs px-4 py-2 flex items-center gap-2"
+                data-testid={`generate-${character.id}`}
+              >
+                {showGenerating ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+                ) : (
+                  <><Zap className="w-4 h-4" /> {generatedImage ? 'Regenerate' : 'Generate AI Art'}</>
+                )}
+              </button>
+            </div>
+            {/* AI Generated badge */}
+            {generatedImage && !showGenerating && (
+              <div className="absolute top-2 right-2 px-2 py-1 bg-primary/80 rounded text-xs font-bold text-black">
+                AI GENERATED
+              </div>
+            )}
+          </>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-white/30">
             <Star className="w-16 h-16 mb-4 opacity-50" />
             <button
               onClick={handleGenerate}
-              disabled={isGenerating}
+              disabled={showGenerating}
               className="btn-cyber text-xs px-4 py-2"
               data-testid={`generate-${character.id}`}
             >
-              {isGenerating ? (
+              {showGenerating ? (
                 <><Loader2 className="w-4 h-4 animate-spin inline mr-2" /> Generating...</>
               ) : (
                 'Generate AI Art'
