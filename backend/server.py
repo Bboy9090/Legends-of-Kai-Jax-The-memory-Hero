@@ -107,9 +107,82 @@ async def get_status_checks():
 
 MASTER_BLUEPRINT = {
     "title": "LEGENDS OF KAI-JAX: THE MEMORY KING",
-    "subtitle": "MASTER BLUEPRINT — COMPLETE SET",
-    "version": "Final Delivery — Canon Locked",
+    "subtitle": "MASTER BLUEPRINT — PRODUCTION CANON LOCKED",
+    "version": "Final Delivery — Image Canon Locked",
     "franchise_spine": "The First Sabertooths did not rule the world. They taught it how to survive without them.",
+    "gameplay_style": "Open-world Monster Hunter meets Pokémon - hunt, capture, battle. Lions, tigers, bears - oh my!",
+    
+    # IMAGE CANON - LOCKED
+    "image_canon": {
+        "status": "PRODUCTION CANON - NO REDESIGNS",
+        "allies": {
+            "kai": {
+                "title": "Prime Hero",
+                "status": "FINAL / DO NOT TOUCH",
+                "palette": ["Coal black", "Burnt orange", "Ember gold"],
+                "eyes": "Vivid green",
+                "claws": "Molten amber",
+                "silhouette": "Forward lunge, broad chest, leader posture"
+            },
+            "jax": {
+                "title": "Prime Striker", 
+                "status": "FINAL / DO NOT TOUCH",
+                "palette": ["Pitch black", "Electric blue"],
+                "eyes": "Ember gold (solid)",
+                "claws": "Ice-blue steel",
+                "silhouette": "Speed, menace, precision"
+            },
+            "kaijax": {
+                "title": "The Memory King",
+                "status": "LOCKED / EVOLUTION READY",
+                "palette_split": {"kai_side": "Ember gold / orange", "jax_side": "Electric blue"},
+                "tails": ["Tail 1: flame/amber", "Tail 2: ice/blue", "Tail 3: bond tail (neutral dark)"],
+                "eyes": "Heterochromia (one green, one gold)",
+                "rule": "Only 1-2 tails glow at a time. Evolves to 9 tails."
+            }
+        },
+        "villains": {
+            "borax": {
+                "title": "Sabertooth Tank King",
+                "status": "FINAL / HEAVY BOSS",
+                "species": "Sabertooth Lion",
+                "palette": ["Rust red", "Ash", "Scorched iron"],
+                "armor": "Apocalyptic militia, heavy, scarred",
+                "eyes": "Deep molten red",
+                "silhouette": "Wide, immovable, king-of-ruins",
+                "read": "Brute force, dominance, final boss energy"
+            },
+            "boryn": {
+                "title": "Sabertooth Hunter General",
+                "status": "FINAL / ELITE BOSS",
+                "species": "Sabertooth Tiger",
+                "palette": ["Bone white", "Charcoal", "Dried blood accents"],
+                "outfit": "Martial gi pants only, shirtless",
+                "eyes": "Cold pale gold",
+                "silhouette": "Tall, lean, blade-like",
+                "read": "Discipline, lethal calm, assassin general"
+            }
+        },
+        "wildcard": {
+            "codename": "The Veil",
+            "status": "SLOT RESERVED - NOT DEPLOYED",
+            "palette": ["Void black", "Faint violet fractures"],
+            "role": "Manipulator / late-game threat",
+            "rule": "Never fully lit on screen"
+        },
+        "canon_rules": [
+            "Base images are frozen",
+            "Changes only via: skins, story corruption, power ascension, alternate timelines",
+            "No redesigns disguised as tweaks"
+        ]
+    },
+    
+    # CORONATION UPDATE
+    "ninth_tail_coronation": {
+        "trigger": "9th Tail manifestation",
+        "cinematic": "BOTH fathers' echoes appear and crown Kai-Jax together",
+        "moment": "The world stops. Memory refuses erasure. The King is crowned."
+    },
     
     # 📕 STORY & LORE BIBLE
     "story_lore_bible": {
