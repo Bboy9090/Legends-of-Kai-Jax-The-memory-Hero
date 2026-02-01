@@ -103,7 +103,336 @@ async def get_status_checks():
             check['timestamp'] = datetime.fromisoformat(check['timestamp'])
     return status_checks
 
-# ========== GAME LORE DATA ==========
+# ========== FULL GAME BIBLE DATA ==========
+
+NARRATIVE_BIBLE = {
+    "title": "NARRATIVE BIBLE — CANON & WRITING LAW",
+    "version": "1.1 — Locked",
+    "purpose": "Define what can be written, how it must feel, and what is never allowed so narrative always reinforces gameplay and theme.",
+    "core_law": {
+        "rule": "Story never explains mechanics. Mechanics reveal story.",
+        "detail": "Writers do not 'teach' systems. They react to what the player has already done."
+    },
+    "tone_rules": {
+        "allowed": ["Grounded", "Restrained", "Emotionally honest", "Mythic without spectacle-chasing", "Street-level truth with cosmic weight"],
+        "forbidden": ["Camp", "Anime monologues", "Quippy Marvel dialogue", "Lore dumps", "Chosen one language"],
+        "never_say": ["You are the chosen one", "This was your destiny", "Only you can save the world"]
+    },
+    "character_constraints": {
+        "kai_jax_prefusion": {
+            "rules": ["They do not philosophize", "They react emotionally, not intellectually", "Their bond is shown through instinct, not dialogue"],
+            "note": "They argue rarely. They move together naturally."
+        },
+        "kaijax_fusion": {
+            "rules": ["Speaks less than either Kai or Jax alone", "When he speaks, it is short", "He never explains himself"],
+            "feel": "A single voice carrying two histories refusing to justify its existence"
+        },
+        "boryn": {
+            "rules": ["Never idealized", "Never poetic", "His love is practical"],
+            "teaches_by": ["Stepping in front of danger", "Fixing mistakes", "Buying time"],
+            "note": "His sacrifice is not heroic framing. It is necessary brutality."
+        },
+        "borax": {
+            "rules": ["Never comforts", "Never explains emotions", "Never apologizes"],
+            "never_says": ["I'm proud of you", "You did well"],
+            "note": "If he approves, the world responds, not his words."
+        }
+    },
+    "two_father_doctrine": {
+        "boryn": "Why life matters",
+        "borax": "Why survival needs restraint",
+        "rule": "They never overlap. They never replace each other. They never compete."
+    },
+    "mythology_handling": {
+        "sabertooth_gods": ["Never appear fully", "Never speak directly", "Never intervene"],
+        "exist_as": ["Environmental echoes", "Distorted murals", "Half-remembered rituals", "Instinctual reactions"],
+        "rule": "If a god solves a problem → scene is cut."
+    },
+    "erasure_writing": {
+        "principle": "Erasure is not an explosion. Erasure is absence.",
+        "allowed": ["Conversations that never finish", "NPCs who stop mid-sentence", "Locations that feel 'smaller' than before", "Missing UI with no comment"],
+        "forbidden": ["Dramatic screams", "'Reality is breaking!' dialogue", "Characters explaining erasure"],
+        "example_lines": ["Was there a door here?", "I thought someone lived here."]
+    },
+    "fusion_revelation": {
+        "rules": ["Has almost no dialogue", "Uses sound, movement, silence", "Is readable even with subtitles off"],
+        "dialogue_limit": "One breath, one word, or a scream. Anything else is cut."
+    },
+    "coronation": {
+        "boryn_echo": ["Appears once", "Speaks once", "Leaves immediately"],
+        "approved_lines": ["You carried what I couldn't.", "Stand. Be remembered."],
+        "rule": "No goodbye speeches. No reassurance. The crown is recognition, not permission."
+    },
+    "dialogue_density": {
+        "regular_npc": "2–3 lines",
+        "major_characters": "4–5 lines",
+        "gods": "0 lines",
+        "boryn_echo": "1 line"
+    },
+    "narrative_truth": "If the story makes the player feel important without earning it through play, it is lying."
+}
+
+ART_UX_BIBLE = {
+    "title": "ART & UX BIBLE — VISUAL LAW",
+    "version": "1.1 — Locked",
+    "purpose": "Ensure every visual choice clarifies gameplay, reinforces myth, and never lies to the player.",
+    "prime_directive": {
+        "rules": ["Clarity beats spectacle", "Weight beats speed", "Meaning beats noise"],
+        "goal": "The game must look fun at a glance and serious up close. Kids see color and motion. Adults feel consequence."
+    },
+    "art_direction": {
+        "world_look": ["Stylized realism", "Exaggerated silhouettes", "Readable forms in motion", "Urban grit + mythic geometry"],
+        "rules": ["Nothing is photoreal", "Nothing is flat"],
+        "feel": "The city should feel built, worn, and remembered."
+    },
+    "color_law": {
+        "principle": "Colors are language, not decoration.",
+        "colors": {
+            "orange": {"meaning": "Sacrifice / Father", "usage": "Heavy hits, last-stand states"},
+            "cyan": {"meaning": "Law / Discipline", "usage": "Precision timing, denial zones"},
+            "purple": {"meaning": "Memory / Fusion", "usage": "Tails, anchors, recall effects"},
+            "black": {"meaning": "Erasure / Design", "usage": "Absence, missing UI, null zones"},
+            "gold": {"meaning": "Alignment / Crown", "usage": "Rare, calm, never flashy"}
+        },
+        "forbidden": ["Never mix colors without meaning", "Never rainbow-blast outside fusion birth", "Gold is earned, never spammed"]
+    },
+    "silhouette_rules": {
+        "kaijax": "Tall, lean, forward-weighted. Tails form readable fan shape. Even in shadow, the tails identify him.",
+        "enemies": "Each faction has distinct outline. Covenant = clean, symmetrical. Fang Syndicate = jagged, asymmetrical.",
+        "rule": "Silhouette tells allegiance before color does."
+    },
+    "animation_philosophy": {
+        "movement_feel": ["Heavy gravity", "Short airtime", "Clear commitment frames"],
+        "rules": ["No float", "No animation-cancel soup"],
+        "attacks": ["Strong anticipation", "Violent follow-through", "Visible recovery"],
+        "note": "A missed hit should look dangerous."
+    },
+    "tail_animation": {
+        "principle": "Tails are not cosmetics. They are independent actors.",
+        "rules": ["Each tail moves with purpose", "Idle tails subtly react to danger", "Active tail overrides idle motion", "Never animate all tails the same way"],
+        "bad": ["Symmetrical tail swaying", "Idle loops during combat"],
+        "good": ["One tail anchoring", "One tail coiling", "One tail twitching under pressure"]
+    },
+    "combat_vfx": {
+        "hits": ["Fewer particles", "Sharper shapes", "Shorter lifespan"],
+        "must_show": ["Direction", "Force", "Consequence"],
+        "impact_hierarchy": {
+            "small_hits": "Sparks, dust",
+            "heavy_hits": "Camera micro-shake, sound drop",
+            "critical_moments": "Hit-stop (1–3 frames only)"
+        },
+        "rule": "If everything explodes, nothing matters."
+    },
+    "erasure_visuals": {
+        "principle": "Erasure is absence, not destruction.",
+        "allowed": ["Missing shadows", "Holes where UI used to be", "Silent animations", "Desaturated environments"],
+        "forbidden": ["Screen tearing spam", "Glitch filters everywhere", "Loud distortion effects"],
+        "note": "Design removes things politely. That's what makes it horrifying."
+    },
+    "ui_philosophy": {
+        "core_rules": ["Readable in combat", "Minimal at rest", "Reacts to pressure", "Disappears as mastery increases"],
+        "hud_layout": {
+            "top_left": "Health (thick, bold, shakes on impact)",
+            "top_right": "Dread / Pressure (no numbers)",
+            "bottom_center": "Fusion / Resonance"
+        },
+        "rule": "No mini-map clutter. Environment teaches navigation."
+    },
+    "art_ux_truth": "If the player can't tell what happened, the art failed."
+}
+
+ENGINEERING_SPECS = {
+    "tail_expression_engine": {
+        "title": "TAIL EXPRESSION ENGINE",
+        "principle": "All 9 tails always exist. Only a subset may express. Expression is contextual, volatile, revocable.",
+        "data_model": {
+            "tail": ["id: 1–9", "aspect: Hunger | Law | Sacrifice | Memory", "state: Dormant | Available | Active | Suppressed | Locked", "fatigue: 0.0–1.0", "resonance: 0.0–1.0", "last_used_timestamp"],
+            "tail_manager": ["tails[9]", "max_active_tails", "expression_ruleset", "world_pressure"]
+        },
+        "active_limits": {
+            "early_game": 3,
+            "mid_game": "4–6",
+            "endgame": "contextual",
+            "ninth_tail": "event-only"
+        },
+        "fatigue_system": "Every use increases fatigue. Repetition accelerates fatigue. Fatigue suppresses tail temporarily. This is how you kill cheese without patch notes.",
+        "ninth_tail_logic": {
+            "conditions": ["All other tails balanced", "Fusion stability > 0.9", "No panic input for sustained duration", "A choice made under pressure"],
+            "effect": "World pressure stabilizes. Erasure pauses. No damage buff. Only clarity.",
+            "note": "That's why it's a crown, not a weapon."
+        }
+    },
+    "memory_save_system": {
+        "title": "MEMORY SAVE & WORLD SERIALIZATION",
+        "philosophy": ["No save scumming", "No binary morality", "Memory persists even when content disappears"],
+        "save_structure": ["player_state", "tail_states", "memory_flags", "npc_registry", "world_modifiers", "erasure_log", "timeline_hash"],
+        "memory_flags": {
+            "represent": ["Mercy shown", "Sacrifice made", "NPC protected", "Pattern broken", "Panic overcome"],
+            "note": "They do not say what happened. They say how it happened."
+        },
+        "npc_registry": {
+            "fields": ["id", "alive: boolean", "remembers_player: boolean", "memory_depth: 0–3", "erasure_resistant: boolean"],
+            "rule": "If an NPC dies: They are gone. Systems tied to them weaken. World feels colder. No reload fixes that."
+        },
+        "timeline_hash": {
+            "purpose": "Anti-retcon. If player exploits reloads, world remembers the attempt.",
+            "effects": ["NPC distrust", "Increased Design pressure", "Harsher suppression"]
+        }
+    }
+}
+
+PRODUCTION_PLAN = {
+    "staffing_model": {
+        "principle": "Small senior team. High trust. Zero passengers.",
+        "core_leadership": [
+            {"role": "Creative Director", "owns": ["Canon", "Tie-breaking", "Tone protection"]},
+            {"role": "Lead Gameplay Engineer", "owns": ["PlayerState", "Tail Engine", "Combat feel"]},
+            {"role": "Technical Director", "owns": ["Performance", "Build stability", "Tooling"]},
+            {"role": "Narrative Systems Designer", "owns": ["Memory Flags", "NPC persistence", "Erasure logic"]}
+        ],
+        "core_team": [
+            "Gameplay Engineer (Movement / AI)",
+            "Environment / Level Designer",
+            "Technical Artist",
+            "UI / UX Designer"
+        ],
+        "team_size": "Core: 8–10 people. Max at peak: 14–16. If you hit 20+: something went wrong."
+    },
+    "tech_stack": {
+        "engine": "Unity (HDRP or URP)",
+        "why_unity": ["Fast iteration", "Mature tooling", "Custom systems friendly", "Easier hiring"],
+        "architecture": ["Pure C# gameplay core", "ScriptableObjects for data", "No logic in untestable MonoBehaviours"],
+        "ai": ["Custom Behavior Trees", "Utility scoring for adaptation", "No difficulty sliders"],
+        "target_platforms": {"beta": "PC (Windows)", "launch": "PC, Console if earned"}
+    },
+    "milestones": {
+        "alpha": {
+            "time": "6–8 months",
+            "question": "Does the game actually work?",
+            "must_have": ["Full PlayerState", "Tail Expression Engine", "Memory Save System", "One region", "Fusion playable", "One adaptive boss", "Zero crashes >30 min"]
+        },
+        "beta": {
+            "time": "4–6 months",
+            "question": "Does it feel like a real game?",
+            "must_have": ["2–3 regions", "Multiple factions active", "Memory consequences visible", "2+ endings reachable", "Full onboarding", "Performance locked"]
+        },
+        "launch": {
+            "time": "3 months",
+            "question": "Is this worth existing publicly?",
+            "must_have": ["Full story spine", "Endgame functional", "No soft-locks", "No save corruption", "Accessibility pass"]
+        }
+    },
+    "execution_rules": [
+        "No system enters the game without a failure mode",
+        "No mechanic explains itself with text first",
+        "If a feature feels safe, it is wrong",
+        "If everyone agrees, someone isn't thinking",
+        "Memory always beats optimization"
+    ]
+}
+
+FACTION_WAR = {
+    "core_rule": "The world is never neutral. If Kai-Jax does nothing, Design wins by default.",
+    "factions": [
+        {"name": "Fang Syndicate", "type": "Street power. Opportunists. Momentum-based control."},
+        {"name": "Void Fang Covenant", "type": "Design extremists. Surgical. Erasure-based expansion."},
+        {"name": "Fracture Circle", "type": "Unstable allies. Memory carriers. Can collapse."},
+        {"name": "Sabertooth Echoes", "type": "Not a faction. A pressure gradient. Shows up when alignment shifts."}
+    ],
+    "region_state": ["controlling_faction", "control_strength (0–100)", "memory_density", "erasure_density", "instability_level"],
+    "control_shifts_through": ["Mission outcomes", "NPC survival", "Tail expression patterns", "Time spent inactive"]
+}
+
+MULTIPLE_ENDINGS = {
+    "principle": "Endings are not chosen. They are survived.",
+    "axes_tracked": ["Memory Preservation", "Alignment Stability", "Design Containment"],
+    "endings": [
+        {
+            "name": "The Memory King (True Crown)",
+            "requirements": ["Ninth Tail manifested through choice, not rage", "Fracture Circle largely intact", "Erasure contained, not reversed"],
+            "outcome": "Ulgorr defeated but not destroyed. World remains scarred but alive. Kai-Jax crowned by memory, not force.",
+            "note": "This is not 'good.' It is earned."
+        },
+        {
+            "name": "The Lone Sovereign",
+            "requirements": ["Ninth Tail achieved through sacrifice", "Allies lost", "High Design pressure survived"],
+            "outcome": "Kai-Jax rules a quieter world. Fewer systems active. Less chaos, less life.",
+            "note": "Stable. Empty. Sad."
+        },
+        {
+            "name": "The Designed World",
+            "requirements": ["Failure to balance tails", "Over-specialization", "Memory collapse"],
+            "outcome": "Ulgorr's logic partially succeeds. World survives efficiently. Player wins mechanically, loses philosophically.",
+            "note": "This ending does not feel like failure. That's the horror."
+        },
+        {
+            "name": "The Broken Loop (Rare)",
+            "requirements": ["Timeline abuse", "Save exploitation", "Forced reload behavior"],
+            "outcome": "World destabilizes. Ending is abrupt, unresolved.",
+            "note": "The game silently judges you."
+        }
+    ]
+}
+
+# API Endpoints for Bible
+@api_router.get("/bible/narrative")
+async def get_narrative_bible():
+    """Get the complete Narrative Bible"""
+    return NARRATIVE_BIBLE
+
+@api_router.get("/bible/art-ux")
+async def get_art_ux_bible():
+    """Get the Art & UX Bible"""
+    return ART_UX_BIBLE
+
+@api_router.get("/bible/engineering")
+async def get_engineering_specs():
+    """Get Engineering Specifications"""
+    return ENGINEERING_SPECS
+
+@api_router.get("/bible/production")
+async def get_production_plan():
+    """Get Production Plan"""
+    return PRODUCTION_PLAN
+
+@api_router.get("/bible/factions")
+async def get_faction_war():
+    """Get Faction War System"""
+    return FACTION_WAR
+
+@api_router.get("/bible/endings")
+async def get_multiple_endings():
+    """Get Multiple Endings Architecture"""
+    return MULTIPLE_ENDINGS
+
+@api_router.get("/bible/full")
+async def get_full_bible():
+    """Get the COMPLETE Game Bible"""
+    return {
+        "title": "LEGENDS OF KAI-JAX: THE MEMORY KING",
+        "subtitle": "MASTER STORY & GAME BLUEPRINT BIBLE",
+        "version": "1.1 — Canon Locked",
+        "tagline": "Forged in the Raging City. Crowned by Memory.",
+        "franchise_pillar": "Survival without memory is extinction with better design.",
+        "narrative_bible": NARRATIVE_BIBLE,
+        "art_ux_bible": ART_UX_BIBLE,
+        "engineering_specs": ENGINEERING_SPECS,
+        "production_plan": PRODUCTION_PLAN,
+        "faction_war": FACTION_WAR,
+        "multiple_endings": MULTIPLE_ENDINGS,
+        "tails": [t.model_dump() for t in TAILS_DATA],
+        "characters": [c.model_dump() for c in CHARACTERS_DATA],
+        "story_acts": [a.model_dump() for a in STORY_ACTS],
+        "gods": SABERTOOTH_GODS,
+        "regions": WORLD_REGIONS,
+        "status": {
+            "lore": "Locked",
+            "systems": "Aligned",
+            "narrative": "Constrained",
+            "art_ux": "Governed",
+            "production": "Roadmap Locked"
+        }
+    }
 
 TAILS_DATA = [
     TailData(id=1, name="Ember Tail", element="Fire", color="#FF3B30", 
