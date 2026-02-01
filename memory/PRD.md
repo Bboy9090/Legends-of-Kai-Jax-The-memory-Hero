@@ -100,10 +100,11 @@ Transform the GitHub repo "Legends-of-Kai-Jax-The-memory-Hero" into a 10x more l
 ---
 
 ## Next Logical Steps
-1. Opening cinematic shot list
-2. DLC / sequel timeline
-3. Studio pitch deck
-4. Playable prototype roadmap
+1. **PDF Export of Master Bible** - Add button to export entire Blueprint as downloadable PDF
+2. Opening cinematic shot list
+3. DLC / sequel timeline
+4. Studio pitch deck
+5. Playable prototype roadmap
 
 ---
 
