@@ -742,19 +742,30 @@ const RegionsSection = () => {
 
 // Bible Section
 const BibleSection = () => {
-  const [bibleVerses, setBibleVerses] = useState([]);
+  const [gameBible, setGameBible] = useState(null);
 
   useEffect(() => {
-    const fetchBibleVerses = async () => {
+    const fetchGameBible = async () => {
       try {
         const response = await axios.get(`${API}/bible`);
-        setBibleVerses(response.data);
+        setGameBible(response.data);
       } catch (e) {
-        console.error('Failed to fetch bible verses:', e);
+        console.error('Failed to fetch game bible:', e);
       }
     };
-    fetchBibleVerses();
+    fetchGameBible();
   }, []);
+
+  if (!gameBible) {
+    return (
+      <section className="min-h-screen py-24 bg-black/30 flex items-center justify-center" data-testid="bible-section">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-white/60">Loading the Memory Bible...</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="min-h-screen py-24 bg-black/30" data-testid="bible-section">
@@ -765,46 +776,93 @@ const BibleSection = () => {
             THE <span className="text-primary">MEMORY BIBLE</span>
           </h2>
           <p className="text-white/60 max-w-2xl mx-auto font-lore italic">
-            "Sacred verses that guide the Memory King's journey through the fractured world."
+            {gameBible.tagline}
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {bibleVerses.map((verse, index) => (
-            <div 
-              key={verse.id || index}
-              className="card-beam p-6"
-              style={{ animationDelay: `${index * 0.1}s` }}
-              data-testid={`bible-verse-${index}`}
-            >
-              <div className="mb-4">
-                <h3 className="font-heading text-xl text-primary mb-2">{verse.title}</h3>
-                <p className="text-white/40 text-xs uppercase tracking-widest">
-                  {verse.book} {verse.chapter}:{verse.verse}
-                </p>
-              </div>
-              <blockquote className="text-white/80 text-sm leading-relaxed mb-4 italic border-l-2 border-primary/30 pl-4">
-                "{verse.text}"
-              </blockquote>
-              {verse.interpretation && (
-                <div className="pt-4 border-t border-white/5">
-                  <p className="text-xs text-white/30 uppercase tracking-widest mb-2">Memory King's Interpretation</p>
-                  <p className="text-white/60 text-sm">{verse.interpretation}</p>
-                </div>
-              )}
-            </div>
-          ))}
+        {/* Core Philosophy */}
+        <div className="mb-16">
+          <div className="card-beam p-8 text-center max-w-3xl mx-auto">
+            <h3 className="font-heading text-2xl text-primary mb-4">The Franchise Pillar</h3>
+            <p className="text-white/80 text-xl font-lore italic">
+              "{gameBible.franchise_pillar}"
+            </p>
+          </div>
         </div>
 
-        <div className="mt-16 text-center">
-          <div className="card-beam p-8 max-w-2xl mx-auto bg-gradient-to-b from-primary/5 to-transparent">
-            <p className="font-lore text-xl text-primary mb-4">The Final Verse</p>
+        {/* Player Fantasy */}
+        <div className="mb-16">
+          <div className="card-beam p-6 max-w-2xl mx-auto">
+            <h3 className="font-heading text-xl text-fire mb-3">The Player's Journey</h3>
+            <p className="text-white/70 text-lg">
+              {gameBible.player_fantasy}
+            </p>
+          </div>
+        </div>
+
+        {/* Tone & Genre */}
+        <div className="grid md:grid-cols-2 gap-6 mb-16">
+          <div className="card-beam p-6">
+            <h3 className="font-heading text-xl text-storm mb-4">Genre</h3>
+            <div className="space-y-2">
+              {gameBible.genre?.map((g, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Star className="w-4 h-4 text-storm" />
+                  <span className="text-white/70">{g}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="card-beam p-6">
+            <h3 className="font-heading text-xl text-electric mb-4">Tone</h3>
+            <div className="space-y-2">
+              {gameBible.tone?.map((t, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-electric" />
+                  <span className="text-white/70">{t}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* The Coronation */}
+        {gameBible.coronation && (
+          <div className="mb-16">
+            <div className="card-beam p-8 max-w-3xl mx-auto bg-gradient-to-b from-primary/5 to-transparent">
+              <h3 className="font-heading text-2xl text-primary mb-4 text-center">The Coronation</h3>
+              <p className="text-white/60 mb-4 text-center">
+                <span className="text-primary">Trigger:</span> {gameBible.coronation.trigger}
+              </p>
+              <div className="space-y-2 mb-6">
+                {gameBible.coronation.events?.map((event, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-primary" />
+                    <span className="text-white/70">{event}</span>
+                  </div>
+                ))}
+              </div>
+              <blockquote className="text-center text-xl font-lore text-electric italic border-t border-white/10 pt-6">
+                "{gameBible.coronation.quote}"
+              </blockquote>
+              <p className="text-center text-sm text-white/40 mt-4">
+                {gameBible.coronation.meaning || "Memory Hero → Memory King. A state change, not a buff."}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Final Wisdom */}
+        <div className="text-center">
+          <div className="card-beam p-8 max-w-2xl mx-auto">
+            <p className="font-lore text-xl text-primary mb-4">The Final Truth</p>
             <p className="text-white/60 mb-4 italic">
               "When memory becomes legend, and legend becomes truth, 
               the King shall rise from the ashes of the forgotten."
             </p>
             <p className="text-sm text-white/40">
-              - The Memory Bible, Final Chapter
+              Memory cannot be designed out of existence.
             </p>
           </div>
         </div>
