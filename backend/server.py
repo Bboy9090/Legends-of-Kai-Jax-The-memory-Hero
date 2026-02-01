@@ -141,26 +141,26 @@ MASTER_BLUEPRINT = {
                 "rule": "Only 1-2 tails glow at a time. Evolves to 9 tails."
             }
         },
-        "villains": {
-            "borax": {
-                "title": "Sabertooth Tank King",
-                "status": "FINAL / HEAVY BOSS",
-                "species": "Sabertooth Lion",
-                "palette": ["Rust red", "Ash", "Scorched iron"],
-                "armor": "Apocalyptic militia, heavy, scarred",
-                "eyes": "Deep molten red",
-                "silhouette": "Wide, immovable, king-of-ruins",
-                "read": "Brute force, dominance, final boss energy"
-            },
+        "fathers": {
             "boryn": {
-                "title": "Sabertooth Hunter General",
-                "status": "FINAL / ELITE BOSS",
+                "title": "The Shield Father",
+                "status": "FINAL / FATHER FIGURE",
                 "species": "Sabertooth Tiger",
                 "palette": ["Bone white", "Charcoal", "Dried blood accents"],
                 "outfit": "Martial gi pants only, shirtless",
                 "eyes": "Cold pale gold",
                 "silhouette": "Tall, lean, blade-like",
-                "read": "Discipline, lethal calm, assassin general"
+                "role": "Protector. Sacrifices himself. His ECHO crowns Kai-Jax at 9th tail."
+            },
+            "borax": {
+                "title": "The Sabertooth Law",
+                "status": "FINAL / MENTOR FIGURE",
+                "species": "Sabertooth Lion",
+                "palette": ["Rust red", "Ash", "Scorched iron"],
+                "armor": "Apocalyptic militia, heavy, scarred",
+                "eyes": "Deep molten red",
+                "silhouette": "Wide, immovable, king-of-ruins",
+                "role": "Mentor. Trains without comfort. His ECHO crowns Kai-Jax at 9th tail."
             }
         },
         "wildcard": {
@@ -177,11 +177,13 @@ MASTER_BLUEPRINT = {
         ]
     },
     
-    # CORONATION UPDATE
+    # CORONATION - BOTH FATHERS CROWN KAI-JAX
     "ninth_tail_coronation": {
-        "trigger": "9th Tail manifestation",
-        "cinematic": "BOTH fathers' echoes appear and crown Kai-Jax together",
-        "moment": "The world stops. Memory refuses erasure. The King is crowned."
+        "trigger": "9th Tail manifestation through choice, not rage",
+        "cinematic": "BOTH fathers' echoes (Boryn + Borax) appear together and crown Kai-Jax",
+        "boryn_line": "You carried what I couldn't.",
+        "borax_line": "Stand. Be remembered.",
+        "moment": "The world stops. Memory refuses erasure. The King is crowned by love AND law."
     },
     
     # 📕 STORY & LORE BIBLE
