@@ -103,6 +103,267 @@ async def get_status_checks():
             check['timestamp'] = datetime.fromisoformat(check['timestamp'])
     return status_checks
 
+# ========== FINAL CONSOLIDATED MASTER BIBLE - 8 LAYERS ==========
+
+FINAL_MASTER_BIBLE = {
+    "title": "LEGENDS OF KAI-JAX: THE MEMORY KING",
+    "subtitle": "MASTER STORY & GAME BLUEPRINT BIBLE (FINAL CONSOLIDATION)",
+    "tagline": "Forged in the Raging City. Crowned by Memory.",
+    "status": {
+        "story": "Locked",
+        "world": "Coherent", 
+        "systems": "Buildable",
+        "scale": "Expandable",
+        "identity": "Clear"
+    },
+    
+    # LAYER I - THE ABSOLUTE CORE
+    "layer_1_core": {
+        "title": "LAYER I — THE ABSOLUTE CORE",
+        "subtitle": "The Non-Negotiables",
+        "one_sentence_truth": "Survival is not strength. Survival is memory that refuses erasure.",
+        "what_it_is": [
+            "A mythic action RPG",
+            "A precision brawler", 
+            "A movement-first survival story",
+            "A legacy narrative disguised as a beast fighter"
+        ],
+        "what_it_is_not": [
+            "Not a power fantasy",
+            "Not a grind simulator",
+            "Not lore-dumps and cutscenes",
+            "Not 'chosen one' nonsense"
+        ],
+        "core_rule": "You earn everything by moving correctly under pressure."
+    },
+    
+    # LAYER II - THE COSMOLOGY
+    "layer_2_cosmology": {
+        "title": "LAYER II — THE COSMOLOGY",
+        "subtitle": "Why The World Exists",
+        "gods_intro": "They are not characters. They are laws.",
+        "sabertooth_gods": [
+            {
+                "name": "KAR-VOTH",
+                "title": "The First Fang",
+                "domain": "Electric Hunger / Initiation",
+                "aspects": ["Teleportation", "Refusal", "Becoming before morality"],
+                "truth": "He is why cubs bite back.",
+                "color": "#FFD60A"
+            },
+            {
+                "name": "THRYXEN",
+                "title": "The Storm Sovereign",
+                "domain": "Ice / Pressure / Law",
+                "aspects": ["Space bends", "Authority without motion", "Kingship without mercy"],
+                "truth": "He is why Sabertooth Lions command reality.",
+                "color": "#64D2FF"
+            },
+            {
+                "name": "PYRAXIS",
+                "title": "The Bloodward Titan",
+                "domain": "Fire / Sacrifice",
+                "aspects": ["Endurance", "Protection", "Love expressed as pain"],
+                "truth": "He is why fathers die standing.",
+                "color": "#FF3B30"
+            },
+            {
+                "name": "MYRR'KAI",
+                "title": "The Memory Eater",
+                "domain": "Web / Fusion / Continuity",
+                "aspects": ["Adaptation", "Hybrid survival", "Erasure resistance"],
+                "truth": "She is why extinction fails.",
+                "color": "#BF5AF2"
+            }
+        ],
+        "sabertooth_law": {
+            "rule": "Each descendant carries: One dominant echo, One suppressed echo",
+            "fusion_requirement": "Fusion happens only when Hunger, Law, Sacrifice, and Memory align without conflict.",
+            "result": "That alignment is Kai-Jax."
+        }
+    },
+    
+    # LAYER III - CHARACTERS
+    "layer_3_characters": {
+        "title": "LAYER III — CHARACTERS",
+        "subtitle": "Everyone That Matters",
+        "characters": [
+            {
+                "name": "KAI",
+                "icon": "🐺🔥",
+                "traits": ["Speed", "Instinct", "Emotional engine", "Fights to protect"],
+                "gameplay": ["Aggressive movement", "Fast entry", "Risk-taker"]
+            },
+            {
+                "name": "JAX",
+                "icon": "🐯🕷️",
+                "traits": ["Precision", "Observation", "Memory holder", "Fights to control chaos"],
+                "gameplay": ["Timing", "Counters", "Setup and restraint"]
+            },
+            {
+                "name": "KAI-JAX",
+                "icon": "🦁🐾",
+                "title": "THE MEMORY KING",
+                "traits": ["Not stronger", "Harder to erase", "Momentum-preserving fusion", "Death-delaying presence"],
+                "truth": "Kaijax is not two becoming one. He is two carrying a third. That third is memory."
+            },
+            {
+                "name": "BORYN",
+                "icon": "🐯🔥",
+                "title": "THE FATHER",
+                "species": "Sabertooth Tiger",
+                "traits": ["Foster guardian", "Brutal, loving, uneducated in philosophy", "Trains through survival"],
+                "represents": ["Sacrifice", "Love", "Why the brothers fight at all"],
+                "truth": "Dies once. Lives forever."
+            },
+            {
+                "name": "BORAX",
+                "icon": "🦁⚡",
+                "title": "THE LAW",
+                "species": "Sabertooth Lion",
+                "traits": ["Mentor, uncle, blood-adjacent", "Cold, disciplined, legendary", "Never comforts"],
+                "represents": ["Discipline", "Ancestry", "Why survival must mean something"],
+                "truth": "Never replaces the father. Completes him."
+            },
+            {
+                "name": "AURELION",
+                "icon": "🌠",
+                "title": "Silver Successor Archetype",
+                "traits": ["Time-displaced warrior", "From a failed future", "Descendant of forgotten legends", "Knows the ending and hates it"],
+                "gameplay_role": ["Guest ally", "Warning system", "Timeline fracture events"]
+            },
+            {
+                "name": "SELENE",
+                "icon": "🌙",
+                "title": "Lunara Archetype",
+                "traits": ["Oracle descendant", "Memory anchor", "Cannot fight directly", "Sees what must survive"],
+                "gameplay_role": ["World-state unlocks", "Memory vault access", "Emotional balance to Aurelion"]
+            }
+        ]
+    },
+    
+    # LAYER IV - FACTIONS
+    "layer_4_factions": {
+        "title": "LAYER IV — FACTIONS",
+        "subtitle": "Friends, Enemies, Problems",
+        "factions": [
+            {
+                "name": "THE FANG SYNDICATE",
+                "icon": "🩸",
+                "description": "Street predators. They steal fangs to become more than they are.",
+                "purpose": ["Early enemies", "Movement checks", "Brutal but human-scale threats"]
+            },
+            {
+                "name": "THE NULL COVENANT",
+                "icon": "🕯️",
+                "description": "Anti-Sabertooth cult.",
+                "belief": "Inheritance is a disease.",
+                "actions": ["Collect fangs", "Erase bloodlines", "Worship oblivion"],
+                "timing": "Mid–late game ideological enemies"
+            },
+            {
+                "name": "THE BEHEMOTH LEGION",
+                "icon": "🐊🦎",
+                "description": "Reptilian / amphibian super-creatures.",
+                "creator": "ULGORR — THE WORLD BEHEMOTH",
+                "goal": "End survival as evolution. Replace it with consumption."
+            }
+        ]
+    },
+    
+    # LAYER V - THE 9-TAIL SYSTEM
+    "layer_5_tails": {
+        "title": "LAYER V — THE 9-TAIL SYSTEM",
+        "subtitle": "The Game's Heart",
+        "tail_rules": ["Start with 3", "End with 9", "Each tail is: An element, A function, A memory branch"],
+        "ninth_tail": {
+            "rules": ["No UI hype", "No explosion", "No speech"],
+            "moment": ["Music fades", "Combat quiets", "Camera pulls back slightly"],
+            "realization": "I survived everything.",
+            "result": "That's the crown."
+        }
+    },
+    
+    # LAYER VI - GAME MODES
+    "layer_6_modes": {
+        "title": "LAYER VI — GAME MODES",
+        "subtitle": "Complete",
+        "modes": [
+            {
+                "name": "STORY MODE",
+                "features": ["Primary experience", "Open districts", "Myth through action"]
+            },
+            {
+                "name": "SURVIVAL / GAUNTLET",
+                "features": ["Wave escalation", "Tail mastery showcase", "Leaderboard viable"]
+            },
+            {
+                "name": "VERSUS / QUICK BATTLE",
+                "features": ["Honest combat", "No lore advantages", "Movement decides winners"]
+            }
+        ]
+    },
+    
+    # LAYER VII - FULL CAMPAIGN FLOW
+    "layer_7_campaign": {
+        "title": "LAYER VII — FULL CAMPAIGN FLOW",
+        "subtitle": "High Level",
+        "areas": [
+            {"number": 1, "name": "Ashblock Heights", "theme": "Survival"},
+            {"number": 2, "name": "Undercity Veins", "theme": "Gangs & Cults"},
+            {"number": 3, "name": "Stormward Spires", "theme": "Sabertooth Truth"},
+            {"number": 4, "name": "Memory Vaults", "theme": "Erased History"},
+            {"number": 5, "name": "Behemoth Scar", "theme": "Endgame Threat"},
+            {"number": 6, "name": "Fractured Future", "theme": "Aurelion Arc"},
+            {"number": 7, "name": "The Crown Moment", "theme": "Ninth Tail"},
+            {"number": 8, "name": "Final War", "theme": "Survival vs Erasure"}
+        ]
+    },
+    
+    # LAYER VIII - WHY THIS WORKS
+    "layer_8_truth": {
+        "title": "LAYER VIII — WHY THIS WORKS",
+        "subtitle": "No Delusions",
+        "reasons": [
+            "Lore and mechanics are the same thing",
+            "Fathers, mentors, gods all coexist without overlap",
+            "Fusion is earned through failure",
+            "Movement skill = narrative legitimacy",
+            "Franchise-ready without copying anyone"
+        ],
+        "final_statement": "This is not derivative. It is ancestral."
+    },
+    
+    # FINAL CANON LINES
+    "canon_lines": [
+        "The First Sabertooths did not rule the world. They taught it how to survive without them.",
+        "You are not a weapon. You are a memory that learned how to fight back."
+    ]
+}
+
+# API endpoint for Final Master Bible
+@api_router.get("/master-bible")
+async def get_master_bible():
+    """Get the FINAL CONSOLIDATED Master Bible - 8 Layers"""
+    return FINAL_MASTER_BIBLE
+
+@api_router.get("/master-bible/layer/{layer_num}")
+async def get_bible_layer(layer_num: int):
+    """Get specific layer of the Master Bible"""
+    layer_map = {
+        1: FINAL_MASTER_BIBLE["layer_1_core"],
+        2: FINAL_MASTER_BIBLE["layer_2_cosmology"],
+        3: FINAL_MASTER_BIBLE["layer_3_characters"],
+        4: FINAL_MASTER_BIBLE["layer_4_factions"],
+        5: FINAL_MASTER_BIBLE["layer_5_tails"],
+        6: FINAL_MASTER_BIBLE["layer_6_modes"],
+        7: FINAL_MASTER_BIBLE["layer_7_campaign"],
+        8: FINAL_MASTER_BIBLE["layer_8_truth"]
+    }
+    if layer_num in layer_map:
+        return layer_map[layer_num]
+    return {"error": "Layer not found"}
+
 # ========== CHARACTER SELECT + UI + CODEX SYSTEM ==========
 
 CHARACTER_SELECT = {
