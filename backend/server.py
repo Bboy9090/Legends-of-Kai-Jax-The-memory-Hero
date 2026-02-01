@@ -785,22 +785,22 @@ CHARACTERS_DATA = [
         id="kaijax",
         name="KAI-JAX",
         title="The Memory King",
-        description="The legendary fusion - split palette of ember gold/orange (Kai side) and electric blue (Jax side). Heterochromia eyes - one green, one gold. THREE TAILS: Tail 1 (flame/amber), Tail 2 (ice/blue), Tail 3 (bond tail - neutral dark, reacts to emotion). Evolves up to 9 tails. Only 1-2 tails glow at a time. The 9th tail crowns him as both fathers' echoes appear.",
+        description="The legendary fusion - split palette of ember gold/orange (Kai side) and electric blue (Jax side). Heterochromia eyes - one green, one gold. THREE TAILS: Tail 1 (flame/amber), Tail 2 (ice/blue), Tail 3 (bond tail - neutral dark, reacts to emotion). Evolves up to 9 tails. Only 1-2 tails glow at a time. At the 9th tail, BOTH fathers' echoes appear and crown him together.",
         abilities=["Dual Element Mastery", "Fusion State", "Nine-Tail Evolution", "Memory Weave", "Architect's Denial", "Sovereign Crown"]
-    ),
-    CharacterData(
-        id="borax",
-        name="BORAX",
-        title="Sabertooth Tank King",
-        description="FINAL BOSS - A massive sabertooth LION beast. Rust red, ash, and scorched iron palette. Apocalyptic militia armor, heavy and scarred. Deep molten red eyes that burn with dominance. Wide, immovable silhouette - the king of ruins. Brute force incarnate.",
-        abilities=["Titan Slam", "Scorched Earth", "Iron Fortress", "Dominance Roar", "Extinction Strike"]
     ),
     CharacterData(
         id="boryn",
         name="BORYN",
-        title="Sabertooth Hunter General",
-        description="ELITE BOSS - A lethal sabertooth TIGER. Bone white fur with charcoal and dried blood accents. Martial gi pants only, shirtless warrior. Cold pale gold eyes. Tall, lean, blade-like silhouette. Discipline, lethal calm, assassin general. The hunter who never misses.",
-        abilities=["Silent Strike", "Blade Dance", "Hunter's Mark", "Lethal Precision", "Death's Patience"]
+        title="The Shield Father",
+        description="Foster father who raised Kai and Jax. Massive sabertooth tiger with bone white fur, charcoal accents, and cold pale gold eyes. Martial gi pants, shirtless warrior. Tall, lean, blade-like. Teaches survival through ruthless love. His sacrifice buys time for legends to be born. His ECHO returns at the 9th tail to crown Kai-Jax.",
+        abilities=["Iron Defense", "Paternal Shield", "Sacrifice", "Lethal Precision", "Echo's Blessing"]
+    ),
+    CharacterData(
+        id="borax",
+        name="BORAX",
+        title="The Sabertooth Law",
+        description="Legendary apex mentor. Massive sabertooth lion with rust red, ash, and scorched iron palette. Apocalyptic militia armor, deep molten red eyes. Wide, immovable presence. Trains without comfort, never replaces the father. Teaches why survival needs restraint. His ECHO returns at the 9th tail to crown Kai-Jax alongside Boryn.",
+        abilities=["Law Enforcement", "Discipline Strike", "Apex Judgment", "Silent Vigil", "Echo's Crown"]
     ),
 ]
 
