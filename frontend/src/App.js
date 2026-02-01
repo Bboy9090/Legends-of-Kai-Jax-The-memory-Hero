@@ -91,9 +91,18 @@ const Navigation = ({ activeSection, setActiveSection }) => {
 const HeroSection = ({ onNavigate }) => {
   return (
     <section className="min-h-screen flex items-center justify-center hero-gradient relative" data-testid="hero-section">
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1633701899715-be64b730ef19?w=1920&q=80')] bg-cover bg-center opacity-20" />
-      <div className="container-game text-center relative z-10 pt-20">
-        <div className="animate-fade-in-up">
+      {/* Background with Kai-Jax art */}
+      <div className="absolute inset-0 overflow-hidden">
+        <img 
+          src="https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/htuxfqte_9660FF22-E010-4DF5-A321-DDFE60ADB8CB.png"
+          alt="Kai-Jax"
+          className="absolute right-0 top-1/2 -translate-y-1/2 h-[120%] w-auto object-contain opacity-30 md:opacity-50"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
+      </div>
+      
+      <div className="container-game relative z-10 pt-20">
+        <div className="max-w-3xl animate-fade-in-up">
           <p className="font-lore text-storm text-sm md:text-base tracking-[0.3em] mb-4">
             FORGED IN THE RAGING CITY
           </p>
@@ -106,11 +115,11 @@ const HeroSection = ({ onNavigate }) => {
           <p className="font-heading text-2xl md:text-3xl text-primary mb-8">
             THE MEMORY KING
           </p>
-          <p className="font-lore text-white/60 text-lg md:text-xl max-w-2xl mx-auto mb-12">
+          <p className="font-lore text-white/60 text-lg md:text-xl max-w-xl mb-12">
             "Survival without memory is extinction with better design."
           </p>
           
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap gap-4">
             <button 
               onClick={() => onNavigate('characters')} 
               className="btn-cyber flex items-center gap-2"
@@ -124,6 +133,13 @@ const HeroSection = ({ onNavigate }) => {
               data-testid="cta-story"
             >
               <Flame className="w-4 h-4 text-fire" /> Read the Saga
+            </button>
+            <button 
+              onClick={() => onNavigate('tails')} 
+              className="btn-cyber flex items-center gap-2 border-electric/50 hover:border-electric"
+              data-testid="cta-tails"
+            >
+              <Zap className="w-4 h-4 text-electric" /> 9 Tails
             </button>
           </div>
         </div>
