@@ -1156,6 +1156,258 @@ const BibleSection = () => {
   );
 };
 
+// UI & Codex Section
+const UISection = () => {
+  const [charSelect, setCharSelect] = useState(null);
+  const [matchups, setMatchups] = useState([]);
+  const [codex, setCodex] = useState(null);
+  const [activeTab, setActiveTab] = useState('select');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [selectRes, matchupRes, codexRes] = await Promise.all([
+          axios.get(`${API}/ui/character-select`),
+          axios.get(`${API}/ui/matchups`),
+          axios.get(`${API}/ui/codex`)
+        ]);
+        setCharSelect(selectRes.data);
+        setMatchups(matchupRes.data);
+        setCodex(codexRes.data);
+      } catch (e) {
+        console.error('Failed to fetch UI data:', e);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const tabs = [
+    { id: 'select', label: 'Character Select' },
+    { id: 'matchups', label: 'Matchup Art' },
+    { id: 'codex', label: 'Codex System' }
+  ];
+
+  const renderCharacterSelect = () => (
+    <div className="space-y-6">
+      <div className="card-beam p-6 text-center">
+        <h4 className="font-heading text-xl text-primary mb-4">{charSelect?.title}</h4>
+        <p className="text-white/60 italic">"{charSelect?.design_philosophy}"</p>
+      </div>
+
+      {/* Layout Grid */}
+      <div className="grid md:grid-cols-3 gap-4">
+        {/* Left - Heroes */}
+        <div className="card-beam p-4">
+          <h5 className="font-heading text-lg text-storm mb-3">{charSelect?.layout?.left_column?.title}</h5>
+          <div className="space-y-2">
+            {charSelect?.layout?.left_column?.characters?.map((char, i) => (
+              <div key={i} className="flex justify-between items-center p-2 bg-black/40 rounded">
+                <span className="text-white/80">{char.name}</span>
+                <span className="text-xs text-storm">{char.status}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Center - Preview */}
+        <div className="card-beam p-4 text-center">
+          <h5 className="font-heading text-lg text-primary mb-3">CENTER STAGE</h5>
+          <div className="bg-black/60 p-6 rounded-lg mb-4">
+            <div className="w-20 h-20 mx-auto rounded-full bg-primary/20 flex items-center justify-center mb-3">
+              <Star className="w-10 h-10 text-primary" />
+            </div>
+            <p className="text-sm text-white/50">Large animated model</p>
+          </div>
+          <ul className="text-xs text-white/40 space-y-1">
+            {charSelect?.layout?.center?.features?.map((f, i) => (
+              <li key={i}>• {f}</li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Right - Opposition */}
+        <div className="card-beam p-4">
+          <h5 className="font-heading text-lg text-fire mb-3">{charSelect?.layout?.right_column?.title}</h5>
+          <div className="space-y-2">
+            {charSelect?.layout?.right_column?.characters?.map((char, i) => (
+              <div key={i} className="flex justify-between items-center p-2 bg-black/40 rounded">
+                <span className="text-white/80">{char.name}</span>
+                <span className="text-xs text-fire">{char.status}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Hover Behavior */}
+      <div className="card-beam p-6">
+        <h5 className="font-heading text-lg text-electric mb-4">Hover Behavior</h5>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {charSelect?.hover_behavior?.examples?.map((ex, i) => (
+            <div key={i} className="text-center p-3 bg-black/40 rounded-lg">
+              <p className="text-white/60 text-sm">{ex.character}</p>
+              <p className="font-heading text-electric text-lg">"{ex.word}"</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Visual Rules */}
+      <div className="card-beam p-6">
+        <h5 className="font-heading text-lg text-void mb-4">Visual Rules</h5>
+        <div className="flex flex-wrap gap-2">
+          {charSelect?.visual_rules?.map((rule, i) => (
+            <span key={i} className="px-3 py-1 rounded-full bg-void/20 text-void text-sm">{rule}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderMatchups = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <p className="text-white/50 text-sm">For: Versus splash screens, Story chapter cards, Marketing key art</p>
+      </div>
+
+      {matchups.map((matchup, i) => (
+        <div key={i} className="card-beam p-6" style={{ borderLeft: `4px solid ${matchup.color}` }}>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">{i === 0 ? '🦷' : i === 1 ? '🦁' : i === 2 ? '🐯' : '🌠'}</span>
+            <div>
+              <h4 className="font-heading text-xl" style={{ color: matchup.color }}>{matchup.title}</h4>
+              <p className="text-white/50 text-sm italic">"{matchup.subtitle}"</p>
+            </div>
+          </div>
+          <div className="bg-black/40 p-4 rounded-lg">
+            <p className="text-xs text-white/40 uppercase mb-2">Art Prompt</p>
+            <p className="text-white/70 text-sm leading-relaxed">{matchup.prompt}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderCodex = () => (
+    <div className="space-y-6">
+      <div className="card-beam p-6 text-center">
+        <h4 className="font-heading text-2xl text-primary mb-2">{codex?.title}</h4>
+        <p className="text-white/60">{codex?.description}</p>
+      </div>
+
+      {/* Unlock Rules */}
+      <div className="card-beam p-6">
+        <h5 className="font-heading text-lg text-storm mb-4">How Entries Unlock</h5>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {codex?.unlock_rules?.map((rule, i) => (
+            <span key={i} className="px-3 py-1 rounded-full bg-storm/20 text-storm text-sm">{rule}</span>
+          ))}
+        </div>
+        <p className="text-fire text-sm italic">{codex?.never}</p>
+      </div>
+
+      {/* Tab Structure */}
+      <div className="card-beam p-6">
+        <h5 className="font-heading text-lg text-electric mb-4">Entry Structure - 4 Tabs</h5>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {codex?.structure?.tabs?.map((tab, i) => (
+            <div key={i} className="bg-black/40 p-4 rounded-lg text-center" style={{ borderTop: `2px solid ${i === 0 ? '#64D2FF' : i === 1 ? '#30D158' : i === 2 ? '#FF3B30' : '#BF5AF2'}` }}>
+              <p className="font-heading text-sm" style={{ color: i === 0 ? '#64D2FF' : i === 1 ? '#30D158' : i === 2 ? '#FF3B30' : '#BF5AF2' }}>{tab.name}</p>
+              <p className="text-white/40 text-xs mt-1">{tab.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Example Entries */}
+      <div className="space-y-4">
+        <h5 className="font-heading text-lg text-primary">Example Codex Entries</h5>
+        {codex?.example_entries?.map((entry, i) => (
+          <div key={i} className="card-beam p-4">
+            <p className="font-heading text-lg text-electric mb-3">ENTRY: {entry.entry}</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+              <div className="bg-black/40 p-2 rounded">
+                <p className="text-storm text-xs uppercase mb-1">Known</p>
+                <p className="text-white/60">{entry.known}</p>
+              </div>
+              <div className="bg-black/40 p-2 rounded">
+                <p className="text-[#30D158] text-xs uppercase mb-1">Remembered</p>
+                <p className="text-white/60">{entry.remembered}</p>
+              </div>
+              <div className="bg-black/40 p-2 rounded">
+                <p className="text-fire text-xs uppercase mb-1">Lost</p>
+                <p className="text-white/60">{entry.lost}</p>
+              </div>
+              <div className="bg-black/40 p-2 rounded">
+                <p className="text-void text-xs uppercase mb-1">Player Note</p>
+                <p className="text-white/60 italic">"{entry.player_note}"</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Tail Codex UI */}
+      <div className="card-beam p-6">
+        <h5 className="font-heading text-lg text-primary mb-4">Tail Codex UI</h5>
+        <p className="text-white/60 mb-3">{codex?.tail_codex_ui?.display}</p>
+        <ul className="space-y-1 mb-3">
+          {codex?.tail_codex_ui?.rules?.map((rule, i) => (
+            <li key={i} className="text-white/50 text-sm">• {rule}</li>
+          ))}
+        </ul>
+        <p className="text-storm text-sm italic">{codex?.tail_codex_ui?.hover}</p>
+      </div>
+    </div>
+  );
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'matchups': return renderMatchups();
+      case 'codex': return renderCodex();
+      default: return renderCharacterSelect();
+    }
+  };
+
+  return (
+    <section className="min-h-screen py-24 bg-black/30" data-testid="ui-section">
+      <div className="container-game">
+        <div className="text-center mb-12">
+          <p className="font-lore text-electric text-sm tracking-[0.3em] mb-4">GAME UI</p>
+          <h2 className="font-heading text-4xl md:text-5xl font-black mb-4">
+            UI & <span className="text-electric">CODEX</span>
+          </h2>
+          <p className="text-white/60 max-w-2xl mx-auto">
+            Character select, matchup art prompts, and the Memory Ledger system.
+          </p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex justify-center gap-2 mb-12">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider transition-all ${
+                activeTab === tab.id 
+                  ? 'bg-electric text-black' 
+                  : 'bg-white/5 text-white/50 hover:bg-white/10'
+              }`}
+              data-testid={`ui-tab-${tab.id}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="max-w-4xl mx-auto">
+          {renderContent()}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 // Footer
 const Footer = () => (
   <footer className="py-12 border-t border-white/5" data-testid="footer">
