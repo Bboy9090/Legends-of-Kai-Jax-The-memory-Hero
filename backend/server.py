@@ -140,35 +140,35 @@ CHARACTERS_DATA = [
         id="kai",
         name="KAI",
         title="The Fierce Heart",
-        description="The elder brother. Quick to anger, quicker to protect. Kai fights with instinct and passion. His heart burns like the first flame - destructive but warming to those he loves.",
+        description="The elder Sabertooth brother. A powerful bipedal tiger-beast with burning orange fur, massive fangs, and eyes like molten fire. Quick to anger, quicker to protect. His muscular frame radiates heat, and his roar shakes the foundations of the city.",
         abilities=["Ember Strike", "Rage Ignition", "Protective Fury", "Heart of Fire"]
     ),
     CharacterData(
         id="jax",
         name="JAX",
         title="The Calculated Mind",
-        description="The younger brother. Patient, strategic, always thinking three moves ahead. Jax fights with precision and foresight. His mind is sharp as the coldest ice.",
+        description="The younger Sabertooth brother. A sleek bipedal tiger-beast with cool silver-blue fur, sharp calculating eyes, and frost patterns across his coat. Patient and strategic, his lean powerful form moves with deadly precision.",
         abilities=["Storm Analysis", "Tactical Strike", "Mind's Eye", "Frozen Precision"]
     ),
     CharacterData(
         id="kaijax",
         name="KAI-JAX",
         title="The Memory King",
-        description="The fusion of two brothers, two souls, two destinies. Neither Kai nor Jax alone - something greater. The 9-Tailed Memory Warrior who cannot be erased. Born from grief, forged in loss, crowned by memory itself.",
+        description="The legendary fusion - a towering bipedal Sabertooth beast with fur that shifts between fire-orange and storm-blue. Nine magnificent tails swirl behind him, each blazing with different elemental power. His eyes hold the memory of two souls, his fangs gleam with sovereign light. The Memory Warrior who cannot be erased.",
         abilities=["Nine-Tail Mastery", "Memory Weave", "Fusion State", "Architect's Denial", "Sovereign Crown"]
     ),
     CharacterData(
         id="boryn",
         name="BORYN",
         title="The Shield Father",
-        description="Foster guardian. Street-level survival mentor. He taught love through protection. His sacrifice bought time for the future. The reason Kai and Jax want to live.",
+        description="A weathered Sabertooth warrior with battle-scarred grey fur and kind amber eyes. Bipedal and broad-shouldered, his protective stance speaks of countless fights survived. Foster guardian to Kai and Jax, his sacrifice bought time for legends to be born.",
         abilities=["Iron Defense", "Paternal Shield", "Sacrifice"]
     ),
     CharacterData(
         id="borax",
         name="BORAX",
         title="The Sabertooth Law",
-        description="Legendary apex predator. Emotionally distant. Trains without comfort. Never replaces the father. He teaches why survival matters through discipline.",
+        description="The apex of all Sabertooths - a massive bipedal beast towering above all others. His ancient white fur is streaked with battle marks, his fangs are legendary, his presence commands absolute respect. Cold, distant, unmovable. He is the Law itself.",
         abilities=["Law Enforcement", "Discipline Strike", "Apex Judgment"]
     ),
 ]
