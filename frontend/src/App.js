@@ -740,6 +740,79 @@ const RegionsSection = () => {
   );
 };
 
+// Bible Section
+const BibleSection = () => {
+  const [bibleVerses, setBibleVerses] = useState([]);
+
+  useEffect(() => {
+    const fetchBibleVerses = async () => {
+      try {
+        const response = await axios.get(`${API}/bible`);
+        setBibleVerses(response.data);
+      } catch (e) {
+        console.error('Failed to fetch bible verses:', e);
+      }
+    };
+    fetchBibleVerses();
+  }, []);
+
+  return (
+    <section className="min-h-screen py-24 bg-black/30" data-testid="bible-section">
+      <div className="container-game">
+        <div className="text-center mb-16">
+          <p className="font-lore text-primary text-sm tracking-[0.3em] mb-4">THE SACRED TEXTS</p>
+          <h2 className="font-heading text-4xl md:text-5xl font-black mb-4">
+            THE <span className="text-primary">MEMORY BIBLE</span>
+          </h2>
+          <p className="text-white/60 max-w-2xl mx-auto font-lore italic">
+            "Sacred verses that guide the Memory King's journey through the fractured world."
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {bibleVerses.map((verse, index) => (
+            <div 
+              key={verse.id || index}
+              className="card-beam p-6"
+              style={{ animationDelay: `${index * 0.1}s` }}
+              data-testid={`bible-verse-${index}`}
+            >
+              <div className="mb-4">
+                <h3 className="font-heading text-xl text-primary mb-2">{verse.title}</h3>
+                <p className="text-white/40 text-xs uppercase tracking-widest">
+                  {verse.book} {verse.chapter}:{verse.verse}
+                </p>
+              </div>
+              <blockquote className="text-white/80 text-sm leading-relaxed mb-4 italic border-l-2 border-primary/30 pl-4">
+                "{verse.text}"
+              </blockquote>
+              {verse.interpretation && (
+                <div className="pt-4 border-t border-white/5">
+                  <p className="text-xs text-white/30 uppercase tracking-widest mb-2">Memory King's Interpretation</p>
+                  <p className="text-white/60 text-sm">{verse.interpretation}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-16 text-center">
+          <div className="card-beam p-8 max-w-2xl mx-auto bg-gradient-to-b from-primary/5 to-transparent">
+            <p className="font-lore text-xl text-primary mb-4">The Final Verse</p>
+            <p className="text-white/60 mb-4 italic">
+              "When memory becomes legend, and legend becomes truth, 
+              the King shall rise from the ashes of the forgotten."
+            </p>
+            <p className="text-sm text-white/40">
+              - The Memory Bible, Final Chapter
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 // Footer
 const Footer = () => (
   <footer className="py-12 border-t border-white/5" data-testid="footer">
