@@ -159,13 +159,13 @@ const HeroSection = ({ onNavigate }) => {
 const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
   const [generatedImage, setGeneratedImage] = useState(null);
 
-  // Reference images from user's art
+  // Reference images from user's art - LOCKED IMAGE CANON
   const referenceImages = {
-    kai: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/qg2yruaf_D3D596A4-184F-4AE1-8009-15784FB7D51F.png",
-    jax: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/qg2yruaf_D3D596A4-184F-4AE1-8009-15784FB7D51F.png",
+    kai: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/qfhn7od0_F5ACDADF-FD25-4E9D-ACF2-658700CB2C84.png",
+    jax: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/qfhn7od0_F5ACDADF-FD25-4E9D-ACF2-658700CB2C84.png",
     kaijax: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/htuxfqte_9660FF22-E010-4DF5-A321-DDFE60ADB8CB.png",
-    boryn: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/wqaylhx5_IMG_2571.png",
-    borax: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/wqaylhx5_IMG_2571.png"
+    boryn: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/qfhn7od0_F5ACDADF-FD25-4E9D-ACF2-658700CB2C84.png",
+    borax: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/qfhn7od0_F5ACDADF-FD25-4E9D-ACF2-658700CB2C84.png"
   };
 
   const handleGenerate = async () => {
