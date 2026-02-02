@@ -7,3 +7,7 @@ export { default as Fighter } from './entities/Fighter';
 export { default as KaiJax, TAIL_DATA, TAIL_MOVES } from './entities/KaiJax';
 export { default as Enemy, ENEMY_TYPES, AI_STATES } from './entities/Enemy';
 export { default as CombatArena } from './CombatArena';
+export { default as CombatArena3D } from './CombatArena3D';
+
+// Graphics exports
+export * from './graphics';
