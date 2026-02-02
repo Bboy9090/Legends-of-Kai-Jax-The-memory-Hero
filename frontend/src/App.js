@@ -1461,6 +1461,8 @@ function App() {
 
   const renderSection = () => {
     switch (activeSection) {
+      case 'play':
+        return <CombatArena onExit={() => setActiveSection('home')} />;
       case 'characters':
         return <CharactersSection onGenerateImage={handleGenerateImage} isGenerating={isGenerating} />;
       case 'tails':
@@ -1480,16 +1482,19 @@ function App() {
     }
   };
 
+  // Full screen mode for game
+  const isGameMode = activeSection === 'play';
+
   return (
     <div className="min-h-screen bg-background">
-      <ParticleBackground />
-      <Navigation activeSection={activeSection} setActiveSection={setActiveSection} />
+      {!isGameMode && <ParticleBackground />}
+      {!isGameMode && <Navigation activeSection={activeSection} setActiveSection={setActiveSection} />}
       
       <main>
         {renderSection()}
       </main>
 
-      <Footer />
+      {!isGameMode && <Footer />}
     </div>
   );
 }
