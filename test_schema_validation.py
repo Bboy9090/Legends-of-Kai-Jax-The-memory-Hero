@@ -10,10 +10,9 @@ import sys
 try:
     import jsonschema
 except ImportError:
-    print("Installing jsonschema...")
-    import subprocess
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "jsonschema", "-q"])
-    import jsonschema
+    print("Error: jsonschema package is required to run this test.")
+    print("Please install it with: pip install jsonschema")
+    sys.exit(1)
 
 def load_schema():
     """Load the story_mode schema."""
