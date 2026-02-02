@@ -268,6 +268,7 @@ const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
 // Characters Section
 const CharactersSection = ({ onGenerateImage, isGenerating }) => {
   const [characters, setCharacters] = useState([]);
+  const [aiGallery, setAiGallery] = useState([]);
 
   useEffect(() => {
     const fetchCharacters = async () => {
@@ -280,6 +281,27 @@ const CharactersSection = ({ onGenerateImage, isGenerating }) => {
     };
     fetchCharacters();
   }, []);
+
+  // Fetch AI Gallery images
+  useEffect(() => {
+    const fetchAiGallery = async () => {
+      try {
+        const response = await axios.get(`${API}/ai-gallery`);
+        setAiGallery(response.data);
+      } catch (e) {
+        console.error('Failed to fetch AI gallery:', e);
+      }
+    };
+    fetchAiGallery();
+  }, []);
+
+  const characterNames = {
+    kai: 'KAI - Prime Hero',
+    jax: 'JAX - Prime Striker',
+    kaijax: 'KAI-JAX - The Memory King',
+    boryn: 'BORYN - The Shield Father',
+    borax: 'BORAX - The Sabertooth Law'
+  };
 
   // All reference art gallery - LOCKED IMAGE CANON
   const galleryImages = [
