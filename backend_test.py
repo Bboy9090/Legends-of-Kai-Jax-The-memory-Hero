@@ -229,6 +229,9 @@ class KaiJaxAPITester:
             print("❌ API Root failed - stopping tests")
             return False
 
+        # Test health endpoint (mentioned in requirements)
+        self.test_health_endpoint()
+
         # Test main endpoints
         self.test_tails_endpoint()
         self.test_characters_endpoint()
