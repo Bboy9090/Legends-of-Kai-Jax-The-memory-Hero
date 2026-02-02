@@ -36,6 +36,8 @@ Transform the GitHub repo "Legends-of-Kai-Jax-The-memory-Hero" into a 10x more l
 - **AI GENERATED badge** appears after successful generation
 - **Regenerate button** allows creating new variations
 - **Backend integration** with OpenAI GPT Image 1 via Emergent LLM Key
+- **AI Character Gallery** - Dedicated section displaying all AI-generated character art
+- **All 5 characters generated**: KAI, JAX, KAI-JAX, BORYN, BORAX
 
 ### 2. FINAL MASTER BIBLE (8 Layers)
 - **Layer I** - The Absolute Core (non-negotiables)
