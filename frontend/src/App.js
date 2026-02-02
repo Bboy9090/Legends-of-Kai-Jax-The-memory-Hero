@@ -122,6 +122,13 @@ const HeroSection = ({ onNavigate }) => {
           
           <div className="flex flex-wrap gap-4">
             <button 
+              onClick={() => onNavigate('play')} 
+              className="btn-cyber flex items-center gap-2 bg-primary/20 border-primary hover:bg-primary/30 animate-pulse"
+              data-testid="cta-play"
+            >
+              <Gamepad2 className="w-5 h-5" /> PLAY NOW
+            </button>
+            <button 
               onClick={() => onNavigate('characters')} 
               className="btn-cyber flex items-center gap-2"
               data-testid="cta-characters"
