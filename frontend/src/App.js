@@ -1463,8 +1463,6 @@ function App() {
     switch (activeSection) {
       case 'play':
         return <CombatArena onExit={() => setActiveSection('home')} />;
-      case 'play3d':
-        return <CombatArena3D onExit={() => setActiveSection('home')} />;
       case 'characters':
         return <CharactersSection onGenerateImage={handleGenerateImage} isGenerating={isGenerating} />;
       case 'tails':
