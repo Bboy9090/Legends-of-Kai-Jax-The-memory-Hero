@@ -41,6 +41,17 @@ class KaiJaxAPITester:
             self.log_test("API Root", False, str(e))
             return False
 
+    def test_health_endpoint(self):
+        """Test /api/health endpoint - mentioned in requirements but doesn't exist"""
+        try:
+            response = requests.get(f"{self.api_url}/health", timeout=10)
+            success = response.status_code == 200
+            self.log_test("Health Endpoint", success, f"Status: {response.status_code}")
+            return success
+        except Exception as e:
+            self.log_test("Health Endpoint", False, str(e))
+            return False
+
     def test_tails_endpoint(self):
         """Test /api/tails endpoint - should return 9 tails"""
         try:
