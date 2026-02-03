@@ -127,11 +127,17 @@ Transform the GitHub repo "Legends-of-Kai-Jax-The-memory-Hero" into a 10x more l
 
 ---
 
-## 9th Tail Coronation
-**Trigger:** All tails aligned, fusion stable, choice under pressure
-**Cinematic:** BOTH fathers' echoes (Boryn + Borax) appear and crown Kai-Jax together
-- Boryn: "You carried what I couldn't."
-- Borax: "Stand. Be remembered."
+## Production Bible Documents
+
+| Document | Path | Purpose |
+|----------|------|---------|
+| Engine Design Spec | `/app/memory/ENGINE_DESIGN_SPECIFICATION.md` | Master technical blueprint |
+| Quick Reference | `/app/memory/QUICK_REFERENCE_CARD.md` | Combat data quick lookup |
+| Character Build Sheets | `/app/memory/CHARACTER_BUILD_SHEETS.md` | 3D artist guide |
+| Animation State Machine | `/app/memory/ANIMATION_STATE_MACHINE.md` | Animator guide |
+| Tail Ability System | `/app/memory/TAIL_ABILITY_SYSTEM.md` | Systems designer guide |
+| Enemy AI Behavior Spec | `/app/memory/ENEMY_AI_BEHAVIOR_SPEC.md` | AI programmer guide |
+| Asset Master List | `/app/memory/ASSET_MASTER_LIST.md` | Production tracking |
 
 ---
 
@@ -140,25 +146,59 @@ Transform the GitHub repo "Legends-of-Kai-Jax-The-memory-Hero" into a 10x more l
 |-----------|--------|
 | Story | ✅ Locked |
 | World | ✅ Coherent |
-| Systems | ✅ Buildable |
+| Systems | ✅ Fully Specified |
 | Scale | ✅ Expandable |
 | Identity | ✅ Clear |
+| Character Design | ✅ Production Ready |
+| Animation Spec | ✅ Production Ready |
+| Ability System | ✅ Production Ready |
+| Enemy AI | ✅ Production Ready |
+| Asset List | ✅ Production Ready |
 
 ---
 
 ## Tech Stack
+
+### Web Prototype (Reference)
 - **Frontend:** React 19, Tailwind CSS, Lucide Icons
 - **Backend:** FastAPI, Python, Motor (MongoDB)
 - **AI Integration:** OpenAI GPT Image 1 via Emergent LLM Key
 - **Database:** MongoDB
 
+### Target Game Engine
+- **Primary:** Unreal Engine 5
+- **Alternative:** Unity 2022+ (HDRP/URP)
+- **Platforms:** PC, Console (PS5/XSX), Mobile
+
 ---
 
-## Next Logical Steps
-1. Opening cinematic shot list
-2. DLC / sequel timeline
-3. Studio pitch deck
-4. Playable prototype roadmap
+## Next Steps (Prioritized)
+
+### P0 - Immediate (Engine Setup)
+1. Set up Unreal/Unity project with folder structure
+2. Import Kai-Jax placeholder model (greybox)
+3. Implement character controller following spec
+4. Create greybox test arena
+5. Build basic Iterator enemy with AI
+
+### P1 - Core Combat
+1. Implement frame data system
+2. Build hitbox/hurtbox system
+3. Create input buffer
+4. Add first 3 tails (Ember, Gale, Shade)
+5. Build basic HUD
+
+### P2 - Content
+1. Remaining 6 tails
+2. Additional enemy types
+3. First region (Ashblock Heights)
+4. Audio implementation
+
+### P3 - Polish
+1. VFX polish pass
+2. Animation polish
+3. Enemy AI tuning
+4. Performance optimization
 
 ---
 
@@ -166,3 +206,5 @@ Transform the GitHub repo "Legends-of-Kai-Jax-The-memory-Hero" into a 10x more l
 > "This is not derivative. It is ancestral."
 
 **You've crossed the point of "idea." This is a myth you can ship.**
+
+**Opening Unreal or Unity is now mechanical, not creative chaos.**
