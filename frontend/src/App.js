@@ -30,7 +30,7 @@ const ParticleBackground = () => {
 // Navigation Component
 const Navigation = ({ activeSection, setActiveSection }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const sections = ['home', 'play', 'characters', 'tails', 'story', 'gods', 'regions', 'bible', 'ui'];
+  const sections = ['home', 'play', 'testlab', 'characters', 'tails', 'story', 'gods', 'regions', 'bible', 'ui'];
 
   return (
     <nav className="glass-nav" data-testid="main-navigation">
