@@ -1485,7 +1485,7 @@ function App() {
   };
 
   // Full screen mode for game
-  const isGameMode = activeSection === 'play';
+  const isGameMode = activeSection === 'play' || activeSection === 'testlab';
 
   return (
     <div className="min-h-screen bg-background">
