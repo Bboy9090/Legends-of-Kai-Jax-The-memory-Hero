@@ -35,7 +35,27 @@ Transform the GitHub repo "Legends-of-Kai-Jax-The-memory-Hero" into a 10x more l
 - Basic HUD with meters and frame display
 - Combat state machine implementation
 
-### 3. ENGINE DESIGN SPECIFICATION — Production Bible
+### 3. FRAME DATA ENGINE SKELETON (NEW - December 2025)
+- `/app/frontend/src/game/data/FrameData.js` — Single source of truth for ALL combat data
+  - Move phases (STARTUP/ACTIVE/RECOVERY)
+  - Fighter states (17 states with transition rules)
+  - Complete move data (light_1-3, heavy_1-2, dash_attack, air attacks)
+  - Tail ability data (all 9 tails with frame-perfect timings)
+  - Movement data (speeds, friction, jump force)
+  - Hitstop values, cancel windows, advantage calculations
+- `/app/frontend/src/game/core/CharacterController.js` — Engine-ready state machine
+  - Input buffer (6-frame window)
+  - Cancel system with hit confirm
+  - Physics with gravity, friction
+  - Hitbox/hurtbox collision
+  - Stun, invincibility, combo tracking
+- `/app/frontend/src/game/TestArena.jsx` — Gray capsule test arena
+  - Live frame data validation
+  - Debug info display
+  - Control reference panel
+  - Frame data table
+
+### 4. ENGINE DESIGN SPECIFICATION — Production Bible
 - `/app/memory/ENGINE_DESIGN_SPECIFICATION.md` - Full technical spec
 - `/app/memory/QUICK_REFERENCE_CARD.md` - Combat quick reference
 
