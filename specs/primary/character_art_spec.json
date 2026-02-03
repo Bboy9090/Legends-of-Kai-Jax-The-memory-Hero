@@ -1,0 +1,39 @@
+{
+  "title": "Legends of Kai-Jax: The Memory King — Character Art Spec (Primary)",
+  "version": "1.0",
+  "description": "Locked looks for 3D and 2D rendering. Primary stack: Three.js + Rapier.",
+  "characters": [
+    {
+      "id": "kai-jax",
+      "name": "KAIJAX",
+      "title": "Memory Hybrid",
+      "primaryColor": "#1a1a1a",
+      "accentColor": "#00ff00",
+      "secondaryColor": "#cc5500",
+      "webbingColor": "#00ff00",
+      "eyeColors": ["#00ff00", "#00f2ff", "#ffb000"],
+      "features": ["no_clothes", "charcoal_fur", "lime_webbing", "tri_color_eyes", "tribal_scars", "tail_streaks"],
+      "portraitPath": ""
+    },
+    {
+      "id": "jaxon",
+      "name": "JAXON",
+      "primaryColor": "#0b1020",
+      "accentColor": "#4fd2ff",
+      "secondaryColor": "#4fd2ff",
+      "webbingColor": "",
+      "features": ["tactical_jacket"],
+      "portraitPath": ""
+    },
+    {
+      "id": "kaison",
+      "name": "KAISON",
+      "primaryColor": "#1a0a0a",
+      "accentColor": "#ffb000",
+      "secondaryColor": "#ffb000",
+      "webbingColor": "",
+      "features": ["tactical_jacket"],
+      "portraitPath": ""
+    }
+  ]
+}

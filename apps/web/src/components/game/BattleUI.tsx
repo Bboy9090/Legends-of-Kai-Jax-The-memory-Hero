@@ -3,6 +3,7 @@ import { useGame } from "../../lib/stores/useGame";
 import { useRunner } from "../../lib/stores/useRunner";
 import { useMissions } from "../../lib/stores/useMissions";
 import { getFighterById } from "../../lib/characters";
+import { getPortraitPath } from "../../data/characterDesigns";
 import { useState, useEffect, useRef } from "react";
 import { Zap, Shield, Flame, Crown, RotateCcw, Home, Star, Sparkles, Swords, CheckCircle2, XCircle, Target } from "lucide-react";
 
@@ -156,7 +157,7 @@ function LegendaryHealthBar({
 }: {
   health: number;
   maxHealth: number;
-  fighter: { name: string; displayName: string; color: string; accentColor: string };
+  fighter: { id?: string; name: string; displayName: string; color: string; accentColor: string };
   side: 'left' | 'right';
   wins: number;
   synergy?: number;
@@ -165,7 +166,8 @@ function LegendaryHealthBar({
   const percentage = (health / maxHealth) * 100;
   const isLow = percentage < 30;
   const isCritical = percentage < 15;
-  
+  const portraitPath = fighter.id ? getPortraitPath(fighter.id) : null;
+
   return (
     <div 
       className={`flex-1 min-w-0 animate-[${side === 'left' ? 'slideInLeft' : 'slideInRight'}_0.5s_ease-out]`}
@@ -194,21 +196,25 @@ function LegendaryHealthBar({
       >
         {/* Fighter Info Row */}
         <div className={`flex items-center gap-2 mb-2 ${side === 'right' ? 'flex-row-reverse' : ''}`}>
-          {/* Fighter Avatar */}
+          {/* Fighter Avatar — design-driven portrait when available */}
           <div 
             className={`
               relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 
-              rounded-full flex items-center justify-center 
+              rounded-full flex items-center justify-center overflow-hidden
               font-black text-lg sm:text-xl md:text-2xl text-white
               flex-shrink-0 border-2 border-white/30
               ${isCritical ? 'animate-pulse' : ''}
             `}
             style={{ 
-              background: `linear-gradient(135deg, ${fighter.color}, ${fighter.accentColor})`,
-              boxShadow: `0 0 20px ${fighter.color}80, inset 0 0 15px rgba(255,255,255,0.3)`,
+              background: portraitPath ? "transparent" : `linear-gradient(135deg, ${fighter.color}, ${fighter.accentColor})`,
+              boxShadow: portraitPath ? undefined : `0 0 20px ${fighter.color}80, inset 0 0 15px rgba(255,255,255,0.3)`,
             }}
           >
-            {fighter.name.charAt(0)}
+            {portraitPath ? (
+              <img src={portraitPath} alt="" className="w-full h-full object-cover" />
+            ) : (
+              fighter.name.charAt(0)
+            )}
             
             {/* Transform Indicator */}
             {isTransformed && (

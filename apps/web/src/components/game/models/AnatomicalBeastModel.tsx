@@ -4,8 +4,9 @@ import type { RefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Fighter } from "../../../lib/characters";
-import { COMPLETE_BEAST_ROSTER } from "@beast-kin/shared/data/complete_beast_roster";
+import { COMPLETE_BEAST_ROSTER } from "../../../data/beastRoster";
 import type { BeastPresetKind } from "../../../lib/stores/useBeastPreset";
+import { getDesignForFighterId, hexToRgb } from "../../../data/characterDesigns";
 
 function fract(x: number): number {
   return x - Math.floor(x);
@@ -188,6 +189,9 @@ function makeClothWeaveTexture(seed: number, size = 128): THREE.CanvasTexture | 
   return tex;
 }
 
+/** LOD by layer: 0=close (all on), 1=mid (aura off), 2=far (fur shell off), 3=very far (base + emissive only) */
+export type CharacterLODLevel = 0 | 1 | 2 | 3;
+
 export interface AnatomicalBeastModelProps {
   fighter: Fighter;
   bodyRef: RefObject<THREE.Group>;
@@ -207,6 +211,8 @@ export interface AnatomicalBeastModelProps {
    * Use `undefined`/`null` to let roster drive it (“auto”).
    */
   presetOverride?: Exclude<BeastPresetKind, "auto"> | null;
+  /** LOD level: 0=close, 1=mid, 2=far, 3=very far. Gates layers per character_renderer_spec. */
+  lodLevel?: CharacterLODLevel;
 }
 
 /**
@@ -229,8 +235,15 @@ export default function AnatomicalBeastModel({
   isInvulnerable,
   isMoving = false,
   presetOverride = null,
+  lodLevel = 0,
 }: AnatomicalBeastModelProps) {
   const groupRef = useRef<THREE.Group>(null);
+
+  /** Layer visibility per character_renderer_spec: aura off at mid+, fur/veins/tail off at very far */
+  const showAuraLayer = lodLevel === 0;
+  const showFurShellLayer = lodLevel < 3;
+  const showVeinLayer = lodLevel < 3;
+  const showElementalTailLayer = lodLevel < 3;
   const nebulaRef = useRef<THREE.Mesh>(null);
   const coreRef = useRef<THREE.Mesh>(null);
   const coreLightRef = useRef<THREE.PointLight>(null);
@@ -249,11 +262,14 @@ export default function AnatomicalBeastModel({
     [fighter.id]
   );
 
-  const primary = beast?.visual.primaryColor || fighter.color || "#1a1a1a";
-  const accent = beast?.visual.accentColor || fighter.accentColor || "#00f2ff";
-  const features = beast?.visual.features || [];
-  const hybrid = beast?.beastHybrid || "";
+  const design = useMemo(() => getDesignForFighterId(fighter.id), [fighter.id]);
+
+  const primary = design?.primaryColor ?? beast?.visual.primaryColor ?? fighter.color ?? "#1a1a1a";
+  const accent = design?.accentColor ?? beast?.visual.accentColor ?? fighter.accentColor ?? "#00f2ff";
+  const features = beast?.visual.features ?? [];
+  const hybrid = beast?.beastHybrid ?? "";
   const featureKey = features.join("|");
+  const webbingColor = design?.webbingColor ?? null;
 
   const has = (k: string) => features.some((f) => f === k || f.includes(k));
   const hasWord = (re: RegExp) => features.some((f) => re.test(f));
@@ -304,13 +320,15 @@ export default function AnatomicalBeastModel({
   const hasSageEyes = has("sage_mode_eyes");
 
   const quillCount = has("seven_electric_quills") ? 7 : hasSpines ? 6 : 0;
-  const eyeColor = hasSageEyes ? "#FFD700" : has("feral_amber_eyes") ? "#FFB000" : accent;
+  const eyeColor = design?.eyeColors?.[0] ?? (hasSageEyes ? "#FFD700" : has("feral_amber_eyes") ? "#FFB000" : accent);
 
-  const furColor = has("charcoal_fur") ? "#1a1a1a" : primary;
+  const furColor = design?.features?.includes("charcoal_fur") || has("charcoal_fur") ? "#1a1a1a" : primary;
   const clothColor = hasTacticalJacket ? "#0b1020" : primary;
   // Keep “hero jacket/armor” ONLY for heroes / explicit jacket DNA.
   // Applying it to all wolves/foxes makes everyone read like blocky robot armor.
-  const hasCinematicJacket = hasTacticalJacket || fighter.id === "jaxon" || fighter.id === "kaison";
+  const hasCinematicJacket =
+    !(design?.features?.includes("no_clothes")) &&
+    (hasTacticalJacket || fighter.id === "jaxon" || fighter.id === "kaison");
 
   // Chest “fusion core” glow can read too bright / toy-like in this procedural pass.
   // Keeping it off for now to reduce “glowy robot” feel.
@@ -819,6 +837,8 @@ export default function AnatomicalBeastModel({
         uniform float uHueOffset;
         uniform float uAlpha;
         uniform float uIntensity;
+        uniform vec3 uWebbingRGB;
+        uniform float uUseWebbing;
 
         float hash(vec2 p) {
           return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -869,7 +889,7 @@ export default function AnatomicalBeastModel({
       `,
     });
     return mat;
-  }, []);
+  }, [webbingColor]);
 
   const lightningRibbonMaterials = useMemo(() => {
     if (!hasAuraWings) return [] as THREE.ShaderMaterial[];
@@ -1007,7 +1027,7 @@ export default function AnatomicalBeastModel({
             <primitive attach="material" object={furPhysical} />
           )}
         </mesh>
-        {!useScales && !useChitin && (
+        {showFurShellLayer && !useScales && !useChitin && (
           <mesh position={[0, -0.12, -0.02]} rotation={[0.08, 0, 0]} geometry={hipGeo} scale={1.03}>
             <primitive attach="material" object={rimGlowMat} />
           </mesh>
@@ -1323,8 +1343,8 @@ export default function AnatomicalBeastModel({
             </>
           )}
 
-          {/* Neck mane/ruff (reference-style fur silhouette) */}
-          {(kind === "wolf" || kind === "fox" || kind === "cat" || fighter.id === "kai-jax") && (
+          {/* Neck mane/ruff — fur shell layer (off at very far LOD) */}
+          {showFurShellLayer && (kind === "wolf" || kind === "fox" || kind === "cat" || fighter.id === "kai-jax") && (
             <group position={[0, -0.08, 0.02]}>
               {Array.from({ length: 14 }).map((_, i) => (
                 <mesh
@@ -1372,7 +1392,7 @@ export default function AnatomicalBeastModel({
           {[-0.04, 0, 0.04].map((x) => (
             <mesh key={x} position={[x, -0.50, 0.14]} rotation={[0.25, 0, 0]} castShadow>
               <coneGeometry args={[0.014, 0.07, 6]} />
-              <meshStandardMaterial color={"#e8e8ee"} roughness={0.45} metalness={0.35} />
+              <meshStandardMaterial color="#e8e8ee" roughness={0.2} metalness={0.6} emissive="#8888aa" emissiveIntensity={0.08} />
             </mesh>
           ))}
         </group>
@@ -1402,7 +1422,7 @@ export default function AnatomicalBeastModel({
           {[-0.04, 0, 0.04].map((x) => (
             <mesh key={x} position={[x, -0.50, 0.14]} rotation={[0.25, 0, 0]} castShadow>
               <coneGeometry args={[0.014, 0.07, 6]} />
-              <meshStandardMaterial color={"#e8e8ee"} roughness={0.45} metalness={0.35} />
+              <meshStandardMaterial color="#e8e8ee" roughness={0.2} metalness={0.6} emissive="#8888aa" emissiveIntensity={0.08} />
             </mesh>
           ))}
         </group>
@@ -1633,8 +1653,8 @@ export default function AnatomicalBeastModel({
         </group>
       )}
 
-      {/* Swirling ribbons (closer to your artwork arcs) */}
-      {hasAuraWings && auraRibbonGeometries.length > 0 && (
+      {/* Vein/web layer (emissive ribbons — must survive LOD until very far) */}
+      {hasAuraWings && showVeinLayer && auraRibbonGeometries.length > 0 && (
         <group ref={auraRibbonRef} position={[0, 0.0, 0]}>
           {auraRibbonGeometries.map((geo, i) => (
             <mesh
