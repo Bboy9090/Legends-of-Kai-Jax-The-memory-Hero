@@ -704,8 +704,8 @@ export default function TestArena() {
               INPUT BUFFER ({FRAME_CONSTANTS.INPUT_BUFFER_FRAMES}f)
             </h3>
             <div className="space-y-1">
-              {inputBufferDisplay.length > 0 ? (
-                inputBufferDisplay.map((input, i) => (
+              {inputBufferRef.current.length > 0 ? (
+                inputBufferRef.current.map((input, i) => (
                   <div key={i} className={`flex justify-between ${input.consumed ? 'text-gray-600 line-through' : 'text-gray-300'}`}>
                     <span>{input.action}</span>
                     <span className="text-gray-500">age: {input.age}f</span>
@@ -723,12 +723,12 @@ export default function TestArena() {
               COMBAT
             </h3>
             <div className="space-y-1 text-gray-300">
-              <Row label="Health" value={`${playerData.health} / 100`} />
-              <Row label="Meter" value={`${playerData.meter} / 100`} />
-              <Row label="Combo" value={playerData.comboCount || 0} />
-              <Row label="Stun Frames" value={playerData.stunFrames || 0} />
-              <Row label="Invincible" value={playerData.invincible ? 'YES' : 'NO'}
-                   color={playerData.invincible ? 'text-cyan-400' : 'text-gray-500'} />
+              <Row label="Health" value={`${playerDataRef.current.health || 100} / 100`} />
+              <Row label="Meter" value={`${playerDataRef.current.meter || 0} / 100`} />
+              <Row label="Combo" value={playerDataRef.current.comboCount || 0} />
+              <Row label="Stun Frames" value={playerDataRef.current.stunFrames || 0} />
+              <Row label="Invincible" value={playerDataRef.current.invincible ? 'YES' : 'NO'}
+                   color={playerDataRef.current.invincible ? 'text-cyan-400' : 'text-gray-500'} />
             </div>
           </div>
           
@@ -737,23 +737,23 @@ export default function TestArena() {
             <h3 className="text-red-500 font-bold mb-2 border-b border-gray-800 pb-1">
               DUMMY HIT DATA
             </h3>
-            {hitData.lastHitFrame !== null ? (
+            {hitDataRef.current.lastHitFrame !== null && hitDataRef.current.lastHitFrame !== undefined ? (
               <div className="space-y-1 text-gray-300">
-                <Row label="Last Hit" value={`Frame ${hitData.lastHitFrame}`} />
-                <Row label="Move" value={hitData.lastHitMove} />
-                <Row label="Damage" value={hitData.lastHitDamage} 
-                     color={hitData.wasBlocked ? 'text-gray-500' : 'text-red-400'} />
-                <Row label="Blocked" value={hitData.wasBlocked ? 'YES' : 'NO'}
-                     color={hitData.wasBlocked ? 'text-blue-400' : 'text-gray-500'} />
-                <Row label="Hitstun" value={`${hitData.lastHitstun}f`} />
-                <Row label="Blockstun" value={`${hitData.lastBlockstun}f`} />
+                <Row label="Last Hit" value={`Frame ${hitDataRef.current.lastHitFrame}`} />
+                <Row label="Move" value={hitDataRef.current.lastHitMove} />
+                <Row label="Damage" value={hitDataRef.current.lastHitDamage} 
+                     color={hitDataRef.current.wasBlocked ? 'text-gray-500' : 'text-red-400'} />
+                <Row label="Blocked" value={hitDataRef.current.wasBlocked ? 'YES' : 'NO'}
+                     color={hitDataRef.current.wasBlocked ? 'text-blue-400' : 'text-gray-500'} />
+                <Row label="Hitstun" value={`${hitDataRef.current.lastHitstun}f`} />
+                <Row label="Blockstun" value={`${hitDataRef.current.lastBlockstun}f`} />
                 <div className="border-t border-gray-800 pt-1 mt-1">
-                  <Row label="ADVANTAGE" value={`${hitData.frameAdvantage >= 0 ? '+' : ''}${hitData.frameAdvantage}f`}
-                       color={hitData.frameAdvantage >= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold'} />
+                  <Row label="ADVANTAGE" value={`${hitDataRef.current.frameAdvantage >= 0 ? '+' : ''}${hitDataRef.current.frameAdvantage}f`}
+                       color={hitDataRef.current.frameAdvantage >= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold'} />
                 </div>
                 <div className="border-t border-gray-800 pt-1 mt-1">
-                  <Row label="Combo" value={hitData.comboCounter} color="text-yellow-400" />
-                  <Row label="Total Dmg" value={hitData.totalDamage} color="text-red-400" />
+                  <Row label="Combo" value={hitDataRef.current.comboCounter} color="text-yellow-400" />
+                  <Row label="Total Dmg" value={hitDataRef.current.totalDamage} color="text-red-400" />
                 </div>
               </div>
             ) : (
@@ -767,8 +767,8 @@ export default function TestArena() {
               HIT HISTORY
             </h3>
             <div className="space-y-1">
-              {hitData.hitHistory?.length > 0 ? (
-                hitData.hitHistory.map((hit, i) => (
+              {hitDataRef.current.hitHistory?.length > 0 ? (
+                hitDataRef.current.hitHistory.map((hit, i) => (
                   <div key={i} className={`text-gray-400 ${i === 0 ? 'text-white' : ''}`}>
                     <span className="text-gray-500">#{hit.combo}</span>
                     {' '}{hit.move}
