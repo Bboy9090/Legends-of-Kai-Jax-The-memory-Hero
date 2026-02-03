@@ -183,12 +183,13 @@ export default function TestArena() {
   const runningRef = useRef(true);
   const hitstopRef = useRef(0);
   
-  // State for display
-  const [playerData, setPlayerData] = useState({});
-  const [dummyData, setDummyData] = useState({});
-  const [hitData, setHitData] = useState({});
-  const [inputBufferDisplay, setInputBufferDisplay] = useState([]);
-  const [frameCount, setFrameCount] = useState(0);
+  // State for display - use refs for frequent updates, state for React renders
+  const [, forceUpdate] = useState(0);
+  const playerDataRef = useRef({});
+  const dummyDataRef = useRef({});
+  const hitDataRef = useRef({});
+  const inputBufferRef = useRef([]);
+  const frameCountRef = useRef(0);
   const [showOverlay, setShowOverlay] = useState(true);
   
   // Input state
