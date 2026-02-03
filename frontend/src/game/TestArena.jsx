@@ -384,12 +384,17 @@ export default function TestArena() {
         player.hitbox.active = false;
       }
       
-      // Update display states
-      setPlayerData(getPlayerDebugData(player));
-      setDummyData(dummy.getDebugInfo());
-      setHitData(dummy.getHitData());
-      setInputBufferDisplay(player.inputBuffer.buffer.slice(0, 6));
-      setFrameCount(frameRef.current);
+      // Update display refs (faster than setState)
+      playerDataRef.current = getPlayerDebugData(player);
+      dummyDataRef.current = dummy.getDebugInfo();
+      hitDataRef.current = dummy.getHitData();
+      inputBufferRef.current = player.inputBuffer.buffer.slice(0, 6);
+      frameCountRef.current = frameRef.current;
+      
+      // Force React re-render every 6 frames (~10fps for UI)
+      if (frameRef.current % 6 === 0) {
+        forceUpdate(n => n + 1);
+      }
     };
     
     // Get detailed player debug data
