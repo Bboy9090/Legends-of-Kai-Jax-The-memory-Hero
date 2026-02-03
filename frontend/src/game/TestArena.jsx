@@ -662,11 +662,11 @@ export default function TestArena() {
               PLAYER STATE
             </h3>
             <div className="space-y-1 text-gray-300">
-              <Row label="State" value={playerData.state} />
-              <Row label="State Frame" value={playerData.stateFrame} />
-              <Row label="Grounded" value={playerData.grounded ? 'YES' : 'NO'} 
-                   color={playerData.grounded ? 'text-green-400' : 'text-red-400'} />
-              <Row label="Velocity" value={`(${playerData.velocity?.x}, ${playerData.velocity?.y})`} />
+              <Row label="State" value={playerDataRef.current.state} />
+              <Row label="State Frame" value={playerDataRef.current.stateFrame} />
+              <Row label="Grounded" value={playerDataRef.current.grounded ? 'YES' : 'NO'} 
+                   color={playerDataRef.current.grounded ? 'text-green-400' : 'text-red-400'} />
+              <Row label="Velocity" value={`(${playerDataRef.current.velocity?.x || 0}, ${playerDataRef.current.velocity?.y || 0})`} />
             </div>
           </div>
           
@@ -675,23 +675,23 @@ export default function TestArena() {
             <h3 className="text-green-500 font-bold mb-2 border-b border-gray-800 pb-1">
               CURRENT MOVE
             </h3>
-            {playerData.move ? (
+            {playerDataRef.current.move ? (
               <div className="space-y-1 text-gray-300">
-                <Row label="Move" value={playerData.move} color="text-white" />
-                <Row label="Frame" value={`${playerData.moveFrame} / ${playerData.moveData?.total}`} />
-                <Row label="Phase" value={playerData.movePhase} 
+                <Row label="Move" value={playerDataRef.current.move} color="text-white" />
+                <Row label="Frame" value={`${playerDataRef.current.moveFrame} / ${playerDataRef.current.moveData?.total}`} />
+                <Row label="Phase" value={playerDataRef.current.movePhase} 
                      color={
-                       playerData.movePhase === 'STARTUP' ? 'text-yellow-400' :
-                       playerData.movePhase === 'ACTIVE' ? 'text-green-400' :
-                       playerData.movePhase === 'RECOVERY' ? 'text-red-400' : ''
+                       playerDataRef.current.movePhase === 'STARTUP' ? 'text-yellow-400' :
+                       playerDataRef.current.movePhase === 'ACTIVE' ? 'text-green-400' :
+                       playerDataRef.current.movePhase === 'RECOVERY' ? 'text-red-400' : ''
                      } />
-                <Row label="Startup" value={`${playerData.moveData?.startup}f`} />
-                <Row label="Active" value={`${playerData.moveData?.active}f`} color="text-green-400" />
-                <Row label="Recovery" value={`${playerData.moveData?.recovery}f`} color="text-red-400" />
-                <Row label="Cancelable" value={playerData.cancelable ? 'YES' : 'NO'}
-                     color={playerData.cancelable ? 'text-green-400' : 'text-gray-500'} />
-                <Row label="Hit Confirm" value={playerData.hitConnected ? 'YES' : 'NO'}
-                     color={playerData.hitConnected ? 'text-green-400' : 'text-gray-500'} />
+                <Row label="Startup" value={`${playerDataRef.current.moveData?.startup}f`} />
+                <Row label="Active" value={`${playerDataRef.current.moveData?.active}f`} color="text-green-400" />
+                <Row label="Recovery" value={`${playerDataRef.current.moveData?.recovery}f`} color="text-red-400" />
+                <Row label="Cancelable" value={playerDataRef.current.cancelable ? 'YES' : 'NO'}
+                     color={playerDataRef.current.cancelable ? 'text-green-400' : 'text-gray-500'} />
+                <Row label="Hit Confirm" value={playerDataRef.current.hitConnected ? 'YES' : 'NO'}
+                     color={playerDataRef.current.hitConnected ? 'text-green-400' : 'text-gray-500'} />
               </div>
             ) : (
               <div className="text-gray-500">No active move</div>
