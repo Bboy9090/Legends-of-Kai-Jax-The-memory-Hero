@@ -803,7 +803,7 @@ export default function TestArena() {
               </thead>
               <tbody>
                 {Object.entries(MOVE_DATA).map(([id, move]) => (
-                  <tr key={id} className={playerData.move === id ? 'text-white bg-gray-800' : ''}>
+                  <tr key={id} className={playerDataRef.current.move === id ? 'text-white bg-gray-800' : ''}>
                     <td className="text-yellow-400">{id}</td>
                     <td>{move.startup}</td>
                     <td className="text-green-400">{move.active}</td>
