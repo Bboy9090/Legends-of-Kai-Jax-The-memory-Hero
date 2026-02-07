@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { UEE_MISSIONS, getUEEMissionById } from '../../lib/uee_missions';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Swords, Zap, ArrowLeft } from 'lucide-react';
+import { Swords, Zap, ArrowLeft } from "../ui/icons";
 
 interface UEEMissionSelectProps {
   onSelectMission: (missionId: string) => void;

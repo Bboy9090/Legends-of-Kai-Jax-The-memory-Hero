@@ -54,7 +54,7 @@ export default function BattleScene() {
   }, [startBattle]);
   
   // Update round timer every frame
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (battlePhase === 'fighting') {
       updateRoundTimer(delta);
     }

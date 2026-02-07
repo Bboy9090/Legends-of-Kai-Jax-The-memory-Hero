@@ -1,6 +1,4 @@
 import { create } from "zustand";
-import { getFighterById } from "../characters";
-import { getArenaById } from "../arenas";
 import { useAudio } from "./useAudio";
 import { useMissions } from "./useMissions";
 
@@ -624,7 +622,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     useAudio.getState().playKO();
     
     // Calculate score with bonuses
-    const { comboCount, maxCombo, playerHealth, maxHealth } = get();
+    const { maxCombo, playerHealth, maxHealth } = get();
     const baseScore = winner === 'player' ? 100 : 0;
     const comboBonus = maxCombo * 5;
     const healthBonus = winner === 'player' ? Math.round((playerHealth / maxHealth) * 50) : 0;

@@ -18,7 +18,8 @@ export function getDeviceType(): DeviceType {
 }
 
 export function getQualitySettings(): QualitySettings {
-  const device = getDeviceType();
+  const _device = getDeviceType();
+  void _device;
   const pixelRatio = typeof window !== "undefined" ? Math.min(window.devicePixelRatio ?? 1, 2) : 1;
   return {
     pixelRatio,

@@ -11,6 +11,7 @@ import DialogueDisplay from "./components/game/DialogueDisplay";
 import MainMenu from "./components/game/MainMenu";
 import CharacterSelect from "./components/game/CharacterSelect";
 import MissionSelectHub from "./components/game/MissionSelectHub";
+import CampaignMap from "./components/game/CampaignMap";
 import TransformationOverlay from "./components/game/TransformationOverlay";
 import ScreenEffects from "./components/game/ScreenEffects";
 import { GameIntro } from "./components/game/LoadingScreen";
@@ -20,7 +21,6 @@ import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
 import { useAudio } from "./lib/stores/useAudio";
 import { FIGHTERS } from "./lib/characters";
-import { BRAND } from "./lib/brand";
 import { useEffect } from "react";
 import * as THREE from "three";
 import { getQualitySettings } from "./lib/threejs/PerformanceOptimizer";
@@ -62,7 +62,7 @@ const controls = [
 
 function App() {
   const { phase } = useGame();
-  const { gameState, selectedCharacter, setGameState } = useRunner();
+  const { gameState, selectedCharacter } = useRunner();
   const { setPlayerFighter, setOpponentFighter, screenShake } = useBattle();
   const { 
     setBackgroundMusic, 
@@ -76,25 +76,22 @@ function App() {
   // ⚡ LEGENDARY INTRO SYSTEM
   const [showIntro, setShowIntro] = useState(true);
 
-  // Initialize audio on mount
+  // Initialize audio on mount (non-fatal if files missing)
   useEffect(() => {
-    const bgMusic = new Audio('/sounds/background.mp3');
-    bgMusic.loop = true;
-    bgMusic.volume = 0.3;
-    setBackgroundMusic(bgMusic);
-
-    const battleMusic = new Audio('/sounds/background.mp3');
-    battleMusic.loop = true;
-    battleMusic.volume = 0.4;
-    setBattleMusic(battleMusic);
-
-    const hit = new Audio('/sounds/hit.mp3');
-    setHitSound(hit);
-
-    const success = new Audio('/sounds/success.mp3');
-    setSuccessSound(success);
-
-    console.log(`⚡ ${BRAND.title} - Audio initialized`);
+    try {
+      const bgMusic = new Audio("/sounds/background.mp3");
+      bgMusic.loop = true;
+      bgMusic.volume = 0.3;
+      setBackgroundMusic(bgMusic);
+      const battleMusic = new Audio("/sounds/background.mp3");
+      battleMusic.loop = true;
+      battleMusic.volume = 0.4;
+      setBattleMusic(battleMusic);
+      setHitSound(new Audio("/sounds/hit.mp3"));
+      setSuccessSound(new Audio("/sounds/success.mp3"));
+    } catch (e) {
+      console.warn("Audio init skipped:", e);
+    }
   }, [setBackgroundMusic, setBattleMusic, setHitSound, setSuccessSound]);
 
   // Play background music in menu states
@@ -146,10 +143,13 @@ function App() {
       
       <KeyboardControls map={controls}>
         {/* Main Menu */}
-        {phase === 'ready' && gameState === 'menu' && !showIntro && <MainMenu />}
-        
-        {/* Missions (Story / UEE) */}
-        {phase === 'ready' && (gameState === 'story-mode-select' || gameState === 'mission-select') && (
+        {phase === "ready" && gameState === "menu" && !showIntro && <MainMenu />}
+
+        {/* Campaign: RPG adventure — map, waves, bosses, progression to big bad */}
+        {phase === "ready" && gameState === "campaign-map" && <CampaignMap />}
+
+        {/* Missions / Trials (optional challenge list) */}
+        {phase === "ready" && (gameState === "story-mode-select" || gameState === "mission-select") && (
           <MissionSelectHub />
         )}
         
@@ -167,33 +167,37 @@ function App() {
         {/* ⚡ BATTLE CANVAS - THE MAIN EVENT! */}
         {(phase === 'playing' || phase === 'ended') && (
           <>
-            <Canvas
-              shadows
-              camera={{
-                position: [0, 5, 10],
-                fov: 60,
-                near: 0.1,
-                far: 1000
-              }}
-              onCreated={({ gl }) => {
-                const q = getQualitySettings();
-                gl.setPixelRatio(q.pixelRatio);
-                gl.outputColorSpace = THREE.SRGBColorSpace;
-                gl.toneMapping = THREE.ACESFilmicToneMapping;
-                // Lower baseline exposure so the arena doesn't wash out.
-                gl.toneMappingExposure = 0.98;
-                gl.shadowMap.enabled = true;
-                gl.shadowMap.type = q.shadowMap.type;
-              }}
-              gl={{
-                antialias: getQualitySettings().antialias,
-                powerPreference: "high-performance"
-              }}
-            >
-              <Suspense fallback={null}>
-                <BattleScene />
-              </Suspense>
-            </Canvas>
+            <div className="relative w-full h-full min-h-[200px]">
+              <Canvas
+                shadows
+                camera={{
+                  position: [0, 5, 10],
+                  fov: 60,
+                  near: 0.1,
+                  far: 1000
+                }}
+                onCreated={({ gl }) => {
+                  const q = getQualitySettings();
+                  gl.setPixelRatio(q.pixelRatio);
+                  gl.outputColorSpace = THREE.SRGBColorSpace;
+                  gl.toneMapping = THREE.ACESFilmicToneMapping;
+                  gl.toneMappingExposure = 0.98;
+                  gl.shadowMap.enabled = true;
+                  gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
+                }}
+                gl={{
+                  antialias: getQualitySettings().antialias,
+                  powerPreference: "high-performance"
+                }}
+              >
+                <Suspense fallback={null}>
+                  <BattleScene />
+                </Suspense>
+              </Canvas>
+              <div className="absolute bottom-4 left-0 right-0 text-center text-slate-400 text-sm pointer-events-none">
+                ← → move · Space jump · J punch · K kick · L special · T transform
+              </div>
+            </div>
             
             {/* ⚡ LEGENDARY UI OVERLAYS */}
             <BattleUI />

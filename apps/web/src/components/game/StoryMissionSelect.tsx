@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { ArrowLeft, BookOpen, Swords, Zap } from "lucide-react";
+import { ArrowLeft, BookOpen, Swords, Zap } from "../ui/icons";
 import { getStoryMissionById, getStoryMissionsByAct } from "../../lib/story_missions";
 
 interface StoryMissionSelectProps {

@@ -169,6 +169,6 @@ export function getUnlockedArenas(): Arena[] {
   return ARENAS; // all unlocked
 }
 
-export function canUnlockArena(arena: Arena, score: number): boolean {
+export function canUnlockArena(_arena: Arena, _score: number): boolean {
   return true;
 }

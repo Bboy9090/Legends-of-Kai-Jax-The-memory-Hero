@@ -119,63 +119,63 @@ function objective(
 }
 
 function getUEEObjectives(ueeId: string): MissionObjectiveRuntime[] {
-  // 10 UEE missions → typed objectives we can actually track in battle
+  // 10 UEE missions (uee-1 .. uee-10) → typed objectives we track in battle
   switch (ueeId) {
-    case "uee_m1":
+    case "uee-1":
       return [
         objective("punches", "Land 10 punches", { kind: "landHits", count: 10, attackType: "punch" }, 10),
         objective("kicks", "Land 5 kicks", { kind: "landHits", count: 5, attackType: "kick" }, 5),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "uee_m2":
+    case "uee-2":
       return [
         objective("combo5", "Reach a 5-hit combo", { kind: "reachCombo", count: 5 }, 5),
-        objective("dodges3", "Survive 30 seconds", { kind: "surviveSeconds", seconds: 30 }, 30),
+        objective("survive30", "Survive 30 seconds", { kind: "surviveSeconds", seconds: 30 }, 30),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "uee_m3":
+    case "uee-3":
       return [
-        objective("perfect30", "Survive 40 seconds", { kind: "surviveSeconds", seconds: 40 }, 40),
+        objective("survive40", "Survive 40 seconds", { kind: "surviveSeconds", seconds: 40 }, 40),
         objective("combo8", "Reach an 8-hit combo", { kind: "reachCombo", count: 8 }, 8),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "uee_m4":
+    case "uee-4":
       return [
         objective("survive60", "Survive 60 seconds", { kind: "surviveSeconds", seconds: 60 }, 60),
         objective("special1", "Use 1 special", { kind: "useMove", count: 1, move: "special" }, 1),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "uee_m5":
+    case "uee-5":
       return [
         objective("combo10", "Reach a 10-hit combo", { kind: "reachCombo", count: 10 }, 10),
         objective("special2", "Use 2 specials", { kind: "useMove", count: 2, move: "special" }, 2),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "uee_m6":
+    case "uee-6":
       return [
         objective("win", "Win the match", { kind: "winMatch" }, 1),
         objective("combo6", "Reach a 6-hit combo", { kind: "reachCombo", count: 6 }, 6),
         objective("special1", "Use 1 special", { kind: "useMove", count: 1, move: "special" }, 1),
       ];
-    case "uee_m7":
+    case "uee-7":
       return [
         objective("survive45", "Survive 45 seconds", { kind: "surviveSeconds", seconds: 45 }, 45),
         objective("combo7", "Reach a 7-hit combo", { kind: "reachCombo", count: 7 }, 7),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "uee_m8":
+    case "uee-8":
       return [
         objective("combo15", "Reach a 15-hit combo", { kind: "reachCombo", count: 15 }, 15),
         objective("special2", "Use 2 specials", { kind: "useMove", count: 2, move: "special" }, 2),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "uee_m9":
+    case "uee-9":
       return [
         objective("survive75", "Survive 75 seconds", { kind: "surviveSeconds", seconds: 75 }, 75),
         objective("ultimate1", "Use 1 ultimate", { kind: "useMove", count: 1, move: "ultimate" }, 1),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "uee_m10":
+    case "uee-10":
       return [
         objective("combo12", "Reach a 12-hit combo", { kind: "reachCombo", count: 12 }, 12),
         objective("ultimate1", "Use 1 ultimate", { kind: "useMove", count: 1, move: "ultimate" }, 1),
@@ -187,60 +187,60 @@ function getUEEObjectives(ueeId: string): MissionObjectiveRuntime[] {
 }
 
 function getActIStoryObjectives(storyId: string): MissionObjectiveRuntime[] {
-  // Act I missions 1–10 → typed objectives we can track in current battle loop
+  // Act I missions act1-1 .. act1-10 → typed objectives we track in battle
   switch (storyId) {
-    case "story_act1_m1":
+    case "act1-1":
       return [
         objective("win", "Win the match", { kind: "winMatch" }, 1),
         objective("hits8", "Land 8 hits", { kind: "landHits", count: 8 }, 8),
       ];
-    case "story_act1_m2":
+    case "act1-2":
       return [
         objective("win", "Win the match", { kind: "winMatch" }, 1),
         objective("special1", "Use 1 special", { kind: "useMove", count: 1, move: "special" }, 1),
       ];
-    case "story_act1_m3":
+    case "act1-3":
       return [
         objective("survive45", "Survive 45 seconds", { kind: "surviveSeconds", seconds: 45 }, 45),
         objective("combo6", "Reach a 6-hit combo", { kind: "reachCombo", count: 6 }, 6),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "story_act1_m4":
+    case "act1-4":
       return [
         objective("combo5", "Reach a 5-hit combo", { kind: "reachCombo", count: 5 }, 5),
         objective("special1", "Use 1 special", { kind: "useMove", count: 1, move: "special" }, 1),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "story_act1_m5":
+    case "act1-5":
       return [
         objective("survive60", "Survive 60 seconds", { kind: "surviveSeconds", seconds: 60 }, 60),
         objective("hits12", "Land 12 hits", { kind: "landHits", count: 12 }, 12),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "story_act1_m6":
+    case "act1-6":
       return [
         objective("survive45", "Survive 45 seconds", { kind: "surviveSeconds", seconds: 45 }, 45),
         objective("combo7", "Reach a 7-hit combo", { kind: "reachCombo", count: 7 }, 7),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "story_act1_m7":
+    case "act1-7":
       return [
         objective("special2", "Use 2 specials", { kind: "useMove", count: 2, move: "special" }, 2),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "story_act1_m8":
+    case "act1-8":
       return [
         objective("survive75", "Survive 75 seconds", { kind: "surviveSeconds", seconds: 75 }, 75),
         objective("combo10", "Reach a 10-hit combo", { kind: "reachCombo", count: 10 }, 10),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "story_act1_m9":
+    case "act1-9":
       return [
         objective("survive60", "Survive 60 seconds", { kind: "surviveSeconds", seconds: 60 }, 60),
         objective("special1", "Use 1 special", { kind: "useMove", count: 1, move: "special" }, 1),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
       ];
-    case "story_act1_m10":
+    case "act1-10":
       return [
         objective("ultimate1", "Use 1 ultimate", { kind: "useMove", count: 1, move: "ultimate" }, 1),
         objective("win", "Win the match", { kind: "winMatch" }, 1),
@@ -254,11 +254,13 @@ function resolveMissionMeta(source: MissionSource, id: string): ActiveMissionMet
   if (source === "uee") {
     const m = getUEEMissionById(id);
     if (!m) return null;
-    return { source, id: m.id, title: m.name, description: m.description, arenaId: toPlayableArenaId(m.arena) };
+    const arenaRaw = m.arena ?? m.arenaId;
+    return { source, id: m.id, title: m.name, description: m.description, arenaId: toPlayableArenaId(arenaRaw) };
   }
   const m = getStoryMissionById(id);
   if (!m) return null;
-  return { source, id: m.id, title: m.name, description: m.description, arenaId: toPlayableArenaId(m.arena) };
+  const arenaRaw = m.arena ?? m.arenaId;
+  return { source, id: m.id, title: m.name, description: m.description, arenaId: toPlayableArenaId(arenaRaw) };
 }
 
 function resolveObjectives(source: MissionSource, id: string): MissionObjectiveRuntime[] {

@@ -317,13 +317,8 @@ export default function CinematicPostFX({
       vignetteRef.current = vignette;
       composer.addPass(vignette);
 
-      // Film grain (very subtle)
-      const film = new FilmPass(
-        0.22, // noise intensity
-        0.04, // scanline intensity
-        720, // scanline count
-        false
-      );
+      // Film grain (very subtle) — FilmPass(noiseIntensity, scanlinesIntensity, scanlinesCount?, grayscale?)
+      const film = new (FilmPass as any)(0.22, 0.04, 720, false);
       filmRef.current = film;
       composer.addPass(film);
 

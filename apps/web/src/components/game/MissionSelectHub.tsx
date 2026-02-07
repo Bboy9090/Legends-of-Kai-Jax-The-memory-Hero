@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, BookOpen, Swords } from "lucide-react";
+import { ArrowLeft, BookOpen, Swords } from "../ui/icons";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useGame } from "../../lib/stores/useGame";
 import { useMissions } from "../../lib/stores/useMissions";
 import { useRunner } from "../../lib/stores/useRunner";
+import { useBeastPreset } from "../../lib/stores/useBeastPreset";
 import { FIGHTERS, getFighterById } from "../../lib/characters";
 import { getStoryMissionById } from "../../lib/story_missions";
 import UEEMissionSelect from "./UEEMissionSelect";
 import StoryMissionSelect from "./StoryMissionSelect";
+import CharacterPreview3D from "./CharacterPreview3D";
 
 type Tab = "story" | "uee";
 
@@ -23,6 +25,11 @@ export default function MissionSelectHub() {
   const { completedKeys, startMission } = useMissions();
 
   const [tab, setTab] = useState<Tab>("story");
+  const { preset } = useBeastPreset();
+  const missionCharacter = useMemo(
+    () => getFighterById(selectedCharacter ?? FIGHTERS[0]?.id ?? ""),
+    [selectedCharacter]
+  );
 
   const completedStory = useMemo(
     () => completedKeys.filter((k) => k.startsWith("story:")).map((k) => k.slice("story:".length)),
@@ -60,14 +67,28 @@ export default function MissionSelectHub() {
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-[#07070d] via-purple-950/30 to-[#07070d] text-white p-6 overflow-auto">
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between gap-3 mb-6">
-          <button
-            onClick={() => setGameState("menu")}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-slate-600 bg-slate-900/60 hover:border-cyan-400/60 transition-all"
-          >
-            <ArrowLeft className="w-4 h-4 text-cyan-300" />
-            <span className="font-bold">Back</span>
-          </button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={() => setGameState("menu")}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-slate-600 bg-slate-900/60 hover:border-cyan-400/60 transition-all"
+            >
+              <ArrowLeft className="w-4 h-4 text-cyan-300" />
+              <span className="font-bold">Back</span>
+            </button>
+            {missionCharacter && (
+              <div className="hidden sm:flex items-center gap-2 rounded-xl border border-slate-600 bg-black/40 overflow-hidden">
+                <div className="w-[120px] h-[80px] flex-shrink-0">
+                  <CharacterPreview3D fighter={missionCharacter} preset={preset} />
+                </div>
+                <div className="px-3 py-1 text-sm text-slate-300">
+                  <span className="font-bold text-white">{missionCharacter.displayName}</span>
+                  <br />
+                  <span>Layered design for missions</span>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="flex items-center gap-2">
             <button

@@ -17,7 +17,7 @@ export const FIGHTERS: Fighter[] = [
     name: "KaiJax",
     displayName: "KAI-JAX",
     color: "#1a1a1a",
-    accentColor: "#00ff00",
+    accentColor: "#7fff00",
     baseStats: { power: 88, speed: 85, defense: 82, gravity: 9.8 },
   },
   {
@@ -25,7 +25,7 @@ export const FIGHTERS: Fighter[] = [
     name: "Jaxon",
     displayName: "JAXON",
     color: "#0b1020",
-    accentColor: "#4fd2ff",
+    accentColor: "#5dd9ff",
     baseStats: { power: 82, speed: 88, defense: 78, gravity: 9.8 },
   },
   {
@@ -33,7 +33,7 @@ export const FIGHTERS: Fighter[] = [
     name: "Kaison",
     displayName: "KAISON",
     color: "#1a0a0a",
-    accentColor: "#ffb000",
+    accentColor: "#ffc233",
     baseStats: { power: 85, speed: 82, defense: 85, gravity: 9.8 },
   },
 ];

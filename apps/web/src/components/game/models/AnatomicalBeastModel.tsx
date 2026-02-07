@@ -6,7 +6,7 @@ import * as THREE from "three";
 import type { Fighter } from "../../../lib/characters";
 import { COMPLETE_BEAST_ROSTER } from "../../../data/beastRoster";
 import type { BeastPresetKind } from "../../../lib/stores/useBeastPreset";
-import { getDesignForFighterId, hexToRgb } from "../../../data/characterDesigns";
+import { getDesignForFighterId } from "../../../data/characterDesigns";
 
 function fract(x: number): number {
   return x - Math.floor(x);
@@ -240,10 +240,12 @@ export default function AnatomicalBeastModel({
   const groupRef = useRef<THREE.Group>(null);
 
   /** Layer visibility per character_renderer_spec: aura off at mid+, fur/veins/tail off at very far */
-  const showAuraLayer = lodLevel === 0;
+  const _showAuraLayer = lodLevel === 0;
   const showFurShellLayer = lodLevel < 3;
   const showVeinLayer = lodLevel < 3;
-  const showElementalTailLayer = lodLevel < 3;
+  const _showElementalTailLayer = lodLevel < 3;
+  void _showAuraLayer;
+  void _showElementalTailLayer;
   const nebulaRef = useRef<THREE.Mesh>(null);
   const coreRef = useRef<THREE.Mesh>(null);
   const coreLightRef = useRef<THREE.PointLight>(null);
@@ -1392,11 +1394,7 @@ export default function AnatomicalBeastModel({
           {[-0.04, 0, 0.04].map((x) => (
             <mesh key={x} position={[x, -0.50, 0.14]} rotation={[0.25, 0, 0]} castShadow>
               <coneGeometry args={[0.014, 0.07, 6]} />
-<<<<<<< Updated upstream
               <meshStandardMaterial color="#e8e8ee" roughness={0.2} metalness={0.6} emissive="#8888aa" emissiveIntensity={0.08} />
-=======
-              <meshStandardMaterial color={"#e8e8ee"} roughness={0.45} metalness={0.35} />
->>>>>>> Stashed changes
             </mesh>
           ))}
         </group>
@@ -1426,11 +1424,7 @@ export default function AnatomicalBeastModel({
           {[-0.04, 0, 0.04].map((x) => (
             <mesh key={x} position={[x, -0.50, 0.14]} rotation={[0.25, 0, 0]} castShadow>
               <coneGeometry args={[0.014, 0.07, 6]} />
-<<<<<<< Updated upstream
               <meshStandardMaterial color="#e8e8ee" roughness={0.2} metalness={0.6} emissive="#8888aa" emissiveIntensity={0.08} />
-=======
-              <meshStandardMaterial color={"#e8e8ee"} roughness={0.45} metalness={0.35} />
->>>>>>> Stashed changes
             </mesh>
           ))}
         </group>

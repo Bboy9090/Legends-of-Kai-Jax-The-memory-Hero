@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unknown-property */
 import { useRef } from "react";
 import { useBattle } from "../../lib/stores/useBattle";
+import { useBeastPreset } from "../../lib/stores/useBeastPreset";
 import { getFighterById } from "../../lib/characters";
 import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
 import type { Group } from "three";
@@ -21,6 +22,7 @@ export default function BattlePlayer() {
     playerAttacking,
     playerInvulnerable,
   } = useBattle();
+  const { preset } = useBeastPreset();
 
   const fighter = getFighterById(playerFighterId);
 
@@ -44,6 +46,7 @@ export default function BattlePlayer() {
         animTime={0}
         isAttacking={playerAttacking}
         isInvulnerable={playerInvulnerable}
+        presetOverride={preset === "auto" ? null : preset}
       />
     </group>
   );
