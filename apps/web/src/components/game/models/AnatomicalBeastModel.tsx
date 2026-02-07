@@ -1392,7 +1392,11 @@ export default function AnatomicalBeastModel({
           {[-0.04, 0, 0.04].map((x) => (
             <mesh key={x} position={[x, -0.50, 0.14]} rotation={[0.25, 0, 0]} castShadow>
               <coneGeometry args={[0.014, 0.07, 6]} />
+<<<<<<< Updated upstream
               <meshStandardMaterial color="#e8e8ee" roughness={0.2} metalness={0.6} emissive="#8888aa" emissiveIntensity={0.08} />
+=======
+              <meshStandardMaterial color={"#e8e8ee"} roughness={0.45} metalness={0.35} />
+>>>>>>> Stashed changes
             </mesh>
           ))}
         </group>
@@ -1422,7 +1426,11 @@ export default function AnatomicalBeastModel({
           {[-0.04, 0, 0.04].map((x) => (
             <mesh key={x} position={[x, -0.50, 0.14]} rotation={[0.25, 0, 0]} castShadow>
               <coneGeometry args={[0.014, 0.07, 6]} />
+<<<<<<< Updated upstream
               <meshStandardMaterial color="#e8e8ee" roughness={0.2} metalness={0.6} emissive="#8888aa" emissiveIntensity={0.08} />
+=======
+              <meshStandardMaterial color={"#e8e8ee"} roughness={0.45} metalness={0.35} />
+>>>>>>> Stashed changes
             </mesh>
           ))}
         </group>
