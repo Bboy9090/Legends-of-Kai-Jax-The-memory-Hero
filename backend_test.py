@@ -206,6 +206,107 @@ class KaiJaxAPITester:
             self.log_test("Individual Story Act (1)", success, f"Status: {response.status_code}")
         except Exception as e:
             self.log_test("Individual Story Act (1)", False, str(e))
+    
+    def test_story_progress_enforcement(self):
+        """Test story progress enforcement - sequential act progression"""
+        import uuid
+        player_id = f"test_player_{uuid.uuid4()}"
+        
+        try:
+            # Test 1: Get initial progress (should default to Act 1, 3 tails)
+            response = requests.get(f"{self.api_url}/story-progress/{player_id}", timeout=10)
+            success = response.status_code == 200
+            if success:
+                data = response.json()
+                success = data["current_act"] == 1 and data["max_tail_count"] == 3
+            self.log_test("Story Progress - Initial State", success, f"Status: {response.status_code}")
+            
+            # Test 2: Advance to Act 2 (should succeed)
+            response = requests.post(
+                f"{self.api_url}/story-progress/{player_id}/advance",
+                json={"current_act": 2},
+                timeout=10
+            )
+            success = response.status_code == 200
+            if success:
+                data = response.json()
+                success = data["current_act"] == 2 and data["max_tail_count"] >= 5
+            self.log_test("Story Progress - Sequential Advance", success, f"Status: {response.status_code}")
+            
+            # Test 3: Try to skip to Act 4 (should fail - tier skipping not allowed)
+            response = requests.post(
+                f"{self.api_url}/story-progress/{player_id}/advance",
+                json={"current_act": 4},
+                timeout=10
+            )
+            success = response.status_code == 400  # Should be rejected
+            self.log_test("Story Progress - Prevent Tier Skipping", success, f"Status: {response.status_code}")
+            
+            # Test 4: Try to go backwards to Act 1 (should fail)
+            response = requests.post(
+                f"{self.api_url}/story-progress/{player_id}/advance",
+                json={"current_act": 1},
+                timeout=10
+            )
+            success = response.status_code == 400  # Should be rejected
+            self.log_test("Story Progress - Prevent Backward Progress", success, f"Status: {response.status_code}")
+            
+        except Exception as e:
+            self.log_test("Story Progress Enforcement", False, str(e))
+    
+    def test_tail_count_enforcement(self):
+        """Test tail count enforcement - cannot decrease, must respect act limits"""
+        import uuid
+        player_id = f"test_player_{uuid.uuid4()}"
+        
+        try:
+            # Initialize player at Act 1
+            requests.get(f"{self.api_url}/story-progress/{player_id}", timeout=10)
+            
+            # Test 1: Try to set 6 tails in Act 1 (should fail - exceeds limit)
+            response = requests.post(
+                f"{self.api_url}/story-progress/{player_id}/tails",
+                json={"tail_count": 6},
+                timeout=10
+            )
+            success = response.status_code == 400  # Should be rejected
+            self.log_test("Tail Count - Respect Act Limits", success, f"Status: {response.status_code}")
+            
+            # Test 2: Advance to Act 3 to unlock 6 tails
+            requests.post(
+                f"{self.api_url}/story-progress/{player_id}/advance",
+                json={"current_act": 2},
+                timeout=10
+            )
+            requests.post(
+                f"{self.api_url}/story-progress/{player_id}/advance",
+                json={"current_act": 3},
+                timeout=10
+            )
+            
+            # Test 3: Set 6 tails (should succeed in Act 3)
+            response = requests.post(
+                f"{self.api_url}/story-progress/{player_id}/tails",
+                json={"tail_count": 6},
+                timeout=10
+            )
+            success = response.status_code == 200
+            if success:
+                data = response.json()
+                success = data["max_tail_count"] == 6
+            self.log_test("Tail Count - Valid Increase", success, f"Status: {response.status_code}")
+            
+            # Test 4: Try to decrease to 4 tails (should fail)
+            response = requests.post(
+                f"{self.api_url}/story-progress/{player_id}/tails",
+                json={"tail_count": 4},
+                timeout=10
+            )
+            success = response.status_code == 400  # Should be rejected
+            self.log_test("Tail Count - Prevent Decrease", success, f"Status: {response.status_code}")
+            
+        except Exception as e:
+            self.log_test("Tail Count Enforcement", False, str(e))
 
     def run_all_tests(self):
         """Run all backend API tests"""
@@ -228,6 +329,10 @@ class KaiJaxAPITester:
         
         # Test individual endpoints
         self.test_individual_endpoints()
+        
+        # Test story mode enforcement (NEW)
+        self.test_story_progress_enforcement()
+        self.test_tail_count_enforcement()
 
         # Print summary
         print("=" * 60)
