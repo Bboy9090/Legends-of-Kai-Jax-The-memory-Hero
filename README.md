@@ -41,13 +41,14 @@ These files are the **single source of truth**:
 Before committing, run:
 
 ```bash
-# Validate character data
-python validate_characters.py
+# Comprehensive validation (recommended)
+python validate_all.py
 
-# Validate story schema
-python test_schema_validation.py
+# Individual validators
+python validate_characters.py      # Character data only
+python test_schema_validation.py   # Story schema only
 
-# Build and check
+# Build check
 cd apps/web && npm run build
 ```
 

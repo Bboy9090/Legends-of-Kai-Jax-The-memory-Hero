@@ -172,11 +172,13 @@ const showFur = distance < 20; // Magic number, not from spec
 Run before committing:
 
 ```bash
-# Validate character data against spec
-python test_schema_validation.py
+# Run comprehensive validation (RECOMMENDED)
+python validate_all.py
 
-# Run backend tests
-python backend_test.py
+# Or run individual validators:
+python validate_characters.py      # Character data validation
+python test_schema_validation.py   # Story mode schema validation
+python backend_test.py             # Backend API tests
 
 # Build and check for errors
 cd apps/web && npm run build
@@ -188,6 +190,8 @@ cd apps/web && npm run build
 - [ ] Stats are within valid ranges
 - [ ] LOD levels match canonical distances
 - [ ] No hard-coded values that should be in specs
+- [ ] All constraints properly enforced (unified core, PC-first, etc.)
+- [ ] Design principles documented and followed
 
 ---
 
