@@ -1,0 +1,262 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Kai-Jax Character Specification",
+  "description": "Canonical character specification for Legends of Kai-Jax: The Memory King. All implementations must validate against this spec. PC-first, unified core, deterministic behavior.",
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-08",
+  "metadata": {
+    "projectName": "Legends of Kai-Jax: The Memory King",
+    "canonStatus": "LOCKED",
+    "constraints": {
+      "unifiedCore": true,
+      "pcFirst": true,
+      "noLogicDivergence": true,
+      "mustValidate": true
+    }
+  },
+  "characters": [
+    {
+      "id": "kai-jax",
+      "name": "KAIJAX",
+      "displayName": "KAI-JAX",
+      "title": "Memory Hybrid",
+      "species": "Sabertooth Hybrid",
+      "description": "The Memory King. Fusion of Kai and Jax, bearer of 9 tails.",
+      "appearance": {
+        "primaryColor": "#1a1a1a",
+        "accentColor": "#00ff00",
+        "secondaryColor": "#cc5500",
+        "webbingColor": "#00ff00",
+        "eyeColors": ["#00ff00", "#00f2ff", "#ffb000"],
+        "features": [
+          "no_clothes",
+          "charcoal_fur",
+          "lime_webbing",
+          "tri_color_eyes",
+          "tribal_scars",
+          "tail_streaks"
+        ]
+      },
+      "combat": {
+        "baseStats": {
+          "power": 88,
+          "speed": 85,
+          "defense": 82,
+          "gravity": 9.8
+        },
+        "tailCount": 9,
+        "abilities": [
+          "memory_fusion",
+          "elemental_mastery",
+          "tail_resonance"
+        ]
+      },
+      "rendering": {
+        "lodLevels": {
+          "close": {
+            "distance": 12,
+            "layers": ["base", "fur_shell", "vein_emissive", "aura", "particles"]
+          },
+          "mid": {
+            "distance": 28,
+            "layers": ["base", "fur_shell", "vein_emissive"]
+          },
+          "far": {
+            "distance": 50,
+            "layers": ["base", "vein_emissive", "tail"]
+          },
+          "veryFar": {
+            "distance": 999,
+            "layers": ["base", "vein_emissive"]
+          }
+        },
+        "materials": {
+          "furShell": {
+            "technique": "shell_offset",
+            "rimGlow": true,
+            "vertexNoise": 0.02
+          },
+          "veinEmissive": {
+            "maskBased": true,
+            "pulsing": true,
+            "blendMode": "additive"
+          },
+          "clawSpec": {
+            "roughness": 0.2,
+            "metalness": 0.6,
+            "emissive": 0.1
+          }
+        },
+        "silhouetteFirst": true
+      },
+      "portraitPath": "",
+      "canonicalSources": [
+        "specs/primary/character_art_spec.json",
+        "specs/primary/character_renderer_spec.md",
+        "design_guidelines.json"
+      ]
+    },
+    {
+      "id": "jaxon",
+      "name": "JAXON",
+      "displayName": "JAXON",
+      "title": "Prime Striker",
+      "species": "Sabertooth",
+      "description": "The electric blade. Fast, precise, tactical.",
+      "appearance": {
+        "primaryColor": "#0b1020",
+        "accentColor": "#4fd2ff",
+        "secondaryColor": "#4fd2ff",
+        "webbingColor": "",
+        "eyeColors": ["#ffb000"],
+        "features": ["tactical_jacket"]
+      },
+      "combat": {
+        "baseStats": {
+          "power": 82,
+          "speed": 88,
+          "defense": 78,
+          "gravity": 9.8
+        },
+        "tailCount": 1,
+        "abilities": ["lightning_strike", "tactical_precision"]
+      },
+      "rendering": {
+        "lodLevels": {
+          "close": {
+            "distance": 12,
+            "layers": ["base", "fur_shell", "vein_emissive", "aura", "particles"]
+          },
+          "mid": {
+            "distance": 28,
+            "layers": ["base", "fur_shell", "vein_emissive"]
+          },
+          "far": {
+            "distance": 50,
+            "layers": ["base", "vein_emissive", "tail"]
+          },
+          "veryFar": {
+            "distance": 999,
+            "layers": ["base", "vein_emissive"]
+          }
+        },
+        "materials": {
+          "furShell": {
+            "technique": "shell_offset",
+            "rimGlow": true,
+            "vertexNoise": 0.02
+          },
+          "veinEmissive": {
+            "maskBased": true,
+            "pulsing": true,
+            "blendMode": "additive"
+          },
+          "clawSpec": {
+            "roughness": 0.2,
+            "metalness": 0.6,
+            "emissive": 0.1
+          }
+        },
+        "silhouetteFirst": true
+      },
+      "portraitPath": "",
+      "canonicalSources": [
+        "specs/primary/character_art_spec.json"
+      ]
+    },
+    {
+      "id": "kaison",
+      "name": "KAISON",
+      "displayName": "KAISON",
+      "title": "Prime Guardian",
+      "species": "Sabertooth",
+      "description": "The shield father. Defensive, strategic, protective.",
+      "appearance": {
+        "primaryColor": "#1a0a0a",
+        "accentColor": "#ffb000",
+        "secondaryColor": "#ffb000",
+        "webbingColor": "",
+        "eyeColors": ["#00f2ff"],
+        "features": ["tactical_jacket"]
+      },
+      "combat": {
+        "baseStats": {
+          "power": 85,
+          "speed": 82,
+          "defense": 85,
+          "gravity": 9.8
+        },
+        "tailCount": 1,
+        "abilities": ["shield_wall", "protective_aura"]
+      },
+      "rendering": {
+        "lodLevels": {
+          "close": {
+            "distance": 12,
+            "layers": ["base", "fur_shell", "vein_emissive", "aura", "particles"]
+          },
+          "mid": {
+            "distance": 28,
+            "layers": ["base", "fur_shell", "vein_emissive"]
+          },
+          "far": {
+            "distance": 50,
+            "layers": ["base", "vein_emissive", "tail"]
+          },
+          "veryFar": {
+            "distance": 999,
+            "layers": ["base", "vein_emissive"]
+          }
+        },
+        "materials": {
+          "furShell": {
+            "technique": "shell_offset",
+            "rimGlow": true,
+            "vertexNoise": 0.02
+          },
+          "veinEmissive": {
+            "maskBased": true,
+            "pulsing": true,
+            "blendMode": "additive"
+          },
+          "clawSpec": {
+            "roughness": 0.2,
+            "metalness": 0.6,
+            "emissive": 0.1
+          }
+        },
+        "silhouetteFirst": true
+      },
+      "portraitPath": "",
+      "canonicalSources": [
+        "specs/primary/character_art_spec.json"
+      ]
+    }
+  ],
+  "designPrinciples": {
+    "silhouetteFirst": "If the silhouette reads, you win. If it breaks when scaled down, you lose.",
+    "layeredRendering": "Characters are stacked render layers, not textures on geometry",
+    "lodStrategy": "Reduce layers, not polycount. Identity must survive all distances.",
+    "pcFirst": "Design for PC, scale to tablet, then mobile. Never compromise core experience.",
+    "deterministicBehavior": "Same input always produces same output. No randomness in core systems.",
+    "noPlaceholderLogic": "All features must be fully implemented or clearly marked as future."
+  },
+  "validation": {
+    "requiredFields": [
+      "id",
+      "name",
+      "displayName",
+      "appearance.primaryColor",
+      "appearance.accentColor",
+      "combat.baseStats",
+      "rendering.lodLevels"
+    ],
+    "colorFormat": "Must be valid hex color (#RRGGBB or #RGB)",
+    "statRanges": {
+      "power": [0, 100],
+      "speed": [0, 100],
+      "defense": [0, 100],
+      "gravity": [0, 20]
+    }
+  }
+}
