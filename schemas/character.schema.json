@@ -1,0 +1,317 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/schemas/character.schema.json",
+  "title": "Character Specification Schema",
+  "description": "JSON Schema for validating character specifications in Legends of Kai-Jax",
+  "type": "object",
+  "required": ["$schema", "title", "version", "metadata", "characters", "designPrinciples", "validation"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema version"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title of the specification"
+    },
+    "description": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the specification"
+    },
+    "lastUpdated": {
+      "type": "string",
+      "format": "date",
+      "description": "Last update date (ISO 8601)"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["projectName", "canonStatus", "constraints"],
+      "properties": {
+        "projectName": {
+          "type": "string"
+        },
+        "canonStatus": {
+          "type": "string",
+          "enum": ["LOCKED", "DRAFT", "REVIEW"]
+        },
+        "constraints": {
+          "type": "object",
+          "required": ["unifiedCore", "pcFirst", "noLogicDivergence", "mustValidate"],
+          "properties": {
+            "unifiedCore": {
+              "type": "boolean"
+            },
+            "pcFirst": {
+              "type": "boolean"
+            },
+            "noLogicDivergence": {
+              "type": "boolean"
+            },
+            "mustValidate": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "characters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/character"
+      }
+    },
+    "designPrinciples": {
+      "type": "object",
+      "required": ["silhouetteFirst", "layeredRendering", "lodStrategy", "pcFirst", "deterministicBehavior", "noPlaceholderLogic"],
+      "properties": {
+        "silhouetteFirst": {
+          "type": "string"
+        },
+        "layeredRendering": {
+          "type": "string"
+        },
+        "lodStrategy": {
+          "type": "string"
+        },
+        "pcFirst": {
+          "type": "string"
+        },
+        "deterministicBehavior": {
+          "type": "string"
+        },
+        "noPlaceholderLogic": {
+          "type": "string"
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "required": ["requiredFields", "colorFormat", "statRanges"],
+      "properties": {
+        "requiredFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "colorFormat": {
+          "type": "string"
+        },
+        "statRanges": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "character": {
+      "type": "object",
+      "required": ["id", "name", "displayName", "appearance", "combat", "rendering"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Unique character identifier (kebab-case)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Character name (UPPERCASE)"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name for UI"
+        },
+        "title": {
+          "type": "string",
+          "description": "Character title/role"
+        },
+        "species": {
+          "type": "string",
+          "description": "Character species"
+        },
+        "description": {
+          "type": "string",
+          "description": "Character description"
+        },
+        "appearance": {
+          "$ref": "#/definitions/appearance"
+        },
+        "combat": {
+          "$ref": "#/definitions/combat"
+        },
+        "rendering": {
+          "$ref": "#/definitions/rendering"
+        },
+        "portraitPath": {
+          "type": "string",
+          "description": "Path to character portrait"
+        },
+        "canonicalSources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of canonical source files"
+        }
+      }
+    },
+    "appearance": {
+      "type": "object",
+      "required": ["primaryColor", "accentColor", "features"],
+      "properties": {
+        "primaryColor": {
+          "type": "string",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "description": "Primary color (hex format)"
+        },
+        "accentColor": {
+          "type": "string",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "description": "Accent color (hex format)"
+        },
+        "secondaryColor": {
+          "type": "string",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "description": "Secondary color (hex format)"
+        },
+        "webbingColor": {
+          "type": "string",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|^$",
+          "description": "Webbing/vein color (hex format or empty)"
+        },
+        "eyeColors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "description": "Array of eye colors (hex format)"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "List of character features"
+        }
+      }
+    },
+    "combat": {
+      "type": "object",
+      "required": ["baseStats"],
+      "properties": {
+        "baseStats": {
+          "type": "object",
+          "required": ["power", "speed", "defense", "gravity"],
+          "properties": {
+            "power": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Power stat (0-100)"
+            },
+            "speed": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Speed stat (0-100)"
+            },
+            "defense": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Defense stat (0-100)"
+            },
+            "gravity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 20,
+              "description": "Gravity value (0-20)"
+            }
+          }
+        },
+        "tailCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9,
+          "description": "Number of tails (1-9)"
+        },
+        "abilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of character abilities"
+        }
+      }
+    },
+    "rendering": {
+      "type": "object",
+      "required": ["lodLevels", "materials", "silhouetteFirst"],
+      "properties": {
+        "lodLevels": {
+          "type": "object",
+          "required": ["close", "mid", "far", "veryFar"],
+          "properties": {
+            "close": {
+              "$ref": "#/definitions/lodLevel"
+            },
+            "mid": {
+              "$ref": "#/definitions/lodLevel"
+            },
+            "far": {
+              "$ref": "#/definitions/lodLevel"
+            },
+            "veryFar": {
+              "$ref": "#/definitions/lodLevel"
+            }
+          }
+        },
+        "materials": {
+          "type": "object",
+          "properties": {
+            "furShell": {
+              "type": "object"
+            },
+            "veinEmissive": {
+              "type": "object"
+            },
+            "clawSpec": {
+              "type": "object"
+            }
+          }
+        },
+        "silhouetteFirst": {
+          "type": "boolean",
+          "description": "Whether silhouette preservation is prioritized"
+        }
+      }
+    },
+    "lodLevel": {
+      "type": "object",
+      "required": ["distance", "layers"],
+      "properties": {
+        "distance": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Distance threshold for this LOD level"
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["base", "fur_shell", "vein_emissive", "aura", "particles", "tail"]
+          },
+          "minItems": 1,
+          "description": "Active rendering layers at this LOD"
+        }
+      }
+    }
+  }
+}
