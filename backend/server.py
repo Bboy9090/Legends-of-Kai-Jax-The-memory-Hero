@@ -81,6 +81,20 @@ class StoryAct(BaseModel):
     boss_test: str
     player_learns: str
 
+class PlayerProgress(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    player_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    current_act: int = Field(default=1, ge=1, le=5)
+    max_tail_count: int = Field(default=3, ge=3, le=9)
+    completed_acts: List[int] = Field(default_factory=list)
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ProgressUpdate(BaseModel):
+    current_act: int = Field(ge=1, le=5)
+
+class TailCountUpdate(BaseModel):
+    tail_count: int = Field(ge=3, le=9)
+
 # Add your routes to the router
 @api_router.get("/")
 async def root():
@@ -952,16 +966,26 @@ ENGINEERING_SPECS = {
     "tail_expression_engine": {
         "title": "TAIL EXPRESSION ENGINE",
         "principle": "All 9 tails always exist. Only a subset may express. Expression is contextual, volatile, revocable.",
+        "enforcement_status": "ENFORCED via StoryModeManager API",
+        "enforcement_rules": [
+            "Tail progression is strictly sequential (3 → 4-5 → 6 → 7-8 → 9)",
+            "Tail count cannot decrease once unlocked",
+            "New tails unlock only through story act completion",
+            "Players cannot skip tiers or acts",
+            "Progression is validated at the API level"
+        ],
         "data_model": {
             "tail": ["id: 1–9", "aspect: Hunger | Law | Sacrifice | Memory", "state: Dormant | Available | Active | Suppressed | Locked", "fatigue: 0.0–1.0", "resonance: 0.0–1.0", "last_used_timestamp"],
             "tail_manager": ["tails[9]", "max_active_tails", "expression_ruleset", "world_pressure"]
         },
         "active_limits": {
-            "early_game": 3,
-            "mid_game": "4–6",
-            "endgame": "contextual",
-            "ninth_tail": "event-only"
+            "act_1": 3,
+            "act_2": "4–5",
+            "act_3": 6,
+            "act_4": "7–8",
+            "act_5": 9
         },
+        "enforcement_implementation": "StoryModeManager class enforces limits via /api/story-progress endpoints",
         "fatigue_system": "Every use increases fatigue. Repetition accelerates fatigue. Fatigue suppresses tail temporarily. This is how you kill cheese without patch notes.",
         "ninth_tail_logic": {
             "conditions": ["All other tails balanced", "Fusion stability > 0.9", "No panic input for sustained duration", "A choice made under pressure"],
@@ -1209,6 +1233,158 @@ CHARACTERS_DATA = [
     ),
 ]
 
+# StoryModeManager: ENFORCES sequential tail progression and prevents tier skipping
+class StoryModeManager:
+    """
+    Story Mode Manager with ENFORCED tail progression.
+    
+    Rules:
+    1. Tail progression is strictly sequential (3 -> 4-5 -> 6 -> 7-8 -> 9)
+    2. Tail count cannot decrease once unlocked
+    3. New tails unlock only through story act completion
+    4. Players cannot skip tiers
+    """
+    
+    # Maps act number to maximum allowed tail count
+    ACT_TAIL_LIMITS = {
+        1: 3,   # Act 1: Survival - 3-Tail fusion
+        2: 5,   # Act 2: Law - Expand to 4-5 tails
+        3: 6,   # Act 3: Memory - Expand to 6 tails
+        4: 8,   # Act 4: Alignment - Expand to 7-8 tails
+        5: 9,   # Act 5: Sovereignty - Ninth tail manifestation
+    }
+    
+    @classmethod
+    def get_max_tails_for_act(cls, act_number: int) -> int:
+        """Get the maximum tail count allowed for a given act."""
+        if act_number < 1:
+            return 3  # Default to minimum
+        if act_number > 5:
+            return 9  # Max tails
+        return cls.ACT_TAIL_LIMITS.get(act_number, 3)
+    
+    @classmethod
+    def validate_act_progression(cls, current_act: int, new_act: int) -> tuple[bool, str]:
+        """
+        Validate that act progression is sequential.
+        Returns (is_valid, error_message)
+        """
+        if new_act < 1 or new_act > 5:
+            return False, f"Invalid act number: {new_act}. Must be between 1 and 5."
+        
+        if new_act < current_act:
+            return False, f"Cannot decrease act from {current_act} to {new_act}. Story progression is irreversible."
+        
+        if new_act > current_act + 1:
+            return False, f"Cannot skip acts. Current act: {current_act}, attempted: {new_act}. Must progress sequentially."
+        
+        return True, ""
+    
+    @classmethod
+    def validate_tail_count(cls, current_tails: int, new_tails: int, current_act: int) -> tuple[bool, str]:
+        """
+        Validate tail count changes.
+        Returns (is_valid, error_message)
+        """
+        if new_tails < 3 or new_tails > 9:
+            return False, f"Invalid tail count: {new_tails}. Must be between 3 and 9."
+        
+        if new_tails < current_tails:
+            return False, f"Tail count cannot decrease from {current_tails} to {new_tails}. Tail progression is irreversible."
+        
+        max_allowed = cls.get_max_tails_for_act(current_act)
+        if new_tails > max_allowed:
+            return False, f"Cannot have {new_tails} tails in Act {current_act}. Maximum allowed: {max_allowed}. Complete more acts to unlock additional tails."
+        
+        # Check for tier skipping (e.g., going from 3 to 6 tails without progressing through 4-5)
+        if new_tails > current_tails + 3:
+            return False, f"Cannot skip tail tiers. Current: {current_tails}, attempted: {new_tails}. Progression must be gradual."
+        
+        return True, ""
+    
+    @classmethod
+    async def update_progress(cls, player_id: str, new_act: int) -> PlayerProgress:
+        """
+        Update player's story progress with enforcement.
+        Automatically adjusts max_tail_count based on completed act.
+        """
+        # Get existing progress or create new
+        existing = await db.player_progress.find_one({"player_id": player_id})
+        
+        if existing:
+            current = PlayerProgress(**existing)
+        else:
+            current = PlayerProgress(player_id=player_id)
+        
+        # Validate act progression
+        is_valid, error = cls.validate_act_progression(current.current_act, new_act)
+        if not is_valid:
+            raise HTTPException(status_code=400, detail=error)
+        
+        # Update progress
+        current.current_act = new_act
+        if new_act not in current.completed_acts and new_act < 5:
+            # Mark previous act as completed
+            if new_act - 1 not in current.completed_acts and new_act > 1:
+                current.completed_acts.append(new_act - 1)
+        elif new_act == 5:
+            # Completing final act
+            current.completed_acts = [1, 2, 3, 4]
+        
+        # ENFORCE: Update max_tail_count based on act completion
+        new_max_tails = cls.get_max_tails_for_act(new_act)
+        current.max_tail_count = max(current.max_tail_count, new_max_tails)
+        current.updated_at = datetime.now(timezone.utc)
+        
+        # Save to database
+        doc = current.model_dump()
+        doc['updated_at'] = doc['updated_at'].isoformat()
+        await db.player_progress.update_one(
+            {"player_id": player_id},
+            {"$set": doc},
+            upsert=True
+        )
+        
+        return current
+    
+    @classmethod
+    async def update_tail_count(cls, player_id: str, new_tail_count: int) -> PlayerProgress:
+        """
+        Attempt to update tail count with enforcement.
+        Will reject if it violates progression rules.
+        """
+        # Get existing progress
+        existing = await db.player_progress.find_one({"player_id": player_id})
+        
+        if not existing:
+            raise HTTPException(status_code=404, detail=f"Player progress not found for {player_id}")
+        
+        current = PlayerProgress(**existing)
+        
+        # Validate tail count change
+        is_valid, error = cls.validate_tail_count(
+            current.max_tail_count,
+            new_tail_count,
+            current.current_act
+        )
+        if not is_valid:
+            raise HTTPException(status_code=400, detail=error)
+        
+        # Update tail count
+        current.max_tail_count = new_tail_count
+        current.updated_at = datetime.now(timezone.utc)
+        
+        # Save to database
+        doc = current.model_dump()
+        doc['updated_at'] = doc['updated_at'].isoformat()
+        await db.player_progress.update_one(
+            {"player_id": player_id},
+            {"$set": doc},
+            upsert=True
+        )
+        
+        return current
+
 STORY_ACTS = [
     StoryAct(
         act_number=1,
@@ -1381,6 +1557,56 @@ async def get_sabertooth_gods():
 async def get_world_regions():
     """Get all world regions"""
     return WORLD_REGIONS
+
+# ========== STORY MODE PROGRESSION API (WITH ENFORCEMENT) ==========
+
+@api_router.get("/story-progress/{player_id}", response_model=PlayerProgress)
+async def get_player_progress(player_id: str):
+    """Get player's story progress and tail unlock status"""
+    existing = await db.player_progress.find_one({"player_id": player_id})
+    if not existing:
+        # Return default starting progress
+        return PlayerProgress(player_id=player_id)
+    return PlayerProgress(**existing)
+
+@api_router.post("/story-progress/{player_id}/advance", response_model=PlayerProgress)
+async def advance_story_act(player_id: str, update: ProgressUpdate):
+    """
+    Advance player to next story act with ENFORCED sequential progression.
+    Automatically unlocks appropriate tail count for the new act.
+    
+    Enforcement rules:
+    - Cannot skip acts
+    - Cannot go backwards
+    - Tail count automatically increases per act completion
+    """
+    return await StoryModeManager.update_progress(player_id, update.current_act)
+
+@api_router.post("/story-progress/{player_id}/tails", response_model=PlayerProgress)
+async def update_player_tails(player_id: str, update: TailCountUpdate):
+    """
+    Update player's tail count with strict validation.
+    
+    Enforcement rules:
+    - Tail count cannot decrease
+    - Cannot exceed maximum for current act
+    - Cannot skip multiple tail tiers at once
+    """
+    return await StoryModeManager.update_tail_count(player_id, update.tail_count)
+
+@api_router.get("/story-progress/{player_id}/max-tails")
+async def get_max_allowed_tails(player_id: str):
+    """Get the maximum tail count allowed for player's current story act"""
+    existing = await db.player_progress.find_one({"player_id": player_id})
+    if not existing:
+        return {"max_tails": 3, "current_act": 1}
+    
+    progress = PlayerProgress(**existing)
+    return {
+        "max_tails": progress.max_tail_count,
+        "current_act": progress.current_act,
+        "completed_acts": progress.completed_acts
+    }
 
 @api_router.get("/bible")
 async def get_full_bible():
