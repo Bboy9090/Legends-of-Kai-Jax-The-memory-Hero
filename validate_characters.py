@@ -165,8 +165,14 @@ def validate_design_consistency():
     
     art_chars = {c['id']: c for c in art_spec.get('characters', [])}
     
+    # Convert characters to iterable format
+    if isinstance(spec['characters'], dict):
+        char_items = spec['characters'].items()
+    else:
+        char_items = [(c['id'], c) for c in spec['characters']]
+    
     issues = []
-    for char_id, canonical in spec['characters'].items() if isinstance(spec['characters'], dict) else [(c['id'], c) for c in spec['characters']]:
+    for char_id, canonical in char_items:
         if char_id in art_chars:
             art_char = art_chars[char_id]
             
