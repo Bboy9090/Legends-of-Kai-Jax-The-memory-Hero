@@ -4,10 +4,12 @@ export type GameState =
   | "menu"
   | "campaign-map"
   | "story-mode-select"
+  | "story-mode"
   | "mission-select"
   | "versus-select"
   | "character-select"
   | "customization"
+  | "beast-preview"
   | "playing";
 
 /** Campaign node id. Order: start → districts → final boss. */

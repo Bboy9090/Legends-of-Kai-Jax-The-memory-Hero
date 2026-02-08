@@ -9,8 +9,8 @@ import MobileControls from "./components/game/MobileControls";
 import BattleUI from "./components/game/BattleUI";
 import DialogueDisplay from "./components/game/DialogueDisplay";
 import MainMenu from "./components/game/MainMenu";
-import CharacterSelect from "./components/game/CharacterSelect";
-import MissionSelectHub from "./components/game/MissionSelectHub";
+import VersusCharacterSelect from "./components/game/VersusCharacterSelect";
+import BeastPreview from "./components/game/BeastPreview";
 import CampaignMap from "./components/game/CampaignMap";
 import TransformationOverlay from "./components/game/TransformationOverlay";
 import ScreenEffects from "./components/game/ScreenEffects";
@@ -148,18 +148,13 @@ function App() {
         {/* Campaign: RPG adventure — map, waves, bosses, progression to big bad */}
         {phase === "ready" && gameState === "campaign-map" && <CampaignMap />}
 
-        {/* Missions / Trials (optional challenge list) */}
-        {phase === "ready" && (gameState === "story-mode-select" || gameState === "mission-select") && (
-          <MissionSelectHub />
-        )}
-        
-        {/* Versus Mode - redirect to character select for now */}
+        {/* Versus Mode - full 3D beast model character select */}
         {phase === 'ready' && gameState === 'versus-select' && (
-          <CharacterSelect />
+          <VersusCharacterSelect />
         )}
         
-        {/* Character Selection */}
-        {phase === 'ready' && gameState === 'character-select' && <CharacterSelect />}
+        {/* Beast Preview - inspect the layered rendering system */}
+        {phase === 'ready' && gameState === 'beast-preview' && <BeastPreview />}
         
         {/* Customization Menu */}
         {phase === 'ready' && gameState === 'customization' && <CustomizationMenu />}
