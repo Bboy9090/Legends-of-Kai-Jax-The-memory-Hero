@@ -7,7 +7,7 @@ import logging
 import base64
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import uuid
 from datetime import datetime, timezone
 
@@ -1264,7 +1264,7 @@ class StoryModeManager:
         return cls.ACT_TAIL_LIMITS.get(act_number, 3)
     
     @classmethod
-    def validate_act_progression(cls, current_act: int, new_act: int) -> tuple[bool, str]:
+    def validate_act_progression(cls, current_act: int, new_act: int) -> Tuple[bool, str]:
         """
         Validate that act progression is sequential.
         Returns (is_valid, error_message)
@@ -1281,7 +1281,7 @@ class StoryModeManager:
         return True, ""
     
     @classmethod
-    def validate_tail_count(cls, current_tails: int, new_tails: int, current_act: int) -> tuple[bool, str]:
+    def validate_tail_count(cls, current_tails: int, new_tails: int, current_act: int) -> Tuple[bool, str]:
         """
         Validate tail count changes.
         Returns (is_valid, error_message)
