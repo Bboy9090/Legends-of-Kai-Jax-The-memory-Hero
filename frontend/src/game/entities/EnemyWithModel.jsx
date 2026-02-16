@@ -80,7 +80,18 @@ const AI_STATE = {
 const EnemyModel = ({ config, isAttacking, health, maxHealth }) => {
   const groupRef = useRef();
   const { scene } = useGLTF(ENEMY_MODEL_URL);
+  const clonedScene = useMemo(() => SkeletonUtils.clone(scene), [scene]);
   const healthPercent = health / maxHealth;
+
+  // Setup shadows
+  useEffect(() => {
+    clonedScene.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+  }, [clonedScene]);
 
   useFrame((state) => {
     if (groupRef.current) {
@@ -100,7 +111,7 @@ const EnemyModel = ({ config, isAttacking, health, maxHealth }) => {
 
   return (
     <group ref={groupRef} scale={[config.scale, config.scale, config.scale]} rotation={[0, Math.PI, 0]}>
-      <Clone object={scene} castShadow receiveShadow />
+      <primitive object={clonedScene} />
       
       {/* Health bar */}
       <group position={[0, 2.5 / config.scale, 0]}>
