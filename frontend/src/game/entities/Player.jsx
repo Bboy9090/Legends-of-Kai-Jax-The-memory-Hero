@@ -1,88 +1,96 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { RigidBody, CapsuleCollider } from '@react-three/rapier';
-import { useKeyboardControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGameStore } from '../stores/gameStore';
 
-// Low-poly Kai-Jax character model
-const KaiJaxModel = ({ isAttacking, isDodging, activeTail }) => {
-  const bodyRef = useRef();
+// Simple geometric player model (works without GLB)
+const KaiJaxModel = ({ isAttacking, isDodging, activeTail, scale = 1 }) => {
+  const groupRef = useRef();
   const tailsRef = useRef([]);
   
-  // Tail colors based on active tail
   const tailColors = {
     4: '#64D2FF', // Law - Ice blue
-    5: '#FF3B30', // Sacrifice - Fire red
+    5: '#FF3B30', // Sacrifice - Fire red  
     6: '#BF5AF2', // Memory - Void purple
   };
 
   useFrame((state) => {
+    if (groupRef.current) {
+      // Idle breathing
+      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.02;
+      
+      // Attack animation
+      if (isAttacking) {
+        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0.4, 0.3);
+      } else {
+        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0, 0.1);
+      }
+      
+      // Dodge animation
+      if (isDodging) {
+        groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, 0.6, 0.3);
+      } else {
+        groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, 0, 0.1);
+      }
+    }
+
     // Animate tails
     tailsRef.current.forEach((tail, i) => {
       if (tail) {
-        tail.rotation.z = Math.sin(state.clock.elapsedTime * 2 + i * 0.5) * 0.3;
-        tail.rotation.x = Math.cos(state.clock.elapsedTime * 1.5 + i * 0.3) * 0.2;
+        tail.rotation.z = Math.sin(state.clock.elapsedTime * 3 + i * 0.7) * 0.4;
+        tail.rotation.x = Math.cos(state.clock.elapsedTime * 2 + i * 0.5) * 0.25;
       }
     });
-
-    // Attack animation
-    if (bodyRef.current && isAttacking) {
-      bodyRef.current.rotation.y += 0.3;
-    }
   });
 
+  const activeColor = tailColors[activeTail] || '#FFD60A';
+
   return (
-    <group>
-      {/* Body - Low poly capsule shape */}
-      <mesh ref={bodyRef} castShadow>
-        <capsuleGeometry args={[0.4, 1, 4, 8]} />
-        <meshStandardMaterial 
-          color="#1a1a2e" 
-          roughness={0.7}
-          metalness={0.3}
-        />
+    <group ref={groupRef} scale={scale}>
+      {/* Body - Low poly capsule */}
+      <mesh castShadow position={[0, 0.5, 0]}>
+        <capsuleGeometry args={[0.35, 0.8, 4, 12]} />
+        <meshStandardMaterial color="#1a1a2e" roughness={0.7} metalness={0.3} />
       </mesh>
 
       {/* Head */}
-      <mesh position={[0, 1, 0]} castShadow>
-        <dodecahedronGeometry args={[0.35, 0]} />
-        <meshStandardMaterial 
-          color="#2d2d44"
-          roughness={0.6}
-          metalness={0.2}
-        />
+      <mesh castShadow position={[0, 1.3, 0]}>
+        <dodecahedronGeometry args={[0.3, 0]} />
+        <meshStandardMaterial color="#2d2d44" roughness={0.6} />
       </mesh>
 
       {/* Eyes - Glowing */}
-      <mesh position={[0.12, 1.05, 0.25]}>
-        <sphereGeometry args={[0.06, 8, 8]} />
-        <meshStandardMaterial 
-          color="#FFD60A" 
-          emissive="#FFD60A"
-          emissiveIntensity={2}
-        />
+      <mesh position={[0.1, 1.35, 0.2]}>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshStandardMaterial color="#FFD60A" emissive="#FFD60A" emissiveIntensity={3} />
       </mesh>
-      <mesh position={[-0.12, 1.05, 0.25]}>
-        <sphereGeometry args={[0.06, 8, 8]} />
-        <meshStandardMaterial 
-          color="#30D158" 
-          emissive="#30D158"
-          emissiveIntensity={2}
-        />
+      <mesh position={[-0.1, 1.35, 0.2]}>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshStandardMaterial color="#30D158" emissive="#30D158" emissiveIntensity={3} />
       </mesh>
 
       {/* Ears */}
-      <mesh position={[0.25, 1.3, 0]} rotation={[0, 0, 0.5]}>
-        <coneGeometry args={[0.1, 0.25, 4]} />
+      <mesh castShadow position={[0.2, 1.55, 0]} rotation={[0, 0, 0.4]}>
+        <coneGeometry args={[0.08, 0.2, 4]} />
         <meshStandardMaterial color="#FF6B35" roughness={0.8} />
       </mesh>
-      <mesh position={[-0.25, 1.3, 0]} rotation={[0, 0, -0.5]}>
-        <coneGeometry args={[0.1, 0.25, 4]} />
+      <mesh castShadow position={[-0.2, 1.55, 0]} rotation={[0, 0, -0.4]}>
+        <coneGeometry args={[0.08, 0.2, 4]} />
         <meshStandardMaterial color="#64D2FF" roughness={0.8} />
       </mesh>
 
-      {/* Tails - 3 visible (representing tails 4-6) */}
+      {/* Arms */}
+      <mesh castShadow position={[0.45, 0.6, 0]} rotation={[0, 0, 0.3]}>
+        <boxGeometry args={[0.12, 0.4, 0.1]} />
+        <meshStandardMaterial color="#FF6B35" roughness={0.7} />
+      </mesh>
+      <mesh castShadow position={[-0.45, 0.6, 0]} rotation={[0, 0, -0.3]}>
+        <boxGeometry args={[0.12, 0.4, 0.1]} />
+        <meshStandardMaterial color="#64D2FF" roughness={0.7} />
+      </mesh>
+
+      {/* Three tails (representing tails 4-6) */}
       {[0, 1, 2].map((i) => {
         const tailId = i + 4;
         const isActive = activeTail === tailId;
@@ -90,22 +98,17 @@ const KaiJaxModel = ({ isAttacking, isDodging, activeTail }) => {
           <group 
             key={i} 
             ref={(el) => (tailsRef.current[i] = el)}
-            position={[0, 0.2, -0.5]}
-            rotation={[0.5, (i - 1) * 0.4, 0]}
+            position={[0, 0.3, -0.4]}
+            rotation={[0.6, (i - 1) * 0.5, 0]}
           >
-            {/* Tail segments */}
-            {[0, 1, 2].map((seg) => (
-              <mesh 
-                key={seg} 
-                position={[0, 0, -seg * 0.3]} 
-                castShadow
-              >
-                <boxGeometry args={[0.15 - seg * 0.03, 0.15 - seg * 0.03, 0.3]} />
+            {[0, 1, 2, 3].map((seg) => (
+              <mesh key={seg} position={[0, 0, -seg * 0.2]} castShadow>
+                <boxGeometry args={[0.12 - seg * 0.02, 0.12 - seg * 0.02, 0.2]} />
                 <meshStandardMaterial 
                   color={tailColors[tailId]}
-                  emissive={isActive ? tailColors[tailId] : '#000000'}
-                  emissiveIntensity={isActive ? 1.5 : 0}
-                  roughness={0.5}
+                  emissive={tailColors[tailId]}
+                  emissiveIntensity={isActive ? 2 : 0.3}
+                  roughness={0.4}
                   metalness={0.5}
                 />
               </mesh>
@@ -114,120 +117,124 @@ const KaiJaxModel = ({ isAttacking, isDodging, activeTail }) => {
         );
       })}
 
-      {/* Claws/Hands */}
-      <mesh position={[0.5, 0.3, 0.2]} rotation={[0, 0, 0.3]}>
-        <boxGeometry args={[0.15, 0.3, 0.1]} />
-        <meshStandardMaterial color="#FF6B35" roughness={0.7} />
-      </mesh>
-      <mesh position={[-0.5, 0.3, 0.2]} rotation={[0, 0, -0.3]}>
-        <boxGeometry args={[0.15, 0.3, 0.1]} />
-        <meshStandardMaterial color="#64D2FF" roughness={0.7} />
-      </mesh>
+      {/* Glow effect */}
+      <pointLight position={[0, 0.8, 0]} color={activeColor} intensity={1} distance={3} />
     </group>
   );
 };
 
-// Player Controller Component
+// Input handler
+const usePlayerInput = () => {
+  const keys = useRef({
+    forward: false, backward: false, left: false, right: false, jump: false,
+  });
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      switch (e.code) {
+        case 'KeyW': case 'ArrowUp': keys.current.forward = true; break;
+        case 'KeyS': case 'ArrowDown': keys.current.backward = true; break;
+        case 'KeyA': case 'ArrowLeft': keys.current.left = true; break;
+        case 'KeyD': case 'ArrowRight': keys.current.right = true; break;
+        case 'Space': keys.current.jump = true; break;
+        default: break;
+      }
+    };
+
+    const handleKeyUp = (e) => {
+      switch (e.code) {
+        case 'KeyW': case 'ArrowUp': keys.current.forward = false; break;
+        case 'KeyS': case 'ArrowDown': keys.current.backward = false; break;
+        case 'KeyA': case 'ArrowLeft': keys.current.left = false; break;
+        case 'KeyD': case 'ArrowRight': keys.current.right = false; break;
+        case 'Space': keys.current.jump = false; break;
+        default: break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  return keys;
+};
+
+// Main Player Component
 export const Player = () => {
   const rigidBodyRef = useRef();
-  const { player, tails, updatePlayerPosition, setPlayerAttacking, setPlayerDodging, useTailAbility } = useGameStore();
+  const { 
+    player, tails, gameState,
+    updatePlayerPosition, setPlayerAttacking, setPlayerDodging, 
+    updatePlayerHealth,
+  } = useGameStore();
   
-  const moveSpeed = 8;
-  const jumpForce = 10;
-  const dashForce = 15;
-  
-  const velocity = useRef(new THREE.Vector3());
+  const keys = usePlayerInput();
   const direction = useRef(new THREE.Vector3());
   const canJump = useRef(true);
   const canDash = useRef(true);
   const lastAttackTime = useRef(0);
 
-  // Keyboard input
+  const moveSpeed = 8;
+  const jumpForce = 8;
+  const dashForce = 12;
+
+  // Handle input events
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      const now = Date.now();
-      
-      // Attack - Left Mouse or J
-      if (e.key === 'j' || e.key === 'J') {
-        if (now - lastAttackTime.current > 300) {
-          setPlayerAttacking(true);
-          lastAttackTime.current = now;
-          setTimeout(() => setPlayerAttacking(false), 200);
-        }
-      }
-      
-      // Dodge - Shift or K
-      if ((e.key === 'Shift' || e.key === 'k' || e.key === 'K') && canDash.current) {
-        setPlayerDodging(true);
-        canDash.current = false;
-        
-        if (rigidBodyRef.current) {
-          const impulse = direction.current.clone().multiplyScalar(dashForce);
-          rigidBodyRef.current.applyImpulse(impulse, true);
-        }
-        
-        setTimeout(() => {
-          setPlayerDodging(false);
-          canDash.current = true;
-        }, 500);
-      }
-      
-      // Tail Abilities - 1, 2, 3
-      if (e.key === '1') useTailAbility(4); // Law Tail
-      if (e.key === '2') useTailAbility(5); // Sacrifice Tail
-      if (e.key === '3') useTailAbility(6); // Memory Fracture Tail
-    };
-
-    const handleMouseDown = (e) => {
-      if (e.button === 0) { // Left click
+    const handleClick = (e) => {
+      if (e.button === 0 && gameState === 'playing') {
         const now = Date.now();
-        if (now - lastAttackTime.current > 300) {
+        if (now - lastAttackTime.current > 350) {
           setPlayerAttacking(true);
           lastAttackTime.current = now;
-          setTimeout(() => setPlayerAttacking(false), 200);
+          setTimeout(() => setPlayerAttacking(false), 250);
         }
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('mousedown', handleMouseDown);
-    
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('mousedown', handleMouseDown);
+    const handleKeyPress = (e) => {
+      if (gameState !== 'playing') return;
+      const store = useGameStore.getState();
+      if (e.key === '1') store.useTailAbility(4);
+      if (e.key === '2') store.useTailAbility(5);
+      if (e.key === '3') store.useTailAbility(6);
+      if (e.key === 'Escape') store.setGameState('paused');
+      
+      // Dodge on shift
+      if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && canDash.current) {
+        if (direction.current.length() > 0) {
+          setPlayerDodging(true);
+          canDash.current = false;
+          
+          if (rigidBodyRef.current) {
+            const dashDir = direction.current.clone().multiplyScalar(dashForce);
+            rigidBodyRef.current.applyImpulse({ x: dashDir.x, y: 2, z: dashDir.z }, true);
+          }
+          
+          setTimeout(() => setPlayerDodging(false), 300);
+          setTimeout(() => { canDash.current = true; }, 800);
+        }
+      }
     };
-  }, [setPlayerAttacking, setPlayerDodging, useTailAbility]);
+
+    window.addEventListener('mousedown', handleClick);
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('mousedown', handleClick);
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [gameState, setPlayerAttacking, setPlayerDodging]);
 
   useFrame((state, delta) => {
-    if (!rigidBodyRef.current) return;
+    if (!rigidBodyRef.current || gameState !== 'playing') return;
 
     const body = rigidBodyRef.current;
     const linvel = body.linvel();
     
-    // Get input
-    const keys = {
-      forward: false,
-      backward: false,
-      left: false,
-      right: false,
-      jump: false,
-    };
-
-    // Check keyboard state
-    const keyState = (key) => {
-      return document.querySelector(`[data-key="${key}"]`)?.dataset.pressed === 'true';
-    };
-
-    // Movement input from keyboard
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') keys.forward = true;
-      if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') keys.backward = true;
-      if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = true;
-      if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = true;
-      if (e.key === ' ') keys.jump = true;
-    });
-
-    // Calculate movement direction based on camera
+    // Camera-relative movement
     const cameraDirection = new THREE.Vector3();
     state.camera.getWorldDirection(cameraDirection);
     cameraDirection.y = 0;
@@ -236,19 +243,11 @@ export const Player = () => {
     const cameraRight = new THREE.Vector3();
     cameraRight.crossVectors(cameraDirection, new THREE.Vector3(0, 1, 0));
 
-    // Build movement vector
     direction.current.set(0, 0, 0);
-    
-    // Simple WASD check
-    const isKeyPressed = (key) => {
-      return window[`_key_${key}`] === true;
-    };
-
-    if (isKeyPressed('w')) direction.current.add(cameraDirection);
-    if (isKeyPressed('s')) direction.current.sub(cameraDirection);
-    if (isKeyPressed('a')) direction.current.sub(cameraRight);
-    if (isKeyPressed('d')) direction.current.add(cameraRight);
-
+    if (keys.current.forward) direction.current.add(cameraDirection);
+    if (keys.current.backward) direction.current.sub(cameraDirection);
+    if (keys.current.left) direction.current.sub(cameraRight);
+    if (keys.current.right) direction.current.add(cameraRight);
     direction.current.normalize();
 
     // Apply movement
@@ -259,28 +258,38 @@ export const Player = () => {
         z: direction.current.z * moveSpeed,
       }, true);
 
-      // Rotate character to face movement direction
+      // Rotate to face movement
       const angle = Math.atan2(direction.current.x, direction.current.z);
-      body.setRotation({ x: 0, y: angle, z: 0, w: 1 }, true);
+      const targetQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, angle, 0));
+      const currentRot = body.rotation();
+      const currentQuat = new THREE.Quaternion(currentRot.x, currentRot.y, currentRot.z, currentRot.w);
+      currentQuat.slerp(targetQuat, 0.15);
+      body.setRotation(currentQuat, true);
     } else {
-      // Apply friction when not moving
-      body.setLinvel({
-        x: linvel.x * 0.9,
-        y: linvel.y,
-        z: linvel.z * 0.9,
-      }, true);
+      body.setLinvel({ x: linvel.x * 0.85, y: linvel.y, z: linvel.z * 0.85 }, true);
     }
 
     // Jump
-    if (isKeyPressed(' ') && canJump.current) {
+    if (keys.current.jump && canJump.current) {
       body.applyImpulse({ x: 0, y: jumpForce, z: 0 }, true);
       canJump.current = false;
-      setTimeout(() => (canJump.current = true), 500);
+      setTimeout(() => { canJump.current = true; }, 600);
     }
 
-    // Update store position
+    // Update position
     const pos = body.translation();
     updatePlayerPosition([pos.x, pos.y, pos.z]);
+
+    // Fall death
+    if (pos.y < -20) {
+      updatePlayerHealth(-100);
+      if (player.health <= 0) {
+        useGameStore.getState().setGameState('dead');
+      }
+    }
+
+    // Update cooldowns
+    useGameStore.getState().updateTailCooldowns(delta);
   });
 
   return (
@@ -293,11 +302,12 @@ export const Player = () => {
       angularDamping={0.5}
       colliders={false}
     >
-      <CapsuleCollider args={[0.5, 0.4]} position={[0, 0.9, 0]} />
+      <CapsuleCollider args={[0.5, 0.35]} position={[0, 0.85, 0]} />
       <KaiJaxModel 
         isAttacking={player.isAttacking} 
         isDodging={player.isDodging}
         activeTail={tails.equipped[0]}
+        scale={1}
       />
     </RigidBody>
   );
