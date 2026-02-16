@@ -1,8 +1,9 @@
 import React, { useRef, useState, useEffect, Suspense, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF, Clone } from '@react-three/drei';
+import { useGLTF } from '@react-three/drei';
 import { RigidBody, CapsuleCollider } from '@react-three/rapier';
 import * as THREE from 'three';
+import { SkeletonUtils } from 'three-stdlib';
 import { useGameStore } from '../stores/gameStore';
 
 // Enemy Model URL
