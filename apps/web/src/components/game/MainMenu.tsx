@@ -1,6 +1,6 @@
 import { useRunner } from "../../lib/stores/useRunner";
 import { useBattle } from "../../lib/stores/useBattle";
-import { Swords, BookOpen, Palette } from "../ui/icons";
+import { Swords, BookOpen, Palette, ArrowLeft } from "../ui/icons";
 
 export default function MainMenu() {
   const setGameState = useRunner((s) => s.setGameState);
@@ -46,6 +46,14 @@ export default function MainMenu() {
           Beast Preview
         </button>
       </div>
+
+      <button
+        onClick={() => setGameState("lore-hub")}
+        className="flex items-center gap-2 mt-4 text-slate-500 text-sm hover:text-slate-300 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to Hub
+      </button>
     </div>
   );
 }

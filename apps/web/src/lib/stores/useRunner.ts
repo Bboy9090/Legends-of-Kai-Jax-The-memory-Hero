@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 export type GameState =
+  | "lore-hub"
   | "menu"
   | "campaign-map"
   | "story-mode-select"
@@ -61,7 +62,7 @@ export function isCampaignNodeUnlocked(completed: CampaignNodeId[], nodeId: Camp
 }
 
 export const useRunner = create<RunnerState>((set, get) => ({
-  gameState: "menu",
+  gameState: "lore-hub",
   selectedCharacter: "jaxon",
   totalScore: 0,
   campaignCompletedNodes: [],

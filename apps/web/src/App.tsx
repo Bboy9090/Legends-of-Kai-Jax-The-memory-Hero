@@ -16,6 +16,7 @@ import TransformationOverlay from "./components/game/TransformationOverlay";
 import ScreenEffects from "./components/game/ScreenEffects";
 import { GameIntro } from "./components/game/LoadingScreen";
 import CustomizationMenu from "./components/game/CustomizationMenu";
+import LoreHub from "./components/game/LoreHub";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
@@ -133,13 +134,16 @@ function App() {
         width: '100vw', 
         minHeight: '100vh', 
         position: 'relative', 
-        overflow: 'auto',
+        overflow: gameState === 'lore-hub' ? 'auto' : 'hidden',
         background: 'linear-gradient(to bottom, #0a0a1a, #1a0a2e)',
         transform: shakeTransform,
       }}
     >
+      {/* Lore Hub - Landing Page */}
+      {gameState === "lore-hub" && <LoreHub />}
+
       {/* ⚡ LEGENDARY INTRO SEQUENCE */}
-      {showIntro && <GameIntro onComplete={handleIntroComplete} />}
+      {showIntro && gameState !== "lore-hub" && <GameIntro onComplete={handleIntroComplete} />}
       
       <KeyboardControls map={controls}>
         {/* Main Menu */}

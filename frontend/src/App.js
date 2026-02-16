@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "@/App.css";
 import axios from "axios";
-import { Zap, Flame, Wind, Shield, Droplet, Leaf, Sun, Star, Skull, Menu, X, ChevronRight, Loader2 } from "lucide-react";
+import { Zap, Flame, Wind, Shield, Droplet, Leaf, Sun, Star, Skull, Menu, X, ChevronRight, Loader2, Gamepad2 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -120,6 +120,13 @@ const HeroSection = ({ onNavigate }) => {
           </p>
           
           <div className="flex flex-wrap gap-4">
+            <a 
+              href="/game"
+              className="btn-cyber flex items-center gap-2 bg-gradient-to-r from-primary/20 to-fire/20 border-primary hover:border-primary hover:shadow-[0_0_30px_rgba(46,46,254,0.4)] text-lg px-8 py-4 font-heading uppercase tracking-wider"
+              data-testid="cta-play-game"
+            >
+              <Gamepad2 className="w-5 h-5 text-primary" /> Play Game
+            </a>
             <button 
               onClick={() => onNavigate('characters')} 
               className="btn-cyber flex items-center gap-2"
