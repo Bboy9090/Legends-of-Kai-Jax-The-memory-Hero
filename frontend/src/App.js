@@ -1582,4 +1582,33 @@ function App() {
   );
 }
 
-export default App;
+// Loading fallback for game
+const GameLoadingFallback = () => (
+  <div className="w-full h-screen bg-black flex items-center justify-center">
+    <div className="text-center">
+      <Gamepad2 className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse" />
+      <p className="text-white/60">Loading game...</p>
+    </div>
+  </div>
+);
+
+// Main App with Router
+function AppWrapper() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route 
+          path="/game" 
+          element={
+            <Suspense fallback={<GameLoadingFallback />}>
+              <GamePage />
+            </Suspense>
+          } 
+        />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default AppWrapper;
