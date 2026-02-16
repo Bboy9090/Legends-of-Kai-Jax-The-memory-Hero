@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, Suspense } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations } from '@react-three/drei';
+import { useGLTF } from '@react-three/drei';
 import { RigidBody, CapsuleCollider } from '@react-three/rapier';
 import * as THREE from 'three';
 import { useGameStore } from '../stores/gameStore';
