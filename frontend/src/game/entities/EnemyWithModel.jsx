@@ -79,15 +79,33 @@ const AI_STATE = {
 const EnemyModel = ({ config, isAttacking, health, maxHealth }) => {
   const groupRef = useRef();
   const { scene } = useGLTF(ENEMY_MODEL_URL);
-  const clonedScene = scene.clone();
   
-  const healthPercent = health / maxHealth;
-
-  useEffect(() => {
-    clonedScene.traverse((child) => {
+  // Clone scene once with useMemo
+  const clonedScene = React.useMemo(() => {
+    const clone = scene.clone(true);
+    clone.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
+        if (child.material) {
+          child.material = child.material.clone();
+          const tint = new THREE.Color(config.color);
+          child.material.color.lerp(tint, 0.3);
+        }
+      }
+    });
+    return clone;
+  }, [scene, config.color]);
+  
+  const healthPercent = health / maxHealth;
+
+  // Update emissive on attack
+  useEffect(() => {
+    if (!clonedScene) return;
+    clonedScene.traverse((child) => {
+      if (child.isMesh && child.material) {
+        child.material.emissive = new THREE.Color('#FF0000');
+        child.material.emissiveIntensity = isAttacking ? 0.5 : 0.1;
         if (child.material) {
           child.material = child.material.clone();
           // Tint based on faction
