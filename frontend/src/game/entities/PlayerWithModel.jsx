@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, Suspense, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF, Clone } from '@react-three/drei';
+import { useGLTF } from '@react-three/drei';
 import { RigidBody, CapsuleCollider } from '@react-three/rapier';
 import * as THREE from 'three';
+import { SkeletonUtils } from 'three-stdlib';
 import { useGameStore } from '../stores/gameStore';
 
 // GLB Model URLs
@@ -21,12 +22,25 @@ const KaiJaxModel = ({ isAttacking, isDodging, activeTail, scale = 1 }) => {
   const groupRef = useRef();
   const { scene } = useGLTF(MODEL_URLS.kaijax);
   
+  // Clone scene properly for reuse
+  const clonedScene = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+  
   // Tail glow colors
   const tailColors = useMemo(() => ({
     4: '#64D2FF', // Law - Ice blue
     5: '#FF3B30', // Sacrifice - Fire red
     6: '#BF5AF2', // Memory - Void purple
   }), []);
+
+  // Setup shadows
+  useEffect(() => {
+    clonedScene.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+  }, [clonedScene]);
 
   useFrame((state) => {
     if (groupRef.current) {
@@ -51,7 +65,7 @@ const KaiJaxModel = ({ isAttacking, isDodging, activeTail, scale = 1 }) => {
 
   return (
     <group ref={groupRef} scale={[scale, scale, scale]} rotation={[0, Math.PI, 0]}>
-      <Clone object={scene} castShadow receiveShadow />
+      <primitive object={clonedScene} />
       {/* Tail energy particles */}
       <TailEnergyEffect color={tailColors[activeTail] || '#FFD60A'} />
     </group>
