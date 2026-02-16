@@ -104,19 +104,10 @@ const EnemyModel = ({ config, isAttacking, health, maxHealth }) => {
     if (!clonedScene) return;
     clonedScene.traverse((child) => {
       if (child.isMesh && child.material) {
-        child.material.emissive = new THREE.Color('#FF0000');
         child.material.emissiveIntensity = isAttacking ? 0.5 : 0.1;
-        if (child.material) {
-          child.material = child.material.clone();
-          // Tint based on faction
-          const tint = new THREE.Color(config.color);
-          child.material.color.lerp(tint, 0.3);
-          child.material.emissive = new THREE.Color('#FF0000');
-          child.material.emissiveIntensity = isAttacking ? 0.5 : 0.1;
-        }
       }
     });
-  }, [isAttacking, config.color, clonedScene]);
+  }, [isAttacking, clonedScene]);
 
   useFrame((state) => {
     if (groupRef.current) {
