@@ -6,6 +6,8 @@ import { getFighterById } from "../../lib/characters";
 import BattleArena from "./BattleArena";
 import BattlePlayer from "./BattlePlayer";
 import Opponent from "./Opponent";
+import PlayerController from "./PlayerController";
+import OpponentAI from "./OpponentAI";
 import ParticleManager from "./ParticleManager";
 import CameraEffects from "./CameraEffects";
 import AttackTrails from "./AttackTrails";
@@ -45,12 +47,15 @@ export default function BattleScene() {
         (playerAttacking && (playerAttackType === "special" || playerAttackType === "ultimate") ? 0.25 : 0)
     ) || 0;
   
-  // Start battle on mount
   useEffect(() => {
     console.log("[BattleScene] Initializing battle");
-    setTimeout(() => {
-      startBattle();
+    const timer = setTimeout(() => {
+      const phase = useBattle.getState().battlePhase;
+      if (phase === "preRound") {
+        startBattle();
+      }
     }, 1000);
+    return () => clearTimeout(timer);
   }, [startBattle]);
   
   // Update round timer every frame
@@ -89,6 +94,12 @@ export default function BattleScene() {
       
       {/* Opponent Fighter */}
       <Opponent />
+      
+      {/* Player Input Controller */}
+      <PlayerController />
+      
+      {/* Opponent AI */}
+      <OpponentAI />
       
       {/* EPIC Particle Effects! ✨💥 */}
       <ParticleManager />
