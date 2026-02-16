@@ -19,17 +19,31 @@ Object.values(MODEL_URLS).forEach(url => useGLTF.preload(url));
 // Kai-Jax 3D Model Component
 const KaiJaxModel = ({ isAttacking, isDodging, activeTail, scale = 1 }) => {
   const groupRef = useRef();
-  const { scene, animations } = useGLTF(MODEL_URLS.kaijax);
-  const clonedScene = scene.clone();
+  const { scene } = useGLTF(MODEL_URLS.kaijax);
+  
+  // Clone scene once with useMemo
+  const clonedScene = React.useMemo(() => {
+    const clone = scene.clone(true);
+    clone.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        if (child.material) {
+          child.material = child.material.clone();
+        }
+      }
+    });
+    return clone;
+  }, [scene]);
   
   // Tail glow effect based on active tail
   const tailColors = {
-    4: new THREE.Color('#64D2FF'), // Law - Ice blue
-    5: new THREE.Color('#FF3B30'), // Sacrifice - Fire red
-    6: new THREE.Color('#BF5AF2'), // Memory - Void purple
+    4: '#64D2FF', // Law - Ice blue
+    5: '#FF3B30', // Sacrifice - Fire red
+    6: '#BF5AF2', // Memory - Void purple
   };
 
-  useFrame((state, delta) => {
+  useFrame((state) => {
     if (groupRef.current) {
       // Idle breathing animation
       groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.02;
@@ -52,12 +66,12 @@ const KaiJaxModel = ({ isAttacking, isDodging, activeTail, scale = 1 }) => {
 
   // Apply emissive glow based on active tail
   useEffect(() => {
+    if (!clonedScene) return;
+    const color = new THREE.Color(tailColors[activeTail] || '#FFD60A');
     clonedScene.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        
-        // Add slight emissive glow
+      if (child.isMesh && child.material) {
+        child.material.emissive = color;
+        child.material.emissiveIntensity = 0.15;
         if (child.material) {
           child.material = child.material.clone();
           child.material.emissive = tailColors[activeTail] || new THREE.Color('#FFD60A');
