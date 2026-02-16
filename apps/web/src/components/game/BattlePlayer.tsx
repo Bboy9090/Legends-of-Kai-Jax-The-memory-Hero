@@ -1,5 +1,6 @@
 /* eslint-disable react/no-unknown-property */
 import { useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useBeastPreset } from "../../lib/stores/useBeastPreset";
 import { getFighterById } from "../../lib/characters";
@@ -13,6 +14,7 @@ export default function BattlePlayer() {
   const rightArmRef = useRef<Group>(null);
   const leftLegRef = useRef<Group>(null);
   const rightLegRef = useRef<Group>(null);
+  const timeRef = useRef<number>(0);
 
   const {
     playerFighterId,
@@ -21,8 +23,16 @@ export default function BattlePlayer() {
     playerFacingRight,
     playerAttacking,
     playerInvulnerable,
+    playerVelocityX,
+    playerVelocityY,
+    playerGrounded,
+    playerAttackType,
   } = useBattle();
   const { preset } = useBeastPreset();
+
+  useFrame((state) => {
+    timeRef.current = state.clock.elapsedTime;
+  });
 
   const fighter = getFighterById(playerFighterId);
 
@@ -43,9 +53,15 @@ export default function BattlePlayer() {
         rightLegRef={rightLegRef}
         emotionIntensity={0.5}
         hitAnim={playerInvulnerable ? 1 : 0}
-        animTime={0}
+        animTime={timeRef.current}
         isAttacking={playerAttacking}
         isInvulnerable={playerInvulnerable}
+        isMoving={Math.abs(playerVelocityX) > 0.1}
+        attackType={playerAttackType}
+        velocityX={playerVelocityX}
+        velocityY={playerVelocityY}
+        isGrounded={playerGrounded}
+        isJumping={playerVelocityY > 0 && !playerGrounded}
         presetOverride={preset === "auto" ? null : preset}
       />
     </group>

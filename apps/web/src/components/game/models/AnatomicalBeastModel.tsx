@@ -213,6 +213,11 @@ export interface AnatomicalBeastModelProps {
   presetOverride?: Exclude<BeastPresetKind, "auto"> | null;
   /** LOD level: 0=close, 1=mid, 2=far, 3=very far. Gates layers per character_renderer_spec. */
   lodLevel?: CharacterLODLevel;
+  attackType?: 'punch' | 'kick' | 'special' | 'ultimate' | null;
+  velocityX?: number;
+  velocityY?: number;
+  isGrounded?: boolean;
+  isJumping?: boolean;
 }
 
 /**
@@ -236,8 +241,15 @@ export default function AnatomicalBeastModel({
   isMoving = false,
   presetOverride = null,
   lodLevel = 0,
+  attackType = null,
+  velocityX = 0,
+  velocityY = 0,
+  isGrounded = true,
+  isJumping = false,
 }: AnatomicalBeastModelProps) {
   const groupRef = useRef<THREE.Group>(null);
+  const landSquash = useRef<number>(0);
+  const wasGrounded = useRef<boolean>(true);
 
   /** Layer visibility per character_renderer_spec: aura off at mid+, fur/veins/tail off at very far */
   const _showAuraLayer = lodLevel === 0;
@@ -910,24 +922,144 @@ export default function AnatomicalBeastModel({
   useFrame((state, delta) => {
     if (!groupRef.current) return;
     const t = animTime || state.clock.elapsedTime;
+    const lerp = THREE.MathUtils.lerp;
 
-    // Idle breathing / weight shift
-    groupRef.current.position.y = Math.sin(t * 2.0) * 0.02;
-    groupRef.current.rotation.y = Math.sin(t * 0.6) * 0.18;
-    if (hitAnim > 0) groupRef.current.rotation.z = Math.sin(t * 22) * 0.06 * hitAnim;
+    const absVX = Math.abs(velocityX);
+    const moving = isMoving || absVX > 0.5;
+    const speed = THREE.MathUtils.clamp(absVX / 6, 0, 1);
+    const walkRate = 8 + speed * 8;
+    const walkPhase = Math.sin(t * walkRate);
 
-    // Walk + attack motion
-    const walk = isMoving ? Math.sin(t * 10) : 0;
-    const atk = isAttacking ? Math.max(0, Math.sin(t * 16)) : 0;
+    if (!isGrounded && wasGrounded.current) {
+      wasGrounded.current = false;
+    }
+    if (isGrounded && !wasGrounded.current) {
+      landSquash.current = 1.0;
+      wasGrounded.current = true;
+    }
+    landSquash.current = lerp(landSquash.current, 0, 1 - Math.pow(0.05, delta));
 
-    leftArmRef.current && (leftArmRef.current.rotation.x = -0.35 * walk + -0.65 * atk);
-    rightArmRef.current && (rightArmRef.current.rotation.x = 0.35 * walk + -0.65 * atk);
-    leftLegRef.current && (leftLegRef.current.rotation.x = 0.45 * walk);
-    rightLegRef.current && (rightLegRef.current.rotation.x = -0.45 * walk);
+    const squashY = 1 - landSquash.current * 0.25;
+    const squashXZ = 1 + landSquash.current * 0.15;
+
+    if (isInvulnerable) {
+      groupRef.current.visible = Math.sin(t * 30) > 0;
+    } else {
+      groupRef.current.visible = true;
+    }
+
+    let bodyPosY = Math.sin(t * 2.0) * 0.02;
+    let bodyRotX = 0;
+    let bodyRotY = Math.sin(t * 0.6) * 0.08;
+    let bodyRotZ = 0;
+
+    let leftArmX = 0;
+    let leftArmZ = 0;
+    let rightArmX = 0;
+    let rightArmZ = 0;
+    let leftLegX = 0;
+    let rightLegX = 0;
+
+    let headRotX = 0.06 + emotionIntensity * 0.06;
+    let headRotY = Math.sin(t * 1.5) * 0.06;
+    let headRotZ = 0;
+
+    if (moving && isGrounded && !isAttacking) {
+      leftArmX = -0.45 * walkPhase * (0.5 + speed * 0.5);
+      rightArmX = 0.45 * walkPhase * (0.5 + speed * 0.5);
+      leftLegX = 0.55 * walkPhase * (0.5 + speed * 0.5);
+      rightLegX = -0.55 * walkPhase * (0.5 + speed * 0.5);
+      bodyRotX = lerp(0, velocityX > 0 ? -0.06 : 0.06, speed);
+      bodyPosY += Math.abs(Math.sin(t * walkRate * 2)) * 0.01 * speed;
+      headRotY += Math.sin(t * walkRate) * 0.03 * speed;
+    }
+
+    if (!isGrounded) {
+      const vyNorm = THREE.MathUtils.clamp(velocityY / 8, -1, 1);
+      if (isJumping) {
+        leftArmX = lerp(leftArmX, -1.2 - vyNorm * 0.3, 0.7);
+        rightArmX = lerp(rightArmX, -1.2 - vyNorm * 0.3, 0.7);
+        leftLegX = lerp(leftLegX, 0.4, 0.7);
+        rightLegX = lerp(rightLegX, 0.4, 0.7);
+        bodyPosY += 0.03;
+        bodyRotX = lerp(bodyRotX, -0.08, 0.5);
+      } else {
+        leftArmX = lerp(leftArmX, -0.6 + vyNorm * 0.2, 0.5);
+        rightArmX = lerp(rightArmX, -0.6 + vyNorm * 0.2, 0.5);
+        leftArmZ = lerp(leftArmZ, -0.4, 0.5);
+        rightArmZ = lerp(rightArmZ, 0.4, 0.5);
+        leftLegX = lerp(leftLegX, -0.3, 0.5);
+        rightLegX = lerp(rightLegX, -0.3, 0.5);
+        bodyRotX = lerp(bodyRotX, 0.06 - vyNorm * 0.04, 0.5);
+      }
+    }
+
+    if (isAttacking && attackType) {
+      const atkT = (Math.sin(t * 16) * 0.5 + 0.5);
+      if (attackType === 'punch') {
+        rightArmX = lerp(rightArmX, -1.4 * atkT, 0.85);
+        leftArmX = lerp(leftArmX, -0.3, 0.6);
+        leftArmZ = lerp(leftArmZ, -0.2, 0.5);
+        bodyRotX = lerp(bodyRotX, -0.12 * atkT, 0.7);
+        headRotX = lerp(headRotX, 0.15, 0.6);
+      } else if (attackType === 'kick') {
+        rightLegX = lerp(rightLegX, -1.2 * atkT, 0.85);
+        bodyRotX = lerp(bodyRotX, 0.15 * atkT, 0.7);
+        leftArmX = lerp(leftArmX, -0.3, 0.5);
+        rightArmX = lerp(rightArmX, -0.3, 0.5);
+        leftArmZ = lerp(leftArmZ, -0.15, 0.4);
+        rightArmZ = lerp(rightArmZ, 0.15, 0.4);
+      } else if (attackType === 'special') {
+        rightArmX = lerp(rightArmX, -1.3 * atkT, 0.9);
+        leftArmX = lerp(leftArmX, -1.3 * atkT, 0.9);
+        bodyRotX = lerp(bodyRotX, -0.2 * atkT, 0.8);
+        headRotX = lerp(headRotX, 0.2, 0.7);
+      } else if (attackType === 'ultimate') {
+        const phase = (t * 4) % (Math.PI * 2);
+        const spread = Math.sin(phase) * 0.5 + 0.5;
+        const slam = Math.cos(phase) * 0.5 + 0.5;
+        leftArmX = lerp(leftArmX, lerp(-0.8, -1.5, slam), 0.9);
+        rightArmX = lerp(rightArmX, lerp(-0.8, -1.5, slam), 0.9);
+        leftArmZ = lerp(leftArmZ, lerp(-0.8 * spread, 0, slam), 0.8);
+        rightArmZ = lerp(rightArmZ, lerp(0.8 * spread, 0, slam), 0.8);
+        bodyRotX = lerp(bodyRotX, lerp(0.1, -0.3, slam), 0.85);
+        headRotX = lerp(headRotX, lerp(-0.3, 0.3, slam), 0.8);
+      }
+    }
+
+    if (hitAnim > 0) {
+      bodyRotX = lerp(bodyRotX, 0.2 * hitAnim, 0.7);
+      bodyRotZ = Math.sin(t * 22) * 0.06 * hitAnim;
+      headRotX = lerp(headRotX, -0.2 * hitAnim, 0.6);
+      leftArmX = lerp(leftArmX, 0.3 * hitAnim, 0.5);
+      rightArmX = lerp(rightArmX, 0.3 * hitAnim, 0.5);
+    }
+
+    groupRef.current.position.y = bodyPosY;
+    groupRef.current.rotation.x = bodyRotX;
+    groupRef.current.rotation.y = bodyRotY;
+    groupRef.current.rotation.z = bodyRotZ;
+    groupRef.current.scale.set(squashXZ, squashY, squashXZ);
+
+    if (leftArmRef.current) {
+      leftArmRef.current.rotation.x = leftArmX;
+      leftArmRef.current.rotation.z = leftArmZ;
+    }
+    if (rightArmRef.current) {
+      rightArmRef.current.rotation.x = rightArmX;
+      rightArmRef.current.rotation.z = rightArmZ;
+    }
+    if (leftLegRef.current) {
+      leftLegRef.current.rotation.x = leftLegX;
+    }
+    if (rightLegRef.current) {
+      rightLegRef.current.rotation.x = rightLegX;
+    }
 
     if (headRef.current) {
-      headRef.current.rotation.x = 0.06 + (isAttacking ? 0.12 : 0) + emotionIntensity * 0.06;
-      headRef.current.rotation.y = Math.sin(t * 1.5) * 0.06;
+      headRef.current.rotation.x = headRotX;
+      headRef.current.rotation.y = headRotY;
+      headRef.current.rotation.z = headRotZ;
     }
 
     if (nebulaRef.current && hasInternalNebulae) {
@@ -943,7 +1075,6 @@ export default function AnatomicalBeastModel({
     }
 
     if (coreLightRef.current && hasFusionCore) {
-      // drives bloom + “energy lights the body” feeling
       coreLightRef.current.intensity = 1.6 + (Math.sin(t * 3.2) * 0.5 + 0.5) * 2.2;
     }
 
@@ -955,13 +1086,11 @@ export default function AnatomicalBeastModel({
       auraRibbonRef.current.rotation.y = Math.sin(t * 0.55) * 0.22;
       auraRibbonRef.current.rotation.z = Math.sin(t * 0.35) * 0.10;
       auraRibbonRef.current.position.y = Math.sin(t * 0.8) * 0.03;
-      // update shader uniforms
       for (let i = 0; i < lightningRibbonMaterials.length; i++) {
         const m = lightningRibbonMaterials[i];
         if (!m) continue;
         const u = m.uniforms as any;
         u.uTime.value = t;
-        // punchier during attacks
         u.uIntensity.value = isAttacking ? 1.35 : 1.0;
         u.uAlpha.value = 0.14 + (Math.sin(t * 2.2 + i) * 0.5 + 0.5) * 0.10;
       }
