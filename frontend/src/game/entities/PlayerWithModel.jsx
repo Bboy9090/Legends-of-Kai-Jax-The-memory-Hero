@@ -72,21 +72,16 @@ const KaiJaxModel = ({ isAttacking, isDodging, activeTail, scale = 1 }) => {
       if (child.isMesh && child.material) {
         child.material.emissive = color;
         child.material.emissiveIntensity = 0.15;
-        if (child.material) {
-          child.material = child.material.clone();
-          child.material.emissive = tailColors[activeTail] || new THREE.Color('#FFD60A');
-          child.material.emissiveIntensity = 0.15;
-        }
       }
     });
-  }, [activeTail, clonedScene]);
+  }, [activeTail, clonedScene, tailColors]);
 
   return (
     <group ref={groupRef} scale={[scale, scale, scale]} rotation={[0, Math.PI, 0]}>
       <primitive object={clonedScene} />
       
       {/* Tail energy particles */}
-      <TailEnergyEffect color={tailColors[activeTail]?.getHexString() || '#FFD60A'} />
+      <TailEnergyEffect color={tailColors[activeTail] || '#FFD60A'} />
     </group>
   );
 };
