@@ -1,12 +1,12 @@
 import React, { Suspense, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Physics } from '@react-three/rapier';
-import { Sky, Stars, Environment, PerformanceMonitor } from '@react-three/drei';
+import { Sky, Stars } from '@react-three/drei';
 import * as THREE from 'three';
 
 import { useGameStore } from './stores/gameStore';
-import PlayerWithModel from './entities/PlayerWithModel';
-import { EnemyWithModel } from './entities/EnemyWithModel';
+import Player from './entities/Player';
+import { Enemy } from './entities/Enemy';
 import IronveinWards from './world/IronveinWards';
 import { ThirdPersonCamera } from './systems/CameraSystem';
 import GameHUD from './ui/GameHUD';
