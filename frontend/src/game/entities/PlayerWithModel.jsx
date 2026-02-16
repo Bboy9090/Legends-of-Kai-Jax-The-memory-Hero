@@ -1,6 +1,6 @@
-import React, { useRef, useEffect, Suspense } from 'react';
+import React, { useRef, useEffect, Suspense, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF } from '@react-three/drei';
+import { useGLTF, Clone } from '@react-three/drei';
 import { RigidBody, CapsuleCollider } from '@react-three/rapier';
 import * as THREE from 'three';
 import { useGameStore } from '../stores/gameStore';
@@ -21,41 +21,26 @@ const KaiJaxModel = ({ isAttacking, isDodging, activeTail, scale = 1 }) => {
   const groupRef = useRef();
   const { scene } = useGLTF(MODEL_URLS.kaijax);
   
-  // Clone scene once with useMemo
-  const clonedScene = React.useMemo(() => {
-    const clone = scene.clone(true);
-    clone.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        if (child.material) {
-          child.material = child.material.clone();
-        }
-      }
-    });
-    return clone;
-  }, [scene]);
-  
-  // Tail glow effect based on active tail
-  const tailColors = {
+  // Tail glow colors
+  const tailColors = useMemo(() => ({
     4: '#64D2FF', // Law - Ice blue
     5: '#FF3B30', // Sacrifice - Fire red
     6: '#BF5AF2', // Memory - Void purple
-  };
+  }), []);
 
   useFrame((state) => {
     if (groupRef.current) {
       // Idle breathing animation
       groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.02;
       
-      // Attack animation - lean forward
+      // Attack animation
       if (isAttacking) {
         groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0.3, 0.3);
       } else {
         groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0, 0.1);
       }
       
-      // Dodge animation - tilt
+      // Dodge animation
       if (isDodging) {
         groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, 0.5, 0.3);
       } else {
@@ -64,22 +49,9 @@ const KaiJaxModel = ({ isAttacking, isDodging, activeTail, scale = 1 }) => {
     }
   });
 
-  // Apply emissive glow based on active tail
-  useEffect(() => {
-    if (!clonedScene) return;
-    const color = new THREE.Color(tailColors[activeTail] || '#FFD60A');
-    clonedScene.traverse((child) => {
-      if (child.isMesh && child.material) {
-        child.material.emissive = color;
-        child.material.emissiveIntensity = 0.15;
-      }
-    });
-  }, [activeTail, clonedScene, tailColors]);
-
   return (
     <group ref={groupRef} scale={[scale, scale, scale]} rotation={[0, Math.PI, 0]}>
-      <primitive object={clonedScene} />
-      
+      <Clone object={scene} castShadow receiveShadow />
       {/* Tail energy particles */}
       <TailEnergyEffect color={tailColors[activeTail] || '#FFD60A'} />
     </group>
