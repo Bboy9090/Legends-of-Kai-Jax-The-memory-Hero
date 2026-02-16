@@ -79,35 +79,7 @@ const AI_STATE = {
 const EnemyModel = ({ config, isAttacking, health, maxHealth }) => {
   const groupRef = useRef();
   const { scene } = useGLTF(ENEMY_MODEL_URL);
-  
-  // Clone scene once with useMemo
-  const clonedScene = React.useMemo(() => {
-    const clone = scene.clone(true);
-    clone.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        if (child.material) {
-          child.material = child.material.clone();
-          const tint = new THREE.Color(config.color);
-          child.material.color.lerp(tint, 0.3);
-        }
-      }
-    });
-    return clone;
-  }, [scene, config.color]);
-  
   const healthPercent = health / maxHealth;
-
-  // Update emissive on attack
-  useEffect(() => {
-    if (!clonedScene) return;
-    clonedScene.traverse((child) => {
-      if (child.isMesh && child.material) {
-        child.material.emissiveIntensity = isAttacking ? 0.5 : 0.1;
-      }
-    });
-  }, [isAttacking, clonedScene]);
 
   useFrame((state) => {
     if (groupRef.current) {
@@ -127,24 +99,20 @@ const EnemyModel = ({ config, isAttacking, health, maxHealth }) => {
 
   return (
     <group ref={groupRef} scale={[config.scale, config.scale, config.scale]} rotation={[0, Math.PI, 0]}>
-      <primitive object={clonedScene} />
+      <Clone object={scene} castShadow receiveShadow />
       
       {/* Health bar */}
       <group position={[0, 2.5 / config.scale, 0]}>
-        {/* Background */}
         <mesh>
           <boxGeometry args={[1.2, 0.12, 0.05]} />
           <meshBasicMaterial color="#222222" />
         </mesh>
-        {/* Health fill */}
         <mesh position={[(healthPercent - 1) * 0.55, 0, 0.03]}>
           <boxGeometry args={[1.1 * healthPercent, 0.08, 0.05]} />
           <meshBasicMaterial 
             color={healthPercent > 0.5 ? '#30D158' : healthPercent > 0.25 ? '#FFD60A' : '#FF3B30'} 
           />
         </mesh>
-        {/* Name */}
-        {/* (Text would go here with troika-three-text) */}
       </group>
       
       {/* Aggro indicator */}
