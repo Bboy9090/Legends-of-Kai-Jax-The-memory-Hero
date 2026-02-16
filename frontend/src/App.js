@@ -124,6 +124,14 @@ const HeroSection = ({ onNavigate }) => {
           </p>
           
           <div className="flex flex-wrap gap-4">
+            {/* PLAY GAME - Primary CTA */}
+            <Link 
+              to="/game"
+              className="btn-cyber flex items-center gap-2 bg-primary/20 border-primary hover:bg-primary/40 text-lg px-8 py-4"
+              data-testid="cta-play-game"
+            >
+              <Gamepad2 className="w-5 h-5 text-primary" /> PLAY GAME
+            </Link>
             <button 
               onClick={() => onNavigate('characters')} 
               className="btn-cyber flex items-center gap-2"
