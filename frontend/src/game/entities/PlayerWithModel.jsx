@@ -254,14 +254,15 @@ export const PlayerWithModel = () => {
     const handleKeyPress = (e) => {
       if (gameState !== 'playing') return;
       
-      // Tail abilities
-      if (e.key === '1') useTailAbility(4);
-      if (e.key === '2') useTailAbility(5);
-      if (e.key === '3') useTailAbility(6);
+      // Tail abilities - use the store directly to avoid hook rules
+      const store = useGameStore.getState();
+      if (e.key === '1') store.useTailAbility(4);
+      if (e.key === '2') store.useTailAbility(5);
+      if (e.key === '3') store.useTailAbility(6);
       
       // Pause
       if (e.key === 'Escape') {
-        useGameStore.getState().setGameState('paused');
+        store.setGameState('paused');
       }
     };
 
@@ -272,7 +273,7 @@ export const PlayerWithModel = () => {
       window.removeEventListener('mousedown', handleClick);
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [gameState, setPlayerAttacking, useTailAbility]);
+  }, [gameState, setPlayerAttacking]);
 
   useFrame((state, delta) => {
     if (!rigidBodyRef.current || gameState !== 'playing') return;
