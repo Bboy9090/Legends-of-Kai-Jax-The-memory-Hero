@@ -271,13 +271,15 @@ export class CombatService {
         let knockbackDirZ = 0;
         
         if (dist > 0) {
+          // Normal case: push away from attacker
           knockbackDirX = dx / dist;
           knockbackDirZ = dz / dist;
         } else {
-          // Default knockback direction when positions overlap (push away from attacker's facing)
+          // Overlap case: use attacker's velocity direction as proxy for facing
+          // Falls back to +X direction only when attacker is stationary
           knockbackDirX = attacker.vel_x !== 0 ? Math.sign(attacker.vel_x) : 1;
           knockbackDirZ = attacker.vel_z !== 0 ? Math.sign(attacker.vel_z) : 0;
-          // Normalize if needed
+          // Normalize the fallback direction
           const defaultDist = Math.sqrt(knockbackDirX * knockbackDirX + knockbackDirZ * knockbackDirZ);
           if (defaultDist > 0) {
             knockbackDirX /= defaultDist;
