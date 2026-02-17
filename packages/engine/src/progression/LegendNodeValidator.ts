@@ -24,8 +24,8 @@ export class LegendNodeValidator {
     // Validate node_id format
     if (!nodeData.node_id || typeof nodeData.node_id !== 'string') {
       errors.push('node_id is required and must be a string');
-    } else if (!nodeData.node_id.match(/^legend_node_[a-z_]+$/)) {
-      errors.push('node_id must match pattern: legend_node_[a-z_]+');
+    } else if (!nodeData.node_id.match(/^legend_node_[a-z0-9_]+$/)) {
+      errors.push('node_id must match pattern: legend_node_[a-z0-9_]+');
     }
 
     // Validate tail_unlocked is 4-9

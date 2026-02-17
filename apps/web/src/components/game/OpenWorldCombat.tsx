@@ -7,10 +7,9 @@
  */
 
 import { useEffect, useState } from "react";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { useBattle } from "../../lib/stores/useBattle";
-import { useRunner } from "../../lib/stores/useRunner";
 import { getFighterById } from "../../lib/characters";
 import BattleArena from "./BattleArena";
 import BattlePlayer from "./BattlePlayer";
@@ -60,7 +59,7 @@ export default function OpenWorldCombat({ missionId }: { missionId?: string }) {
   } = useBattle();
   
   // Track multiple enemies for open-world combat
-  const [enemies, setEnemies] = useState<Enemy[]>([
+  const [enemies, _setEnemies] = useState<Enemy[]>([
     {
       id: 'enemy_1',
       fighterId: 'umbra-flux',
@@ -100,9 +99,12 @@ export default function OpenWorldCombat({ missionId }: { missionId?: string }) {
   // Start open-world combat on mount
   useEffect(() => {
     console.log("[OpenWorldCombat] Initializing open-world combat mode for mission:", missionId);
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       startBattle();
     }, 1000);
+    
+    // Cleanup timer on unmount
+    return () => clearTimeout(timer);
   }, [startBattle, missionId]);
   
   // Open-world camera - wider view to see multiple enemies and environment

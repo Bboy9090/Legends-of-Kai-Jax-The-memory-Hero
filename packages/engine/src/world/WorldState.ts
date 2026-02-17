@@ -134,17 +134,46 @@ export class WorldState {
       throw new Error('Invalid save data: unlockedTails must be an array');
     }
 
+    // Validate unlocked tails content and range
+    for (const tail of data.unlockedTails) {
+      if (
+        typeof tail !== 'number' ||
+        !Number.isInteger(tail) ||
+        tail < 1 ||
+        tail > 9
+      ) {
+        throw new Error('Invalid save data: unlockedTails entries must be integers between 1 and 9');
+      }
+    }
+
+    // Validate player level explicitly to avoid silent coercion
+    if (
+      typeof data.playerLevel !== 'number' ||
+      !Number.isFinite(data.playerLevel) ||
+      data.playerLevel < 1
+    ) {
+      throw new Error('Invalid save data: playerLevel must be a number greater than or equal to 1');
+    }
+
+    // Validate discoveredZones if present
+    if (data.discoveredZones !== undefined && !Array.isArray(data.discoveredZones)) {
+      throw new Error('Invalid save data: discoveredZones must be an array if provided');
+    }
+
     // Load data
     this.completedLegendNodes = new Set(data.completedLegendNodes);
     this.currentTailCount = data.currentTailCount;
     this.unlockedTails = new Set(data.unlockedTails);
-    this.playerLevel = data.playerLevel || 1;
+    this.playerLevel = data.playerLevel;
     this.discoveredZones = new Set(data.discoveredZones || []);
 
-    // Validate consistency - auto-correct if mismatch
-    if (this.unlockedTails.size !== this.currentTailCount) {
-      // Auto-correct: use actual unlocked tail count as source of truth
-      this.currentTailCount = this.unlockedTails.size;
+    // Validate consistency after loading
+    const unlockedCount = this.unlockedTails.size;
+    if (unlockedCount < 3 || unlockedCount > 9) {
+      throw new Error('Invalid save data: unlockedTails size must be between 3 and 9');
+    }
+    if (unlockedCount !== this.currentTailCount) {
+      throw new Error('Invalid save data: unlockedTails size must match currentTailCount');
     }
   }
 
