@@ -4,7 +4,6 @@ import { useBattle } from "../../lib/stores/useBattle";
 import { useGame } from "../../lib/stores/useGame";
 import { useMissions } from "../../lib/stores/useMissions";
 import { useRunner } from "../../lib/stores/useRunner";
-import { useBeastPreset } from "../../lib/stores/useBeastPreset";
 import { FIGHTERS, getFighterById } from "../../lib/characters";
 import { getStoryMissionById } from "../../lib/story_missions";
 import UEEMissionSelect from "./UEEMissionSelect";
@@ -25,7 +24,6 @@ export default function MissionSelectHub() {
   const { completedKeys, startMission } = useMissions();
 
   const [tab, setTab] = useState<Tab>("story");
-  const { preset } = useBeastPreset();
   const missionCharacter = useMemo(
     () => getFighterById(selectedCharacter ?? FIGHTERS[0]?.id ?? ""),
     [selectedCharacter]
@@ -79,12 +77,12 @@ export default function MissionSelectHub() {
             {missionCharacter && (
               <div className="hidden sm:flex items-center gap-2 rounded-xl border border-slate-600 bg-black/40 overflow-hidden">
                 <div className="w-[120px] h-[80px] flex-shrink-0">
-                  <CharacterPreview3D fighter={missionCharacter} preset={preset} />
+                  <CharacterPreview3D fighter={missionCharacter} />
                 </div>
                 <div className="px-3 py-1 text-sm text-slate-300">
                   <span className="font-bold text-white">{missionCharacter.displayName}</span>
                   <br />
-                  <span>Layered design for missions</span>
+                  <span>Ready for battle</span>
                 </div>
               </div>
             )}

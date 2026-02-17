@@ -47,20 +47,8 @@ interface GLBCharacterModelProps {
   hitAnim?: number;
 }
 
-function GLBModelFallback({ accentColor = "#00f2ff" }: { accentColor?: string }) {
-  return (
-    <group>
-      <mesh position={[0, 0.5, 0]} castShadow>
-        <capsuleGeometry args={[0.15, 0.4, 8, 16]} />
-        <meshStandardMaterial color="#333" roughness={0.7} />
-      </mesh>
-      <mesh position={[0, 0.95, 0]} castShadow>
-        <sphereGeometry args={[0.12, 16, 12]} />
-        <meshStandardMaterial color="#444" roughness={0.7} />
-      </mesh>
-      <pointLight position={[0, 0.8, 0.3]} color={accentColor} intensity={1} distance={2} />
-    </group>
-  );
+function GLBModelFallback() {
+  return null;
 }
 
 function GLBModelInner({
@@ -216,7 +204,7 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
   if (!config) return null;
 
   return (
-    <Suspense fallback={<GLBModelFallback accentColor={accentColor} />}>
+    <Suspense fallback={<GLBModelFallback />}>
       <GLBModelInner
         config={config}
         animTime={animTime}

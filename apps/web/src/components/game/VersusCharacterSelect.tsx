@@ -1,4 +1,4 @@
-import { useState, useRef, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Environment, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
@@ -6,7 +6,7 @@ import { useGame } from "../../lib/stores/useGame";
 import { useRunner } from "../../lib/stores/useRunner";
 import { useBattle } from "../../lib/stores/useBattle";
 import { Fighter, FIGHTERS, getFighterById } from "../../lib/characters";
-import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
+import GLBCharacterModel from "./models/GLBCharacterModel";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
 import CinematicPostFX from "./graphics/CinematicPostFX";
 import { getQualitySettings } from "../../lib/threejs/PerformanceOptimizer";
@@ -31,13 +31,6 @@ function FighterPanel({
   selected: boolean;
   onClick: () => void;
 }) {
-  const bodyRef = useRef<THREE.Group>(null);
-  const headRef = useRef<THREE.Group>(null);
-  const leftArmRef = useRef<THREE.Group>(null);
-  const rightArmRef = useRef<THREE.Group>(null);
-  const leftLegRef = useRef<THREE.Group>(null);
-  const rightLegRef = useRef<THREE.Group>(null);
-
   const stats = fighter.baseStats;
 
   return (
@@ -94,20 +87,10 @@ function FighterPanel({
           />
           <Suspense fallback={null}>
             <group position={[0, -1, 0]}>
-              <AnatomicalBeastModel
-                fighter={fighter}
-                bodyRef={bodyRef}
-                headRef={headRef}
-                leftArmRef={leftArmRef}
-                rightArmRef={rightArmRef}
-                leftLegRef={leftLegRef}
-                rightLegRef={rightLegRef}
+              <GLBCharacterModel
+                fighterId={fighter.id}
+                accentColor={fighter.accentColor}
                 emotionIntensity={0.5}
-                hitAnim={0}
-                animTime={0}
-                isAttacking={false}
-                isInvulnerable={false}
-                lodLevel={0}
               />
             </group>
             <mesh

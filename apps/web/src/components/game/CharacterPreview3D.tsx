@@ -1,10 +1,8 @@
 import { Canvas } from "@react-three/fiber";
 import { Environment, OrbitControls } from "@react-three/drei";
-import { Suspense, useRef } from "react";
+import { Suspense } from "react";
 import { Fighter } from "../../lib/characters";
-import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
-import { Group } from "three";
-import type { BeastPresetKind } from "../../lib/stores/useBeastPreset";
+import GLBCharacterModel from "./models/GLBCharacterModel";
 import * as THREE from "three";
 import CinematicPostFX from "./graphics/CinematicPostFX";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
@@ -12,42 +10,14 @@ import { getQualitySettings } from "../../lib/threejs/PerformanceOptimizer";
 
 interface CharacterPreview3DProps {
   fighter: Fighter;
-  preset?: BeastPresetKind;
+  preset?: string;
 }
 
-export default function CharacterPreview3D({ fighter, preset = "auto" }: CharacterPreview3DProps) {
-  const bodyRef = useRef<Group>(null);
-  const headRef = useRef<Group>(null);
-  const leftArmRef = useRef<Group>(null);
-  const rightArmRef = useRef<Group>(null);
-  const leftLegRef = useRef<Group>(null);
-  const rightLegRef = useRef<Group>(null);
-
-  const renderCharacterModel = () => {
-    const modelProps = {
-      fighter,
-      bodyRef,
-      headRef,
-      leftArmRef,
-      rightArmRef,
-      leftLegRef,
-      rightLegRef,
-      emotionIntensity: 0.5,
-      hitAnim: 0,
-      animTime: 0,
-      isAttacking: false,
-      isInvulnerable: false,
-      presetOverride: preset === "auto" ? null : preset
-    };
-
-    return <AnatomicalBeastModel {...modelProps} />;
-  };
-
+export default function CharacterPreview3D({ fighter }: CharacterPreview3DProps) {
   return (
     <div className="w-full h-full">
       <Canvas
         camera={{
-          // Backed up so larger fighters fit in frame
           position: [0, 1.65, 6.4],
           fov: 42
         }}
@@ -76,10 +46,13 @@ export default function CharacterPreview3D({ fighter, preset = "auto" }: Charact
         
         <Suspense fallback={null}>
           <group position={[0, -1, 0]}>
-            {renderCharacterModel()}
+            <GLBCharacterModel
+              fighterId={fighter.id}
+              accentColor={fighter.accentColor}
+              emotionIntensity={0.5}
+            />
           </group>
           
-          {/* Ground shadow plane */}
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.7, 0]} receiveShadow>
             <planeGeometry args={[10, 10]} />
             <shadowMaterial opacity={0.3} />

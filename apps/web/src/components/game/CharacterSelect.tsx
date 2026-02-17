@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { useGame } from "../../lib/stores/useGame";
 import { useRunner } from "../../lib/stores/useRunner";
 import { useBattle } from "../../lib/stores/useBattle";
-import { useBeastPreset } from "../../lib/stores/useBeastPreset";
 import { FIGHTERS, getFighterById } from "../../lib/characters";
 import CharacterPreview3D from "./CharacterPreview3D";
 
@@ -15,7 +14,6 @@ export default function CharacterSelect() {
   const setOpponentFighter = useBattle((s) => s.setOpponentFighter);
 
   const [previewId, setPreviewId] = useState<string | null>(selectedCharacter ?? FIGHTERS[0]?.id ?? null);
-  const { preset } = useBeastPreset();
   const previewFighter = useMemo(
     () => getFighterById(previewId ?? FIGHTERS[0]?.id ?? ""),
     [previewId]
@@ -35,7 +33,7 @@ export default function CharacterSelect() {
       <div className="flex flex-col flex-1 min-w-0">
         <h2 className="text-2xl font-bold text-white mb-4">Select Fighter</h2>
         <p className="text-slate-400 text-sm mb-4">
-          Same layered character design you’ll see in battle and missions.
+          Pick your fighter to battle with across all game modes.
         </p>
         <div className="flex flex-wrap gap-3">
           {FIGHTERS.map((f) => {
@@ -77,7 +75,7 @@ export default function CharacterSelect() {
       </div>
       <div className="w-full lg:w-[380px] h-[320px] rounded-xl overflow-hidden border-2 border-slate-600 bg-black/40 flex-shrink-0">
         {previewFighter && (
-          <CharacterPreview3D fighter={previewFighter} preset={preset} />
+          <CharacterPreview3D fighter={previewFighter} />
         )}
       </div>
     </div>

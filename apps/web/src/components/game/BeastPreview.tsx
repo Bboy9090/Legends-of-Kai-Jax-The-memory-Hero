@@ -1,29 +1,20 @@
-import { useState, useRef, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Environment, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { FIGHTERS, getFighterById } from "../../lib/characters";
-import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
-import GLBCharacterModel, { CHARACTER_MODELS } from "./models/GLBCharacterModel";
+import GLBCharacterModel from "./models/GLBCharacterModel";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
 import CinematicPostFX from "./graphics/CinematicPostFX";
 import { getQualitySettings } from "../../lib/threejs/PerformanceOptimizer";
 import { useRunner } from "../../lib/stores/useRunner";
 
-function BeastModelPanel({ fighterId, useGLB = false }: { fighterId: string; useGLB?: boolean }) {
+function BeastModelPanel({ fighterId }: { fighterId: string }) {
   const fighter = getFighterById(fighterId);
-  const bodyRef = useRef<THREE.Group>(null);
-  const headRef = useRef<THREE.Group>(null);
-  const leftArmRef = useRef<THREE.Group>(null);
-  const rightArmRef = useRef<THREE.Group>(null);
-  const leftLegRef = useRef<THREE.Group>(null);
-  const rightLegRef = useRef<THREE.Group>(null);
-
   if (!fighter) return null;
 
   const grade = fighterId === "kai-jax" ? "cosmic" : fighterId === "jaxon" ? "ice" : "ember";
   const punch = fighterId === "kai-jax" ? 0.35 : 0.18;
-  const hasGLB = !!CHARACTER_MODELS[fighterId];
 
   return (
     <Canvas
@@ -46,29 +37,11 @@ function BeastModelPanel({ fighterId, useGLB = false }: { fighterId: string; use
       <CinematicPostFX grade={grade} accent={fighter.accentColor} punch={punch} center={[0.5, 0.44]} />
       <Suspense fallback={null}>
         <group position={[0, -1, 0]}>
-          {useGLB && hasGLB ? (
-            <GLBCharacterModel
-              fighterId={fighterId}
-              accentColor={fighter.accentColor}
-              emotionIntensity={0.5}
-            />
-          ) : (
-            <AnatomicalBeastModel
-              fighter={fighter}
-              bodyRef={bodyRef}
-              headRef={headRef}
-              leftArmRef={leftArmRef}
-              rightArmRef={rightArmRef}
-              leftLegRef={leftLegRef}
-              rightLegRef={rightLegRef}
-              emotionIntensity={0.5}
-              hitAnim={0}
-              animTime={0}
-              isAttacking={false}
-              isInvulnerable={false}
-              lodLevel={0}
-            />
-          )}
+          <GLBCharacterModel
+            fighterId={fighterId}
+            accentColor={fighter.accentColor}
+            emotionIntensity={0.5}
+          />
         </group>
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.7, 0]} receiveShadow>
           <planeGeometry args={[10, 10]} />
@@ -92,7 +65,6 @@ function BeastModelPanel({ fighterId, useGLB = false }: { fighterId: string; use
 export default function BeastPreview() {
   const setGameState = useRunner((s) => s.setGameState);
   const [activeFighter, setActiveFighter] = useState("kai-jax");
-  const [useGLB, setUseGLB] = useState(false);
   const fighter = getFighterById(activeFighter);
 
   return (
@@ -105,18 +77,9 @@ export default function BeastPreview() {
           Back
         </button>
         <h1 className="text-2xl font-black text-white tracking-tight uppercase">
-          Beast Preview — {useGLB ? "3D Model" : "Layered Rendering"}
+          Beast Preview — 3D Models
         </h1>
-        <button
-          onClick={() => setUseGLB(!useGLB)}
-          className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
-            useGLB
-              ? "bg-cyan-500/25 border-2 border-cyan-400 text-cyan-200"
-              : "border-2 border-slate-600 text-slate-400 hover:border-cyan-500/50"
-          }`}
-        >
-          {useGLB ? "3D Models" : "Procedural"}
-        </button>
+        <div className="w-20" />
       </div>
 
       <div className="flex gap-2 justify-center mb-2">
@@ -146,7 +109,7 @@ export default function BeastPreview() {
       </div>
 
       <div className="flex-1 min-h-0 relative">
-        <BeastModelPanel key={`${activeFighter}-${useGLB}`} fighterId={activeFighter} useGLB={useGLB} />
+        <BeastModelPanel key={activeFighter} fighterId={activeFighter} />
       </div>
 
       {fighter && (
@@ -167,10 +130,10 @@ export default function BeastPreview() {
             </div>
           </div>
           <p className="text-slate-500 text-xs mt-1">
-            {useGLB ? "Mode: 3D GLB Model (Meshy AI)" : "Layers: Base Mesh · Fur Shell · Emissive Veins · Memory Tails · Aura Wings · Particles"}
+            3D GLB Character Model
           </p>
           <p className="text-slate-600 text-xs">
-            Scroll to zoom · Drag to rotate · {useGLB ? "Toggle to switch rendering mode" : "All layers active (LOD 0)"}
+            Scroll to zoom · Drag to rotate
           </p>
         </div>
       )}
