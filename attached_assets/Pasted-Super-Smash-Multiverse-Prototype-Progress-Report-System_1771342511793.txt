@@ -1,0 +1,164 @@
+Super Smash Multiverse — Prototype Progress Report
+
+⚙️ Systems Expansion: Ledge & Recovery Engine (Competitive Backbone)
+
+Platform fighters live or die on ledge rules. This pass locks in a clear, traditional, tournament-grade system — readable, punishable, fair.
+
+Implemented mechanics
+	•	Ledge Snap Cone
+	•	Character auto-snaps only if facing ledge within angle window
+	•	Prevents “teleport grabs” from behind
+	•	Fresh Ledge Invulnerability
+	•	Short invuln on first grab
+	•	Reduced on repeated grabs
+	•	Regrab Lockout
+	•	Touch stage or get hit before grabbing again
+	•	Ledge Options
+	•	Neutral getup
+	•	Roll
+	•	Jump
+	•	Attack (frame‑vulnerable startup)
+
+// ledge_system.ts
+export function trySnapToLedge(player, ledge){
+  if(player.regrabLocked) return false;
+
+  const angle = angleBetween(player.facing, ledge.direction);
+  if(angle > SNAP_CONE) return false;
+
+  player.state = "LEDGE_HANG";
+  player.invuln = player.freshGrab ? 40 : 18;
+  player.freshGrab = false;
+  return true;
+}
+
+Result: Edge-guarding now feels intentional instead of chaotic.
+
+⸻
+
+🧭 Movement Polish: Grounded Neutral Matters Again
+
+Added subtle friction tuning and acceleration curves so fighters don’t feel like hovercraft.
+
+Key adjustments
+	•	Higher traction on stop → crisp micro-spacing
+	•	Short-hop consistency normalized across roster
+	•	Dash → run transition timing unified
+	•	Pivot window widened slightly for precision play
+
+This restores the “dance” of neutral — the quiet chess match before the explosion.
+
+⸻
+
+🧬 New Fighter Prototype: Riftblade (Momentum Duelist)
+
+Identity: Speed converts into power.
+
+Passive — Momentum Gauge
+	•	Builds while moving forward
+	•	Decays when idle or retreating
+	•	Enhances dash attacks, aerial drift, and recovery distance
+
+// momentum_passive.ts
+update(){
+  if(player.velocity.x > 0){
+    gauge = clamp(gauge + 0.4, 0, 100);
+  } else {
+    gauge = clamp(gauge - 0.7, 0, 100);
+  }
+}
+
+Signature Playstyle
+	•	Encourages aggression without mindless rushing
+	•	Rewards clean movement fundamentals
+	•	Punishes hesitation
+
+Old-school footwork meets multiverse energy.
+
+⸻
+
+🏟️ New Stage Blockout: Confluence Station
+
+A transit hub where realities overlap.
+
+Layout
+	•	Main platform
+	•	Offset high platform (anti-camping)
+	•	Moving micro-platform that phases in/out
+
+Rule Shift Interaction
+
+When a shift triggers, background portals sync visually — the stage itself “agrees” with the mechanic.
+
+Competitive toggle keeps geometry stable if needed.
+
+⸻
+
+🎮 Training Mode Upgrade: Frame Insight Tools
+
+Serious players need truth, not guesswork.
+
+Added overlays
+	•	Hitbox/Hurtbox viewer
+	•	Frame advantage display on hit/shield
+	•	DI trajectory preview
+	•	Knockback vector lines
+
+// training_overlay.ts
+if(debug.hitboxes){
+  renderHitboxes(activeMoves);
+}
+
+if(debug.frameData){
+  drawFrameAdvantage(lastInteraction);
+}
+
+This turns the prototype into a laboratory, not just a sandbox.
+
+⸻
+
+🎵 Audio Direction Pass
+	•	Heavy, tactile hit sounds (wood + metal layering)
+	•	Unique KO sting per Rule Shift type
+	•	Subtle crowd swell when high-damage situations occur
+
+The match now breathes with the players.
+
+⸻
+
+📖 Narrative Thread Advancement
+
+Discovery: Rule Shifts are not random.
+
+They are responses.
+
+Something inside the multiverse is testing combatants — measuring adaptability, not strength.
+
+Post‑match anomaly logs now unlock after certain shift combinations occur in a single match.
+
+Story emerges from play, not interruption.
+
+⸻
+
+✅ Prototype Status — Now Demonstrates
+	•	Competitive-grade ledge system
+	•	Movement polish suitable for high-level play
+	•	First momentum-based fighter design
+	•	Stage that visually reinforces mechanics
+	•	Training tools that support mastery
+	•	Narrative seeded through gameplay data
+
+The foundation is no longer fragile.
+
+It’s beginning to feel like a real fighting game — disciplined at its core, strange at its edges.
+
+⸻
+
+Next Development Targets
+	•	Grab/throw system tuning (true combos vs DI escapes)
+	•	Shield health + shield break states
+	•	First heavyweight fighter for matchup diversity
+	•	Online-ready deterministic replay recording
+	•	“Rift Event” match modifier (rare, dramatic, broadcast-worthy)
+
+Progress is steady. The Multiverse is taking shape.

@@ -12,7 +12,6 @@ externalPort = 3000
 channel = "stable-25_05"
 
 [deployment]
-build = ["sh", "-c", "npm install --legacy-peer-deps && cd apps/web && npx vite build"]
 run = ["sh", "-c", "node serve.js "]
 deploymentTarget = "cloudrun"
 publicDir = "dist"
