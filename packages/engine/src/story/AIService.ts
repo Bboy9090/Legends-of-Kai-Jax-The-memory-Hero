@@ -238,9 +238,7 @@ export class AIService {
 
     enemy.state = AIState.Stunned;
     enemy.state_timer = 0; // Reset timer to 0, will count up to duration
-    // Store duration for recovery check (we'll need to add this field or use a different approach)
-    // For now, use a property on the enemy instance
-    (enemy as any).stun_duration = duration;
+    enemy.stun_duration = duration;
   }
 
   /**
@@ -391,11 +389,11 @@ export class AIService {
 
       case AIState.Stunned:
         // Use stored stun duration instead of hardcoded 1.0
-        const stunDuration = (enemy as any).stun_duration || 1.0;
+        const stunDuration = enemy.stun_duration || 1.0;
         if (enemy.state_timer >= stunDuration) {
           enemy.state = AIState.Engaging;
           enemy.state_timer = 0;
-          delete (enemy as any).stun_duration;
+          enemy.stun_duration = undefined;
         }
         break;
 

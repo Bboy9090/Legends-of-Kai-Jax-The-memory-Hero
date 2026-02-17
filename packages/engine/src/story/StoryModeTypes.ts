@@ -325,6 +325,7 @@ export interface EnemyInstance {
   vel_y: number;
   vel_z: number;
   state_timer: number;
+  stun_duration?: number; // Duration of current stun effect (if stunned)
   target_character_id: string;
   last_attack_time: number;
   alert_timer: number;

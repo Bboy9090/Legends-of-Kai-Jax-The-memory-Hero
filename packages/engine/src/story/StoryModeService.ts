@@ -133,7 +133,10 @@ export class StoryModeService {
       if (startingDistrict) {
         this.state.player.current_district = startingDistrict.district_id;
         if (startingDistrict.zones && startingDistrict.zones.length > 0) {
-          this.state.player.current_zone = startingDistrict.zones[0].zone_id;
+          const firstZone = startingDistrict.zones[0];
+          if (firstZone) {
+            this.state.player.current_zone = firstZone.zone_id;
+          }
         }
       }
     }
@@ -261,7 +264,10 @@ export class StoryModeService {
 
     // Fallback to base dialogue
     if (npc.base_dialogue.length > 0) {
-      return npc.base_dialogue[0].dialogue_text;
+      const firstDialogue = npc.base_dialogue[0];
+      if (firstDialogue) {
+        return firstDialogue.dialogue_text;
+      }
     }
 
     return '';
@@ -442,20 +448,46 @@ export class StoryModeService {
    * Load quests from JSON
    */
   private async loadQuests(): Promise<void> {
+    // Raw quest objective from JSON file
+    interface RawQuestObjective {
+      id: string;
+      type: string;
+      description: string;
+      count?: number;
+      target?: string;
+    }
+    
+    // Raw quest data from JSON file
+    interface RawQuestData {
+      quest_id: string;
+      name: string;
+      description: string;
+      objectives: RawQuestObjective[];
+      requirements?: {
+        prerequisite_quests?: string[];
+      };
+      rewards?: {
+        unlock_tail_tier?: number;
+        unlock_district?: string;
+        experience?: number;
+      };
+      giver_npc_id: string;
+    }
+    
     try {
       // Load all quest files
       const questFiles = ['first_awakening', 'memory_trial'];
       
       for (const questFile of questFiles) {
         const response = await fetch(`${this.dataPath}/quests/${questFile}.json`);
-        const rawQuest = await response.json();
+        const rawQuest = await response.json() as RawQuestData;
         
         // Normalize quest data to match Quest interface
         const quest: Quest = {
           quest_id: rawQuest.quest_id,
           quest_name: rawQuest.name,
           description: rawQuest.description,
-          objectives: rawQuest.objectives.map((obj: any) => ({
+          objectives: rawQuest.objectives.map((obj: RawQuestObjective) => ({
             objective_id: obj.id,
             type: obj.type as QuestObjectiveType,
             description: obj.description,
