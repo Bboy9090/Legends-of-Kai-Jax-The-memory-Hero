@@ -265,9 +265,25 @@ export class CombatService {
           damage *= this.calculateMomentumBonus(attacker);
         }
 
-        // Calculate knockback
-        const knockbackDirX = dx / dist;
-        const knockbackDirZ = dz / dist;
+        // Calculate knockback direction
+        // Guard against division by zero when combatants overlap
+        let knockbackDirX = 0;
+        let knockbackDirZ = 0;
+        
+        if (dist > 0) {
+          knockbackDirX = dx / dist;
+          knockbackDirZ = dz / dist;
+        } else {
+          // Default knockback direction when positions overlap (push away from attacker's facing)
+          knockbackDirX = attacker.vel_x !== 0 ? Math.sign(attacker.vel_x) : 1;
+          knockbackDirZ = attacker.vel_z !== 0 ? Math.sign(attacker.vel_z) : 0;
+          // Normalize if needed
+          const defaultDist = Math.sqrt(knockbackDirX * knockbackDirX + knockbackDirZ * knockbackDirZ);
+          if (defaultDist > 0) {
+            knockbackDirX /= defaultDist;
+            knockbackDirZ /= defaultDist;
+          }
+        }
 
         hits.push({
           attacker_id: attackerId,

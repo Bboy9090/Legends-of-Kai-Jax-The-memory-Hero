@@ -132,7 +132,7 @@ void AKaiJaxCharacter::ActivateMemoryLayer(int32 LayerNumber)
     }
 }
 
-void AKaiJaxCharacter::TakeDamage(float DamageAmount)
+void AKaiJaxCharacter::ApplyDamage(float DamageAmount)
 {
     Health = FMath::Max(0.0f, Health - DamageAmount);
 
