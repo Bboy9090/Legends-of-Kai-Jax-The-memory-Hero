@@ -266,8 +266,8 @@ float UKaiJaxControlRig::CalculatePelvisOffsetForAngle(float Angle) const
     
     float MaxOffset = 20.0f; // cm
     return FMath::GetMappedRangeValueClamped(
-        FVector2D(0.0f, 45.0f),     // Input range (digitigrade angle)
-        FVector2D(0.0f, MaxOffset), // Output range (pelvis offset)
+        FVector2D(0.0f, 45.0f),      // Input range (digitigrade angle)
+        FVector2D(0.0f, -MaxOffset), // Output range (pelvis offset, negative to lower)
         Angle
     );
 }

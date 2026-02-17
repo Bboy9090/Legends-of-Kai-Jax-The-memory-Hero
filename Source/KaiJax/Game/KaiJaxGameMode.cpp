@@ -11,7 +11,8 @@ AKaiJaxGameMode::AKaiJaxGameMode()
 #if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
     ActivePlatformProfile = "PC";
 #elif PLATFORM_IOS
-    ActivePlatformProfile = "Tablet";  // iPads get tablet profile
+    // TODO: Detect if iOS tablet (iPad) vs phone (iPhone)
+    ActivePlatformProfile = "Mobile";
 #elif PLATFORM_ANDROID
     // TODO: Detect if Android tablet vs phone
     ActivePlatformProfile = "Mobile";

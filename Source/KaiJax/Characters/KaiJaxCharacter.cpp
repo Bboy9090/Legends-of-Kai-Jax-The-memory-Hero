@@ -102,6 +102,8 @@ void AKaiJaxCharacter::UnlockTail(int32 TailNumber)
         {
             TailStates[TailNumber] = ETailState::Active;
             ActiveTailCount++;
+            // Activate corresponding memory layer (1-indexed: tail 0 = layer 1)
+            ActivateMemoryLayer(TailNumber + 1);
             UpdateTailVisuals();
         }
     }
