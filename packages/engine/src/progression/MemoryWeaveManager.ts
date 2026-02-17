@@ -189,11 +189,12 @@ export class MemoryWeaveManager {
 
   /**
    * Get active memory state for serialization (save file)
+   * Returns JSON-serializable data (arrays and plain objects instead of Set/Map)
    */
-  getActiveMemoryState(): ActiveMemoryState {
+  getActiveMemoryState(): { activeTailNumbers: number[]; memoryLayers: MemoryLayer[] } {
     return {
-      activeTailNumbers: new Set(this.activeMemories),
-      memoryLayers: new Map(this.memoryLayers),
+      activeTailNumbers: Array.from(this.activeMemories),
+      memoryLayers: Array.from(this.memoryLayers.values()),
     };
   }
 
@@ -202,6 +203,9 @@ export class MemoryWeaveManager {
    * This restores player progression
    */
   loadActiveMemories(activeTailNumbers: number[]): void {
+    // Clear existing active memories to make save data the source of truth
+    this.activeMemories.clear();
+    
     // Validate and restore active memories
     for (const tailNumber of activeTailNumbers) {
       if (tailNumber < 1 || tailNumber > 9) {

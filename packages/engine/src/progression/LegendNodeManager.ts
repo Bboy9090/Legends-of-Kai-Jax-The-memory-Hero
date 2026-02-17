@@ -98,7 +98,12 @@ export class LegendNodeManager {
       try {
         this.memoryWeaveManager.activateMemoryLayer(node.tail_unlocked);
       } catch (error) {
-        console.warn(`Failed to activate memory layer for tail ${node.tail_unlocked}:`, error);
+        // CRITICAL: Must not proceed if memory activation fails
+        // This would break the memory-tail invariant permanently
+        throw new Error(
+          `Failed to activate memory layer for tail ${node.tail_unlocked}: ${error instanceof Error ? error.message : String(error)}. ` +
+          `Cannot complete node "${nodeId}" - memory-tail invariant must be maintained.`
+        );
       }
     }
 
@@ -114,9 +119,10 @@ export class LegendNodeManager {
       const tailCount = this.unlockedTails.size;
       
       if (memoryCount !== tailCount) {
-        console.error(
+        // This should never happen now that we fail on memory activation errors
+        throw new Error(
           `CRITICAL: Memory count (${memoryCount}) does not match tail count (${tailCount})! ` +
-          `Memory must always equal tails.`
+          `Memory must always equal tails. This indicates a severe invariant violation.`
         );
       }
     }
