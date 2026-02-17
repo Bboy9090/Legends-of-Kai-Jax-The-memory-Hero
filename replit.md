@@ -27,22 +27,24 @@ BEAST-KIN SOVEREIGNTY: GENESIS™ is an epic platform fighting RPG featuring 100
 - ✅ Created characterSpecs.ts with authenticated source data
 - ✅ Copyright-safe character name/color modifications
 
-**PHASE 3: Real 3D Character Models** - COMPLETED
-- ✅ Generated 59 high-quality GLB 3D character models in client/public/models/
-- ✅ Created GLBCharacterModel.tsx component with:
-  - Error boundary for failed model loads
-  - Suspense fallback for loading states
-  - Animation integration (hit, attack, idle, emotion)
-  - Visual effects (invulnerability shield, hit flash, attack aura)
-- ✅ Integrated GLB loader into BattlePlayer.tsx
-- ✅ All characters now use real 3D models instead of placeholder boxes
-- ✅ Models generated include:
-  - Nintendo: Mario, Luigi, Peach, Zelda, Link/Ren, Kirby/Puffy, Yoshi, DK/Kong, Bowser, Fox, Falco, Rosalina, Pit, Marth, Ness, Meta Knight, Dedede, Wario, Waluigi, Ice Climbers, Little Mac, Shulk, Pyra, Banjo, Min Min
-  - Sega: Sonic/Velocity, Shadow/Abyss, Tails, Silver
-  - Pokemon: Pikachu/Sparky, Mewtwo, Greninja, Lucario, Ash
-  - Capcom: Mega Man/Blaze, Ryu, Ken, Chun-Li
-  - Third Party: Snake, Bayonetta, Cloud, Sephiroth, Sora, Simon, Joker, Steve, Kazuya, Terry, Hero, Ridley, Inkling, Pac-Man
-  - Original: Solaro, Lunara, Impa, Palutena
+**PHASE 3: Real 3D Character Models (Meshy AI)** - UPDATED
+- ✅ 12 high-quality Meshy AI GLB 3D creature models in apps/web/public/models/
+- ✅ Old 63 auto-generated robot-looking models REMOVED (user rejected them)
+- ✅ Current creature models (user-created via Meshy AI):
+  - kai_jax_beast.glb - KAI-JAX (The Memory King)
+  - kaison_beast.glb - KAISON (Twin of Law)
+  - jaxon_beast.glb - JAXON (Twin of Sacrifice)
+  - boryx_zenith_beast.glb - BORYX ZENITH (Guardian King)
+  - lunara_solis_beast.glb - LUNARA SOLIS (Oracle Sentinel)
+  - phoenix_warrior.glb - PHOENIX WARRIOR (Flame Reborn)
+  - frost_wolf.glb - FROST WOLF (Ice Stalker)
+  - thunder_lion.glb - THUNDER LION (Storm Sovereign)
+  - jade_serpent.glb - JADE SERPENT (Venom Sage)
+  - shadow_panther.glb - SHADOW PANTHER (Void Hunter)
+  - earth_turtle.glb - EARTH TURTLE (Ancient Guardian)
+  - voidonus_beast.glb - VOIDONUS (The Final Darkness)
+- ✅ Model path format: /models/{name}.glb (NOT _hero.glb)
+- ✅ CREATURE_MODEL_MAP in AdventureArena.tsx maps short IDs to full model names
 
 **PHASE 4: Fluid Combat System (Spider-Man Style)** - COMPLETED (Current Session)
 - ✅ Created useFluidCombat.ts Zustand store with:
