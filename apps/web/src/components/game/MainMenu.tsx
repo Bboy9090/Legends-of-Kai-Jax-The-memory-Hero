@@ -1,7 +1,7 @@
 import { useRunner } from "../../lib/stores/useRunner";
 import { useAudio } from "../../lib/stores/useAudio";
 import { useState, useEffect, useRef } from "react";
-import { Volume2, VolumeX, Zap, Swords, Users, Trophy, Settings, Sparkles, Crown, Gamepad2, BookOpen } from "lucide-react";
+import { Volume2, VolumeX, Zap, Swords, Users, Trophy, Settings, Sparkles, Crown, Gamepad2, BookOpen, Map } from "lucide-react";
 import { BRAND } from "../../lib/brand";
 
 // ⚡ LEGENDARY PARTICLE SYSTEM
@@ -380,6 +380,15 @@ export default function MainMenu() {
             variant="gold"
           >
             STORY MODE
+          </LegendaryButton>
+
+          {/* Adventure Mode - Open World */}
+          <LegendaryButton 
+            onClick={() => setGameState("adventure-select")}
+            icon={Map}
+            variant="primary"
+          >
+            ADVENTURE MODE
           </LegendaryButton>
 
           {/* Versus Mode */}

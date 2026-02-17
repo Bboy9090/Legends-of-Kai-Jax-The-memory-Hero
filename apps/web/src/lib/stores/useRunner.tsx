@@ -2,23 +2,7 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { EquippedCosmetics } from "../cosmetics";
 
-export type GameState = 
-  | "menu" 
-  | "character-select" 
-  | "playing" 
-  | "paused" 
-  | "game-over" 
-  | "ai-assistant" 
-  | "customization"
-  | "story-mode-select"
-  | "mission-select"
-  | "mission-team-select"
-  | "mission-gameplay"
-  | "versus-select"
-  | "versus-battle"
-  | "game-modes-menu"
-  | "nexus-haven"
-  | "squad-select";
+export type GameState = "menu" | "character-select" | "playing" | "paused" | "game-over" | "ai-assistant" | "customization" | "nexus-haven" | "squad-select" | "story-mode-select" | "game-modes-menu" | "mission-select" | "mission-team-select" | "mission-gameplay" | "versus-select" | "versus-battle" | "adventure-select" | "adventure";
 export type Character = "jaxon" | "kaison";
 export type ReunionMode = "sleepy" | "hyper" | "normal";
 
@@ -180,7 +164,7 @@ interface RunnerState {
 const initialPlayerState: PlayerState = {
   // 2.5D Position
   x: 0,
-  y: 0.8, // Start ON the ground (default body height)
+  y: 0.8, // Start ON the ground (adjusted for Sonic proportions)
   z: 0, // Always 0 for 2.5D
   velocityX: 5, // Initial horizontal speed
   velocityY: 0,
@@ -358,7 +342,7 @@ export const useRunner = create<RunnerState>()(
       let newVelocityY = player.velocityY;
       let newIsGrounded = false;
       
-      // Apply gravity if not grounded (default body height)
+      // Apply gravity if not grounded (adjusted for Sonic body height)
       if (newY > player.groundLevel + 0.8) {
         newVelocityY -= player.gravity * delta;
       }
@@ -387,7 +371,7 @@ export const useRunner = create<RunnerState>()(
       
       // Sliding physics
       if (player.isSliding) {
-        newY = player.groundLevel + 0.4; // Crouch position
+        newY = player.groundLevel + 0.4; // Crouch position (lower for Sonic body)
       }
       
       // Update cooldowns
