@@ -1,6 +1,6 @@
-import { useRef, useEffect, useMemo } from "react";
+import { useRef, useMemo, Suspense } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useGLTF } from "@react-three/drei";
+import { useGLTF, Clone } from "@react-three/drei";
 import * as THREE from "three";
 
 export interface GLBModelConfig {
@@ -17,13 +17,13 @@ export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
-  "jaxon": {
+  jaxon: {
     path: "/models/neon-wraiths.glb",
     scale: 2.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
-  "kaison": {
+  kaison: {
     path: "/models/stylized-beast.glb",
     scale: 2.5,
     position: [0, 0, 0],
@@ -36,114 +36,154 @@ interface GLBCharacterModelProps {
   animTime?: number;
   isAttacking?: boolean;
   isMoving?: boolean;
+  attackType?: "punch" | "kick" | "special" | "ultimate" | null;
+  velocityX?: number;
+  velocityY?: number;
+  isGrounded?: boolean;
+  isJumping?: boolean;
   emotionIntensity?: number;
   accentColor?: string;
+  isInvulnerable?: boolean;
+  hitAnim?: number;
 }
 
-export default function GLBCharacterModel({
-  fighterId,
-  animTime = 0,
-  isAttacking = false,
-  isMoving = false,
-  emotionIntensity = 0.5,
-  accentColor = "#00f2ff",
-}: GLBCharacterModelProps) {
-  const config = CHARACTER_MODELS[fighterId];
-  const groupRef = useRef<THREE.Group>(null);
-  const mixerRef = useRef<THREE.AnimationMixer | null>(null);
-
-  if (!config) return null;
-
+function GLBModelFallback({ accentColor = "#00f2ff" }: { accentColor?: string }) {
   return (
-    <GLBModelInner
-      config={config}
-      groupRef={groupRef}
-      mixerRef={mixerRef}
-      animTime={animTime}
-      isAttacking={isAttacking}
-      isMoving={isMoving}
-      emotionIntensity={emotionIntensity}
-      accentColor={accentColor}
-    />
+    <group>
+      <mesh position={[0, 0.5, 0]} castShadow>
+        <capsuleGeometry args={[0.15, 0.4, 8, 16]} />
+        <meshStandardMaterial color="#333" roughness={0.7} />
+      </mesh>
+      <mesh position={[0, 0.95, 0]} castShadow>
+        <sphereGeometry args={[0.12, 16, 12]} />
+        <meshStandardMaterial color="#444" roughness={0.7} />
+      </mesh>
+      <pointLight position={[0, 0.8, 0.3]} color={accentColor} intensity={1} distance={2} />
+    </group>
   );
 }
 
 function GLBModelInner({
   config,
-  groupRef,
-  mixerRef,
   animTime,
   isAttacking,
   isMoving,
+  attackType,
+  velocityX = 0,
+  velocityY = 0,
+  isGrounded = true,
+  isJumping = false,
   emotionIntensity,
   accentColor,
+  isInvulnerable = false,
+  hitAnim = 0,
 }: {
   config: GLBModelConfig;
-  groupRef: React.RefObject<THREE.Group>;
-  mixerRef: React.MutableRefObject<THREE.AnimationMixer | null>;
   animTime: number;
   isAttacking: boolean;
   isMoving: boolean;
+  attackType?: "punch" | "kick" | "special" | "ultimate" | null;
+  velocityX?: number;
+  velocityY?: number;
+  isGrounded?: boolean;
+  isJumping?: boolean;
   emotionIntensity: number;
   accentColor: string;
+  isInvulnerable?: boolean;
+  hitAnim?: number;
 }) {
+  const groupRef = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF(config.path);
+  const mixerRef = useRef<THREE.AnimationMixer | null>(null);
+  const landSquash = useRef(0);
+  const wasGrounded = useRef(true);
 
-  const clonedScene = useMemo(() => {
-    const clone = scene.clone(true);
-    clone.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child as THREE.Mesh;
-        if (mesh.material) {
-          mesh.material = (mesh.material as THREE.Material).clone();
-          mesh.castShadow = true;
-          mesh.receiveShadow = true;
-        }
-      }
-    });
-    return clone;
-  }, [scene]);
+  const cloneRef = useRef<THREE.Group>(null);
+  const mixerInitialized = useRef(false);
 
-  useEffect(() => {
-    if (animations && animations.length > 0 && clonedScene) {
-      const mixer = new THREE.AnimationMixer(clonedScene);
+  useFrame((state, delta) => {
+    if (!groupRef.current) return;
+    const t = animTime || state.clock.elapsedTime;
+
+    if (cloneRef.current && animations.length > 0 && !mixerInitialized.current) {
+      mixerInitialized.current = true;
+      const mixer = new THREE.AnimationMixer(cloneRef.current);
       mixerRef.current = mixer;
       const action = mixer.clipAction(animations[0]);
       action.play();
-      return () => {
-        mixer.stopAllAction();
-      };
     }
-  }, [animations, clonedScene, mixerRef]);
 
-  useFrame((_, delta) => {
     if (mixerRef.current) {
       mixerRef.current.update(delta);
     }
 
-    if (groupRef.current) {
-      const breathe = Math.sin(animTime * 1.5) * 0.005;
-      groupRef.current.position.y = config.position[1] + breathe;
-
-      if (isMoving) {
-        const bob = Math.sin(animTime * 8) * 0.015;
-        groupRef.current.position.y += bob;
-      }
-
-      if (isAttacking) {
-        groupRef.current.rotation.y += delta * 2;
-      }
+    if (!wasGrounded.current && isGrounded) {
+      landSquash.current = 1;
     }
+    wasGrounded.current = isGrounded;
+    landSquash.current = THREE.MathUtils.lerp(landSquash.current, 0, delta * 8);
+
+    const squashY = 1 - landSquash.current * 0.2;
+    const squashXZ = 1 + landSquash.current * 0.1;
+
+    const breathe = Math.sin(t * 2.0) * 0.02;
+    const speed = Math.abs(velocityX);
+    const walkRate = 8 + speed * 2;
+    const walkAmp = Math.min(speed / 6, 1);
+    const walk = isMoving || speed > 0.5 ? Math.sin(t * walkRate) * walkAmp : 0;
+
+    groupRef.current.position.y = breathe;
+    groupRef.current.scale.set(
+      config.scale * squashXZ,
+      config.scale * squashY,
+      config.scale * squashXZ
+    );
+
+    if (hitAnim > 0) {
+      groupRef.current.rotation.z = Math.sin(t * 22) * 0.08 * hitAnim;
+    } else {
+      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, 0, delta * 10);
+    }
+
+    if (isInvulnerable) {
+      groupRef.current.visible = Math.sin(t * 30) > 0;
+    } else {
+      groupRef.current.visible = true;
+    }
+
+    if (!isGrounded) {
+      if (isJumping) {
+        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, -0.15, delta * 6);
+      } else {
+        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0.1, delta * 6);
+      }
+    } else if (isAttacking) {
+      const leanAmount = attackType === "kick" ? -0.2 : attackType === "special" || attackType === "ultimate" ? 0.25 : 0.15;
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, leanAmount, delta * 10);
+    } else if (isMoving) {
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0.05, delta * 6);
+      groupRef.current.position.y += Math.abs(walk) * 0.03;
+    } else {
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0, delta * 6);
+    }
+
+    groupRef.current.rotation.y = Math.sin(t * 0.6) * 0.08 + (isMoving ? velocityX * 0.02 : 0);
   });
 
   return (
     <group
       ref={groupRef}
       position={config.position}
-      rotation={config.rotation ? [config.rotation[0], config.rotation[1], config.rotation[2]] : undefined}
+      rotation={
+        config.rotation
+          ? [config.rotation[0], config.rotation[1], config.rotation[2]]
+          : undefined
+      }
       scale={config.scale}
     >
-      <primitive object={clonedScene} />
+      <group ref={cloneRef}>
+        <Clone object={scene} castShadow receiveShadow />
+      </group>
       <pointLight
         position={[0, 1.5, 0.5]}
         color={accentColor}
@@ -155,10 +195,49 @@ function GLBModelInner({
   );
 }
 
+export default function GLBCharacterModel(props: GLBCharacterModelProps) {
+  const {
+    fighterId,
+    animTime = 0,
+    isAttacking = false,
+    isMoving = false,
+    attackType = null,
+    velocityX = 0,
+    velocityY = 0,
+    isGrounded = true,
+    isJumping = false,
+    emotionIntensity = 0.5,
+    accentColor = "#00f2ff",
+    isInvulnerable = false,
+    hitAnim = 0,
+  } = props;
+
+  const config = CHARACTER_MODELS[fighterId];
+  if (!config) return null;
+
+  return (
+    <Suspense fallback={<GLBModelFallback accentColor={accentColor} />}>
+      <GLBModelInner
+        config={config}
+        animTime={animTime}
+        isAttacking={isAttacking}
+        isMoving={isMoving}
+        attackType={attackType}
+        velocityX={velocityX}
+        velocityY={velocityY}
+        isGrounded={isGrounded}
+        isJumping={isJumping}
+        emotionIntensity={emotionIntensity}
+        accentColor={accentColor}
+        isInvulnerable={isInvulnerable}
+        hitAnim={hitAnim}
+      />
+    </Suspense>
+  );
+}
+
 Object.values(CHARACTER_MODELS).forEach((config) => {
   try {
     useGLTF.preload(config.path);
-  } catch (e) {
-    // silently skip preload errors
-  }
+  } catch (e) {}
 });

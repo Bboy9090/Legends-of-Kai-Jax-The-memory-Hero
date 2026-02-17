@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
 import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
+import GLBCharacterModel, { CHARACTER_MODELS } from "./models/GLBCharacterModel";
 import type { Group } from "three";
 
 export default function Opponent() {
@@ -13,7 +14,7 @@ export default function Opponent() {
   const rightArmRef = useRef<Group>(null);
   const leftLegRef = useRef<Group>(null);
   const rightLegRef = useRef<Group>(null);
-  const timeRef = useRef<number>(0);
+  const timeRef = useRef(0);
 
   const {
     opponentFighterId,
@@ -21,46 +22,66 @@ export default function Opponent() {
     opponentY,
     opponentFacingRight,
     opponentAttacking,
+    opponentAttackType,
     opponentInvulnerable,
     opponentVelocityX,
     opponentVelocityY,
     opponentGrounded,
-    opponentAttackType,
   } = useBattle();
+
+  const fighter = getFighterById(opponentFighterId);
 
   useFrame((state) => {
     timeRef.current = state.clock.elapsedTime;
   });
 
-  const fighter = getFighterById(opponentFighterId);
-
   if (!fighter) return null;
+
+  const hasGLB = !!CHARACTER_MODELS[opponentFighterId];
 
   return (
     <group
       position={[opponentX, opponentY, 0]}
       scale={[opponentFacingRight ? 1 : -1, 1, 1]}
     >
-      <AnatomicalBeastModel
-        fighter={fighter}
-        bodyRef={bodyRef}
-        headRef={headRef}
-        leftArmRef={leftArmRef}
-        rightArmRef={rightArmRef}
-        leftLegRef={leftLegRef}
-        rightLegRef={rightLegRef}
-        emotionIntensity={0.5}
-        hitAnim={opponentInvulnerable ? 1 : 0}
-        animTime={timeRef.current}
-        isAttacking={opponentAttacking}
-        isInvulnerable={opponentInvulnerable}
-        isMoving={Math.abs(opponentVelocityX) > 0.1}
-        attackType={opponentAttackType}
-        velocityX={opponentVelocityX}
-        velocityY={opponentVelocityY}
-        isGrounded={opponentGrounded}
-        isJumping={opponentVelocityY > 0 && !opponentGrounded}
-      />
+      {hasGLB ? (
+        <GLBCharacterModel
+          fighterId={opponentFighterId}
+          animTime={timeRef.current}
+          isAttacking={opponentAttacking}
+          isMoving={Math.abs(opponentVelocityX) > 0.5}
+          attackType={opponentAttackType}
+          velocityX={opponentVelocityX}
+          velocityY={opponentVelocityY}
+          isGrounded={opponentGrounded}
+          isJumping={opponentVelocityY > 0 && !opponentGrounded}
+          emotionIntensity={0.5}
+          accentColor={fighter.accentColor}
+          isInvulnerable={opponentInvulnerable}
+          hitAnim={opponentInvulnerable ? 1 : 0}
+        />
+      ) : (
+        <AnatomicalBeastModel
+          fighter={fighter}
+          bodyRef={bodyRef}
+          headRef={headRef}
+          leftArmRef={leftArmRef}
+          rightArmRef={rightArmRef}
+          leftLegRef={leftLegRef}
+          rightLegRef={rightLegRef}
+          emotionIntensity={0.5}
+          hitAnim={opponentInvulnerable ? 1 : 0}
+          animTime={timeRef.current}
+          isAttacking={opponentAttacking}
+          isInvulnerable={opponentInvulnerable}
+          isMoving={Math.abs(opponentVelocityX) > 0.5}
+          attackType={opponentAttackType}
+          velocityX={opponentVelocityX}
+          velocityY={opponentVelocityY}
+          isGrounded={opponentGrounded}
+          isJumping={opponentVelocityY > 0 && !opponentGrounded}
+        />
+      )}
     </group>
   );
 }
