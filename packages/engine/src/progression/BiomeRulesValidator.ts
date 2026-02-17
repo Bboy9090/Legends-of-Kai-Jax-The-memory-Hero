@@ -53,8 +53,8 @@ export class BiomeRulesValidator {
   private schemaPath: string;
 
   constructor(
-    biomeRulesPath: string = '../../../data/biomes/biome_rules.json',
-    schemaPath: string = '../../../schemas/biome_rules.schema.json'
+    biomeRulesPath: string = '../../../../data/biomes/biome_rules.json',
+    schemaPath: string = '../../../../schemas/biome_rules.schema.json'
   ) {
     this.biomeRulesPath = path.resolve(__dirname, biomeRulesPath);
     this.schemaPath = path.resolve(__dirname, schemaPath);

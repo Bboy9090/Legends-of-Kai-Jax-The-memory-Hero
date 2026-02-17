@@ -67,6 +67,7 @@ export interface ScenarioState {
   stealth_detection_count: number;
   enemies_defeated: number;
   stealth_kills: number;
+  shade_trial_passed: boolean;
 }
 
 /**
@@ -83,7 +84,7 @@ export class BlackreachDescent {
 
   constructor(
     worldStateManager: WorldStateManager,
-    slicePath: string = '../../../data/vertical_slices/blackreach_descent.slice.json'
+    slicePath: string = '../../../../data/vertical_slices/blackreach_descent.slice.json'
   ) {
     this.slicePath = path.resolve(__dirname, slicePath);
     this.sliceData = this.loadSlice();
@@ -97,7 +98,8 @@ export class BlackreachDescent {
       total_elapsed_minutes: 0,
       stealth_detection_count: 0,
       enemies_defeated: 0,
-      stealth_kills: 0
+      stealth_kills: 0,
+      shade_trial_passed: false
     };
   }
 
@@ -169,7 +171,10 @@ export class BlackreachDescent {
     const phase = this.getCurrentPhase();
     const elapsed = (Date.now() - this.scenarioState.phase_start_time) / 1000 / 60;
 
-    this.scenarioState.completed_phases.push(this.scenarioState.current_phase);
+    // Prevent duplicate phase completions
+    if (!this.scenarioState.completed_phases.includes(this.scenarioState.current_phase)) {
+      this.scenarioState.completed_phases.push(this.scenarioState.current_phase);
+    }
     this.scenarioState.total_elapsed_minutes += elapsed;
 
     console.log(`[Phase ${this.scenarioState.current_phase}] Completed in ${elapsed.toFixed(1)} minutes`);
@@ -268,6 +273,8 @@ export class BlackreachDescent {
       throw new Error(`Cannot attempt Shade Trial: ${attemptResult.reason}`);
     }
 
+    // Mark trial as passed for scenario completion verification
+    this.scenarioState.shade_trial_passed = true;
     return true;
   }
 
@@ -278,6 +285,11 @@ export class BlackreachDescent {
     // Verify all phases completed
     if (this.scenarioState.completed_phases.length !== this.sliceData.mission_flow.length) {
       throw new Error('All phases must be completed before finishing scenario');
+    }
+
+    // Verify Shade Trial was actually executed and passed
+    if (!this.scenarioState.shade_trial_passed) {
+      throw new Error('Shade Trial must be successfully executed before completing scenario');
     }
 
     // Complete Shade Trial Legend Node

@@ -67,7 +67,7 @@ export class LegendNodeManager {
   private legendNodesPath: string;
   private loadedNodes: Map<string, LegendNode>;
 
-  constructor(legendNodesPath: string = '../../../data/legend_nodes') {
+  constructor(legendNodesPath: string = '../../../../data/legend_nodes') {
     this.legendNodesPath = path.resolve(__dirname, legendNodesPath);
     this.loadedNodes = new Map();
   }
@@ -93,29 +93,37 @@ export class LegendNodeManager {
   }
 
   /**
-   * Load all available Legend Nodes
+   * Load all available Legend Nodes with their file IDs
+   * Returns array of {fileId, node} sorted by tail_unlocked
    */
-  public loadAllLegendNodes(): LegendNode[] {
+  public loadAllLegendNodesWithFileIds(): Array<{ fileId: string; node: LegendNode }> {
     try {
       const files = fs.readdirSync(this.legendNodesPath);
       const nodeFiles = files.filter(f => f.endsWith('.node.json'));
       
-      const nodes: LegendNode[] = [];
+      const entries: Array<{ fileId: string; node: LegendNode }> = [];
       for (const file of nodeFiles) {
-        const nodeId = file.replace('.node.json', '');
+        const fileId = file.replace('.node.json', '');
         try {
-          const node = this.loadLegendNode(nodeId);
-          nodes.push(node);
+          const node = this.loadLegendNode(fileId);
+          entries.push({ fileId, node });
         } catch (error) {
           console.error(`Failed to load ${file}:`, error);
         }
       }
       
-      return nodes.sort((a, b) => a.tail_unlocked - b.tail_unlocked);
+      return entries.sort((a, b) => a.node.tail_unlocked - b.node.tail_unlocked);
     } catch (error) {
       console.error('Failed to load Legend Nodes:', error);
       return [];
     }
+  }
+
+  /**
+   * Load all available Legend Nodes
+   */
+  public loadAllLegendNodes(): LegendNode[] {
+    return this.loadAllLegendNodesWithFileIds().map(entry => entry.node);
   }
 
   /**
@@ -201,13 +209,13 @@ export class LegendNodeManager {
     const requiredTailCount = node.starting_tail_count_required;
     
     // Load all nodes and check if all previous tail unlocks are completed
-    const allNodes = this.loadAllLegendNodes();
+    const allEntries = this.loadAllLegendNodesWithFileIds();
     
-    for (const otherNode of allNodes) {
+    for (const { fileId, node: otherNode } of allEntries) {
       if (otherNode.tail_unlocked < node.tail_unlocked) {
-        // This node unlocks an earlier tail
-        if (!playerState.completed_legend_nodes.includes(otherNode.node_id)) {
-          missing.push(otherNode.node_id);
+        // This node unlocks an earlier tail - use fileId for comparison
+        if (!playerState.completed_legend_nodes.includes(fileId)) {
+          missing.push(fileId);
         }
       }
     }
@@ -248,10 +256,10 @@ export class LegendNodeManager {
    * Get next available Legend Node for player
    */
   public getNextLegendNode(playerState: PlayerProgressionState): LegendNode | null {
-    const allNodes = this.loadAllLegendNodes();
+    const allEntries = this.loadAllLegendNodesWithFileIds();
     
-    for (const node of allNodes) {
-      const attemptResult = this.canAttemptLegendNode(node.node_id, playerState);
+    for (const { fileId, node } of allEntries) {
+      const attemptResult = this.canAttemptLegendNode(fileId, playerState);
       if (attemptResult.can_attempt) {
         return node;
       }
@@ -265,13 +273,13 @@ export class LegendNodeManager {
    * Throws error if player state violates progression rules
    */
   public validateSequentialProgression(playerState: PlayerProgressionState): void {
-    const allNodes = this.loadAllLegendNodes();
+    const allEntries = this.loadAllLegendNodesWithFileIds();
     
     // Build expected progression path
     const expectedPath: number[] = [STARTING_TAIL_COUNT]; // Starting tails
     
-    for (const node of allNodes) {
-      if (playerState.completed_legend_nodes.includes(node.node_id)) {
+    for (const { fileId, node } of allEntries) {
+      if (playerState.completed_legend_nodes.includes(fileId)) {
         expectedPath.push(node.tail_unlocked);
       }
     }

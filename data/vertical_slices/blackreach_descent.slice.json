@@ -43,7 +43,7 @@
       "phase": 4,
       "type": "legend_node",
       "objective": "Complete the Shade Trial to unlock Tail 5",
-      "legend_node_id": "legend_node_shade",
+      "legend_node_id": "shade_trial",
       "mechanics": ["stealth_strikes", "threat_resets", "time_pressure"],
       "duration_minutes": 5
     }

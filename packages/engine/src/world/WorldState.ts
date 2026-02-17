@@ -77,9 +77,17 @@ export class WorldStateManager {
 
   /**
    * Get current world state
+   * Returns a deep copy to prevent external mutation of internal state
    */
   public getState(): Readonly<WorldState> {
-    return { ...this.worldState };
+    return {
+      ...this.worldState,
+      completed_legend_nodes: [...this.worldState.completed_legend_nodes],
+      unlocked_abilities: [...this.worldState.unlocked_abilities],
+      discovered_zones: [...this.worldState.discovered_zones],
+      cleared_zones: [...this.worldState.cleared_zones],
+      narrative_beats_completed: [...this.worldState.narrative_beats_completed]
+    };
   }
 
   /**
@@ -148,8 +156,10 @@ export class WorldStateManager {
       return;
     }
 
-    this.worldState.completed_legend_nodes.push(nodeId);
+    // Update tail count first - this may throw validation errors
+    // Only record completion if tail count update succeeds (atomic ordering)
     this.updateTailCount(tailUnlocked);
+    this.worldState.completed_legend_nodes.push(nodeId);
     this.worldState.last_updated = Date.now();
   }
 
