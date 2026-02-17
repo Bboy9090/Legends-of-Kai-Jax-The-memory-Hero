@@ -166,9 +166,9 @@ void AKaiJaxWorldReactionManager::TriggerEnvironmentalEffect(FVector Location)
         // Significant environmental reaction
         // Screen shake, particle burst, etc.
         APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-        if (PC)
+        if (PC && EnvironmentalCameraShake)
         {
-            PC->ClientStartCameraShake(nullptr, CurrentReactions.EnvironmentalIntensity);
+            PC->ClientStartCameraShake(EnvironmentalCameraShake, CurrentReactions.EnvironmentalIntensity);
         }
     }
 }

@@ -65,7 +65,9 @@ void UKaiJaxAnimInstance::UpdateMovementVariables()
     if (CurrentState != EKaiJaxAnimState::Attacking && 
         CurrentState != EKaiJaxAnimState::TailStrike &&
         CurrentState != EKaiJaxAnimState::Parrying &&
-        CurrentState != EKaiJaxAnimState::Dashing)
+        CurrentState != EKaiJaxAnimState::Dashing &&
+        CurrentState != EKaiJaxAnimState::Staggered &&
+        CurrentState != EKaiJaxAnimState::Dead)
     {
         if (bIsInAir)
         {

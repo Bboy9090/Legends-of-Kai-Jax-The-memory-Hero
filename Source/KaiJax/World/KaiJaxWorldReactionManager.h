@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Camera/CameraShakeBase.h"
 #include "KaiJaxWorldReactionManager.generated.h"
 
 UENUM(BlueprintType)
@@ -71,6 +72,10 @@ protected:
     // Tier-specific reaction data
     UPROPERTY(EditDefaultsOnly, Category = "Reactions|Tiers")
     TMap<ETailTier, FWorldReactionData> TierReactions;
+
+    // Camera shake class for environmental effects
+    UPROPERTY(EditDefaultsOnly, Category = "Reactions|Environment")
+    TSubclassOf<UCameraShakeBase> EnvironmentalCameraShake;
 
 public:
     virtual void Tick(float DeltaTime) override;

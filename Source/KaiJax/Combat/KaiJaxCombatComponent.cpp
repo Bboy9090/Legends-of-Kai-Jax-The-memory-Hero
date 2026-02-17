@@ -72,7 +72,6 @@ void UKaiJaxCombatComponent::TailStrike(ETailAbility TailToUse)
     {
         Owner->PlayAnimMontage(TailStrikeMontage);
         ActivateTailAbility(TailToUse);
-        SpawnTailVFX(TailToUse);
         IncrementCombo();
         
         // Tail attacks build significant corruption
@@ -240,6 +239,10 @@ void UKaiJaxCombatComponent::UpdateStanceBasedOnCombat()
     else if (ComboState.ComboCounter > 5)
     {
         CurrentStance = EKaiJaxStance::Aggressive;
+    }
+    else
+    {
+        CurrentStance = EKaiJaxStance::Neutral;
     }
 }
 

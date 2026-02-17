@@ -121,6 +121,7 @@ int StateManager::GetStatePriority(AnimationState state) const {
         case AnimationState::SPECIAL_ATTACKS:
         case AnimationState::PARRY:
         case AnimationState::COUNTER:
+        case AnimationState::HIT_REACTIONS:
             return 4;
             
         case AnimationState::DODGE_GROUND:
@@ -134,7 +135,6 @@ int StateManager::GetStatePriority(AnimationState state) const {
             
         case AnimationState::IDLE_CALM:
         case AnimationState::IDLE_COMBAT:
-        case AnimationState::HIT_REACTIONS:
             return 1;
             
         default:
