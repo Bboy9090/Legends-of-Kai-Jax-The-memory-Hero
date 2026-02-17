@@ -487,15 +487,26 @@ export class StoryModeService {
           quest_id: rawQuest.quest_id,
           quest_name: rawQuest.name,
           description: rawQuest.description,
-          objectives: rawQuest.objectives.map((obj: RawQuestObjective) => ({
-            objective_id: obj.id,
-            type: obj.type as QuestObjectiveType,
-            description: obj.description,
-            target_count: obj.count,
-            target_location: obj.target,
-            target_npc: obj.target,
-            target_enemy_type: obj.target,
-          })),
+          objectives: rawQuest.objectives.map((obj: RawQuestObjective) => {
+            // Map target based on objective type
+            const objective: QuestObjective = {
+              objective_id: obj.id,
+              type: obj.type as QuestObjectiveType,
+              description: obj.description,
+              target_count: obj.count,
+            };
+            
+            // Assign target to appropriate field based on type
+            if (obj.type === 'reach_location') {
+              objective.target_location = obj.target;
+            } else if (obj.type === 'interact_npc') {
+              objective.target_npc = obj.target;
+            } else if (obj.type === 'defeat_enemies') {
+              objective.target_enemy_type = obj.target;
+            }
+            
+            return objective;
+          }),
           prerequisites: rawQuest.requirements?.prerequisite_quests || [],
           rewards: {
             unlock_tail_tier: rawQuest.rewards?.unlock_tail_tier,
