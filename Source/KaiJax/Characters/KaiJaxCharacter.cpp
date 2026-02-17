@@ -49,7 +49,7 @@ void AKaiJaxCharacter::BeginPlay()
     // - tail_roles array defines all 9 tail functions
     UKaiJaxCharacterData* CharData = UKaiJaxCharacterData::Get();
     
-    if (CharData)
+    if (CharData && CharData->IsDataLoaded())
     {
         FCharacterEvolution Evolution = CharData->GetEvolutionRules();
         

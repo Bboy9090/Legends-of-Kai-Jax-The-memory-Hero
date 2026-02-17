@@ -169,6 +169,13 @@ public:
     FCharacterEvolution GetEvolutionRules() const { return EvolutionRules; }
 
     /**
+     * Check if character data was loaded successfully from lockfile
+     * Returns true only if both character data and tail tier reactions loaded successfully
+     */
+    UFUNCTION(BlueprintPure, Category = "Character Data")
+    bool IsDataLoaded() const { return bDataLoaded && bReactionsLoaded; }
+
+    /**
      * Validate that current implementation matches lockfile/schema
      * Returns true if validation passes, false if validation fails (errors are logged)
      */

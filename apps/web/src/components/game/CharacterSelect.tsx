@@ -255,7 +255,7 @@ export default function CharacterSelect() {
     if (gameState === 'mission-team-select') {
       setGameState("story-mode-select");
     } else if (gameState === 'versus-select') {
-      setGameState("versus-select");  
+      setGameState("menu");  
     } else {
       setGameState("menu");
     }

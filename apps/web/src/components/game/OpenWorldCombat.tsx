@@ -100,9 +100,13 @@ export default function OpenWorldCombat({ missionId }: { missionId?: string }) {
   // Start open-world combat on mount
   useEffect(() => {
     console.log("[OpenWorldCombat] Initializing open-world combat mode for mission:", missionId);
-    setTimeout(() => {
+    const timerId = setTimeout(() => {
       startBattle();
     }, 1000);
+    
+    return () => {
+      clearTimeout(timerId);
+    };
   }, [startBattle, missionId]);
   
   // Open-world camera - wider view to see multiple enemies and environment

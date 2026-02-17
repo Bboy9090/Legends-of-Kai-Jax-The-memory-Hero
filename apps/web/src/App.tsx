@@ -200,7 +200,7 @@ function App() {
               encounterAlert={encounterAlert}
               onDismissAlert={() => {
                 if (encounterAlert?.type === 'battle' || encounterAlert?.type === 'boss') {
-                  setGameState('versus-select');
+                  setGameState('mission-team-select');
                 }
                 setEncounterAlert(null);
               }}
