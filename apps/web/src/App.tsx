@@ -76,6 +76,9 @@ function App() {
   
   // ⚡ LEGENDARY INTRO SYSTEM
   const [showIntro, setShowIntro] = useState(true);
+  
+  // Track selected mission for story mode
+  const [selectedMission, setSelectedMission] = useState<string>("placeholder-mission");
 
   // Initialize audio on mount
   useEffect(() => {
@@ -156,6 +159,7 @@ function App() {
               onSelectMission={(missionId) => {
                 console.log("Mission selected:", missionId);
                 // Store selected mission and go to character select
+                setSelectedMission(missionId);
                 setGameState('mission-team-select');
               }}
               onBack={() => setGameState('menu')}
@@ -211,7 +215,7 @@ function App() {
                 {/* Render different combat modes based on game state */}
                 {gameState === 'mission-gameplay' ? (
                   // RPG Open-World Combat for Story/Mission Mode
-                  <OpenWorldCombat missionId="placeholder-mission" />
+                  <OpenWorldCombat missionId={selectedMission} />
                 ) : (
                   // Arcade-Style 1v1 for Versus/Quick Battle
                   <BattleScene />

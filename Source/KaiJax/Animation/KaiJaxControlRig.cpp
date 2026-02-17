@@ -51,7 +51,7 @@ void UKaiJaxControlRig::Initialize(bool bInitRigUnits)
     }
 }
 
-void UKaiJaxControlRig::UpdateDigitegradeIK(float DeltaTime)
+void UKaiJaxControlRig::UpdateDigitigradeIK(float DeltaTime)
 {
     // ==================== DIGITIGRADE IK UPDATE ====================
     

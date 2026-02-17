@@ -448,7 +448,31 @@ export class StoryModeService {
       
       for (const questFile of questFiles) {
         const response = await fetch(`${this.dataPath}/quests/${questFile}.json`);
-        const quest = await response.json();
+        const rawQuest = await response.json();
+        
+        // Normalize quest data to match Quest interface
+        const quest: Quest = {
+          quest_id: rawQuest.quest_id,
+          quest_name: rawQuest.name,
+          description: rawQuest.description,
+          objectives: rawQuest.objectives.map((obj: any) => ({
+            objective_id: obj.id,
+            type: obj.type as QuestObjectiveType,
+            description: obj.description,
+            target_count: obj.count,
+            target_location: obj.target,
+            target_npc: obj.target,
+            target_enemy_type: obj.target,
+          })),
+          prerequisites: rawQuest.requirements?.prerequisite_quests || [],
+          rewards: {
+            unlock_tail_tier: rawQuest.rewards?.unlock_tail_tier,
+            unlock_district: rawQuest.rewards?.unlock_district,
+            experience_points: rawQuest.rewards?.experience,
+          },
+          starting_npc: rawQuest.giver_npc_id,
+        };
+        
         this.state.quests.push(quest);
       }
     } catch (error) {

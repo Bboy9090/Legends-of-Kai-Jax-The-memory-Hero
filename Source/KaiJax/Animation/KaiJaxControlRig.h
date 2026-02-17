@@ -46,7 +46,7 @@ protected:
      * - 45°: Combat (maximum bend, spring-loaded)
      */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IK")
-    float DigitegradeAngle = 45.0f;
+    float DigitigradeAngle = 45.0f;
 
     /**
      * Enable/disable foot IK
@@ -110,7 +110,7 @@ public:
      * @param DeltaTime Time since last frame
      */
     UFUNCTION(BlueprintCallable, Category = "IK")
-    void UpdateDigitegradeIK(float DeltaTime);
+    void UpdateDigitigradeIK(float DeltaTime);
 
     /**
      * Update tail physics
