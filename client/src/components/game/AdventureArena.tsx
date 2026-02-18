@@ -1,3 +1,4 @@
+import React from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Suspense, useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { KeyboardControls, useKeyboardControls, useGLTF, Html, Sparkles, useTexture } from '@react-three/drei';
@@ -14,7 +15,7 @@ interface AdventureArenaProps {
 const ATTACK_RANGE = 4.0;
 const WORLD_SIZE = 100;
 const HALF_WORLD = WORLD_SIZE / 2;
-const ENEMY_IDS = ['voidonus_beast', 'shadow_panther', 'frost_wolf', 'thunder_lion', 'jade_serpent'];
+const ENEMY_IDS = ['frost_wolf', 'shadow_panther', 'thunder_lion', 'jade_serpent', 'earth_turtle', 'phoenix_warrior', 'boryx_zenith_beast', 'voidonus_beast'];
 
 const CREATURE_MODEL_MAP: Record<string, string> = {
   'kai-jax': 'kai_jax_beast',
@@ -45,8 +46,36 @@ const CREATURE_MODEL_MAP: Record<string, string> = {
 function resolveModelId(id: string): string {
   return CREATURE_MODEL_MAP[id] || id;
 }
+
+const CHARACTER_SCALE: Record<string, number> = {
+  'KAITEENFOX': 1.8,
+  'kaison_beast': 1.8,
+  'jaxon_beast': 1.8,
+  'KAIJAX1': 2.5,
+  'KAINJAXYN': 2.5,
+  'darjshadowkaijax': 2.2,
+  'kai_jax_beast': 2.5,
+  'boryx_zenith_beast': 3.5,
+  'BORYN': 3.2,
+  'Borax': 3.2,
+  'lunara_solis_beast': 3.0,
+  'SABERVILLAIN': 3.0,
+  'phoenix_warrior': 2.8,
+  'frost_wolf': 2.6,
+  'thunder_lion': 3.0,
+  'jade_serpent': 2.6,
+  'shadow_panther': 2.5,
+  'earth_turtle': 3.2,
+  'voidonus_beast': 4.0,
+};
+
+function getCharacterScale(modelId: string): number {
+  const resolved = resolveModelId(modelId);
+  return CHARACTER_SCALE[resolved] || 2.5;
+}
+
 const RESPAWN_TIME = 10;
-const CHASE_RANGE = 8;
+const CHASE_RANGE = 15;
 const ENEMY_ATTACK_RANGE = 3.5;
 const ENEMY_ATTACK_COOLDOWN = 2.0;
 
@@ -108,6 +137,23 @@ function seededRandom(seed: number) {
   return x - Math.floor(x);
 }
 
+class ModelErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
+
 function GLBModel({ modelId, scale = 2.5 }: { modelId: string; scale?: number }) {
   const resolved = resolveModelId(modelId);
   const modelPath = `/models/${resolved}.glb`;
@@ -140,11 +186,14 @@ function FallbackModel({ color = '#ff4444' }: { color?: string }) {
   );
 }
 
-function SafeGLBModel({ modelId, scale = 2.5, fallbackColor = '#ff4444' }: { modelId: string; scale?: number; fallbackColor?: string }) {
+function SafeGLBModel({ modelId, scale, fallbackColor = '#ff4444' }: { modelId: string; scale?: number; fallbackColor?: string }) {
+  const finalScale = scale || getCharacterScale(modelId);
   return (
-    <Suspense fallback={<FallbackModel color={fallbackColor} />}>
-      <GLBModel modelId={modelId} scale={scale} />
-    </Suspense>
+    <ModelErrorBoundary fallback={<FallbackModel color={fallbackColor} />}>
+      <Suspense fallback={<FallbackModel color={fallbackColor} />}>
+        <GLBModel modelId={modelId} scale={finalScale} />
+      </Suspense>
+    </ModelErrorBoundary>
   );
 }
 
@@ -561,7 +610,8 @@ function Player3D({
 
     if (dashTimerRef.current > 0) {
       bodyRef.current.rotation.y = time * 25;
-      bodyRef.current.position.y = 0.3;
+      bodyRef.current.position.y = 0.5;
+      bodyRef.current.scale.setScalar(0.9);
       return;
     }
 
@@ -569,52 +619,67 @@ function Player3D({
       const atk = currentAttackRef.current;
       if (attackPhaseRef.current === 'active') {
         if (atk.startsWith('light')) {
-          bodyRef.current.rotation.y = (parseInt(atk.replace('light', '')) % 2 === 1) ? 0.4 : -0.4;
-          bodyRef.current.position.z = 0.3;
-        } else if (atk.startsWith('heavy')) {
-          bodyRef.current.rotation.y = time * 15;
+          const swingNum = parseInt(atk.replace('light', '')) || 1;
+          const dir = swingNum % 2 === 1 ? 1 : -1;
+          bodyRef.current.rotation.y = dir * 0.6;
+          bodyRef.current.rotation.z = Math.sin(time * 25) * 0.15 * dir;
           bodyRef.current.position.z = 0.5;
-          bodyRef.current.scale.setScalar(1.1);
-        } else if (atk === 'launcher') {
-          bodyRef.current.position.y = 0.6;
-          bodyRef.current.rotation.x = -0.3;
-        } else if (atk.startsWith('aerial')) {
+          bodyRef.current.position.y = Math.abs(Math.sin(time * 20)) * 0.15;
+        } else if (atk.startsWith('heavy')) {
           bodyRef.current.rotation.y = time * 18;
-          bodyRef.current.rotation.x = 0.3;
+          bodyRef.current.position.z = 0.7;
+          bodyRef.current.position.y = 0.2;
+          bodyRef.current.scale.setScalar(1.15);
+        } else if (atk === 'launcher') {
+          bodyRef.current.position.y = 0.8 + Math.sin(time * 15) * 0.2;
+          bodyRef.current.rotation.x = -0.4;
+          bodyRef.current.rotation.z = Math.sin(time * 12) * 0.2;
+        } else if (atk.startsWith('aerial')) {
+          bodyRef.current.rotation.y = time * 22;
+          bodyRef.current.rotation.x = 0.35;
+          bodyRef.current.position.y = 0.5;
         } else if (atk === 'slam') {
-          bodyRef.current.rotation.x = Math.PI / 4;
-          bodyRef.current.position.y = -0.4;
+          bodyRef.current.rotation.x = Math.PI / 3;
+          bodyRef.current.position.y = -0.5;
+          bodyRef.current.scale.setScalar(1.1);
         } else if (atk === 'special') {
-          bodyRef.current.scale.setScalar(1.2);
-          bodyRef.current.position.y = Math.sin(time * 20) * 0.2;
+          bodyRef.current.scale.setScalar(1.25);
+          bodyRef.current.position.y = 0.3 + Math.sin(time * 20) * 0.3;
+          bodyRef.current.rotation.y = Math.sin(time * 8) * 0.5;
         } else if (atk === 'ultimate') {
-          bodyRef.current.position.y = 1.0 + Math.sin(time * 10) * 0.3;
+          bodyRef.current.position.y = 1.5 + Math.sin(time * 10) * 0.4;
           bodyRef.current.rotation.y = time * 30;
-          bodyRef.current.scale.setScalar(1.3);
+          bodyRef.current.scale.setScalar(1.4);
         }
       } else if (attackPhaseRef.current === 'windup') {
-        bodyRef.current.rotation.y = -0.3;
-        bodyRef.current.position.y = -0.1;
+        bodyRef.current.rotation.y = -0.4;
+        bodyRef.current.position.y = -0.15;
+        bodyRef.current.rotation.x = 0.15;
       }
       return;
     }
 
     if (!groundedRef.current) {
-      bodyRef.current.rotation.x = 0.15;
+      bodyRef.current.rotation.x = 0.2;
+      bodyRef.current.position.y = Math.sin(time * 6) * 0.1;
       return;
     }
 
     if (isMoving) {
-      const animSpeed = isRunning ? 14 : 10;
+      const animSpeed = isRunning ? 16 : 11;
       const t = time * animSpeed;
-      bodyRef.current.position.y = Math.abs(Math.sin(t * 2)) * 0.12;
-      bodyRef.current.rotation.x = isRunning ? 0.2 : 0.12;
-      bodyRef.current.rotation.z = Math.sin(t) * 0.08;
+      bodyRef.current.position.y = Math.abs(Math.sin(t)) * (isRunning ? 0.25 : 0.15);
+      bodyRef.current.rotation.x = isRunning ? 0.25 : 0.15;
+      bodyRef.current.rotation.z = Math.sin(t * 0.5) * (isRunning ? 0.15 : 0.08);
+      const bob = Math.sin(t) * 0.03;
+      bodyRef.current.position.x = bob;
       return;
     }
 
-    const breathe = Math.sin(time * 2) * 0.03;
+    const breathe = Math.sin(time * 2) * 0.06;
+    const sway = Math.sin(time * 1.3) * 0.02;
     bodyRef.current.position.y = breathe;
+    bodyRef.current.rotation.z = sway;
   };
 
   const attackColor = useMemo(() => {
@@ -627,7 +692,7 @@ function Player3D({
   return (
     <group ref={groupRef}>
       <group ref={bodyRef}>
-        <SafeGLBModel modelId={characterId} scale={2.5} fallbackColor="#4488ff" />
+        <SafeGLBModel modelId={characterId} fallbackColor="#4488ff" />
       </group>
 
       {dashTimerRef.current > 0 && (
@@ -740,28 +805,45 @@ function Enemy3D({
 
     if (bodyRef.current) {
       const t = state.clock.elapsedTime;
-      if (newState === 'chase' || newState === 'patrol') {
-        bodyRef.current.position.y = Math.abs(Math.sin(t * 8)) * 0.08;
+      bodyRef.current.rotation.set(0, 0, 0);
+      bodyRef.current.position.set(0, 0, 0);
+      bodyRef.current.scale.setScalar(1);
+
+      if (newState === 'chase') {
+        const chaseSpeed = 12;
+        bodyRef.current.position.y = Math.abs(Math.sin(t * chaseSpeed)) * 0.2;
+        bodyRef.current.rotation.x = 0.2;
+        bodyRef.current.rotation.z = Math.sin(t * chaseSpeed * 0.5) * 0.1;
+      } else if (newState === 'patrol') {
+        const walkSpeed = 8;
+        bodyRef.current.position.y = Math.abs(Math.sin(t * walkSpeed)) * 0.12;
         bodyRef.current.rotation.x = 0.1;
+        bodyRef.current.rotation.z = Math.sin(t * walkSpeed * 0.5) * 0.06;
       } else if (newState === 'attack') {
-        bodyRef.current.rotation.y = t * 12;
-        bodyRef.current.position.z = 0.4;
+        bodyRef.current.rotation.y = t * 15;
+        bodyRef.current.position.z = 0.6;
+        bodyRef.current.position.y = 0.2 + Math.sin(t * 12) * 0.15;
+        bodyRef.current.scale.setScalar(1.1);
       } else {
-        bodyRef.current.position.y = Math.sin(t * 2) * 0.03;
-        bodyRef.current.rotation.set(0, 0, 0);
+        const breathe = Math.sin(t * 2) * 0.05;
+        const sway = Math.sin(t * 1.5) * 0.02;
+        bodyRef.current.position.y = breathe;
+        bodyRef.current.rotation.z = sway;
       }
     }
   });
 
   const hpPercent = enemy.hp / enemy.maxHp;
+  const enemyScale = getCharacterScale(enemy.modelId);
+  const hpBarHeight = Math.max(2.5, enemyScale * 1.2);
 
   return (
     <group ref={groupRef}>
       <group ref={bodyRef}>
-        <SafeGLBModel modelId={enemy.modelId} scale={2.5} fallbackColor="#ff4444" />
+        <SafeGLBModel modelId={enemy.modelId} fallbackColor="#ff4444" />
       </group>
 
-      <Html position={[0, 2.5, 0]} center distanceFactor={15} sprite>
+      <Html position={[0, hpBarHeight, 0]} center distanceFactor={15} sprite>
         <div style={{ width: '60px', textAlign: 'center', pointerEvents: 'none' }}>
           <div style={{
             width: '60px', height: '6px', background: '#333', borderRadius: '3px', overflow: 'hidden',
