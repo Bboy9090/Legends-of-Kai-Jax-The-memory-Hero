@@ -24,7 +24,7 @@ const CREATURE_MODEL_MAP: Record<string, string> = {
   'kaijax': 'kai_jax_beast',
   'kai_jax': 'kai_jax_beast',
   'kaison': 'kaison_beast',
-  'jaxon': 'jaxon_beast',
+  'jaxon': 'darjshadowkaijax',
   'boryx': 'boryx_zenith_beast',
   'boryx-zenith': 'boryx_zenith_beast',
   'lunara': 'lunara_solis_beast',
