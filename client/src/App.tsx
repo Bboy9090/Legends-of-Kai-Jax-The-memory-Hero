@@ -3,7 +3,8 @@ import "@fontsource/inter";
 import "@fontsource/bebas-neue";
 import AdventureArena from "./components/game/AdventureArena";
 
-type AppSection = 'home' | 'characters' | 'tails' | 'story' | 'gallery' | 'adventure-select' | 'adventure';
+type AppSection = 'home' | 'characters' | 'tails' | 'story' | 'gallery' | 'adventure-select' | 'adventure' | 'versus-select' | 'versus' | 'battleworld-select' | 'battleworld';
+type GameMode = 'adventure' | 'versus' | 'battleworld';
 
 const HERO_IMAGE = "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/htuxfqte_9660FF22-E010-4DF5-A321-DDFE60ADB8CB.png";
 
@@ -74,7 +75,13 @@ const STORY_ACTS = [
   { number: 5, title: 'THE MEMORY KING', theme: 'Resolution', color: '#2E2EFE', events: ['The ninth tail settles', 'Voidonus is sealed, not destroyed', 'Kai-Jax becomes the Memory King', 'The world stops correcting him'] },
 ];
 
-const ADVENTURE_CHARACTERS = [
+const ADVENTURE_HEROES = [
+  { id: 'KAITEENFOX', name: 'KAI', subtitle: 'The Fire Twin', color: '#FF3B30', description: 'Play as Kai through the early story chapters. Street-smart, web-slinging beast warrior.' },
+  { id: 'kaison_beast', name: 'JAX', subtitle: 'The Ice Twin', color: '#64D2FF', description: 'Play as Jax through select story missions. Strategic mind, lightning reflexes.' },
+  { id: 'KAIJAX1', name: 'KAI-JAX', subtitle: 'The Memory King', color: '#BF5AF2', locked: true, description: 'Unlocked after Act 3: The Fusion. The legendary nine-tailed fusion form.' },
+];
+
+const ALL_CHARACTERS = [
   { id: 'KAIJAX1', name: 'KAI-JAX', subtitle: 'The Memory King', color: '#8B5CF6' },
   { id: 'KAINJAXYN', name: 'KAINJAXYN', subtitle: 'The Ascended Twin', color: '#A855F7' },
   { id: 'KAITEENFOX', name: 'KAITEEN FOX', subtitle: 'Blazing Vanguard', color: '#F97316' },
@@ -278,16 +285,27 @@ function HeroSection({ onNavigate }: { onNavigate: (s: AppSection) => void }) {
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
             <CyberButton color="#BF5AF2" onClick={() => onNavigate('adventure-select')} primary>
-              PLAY ADVENTURE
+              ADVENTURE MODE
             </CyberButton>
+            <CyberButton color="#FF3B30" onClick={() => onNavigate('versus-select')}>
+              VERSUS MODE
+            </CyberButton>
+            <CyberButton color="#FFD60A" onClick={() => onNavigate('battleworld-select')}>
+              BATTLEWORLD
+            </CyberButton>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '0.75rem' }}>
             <CyberButton color="#64D2FF" onClick={() => onNavigate('characters')}>
-              MEET THE HEROES
+              HEROES
             </CyberButton>
-            <CyberButton color="#FF3B30" onClick={() => onNavigate('story')}>
-              READ THE SAGA
+            <CyberButton color="#30D158" onClick={() => onNavigate('story')}>
+              SAGA
             </CyberButton>
-            <CyberButton color="#FFD60A" onClick={() => onNavigate('tails')}>
+            <CyberButton color="#0A84FF" onClick={() => onNavigate('tails')}>
               9 TAILS
+            </CyberButton>
+            <CyberButton color="#8E8E93" onClick={() => onNavigate('gallery')}>
+              GALLERY
             </CyberButton>
           </div>
         </div>
@@ -557,17 +575,100 @@ function AdventureCharacterSelect({ onSelect, onBack }: { onSelect: (id: string)
       position: 'fixed', inset: 0, zIndex: 100,
       background: 'linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a1a1a 100%)',
       display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'center', padding: '2rem',
+    }}>
+      <button onClick={onBack} style={{
+        position: 'absolute', top: '1.5rem', left: '1.5rem',
+        background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+        color: 'white', padding: '0.5rem 1.5rem', borderRadius: '8px', cursor: 'pointer',
+      }}>
+        BACK
+      </button>
+
+      <h1 style={{
+        fontFamily: "'Bebas Neue', sans-serif",
+        fontSize: '3rem', color: 'white', letterSpacing: '0.15em',
+        marginBottom: '0.5rem', textAlign: 'center',
+      }}>
+        ADVENTURE <span style={{ color: '#BF5AF2' }}>MODE</span>
+      </h1>
+      <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '2.5rem', textAlign: 'center', maxWidth: '500px' }}>
+        Follow the story of the Beast-Kin twins. Only Kai, Jax, or the fused Kai-Jax can enter the story campaign.
+      </p>
+
+      <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {ADVENTURE_HEROES.map((hero) => {
+          const isHovered = hoveredId === hero.id;
+          const isLocked = !!(hero as any).locked;
+          return (
+            <button
+              key={hero.id}
+              onClick={() => !isLocked && onSelect(hero.id)}
+              onMouseEnter={() => setHoveredId(hero.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              style={{
+                width: '240px', padding: '2rem 1.5rem',
+                background: isLocked ? 'rgba(255,255,255,0.03)' : isHovered
+                  ? `linear-gradient(135deg, ${hero.color}25, ${hero.color}08)`
+                  : 'rgba(255,255,255,0.06)',
+                border: `2px solid ${isLocked ? 'rgba(255,255,255,0.08)' : isHovered ? hero.color : 'rgba(255,255,255,0.15)'}`,
+                borderRadius: '16px', cursor: isLocked ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s ease',
+                transform: isHovered && !isLocked ? 'translateY(-6px) scale(1.03)' : 'none',
+                boxShadow: isHovered && !isLocked ? `0 12px 40px ${hero.color}35` : 'none',
+                opacity: isLocked ? 0.5 : 1,
+                textAlign: 'center' as const,
+              }}
+            >
+              <div style={{
+                width: '70px', height: '70px', borderRadius: '50%',
+                background: `radial-gradient(circle, ${hero.color}50, ${hero.color}15)`,
+                margin: '0 auto 1rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: `3px solid ${hero.color}60`,
+                fontSize: '2rem', fontWeight: 'bold', color: hero.color,
+              }}>
+                {isLocked ? '?' : hero.name[0]}
+              </div>
+              <p style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: '1.5rem', color: isLocked ? 'rgba(255,255,255,0.4)' : 'white',
+                letterSpacing: '0.1em', margin: 0,
+              }}>
+                {hero.name}
+              </p>
+              <p style={{ fontSize: '0.7rem', color: hero.color, letterSpacing: '0.12em', textTransform: 'uppercase' as const, margin: '0.3rem 0 0.8rem' }}>
+                {hero.subtitle}
+              </p>
+              <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.4 }}>
+                {hero.description}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function GameCharacterSelect({ onSelect, onBack, mode }: { onSelect: (id: string) => void; onBack: () => void; mode: 'versus' | 'battleworld' }) {
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const modeConfig = mode === 'versus'
+    ? { title: 'VERSUS', accent: '#FF3B30', subtitle: 'Choose your fighter for head-to-head combat.' }
+    : { title: 'BATTLEWORLD', accent: '#FFD60A', subtitle: 'Choose your warrior for endless wave survival.' };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 100,
+      background: 'linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a1a1a 100%)',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
       overflow: 'auto', padding: '2rem',
     }}>
-      <button
-        onClick={onBack}
-        style={{
-          position: 'absolute', top: '1.5rem', left: '1.5rem',
-          background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
-          color: 'white', padding: '0.5rem 1.5rem', borderRadius: '8px',
-          cursor: 'pointer', fontSize: '0.9rem',
-        }}
-      >
+      <button onClick={onBack} style={{
+        position: 'absolute', top: '1.5rem', left: '1.5rem',
+        background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+        color: 'white', padding: '0.5rem 1.5rem', borderRadius: '8px', cursor: 'pointer',
+      }}>
         BACK
       </button>
 
@@ -576,18 +677,18 @@ function AdventureCharacterSelect({ onSelect, onBack }: { onSelect: (id: string)
         fontSize: '3rem', color: 'white', letterSpacing: '0.15em',
         marginBottom: '0.5rem', textAlign: 'center', marginTop: '1rem',
       }}>
-        CHOOSE YOUR <span style={{ color: '#8B5CF6' }}>BEAST-KIN</span>
+        {modeConfig.title} <span style={{ color: modeConfig.accent }}>MODE</span>
       </h1>
       <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '2rem', textAlign: 'center' }}>
-        Select a warrior to enter the open world
+        {modeConfig.subtitle} All {ALL_CHARACTERS.length} Beast-Kin warriors available.
       </p>
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
         gap: '1rem', maxWidth: '1000px', width: '100%',
       }}>
-        {ADVENTURE_CHARACTERS.map((char) => {
+        {ALL_CHARACTERS.map((char) => {
           const isHovered = hoveredId === char.id;
           return (
             <button
@@ -619,14 +720,13 @@ function AdventureCharacterSelect({ onSelect, onBack }: { onSelect: (id: string)
               </div>
               <p style={{
                 fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: '1.1rem', color: 'white', letterSpacing: '0.1em',
-                margin: 0,
+                fontSize: '1rem', color: 'white', letterSpacing: '0.1em', margin: 0,
               }}>
                 {char.name}
               </p>
               <p style={{
-                fontSize: '0.65rem', color: char.color,
-                letterSpacing: '0.12em', textTransform: 'uppercase',
+                fontSize: '0.6rem', color: char.color,
+                letterSpacing: '0.12em', textTransform: 'uppercase' as const,
                 margin: '0.2rem 0 0',
               }}>
                 {char.subtitle}
@@ -685,7 +785,8 @@ function Footer() {
 
 function App() {
   const [section, setSection] = useState<AppSection>('home');
-  const [adventureCharacter, setAdventureCharacter] = useState('KAIJAX1');
+  const [selectedCharacter, setSelectedCharacter] = useState('KAITEENFOX');
+  const [gameMode, setGameMode] = useState<GameMode>('adventure');
 
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
 
@@ -702,10 +803,10 @@ function App() {
     }
   };
 
-  if (section === 'adventure') {
+  if (section === 'adventure' || section === 'versus' || section === 'battleworld') {
     return (
       <AdventureArena
-        characterId={adventureCharacter}
+        characterId={selectedCharacter}
         onBack={() => setSection('home')}
       />
     );
@@ -715,8 +816,37 @@ function App() {
     return (
       <AdventureCharacterSelect
         onSelect={(id) => {
-          setAdventureCharacter(id);
+          setSelectedCharacter(id);
+          setGameMode('adventure');
           setSection('adventure');
+        }}
+        onBack={() => setSection('home')}
+      />
+    );
+  }
+
+  if (section === 'versus-select') {
+    return (
+      <GameCharacterSelect
+        mode="versus"
+        onSelect={(id) => {
+          setSelectedCharacter(id);
+          setGameMode('versus');
+          setSection('versus');
+        }}
+        onBack={() => setSection('home')}
+      />
+    );
+  }
+
+  if (section === 'battleworld-select') {
+    return (
+      <GameCharacterSelect
+        mode="battleworld"
+        onSelect={(id) => {
+          setSelectedCharacter(id);
+          setGameMode('battleworld');
+          setSection('battleworld');
         }}
         onBack={() => setSection('home')}
       />

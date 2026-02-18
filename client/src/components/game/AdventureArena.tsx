@@ -108,30 +108,21 @@ function seededRandom(seed: number) {
   return x - Math.floor(x);
 }
 
-function GLBModel({ modelId, scale = 2.5, color = '#ff4444' }: { modelId: string; scale?: number; color?: string }) {
+function GLBModel({ modelId, scale = 2.5 }: { modelId: string; scale?: number }) {
   const resolved = resolveModelId(modelId);
   const modelPath = `/models/${resolved}.glb`;
-  try {
-    const { scene } = useGLTF(modelPath);
-    const clonedScene = useMemo(() => {
-      const clone = scene.clone(true);
-      clone.traverse((child: any) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-        }
-      });
-      return clone;
-    }, [scene]);
-    return <primitive object={clonedScene} scale={scale} />;
-  } catch {
-    return (
-      <mesh castShadow>
-        <boxGeometry args={[0.8, 1.6, 0.6]} />
-        <meshStandardMaterial color={color} />
-      </mesh>
-    );
-  }
+  const { scene } = useGLTF(modelPath);
+  const clonedScene = useMemo(() => {
+    const clone = scene.clone(true);
+    clone.traverse((child: any) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+    return clone;
+  }, [scene]);
+  return <primitive object={clonedScene} scale={scale} />;
 }
 
 function FallbackModel({ color = '#ff4444' }: { color?: string }) {
@@ -150,32 +141,11 @@ function FallbackModel({ color = '#ff4444' }: { color?: string }) {
 }
 
 function SafeGLBModel({ modelId, scale = 2.5, fallbackColor = '#ff4444' }: { modelId: string; scale?: number; fallbackColor?: string }) {
-  const [hasError, setHasError] = useState(false);
-
-  if (hasError) {
-    return <FallbackModel color={fallbackColor} />;
-  }
-
   return (
     <Suspense fallback={<FallbackModel color={fallbackColor} />}>
-      <ErrorCatchWrapper onError={() => setHasError(true)}>
-        <GLBModel modelId={modelId} scale={scale} color={fallbackColor} />
-      </ErrorCatchWrapper>
+      <GLBModel modelId={modelId} scale={scale} />
     </Suspense>
   );
-}
-
-function ErrorCatchWrapper({ children, onError }: { children: React.ReactNode; onError: () => void }) {
-  useEffect(() => {
-    const handler = (e: ErrorEvent) => {
-      if (e.message?.includes('GLB') || e.message?.includes('glb') || e.message?.includes('Could not load')) {
-        onError();
-      }
-    };
-    window.addEventListener('error', handler);
-    return () => window.removeEventListener('error', handler);
-  }, [onError]);
-  return <>{children}</>;
 }
 
 function FollowCamera({ target }: { target: React.RefObject<THREE.Vector3> }) {
@@ -194,15 +164,19 @@ function FollowCamera({ target }: { target: React.RefObject<THREE.Vector3> }) {
   return null;
 }
 
+function GrassPlane() {
+  const grassTexture = useTexture('/textures/grass.png');
+  grassTexture.wrapS = grassTexture.wrapT = THREE.RepeatWrapping;
+  grassTexture.repeat.set(20, 20);
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+      <planeGeometry args={[WORLD_SIZE, WORLD_SIZE, 32, 32]} />
+      <meshStandardMaterial color="#2d5a27" map={grassTexture} roughness={0.9} metalness={0.05} />
+    </mesh>
+  );
+}
+
 function WorldTerrain() {
-  let grassTexture: THREE.Texture | null = null;
-  try {
-    grassTexture = useTexture('/textures/grass.png');
-    if (grassTexture) {
-      grassTexture.wrapS = grassTexture.wrapT = THREE.RepeatWrapping;
-      grassTexture.repeat.set(20, 20);
-    }
-  } catch {}
 
   const rocks = useMemo(() => {
     const items: { pos: [number, number, number]; scale: [number, number, number]; rot: number }[] = [];
@@ -252,15 +226,14 @@ function WorldTerrain() {
 
   return (
     <group>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[WORLD_SIZE, WORLD_SIZE, 32, 32]} />
-        <meshStandardMaterial
-          color="#2d5a27"
-          map={grassTexture}
-          roughness={0.9}
-          metalness={0.05}
-        />
-      </mesh>
+      <Suspense fallback={
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+          <planeGeometry args={[WORLD_SIZE, WORLD_SIZE]} />
+          <meshStandardMaterial color="#2d5a27" roughness={0.9} />
+        </mesh>
+      }>
+        <GrassPlane />
+      </Suspense>
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]} receiveShadow>
         <planeGeometry args={[WORLD_SIZE * 3, WORLD_SIZE * 3]} />
