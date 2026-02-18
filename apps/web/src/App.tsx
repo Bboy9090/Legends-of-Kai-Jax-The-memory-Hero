@@ -61,7 +61,14 @@ const controls = [
 ];
 
 const ADVENTURE_CHARACTERS = [
-  { id: 'kai_jax_beast', name: 'KAI-JAX', subtitle: 'The Memory King', color: '#8B5CF6' },
+  { id: 'KAIJAX1', name: 'KAI-JAX', subtitle: 'The Memory King', color: '#8B5CF6' },
+  { id: 'KAINJAXYN', name: 'KAINJAXYN', subtitle: 'The Ascended Twin', color: '#A855F7' },
+  { id: 'KAITEENFOX', name: 'KAITEEN FOX', subtitle: 'Blazing Vanguard', color: '#F97316' },
+  { id: 'darjshadowkaijax', name: 'DARK SHADOW', subtitle: 'KAI-JAX Shadow Form', color: '#1E1B4B' },
+  { id: 'BORYN', name: 'BORYN', subtitle: 'The Iron Beast', color: '#78716C' },
+  { id: 'Borax', name: 'BORAX', subtitle: 'Crystal Guardian', color: '#22D3EE' },
+  { id: 'SABERVILLAIN', name: 'SABER VILLAIN', subtitle: 'The Dark Blade', color: '#DC2626' },
+  { id: 'kai_jax_beast', name: 'KAI-JAX BEAST', subtitle: 'Original Beast Form', color: '#7C3AED' },
   { id: 'kaison_beast', name: 'KAISON', subtitle: 'Twin of Law', color: '#3B82F6' },
   { id: 'jaxon_beast', name: 'JAXON', subtitle: 'Twin of Sacrifice', color: '#EF4444' },
   { id: 'boryx_zenith_beast', name: 'BORYX ZENITH', subtitle: 'Guardian King', color: '#F59E0B' },
