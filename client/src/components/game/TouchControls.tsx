@@ -1,220 +1,211 @@
-import { useEffect, useRef } from "react";
-import { useKeyboardControls } from "@react-three/drei";
-import { useRunner } from "../../lib/stores/useRunner";
-import { TouchManager, hapticFeedback, isTouchDevice } from "../../lib/touchUtils";
+import React, { useRef, useCallback, useEffect } from 'react';
+import { useTouchControls } from '../../lib/stores/useTouchControls';
 
-enum Controls {
-  jump = 'jump',
-  slide = 'slide',
-  left = 'left',
-  right = 'right',
-  pause = 'pause',
-  punch = 'punch',
-  kick = 'kick',
-  special = 'special',
-  dash = 'dash',
-  webSwing = 'webSwing', // Hold to attach web, release to launch
-  chargeKick = 'chargeKick', // Hold to charge kick while web-swinging
-  transform = 'transform', // Activate transformation
-  energyBlast = 'energyBlast' // Fire energy blast (Jaxon only)
+const JOYSTICK_SIZE = 120;
+const JOYSTICK_KNOB = 48;
+const BUTTON_SIZE = 56;
+
+function VirtualJoystick() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const knobRef = useRef<HTMLDivElement>(null);
+  const activeTouch = useRef<number | null>(null);
+
+  const updateMove = useCallback((clientX: number, clientY: number) => {
+    if (!containerRef.current || !knobRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    let dx = clientX - cx;
+    let dy = clientY - cy;
+    const maxR = JOYSTICK_SIZE / 2 - JOYSTICK_KNOB / 2;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > maxR) {
+      dx = (dx / dist) * maxR;
+      dy = (dy / dist) * maxR;
+    }
+
+    knobRef.current.style.transform = `translate(${dx}px, ${dy}px)`;
+    useTouchControls.getState().setMove(dx / maxR, dy / maxR);
+  }, []);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (activeTouch.current !== null) return;
+    const touch = e.changedTouches[0];
+    activeTouch.current = touch.identifier;
+    updateMove(touch.clientX, touch.clientY);
+  }, [updateMove]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === activeTouch.current) {
+        updateMove(e.changedTouches[i].clientX, e.changedTouches[i].clientY);
+        break;
+      }
+    }
+  }, [updateMove]);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === activeTouch.current) {
+        activeTouch.current = null;
+        if (knobRef.current) knobRef.current.style.transform = 'translate(0px, 0px)';
+        useTouchControls.getState().setMove(0, 0);
+        break;
+      }
+    }
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+      style={{
+        width: JOYSTICK_SIZE,
+        height: JOYSTICK_SIZE,
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+        border: '2px solid rgba(255,255,255,0.2)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        touchAction: 'none',
+        userSelect: 'none',
+      }}
+    >
+      <div
+        ref={knobRef}
+        style={{
+          width: JOYSTICK_KNOB,
+          height: JOYSTICK_KNOB,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(78,205,196,0.7) 0%, rgba(78,205,196,0.3) 100%)',
+          border: '2px solid rgba(78,205,196,0.6)',
+          boxShadow: '0 0 12px rgba(78,205,196,0.3)',
+          pointerEvents: 'none',
+        }}
+      />
+    </div>
+  );
+}
+
+interface ActionButtonProps {
+  label: string;
+  color: string;
+  actionName: string;
+  size?: number;
+}
+
+function ActionButton({ label, color, actionName, size = BUTTON_SIZE }: ActionButtonProps) {
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    useTouchControls.getState().setButton(actionName, true);
+  }, [actionName]);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    useTouchControls.getState().setButton(actionName, false);
+  }, [actionName]);
+
+  return (
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: `radial-gradient(circle, ${color}88 0%, ${color}33 100%)`,
+        border: `2px solid ${color}aa`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        touchAction: 'none',
+        userSelect: 'none',
+        boxShadow: `0 0 8px ${color}44`,
+      }}
+    >
+      <span style={{
+        color: '#fff',
+        fontSize: size < 50 ? '9px' : '11px',
+        fontWeight: 'bold',
+        textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+        pointerEvents: 'none',
+        textAlign: 'center',
+        lineHeight: '1.1',
+      }}>
+        {label}
+      </span>
+    </div>
+  );
 }
 
 export default function TouchControls() {
-  const { 
-    movePlayer, 
-    jumpPlayer, 
-    slidePlayer, 
-    attackEnemy, 
-    dashPlayer, 
-    gameState,
-    player,
-    setWebButtonPressed,
-    chargeWebKick,
-    releaseWebKick,
-    transformHero,
-    fireEnergyBlast
-  } = useRunner();
-  const [, get] = useKeyboardControls<Controls>();
-  const touchManagerRef = useRef<TouchManager | null>(null);
-  const kickChargeInterval = useRef<NodeJS.Timeout | null>(null);
-  
-  // Handle touch gestures
-  const handleTap = () => {
-    if (gameState === "playing") {
-      jumpPlayer();
-      hapticFeedback('light');
-    }
-  };
-  
-  const handleSwipe = (direction: 'up' | 'down' | 'left' | 'right') => {
-    if (gameState !== "playing") return;
-    
-    switch (direction) {
-      case 'up':
-        jumpPlayer();
-        hapticFeedback('medium');
-        break;
-      case 'down':
-        slidePlayer();
-        hapticFeedback('medium');
-        break;
-      case 'left':
-        movePlayer('left');
-        hapticFeedback('light');
-        break;
-      case 'right':
-        movePlayer('right');
-        hapticFeedback('light');
-        break;
-    }
-  };
-  
-  // Initialize touch manager
+  const showControls = useTouchControls(s => s.showControls);
+
   useEffect(() => {
-    if (isTouchDevice()) {
-      touchManagerRef.current = new TouchManager(handleTap, handleSwipe);
-      
-      const element = document.body;
-      element.addEventListener('touchstart', touchManagerRef.current.handleTouchStart, { passive: false });
-      element.addEventListener('touchend', touchManagerRef.current.handleTouchEnd, { passive: false });
-      element.addEventListener('touchmove', touchManagerRef.current.handleTouchMove, { passive: false });
-      
-      return () => {
-        if (touchManagerRef.current) {
-          element.removeEventListener('touchstart', touchManagerRef.current.handleTouchStart);
-          element.removeEventListener('touchend', touchManagerRef.current.handleTouchEnd);
-          element.removeEventListener('touchmove', touchManagerRef.current.handleTouchMove);
-        }
-      };
-    }
-  }, [gameState]);
-  
-  // Handle keyboard controls
-  useEffect(() => {
-    let lastWebState = false;
-    let lastChargeState = false;
-    
-    const handleKeyboardControls = () => {
-      if (gameState !== "playing") return;
-      
-      const controls = get();
-      
-      if (controls.jump) {
-        jumpPlayer();
-      }
-      if (controls.slide) {
-        slidePlayer();
-      }
-      if (controls.left) {
-        movePlayer('left');
-      }
-      if (controls.right) {
-        movePlayer('right');
-      }
-      
-      // Combat Controls
-      if (controls.punch) {
-        attackEnemy('punch');
-      }
-      if (controls.kick) {
-        attackEnemy('kick');
-      }
-      if (controls.special) {
-        attackEnemy('special');
-      }
-      if (controls.dash) {
-        dashPlayer();
-      }
-      
-      // Web-Swinging Controls (hold-based)
-      if (controls.webSwing !== lastWebState) {
-        setWebButtonPressed(controls.webSwing);
-        lastWebState = controls.webSwing;
-        console.log("Web button:", controls.webSwing ? "PRESSED" : "RELEASED");
-      }
-      
-      // Charged Kick Controls (hold while web-swinging)
-      if (controls.chargeKick && player.webAttached) {
-        if (!lastChargeState) {
-          // Start charging
-          kickChargeInterval.current = setInterval(() => {
-            chargeWebKick(0.016); // ~60fps delta
-          }, 16);
-          lastChargeState = true;
-          console.log("Started charging web kick!");
-        }
-      } else if (lastChargeState) {
-        // Release kick
-        if (kickChargeInterval.current) {
-          clearInterval(kickChargeInterval.current);
-          kickChargeInterval.current = null;
-        }
-        if (player.kickChargeTimer > 0) {
-          releaseWebKick();
-          console.log("Released web kick!");
-        }
-        lastChargeState = false;
-      }
-      
-      // Transformation Control (press to activate)
-      if (controls.transform && player.energyMeter >= 100 && player.powerLevel === 0) {
-        transformHero();
-        console.log("Transformation activated!");
-      }
-      
-      // Energy Blast Control (Jaxon only)
-      if (controls.energyBlast && !player.isAttacking) {
-        // Fire in direction based on mouse or default forward
-        fireEnergyBlast([1, 0]); // Forward direction
-        console.log("Energy blast fired!");
-      }
-    };
-    
-    const interval = setInterval(handleKeyboardControls, 16); // ~60fps
-    
-    return () => {
-      clearInterval(interval);
-      if (kickChargeInterval.current) {
-        clearInterval(kickChargeInterval.current);
-      }
-    };
-  }, [gameState, player.webAttached, player.kickChargeTimer, player.energyMeter, player.powerLevel, player.isAttacking]);
-  
-  // Touch control UI for mobile devices
-  if (!isTouchDevice() || gameState !== "playing") {
-    return null;
-  }
-  
+    useTouchControls.getState().detectTouch();
+  }, []);
+
+  if (!showControls) return null;
+
   return (
-    <div className="fixed inset-0 pointer-events-none z-10">
-      {/* Invisible touch areas for better control */}
-      <div className="absolute top-0 left-0 w-full h-1/3 pointer-events-auto" 
-           onTouchStart={(e) => { e.preventDefault(); jumpPlayer(); hapticFeedback('light'); }} />
-      
-      <div className="absolute bottom-0 left-0 w-full h-1/3 pointer-events-auto"
-           onTouchStart={(e) => { e.preventDefault(); slidePlayer(); hapticFeedback('medium'); }} />
-      
-      <div className="absolute top-1/3 left-0 w-1/2 h-1/3 pointer-events-auto"
-           onTouchStart={(e) => { e.preventDefault(); movePlayer('left'); hapticFeedback('light'); }} />
-      
-      <div className="absolute top-1/3 right-0 w-1/2 h-1/3 pointer-events-auto"
-           onTouchStart={(e) => { e.preventDefault(); movePlayer('right'); hapticFeedback('light'); }} />
-      
-      {/* Visual hints */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-sm font-bold bg-black bg-opacity-50 px-3 py-1 rounded-full">
-        TAP TO JUMP
+    <div style={{
+      position: 'absolute',
+      inset: 0,
+      pointerEvents: 'none',
+      zIndex: 40,
+      touchAction: 'none',
+    }}>
+      <div style={{
+        position: 'absolute',
+        bottom: 20,
+        left: 16,
+        pointerEvents: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        alignItems: 'center',
+      }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
+          <ActionButton label="JUMP" color="#44aaff" actionName="jump" size={46} />
+          <ActionButton label="DASH" color="#ffaa44" actionName="dodge" size={46} />
+          <ActionButton label="RUN" color="#44ff88" actionName="run" size={46} />
+        </div>
+        <VirtualJoystick />
       </div>
-      
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm font-bold bg-black bg-opacity-50 px-3 py-1 rounded-full">
-        SWIPE DOWN TO SLIDE
-      </div>
-      
-      <div className="absolute top-1/2 left-4 transform -translate-y-1/2 text-white text-xs font-bold bg-black bg-opacity-50 px-2 py-1 rounded-full rotate-90">
-        ← SWIPE
-      </div>
-      
-      <div className="absolute top-1/2 right-4 transform -translate-y-1/2 text-white text-xs font-bold bg-black bg-opacity-50 px-2 py-1 rounded-full rotate-90">
-        SWIPE →
+
+      <div style={{
+        position: 'absolute',
+        bottom: 20,
+        right: 16,
+        pointerEvents: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+        alignItems: 'center',
+      }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 2 }}>
+          <ActionButton label="SPE" color="#00ccff" actionName="special" size={44} />
+          <ActionButton label="ULT" color="#cc44ff" actionName="ultimate" size={44} />
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <ActionButton label="LIGHT" color="#ff4444" actionName="lightAttack" />
+          <ActionButton label="HEAVY" color="#ff8844" actionName="heavyAttack" />
+          <ActionButton label="LAUNCH" color="#aa44ff" actionName="launcher" />
+        </div>
       </div>
     </div>
   );
