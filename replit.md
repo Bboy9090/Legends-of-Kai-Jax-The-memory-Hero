@@ -73,6 +73,16 @@ BEAST-KIN SOVEREIGNTY: GENESIS™ is an epic platform fighting RPG featuring 100
   - Victory/defeat screens with animated stats
   - Real-time enemy position sync to combat store
 
+**PHASE 5: Mobile & Touch Controls** - COMPLETED
+- ✅ useTouchControls.ts Zustand store for touch input state
+- ✅ TouchControls.tsx with virtual joystick (left thumb) + action buttons (right thumb)
+- ✅ Auto-detects touch devices, shows controls automatically on phones/tablets
+- ✅ Desktop toggle button to switch between keyboard hints and touch controls
+- ✅ All inputs merge: keyboard OR touch for movement, jump, dash, combat
+- ✅ Responsive HUD with Tailwind sm: breakpoints (smaller on mobile)
+- ✅ Compact minimap on touch devices
+- ✅ Responsive pause/defeat screens
+
 ## System Architecture
 
 ### Frontend
