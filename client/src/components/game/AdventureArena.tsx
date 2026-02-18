@@ -163,47 +163,95 @@ interface AnimState {
   attackType: string;
   isDashing: boolean;
   isAirborne: boolean;
+  turnDelta: number;
+  moveSpeed: number;
 }
 
-const DEFORM_VERTEX_HEADER = `
+type StanceType = 'biped' | 'quadruped';
+
+const QUADRUPED_MODELS = new Set([
+  'frost_wolf', 'shadow_panther', 'thunder_lion',
+  'jade_serpent', 'earth_turtle',
+]);
+
+function detectStance(modelId: string, bbox: THREE.Box3): StanceType {
+  const resolved = resolveModelId(modelId);
+  if (QUADRUPED_MODELS.has(resolved)) return 'quadruped';
+  const size = new THREE.Vector3();
+  bbox.getSize(size);
+  const depthToHeight = size.z / Math.max(size.y, 0.01);
+  if (depthToHeight > 1.3) return 'quadruped';
+  return 'biped';
+}
+
+const ANIM_UNIFORM_HEADER = `
 uniform float uWalkPhase;
-uniform float uArmSwing;
-uniform float uTorsoTwist;
+uniform float uIsMoving;
 uniform float uModelMinY;
 uniform float uModelHeight;
+uniform float uModelMinZ;
+uniform float uModelDepth;
 uniform float uAttackLunge;
-uniform float uIsMoving;
 uniform float uSquash;
+uniform float uTurnLean;
+uniform float uSpeedFactor;
+uniform float uHeadBob;
 `;
 
-const DEFORM_VERTEX_BODY = `
+const BIPED_DEFORM = `
 {
   float nY = clamp((transformed.y - uModelMinY) / max(uModelHeight, 0.01), 0.0, 1.0);
   float limbSide = step(0.0, transformed.x) * 2.0 - 1.0;
 
-  if (nY < 0.35 && uIsMoving > 0.01) {
-    float legF = (0.35 - nY) / 0.35;
+  if (nY < 0.4 && uIsMoving > 0.01) {
+    float legF = (0.4 - nY) / 0.4;
+    float legF2 = legF * legF;
     float legPhase = sin(uWalkPhase + limbSide * 1.5708);
-    transformed.z += legPhase * legF * 0.5 * uIsMoving;
-    transformed.y += abs(legPhase) * legF * 0.15 * uIsMoving;
+    float strideLen = 0.55 * uSpeedFactor;
+    transformed.z += legPhase * legF2 * strideLen * uIsMoving;
+    transformed.y += abs(legPhase) * legF * 0.18 * uIsMoving * uSpeedFactor;
+    float kneePhase = max(0.0, sin(uWalkPhase + limbSide * 1.5708 + 0.5));
+    transformed.z -= kneePhase * legF * 0.12 * uIsMoving;
   }
 
-  if (nY > 0.3 && nY < 0.7 && abs(uTorsoTwist) > 0.001) {
-    float twF = sin(3.14159 * (nY - 0.3) / 0.4) * 0.5;
-    float ang = uTorsoTwist * twF;
-    float ca = cos(ang);
-    float sa = sin(ang);
+  if (nY > 0.35 && nY < 0.65 && uIsMoving > 0.01) {
+    float hipF = sin(3.14159 * (nY - 0.35) / 0.3) * 0.5;
+    float hipSway = sin(uWalkPhase) * hipF * 0.08 * uIsMoving * uSpeedFactor;
+    transformed.x += hipSway;
+    float hipTwist = sin(uWalkPhase) * hipF * 0.15 * uIsMoving * uSpeedFactor;
+    float ca = cos(hipTwist);
+    float sa = sin(hipTwist);
     float ox = transformed.x;
     float oz = transformed.z;
     transformed.x = ox * ca - oz * sa;
     transformed.z = ox * sa + oz * ca;
   }
 
-  if (nY > 0.6 && abs(uArmSwing) > 0.001) {
-    float armF = (nY - 0.6) / 0.4;
+  if (nY > 0.55 && nY < 0.85 && uIsMoving > 0.01) {
+    float armF = smoothstep(0.55, 0.75, nY);
     float armPhase = sin(uWalkPhase + limbSide * 1.5708 + 3.14159);
-    transformed.z += armPhase * armF * uArmSwing;
-    transformed.x += sin(uWalkPhase * 0.5) * armF * uArmSwing * 0.3 * limbSide;
+    float swing = 0.5 * uSpeedFactor * uIsMoving;
+    transformed.z += armPhase * armF * swing;
+    float elbowBend = max(0.0, -armPhase) * armF * 0.15 * uIsMoving;
+    transformed.y -= elbowBend;
+    transformed.x += sin(uWalkPhase * 0.5) * armF * swing * 0.25 * limbSide;
+  }
+
+  if (nY > 0.85) {
+    float headF = smoothstep(0.85, 1.0, nY);
+    transformed.y += uHeadBob * headF * 0.08;
+    transformed.z += sin(uWalkPhase * 0.5) * headF * 0.02 * uIsMoving;
+  }
+
+  if (abs(uTurnLean) > 0.01) {
+    float leanF = smoothstep(0.0, 0.5, nY);
+    transformed.x += uTurnLean * leanF * 0.25;
+    float leanAngle = uTurnLean * leanF * 0.15;
+    float lca = cos(leanAngle);
+    float lsa = sin(leanAngle);
+    float ly = transformed.y - uModelMinY;
+    float lx = transformed.x;
+    transformed.x = lx * lca - ly * lsa;
   }
 
   transformed.z += uAttackLunge * smoothstep(0.3, 1.0, nY);
@@ -216,44 +264,111 @@ const DEFORM_VERTEX_BODY = `
 }
 `;
 
+const QUADRUPED_DEFORM = `
+{
+  float nY = clamp((transformed.y - uModelMinY) / max(uModelHeight, 0.01), 0.0, 1.0);
+  float nZ = clamp((transformed.z - uModelMinZ) / max(uModelDepth, 0.01), 0.0, 1.0);
+  float limbSide = step(0.0, transformed.x) * 2.0 - 1.0;
+  float isFront = step(0.5, nZ);
+  float isRear = 1.0 - isFront;
+
+  if (nY < 0.5 && uIsMoving > 0.01) {
+    float legF = (0.5 - nY) / 0.5;
+    float legF2 = legF * legF;
+    float frontPhase = sin(uWalkPhase + limbSide * 1.5708);
+    float rearPhase = sin(uWalkPhase + limbSide * 1.5708 + 3.14159);
+    float legPhase = isFront * frontPhase + isRear * rearPhase;
+    float strideLen = 0.5 * uSpeedFactor;
+    transformed.z += legPhase * legF2 * strideLen * uIsMoving;
+    transformed.y += abs(legPhase) * legF * 0.2 * uIsMoving * uSpeedFactor;
+    float pawLift = max(0.0, legPhase) * legF * 0.12 * uIsMoving;
+    transformed.y += pawLift;
+  }
+
+  if (nY > 0.35 && nY < 0.85 && uIsMoving > 0.01) {
+    float spineF = sin(3.14159 * (nY - 0.35) / 0.5);
+    float spineWave = sin(uWalkPhase * 2.0 + nZ * 3.14159) * spineF * 0.12 * uIsMoving * uSpeedFactor;
+    transformed.y += spineWave;
+    float spineUndulate = sin(uWalkPhase + nZ * 6.28318) * spineF * 0.06 * uIsMoving;
+    transformed.x += spineUndulate * (nZ - 0.5);
+  }
+
+  if (nY > 0.6 && nZ > 0.7) {
+    float headF = smoothstep(0.7, 1.0, nZ) * smoothstep(0.6, 0.8, nY);
+    transformed.y += uHeadBob * headF * 0.12;
+    transformed.z += sin(uWalkPhase * 0.5) * headF * 0.04 * uIsMoving;
+  }
+
+  if (nZ < 0.2 && nY > 0.3 && uIsMoving > 0.01) {
+    float tailF = (0.2 - nZ) / 0.2;
+    transformed.x += sin(uWalkPhase * 1.5 + tailF * 3.0) * tailF * 0.2 * uIsMoving;
+    transformed.y += sin(uWalkPhase * 2.0) * tailF * 0.08 * uIsMoving;
+  }
+
+  if (abs(uTurnLean) > 0.01) {
+    float leanF = nY * 0.5;
+    transformed.x += uTurnLean * leanF * 0.2;
+    float bodyTwist = uTurnLean * 0.1 * nZ;
+    float tca = cos(bodyTwist);
+    float tsa = sin(bodyTwist);
+    float tz = transformed.z;
+    float tx = transformed.x;
+    transformed.x = tx * tca - tz * tsa;
+    transformed.z = tx * tsa + tz * tca;
+  }
+
+  transformed.z += uAttackLunge * smoothstep(0.3, 0.8, nY);
+
+  if (abs(uSquash) > 0.01) {
+    transformed.y *= 1.0 - uSquash * 0.2;
+    transformed.x *= 1.0 + uSquash * 0.1;
+    transformed.z *= 1.0 + uSquash * 0.1;
+  }
+}
+`;
+
 function createAnimUniforms(bbox: THREE.Box3) {
+  const size = new THREE.Vector3();
+  bbox.getSize(size);
   return {
     uWalkPhase: { value: 0 },
-    uArmSwing: { value: 0 },
-    uTorsoTwist: { value: 0 },
-    uModelMinY: { value: bbox.min.y },
-    uModelHeight: { value: Math.max(bbox.max.y - bbox.min.y, 0.01) },
-    uAttackLunge: { value: 0 },
     uIsMoving: { value: 0 },
+    uModelMinY: { value: bbox.min.y },
+    uModelHeight: { value: Math.max(size.y, 0.01) },
+    uModelMinZ: { value: bbox.min.z },
+    uModelDepth: { value: Math.max(size.z, 0.01) },
+    uAttackLunge: { value: 0 },
     uSquash: { value: 0 },
+    uTurnLean: { value: 0 },
+    uSpeedFactor: { value: 1 },
+    uHeadBob: { value: 0 },
   };
 }
 
-function injectDeformShader(mat: THREE.Material, uniforms: ReturnType<typeof createAnimUniforms>) {
+type AnimUniforms = ReturnType<typeof createAnimUniforms>;
+
+let _shaderIdCounter = 0;
+function injectDeformShader(mat: THREE.Material, uniforms: AnimUniforms, stance: StanceType) {
   const matAny = mat as any;
   const origCompile = matAny.onBeforeCompile?.bind(mat);
-  const cacheId = 'procAnim_' + Math.random().toString(36).slice(2);
+  const cacheId = `procAnim_${stance}_${_shaderIdCounter++}`;
+  const deformBody = stance === 'quadruped' ? QUADRUPED_DEFORM : BIPED_DEFORM;
 
   matAny.onBeforeCompile = function(shader: any, renderer: any) {
     if (origCompile) origCompile(shader, renderer);
 
-    shader.uniforms.uWalkPhase = uniforms.uWalkPhase;
-    shader.uniforms.uArmSwing = uniforms.uArmSwing;
-    shader.uniforms.uTorsoTwist = uniforms.uTorsoTwist;
-    shader.uniforms.uModelMinY = uniforms.uModelMinY;
-    shader.uniforms.uModelHeight = uniforms.uModelHeight;
-    shader.uniforms.uAttackLunge = uniforms.uAttackLunge;
-    shader.uniforms.uIsMoving = uniforms.uIsMoving;
-    shader.uniforms.uSquash = uniforms.uSquash;
+    for (const [key, val] of Object.entries(uniforms)) {
+      shader.uniforms[key] = val;
+    }
 
     if (shader.vertexShader.indexOf('uWalkPhase') === -1) {
       shader.vertexShader = shader.vertexShader.replace(
         'void main() {',
-        DEFORM_VERTEX_HEADER + '\nvoid main() {'
+        ANIM_UNIFORM_HEADER + '\nvoid main() {'
       );
       shader.vertexShader = shader.vertexShader.replace(
         '#include <begin_vertex>',
-        '#include <begin_vertex>\n' + DEFORM_VERTEX_BODY
+        '#include <begin_vertex>\n' + deformBody
       );
     }
   };
@@ -268,12 +383,18 @@ function AnimatedGLBModel({ modelId, animStateRef }: {
 }) {
   const resolved = resolveModelId(modelId);
   const { scene } = useGLTF(`/models/${resolved}.glb`);
-  const uniformsRef = useRef<ReturnType<typeof createAnimUniforms> | null>(null);
+  const uniformsRef = useRef<AnimUniforms | null>(null);
+  const stanceRef = useRef<StanceType>('biped');
   const scale = getCharacterScale(modelId);
+  const smoothMoving = useRef(0);
+  const smoothTurn = useRef(0);
+  const smoothSpeed = useRef(0);
 
   const clonedScene = useMemo(() => {
     const clone = scene.clone(true);
     const bbox = new THREE.Box3().setFromObject(clone);
+    const stance = detectStance(modelId, bbox);
+    stanceRef.current = stance;
     const uniforms = createAnimUniforms(bbox);
 
     clone.traverse((child: any) => {
@@ -283,12 +404,12 @@ function AnimatedGLBModel({ modelId, animStateRef }: {
         if (Array.isArray(child.material)) {
           child.material = child.material.map((m: THREE.Material) => {
             const cloned = m.clone();
-            injectDeformShader(cloned, uniforms);
+            injectDeformShader(cloned, uniforms, stance);
             return cloned;
           });
         } else if (child.material) {
           child.material = child.material.clone();
-          injectDeformShader(child.material, uniforms);
+          injectDeformShader(child.material, uniforms, stance);
         }
       }
     });
@@ -297,55 +418,65 @@ function AnimatedGLBModel({ modelId, animStateRef }: {
     return clone;
   }, [scene]);
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     const u = uniformsRef.current;
     if (!u) return;
     const t = state.clock.elapsedTime;
+    const dt = Math.min(delta, 0.05);
     const anim = animStateRef.current;
+    const stance = stanceRef.current;
+
+    const targetMoving = (anim.isMoving && !anim.isDashing && !anim.isAttacking) ? 1 : 0;
+    smoothMoving.current += (targetMoving - smoothMoving.current) * Math.min(1, 8 * dt);
+
+    const targetTurn = anim.turnDelta || 0;
+    smoothTurn.current += (targetTurn - smoothTurn.current) * Math.min(1, 6 * dt);
+
+    const targetSpeed = anim.isRunning ? 1.4 : (anim.moveSpeed || 1);
+    smoothSpeed.current += (targetSpeed - smoothSpeed.current) * Math.min(1, 5 * dt);
+
+    u.uIsMoving.value = smoothMoving.current;
+    u.uTurnLean.value = smoothTurn.current;
+    u.uSpeedFactor.value = smoothSpeed.current;
 
     if (anim.isDashing) {
       u.uIsMoving.value = 0;
-      u.uArmSwing.value = 0;
-      u.uTorsoTwist.value = 0;
       u.uAttackLunge.value = 0;
       u.uSquash.value = 0;
+      u.uHeadBob.value = 0;
     } else if (anim.isAttacking) {
       u.uIsMoving.value = 0;
       const isHeavy = anim.attackType.startsWith('heavy') || anim.attackType === 'special' || anim.attackType === 'ultimate';
-      if (isHeavy) {
-        u.uAttackLunge.value = 0.9;
-        u.uArmSwing.value = Math.sin(t * 20) * 0.7;
-        u.uTorsoTwist.value = Math.sin(t * 12) * 0.5;
+      if (stance === 'quadruped') {
+        u.uAttackLunge.value = isHeavy ? 0.7 : 0.4;
+        u.uSquash.value = Math.sin(t * 18) * (isHeavy ? 0.3 : 0.15);
+        u.uHeadBob.value = Math.sin(t * 22) * (isHeavy ? 0.6 : 0.3);
       } else {
-        u.uAttackLunge.value = 0.5;
-        u.uArmSwing.value = Math.sin(t * 28) * 0.5;
-        u.uTorsoTwist.value = Math.sin(t * 18) * 0.25;
+        u.uAttackLunge.value = isHeavy ? 0.9 : 0.5;
+        u.uSquash.value = 0;
+        u.uHeadBob.value = Math.sin(t * 15) * 0.2;
       }
       u.uWalkPhase.value = t * 15;
-      u.uSquash.value = 0;
     } else if (anim.isAirborne) {
       u.uIsMoving.value = 0;
-      u.uArmSwing.value = 0.3;
-      u.uWalkPhase.value = t * 4;
-      u.uTorsoTwist.value = 0;
       u.uAttackLunge.value = 0;
+      u.uHeadBob.value = Math.sin(t * 4) * 0.15;
       u.uSquash.value = 0;
+      u.uWalkPhase.value = t * 4;
     } else if (anim.isMoving) {
-      const speed = anim.isRunning ? 10 : 6;
-      const intensity = anim.isRunning ? 1.0 : 0.65;
-      u.uWalkPhase.value = t * speed;
-      u.uIsMoving.value = intensity;
-      u.uArmSwing.value = intensity * 0.55;
-      u.uTorsoTwist.value = Math.sin(t * speed * 0.5) * 0.18 * intensity;
+      const walkSpeed = anim.isRunning ? (stance === 'quadruped' ? 14 : 10) : (stance === 'quadruped' ? 10 : 6);
+      u.uWalkPhase.value = t * walkSpeed;
       u.uAttackLunge.value = 0;
+      u.uHeadBob.value = Math.sin(t * walkSpeed) * (anim.isRunning ? 0.3 : 0.15);
       u.uSquash.value = 0;
     } else {
-      u.uWalkPhase.value = t * 1.5;
+      const breathSpeed = stance === 'quadruped' ? 1.8 : 1.5;
+      u.uWalkPhase.value = t * breathSpeed;
       u.uIsMoving.value = 0;
-      u.uArmSwing.value = Math.sin(t * 2) * 0.06;
-      u.uTorsoTwist.value = Math.sin(t * 1.2) * 0.04;
       u.uAttackLunge.value = 0;
-      u.uSquash.value = Math.sin(t * 2) * 0.05;
+      u.uHeadBob.value = Math.sin(t * 2) * 0.04;
+      u.uSquash.value = Math.sin(t * breathSpeed) * 0.04;
+      smoothMoving.current = 0;
     }
   });
 
@@ -551,11 +682,13 @@ function Player3D({
   const animStateRef = useRef<AnimState>({
     isMoving: false, isRunning: false, isAttacking: false,
     attackType: '', isDashing: false, isAirborne: false,
+    turnDelta: 0, moveSpeed: 0,
   });
 
   const velocityRef = useRef(new THREE.Vector3());
   const positionRef = useRef(new THREE.Vector3(0, 0, 0));
   const rotationRef = useRef(0);
+  const prevRotationRef = useRef(0);
   const groundedRef = useRef(true);
   const dashTimerRef = useRef(0);
   const dashCooldownRef = useRef(0);
@@ -672,12 +805,18 @@ function Player3D({
     }
 
     const isMoving = len > 0.1;
+    const rotDelta = rotationRef.current - prevRotationRef.current;
+    prevRotationRef.current = rotationRef.current;
+    const horizontalSpeed = Math.sqrt(velocityRef.current.x * velocityRef.current.x + velocityRef.current.z * velocityRef.current.z);
+
     animStateRef.current.isMoving = isMoving;
     animStateRef.current.isRunning = isRunning;
     animStateRef.current.isDashing = dashTimerRef.current > 0;
     animStateRef.current.isAirborne = !groundedRef.current;
     animStateRef.current.isAttacking = !!(currentAttackRef.current && attackPhaseRef.current === 'active');
     animStateRef.current.attackType = currentAttackRef.current || '';
+    animStateRef.current.turnDelta = Math.max(-1, Math.min(1, rotDelta * 5));
+    animStateRef.current.moveSpeed = Math.min(1.5, horizontalSpeed / MOVE_SPEED);
 
     animateBody(dt, state.clock.elapsedTime, isMoving, isRunning);
   });
@@ -806,6 +945,8 @@ function Player3D({
     }
   };
 
+  const bodyLeanRef = useRef({ x: 0, z: 0 });
+
   const animateBody = (dt: number, time: number, isMoving: boolean, isRunning: boolean) => {
     if (!bodyRef.current) return;
 
@@ -822,41 +963,63 @@ function Player3D({
     if (currentAttackRef.current && attackPhaseRef.current) {
       const atk = currentAttackRef.current;
       if (attackPhaseRef.current === 'windup') {
-        bodyRef.current.rotation.x = 0.15;
-        bodyRef.current.position.y = -0.1;
+        bodyRef.current.rotation.x = 0.2;
+        bodyRef.current.position.y = -0.15;
+        bodyRef.current.scale.setScalar(0.97);
       } else if (attackPhaseRef.current === 'active') {
         if (atk === 'launcher') {
           bodyRef.current.position.y = 0.6;
           bodyRef.current.rotation.x = -0.3;
         } else if (atk.startsWith('aerial')) {
           bodyRef.current.position.y = 0.5;
+          bodyRef.current.rotation.z = Math.sin(time * 18) * 0.1;
         } else if (atk === 'slam') {
           bodyRef.current.position.y = -0.3;
+          bodyRef.current.rotation.x = 0.4;
         } else if (atk === 'special') {
           bodyRef.current.position.y = 0.2;
           bodyRef.current.scale.setScalar(1.1);
+          bodyRef.current.rotation.y = Math.sin(time * 12) * 0.15;
         } else if (atk === 'ultimate') {
           bodyRef.current.position.y = 1.0 + Math.sin(time * 10) * 0.3;
           bodyRef.current.rotation.y = time * 15;
           bodyRef.current.scale.setScalar(1.2);
         } else {
           bodyRef.current.position.z = 0.3;
+          bodyRef.current.rotation.y = Math.sin(time * 15) * 0.08;
         }
+      } else if (attackPhaseRef.current === 'recovery') {
+        bodyRef.current.rotation.x = -0.08;
+        bodyRef.current.position.y = 0.05;
       }
       return;
     }
 
     if (!groundedRef.current) {
+      const vy = velocityRef.current.y;
+      bodyRef.current.rotation.x = vy > 0 ? -0.15 : 0.2;
       bodyRef.current.position.y = Math.sin(time * 6) * 0.08;
       return;
     }
 
+    const turnDelta = animStateRef.current.turnDelta;
+    const targetLeanZ = -turnDelta * (isRunning ? 0.18 : 0.1);
+    bodyLeanRef.current.z += (targetLeanZ - bodyLeanRef.current.z) * Math.min(1, 8 * dt);
+
     if (isMoving) {
       const speed = isRunning ? 12 : 8;
-      bodyRef.current.position.y = Math.abs(Math.sin(time * speed)) * (isRunning ? 0.15 : 0.08);
-      bodyRef.current.rotation.x = isRunning ? 0.12 : 0.06;
+      const bounce = Math.abs(Math.sin(time * speed));
+      bodyRef.current.position.y = bounce * (isRunning ? 0.18 : 0.1);
+      bodyRef.current.rotation.x = isRunning ? 0.15 : 0.08;
+      bodyRef.current.rotation.z = bodyLeanRef.current.z;
+      const sway = Math.sin(time * speed * 0.5) * 0.02;
+      bodyRef.current.position.x = sway;
       return;
     }
+
+    bodyLeanRef.current.z *= 0.9;
+    bodyRef.current.position.y = Math.sin(time * 2) * 0.02;
+    bodyRef.current.rotation.x = Math.sin(time * 1.5) * 0.01;
   };
 
   const attackColor = useMemo(() => {
@@ -927,7 +1090,9 @@ function Enemy3D({
   const enemyAnimRef = useRef<AnimState>({
     isMoving: false, isRunning: false, isAttacking: false,
     attackType: '', isDashing: false, isAirborne: false,
+    turnDelta: 0, moveSpeed: 0,
   });
+  const prevEnemyRotRef = useRef(0);
 
   useFrame((state, delta) => {
     if (enemy.state === 'dead') {
@@ -984,12 +1149,16 @@ function Enemy3D({
       groupRef.current.rotation.y = rot + Math.PI;
     }
 
+    const enemyRotDelta = rot - prevEnemyRotRef.current;
+    prevEnemyRotRef.current = rot;
     enemyAnimRef.current.isMoving = newState === 'chase' || newState === 'patrol';
     enemyAnimRef.current.isRunning = newState === 'chase';
     enemyAnimRef.current.isAttacking = newState === 'attack';
     enemyAnimRef.current.attackType = newState === 'attack' ? 'heavy1' : '';
     enemyAnimRef.current.isDashing = false;
     enemyAnimRef.current.isAirborne = false;
+    enemyAnimRef.current.turnDelta = Math.max(-1, Math.min(1, enemyRotDelta * 5));
+    enemyAnimRef.current.moveSpeed = newState === 'chase' ? 1.2 : (newState === 'patrol' ? 0.7 : 0);
 
     if (bodyRef.current) {
       const t = state.clock.elapsedTime;

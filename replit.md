@@ -33,7 +33,7 @@ BEAST-KIN SOVEREIGNTY: GENESIS™ is an epic platform fighting RPG featuring 100
 - ✅ Current creature models (user-created via Meshy AI):
   - kai_jax_beast.glb - KAI-JAX (The Memory King)
   - kaison_beast.glb - KAISON (Twin of Law)
-  - jaxon_beast.glb - JAXON (Twin of Sacrifice)
+  - darjshadowkaijax.glb - JAXON (Twin of Sacrifice) [was jaxon_beast.glb]
   - boryx_zenith_beast.glb - BORYX ZENITH (Guardian King)
   - lunara_solis_beast.glb - LUNARA SOLIS (Oracle Sentinel)
   - phoenix_warrior.glb - PHOENIX WARRIOR (Flame Reborn)
@@ -82,6 +82,17 @@ BEAST-KIN SOVEREIGNTY: GENESIS™ is an epic platform fighting RPG featuring 100
 - ✅ Responsive HUD with Tailwind sm: breakpoints (smaller on mobile)
 - ✅ Compact minimap on touch devices
 - ✅ Responsive pause/defeat screens
+
+**PHASE 6: Biped/Quadruped Locomotion Rigging** - COMPLETED
+- ✅ Stance detection system: manual QUADRUPED_MODELS set + automatic bbox aspect ratio fallback
+- ✅ Quadruped models: frost_wolf, shadow_panther, thunder_lion, jade_serpent, earth_turtle
+- ✅ Biped GLSL shader: legs with knee bend, hip sway/twist, arm swing with elbow bend, head bob, turn lean
+- ✅ Quadruped GLSL shader: diagonal gait (front/rear leg offset), spine undulation, head bob, tail wag, body turn twist
+- ✅ Front/rear detection uses model-space nZ with uModelMinZ for accurate leg phasing regardless of model centering
+- ✅ AnimState extended with turnDelta and moveSpeed for responsive movement feel
+- ✅ Smooth interpolation for all shader uniforms (no popping)
+- ✅ Body lean into turns, airborne tilt based on vertical velocity, attack recovery pose
+- ✅ Jax model switched from jaxon_beast.glb to darjshadowkaijax.glb
 
 ## System Architecture
 
