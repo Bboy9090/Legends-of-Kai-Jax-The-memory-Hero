@@ -5,6 +5,8 @@ import { KeyboardControls, useKeyboardControls, useGLTF, Html, Sparkles, useText
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { useFluidCombat, COMBO_MOVES, COMBO_CHAINS, AttackType } from '../../lib/stores/useFluidCombat';
+import { useTouchControls } from '../../lib/stores/useTouchControls';
+import TouchControls from './TouchControls';
 
 interface AdventureArenaProps {
   characterId: string;
@@ -584,6 +586,7 @@ function Player3D({
   useFrame((state, delta) => {
     animTimeRef.current += delta;
     const keys = getKeys();
+    const touch = useTouchControls.getState();
     const dt = Math.min(delta, 0.05);
 
     let moveX = 0;
@@ -592,10 +595,12 @@ function Player3D({
     if (keys.right) moveX += 1;
     if (keys.forward) moveZ -= 1;
     if (keys.back) moveZ += 1;
+    if (Math.abs(touch.moveX) > 0.15) moveX += touch.moveX;
+    if (Math.abs(touch.moveY) > 0.15) moveZ += touch.moveY;
     const len = Math.sqrt(moveX * moveX + moveZ * moveZ);
     if (len > 0) { moveX /= len; moveZ /= len; }
 
-    const isRunning = keys.run;
+    const isRunning = keys.run || touch.run;
     const speed = isRunning ? RUN_SPEED : MOVE_SPEED;
 
     if (dashTimerRef.current > 0) {
@@ -614,7 +619,7 @@ function Player3D({
 
     if (dashCooldownRef.current > 0) dashCooldownRef.current -= dt;
 
-    if (keys.dodge && dashCooldownRef.current <= 0 && dashTimerRef.current <= 0) {
+    if ((keys.dodge || touch.dodge) && dashCooldownRef.current <= 0 && dashTimerRef.current <= 0) {
       dashTimerRef.current = DASH_DURATION;
       dashCooldownRef.current = DASH_COOLDOWN;
       const dashDir = len > 0.1 ? new THREE.Vector3(moveX, 0, moveZ) : new THREE.Vector3(Math.sin(rotationRef.current), 0, Math.cos(rotationRef.current));
@@ -622,11 +627,12 @@ function Player3D({
       velocityRef.current.z = dashDir.z * DASH_SPEED;
     }
 
-    if (keys.jump && groundedRef.current && !jumpPressedRef.current) {
+    const jumpPressed = keys.jump || touch.jump;
+    if (jumpPressed && groundedRef.current && !jumpPressedRef.current) {
       velocityRef.current.y = JUMP_FORCE;
       groundedRef.current = false;
     }
-    jumpPressedRef.current = keys.jump;
+    jumpPressedRef.current = jumpPressed;
 
     if (!groundedRef.current) {
       velocityRef.current.y += GRAVITY * dt;
@@ -654,7 +660,7 @@ function Player3D({
       rotationRef.current += diff * Math.min(1, 12 * dt);
     }
 
-    handleCombatInput(keys, dt);
+    handleCombatInput(keys, dt, touch);
     updateAttack(dt);
 
     playerPosRef.current.copy(positionRef.current);
@@ -676,7 +682,7 @@ function Player3D({
     animateBody(dt, state.clock.elapsedTime, isMoving, isRunning);
   });
 
-  const handleCombatInput = (keys: any, dt: number) => {
+  const handleCombatInput = (keys: any, dt: number, touch: any) => {
     if (comboTimerRef.current > 0) comboTimerRef.current -= dt;
     if (comboTimerRef.current <= 0 && comboCountRef.current > 0) {
       comboCountRef.current = 0;
@@ -685,36 +691,41 @@ function Player3D({
 
     const canAttack = !currentAttackRef.current || (attackPhaseRef.current === 'recovery');
 
-    if (keys.lightAttack && !attackPressedRef.current.light && canAttack) {
+    const lightDown = keys.lightAttack || touch.lightAttack;
+    if (lightDown && !attackPressedRef.current.light && canAttack) {
       const cur = currentAttackRef.current;
       let next: AttackType = 'light1';
       if (cur === 'light1') next = 'light2';
       else if (cur === 'light2') next = 'light3';
       startAttack(next);
     }
-    attackPressedRef.current.light = keys.lightAttack;
+    attackPressedRef.current.light = lightDown;
 
-    if (keys.heavyAttack && !attackPressedRef.current.heavy && canAttack) {
+    const heavyDown = keys.heavyAttack || touch.heavyAttack;
+    if (heavyDown && !attackPressedRef.current.heavy && canAttack) {
       startAttack('heavy1');
     }
-    attackPressedRef.current.heavy = keys.heavyAttack;
+    attackPressedRef.current.heavy = heavyDown;
 
-    if (keys.launcher && !attackPressedRef.current.launch && canAttack) {
+    const launchDown = keys.launcher || touch.launcher;
+    if (launchDown && !attackPressedRef.current.launch && canAttack) {
       startAttack('launcher');
     }
-    attackPressedRef.current.launch = keys.launcher;
+    attackPressedRef.current.launch = launchDown;
 
-    if (keys.special && !attackPressedRef.current.special && canAttack && specialMeterRef.current >= 50) {
+    const specialDown = keys.special || touch.special;
+    if (specialDown && !attackPressedRef.current.special && canAttack && specialMeterRef.current >= 50) {
       specialMeterRef.current -= 50;
       startAttack('special');
     }
-    attackPressedRef.current.special = keys.special;
+    attackPressedRef.current.special = specialDown;
 
-    if (keys.ultimate && !attackPressedRef.current.ultimate && canAttack && ultimateMeterRef.current >= 100) {
+    const ultDown = keys.ultimate || touch.ultimate;
+    if (ultDown && !attackPressedRef.current.ultimate && canAttack && ultimateMeterRef.current >= 100) {
       ultimateMeterRef.current -= 100;
       startAttack('ultimate');
     }
-    attackPressedRef.current.ultimate = keys.ultimate;
+    attackPressedRef.current.ultimate = ultDown;
   };
 
   const startAttack = (type: AttackType) => {
@@ -1192,9 +1203,11 @@ function AdventureWorld({
   );
 }
 
-function Minimap({ playerPos, enemies }: { playerPos: THREE.Vector3; enemies: EnemyState[] }) {
-  const mapSize = 120;
+function Minimap({ playerPos, enemies, compact }: { playerPos: THREE.Vector3; enemies: EnemyState[]; compact?: boolean }) {
+  const mapSize = compact ? 70 : 120;
   const scale = mapSize / WORLD_SIZE;
+  const dotSize = compact ? 5 : 8;
+  const enemyDot = compact ? 4 : 6;
 
   return (
     <div style={{
@@ -1204,17 +1217,17 @@ function Minimap({ playerPos, enemies }: { playerPos: THREE.Vector3; enemies: En
     }}>
       <div style={{
         position: 'absolute',
-        left: `${(playerPos.x + HALF_WORLD) * scale - 4}px`,
-        top: `${(playerPos.z + HALF_WORLD) * scale - 4}px`,
-        width: '8px', height: '8px', background: '#4488ff', borderRadius: '50%',
+        left: `${(playerPos.x + HALF_WORLD) * scale - dotSize / 2}px`,
+        top: `${(playerPos.z + HALF_WORLD) * scale - dotSize / 2}px`,
+        width: `${dotSize}px`, height: `${dotSize}px`, background: '#4488ff', borderRadius: '50%',
         boxShadow: '0 0 6px #4488ff',
       }} />
       {enemies.map((e, i) => e.state !== 'dead' && (
         <div key={i} style={{
           position: 'absolute',
-          left: `${(e.position.x + HALF_WORLD) * scale - 3}px`,
-          top: `${(e.position.z + HALF_WORLD) * scale - 3}px`,
-          width: '6px', height: '6px',
+          left: `${(e.position.x + HALF_WORLD) * scale - enemyDot / 2}px`,
+          top: `${(e.position.z + HALF_WORLD) * scale - enemyDot / 2}px`,
+          width: `${enemyDot}px`, height: `${enemyDot}px`,
           background: e.state === 'chase' ? '#ff4444' : '#ff8844',
           borderRadius: '50%',
           boxShadow: e.state === 'chase' ? '0 0 4px #ff4444' : 'none',
@@ -1231,6 +1244,12 @@ export default function AdventureArena({ characterId, onBack, onMissionComplete 
   const [isPaused, setIsPaused] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [enemyStates, setEnemyStates] = useState<EnemyState[]>([]);
+  const isTouchDevice = useTouchControls(s => s.isTouchDevice);
+  const showTouchControls = useTouchControls(s => s.showControls);
+
+  useEffect(() => {
+    useTouchControls.getState().detectTouch();
+  }, []);
 
   const enemiesRef = useRef<EnemyState[]>([]);
   const damageNumbersRef = useRef<DamageNumber[]>([]);
@@ -1306,14 +1325,16 @@ export default function AdventureArena({ characterId, onBack, onMissionComplete 
         </Canvas>
       </KeyboardControls>
 
+      <TouchControls />
+
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-4 left-4">
-          <div className="bg-black/80 rounded-lg p-3 border-2 border-cyan-500 min-w-[200px]">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-cyan-400 text-xs font-bold uppercase">{characterId}</span>
-              <span className="text-white text-xs ml-auto">{playerHp}/{maxPlayerHp}</span>
+        <div className="absolute top-2 sm:top-4 left-2 sm:left-4">
+          <div className="bg-black/80 rounded-lg p-2 sm:p-3 border-2 border-cyan-500 min-w-[140px] sm:min-w-[200px]">
+            <div className="flex items-center gap-1 sm:gap-2 mb-1">
+              <span className="text-cyan-400 text-[10px] sm:text-xs font-bold uppercase truncate max-w-[80px] sm:max-w-none">{characterId}</span>
+              <span className="text-white text-[10px] sm:text-xs ml-auto">{playerHp}/{maxPlayerHp}</span>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-gray-700 rounded-full h-2 sm:h-3 overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-200"
                 style={{
@@ -1327,83 +1348,97 @@ export default function AdventureArena({ characterId, onBack, onMissionComplete 
           </div>
         </div>
 
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+        <div className="absolute top-2 sm:top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 sm:gap-2">
           {comboCount > 1 && (
-            <div className={`rounded-lg px-5 py-2 ${comboCount > 10 ? 'bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 animate-pulse' : 'bg-gradient-to-r from-orange-500 to-red-500'}`}>
-              <p className="text-white font-black text-2xl text-center">{comboCount} HIT COMBO!</p>
+            <div className={`rounded-lg px-3 sm:px-5 py-1 sm:py-2 ${comboCount > 10 ? 'bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 animate-pulse' : 'bg-gradient-to-r from-orange-500 to-red-500'}`}>
+              <p className="text-white font-black text-base sm:text-2xl text-center">{comboCount} HIT COMBO!</p>
               {comboDamage > 0 && (
-                <p className="text-yellow-200 text-xs text-center">{comboDamage} total damage</p>
+                <p className="text-yellow-200 text-[10px] sm:text-xs text-center">{comboDamage} total damage</p>
               )}
             </div>
           )}
           {currentAttack && (
-            <div className="bg-orange-600/90 rounded-lg px-4 py-1 border border-orange-400">
-              <p className="text-white font-bold text-sm uppercase">{currentAttack.replace(/(\d)/g, ' $1')}</p>
+            <div className="bg-orange-600/90 rounded-lg px-2 sm:px-4 py-0.5 sm:py-1 border border-orange-400">
+              <p className="text-white font-bold text-[10px] sm:text-sm uppercase">{currentAttack.replace(/(\d)/g, ' $1')}</p>
             </div>
           )}
         </div>
 
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4">
-          <div className="w-48 bg-black/80 rounded-lg p-2 border-2 border-cyan-500">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-cyan-400 text-sm font-bold">SPECIAL</span>
-              <span className="text-white text-sm ml-auto">{Math.floor(specialMeter)}%</span>
+        <div className="absolute top-2 sm:top-4 right-12 sm:right-auto sm:left-[220px]">
+          <div className="flex flex-col gap-1 sm:flex-row sm:gap-4">
+            <div className="w-28 sm:w-48 bg-black/80 rounded-lg p-1.5 sm:p-2 border-2 border-cyan-500">
+              <div className="flex items-center gap-1 mb-0.5 sm:mb-1">
+                <span className="text-cyan-400 text-[9px] sm:text-sm font-bold">SPE</span>
+                <span className="text-white text-[9px] sm:text-sm ml-auto">{Math.floor(specialMeter)}%</span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-1.5 sm:h-3 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${specialMeter >= 50 ? 'animate-pulse' : ''}`}
+                  style={{
+                    width: `${specialMeter}%`,
+                    background: specialMeter >= 50 ? 'linear-gradient(90deg, #00ccff, #4488ff)' : '#00aacc',
+                  }}
+                />
+              </div>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${specialMeter >= 50 ? 'animate-pulse' : ''}`}
-                style={{
-                  width: `${specialMeter}%`,
-                  background: specialMeter >= 50 ? 'linear-gradient(90deg, #00ccff, #4488ff)' : '#00aacc',
-                }}
-              />
+            <div className="w-28 sm:w-48 bg-black/80 rounded-lg p-1.5 sm:p-2 border-2 border-purple-500">
+              <div className="flex items-center gap-1 mb-0.5 sm:mb-1">
+                <span className="text-purple-400 text-[9px] sm:text-sm font-bold">ULT</span>
+                <span className="text-white text-[9px] sm:text-sm ml-auto">{Math.floor(ultimateMeter)}%</span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-1.5 sm:h-3 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${ultimateMeter >= 100 ? 'animate-pulse' : ''}`}
+                  style={{
+                    width: `${ultimateMeter}%`,
+                    background: ultimateMeter >= 100 ? 'linear-gradient(90deg, #aa44ff, #ff44aa, #ff4444)' : '#8844cc',
+                  }}
+                />
+              </div>
             </div>
-          </div>
-          <div className="w-48 bg-black/80 rounded-lg p-2 border-2 border-purple-500">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-purple-400 text-sm font-bold">ULTIMATE</span>
-              <span className="text-white text-sm ml-auto">{Math.floor(ultimateMeter)}%</span>
-            </div>
-            <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${ultimateMeter >= 100 ? 'animate-pulse' : ''}`}
-                style={{
-                  width: `${ultimateMeter}%`,
-                  background: ultimateMeter >= 100 ? 'linear-gradient(90deg, #aa44ff, #ff44aa, #ff4444)' : '#8844cc',
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="absolute bottom-4 right-4">
-          <Minimap playerPos={playerPosRef.current} enemies={enemiesRef.current} />
-        </div>
-
-        <div className="absolute bottom-28 left-1/2 -translate-x-1/2">
-          <div className="text-center text-gray-500 text-xs bg-black/50 rounded-lg px-4 py-2">
-            <p><span className="text-yellow-400">WASD</span> Move | <span className="text-yellow-400">SPACE</span> Jump | <span className="text-yellow-400">SHIFT</span> Dash</p>
-            <p><span className="text-red-400">J/Z</span> Light | <span className="text-orange-400">K/X</span> Heavy | <span className="text-purple-400">L/C</span> Launcher | <span className="text-cyan-400">I/V</span> Special | <span className="text-pink-400">O/B</span> Ultimate</p>
           </div>
         </div>
 
-        <button
-          onClick={onBack}
-          className="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold pointer-events-auto transition-colors"
-        >
-          EXIT
-        </button>
+        <div className="absolute top-2 sm:top-auto sm:bottom-4 right-2 sm:right-4">
+          <Minimap playerPos={playerPosRef.current} enemies={enemiesRef.current} compact={showTouchControls} />
+        </div>
+
+        {!showTouchControls && (
+          <div className="absolute bottom-28 left-1/2 -translate-x-1/2 hidden sm:block">
+            <div className="text-center text-gray-500 text-xs bg-black/50 rounded-lg px-4 py-2">
+              <p><span className="text-yellow-400">WASD</span> Move | <span className="text-yellow-400">SPACE</span> Jump | <span className="text-yellow-400">SHIFT</span> Dash</p>
+              <p><span className="text-red-400">J/Z</span> Light | <span className="text-orange-400">K/X</span> Heavy | <span className="text-purple-400">L/C</span> Launcher | <span className="text-cyan-400">I/V</span> Special | <span className="text-pink-400">O/B</span> Ultimate</p>
+            </div>
+          </div>
+        )}
+
+        <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex gap-1 sm:gap-2">
+          {!isTouchDevice && (
+            <button
+              onClick={() => useTouchControls.getState().setShowControls(!showTouchControls)}
+              className="bg-gray-700/80 hover:bg-gray-600 text-white px-2 sm:px-3 py-1 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold pointer-events-auto transition-colors"
+            >
+              {showTouchControls ? 'KEYS' : 'TOUCH'}
+            </button>
+          )}
+          <button
+            onClick={onBack}
+            className="bg-red-600 hover:bg-red-700 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-bold pointer-events-auto transition-colors"
+          >
+            EXIT
+          </button>
+        </div>
       </div>
 
       {isPaused && !gameOver && (
         <div className="absolute inset-0 bg-black/80 flex items-center justify-center pointer-events-auto z-50">
-          <div className="text-center space-y-6">
-            <h1 className="text-6xl font-black text-white">PAUSED</h1>
-            <div className="flex gap-4 justify-center">
-              <button onClick={() => setIsPaused(false)} className="bg-green-600 hover:bg-green-500 text-white font-bold px-8 py-4 text-xl rounded-lg">
+          <div className="text-center space-y-4 sm:space-y-6 px-4">
+            <h1 className="text-4xl sm:text-6xl font-black text-white">PAUSED</h1>
+            <div className="flex gap-3 sm:gap-4 justify-center">
+              <button onClick={() => setIsPaused(false)} className="bg-green-600 hover:bg-green-500 text-white font-bold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-xl rounded-lg">
                 RESUME
               </button>
-              <button onClick={onBack} className="bg-red-600 hover:bg-red-500 text-white font-bold px-8 py-4 text-xl rounded-lg">
+              <button onClick={onBack} className="bg-red-600 hover:bg-red-500 text-white font-bold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-xl rounded-lg">
                 QUIT
               </button>
             </div>
@@ -1413,21 +1448,21 @@ export default function AdventureArena({ characterId, onBack, onMissionComplete 
 
       {gameOver && (
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900/95 via-red-950/90 to-black/95 flex items-center justify-center pointer-events-auto z-50">
-          <div className="text-center space-y-8">
-            <h1 className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-400 via-red-600 to-gray-400">
+          <div className="text-center space-y-4 sm:space-y-8 px-4">
+            <h1 className="text-4xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-400 via-red-600 to-gray-400">
               DEFEATED
             </h1>
-            <div className="grid grid-cols-2 gap-8 p-6 rounded-2xl bg-gray-900/60 border-2 border-red-500/30">
+            <div className="grid grid-cols-2 gap-4 sm:gap-8 p-4 sm:p-6 rounded-2xl bg-gray-900/60 border-2 border-red-500/30">
               <div className="text-center">
-                <p className="text-gray-400 text-sm uppercase">Max Combo</p>
-                <p className="text-4xl font-black text-red-400">{comboCount}</p>
+                <p className="text-gray-400 text-[10px] sm:text-sm uppercase">Max Combo</p>
+                <p className="text-2xl sm:text-4xl font-black text-red-400">{comboCount}</p>
               </div>
               <div className="text-center">
-                <p className="text-gray-400 text-sm uppercase">Total Damage</p>
-                <p className="text-4xl font-black text-orange-400">{comboDamage}</p>
+                <p className="text-gray-400 text-[10px] sm:text-sm uppercase">Total Damage</p>
+                <p className="text-2xl sm:text-4xl font-black text-orange-400">{comboDamage}</p>
               </div>
             </div>
-            <div className="flex gap-6 justify-center">
+            <div className="flex gap-4 sm:gap-6 justify-center">
               <button
                 onClick={() => {
                   setPlayerHp(100);
@@ -1440,11 +1475,11 @@ export default function AdventureArena({ characterId, onBack, onMissionComplete 
                   });
                   useFluidCombat.setState({ comboCount: 0, comboDamage: 0, specialMeter: 0, ultimateMeter: 0 });
                 }}
-                className="bg-gradient-to-r from-orange-600 to-red-600 text-white font-black px-10 py-5 text-2xl rounded-xl"
+                className="bg-gradient-to-r from-orange-600 to-red-600 text-white font-black px-6 sm:px-10 py-3 sm:py-5 text-lg sm:text-2xl rounded-xl"
               >
                 RETRY
               </button>
-              <button onClick={onBack} className="bg-gray-700 hover:bg-gray-600 text-white font-bold px-10 py-5 text-xl rounded-xl">
+              <button onClick={onBack} className="bg-gray-700 hover:bg-gray-600 text-white font-bold px-6 sm:px-10 py-3 sm:py-5 text-base sm:text-xl rounded-xl">
                 QUIT
               </button>
             </div>
