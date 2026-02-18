@@ -175,38 +175,42 @@ uniform float uSquash;
 `;
 
 const DEFORM_VERTEX_BODY = `
-float normalizedY = clamp((transformed.y - uModelMinY) / max(uModelHeight, 0.01), 0.0, 1.0);
+{
+  float nY = clamp((transformed.y - uModelMinY) / max(uModelHeight, 0.01), 0.0, 1.0);
+  float limbSide = step(0.0, transformed.x) * 2.0 - 1.0;
 
-if (normalizedY < 0.35 && uIsMoving > 0.01) {
-  float legFactor = (0.35 - normalizedY) / 0.35;
-  float side = sign(transformed.x + 0.001);
-  transformed.z += sin(uWalkPhase + side * 1.5708) * legFactor * 0.5 * uIsMoving;
-  transformed.y += abs(sin(uWalkPhase + side * 1.5708)) * legFactor * 0.15 * uIsMoving;
-}
+  if (nY < 0.35 && uIsMoving > 0.01) {
+    float legF = (0.35 - nY) / 0.35;
+    float legPhase = sin(uWalkPhase + limbSide * 1.5708);
+    transformed.z += legPhase * legF * 0.5 * uIsMoving;
+    transformed.y += abs(legPhase) * legF * 0.15 * uIsMoving;
+  }
 
-if (normalizedY > 0.3 && normalizedY < 0.7 && abs(uTorsoTwist) > 0.001) {
-  float twistFactor = sin(3.14159 * (normalizedY - 0.3) / 0.4) * 0.5;
-  float angle = uTorsoTwist * twistFactor;
-  float cs = cos(angle);
-  float sn = sin(angle);
-  vec3 orig = transformed;
-  transformed.x = orig.x * cs - orig.z * sn;
-  transformed.z = orig.x * sn + orig.z * cs;
-}
+  if (nY > 0.3 && nY < 0.7 && abs(uTorsoTwist) > 0.001) {
+    float twF = sin(3.14159 * (nY - 0.3) / 0.4) * 0.5;
+    float ang = uTorsoTwist * twF;
+    float ca = cos(ang);
+    float sa = sin(ang);
+    float ox = transformed.x;
+    float oz = transformed.z;
+    transformed.x = ox * ca - oz * sa;
+    transformed.z = ox * sa + oz * ca;
+  }
 
-if (normalizedY > 0.6 && abs(uArmSwing) > 0.001) {
-  float armFactor = (normalizedY - 0.6) / 0.4;
-  float side = sign(transformed.x + 0.001);
-  transformed.z += sin(uWalkPhase + side * 1.5708 + 3.14159) * armFactor * uArmSwing;
-  transformed.x += sin(uWalkPhase * 0.5) * armFactor * uArmSwing * 0.3 * side;
-}
+  if (nY > 0.6 && abs(uArmSwing) > 0.001) {
+    float armF = (nY - 0.6) / 0.4;
+    float armPhase = sin(uWalkPhase + limbSide * 1.5708 + 3.14159);
+    transformed.z += armPhase * armF * uArmSwing;
+    transformed.x += sin(uWalkPhase * 0.5) * armF * uArmSwing * 0.3 * limbSide;
+  }
 
-transformed.z += uAttackLunge * smoothstep(0.3, 1.0, normalizedY);
+  transformed.z += uAttackLunge * smoothstep(0.3, 1.0, nY);
 
-if (abs(uSquash) > 0.01) {
-  transformed.y *= 1.0 - uSquash * 0.3;
-  transformed.x *= 1.0 + uSquash * 0.15;
-  transformed.z *= 1.0 + uSquash * 0.15;
+  if (abs(uSquash) > 0.01) {
+    transformed.y *= 1.0 - uSquash * 0.3;
+    transformed.x *= 1.0 + uSquash * 0.15;
+    transformed.z *= 1.0 + uSquash * 0.15;
+  }
 }
 `;
 
@@ -224,22 +228,35 @@ function createAnimUniforms(bbox: THREE.Box3) {
 }
 
 function injectDeformShader(mat: THREE.Material, uniforms: ReturnType<typeof createAnimUniforms>) {
-  const origCompile = mat.onBeforeCompile;
-  mat.onBeforeCompile = (shader: any, renderer: any) => {
-    if (origCompile) origCompile.call(mat, shader, renderer);
-    Object.keys(uniforms).forEach(k => {
-      shader.uniforms[k] = (uniforms as any)[k];
-    });
-    shader.vertexShader = shader.vertexShader.replace(
-      'void main() {',
-      DEFORM_VERTEX_HEADER + '\nvoid main() {'
-    );
-    shader.vertexShader = shader.vertexShader.replace(
-      '#include <begin_vertex>',
-      '#include <begin_vertex>\n' + DEFORM_VERTEX_BODY
-    );
+  const matAny = mat as any;
+  const origCompile = matAny.onBeforeCompile?.bind(mat);
+  const cacheId = 'procAnim_' + Math.random().toString(36).slice(2);
+
+  matAny.onBeforeCompile = function(shader: any, renderer: any) {
+    if (origCompile) origCompile(shader, renderer);
+
+    shader.uniforms.uWalkPhase = uniforms.uWalkPhase;
+    shader.uniforms.uArmSwing = uniforms.uArmSwing;
+    shader.uniforms.uTorsoTwist = uniforms.uTorsoTwist;
+    shader.uniforms.uModelMinY = uniforms.uModelMinY;
+    shader.uniforms.uModelHeight = uniforms.uModelHeight;
+    shader.uniforms.uAttackLunge = uniforms.uAttackLunge;
+    shader.uniforms.uIsMoving = uniforms.uIsMoving;
+    shader.uniforms.uSquash = uniforms.uSquash;
+
+    if (shader.vertexShader.indexOf('uWalkPhase') === -1) {
+      shader.vertexShader = shader.vertexShader.replace(
+        'void main() {',
+        DEFORM_VERTEX_HEADER + '\nvoid main() {'
+      );
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        '#include <begin_vertex>\n' + DEFORM_VERTEX_BODY
+      );
+    }
   };
-  (mat as any).customProgramCacheKey = () => 'proceduralAnim_' + mat.uuid;
+
+  matAny.customProgramCacheKey = function() { return cacheId; };
   mat.needsUpdate = true;
 }
 
@@ -786,77 +803,49 @@ function Player3D({
     bodyRef.current.scale.setScalar(1);
 
     if (dashTimerRef.current > 0) {
-      bodyRef.current.rotation.y = time * 25;
-      bodyRef.current.position.y = 0.5;
-      bodyRef.current.scale.setScalar(0.9);
+      bodyRef.current.rotation.y = time * 20;
+      bodyRef.current.position.y = 0.3;
       return;
     }
 
     if (currentAttackRef.current && attackPhaseRef.current) {
       const atk = currentAttackRef.current;
-      if (attackPhaseRef.current === 'active') {
-        if (atk.startsWith('light')) {
-          const swingNum = parseInt(atk.replace('light', '')) || 1;
-          const dir = swingNum % 2 === 1 ? 1 : -1;
-          bodyRef.current.rotation.y = dir * 0.6;
-          bodyRef.current.rotation.z = Math.sin(time * 25) * 0.15 * dir;
-          bodyRef.current.position.z = 0.5;
-          bodyRef.current.position.y = Math.abs(Math.sin(time * 20)) * 0.15;
-        } else if (atk.startsWith('heavy')) {
-          bodyRef.current.rotation.y = time * 18;
-          bodyRef.current.position.z = 0.7;
-          bodyRef.current.position.y = 0.2;
-          bodyRef.current.scale.setScalar(1.15);
-        } else if (atk === 'launcher') {
-          bodyRef.current.position.y = 0.8 + Math.sin(time * 15) * 0.2;
-          bodyRef.current.rotation.x = -0.4;
-          bodyRef.current.rotation.z = Math.sin(time * 12) * 0.2;
+      if (attackPhaseRef.current === 'windup') {
+        bodyRef.current.rotation.x = 0.15;
+        bodyRef.current.position.y = -0.1;
+      } else if (attackPhaseRef.current === 'active') {
+        if (atk === 'launcher') {
+          bodyRef.current.position.y = 0.6;
+          bodyRef.current.rotation.x = -0.3;
         } else if (atk.startsWith('aerial')) {
-          bodyRef.current.rotation.y = time * 22;
-          bodyRef.current.rotation.x = 0.35;
           bodyRef.current.position.y = 0.5;
         } else if (atk === 'slam') {
-          bodyRef.current.rotation.x = Math.PI / 3;
-          bodyRef.current.position.y = -0.5;
-          bodyRef.current.scale.setScalar(1.1);
+          bodyRef.current.position.y = -0.3;
         } else if (atk === 'special') {
-          bodyRef.current.scale.setScalar(1.25);
-          bodyRef.current.position.y = 0.3 + Math.sin(time * 20) * 0.3;
-          bodyRef.current.rotation.y = Math.sin(time * 8) * 0.5;
+          bodyRef.current.position.y = 0.2;
+          bodyRef.current.scale.setScalar(1.1);
         } else if (atk === 'ultimate') {
-          bodyRef.current.position.y = 1.5 + Math.sin(time * 10) * 0.4;
-          bodyRef.current.rotation.y = time * 30;
-          bodyRef.current.scale.setScalar(1.4);
+          bodyRef.current.position.y = 1.0 + Math.sin(time * 10) * 0.3;
+          bodyRef.current.rotation.y = time * 15;
+          bodyRef.current.scale.setScalar(1.2);
+        } else {
+          bodyRef.current.position.z = 0.3;
         }
-      } else if (attackPhaseRef.current === 'windup') {
-        bodyRef.current.rotation.y = -0.4;
-        bodyRef.current.position.y = -0.15;
-        bodyRef.current.rotation.x = 0.15;
       }
       return;
     }
 
     if (!groundedRef.current) {
-      bodyRef.current.rotation.x = 0.2;
-      bodyRef.current.position.y = Math.sin(time * 6) * 0.1;
+      bodyRef.current.position.y = Math.sin(time * 6) * 0.08;
       return;
     }
 
     if (isMoving) {
-      const animSpeed = isRunning ? 16 : 11;
-      const t = time * animSpeed;
-      bodyRef.current.position.y = Math.abs(Math.sin(t)) * (isRunning ? 0.25 : 0.15);
-      bodyRef.current.rotation.x = isRunning ? 0.25 : 0.15;
-      bodyRef.current.rotation.z = Math.sin(t * 0.5) * (isRunning ? 0.15 : 0.08);
-      const bob = Math.sin(t) * 0.03;
-      bodyRef.current.position.x = bob;
+      const speed = isRunning ? 12 : 8;
+      bodyRef.current.position.y = Math.abs(Math.sin(time * speed)) * (isRunning ? 0.15 : 0.08);
+      bodyRef.current.rotation.x = isRunning ? 0.12 : 0.06;
       return;
     }
-
-    const breathe = Math.sin(time * 2) * 0.06;
-    const sway = Math.sin(time * 1.3) * 0.02;
-    bodyRef.current.position.y = breathe;
-    bodyRef.current.rotation.z = sway;
   };
 
   const attackColor = useMemo(() => {
