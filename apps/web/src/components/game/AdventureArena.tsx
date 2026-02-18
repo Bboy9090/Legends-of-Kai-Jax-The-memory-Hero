@@ -33,6 +33,13 @@ const CREATURE_MODEL_MAP: Record<string, string> = {
   'jade': 'jade_serpent',
   'shadow': 'shadow_panther',
   'earth': 'earth_turtle',
+  'boryn': 'BORYN',
+  'darkshadow': 'darjshadowkaijax',
+  'borax': 'Borax',
+  'sabervillain': 'SABERVILLAIN',
+  'kaiteenfox': 'KAITEENFOX',
+  'kainjaxyn': 'KAINJAXYN',
+  'kaijax1': 'KAIJAX1',
 };
 
 function resolveModelId(id: string): string {
