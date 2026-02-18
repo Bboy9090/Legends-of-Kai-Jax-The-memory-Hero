@@ -154,20 +154,182 @@ class ModelErrorBoundary extends React.Component<
   }
 }
 
-function GLBModel({ modelId, scale = 2.5 }: { modelId: string; scale?: number }) {
+interface AnimState {
+  isMoving: boolean;
+  isRunning: boolean;
+  isAttacking: boolean;
+  attackType: string;
+  isDashing: boolean;
+  isAirborne: boolean;
+}
+
+const DEFORM_VERTEX_HEADER = `
+uniform float uWalkPhase;
+uniform float uArmSwing;
+uniform float uTorsoTwist;
+uniform float uModelMinY;
+uniform float uModelHeight;
+uniform float uAttackLunge;
+uniform float uIsMoving;
+uniform float uSquash;
+`;
+
+const DEFORM_VERTEX_BODY = `
+float normalizedY = clamp((transformed.y - uModelMinY) / max(uModelHeight, 0.01), 0.0, 1.0);
+
+if (normalizedY < 0.35 && uIsMoving > 0.01) {
+  float legFactor = (0.35 - normalizedY) / 0.35;
+  float side = sign(transformed.x + 0.001);
+  transformed.z += sin(uWalkPhase + side * 1.5708) * legFactor * 0.5 * uIsMoving;
+  transformed.y += abs(sin(uWalkPhase + side * 1.5708)) * legFactor * 0.15 * uIsMoving;
+}
+
+if (normalizedY > 0.3 && normalizedY < 0.7 && abs(uTorsoTwist) > 0.001) {
+  float twistFactor = sin(3.14159 * (normalizedY - 0.3) / 0.4) * 0.5;
+  float angle = uTorsoTwist * twistFactor;
+  float cs = cos(angle);
+  float sn = sin(angle);
+  vec3 orig = transformed;
+  transformed.x = orig.x * cs - orig.z * sn;
+  transformed.z = orig.x * sn + orig.z * cs;
+}
+
+if (normalizedY > 0.6 && abs(uArmSwing) > 0.001) {
+  float armFactor = (normalizedY - 0.6) / 0.4;
+  float side = sign(transformed.x + 0.001);
+  transformed.z += sin(uWalkPhase + side * 1.5708 + 3.14159) * armFactor * uArmSwing;
+  transformed.x += sin(uWalkPhase * 0.5) * armFactor * uArmSwing * 0.3 * side;
+}
+
+transformed.z += uAttackLunge * smoothstep(0.3, 1.0, normalizedY);
+
+if (abs(uSquash) > 0.01) {
+  transformed.y *= 1.0 - uSquash * 0.3;
+  transformed.x *= 1.0 + uSquash * 0.15;
+  transformed.z *= 1.0 + uSquash * 0.15;
+}
+`;
+
+function createAnimUniforms(bbox: THREE.Box3) {
+  return {
+    uWalkPhase: { value: 0 },
+    uArmSwing: { value: 0 },
+    uTorsoTwist: { value: 0 },
+    uModelMinY: { value: bbox.min.y },
+    uModelHeight: { value: Math.max(bbox.max.y - bbox.min.y, 0.01) },
+    uAttackLunge: { value: 0 },
+    uIsMoving: { value: 0 },
+    uSquash: { value: 0 },
+  };
+}
+
+function injectDeformShader(mat: THREE.Material, uniforms: ReturnType<typeof createAnimUniforms>) {
+  const origCompile = mat.onBeforeCompile;
+  mat.onBeforeCompile = (shader: any, renderer: any) => {
+    if (origCompile) origCompile.call(mat, shader, renderer);
+    Object.keys(uniforms).forEach(k => {
+      shader.uniforms[k] = (uniforms as any)[k];
+    });
+    shader.vertexShader = shader.vertexShader.replace(
+      'void main() {',
+      DEFORM_VERTEX_HEADER + '\nvoid main() {'
+    );
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <begin_vertex>',
+      '#include <begin_vertex>\n' + DEFORM_VERTEX_BODY
+    );
+  };
+  (mat as any).customProgramCacheKey = () => 'proceduralAnim_' + mat.uuid;
+  mat.needsUpdate = true;
+}
+
+function AnimatedGLBModel({ modelId, animStateRef }: {
+  modelId: string;
+  animStateRef: React.MutableRefObject<AnimState>;
+}) {
   const resolved = resolveModelId(modelId);
-  const modelPath = `/models/${resolved}.glb`;
-  const { scene } = useGLTF(modelPath);
+  const { scene } = useGLTF(`/models/${resolved}.glb`);
+  const uniformsRef = useRef<ReturnType<typeof createAnimUniforms> | null>(null);
+  const scale = getCharacterScale(modelId);
+
   const clonedScene = useMemo(() => {
     const clone = scene.clone(true);
+    const bbox = new THREE.Box3().setFromObject(clone);
+    const uniforms = createAnimUniforms(bbox);
+
     clone.traverse((child: any) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
+        if (Array.isArray(child.material)) {
+          child.material = child.material.map((m: THREE.Material) => {
+            const cloned = m.clone();
+            injectDeformShader(cloned, uniforms);
+            return cloned;
+          });
+        } else if (child.material) {
+          child.material = child.material.clone();
+          injectDeformShader(child.material, uniforms);
+        }
       }
     });
+
+    uniformsRef.current = uniforms;
     return clone;
   }, [scene]);
+
+  useFrame((state) => {
+    const u = uniformsRef.current;
+    if (!u) return;
+    const t = state.clock.elapsedTime;
+    const anim = animStateRef.current;
+
+    if (anim.isDashing) {
+      u.uIsMoving.value = 0;
+      u.uArmSwing.value = 0;
+      u.uTorsoTwist.value = 0;
+      u.uAttackLunge.value = 0;
+      u.uSquash.value = 0;
+    } else if (anim.isAttacking) {
+      u.uIsMoving.value = 0;
+      const isHeavy = anim.attackType.startsWith('heavy') || anim.attackType === 'special' || anim.attackType === 'ultimate';
+      if (isHeavy) {
+        u.uAttackLunge.value = 0.9;
+        u.uArmSwing.value = Math.sin(t * 20) * 0.7;
+        u.uTorsoTwist.value = Math.sin(t * 12) * 0.5;
+      } else {
+        u.uAttackLunge.value = 0.5;
+        u.uArmSwing.value = Math.sin(t * 28) * 0.5;
+        u.uTorsoTwist.value = Math.sin(t * 18) * 0.25;
+      }
+      u.uWalkPhase.value = t * 15;
+      u.uSquash.value = 0;
+    } else if (anim.isAirborne) {
+      u.uIsMoving.value = 0;
+      u.uArmSwing.value = 0.3;
+      u.uWalkPhase.value = t * 4;
+      u.uTorsoTwist.value = 0;
+      u.uAttackLunge.value = 0;
+      u.uSquash.value = 0;
+    } else if (anim.isMoving) {
+      const speed = anim.isRunning ? 10 : 6;
+      const intensity = anim.isRunning ? 1.0 : 0.65;
+      u.uWalkPhase.value = t * speed;
+      u.uIsMoving.value = intensity;
+      u.uArmSwing.value = intensity * 0.55;
+      u.uTorsoTwist.value = Math.sin(t * speed * 0.5) * 0.18 * intensity;
+      u.uAttackLunge.value = 0;
+      u.uSquash.value = 0;
+    } else {
+      u.uWalkPhase.value = t * 1.5;
+      u.uIsMoving.value = 0;
+      u.uArmSwing.value = Math.sin(t * 2) * 0.06;
+      u.uTorsoTwist.value = Math.sin(t * 1.2) * 0.04;
+      u.uAttackLunge.value = 0;
+      u.uSquash.value = Math.sin(t * 2) * 0.05;
+    }
+  });
+
   return <primitive object={clonedScene} scale={scale} />;
 }
 
@@ -186,12 +348,15 @@ function FallbackModel({ color = '#ff4444' }: { color?: string }) {
   );
 }
 
-function SafeGLBModel({ modelId, scale, fallbackColor = '#ff4444' }: { modelId: string; scale?: number; fallbackColor?: string }) {
-  const finalScale = scale || getCharacterScale(modelId);
+function SafeAnimatedModel({ modelId, animStateRef, fallbackColor = '#ff4444' }: {
+  modelId: string;
+  animStateRef: React.MutableRefObject<AnimState>;
+  fallbackColor?: string;
+}) {
   return (
     <ModelErrorBoundary fallback={<FallbackModel color={fallbackColor} />}>
       <Suspense fallback={<FallbackModel color={fallbackColor} />}>
-        <GLBModel modelId={modelId} scale={finalScale} />
+        <AnimatedGLBModel modelId={modelId} animStateRef={animStateRef} />
       </Suspense>
     </ModelErrorBoundary>
   );
@@ -364,6 +529,10 @@ function Player3D({
   const animTimeRef = useRef(0);
   const lastAttackRef = useRef<AttackType | null>(null);
   const lastHitTimeRef = useRef(0);
+  const animStateRef = useRef<AnimState>({
+    isMoving: false, isRunning: false, isAttacking: false,
+    attackType: '', isDashing: false, isAirborne: false,
+  });
 
   const velocityRef = useRef(new THREE.Vector3());
   const positionRef = useRef(new THREE.Vector3(0, 0, 0));
@@ -479,7 +648,15 @@ function Player3D({
       groupRef.current.rotation.y = rotationRef.current + Math.PI;
     }
 
-    animateBody(dt, state.clock.elapsedTime, len > 0.1, isRunning);
+    const isMoving = len > 0.1;
+    animStateRef.current.isMoving = isMoving;
+    animStateRef.current.isRunning = isRunning;
+    animStateRef.current.isDashing = dashTimerRef.current > 0;
+    animStateRef.current.isAirborne = !groundedRef.current;
+    animStateRef.current.isAttacking = !!(currentAttackRef.current && attackPhaseRef.current === 'active');
+    animStateRef.current.attackType = currentAttackRef.current || '';
+
+    animateBody(dt, state.clock.elapsedTime, isMoving, isRunning);
   });
 
   const handleCombatInput = (keys: any, dt: number) => {
@@ -692,7 +869,7 @@ function Player3D({
   return (
     <group ref={groupRef}>
       <group ref={bodyRef}>
-        <SafeGLBModel modelId={characterId} fallbackColor="#4488ff" />
+        <SafeAnimatedModel modelId={characterId} animStateRef={animStateRef} fallbackColor="#4488ff" />
       </group>
 
       {dashTimerRef.current > 0 && (
@@ -747,6 +924,10 @@ function Enemy3D({
   const groupRef = useRef<THREE.Group>(null!);
   const bodyRef = useRef<THREE.Group>(null!);
   const patrolTimerRef = useRef(0);
+  const enemyAnimRef = useRef<AnimState>({
+    isMoving: false, isRunning: false, isAttacking: false,
+    attackType: '', isDashing: false, isAirborne: false,
+  });
 
   useFrame((state, delta) => {
     if (enemy.state === 'dead') {
@@ -803,6 +984,13 @@ function Enemy3D({
       groupRef.current.rotation.y = rot + Math.PI;
     }
 
+    enemyAnimRef.current.isMoving = newState === 'chase' || newState === 'patrol';
+    enemyAnimRef.current.isRunning = newState === 'chase';
+    enemyAnimRef.current.isAttacking = newState === 'attack';
+    enemyAnimRef.current.attackType = newState === 'attack' ? 'heavy1' : '';
+    enemyAnimRef.current.isDashing = false;
+    enemyAnimRef.current.isAirborne = false;
+
     if (bodyRef.current) {
       const t = state.clock.elapsedTime;
       bodyRef.current.rotation.set(0, 0, 0);
@@ -810,25 +998,17 @@ function Enemy3D({
       bodyRef.current.scale.setScalar(1);
 
       if (newState === 'chase') {
-        const chaseSpeed = 12;
-        bodyRef.current.position.y = Math.abs(Math.sin(t * chaseSpeed)) * 0.2;
-        bodyRef.current.rotation.x = 0.2;
-        bodyRef.current.rotation.z = Math.sin(t * chaseSpeed * 0.5) * 0.1;
+        bodyRef.current.position.y = Math.abs(Math.sin(t * 12)) * 0.15;
+        bodyRef.current.rotation.x = 0.15;
       } else if (newState === 'patrol') {
-        const walkSpeed = 8;
-        bodyRef.current.position.y = Math.abs(Math.sin(t * walkSpeed)) * 0.12;
-        bodyRef.current.rotation.x = 0.1;
-        bodyRef.current.rotation.z = Math.sin(t * walkSpeed * 0.5) * 0.06;
+        bodyRef.current.position.y = Math.abs(Math.sin(t * 8)) * 0.08;
+        bodyRef.current.rotation.x = 0.08;
       } else if (newState === 'attack') {
-        bodyRef.current.rotation.y = t * 15;
-        bodyRef.current.position.z = 0.6;
-        bodyRef.current.position.y = 0.2 + Math.sin(t * 12) * 0.15;
-        bodyRef.current.scale.setScalar(1.1);
+        bodyRef.current.position.z = 0.4;
+        bodyRef.current.position.y = 0.1;
+        bodyRef.current.scale.setScalar(1.05);
       } else {
-        const breathe = Math.sin(t * 2) * 0.05;
-        const sway = Math.sin(t * 1.5) * 0.02;
-        bodyRef.current.position.y = breathe;
-        bodyRef.current.rotation.z = sway;
+        bodyRef.current.position.y = Math.sin(t * 2) * 0.03;
       }
     }
   });
@@ -840,7 +1020,7 @@ function Enemy3D({
   return (
     <group ref={groupRef}>
       <group ref={bodyRef}>
-        <SafeGLBModel modelId={enemy.modelId} fallbackColor="#ff4444" />
+        <SafeAnimatedModel modelId={enemy.modelId} animStateRef={enemyAnimRef} fallbackColor="#ff4444" />
       </group>
 
       <Html position={[0, hpBarHeight, 0]} center distanceFactor={15} sprite>
