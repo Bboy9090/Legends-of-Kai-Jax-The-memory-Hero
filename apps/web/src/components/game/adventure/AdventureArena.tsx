@@ -1,7 +1,7 @@
 import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useAdventure } from "../../../lib/stores/useAdventure";
-import { FIGHTERS } from "../../../lib/characters";
+import { ENEMY_FIGHTERS } from "../../../lib/characters";
 import AdventureCharacter from "./AdventureCharacter";
 import AdventureCamera from "./AdventureCamera";
 import AdventurePlayerController from "./AdventurePlayerController";
@@ -156,7 +156,7 @@ function WaveSpawner() {
         waveNum.current++;
 
         const count = Math.min(2 + waveNum.current, 6);
-        const enemyIds = FIGHTERS.map((f) => f.id);
+        const enemyIds = ENEMY_FIGHTERS.map((f) => f.id);
         const newEnemies = [];
 
         for (let i = 0; i < count; i++) {

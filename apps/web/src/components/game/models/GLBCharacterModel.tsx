@@ -1,4 +1,4 @@
-import { useRef, useMemo, Suspense } from "react";
+import { useRef, Suspense } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF, Clone } from "@react-three/drei";
 import * as THREE from "three";
@@ -12,19 +12,115 @@ export interface GLBModelConfig {
 
 export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
   "kai-jax": {
-    path: "/models/blazing-fox-vanguard.glb",
+    path: "/models/Meshy_AI_Jax_Stormfang_the_Arm_0219222010_texture.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  jax: {
+    path: "/models/Meshy_AI_Jax_Kai_icey_fox_0219223329_texture.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  kai: {
+    path: "/models/Meshy_AI_Kai_sabertooth_fox_sp_0219223337_texture.glb",
     scale: 2.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   jaxon: {
-    path: "/models/neon-wraiths.glb",
+    path: "/models/jaxon_hero.glb",
     scale: 2.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   kaison: {
-    path: "/models/stylized-beast.glb",
+    path: "/models/kaison_hero.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  kaxon: {
+    path: "/models/kaxon_hero.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  "voltage-fang": {
+    path: "/models/Meshy_AI_Voltage_Fang_0219222028_texture.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  steelwolf: {
+    path: "/models/Meshy_AI_Steelwolf_Exosuit_0219223344_texture.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  "ashen-tiger": {
+    path: "/models/Meshy_AI_Ashen_Tiger_Warrior_0219222741_texture.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  "blazing-fox": {
+    path: "/models/Meshy_AI_Blazing_Fox_Warrior_0219223318_texture.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  velocity: {
+    path: "/models/velocity_hero.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  sparky: {
+    path: "/models/sparky_hero.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  sentinel: {
+    path: "/models/sentinel_hero.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  lunara: {
+    path: "/models/lunara_hero.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  solaro: {
+    path: "/models/solaro_hero.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  blaze: {
+    path: "/models/blaze_hero.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  abyss: {
+    path: "/models/abyss_hero.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  apex: {
+    path: "/models/apex_hero.glb",
+    scale: 2.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  silver: {
+    path: "/models/silver_hero.glb",
     scale: 2.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -58,7 +154,7 @@ function GLBModelInner({
   isMoving,
   attackType,
   velocityX = 0,
-  velocityY = 0,
+  velocityY: _velocityY = 0,
   isGrounded = true,
   isJumping = false,
   emotionIntensity,
@@ -224,8 +320,10 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
   );
 }
 
-Object.values(CHARACTER_MODELS).forEach((config) => {
-  try {
-    useGLTF.preload(config.path);
-  } catch (e) {}
+const PRELOAD_IDS = ["kai-jax", "jax", "kai"];
+PRELOAD_IDS.forEach((id) => {
+  const cfg = CHARACTER_MODELS[id];
+  if (cfg) {
+    try { useGLTF.preload(cfg.path); } catch (_e) {}
+  }
 });

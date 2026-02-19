@@ -13,8 +13,8 @@ import { getQualitySettings } from "../../lib/threejs/PerformanceOptimizer";
 
 function getGrade(fighterId: string): "cosmic" | "ice" | "ember" | "neutral" {
   if (fighterId === "kai-jax") return "cosmic";
-  if (fighterId === "jaxon") return "ice";
-  if (fighterId === "kaison") return "ember";
+  if (fighterId === "jax" || fighterId === "jaxon") return "ice";
+  if (fighterId === "kai" || fighterId === "kaison") return "ember";
   return "neutral";
 }
 
@@ -22,139 +22,29 @@ function getPunch(fighterId: string): number {
   return fighterId === "kai-jax" ? 0.35 : 0.18;
 }
 
-function FighterPanel({
-  fighter,
-  selected,
-  onClick,
-}: {
-  fighter: Fighter;
-  selected: boolean;
-  onClick: () => void;
-}) {
-  const stats = fighter.baseStats;
-
-  return (
-    <div
-      onClick={onClick}
-      className="flex-1 min-w-0 flex flex-col cursor-pointer group transition-all duration-300"
-    >
-      <div
-        className="relative rounded-2xl overflow-hidden transition-all duration-300"
-        style={{
-          height: "55vh",
-          minHeight: 320,
-          border: selected
-            ? `3px solid ${fighter.accentColor}`
-            : "3px solid rgba(255,255,255,0.08)",
-          boxShadow: selected
-            ? `0 0 32px 6px ${fighter.accentColor}55, 0 0 80px 12px ${fighter.accentColor}22, inset 0 0 60px 8px ${fighter.accentColor}18`
-            : "0 0 0 0 transparent",
-        }}
-      >
-        {selected && (
-          <div
-            className="absolute inset-0 z-10 pointer-events-none rounded-2xl"
-            style={{
-              background: `radial-gradient(ellipse at 50% 80%, ${fighter.accentColor}18 0%, transparent 70%)`,
-            }}
-          />
-        )}
-        <Canvas
-          shadows
-          camera={{ position: [0, 1.65, 6.4], fov: 42 }}
-          onCreated={({ gl }) => {
-            const q = getQualitySettings();
-            gl.setPixelRatio(q.pixelRatio);
-            gl.outputColorSpace = THREE.SRGBColorSpace;
-            gl.toneMapping = THREE.ACESFilmicToneMapping;
-            gl.toneMappingExposure = 1.2;
-            gl.shadowMap.enabled = true;
-            gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
-          }}
-          gl={{
-            antialias: getQualitySettings().antialias,
-            powerPreference: "high-performance",
-          }}
-        >
-          <color attach="background" args={["#0b0b12"]} />
-          <LegendaryLightingRig />
-          <Environment preset="sunset" />
-          <CinematicPostFX
-            grade={getGrade(fighter.id)}
-            accent={fighter.accentColor || "#00f2ff"}
-            punch={getPunch(fighter.id)}
-            center={[0.5, 0.44]}
-          />
-          <Suspense fallback={null}>
-            <group position={[0, -1, 0]}>
-              <GLBCharacterModel
-                fighterId={fighter.id}
-                accentColor={fighter.accentColor}
-                emotionIntensity={0.5}
-              />
-            </group>
-            <mesh
-              rotation={[-Math.PI / 2, 0, 0]}
-              position={[0, -1.7, 0]}
-              receiveShadow
-            >
-              <planeGeometry args={[10, 10]} />
-              <shadowMaterial opacity={0.3} />
-            </mesh>
-            <OrbitControls
-              enableZoom={false}
-              enablePan={false}
-              minPolarAngle={Math.PI / 4}
-              maxPolarAngle={Math.PI / 2}
-              autoRotate
-              autoRotateSpeed={2}
-            />
-          </Suspense>
-        </Canvas>
-      </div>
-
-      <div className="mt-3 px-2 text-center">
-        <h3
-          className="text-xl font-extrabold tracking-wider"
-          style={{ color: fighter.accentColor }}
-        >
-          {fighter.displayName}
-        </h3>
-        <p className="text-xs text-slate-400 mt-0.5 uppercase tracking-widest">
-          {fighter.id === "kai-jax"
-            ? "The Fused Apex"
-            : fighter.id === "jaxon"
-              ? "The Swift Blade"
-              : fighter.id === "kaison"
-                ? "The Iron Will"
-                : "Unknown"}
-        </p>
-        {stats && (
-          <div className="mt-2 flex flex-col gap-1.5">
-            <StatBar label="PWR" value={stats.power} color={fighter.accentColor} />
-            <StatBar label="SPD" value={stats.speed} color={fighter.accentColor} />
-            <StatBar label="DEF" value={stats.defense} color={fighter.accentColor} />
-          </div>
-        )}
-      </div>
-    </div>
-  );
+function getRoleLabel(fighter: Fighter): string {
+  switch (fighter.role) {
+    case "hero": return "Hero";
+    case "rival": return "Rival";
+    case "boss": return "Boss";
+    case "enemy": return "Fighter";
+    default: return "Unknown";
+  }
 }
 
-function StatBar({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: number;
-  color: string;
-}) {
+function getRoleBadgeColor(fighter: Fighter): string {
+  switch (fighter.role) {
+    case "hero": return "bg-green-500/30 text-green-300 border-green-500/50";
+    case "rival": return "bg-amber-500/30 text-amber-300 border-amber-500/50";
+    case "boss": return "bg-red-500/30 text-red-300 border-red-500/50";
+    default: return "bg-slate-500/30 text-slate-300 border-slate-500/50";
+  }
+}
+
+function StatBar({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] font-bold text-slate-500 w-8 text-right">
-        {label}
-      </span>
+      <span className="text-[10px] font-bold text-slate-500 w-8 text-right">{label}</span>
       <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
@@ -169,6 +59,54 @@ function StatBar({
   );
 }
 
+function FighterCard({
+  fighter,
+  selected,
+  onClick,
+}: {
+  fighter: Fighter;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`relative p-2 rounded-xl border-2 transition-all duration-200 text-center ${
+        selected
+          ? "scale-[1.05] z-10"
+          : "hover:scale-[1.03] hover:border-slate-500"
+      }`}
+      style={{
+        borderColor: selected ? fighter.accentColor : "rgba(100,116,139,0.3)",
+        background: selected
+          ? `linear-gradient(180deg, ${fighter.accentColor}15, ${fighter.color}40)`
+          : "rgba(15,23,42,0.6)",
+        boxShadow: selected ? `0 0 20px ${fighter.accentColor}33` : "none",
+      }}
+    >
+      <div
+        className="w-10 h-10 mx-auto rounded-full mb-1 flex items-center justify-center text-lg font-black"
+        style={{
+          background: `linear-gradient(135deg, ${fighter.accentColor}44, ${fighter.color})`,
+          color: fighter.accentColor,
+          border: `2px solid ${fighter.accentColor}66`,
+        }}
+      >
+        {fighter.name[0]}
+      </div>
+      <div
+        className="text-xs font-bold tracking-wide truncate"
+        style={{ color: selected ? fighter.accentColor : "#94a3b8" }}
+      >
+        {fighter.displayName}
+      </div>
+      <span className={`inline-block mt-0.5 text-[9px] px-1.5 py-0.5 rounded border ${getRoleBadgeColor(fighter)}`}>
+        {getRoleLabel(fighter)}
+      </span>
+    </button>
+  );
+}
+
 export default function VersusCharacterSelect() {
   const start = useGame((s) => s.start);
   const setGameState = useRunner((s) => s.setGameState);
@@ -177,19 +115,15 @@ export default function VersusCharacterSelect() {
   const setOpponentFighter = useBattle((s) => s.setOpponentFighter);
 
   const [selectedId, setSelectedId] = useState<string>(FIGHTERS[0]?.id ?? "kai-jax");
+  const selected = getFighterById(selectedId);
 
   const handleFight = () => {
-    const fighter = getFighterById(selectedId);
-    if (!fighter) return;
-
+    if (!selected) return;
     setCharacter(selectedId);
     setPlayerFighter(selectedId);
-
     const others = FIGHTERS.map((f) => f.id).filter((id) => id !== selectedId);
-    const opponentId =
-      others[Math.floor(Math.random() * others.length)] ?? selectedId;
+    const opponentId = others[Math.floor(Math.random() * others.length)] ?? selectedId;
     setOpponentFighter(opponentId);
-
     start();
     setGameState("playing");
   };
@@ -209,19 +143,96 @@ export default function VersusCharacterSelect() {
         <div className="w-20" />
       </div>
 
-      <div className="flex-1 flex gap-4 px-6 py-4 min-h-0">
-        {FIGHTERS.map((f) => {
-          const fighter = getFighterById(f.id);
-          if (!fighter) return null;
-          return (
-            <FighterPanel
-              key={f.id}
-              fighter={fighter}
-              selected={selectedId === f.id}
-              onClick={() => setSelectedId(f.id)}
-            />
-          );
-        })}
+      <div className="flex-1 flex gap-6 px-6 py-4 min-h-0">
+        <div className="flex-1 flex flex-col">
+          {selected && (
+            <div
+              className="flex-1 rounded-2xl overflow-hidden border-2 relative"
+              style={{
+                borderColor: `${selected.accentColor}66`,
+                boxShadow: `0 0 40px ${selected.accentColor}22`,
+              }}
+            >
+              <Canvas
+                shadows
+                camera={{ position: [0, 1.65, 6.4], fov: 42 }}
+                onCreated={({ gl }) => {
+                  const q = getQualitySettings();
+                  gl.setPixelRatio(q.pixelRatio);
+                  gl.outputColorSpace = THREE.SRGBColorSpace;
+                  gl.toneMapping = THREE.ACESFilmicToneMapping;
+                  gl.toneMappingExposure = 1.2;
+                  gl.shadowMap.enabled = true;
+                  gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
+                }}
+                gl={{
+                  antialias: getQualitySettings().antialias,
+                  powerPreference: "high-performance",
+                }}
+              >
+                <color attach="background" args={["#0b0b12"]} />
+                <LegendaryLightingRig />
+                <Environment preset="sunset" />
+                <CinematicPostFX
+                  grade={getGrade(selected.id)}
+                  accent={selected.accentColor || "#00f2ff"}
+                  punch={getPunch(selected.id)}
+                  center={[0.5, 0.44]}
+                />
+                <Suspense fallback={null}>
+                  <group position={[0, -1, 0]}>
+                    <GLBCharacterModel
+                      fighterId={selected.id}
+                      accentColor={selected.accentColor}
+                      emotionIntensity={0.5}
+                    />
+                  </group>
+                  <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.7, 0]} receiveShadow>
+                    <planeGeometry args={[10, 10]} />
+                    <shadowMaterial opacity={0.3} />
+                  </mesh>
+                  <OrbitControls
+                    enableZoom={false}
+                    enablePan={false}
+                    minPolarAngle={Math.PI / 4}
+                    maxPolarAngle={Math.PI / 2}
+                    autoRotate
+                    autoRotateSpeed={2}
+                  />
+                </Suspense>
+              </Canvas>
+
+              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                <h2 className="text-3xl font-black tracking-wider" style={{ color: selected.accentColor }}>
+                  {selected.displayName}
+                </h2>
+                <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded border ${getRoleBadgeColor(selected)}`}>
+                  {getRoleLabel(selected)}
+                </span>
+                {selected.baseStats && (
+                  <div className="mt-2 max-w-xs space-y-1">
+                    <StatBar label="PWR" value={selected.baseStats.power} color={selected.accentColor} />
+                    <StatBar label="SPD" value={selected.baseStats.speed} color={selected.accentColor} />
+                    <StatBar label="DEF" value={selected.baseStats.defense} color={selected.accentColor} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="w-72 flex flex-col gap-2 overflow-y-auto pr-1">
+          <div className="grid grid-cols-3 gap-2">
+            {FIGHTERS.map((f) => (
+              <FighterCard
+                key={f.id}
+                fighter={f}
+                selected={selectedId === f.id}
+                onClick={() => setSelectedId(f.id)}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="flex justify-center pb-6 pt-2">
@@ -229,9 +240,9 @@ export default function VersusCharacterSelect() {
           onClick={handleFight}
           className="relative px-12 py-4 rounded-xl font-black text-xl tracking-widest text-white uppercase transition-all duration-200 hover:scale-105 active:scale-95"
           style={{
-            background: `linear-gradient(135deg, ${getFighterById(selectedId)?.accentColor ?? "#7fff00"}cc, ${getFighterById(selectedId)?.color ?? "#1a1a1a"})`,
-            boxShadow: `0 0 30px 4px ${getFighterById(selectedId)?.accentColor ?? "#7fff00"}44, 0 4px 20px rgba(0,0,0,0.5)`,
-            border: `2px solid ${getFighterById(selectedId)?.accentColor ?? "#7fff00"}88`,
+            background: `linear-gradient(135deg, ${selected?.accentColor ?? "#7fff00"}cc, ${selected?.color ?? "#1a1a1a"})`,
+            boxShadow: `0 0 30px 4px ${selected?.accentColor ?? "#7fff00"}44, 0 4px 20px rgba(0,0,0,0.5)`,
+            border: `2px solid ${selected?.accentColor ?? "#7fff00"}88`,
           }}
         >
           FIGHT
