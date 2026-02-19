@@ -29,13 +29,27 @@ const MIME_TYPES = {
   '.webm': 'video/webm',
 };
 
-if (!fs.existsSync(DIST_DIR)) {
+const indexPath = path.join(DIST_DIR, 'index.html');
+if (!fs.existsSync(indexPath)) {
   console.log('Building app...');
-  execSync('cd apps/web && npx vite build', { stdio: 'inherit', cwd: __dirname });
+  try {
+    execSync('cd apps/web && npx vite build', { stdio: 'inherit', cwd: __dirname });
+  } catch (err) {
+    console.error('Build failed:', err.message);
+    process.exit(1);
+  }
 }
 
+if (!fs.existsSync(indexPath)) {
+  console.error('ERROR: Build output not found at', DIST_DIR);
+  process.exit(1);
+}
+
+console.log('Serving from:', DIST_DIR);
+
 const server = http.createServer((req, res) => {
-  let filePath = path.join(DIST_DIR, req.url === '/' ? 'index.html' : req.url);
+  const url = req.url.split('?')[0];
+  let filePath = path.join(DIST_DIR, url === '/' ? 'index.html' : url);
 
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     filePath = path.join(DIST_DIR, 'index.html');
@@ -45,7 +59,13 @@ const server = http.createServer((req, res) => {
     const data = fs.readFileSync(filePath);
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-    res.writeHead(200, { 'Content-Type': contentType });
+
+    const headers = { 'Content-Type': contentType };
+    if (ext === '.glb' || ext === '.gltf' || ext === '.woff' || ext === '.woff2') {
+      headers['Cache-Control'] = 'public, max-age=31536000, immutable';
+    }
+
+    res.writeHead(200, headers);
     res.end(data);
   } catch (err) {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
