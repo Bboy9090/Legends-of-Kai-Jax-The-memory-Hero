@@ -2,6 +2,16 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { useBattle } from "../../lib/stores/useBattle";
 import { Swords, BookOpen, Palette, ArrowLeft } from "../ui/icons";
 
+function GlobeIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  );
+}
+
 export default function MainMenu() {
   const setGameState = useRunner((s) => s.setGameState);
   const setCharacter = useRunner((s) => s.setCharacter);
@@ -13,6 +23,12 @@ export default function MainMenu() {
     setGameState("campaign-map");
   };
 
+  const startAdventure = () => {
+    setCharacter("kai-jax");
+    setPlayerFighter("kai-jax");
+    setGameState("adventure");
+  };
+
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center gap-8 p-6 bg-gradient-to-b from-[#07070d] via-purple-950/25 to-[#07070d]">
       <div className="text-center">
@@ -20,10 +36,17 @@ export default function MainMenu() {
           Legends of Kai-Jax
         </h1>
         <p className="mt-2 text-slate-400 text-lg md:text-xl">The Memory King</p>
-        <p className="mt-1 text-slate-600 text-sm">Campaign · Battle · Transform</p>
+        <p className="mt-1 text-slate-600 text-sm">Adventure · Campaign · Battle · Transform</p>
       </div>
 
       <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 mt-4 max-w-xl">
+        <button
+          onClick={startAdventure}
+          className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-gradient-to-r from-purple-500/25 to-cyan-500/25 border-2 border-purple-400/80 text-purple-100 font-bold text-base shadow-lg shadow-purple-500/20 hover:from-purple-500/35 hover:to-cyan-500/35 hover:border-purple-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+        >
+          <GlobeIcon className="w-5 h-5" />
+          Adventure Mode
+        </button>
         <button
           onClick={startStoryMode}
           className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-cyan-500/25 border-2 border-cyan-400/80 text-cyan-100 font-bold text-base shadow-lg shadow-cyan-500/20 hover:bg-cyan-500/35 hover:border-cyan-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"

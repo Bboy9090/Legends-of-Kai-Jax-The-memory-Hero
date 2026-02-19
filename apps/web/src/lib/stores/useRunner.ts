@@ -11,6 +11,7 @@ export type GameState =
   | "character-select"
   | "customization"
   | "beast-preview"
+  | "adventure"
   | "playing";
 
 /** Campaign node id. Order: start → districts → final boss. */

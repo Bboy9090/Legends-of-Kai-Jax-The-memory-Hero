@@ -17,11 +17,13 @@ import ScreenEffects from "./components/game/ScreenEffects";
 import { GameIntro } from "./components/game/LoadingScreen";
 import CustomizationMenu from "./components/game/CustomizationMenu";
 import LoreHub from "./components/game/LoreHub";
+import AdventureArena from "./components/game/adventure/AdventureArena";
+import AdventureHUD from "./components/game/adventure/AdventureHUD";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
 import { useAudio } from "./lib/stores/useAudio";
-import { FIGHTERS } from "./lib/characters";
+import { FIGHTERS, getFighterById } from "./lib/characters";
 import { useEffect } from "react";
 import * as THREE from "three";
 import { getQualitySettings } from "./lib/threejs/PerformanceOptimizer";
@@ -163,8 +165,51 @@ function App() {
         {/* Customization Menu */}
         {phase === 'ready' && gameState === 'customization' && <CustomizationMenu />}
         
+        {/* ⚡ ADVENTURE MODE - Open World 3D Arena */}
+        {gameState === 'adventure' && (() => {
+          const charId = selectedCharacter || "kai-jax";
+          const fighter = getFighterById(charId);
+          return (
+            <>
+              <div className="relative w-full h-screen">
+                <Canvas
+                  shadows
+                  camera={{
+                    position: [0, 8, 12],
+                    fov: 60,
+                    near: 0.1,
+                    far: 200,
+                  }}
+                  onCreated={({ gl }) => {
+                    const q = getQualitySettings();
+                    gl.setPixelRatio(q.pixelRatio);
+                    gl.outputColorSpace = THREE.SRGBColorSpace;
+                    gl.toneMapping = THREE.ACESFilmicToneMapping;
+                    gl.toneMappingExposure = 0.85;
+                    gl.shadowMap.enabled = true;
+                    gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
+                  }}
+                  gl={{
+                    antialias: getQualitySettings().antialias,
+                    powerPreference: "high-performance",
+                  }}
+                >
+                  <Suspense fallback={null}>
+                    <AdventureArena
+                      characterId={charId}
+                      accentColor={fighter?.accentColor || "#00f2ff"}
+                    />
+                  </Suspense>
+                </Canvas>
+                <AdventureHUD />
+              </div>
+              <MobileControls />
+            </>
+          );
+        })()}
+
         {/* ⚡ BATTLE CANVAS - THE MAIN EVENT! */}
-        {(phase === 'playing' || phase === 'ended') && (
+        {(phase === 'playing' || phase === 'ended') && gameState === 'playing' && (
           <>
             <div className="relative w-full h-full min-h-[200px]">
               <Canvas
