@@ -5,7 +5,7 @@
 This is a mythic action game called "Legends of Kai-Jax: The Memory King" featuring a hybrid sabertooth character with a 9-tail progression system. The project has two main parts:
 
 1. **Game Hub Frontend** (`frontend/`) — A React-based informational hub with 8 sections (Home, Characters, Tails, Story, Gods, Regions, Bible, UI) that presents lore, character data, and game information.
-2. **3D Game Client** (`apps/web/`) — A Three.js + React Three Fiber fighting game with battles, campaign mode, character selection, missions, and a layered beast character rendering system.
+2. **3D Game Client** (`apps/web/`) — A Three.js + React Three Fiber fighting game with battles, campaign mode, character selection, missions, a layered beast character rendering system, and an open-world Adventure Mode with omnidirectional 3D locomotion and wave-based combat.
 3. **Backend API** (`backend/`) — A FastAPI server providing game data endpoints (tails, characters, story, gods, regions, bible) and story mode progression enforcement, backed by MongoDB.
 
 The project enforces a "canonical spec" approach where `kai_jax.character.json` is the single source of truth for all character data, and all implementations must validate against it. The canon status is "PRODUCTION CANON LOCKED" at version 1.0.0.
