@@ -39,25 +39,31 @@ export default function MissionSelectHub() {
   );
 
   const beginMission = (source: "story" | "uee", id: string) => {
-    startMission(source, id);
-
-    const active = useMissions.getState().active;
-    if (active?.arenaId) setArena(active.arenaId);
-
-    // Story missions may suggest required characters; only enforce if that fighter exists.
     let playerId = selectedCharacter as unknown as string;
+
     if (source === "story") {
       const m = getStoryMissionById(id);
       const required = m?.requiredCharacters ?? [];
       const playableRequired = required.find((cid) => !!getFighterById(cid));
       if (playableRequired) playerId = playableRequired;
+
+      setCharacter(playerId as any);
+      setPlayerFighter(playerId);
+      startMission(source, id);
+      useRunner.getState().setActiveStoryMission(id);
+      setGameState("story-mode");
+      return;
     }
+
+    startMission(source, id);
+
+    const active = useMissions.getState().active;
+    if (active?.arenaId) setArena(active.arenaId);
 
     setCharacter(playerId as any);
     setPlayerFighter(playerId);
     setOpponentFighter(pickRandomOpponent(playerId));
 
-    // Enter battle
     start();
     setGameState("playing");
   };

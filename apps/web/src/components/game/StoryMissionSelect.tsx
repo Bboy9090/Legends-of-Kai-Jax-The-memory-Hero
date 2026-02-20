@@ -29,7 +29,6 @@ export default function StoryMissionSelect({
     <>
       {!embedded && (
         <>
-          {/* Header */}
           <div className="text-center mb-8">
             <p className="text-amber-300/90 text-sm sm:text-base font-semibold tracking-[0.2em] uppercase mb-1">
               Story Mode
@@ -38,11 +37,10 @@ export default function StoryMissionSelect({
               Beast Wars Campaign
             </h1>
             <p className="text-sm text-cyan-200/80">
-              Pick an act and drop straight into a playable objective set.
+              Adventure missions with narrative, dialogue, and epic boss battles.
             </p>
           </div>
 
-          {/* Back */}
           <Button
             variant="ghost"
             onClick={onBack}
@@ -54,7 +52,6 @@ export default function StoryMissionSelect({
         </>
       )}
 
-      {/* Act Tabs */}
       <div className="flex gap-2 mb-6">
         {([1, 2, 3] as const).map((a) => (
           <button
@@ -74,7 +71,6 @@ export default function StoryMissionSelect({
         ))}
       </div>
 
-        {/* Mission List */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
           {missions.map((m) => (
             <button
@@ -99,33 +95,40 @@ export default function StoryMissionSelect({
                 )}
               </div>
               <div className="text-xs text-slate-400">
-                Diff {m.difficulty} • {m.gameplayType.toUpperCase()} • {m.objectives.length} objectives
+                Diff {m.difficulty} • ADVENTURE • {m.enemyWaves.length} wave{m.enemyWaves.length > 1 ? "s" : ""}
               </div>
             </button>
           ))}
         </div>
 
-        {/* Selected Mission Detail + Start */}
         {selectedMission && (
           <Card className="bg-slate-900/80 border-2 border-purple-400/50 shadow-[0_0_30px_rgba(196,181,253,0.18)]">
             <CardHeader>
               <CardTitle className="text-xl text-purple-200 flex items-center gap-2">
                 <BookOpen className="w-5 h-5" />
-                {selectedMission.name}
+                {selectedMission.title}
               </CardTitle>
               <p className="text-slate-300 text-sm">{selectedMission.description}</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300">
                 <div className="rounded-lg bg-black/30 border border-white/10 p-3">
-                  <div className="text-slate-400 mb-1">Story beat</div>
+                  <div className="text-slate-400 mb-1">Story Beat</div>
                   <div>{selectedMission.storyBeat}</div>
                 </div>
                 <div className="rounded-lg bg-black/30 border border-white/10 p-3">
-                  <div className="text-slate-400 mb-1">Arena</div>
-                  <div>{selectedMission.arena}</div>
+                  <div className="text-slate-400 mb-1">Enemy Waves</div>
+                  <div>{selectedMission.enemyWaves.length} wave{selectedMission.enemyWaves.length > 1 ? "s" : ""}{selectedMission.bossId ? " (includes boss)" : ""}</div>
                 </div>
               </div>
+
+              {selectedMission.introCutscene.length > 0 && (
+                <div className="rounded-lg bg-black/30 border border-white/10 p-3">
+                  <div className="text-slate-400 text-xs mb-1">Dialogue Preview</div>
+                  <p className="text-slate-300 text-sm italic">"{selectedMission.introCutscene[0].text}"</p>
+                  <p className="text-slate-500 text-xs mt-1">— {selectedMission.introCutscene[0].speaker}</p>
+                </div>
+              )}
 
               <div>
                 <h4 className="text-purple-200 font-semibold mb-2 flex items-center gap-2">
@@ -144,7 +147,7 @@ export default function StoryMissionSelect({
                   +{selectedMission.rewards.xp} XP
                 </span>
                 <span className="px-2 py-1 rounded bg-green-500/20 text-green-300">
-                  +{selectedMission.rewards.currency} currency
+                  +{selectedMission.rewards.currency} Gold
                 </span>
                 {selectedMission.rewards.loot.map((l) => (
                   <span key={l} className="px-2 py-1 rounded bg-purple-500/20 text-purple-200">
@@ -158,7 +161,7 @@ export default function StoryMissionSelect({
                 className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold py-4"
               >
                 <Zap className="w-4 h-4 mr-2" />
-                Start Mission
+                Begin Adventure Mission
               </Button>
             </CardContent>
           </Card>

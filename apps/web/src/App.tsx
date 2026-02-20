@@ -19,10 +19,12 @@ import CustomizationMenu from "./components/game/CustomizationMenu";
 import LoreHub from "./components/game/LoreHub";
 import AdventureArena from "./components/game/adventure/AdventureArena";
 import AdventureHUD from "./components/game/adventure/AdventureHUD";
+import StoryAdventure from "./components/game/StoryAdventure";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
 import { useAudio } from "./lib/stores/useAudio";
+import { useMissions } from "./lib/stores/useMissions";
 import { FIGHTERS, getFighterById } from "./lib/characters";
 import { useEffect } from "react";
 import * as THREE from "three";
@@ -65,7 +67,7 @@ const controls = [
 
 function App() {
   const { phase } = useGame();
-  const { gameState, selectedCharacter } = useRunner();
+  const { gameState, selectedCharacter, activeStoryMissionId } = useRunner();
   const { setPlayerFighter, setOpponentFighter, screenShake } = useBattle();
   const { 
     setBackgroundMusic, 
@@ -202,6 +204,62 @@ function App() {
                   </Suspense>
                 </Canvas>
                 <AdventureHUD />
+              </div>
+              <MobileControls />
+            </>
+          );
+        })()}
+
+        {/* ⚡ STORY MODE - Adventure with narrative */}
+        {gameState === 'story-mode' && (() => {
+          const charId = selectedCharacter || "kai-jax";
+          const fighter = getFighterById(charId);
+          const storyMissionId = activeStoryMissionId || "act1-1";
+          return (
+            <>
+              <div className="relative w-full h-screen">
+                <Canvas
+                  shadows
+                  camera={{
+                    position: [0, 8, 12],
+                    fov: 60,
+                    near: 0.1,
+                    far: 200,
+                  }}
+                  onCreated={({ gl }) => {
+                    const q = getQualitySettings();
+                    gl.setPixelRatio(q.pixelRatio);
+                    gl.outputColorSpace = THREE.SRGBColorSpace;
+                    gl.toneMapping = THREE.ACESFilmicToneMapping;
+                    gl.toneMappingExposure = 0.85;
+                    gl.shadowMap.enabled = true;
+                    gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
+                  }}
+                  gl={{
+                    antialias: getQualitySettings().antialias,
+                    powerPreference: "high-performance",
+                  }}
+                >
+                  <Suspense fallback={null}>
+                    <AdventureArena
+                      characterId={charId}
+                      accentColor={fighter?.accentColor || "#00f2ff"}
+                    />
+                  </Suspense>
+                </Canvas>
+                <AdventureHUD />
+                <StoryAdventure
+                  missionId={storyMissionId}
+                  characterId={charId}
+                  onComplete={(success) => {
+                    if (success) {
+                      useMissions.getState().startMission("story", storyMissionId);
+                      useMissions.getState().completeMission(true);
+                    }
+                    useRunner.getState().setGameState("campaign-map");
+                  }}
+                  onBack={() => useRunner.getState().setGameState("campaign-map")}
+                />
               </div>
               <MobileControls />
             </>

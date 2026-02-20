@@ -28,11 +28,12 @@ export type CampaignNodeId =
 interface RunnerState {
   gameState: GameState;
   selectedCharacter: string | null;
+  activeStoryMissionId: string | null;
   setGameState: (s: GameState) => void;
   setCharacter: (id: string | null) => void;
+  setActiveStoryMission: (id: string | null) => void;
   addScore: (points: number) => void;
   totalScore: number;
-  // Campaign: progress through the city toward the big bad
   campaignCompletedNodes: CampaignNodeId[];
   campaignCurrentNode: CampaignNodeId | null;
   setCampaignCompleted: (nodeId: CampaignNodeId) => void;
@@ -65,11 +66,13 @@ export function isCampaignNodeUnlocked(completed: CampaignNodeId[], nodeId: Camp
 export const useRunner = create<RunnerState>((set, get) => ({
   gameState: "lore-hub",
   selectedCharacter: "jaxon",
+  activeStoryMissionId: null,
   totalScore: 0,
   campaignCompletedNodes: [],
   campaignCurrentNode: null,
   setGameState: (gameState) => set({ gameState }),
   setCharacter: (selectedCharacter) => set({ selectedCharacter }),
+  setActiveStoryMission: (activeStoryMissionId) => set({ activeStoryMissionId }),
   addScore: (points) => set({ totalScore: get().totalScore + points }),
   setCampaignCompleted: (nodeId) =>
     set((s) => ({
