@@ -15,3 +15,8 @@ channel = "stable-25_05"
 run = ["sh", "-c", "node serve.js "]
 deploymentTarget = "cloudrun"
 publicDir = "dist"
+
+[userenv]
+
+[userenv.production]
+NPM_CONFIG_ALWAYS_AUTH = "false"
