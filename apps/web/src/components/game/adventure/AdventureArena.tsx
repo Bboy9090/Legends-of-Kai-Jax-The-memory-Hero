@@ -19,14 +19,14 @@ function ArenaGround() {
       >
         <planeGeometry args={[100, 100]} />
         <meshStandardMaterial
-          color="#1a2030"
-          roughness={0.85}
-          metalness={0.15}
+          color="#2a3348"
+          roughness={0.8}
+          metalness={0.2}
         />
       </mesh>
       <gridHelper
         ref={gridRef}
-        args={[100, 50, "#2a3548", "#1e2838"]}
+        args={[100, 50, "#3d4d66", "#2e3e55"]}
         position={[0, 0.01, 0]}
       />
       <mesh
@@ -37,9 +37,9 @@ function ArenaGround() {
         <meshStandardMaterial
           color="#00f2ff"
           emissive="#00f2ff"
-          emissiveIntensity={0.15}
+          emissiveIntensity={0.2}
           transparent
-          opacity={0.3}
+          opacity={0.35}
         />
       </mesh>
     </group>
@@ -78,8 +78,8 @@ function ArenaEnvironment() {
           <pointLight
             position={[0, p.h + 1, 0]}
             color={p.color}
-            intensity={1}
-            distance={12}
+            intensity={1.5}
+            distance={15}
             decay={2}
           />
           <mesh position={[0, p.h + 0.5, 0]}>
@@ -93,7 +93,7 @@ function ArenaEnvironment() {
         </group>
       ))}
 
-      <fog attach="fog" args={["#0c1220", 40, 90]} />
+      <fog attach="fog" args={["#1a2440", 50, 120]} />
     </group>
   );
 }
@@ -101,11 +101,11 @@ function ArenaEnvironment() {
 function ArenaLighting() {
   return (
     <group>
-      <ambientLight intensity={0.5} color="#99aacc" />
+      <ambientLight intensity={0.8} color="#b0bbdd" />
       <directionalLight
-        position={[10, 20, 10]}
-        intensity={1.2}
-        color="#ccd4ee"
+        position={[10, 25, 10]}
+        intensity={1.8}
+        color="#dde4ff"
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -117,18 +117,23 @@ function ArenaLighting() {
         shadow-camera-bottom={-30}
       />
       <directionalLight
-        position={[-8, 12, -6]}
+        position={[-10, 15, -8]}
+        intensity={0.7}
+        color="#aabbdd"
+      />
+      <directionalLight
+        position={[5, 10, -12]}
         intensity={0.4}
-        color="#8899cc"
+        color="#99aacc"
       />
       <hemisphereLight
-        args={["#3a2a6e", "#1a1a28", 0.6]}
+        args={["#5544aa", "#2a2a44", 0.8]}
       />
       <pointLight
-        position={[0, 15, 0]}
-        color="#7f00ff"
-        intensity={0.8}
-        distance={50}
+        position={[0, 18, 0]}
+        color="#9966ff"
+        intensity={0.6}
+        distance={60}
         decay={2}
       />
     </group>

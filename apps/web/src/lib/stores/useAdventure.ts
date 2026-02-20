@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 export interface AdventurePlayerState {
+  fighterId: string;
   posX: number;
   posY: number;
   posZ: number;
@@ -19,6 +20,7 @@ export interface AdventurePlayerState {
   isAttacking: boolean;
   attackType: "punch" | "kick" | "special" | "ultimate" | null;
   attackCooldown: number;
+  attackTimer: number;
 }
 
 export interface AdventureEnemy {
@@ -69,6 +71,7 @@ interface AdventureState {
 }
 
 const defaultPlayer: AdventurePlayerState = {
+  fighterId: "kai-jax",
   posX: 0,
   posY: 0,
   posZ: 0,
@@ -87,6 +90,7 @@ const defaultPlayer: AdventurePlayerState = {
   isAttacking: false,
   attackType: null,
   attackCooldown: 0,
+  attackTimer: 0,
 };
 
 export const useAdventure = create<AdventureState>((set, get) => ({
@@ -202,9 +206,9 @@ export const useAdventure = create<AdventureState>((set, get) => ({
   removeEnemy: (id) =>
     set((s) => ({ enemies: s.enemies.filter((e) => e.id !== id) })),
 
-  initAdventure: (_characterId, missionId, arenaId) =>
+  initAdventure: (characterId, missionId, arenaId) =>
     set({
-      player: { ...defaultPlayer },
+      player: { ...defaultPlayer, fighterId: characterId },
       enemies: [],
       missionId,
       arenaId,

@@ -1,6 +1,7 @@
-import { useRef, Suspense } from "react";
+import { useRef, Suspense, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useGLTF, Clone } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei";
+import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
 import { CHARACTER_MODELS } from "../models/GLBCharacterModel";
 import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
@@ -16,19 +17,47 @@ interface EnemyMeshProps {
   enemy: AdventureEnemy;
 }
 
+function findEnemyLimbs(root: THREE.Object3D) {
+  const limbs = { rightArm: null as THREE.Object3D | null, leftArm: null as THREE.Object3D | null, rightLeg: null as THREE.Object3D | null, leftLeg: null as THREE.Object3D | null };
+  const armP = /arm|shoulder|hand|claw|wing|forelimb|front.?leg|paw/i;
+  const legP = /leg|thigh|knee|foot|hind|rear.?leg|ankle/i;
+  const rightP = /right|_r$|\.r$|_r_/i;
+  const leftP = /left|_l$|\.l$|_l_/i;
+  root.traverse((child) => {
+    const n = child.name.toLowerCase();
+    if (armP.test(n)) {
+      if (rightP.test(n) && !limbs.rightArm) limbs.rightArm = child;
+      else if (leftP.test(n) && !limbs.leftArm) limbs.leftArm = child;
+      else if (!limbs.rightArm) limbs.rightArm = child;
+      else if (!limbs.leftArm) limbs.leftArm = child;
+    } else if (legP.test(n)) {
+      if (rightP.test(n) && !limbs.rightLeg) limbs.rightLeg = child;
+      else if (leftP.test(n) && !limbs.leftLeg) limbs.leftLeg = child;
+      else if (!limbs.rightLeg) limbs.rightLeg = child;
+      else if (!limbs.leftLeg) limbs.leftLeg = child;
+    }
+  });
+  return limbs;
+}
+
 function EnemyMesh({ enemy }: EnemyMeshProps) {
   const config = CHARACTER_MODELS[enemy.fighterId];
   const modelPath = config?.path || "/models/stylized-beast.glb";
   const modelScale = (config?.scale || 2.5) * 0.85;
 
   const { scene, animations } = useGLTF(modelPath);
+  const clonedScene = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+
   const groupRef = useRef<THREE.Group>(null);
   const innerRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
   const mixerInit = useRef(false);
+  const limbsRef = useRef<ReturnType<typeof findEnemyLimbs> | null>(null);
+  const limbsSearched = useRef(false);
+  const walkCycle = useRef(0);
 
   useFrame((state, rawDelta) => {
-    if (!groupRef.current) return;
+    if (!groupRef.current || !innerRef.current) return;
     const delta = Math.min(rawDelta, 0.05);
     const t = state.clock.elapsedTime;
 
@@ -41,25 +70,89 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
     }
     if (mixerRef.current) mixerRef.current.update(delta);
 
+    if (!limbsSearched.current) {
+      limbsSearched.current = true;
+      limbsRef.current = findEnemyLimbs(innerRef.current);
+    }
+
     groupRef.current.position.set(enemy.posX, enemy.posY, enemy.posZ);
     groupRef.current.rotation.y = enemy.rotY;
 
-    if (innerRef.current) {
-      const breathe = Math.sin(t * 2.5 + enemy.posX) * 0.01;
+    const limbs = limbsRef.current;
+    const hasLimbs = limbs && (limbs.rightArm || limbs.leftArm || limbs.rightLeg || limbs.leftLeg);
+    const breathe = Math.sin(t * 2.5 + enemy.posX) * 0.01;
+
+    if (enemy.isAttacking) {
+      const swing = Math.sin(t * 15) * 0.5 + 0.5;
+      innerRef.current.rotation.x = THREE.MathUtils.lerp(
+        innerRef.current.rotation.x, 0.3 * swing, delta * 12
+      );
+      innerRef.current.position.y = breathe + swing * 0.08;
+      innerRef.current.position.z = swing * 0.1;
+
+      if (hasLimbs) {
+        if (limbs.rightArm) {
+          limbs.rightArm.rotation.x = -swing * 1.3;
+          limbs.rightArm.rotation.z = swing * 0.4;
+        }
+        if (limbs.leftArm) {
+          limbs.leftArm.rotation.x = swing * 0.3;
+        }
+      }
+    } else if (enemy.isAggro) {
+      walkCycle.current += delta * 10;
+      const stride = Math.sin(walkCycle.current);
+      const bounce = Math.abs(Math.sin(walkCycle.current)) * 0.04;
+
+      innerRef.current.rotation.x = THREE.MathUtils.lerp(
+        innerRef.current.rotation.x, 0.08, delta * 6
+      );
+      innerRef.current.position.y = breathe + bounce;
+
+      if (hasLimbs) {
+        if (limbs.rightArm) {
+          limbs.rightArm.rotation.x = THREE.MathUtils.lerp(
+            limbs.rightArm.rotation.x, stride * 0.5, delta * 8
+          );
+        }
+        if (limbs.leftArm) {
+          limbs.leftArm.rotation.x = THREE.MathUtils.lerp(
+            limbs.leftArm.rotation.x, -stride * 0.5, delta * 8
+          );
+        }
+        if (limbs.rightLeg) {
+          limbs.rightLeg.rotation.x = THREE.MathUtils.lerp(
+            limbs.rightLeg.rotation.x, -stride * 0.6, delta * 8
+          );
+        }
+        if (limbs.leftLeg) {
+          limbs.leftLeg.rotation.x = THREE.MathUtils.lerp(
+            limbs.leftLeg.rotation.x, stride * 0.6, delta * 8
+          );
+        }
+      }
+    } else {
+      walkCycle.current = 0;
+      innerRef.current.rotation.x = THREE.MathUtils.lerp(
+        innerRef.current.rotation.x, 0, delta * 4
+      );
       innerRef.current.position.y = breathe;
 
-      if (enemy.isAttacking) {
-        innerRef.current.rotation.x = THREE.MathUtils.lerp(
-          innerRef.current.rotation.x, 0.25, delta * 10
-        );
-      } else if (enemy.isAggro) {
-        innerRef.current.rotation.x = THREE.MathUtils.lerp(
-          innerRef.current.rotation.x, 0.05, delta * 5
-        );
-      } else {
-        innerRef.current.rotation.x = THREE.MathUtils.lerp(
-          innerRef.current.rotation.x, 0, delta * 4
-        );
+      if (hasLimbs) {
+        const idleArm = Math.sin(t * 1.0 + enemy.posX) * 0.05;
+        if (limbs.rightArm) {
+          limbs.rightArm.rotation.x = THREE.MathUtils.lerp(limbs.rightArm.rotation.x, idleArm, delta * 3);
+          limbs.rightArm.rotation.z = THREE.MathUtils.lerp(limbs.rightArm.rotation.z, 0, delta * 3);
+        }
+        if (limbs.leftArm) {
+          limbs.leftArm.rotation.x = THREE.MathUtils.lerp(limbs.leftArm.rotation.x, -idleArm, delta * 3);
+        }
+        if (limbs.rightLeg) {
+          limbs.rightLeg.rotation.x = THREE.MathUtils.lerp(limbs.rightLeg.rotation.x, 0, delta * 3);
+        }
+        if (limbs.leftLeg) {
+          limbs.leftLeg.rotation.x = THREE.MathUtils.lerp(limbs.leftLeg.rotation.x, 0, delta * 3);
+        }
       }
     }
 
@@ -73,7 +166,7 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
   return (
     <group ref={groupRef}>
       <group ref={innerRef} scale={modelScale}>
-        <Clone object={scene} castShadow receiveShadow />
+        <primitive object={clonedScene} castShadow receiveShadow />
       </group>
       <pointLight
         position={[0, 1.5, 0]}
