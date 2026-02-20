@@ -33,7 +33,7 @@ export default function MainMenu() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center gap-8 p-6 bg-gradient-to-b from-[#07070d] via-purple-950/25 to-[#07070d]">
+    <div className="h-screen w-full flex flex-col items-center justify-center gap-8 p-6 bg-gradient-to-b from-[#07070d] via-purple-950/25 to-[#07070d] overflow-auto">
       <div className="text-center">
         <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase drop-shadow-[0_0_24px_rgba(34,211,238,0.2)]">
           Legends of Kai-Jax

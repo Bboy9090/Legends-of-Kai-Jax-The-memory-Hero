@@ -19,6 +19,7 @@ function BeastModelPanel({ fighterId }: { fighterId: string }) {
   return (
     <Canvas
       shadows
+      style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
       camera={{ position: [0, 1.65, 5.5], fov: 42 }}
       onCreated={({ gl }) => {
         const q = getQualitySettings();
@@ -68,26 +69,26 @@ export default function BeastPreview() {
   const fighter = getFighterById(activeFighter);
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-gradient-to-b from-[#07070d] via-purple-950/20 to-[#07070d]">
-      <div className="flex items-center justify-between p-4">
+    <div className="h-screen w-full flex flex-col bg-gradient-to-b from-[#07070d] via-purple-950/20 to-[#07070d]">
+      <div className="flex items-center justify-between px-4 py-3 shrink-0">
         <button
           onClick={() => setGameState("menu")}
           className="px-4 py-2 rounded-lg border border-slate-600 text-slate-300 hover:border-slate-400 hover:text-white transition-all"
         >
           Back
         </button>
-        <h1 className="text-2xl font-black text-white tracking-tight uppercase">
-          Beast Preview — 3D Models
+        <h1 className="text-xl md:text-2xl font-black text-white tracking-tight uppercase">
+          Beast Preview
         </h1>
         <div className="w-20" />
       </div>
 
-      <div className="flex gap-2 justify-center mb-2">
+      <div className="flex gap-2 justify-center pb-2 shrink-0 flex-wrap px-2">
         {FIGHTERS.map((f) => (
           <button
             key={f.id}
             onClick={() => setActiveFighter(f.id)}
-            className={`px-5 py-2 rounded-lg font-bold text-sm transition-all ${
+            className={`px-4 py-1.5 rounded-lg font-bold text-sm transition-all ${
               activeFighter === f.id
                 ? "text-white scale-105"
                 : "text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500"
@@ -108,33 +109,28 @@ export default function BeastPreview() {
         ))}
       </div>
 
-      <div className="flex-1 min-h-0 relative">
+      <div className="flex-1 min-h-0 relative w-full">
         <BeastModelPanel key={activeFighter} fighterId={activeFighter} />
       </div>
 
       {fighter && (
-        <div className="p-4 flex flex-col items-center gap-2">
-          <h2 className="text-xl font-black text-white">{fighter.displayName}</h2>
-          <div className="flex gap-6 text-sm">
+        <div className="px-4 py-3 flex items-center justify-center gap-8 shrink-0 border-t border-slate-800/50">
+          <h2 className="text-lg font-black text-white">{fighter.displayName}</h2>
+          <div className="flex gap-5 text-sm">
             <div className="text-center">
-              <div className="text-slate-500 text-xs uppercase">Power</div>
+              <div className="text-slate-500 text-[10px] uppercase">Power</div>
               <div className="text-white font-bold">{fighter.baseStats?.power ?? 0}</div>
             </div>
             <div className="text-center">
-              <div className="text-slate-500 text-xs uppercase">Speed</div>
+              <div className="text-slate-500 text-[10px] uppercase">Speed</div>
               <div className="text-white font-bold">{fighter.baseStats?.speed ?? 0}</div>
             </div>
             <div className="text-center">
-              <div className="text-slate-500 text-xs uppercase">Defense</div>
+              <div className="text-slate-500 text-[10px] uppercase">Defense</div>
               <div className="text-white font-bold">{fighter.baseStats?.defense ?? 0}</div>
             </div>
           </div>
-          <p className="text-slate-500 text-xs mt-1">
-            3D GLB Character Model
-          </p>
-          <p className="text-slate-600 text-xs">
-            Scroll to zoom · Drag to rotate
-          </p>
+          <span className="text-slate-600 text-xs hidden sm:inline">Scroll to zoom · Drag to rotate</span>
         </div>
       )}
     </div>

@@ -40,7 +40,7 @@ export default function CampaignMap() {
 
   return (
     <div
-      className="min-h-screen w-full p-6 overflow-auto text-white"
+      className="h-screen w-full p-6 overflow-auto text-white"
       style={{ background: "linear-gradient(160deg, #0a0a1a 0%, #1a0a2e 50%, #0d0d1a 100%)" }}
     >
       <div className="max-w-3xl mx-auto">

@@ -136,7 +136,7 @@ function App() {
     <div 
       style={{ 
         width: '100vw', 
-        minHeight: '100vh', 
+        height: '100vh', 
         position: 'relative', 
         overflow: gameState === 'lore-hub' ? 'auto' : 'hidden',
         background: 'linear-gradient(to bottom, #0a0a1a, #1a0a2e)',
@@ -269,7 +269,7 @@ function App() {
         {/* ⚡ BATTLE CANVAS - THE MAIN EVENT! */}
         {(phase === 'playing' || phase === 'ended') && gameState === 'playing' && (
           <>
-            <div className="relative w-full h-full min-h-[200px]">
+            <div className="relative w-full h-screen">
               <Canvas
                 shadows
                 camera={{
