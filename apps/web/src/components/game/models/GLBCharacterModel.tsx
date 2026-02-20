@@ -113,6 +113,24 @@ export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
+  "marble-gladiator": {
+    path: "/models/marble_gladiator.glb",
+    scale: 3.0,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  "granite-colossus": {
+    path: "/models/granite_colossus.glb",
+    scale: 3.2,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  "sandstone-sentinel": {
+    path: "/models/sandstone_sentinel.glb",
+    scale: 2.8,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
   apex: {
     path: "/models/apex_hero.glb",
     scale: 2.5,

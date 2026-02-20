@@ -180,6 +180,33 @@ export const FIGHTERS: Fighter[] = [
     baseStats: { power: 83, speed: 86, defense: 83, gravity: 9.8 },
     role: "enemy",
   },
+  {
+    id: "marble-gladiator",
+    name: "MarbleGladiator",
+    displayName: "MARBLE GLADIATOR",
+    color: "#e8e0d4",
+    accentColor: "#d4c9b8",
+    baseStats: { power: 94, speed: 65, defense: 96, gravity: 12.0 },
+    role: "boss",
+  },
+  {
+    id: "granite-colossus",
+    name: "GraniteColossus",
+    displayName: "GRANITE COLOSSUS",
+    color: "#3a3a3a",
+    accentColor: "#5a7a5a",
+    baseStats: { power: 96, speed: 60, defense: 98, gravity: 13.0 },
+    role: "boss",
+  },
+  {
+    id: "sandstone-sentinel",
+    name: "SandstoneSentinel",
+    displayName: "SANDSTONE SENTINEL",
+    color: "#8b7355",
+    accentColor: "#c4a265",
+    baseStats: { power: 90, speed: 72, defense: 92, gravity: 11.5 },
+    role: "boss",
+  },
 ];
 
 export const HERO_FIGHTERS = FIGHTERS.filter((f) => f.role === "hero");
