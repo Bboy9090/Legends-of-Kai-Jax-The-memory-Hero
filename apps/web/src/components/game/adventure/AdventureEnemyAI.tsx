@@ -77,7 +77,7 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
       <pointLight
         position={[0, 1.5, 0]}
         color="#ff3333"
-        intensity={enemy.isAggro ? 1.5 : 0.5}
+        intensity={enemy.isAggro ? 0.5 : 0.15}
         distance={3}
         decay={2}
       />

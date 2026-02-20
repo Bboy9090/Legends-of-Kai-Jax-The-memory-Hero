@@ -271,7 +271,7 @@ function GLBModelInner({
       <pointLight
         position={[0, 1.5, 0.5]}
         color={accentColor}
-        intensity={emotionIntensity * 2}
+        intensity={emotionIntensity * 0.5}
         distance={3}
         decay={2}
       />

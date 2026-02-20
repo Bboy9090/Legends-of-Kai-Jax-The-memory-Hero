@@ -93,19 +93,9 @@ function CharacterInner({ fighterId, accentColor }: Props) {
       <pointLight
         position={[0, 2, 0.5]}
         color={accentColor}
-        intensity={1.5}
-        distance={5}
+        intensity={0.4}
+        distance={4}
         decay={2}
-      />
-      <spotLight
-        position={[0, 4, 0]}
-        angle={0.5}
-        penumbra={0.8}
-        color={accentColor}
-        intensity={0.5}
-        distance={6}
-        castShadow={false}
-        target-position={[0, 0, 0]}
       />
     </group>
   );

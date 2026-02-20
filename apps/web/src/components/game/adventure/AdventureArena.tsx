@@ -19,14 +19,14 @@ function ArenaGround() {
       >
         <planeGeometry args={[100, 100]} />
         <meshStandardMaterial
-          color="#0d1117"
-          roughness={0.9}
-          metalness={0.1}
+          color="#1a2030"
+          roughness={0.85}
+          metalness={0.15}
         />
       </mesh>
       <gridHelper
         ref={gridRef}
-        args={[100, 50, "#1a2332", "#111827"]}
+        args={[100, 50, "#2a3548", "#1e2838"]}
         position={[0, 0.01, 0]}
       />
       <mesh
@@ -37,9 +37,9 @@ function ArenaGround() {
         <meshStandardMaterial
           color="#00f2ff"
           emissive="#00f2ff"
-          emissiveIntensity={0.3}
+          emissiveIntensity={0.15}
           transparent
-          opacity={0.4}
+          opacity={0.3}
         />
       </mesh>
     </group>
@@ -78,8 +78,8 @@ function ArenaEnvironment() {
           <pointLight
             position={[0, p.h + 1, 0]}
             color={p.color}
-            intensity={2}
-            distance={10}
+            intensity={1}
+            distance={12}
             decay={2}
           />
           <mesh position={[0, p.h + 0.5, 0]}>
@@ -87,13 +87,13 @@ function ArenaEnvironment() {
             <meshStandardMaterial
               color={p.color}
               emissive={p.color}
-              emissiveIntensity={2}
+              emissiveIntensity={0.8}
             />
           </mesh>
         </group>
       ))}
 
-      <fog attach="fog" args={["#070b14", 30, 80]} />
+      <fog attach="fog" args={["#0c1220", 40, 90]} />
     </group>
   );
 }
@@ -101,11 +101,11 @@ function ArenaEnvironment() {
 function ArenaLighting() {
   return (
     <group>
-      <ambientLight intensity={0.15} color="#8899bb" />
+      <ambientLight intensity={0.5} color="#99aacc" />
       <directionalLight
         position={[10, 20, 10]}
-        intensity={0.6}
-        color="#aabbff"
+        intensity={1.2}
+        color="#ccd4ee"
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -116,13 +116,18 @@ function ArenaLighting() {
         shadow-camera-top={30}
         shadow-camera-bottom={-30}
       />
+      <directionalLight
+        position={[-8, 12, -6]}
+        intensity={0.4}
+        color="#8899cc"
+      />
       <hemisphereLight
-        args={["#1a0a3e", "#0a0a14", 0.3]}
+        args={["#3a2a6e", "#1a1a28", 0.6]}
       />
       <pointLight
         position={[0, 15, 0]}
         color="#7f00ff"
-        intensity={1.5}
+        intensity={0.8}
         distance={50}
         decay={2}
       />
