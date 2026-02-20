@@ -7,5 +7,24 @@
   "scripts": {
     "start": "node serve.js",
     "build": "cd apps/web && npx vite build"
+  },
+  "dependencies": {
+    "@fontsource/bebas-neue": "^5.2.7",
+    "@fontsource/inter": "^5.2.8",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.183.0",
+    "@vitejs/plugin-react": "^5.1.4",
+    "autoprefixer": "^10.4.24",
+    "postcss": "^8.5.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwindcss": "^3.4.0",
+    "three": "^0.183.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "zustand": "^5.0.11"
   }
 }

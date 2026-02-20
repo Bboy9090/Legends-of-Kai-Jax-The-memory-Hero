@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useAdventure } from "../../../lib/stores/useAdventure";
+import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
 import * as THREE from "three";
 
 const WALK_SPEED = 5;
@@ -22,6 +23,7 @@ export default function AdventurePlayerController() {
   const prevKeysRef = useRef<Record<string, boolean>>({});
   const attackTimerRef = useRef(0);
   const comboTimerRef = useRef(0);
+  const stoneStepTimer = useRef(0);
 
   useEffect(() => {
     const keys = keysRef.current;
@@ -100,6 +102,17 @@ export default function AdventurePlayerController() {
     store.setPlayerVelocity(vx, vz);
     store.setPlayerMoving(hasInput, hasInput && isRunning);
 
+    if (hasInput && isStatueFighter(store.player.fighterId)) {
+      stoneStepTimer.current += delta;
+      const stepInterval = isRunning ? 0.3 : 0.5;
+      if (stoneStepTimer.current >= stepInterval) {
+        stoneStepTimer.current = 0;
+        useAudio.getState().playStoneMove();
+      }
+    } else {
+      stoneStepTimer.current = 0;
+    }
+
     if (isRunning && hasInput) {
       store.useStamina(15 * delta);
     } else {
@@ -130,18 +143,22 @@ export default function AdventurePlayerController() {
         store.playerAttack("punch");
         attackTimerRef.current = ATTACK_COOLDOWNS.punch;
         comboTimerRef.current = 1.5;
+        if (isStatueFighter(store.player.fighterId)) useAudio.getState().playStoneAttack();
       } else if (justPressed("KeyK") || justPressed("KeyZ")) {
         store.playerAttack("kick");
         attackTimerRef.current = ATTACK_COOLDOWNS.kick;
         comboTimerRef.current = 1.5;
+        if (isStatueFighter(store.player.fighterId)) useAudio.getState().playStoneAttack();
       } else if (justPressed("KeyL") || justPressed("KeyC")) {
         store.playerAttack("special");
         attackTimerRef.current = ATTACK_COOLDOWNS.special;
         comboTimerRef.current = 2.0;
+        if (isStatueFighter(store.player.fighterId)) useAudio.getState().playStoneAttack();
       } else if (justPressed("KeyR")) {
         store.playerAttack("ultimate");
         attackTimerRef.current = ATTACK_COOLDOWNS.ultimate;
         comboTimerRef.current = 2.5;
+        if (isStatueFighter(store.player.fighterId)) useAudio.getState().playStoneAttack();
       }
     }
 

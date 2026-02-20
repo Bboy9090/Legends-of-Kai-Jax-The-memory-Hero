@@ -1,5 +1,72 @@
 import { create } from "zustand";
 
+const STATUE_IDS = new Set(["marble-gladiator", "granite-colossus", "sandstone-sentinel"]);
+
+export function isStatueFighter(id: string): boolean {
+  return STATUE_IDS.has(id);
+}
+
+let audioCtx: AudioContext | null = null;
+function getAudioCtx(): AudioContext | null {
+  if (!audioCtx) audioCtx = new AudioContext();
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume().catch(() => {});
+    return null;
+  }
+  return audioCtx;
+}
+
+function unlockAudioCtx() {
+  if (!audioCtx) audioCtx = new AudioContext();
+  if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+}
+
+if (typeof window !== "undefined") {
+  const unlock = () => {
+    unlockAudioCtx();
+    window.removeEventListener("click", unlock);
+    window.removeEventListener("keydown", unlock);
+  };
+  window.addEventListener("click", unlock, { once: true });
+  window.addEventListener("keydown", unlock, { once: true });
+}
+
+function playStoneGrind(type: "move" | "attack" | "hit") {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const duration = type === "move" ? 0.25 : type === "attack" ? 0.4 : 0.15;
+    const baseFreq = type === "move" ? 80 : type === "attack" ? 120 : 200;
+
+    const bufferSize = ctx.sampleRate * duration;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for (let i = 0; i < bufferSize; i++) {
+      const t = i / ctx.sampleRate;
+      const env = Math.exp(-t * (type === "move" ? 6 : 4));
+      const noise = (Math.random() * 2 - 1) * 0.3;
+      const grind = Math.sin(2 * Math.PI * baseFreq * t + Math.sin(t * 300) * 2) * 0.4;
+      const rumble = Math.sin(2 * Math.PI * 40 * t) * 0.3;
+      data[i] = (noise + grind + rumble) * env;
+    }
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = type === "move" ? 600 : 1200;
+    filter.Q.value = 1.5;
+
+    const gain = ctx.createGain();
+    gain.gain.value = type === "move" ? 0.15 : type === "attack" ? 0.25 : 0.2;
+
+    source.connect(filter).connect(gain).connect(ctx.destination);
+    source.start();
+  } catch (_e) {}
+}
+
 interface AudioState {
   backgroundMusic: HTMLAudioElement | null;
   battleMusic: HTMLAudioElement | null;
@@ -20,6 +87,9 @@ interface AudioState {
   playHit: () => void;
   playKO: () => void;
   playVictory: () => void;
+  playStoneMove: () => void;
+  playStoneAttack: () => void;
+  playStoneHit: () => void;
 }
 
 function tryPlay(a: HTMLAudioElement | null) {
@@ -48,4 +118,7 @@ export const useAudio = create<AudioState>((set, get) => ({
   playHit: () => tryPlay(get().hitSound),
   playKO: () => tryPlay(get().hitSound),
   playVictory: () => tryPlay(get().successSound),
+  playStoneMove: () => { if (!get().isMuted) playStoneGrind("move"); },
+  playStoneAttack: () => { if (!get().isMuted) playStoneGrind("attack"); },
+  playStoneHit: () => { if (!get().isMuted) playStoneGrind("hit"); },
 }));

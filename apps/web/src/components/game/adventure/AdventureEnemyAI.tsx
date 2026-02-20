@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF, Clone } from "@react-three/drei";
 import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
 import { CHARACTER_MODELS } from "../models/GLBCharacterModel";
+import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
 import * as THREE from "three";
 
 const AGGRO_RANGE = 15;
@@ -129,6 +130,7 @@ export default function AdventureEnemyAI() {
           attackTimers.current[enemy.id] = 0;
           adv.setEnemyAttacking(enemy.id, true);
           adv.damagePlayer(ENEMY_DAMAGE);
+          if (isStatueFighter(enemy.fighterId)) useAudio.getState().playStoneAttack();
           setTimeout(() => {
             useAdventure.getState().setEnemyAttacking(enemy.id, false);
           }, 300);
@@ -156,6 +158,7 @@ export default function AdventureEnemyAI() {
             ultimate: 40,
           };
           adv.damageEnemy(enemy.id, dmgMap[player.attackType || "punch"] || 10);
+          if (isStatueFighter(enemy.fighterId)) useAudio.getState().playStoneHit();
         }
       });
     }
