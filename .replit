@@ -20,3 +20,5 @@ publicDir = "dist"
 
 [userenv.production]
 NPM_CONFIG_ALWAYS_AUTH = "false"
+npm_config_always_auth = "false"
+npm_config__auth = ""
