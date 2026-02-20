@@ -5,6 +5,12 @@ import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
 import { CHARACTER_MODELS } from "../models/GLBCharacterModel";
 import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
+import {
+  findLimbs, captureBaseRotations, hasAnyLimb, createAnimState,
+  animateIdle, animateAggroWalk, animateEnemyAttack, animateHitReaction,
+  animateDeath, resetAttackPhase, triggerHit,
+  type LimbRefs, type LimbBaseRotations, type AnimState,
+} from "../../../lib/animationUtils";
 import * as THREE from "three";
 
 const AGGRO_RANGE = 15;
@@ -15,29 +21,6 @@ const ENEMY_DAMAGE = 8;
 
 interface EnemyMeshProps {
   enemy: AdventureEnemy;
-}
-
-function findEnemyLimbs(root: THREE.Object3D) {
-  const limbs = { rightArm: null as THREE.Object3D | null, leftArm: null as THREE.Object3D | null, rightLeg: null as THREE.Object3D | null, leftLeg: null as THREE.Object3D | null };
-  const armP = /arm|shoulder|hand|claw|wing|forelimb|front.?leg|paw/i;
-  const legP = /leg|thigh|knee|foot|hind|rear.?leg|ankle/i;
-  const rightP = /right|_r$|\.r$|_r_/i;
-  const leftP = /left|_l$|\.l$|_l_/i;
-  root.traverse((child) => {
-    const n = child.name.toLowerCase();
-    if (armP.test(n)) {
-      if (rightP.test(n) && !limbs.rightArm) limbs.rightArm = child;
-      else if (leftP.test(n) && !limbs.leftArm) limbs.leftArm = child;
-      else if (!limbs.rightArm) limbs.rightArm = child;
-      else if (!limbs.leftArm) limbs.leftArm = child;
-    } else if (legP.test(n)) {
-      if (rightP.test(n) && !limbs.rightLeg) limbs.rightLeg = child;
-      else if (leftP.test(n) && !limbs.leftLeg) limbs.leftLeg = child;
-      else if (!limbs.rightLeg) limbs.rightLeg = child;
-      else if (!limbs.leftLeg) limbs.leftLeg = child;
-    }
-  });
-  return limbs;
 }
 
 function EnemyMesh({ enemy }: EnemyMeshProps) {
@@ -51,117 +34,71 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
   const groupRef = useRef<THREE.Group>(null);
   const innerRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
-  const mixerInit = useRef(false);
-  const limbsRef = useRef<ReturnType<typeof findEnemyLimbs> | null>(null);
-  const limbsSearched = useRef(false);
-  const walkCycle = useRef(0);
+  const limbsRef = useRef<LimbRefs | null>(null);
+  const basesRef = useRef<LimbBaseRotations | null>(null);
+  const animRef = useRef<AnimState>(createAnimState());
+  const initialized = useRef(false);
+  const prevHealth = useRef(enemy.health);
+  const attackVariant = useRef(0);
 
   useFrame((state, rawDelta) => {
     if (!groupRef.current || !innerRef.current) return;
     const delta = Math.min(rawDelta, 0.05);
     const t = state.clock.elapsedTime;
+    const anim = animRef.current;
 
-    if (innerRef.current && animations.length > 0 && !mixerInit.current) {
-      mixerInit.current = true;
-      const mixer = new THREE.AnimationMixer(innerRef.current);
-      mixerRef.current = mixer;
-      const action = mixer.clipAction(animations[0]);
-      action.play();
+    if (!initialized.current && innerRef.current) {
+      initialized.current = true;
+
+      limbsRef.current = findLimbs(clonedScene);
+      basesRef.current = captureBaseRotations(limbsRef.current);
+
+      const hasProceduralLimbs = hasAnyLimb(limbsRef.current);
+      if (animations.length > 0 && !hasProceduralLimbs) {
+        const mixer = new THREE.AnimationMixer(clonedScene);
+        mixerRef.current = mixer;
+        const action = mixer.clipAction(animations[0]);
+        action.play();
+      }
     }
+
     if (mixerRef.current) mixerRef.current.update(delta);
 
-    if (!limbsSearched.current) {
-      limbsSearched.current = true;
-      limbsRef.current = findEnemyLimbs(innerRef.current);
+    if (enemy.health < prevHealth.current) {
+      triggerHit(anim);
+      attackVariant.current++;
+    }
+    prevHealth.current = enemy.health;
+
+    if (enemy.isDead) {
+      animateDeath(groupRef.current, innerRef.current, anim, delta);
+      return;
     }
 
     groupRef.current.position.set(enemy.posX, enemy.posY, enemy.posZ);
     groupRef.current.rotation.y = enemy.rotY;
+    groupRef.current.scale.set(1, 1, 1);
 
     const limbs = limbsRef.current;
-    const hasLimbs = limbs && (limbs.rightArm || limbs.leftArm || limbs.rightLeg || limbs.leftLeg);
-    const breathe = Math.sin(t * 2.5 + enemy.posX) * 0.01;
+    const bases = basesRef.current;
+    const hasL = hasAnyLimb(limbs);
+    const seed = enemy.posX * 7 + enemy.posZ * 3;
 
     if (enemy.isAttacking) {
-      const swing = Math.sin(t * 15) * 0.5 + 0.5;
-      innerRef.current.rotation.x = THREE.MathUtils.lerp(
-        innerRef.current.rotation.x, 0.3 * swing, delta * 12
-      );
-      innerRef.current.position.y = breathe + swing * 0.08;
-      innerRef.current.position.z = swing * 0.1;
-
-      if (hasLimbs) {
-        if (limbs.rightArm) {
-          limbs.rightArm.rotation.x = -swing * 1.3;
-          limbs.rightArm.rotation.z = swing * 0.4;
-        }
-        if (limbs.leftArm) {
-          limbs.leftArm.rotation.x = swing * 0.3;
-        }
-      }
+      animateEnemyAttack(innerRef.current, hasL ? limbs : null, bases, anim, delta, t, attackVariant.current);
     } else if (enemy.isAggro) {
-      walkCycle.current += delta * 10;
-      const stride = Math.sin(walkCycle.current);
-      const bounce = Math.abs(Math.sin(walkCycle.current)) * 0.04;
-
-      innerRef.current.rotation.x = THREE.MathUtils.lerp(
-        innerRef.current.rotation.x, 0.08, delta * 6
-      );
-      innerRef.current.position.y = breathe + bounce;
-
-      if (hasLimbs) {
-        if (limbs.rightArm) {
-          limbs.rightArm.rotation.x = THREE.MathUtils.lerp(
-            limbs.rightArm.rotation.x, stride * 0.5, delta * 8
-          );
-        }
-        if (limbs.leftArm) {
-          limbs.leftArm.rotation.x = THREE.MathUtils.lerp(
-            limbs.leftArm.rotation.x, -stride * 0.5, delta * 8
-          );
-        }
-        if (limbs.rightLeg) {
-          limbs.rightLeg.rotation.x = THREE.MathUtils.lerp(
-            limbs.rightLeg.rotation.x, -stride * 0.6, delta * 8
-          );
-        }
-        if (limbs.leftLeg) {
-          limbs.leftLeg.rotation.x = THREE.MathUtils.lerp(
-            limbs.leftLeg.rotation.x, stride * 0.6, delta * 8
-          );
-        }
-      }
+      resetAttackPhase(anim, innerRef.current, delta);
+      animateAggroWalk(innerRef.current, hasL ? limbs : null, bases, anim, delta, t);
     } else {
-      walkCycle.current = 0;
-      innerRef.current.rotation.x = THREE.MathUtils.lerp(
-        innerRef.current.rotation.x, 0, delta * 4
-      );
-      innerRef.current.position.y = breathe;
-
-      if (hasLimbs) {
-        const idleArm = Math.sin(t * 1.0 + enemy.posX) * 0.05;
-        if (limbs.rightArm) {
-          limbs.rightArm.rotation.x = THREE.MathUtils.lerp(limbs.rightArm.rotation.x, idleArm, delta * 3);
-          limbs.rightArm.rotation.z = THREE.MathUtils.lerp(limbs.rightArm.rotation.z, 0, delta * 3);
-        }
-        if (limbs.leftArm) {
-          limbs.leftArm.rotation.x = THREE.MathUtils.lerp(limbs.leftArm.rotation.x, -idleArm, delta * 3);
-        }
-        if (limbs.rightLeg) {
-          limbs.rightLeg.rotation.x = THREE.MathUtils.lerp(limbs.rightLeg.rotation.x, 0, delta * 3);
-        }
-        if (limbs.leftLeg) {
-          limbs.leftLeg.rotation.x = THREE.MathUtils.lerp(limbs.leftLeg.rotation.x, 0, delta * 3);
-        }
-      }
+      resetAttackPhase(anim, innerRef.current, delta);
+      anim.walkCycle = 0;
+      animateIdle(innerRef.current, hasL ? limbs : null, bases, t, delta, seed);
     }
 
-    if (enemy.isDead && groupRef.current) {
-      groupRef.current.scale.y = THREE.MathUtils.lerp(groupRef.current.scale.y, 0, delta * 3);
-    }
+    animateHitReaction(innerRef.current, anim, delta, t);
   });
 
-  if (enemy.isDead) return null;
+  if (enemy.isDead && animRef.current.deathProgress >= 1) return null;
 
   return (
     <group ref={groupRef}>
@@ -226,7 +163,7 @@ export default function AdventureEnemyAI() {
           if (isStatueFighter(enemy.fighterId)) useAudio.getState().playStoneAttack();
           setTimeout(() => {
             useAdventure.getState().setEnemyAttacking(enemy.id, false);
-          }, 300);
+          }, 400);
         }
       }
 
