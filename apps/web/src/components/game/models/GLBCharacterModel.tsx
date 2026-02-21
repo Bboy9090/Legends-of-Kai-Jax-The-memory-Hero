@@ -2,6 +2,21 @@ import { useRef, Suspense } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF, Clone } from "@react-three/drei";
 import * as THREE from "three";
+import {
+  findLimbs,
+  captureBaseRotations,
+  createAnimState,
+  animateIdle,
+  animateWalk,
+  animatePunch,
+  animateKick,
+  animateSpecial,
+  animateUltimate,
+  hasAnyLimb,
+  type LimbRefs,
+  type LimbBaseRotations,
+  type AnimState,
+} from "../../../lib/animationUtils";
 
 export interface GLBModelConfig {
   path: string;
@@ -165,6 +180,8 @@ function GLBModelFallback() {
   return null;
 }
 
+const TARGET_HEIGHT = 2.8;
+
 function GLBModelInner({
   config,
   animTime,
@@ -194,20 +211,26 @@ function GLBModelInner({
   isInvulnerable?: boolean;
   hitAnim?: number;
 }) {
-  const groupRef = useRef<THREE.Group>(null);
-  const offsetGroupRef = useRef<THREE.Group>(null);
+  const outerRef = useRef<THREE.Group>(null);
+  const innerRef = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF(config.path);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
   const landSquash = useRef(0);
   const wasGrounded = useRef(true);
-  const offsetComputed = useRef(false);
-  const frameCount = useRef(0);
 
   const cloneRef = useRef<THREE.Group>(null);
   const mixerInitialized = useRef(false);
+  const setupDone = useRef(false);
+  const frameCount = useRef(0);
+  const normalizedScale = useRef(config.scale);
+
+  const limbsRef = useRef<LimbRefs | null>(null);
+  const basesRef = useRef<LimbBaseRotations | null>(null);
+  const animStateRef = useRef<AnimState>(createAnimState());
+  const wasAttacking = useRef(false);
 
   useFrame((state, delta) => {
-    if (!groupRef.current) return;
+    if (!innerRef.current || !cloneRef.current) return;
     const t = animTime || state.clock.elapsedTime;
 
     if (cloneRef.current && animations.length > 0 && !mixerInitialized.current) {
@@ -223,13 +246,26 @@ function GLBModelInner({
     }
 
     frameCount.current++;
-    if (cloneRef.current && !offsetComputed.current && frameCount.current > 3) {
-      offsetComputed.current = true;
+    if (!setupDone.current && frameCount.current > 3) {
+      setupDone.current = true;
+
       const bbox = new THREE.Box3().setFromObject(cloneRef.current);
-      if (bbox.min.y < -0.05 && offsetGroupRef.current) {
-        offsetGroupRef.current.position.y = -bbox.min.y;
+      const modelHeight = bbox.max.y - bbox.min.y;
+      if (modelHeight > 0.01) {
+        normalizedScale.current = (TARGET_HEIGHT / modelHeight) * config.scale;
+      }
+      if (bbox.min.y < -0.05 && outerRef.current) {
+        outerRef.current.position.y = -bbox.min.y * (normalizedScale.current / config.scale);
+      }
+
+      const limbs = findLimbs(cloneRef.current);
+      limbsRef.current = hasAnyLimb(limbs) ? limbs : null;
+      if (limbsRef.current) {
+        basesRef.current = captureBaseRotations(limbsRef.current);
       }
     }
+
+    const sc = normalizedScale.current;
 
     if (!wasGrounded.current && isGrounded) {
       landSquash.current = 1;
@@ -240,61 +276,66 @@ function GLBModelInner({
     const squashY = 1 - landSquash.current * 0.2;
     const squashXZ = 1 + landSquash.current * 0.1;
 
-    const breathe = Math.sin(t * 2.0) * 0.04;
-    const speed = Math.abs(velocityX);
-    const walkRate = 8 + speed * 2;
-    const walkAmp = Math.min(speed / 6, 1);
-    const walk = isMoving || speed > 0.5 ? Math.sin(t * walkRate) * walkAmp : 0;
-
-    groupRef.current.position.y = breathe;
-    groupRef.current.scale.set(
-      config.scale * squashXZ,
-      config.scale * squashY,
-      config.scale * squashXZ
-    );
+    innerRef.current.scale.set(sc * squashXZ, sc * squashY, sc * squashXZ);
 
     if (hitAnim > 0) {
-      groupRef.current.rotation.z = Math.sin(t * 22) * 0.08 * hitAnim;
-    } else {
-      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, 0, delta * 10);
+      innerRef.current.rotation.z = Math.sin(t * 22) * 0.08 * hitAnim;
     }
 
     if (isInvulnerable) {
-      groupRef.current.visible = Math.sin(t * 30) > 0;
+      innerRef.current.visible = Math.sin(t * 30) > 0;
     } else {
-      groupRef.current.visible = true;
+      innerRef.current.visible = true;
+    }
+
+    const limbs = limbsRef.current;
+    const bases = basesRef.current;
+    const anim = animStateRef.current;
+
+    if (isAttacking) {
+      if (!wasAttacking.current) {
+        anim.attackPhase = 0;
+      }
+      wasAttacking.current = true;
+      if (attackType === "punch") {
+        animatePunch(innerRef.current, limbs, bases, anim, delta, t);
+      } else if (attackType === "kick") {
+        animateKick(innerRef.current, limbs, bases, anim, delta);
+      } else if (attackType === "special") {
+        animateSpecial(innerRef.current, limbs, bases, anim, delta);
+      } else if (attackType === "ultimate") {
+        animateUltimate(innerRef.current, limbs, bases, anim, delta);
+      } else {
+        animatePunch(innerRef.current, limbs, bases, anim, delta, t);
+      }
+    } else if (isMoving) {
+      wasAttacking.current = false;
+      animateWalk(innerRef.current, limbs, bases, anim, delta, false);
+    } else {
+      wasAttacking.current = false;
+      animateIdle(innerRef.current, limbs, bases, t, delta);
     }
 
     if (!isGrounded) {
       if (isJumping) {
-        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, -0.15, delta * 6);
+        innerRef.current.rotation.x = THREE.MathUtils.lerp(innerRef.current.rotation.x, -0.15, delta * 6);
       } else {
-        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0.1, delta * 6);
+        innerRef.current.rotation.x = THREE.MathUtils.lerp(innerRef.current.rotation.x, 0.1, delta * 6);
       }
-    } else if (isAttacking) {
-      const leanAmount = attackType === "kick" ? -0.2 : attackType === "special" || attackType === "ultimate" ? 0.25 : 0.15;
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, leanAmount, delta * 10);
-    } else if (isMoving) {
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0.05, delta * 6);
-      groupRef.current.position.y += Math.abs(walk) * 0.05;
-    } else {
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0, delta * 6);
     }
-
-    groupRef.current.rotation.y = Math.sin(t * 0.6) * 0.08 + (isMoving ? velocityX * 0.02 : 0);
   });
 
   return (
-    <group ref={offsetGroupRef}>
+    <group ref={outerRef}>
       <group
-        ref={groupRef}
+        ref={innerRef}
         position={config.position}
         rotation={
           config.rotation
             ? [config.rotation[0], config.rotation[1], config.rotation[2]]
             : undefined
         }
-        scale={config.scale}
+        scale={normalizedScale.current}
       >
         <group ref={cloneRef}>
           <Clone object={scene} castShadow receiveShadow />
