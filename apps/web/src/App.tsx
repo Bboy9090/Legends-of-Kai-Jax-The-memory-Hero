@@ -177,8 +177,8 @@ function App() {
                 <Canvas
                   shadows
                   camera={{
-                    position: [0, 8, 12],
-                    fov: 60,
+                    position: [0, 4, 7],
+                    fov: 50,
                     near: 0.1,
                     far: 200,
                   }}
@@ -221,8 +221,8 @@ function App() {
                 <Canvas
                   shadows
                   camera={{
-                    position: [0, 8, 12],
-                    fov: 60,
+                    position: [0, 4, 7],
+                    fov: 50,
                     near: 0.1,
                     far: 200,
                   }}
@@ -273,8 +273,8 @@ function App() {
               <Canvas
                 shadows
                 camera={{
-                  position: [0, 5, 10],
-                  fov: 60,
+                  position: [0, 3.5, 7],
+                  fov: 50,
                   near: 0.1,
                   far: 1000
                 }}

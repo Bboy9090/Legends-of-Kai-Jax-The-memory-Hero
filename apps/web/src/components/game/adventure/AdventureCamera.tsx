@@ -3,9 +3,9 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import * as THREE from "three";
 
-const CAM_HEIGHT = 8;
-const CAM_DIST = 12;
-const CAM_LERP = 4;
+const CAM_HEIGHT = 4.5;
+const CAM_DIST = 6;
+const CAM_LERP = 5;
 
 export default function AdventureCamera() {
   const { camera } = useThree();
@@ -16,11 +16,11 @@ export default function AdventureCamera() {
     const delta = Math.min(rawDelta, 0.05);
     const { player } = useAdventure.getState();
 
-    targetRef.current.set(player.posX, player.posY + 1.5, player.posZ);
+    targetRef.current.set(player.posX, player.posY + 1.2, player.posZ);
 
     const idealPos = new THREE.Vector3(
-      player.posX - Math.sin(player.rotY) * CAM_DIST * 0.3,
-      CAM_HEIGHT,
+      player.posX - Math.sin(player.rotY) * CAM_DIST * 0.4,
+      player.posY + CAM_HEIGHT,
       player.posZ + CAM_DIST
     );
 
