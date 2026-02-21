@@ -12,7 +12,7 @@ export interface GLBModelConfig {
 
 export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
   "kai-jax": {
-    path: "/models/Meshy_AI_Jax_Stormfang_the_Arm_0219222010_texture.glb",
+    path: "/models/emberwolf_warlord.glb",
     scale: 2.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -24,7 +24,7 @@ export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
     rotation: [0, 0, 0],
   },
   kai: {
-    path: "/models/Meshy_AI_Kai_sabertooth_fox_sp_0219223337_texture.glb",
+    path: "/models/Meshy_AI_Blazing_Fox_Warrior_0219223318_texture.glb",
     scale: 2.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -66,7 +66,7 @@ export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
     rotation: [0, 0, 0],
   },
   "blazing-fox": {
-    path: "/models/Meshy_AI_Blazing_Fox_Warrior_0219223318_texture.glb",
+    path: "/models/blazing-fox-vanguard.glb",
     scale: 2.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
