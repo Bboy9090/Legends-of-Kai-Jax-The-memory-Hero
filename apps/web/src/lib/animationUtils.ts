@@ -139,13 +139,191 @@ export function findLimbs(root: THREE.Object3D): LimbRefs {
   if (!limbs.torso && limbs.spine) limbs.torso = limbs.spine;
   if (!limbs.torso && limbs.hips) limbs.torso = limbs.hips;
 
+  walkBoneChains(limbs);
+
   const foundCount = Object.values(limbs).filter(Boolean).length;
   if (foundCount < 3) {
     root.updateWorldMatrix(true, true);
     assignLimbsByGeometry(root, limbs);
+    walkBoneChains(limbs);
   }
 
+  inferMissingLimbsFromSkeleton(root, limbs);
+
+  const limbNames = Object.entries(limbs).filter(([, v]) => v !== null).map(([k, v]) => `${k}="${(v as THREE.Object3D).name}"`);
+  console.log(`[Rigging] Found ${limbNames.length}/21 limbs: ${limbNames.join(", ")}`);
+
   return limbs;
+}
+
+function walkBoneChains(limbs: LimbRefs) {
+  walkArmChain(limbs, "right");
+  walkArmChain(limbs, "left");
+  walkLegChain(limbs, "right");
+  walkLegChain(limbs, "left");
+
+  if (!limbs.neck && limbs.head && limbs.head.parent && limbs.head.parent !== limbs.spine) {
+    const p = limbs.head.parent;
+    if (p && p !== limbs.torso && p !== limbs.hips) {
+      limbs.neck = p;
+    }
+  }
+}
+
+function walkArmChain(limbs: LimbRefs, side: "right" | "left") {
+  const uaKey = side === "right" ? "rightUpperArm" : "leftUpperArm";
+  const faKey = side === "right" ? "rightForearm" : "leftForearm";
+  const hKey = side === "right" ? "rightHand" : "leftHand";
+  const armKey = side === "right" ? "rightArm" : "leftArm";
+
+  let start = limbs[uaKey] || limbs[armKey];
+  if (!start) return;
+
+  if (!limbs[uaKey]) limbs[uaKey] = start;
+
+  if (!limbs[faKey] && start.children.length > 0) {
+    const child = findBestChild(start, FOREARM_PAT) || findBestChild(start, ARM_GENERIC) || start.children[0];
+    if (child && child !== limbs.head && child !== limbs.neck) {
+      limbs[faKey] = child;
+    }
+  }
+
+  const forearm = limbs[faKey];
+  if (!limbs[hKey] && forearm && forearm.children.length > 0) {
+    const child = findBestChild(forearm, HAND_PAT) || forearm.children[0];
+    if (child) {
+      limbs[hKey] = child;
+    }
+  }
+}
+
+function walkLegChain(limbs: LimbRefs, side: "right" | "left") {
+  const ulKey = side === "right" ? "rightUpperLeg" : "leftUpperLeg";
+  const llKey = side === "right" ? "rightLowerLeg" : "leftLowerLeg";
+  const ftKey = side === "right" ? "rightFoot" : "leftFoot";
+  const legKey = side === "right" ? "rightLeg" : "leftLeg";
+
+  let start = limbs[ulKey] || limbs[legKey];
+  if (!start) return;
+
+  if (!limbs[ulKey]) limbs[ulKey] = start;
+
+  if (!limbs[llKey] && start.children.length > 0) {
+    const child = findBestChild(start, LOWER_LEG_PAT) || findBestChild(start, LEG_GENERIC) || start.children[0];
+    if (child && child !== limbs.hips && child !== limbs.spine) {
+      limbs[llKey] = child;
+    }
+  }
+
+  const lowerLeg = limbs[llKey];
+  if (!limbs[ftKey] && lowerLeg && lowerLeg.children.length > 0) {
+    const child = findBestChild(lowerLeg, FOOT_PAT) || lowerLeg.children[0];
+    if (child) {
+      limbs[ftKey] = child;
+    }
+  }
+}
+
+function findBestChild(parent: THREE.Object3D, pattern: RegExp): THREE.Object3D | null {
+  for (const child of parent.children) {
+    if (pattern.test(child.name)) return child;
+  }
+  return null;
+}
+
+function inferMissingLimbsFromSkeleton(root: THREE.Object3D, limbs: LimbRefs) {
+  const skinnedMeshes: THREE.SkinnedMesh[] = [];
+  root.traverse((child) => {
+    if ((child as THREE.SkinnedMesh).isSkinnedMesh) {
+      skinnedMeshes.push(child as THREE.SkinnedMesh);
+    }
+  });
+
+  if (skinnedMeshes.length === 0) return;
+
+  for (const mesh of skinnedMeshes) {
+    if (!mesh.skeleton) continue;
+    const bones = mesh.skeleton.bones;
+    if (bones.length < 4) continue;
+
+    root.updateWorldMatrix(true, true);
+
+    const positions = bones.map(b => {
+      const pos = new THREE.Vector3();
+      b.getWorldPosition(pos);
+      return { bone: b, pos };
+    });
+
+    let minY = Infinity, maxY = -Infinity;
+    let sumX = 0;
+    for (const { pos } of positions) {
+      minY = Math.min(minY, pos.y);
+      maxY = Math.max(maxY, pos.y);
+      sumX += pos.x;
+    }
+    const height = maxY - minY;
+    if (height < 0.01) continue;
+
+    const midX = sumX / positions.length;
+    const hipLine = minY + height * 0.45;
+    const shoulderLine = minY + height * 0.75;
+
+    if (!limbs.hips) {
+      const hipCandidates = positions.filter(p => Math.abs(p.pos.y - hipLine) < height * 0.15 && Math.abs(p.pos.x - midX) < height * 0.1);
+      hipCandidates.sort((a, b) => Math.abs(a.pos.x - midX) - Math.abs(b.pos.x - midX));
+      if (hipCandidates.length > 0) limbs.hips = hipCandidates[0].bone;
+    }
+
+    if (!limbs.spine) {
+      const spineCandidates = positions.filter(p => p.pos.y > hipLine && p.pos.y < shoulderLine && Math.abs(p.pos.x - midX) < height * 0.1);
+      spineCandidates.sort((a, b) => a.pos.y - b.pos.y);
+      if (spineCandidates.length > 0) limbs.spine = spineCandidates[0].bone;
+      if (!limbs.torso) limbs.torso = limbs.spine;
+    }
+
+    if (!limbs.head) {
+      const topBones = positions.filter(p => p.pos.y > minY + height * 0.85);
+      topBones.sort((a, b) => b.pos.y - a.pos.y);
+      if (topBones.length > 0) limbs.head = topBones[0].bone;
+    }
+
+    const usedBones = new Set([limbs.head, limbs.neck, limbs.spine, limbs.hips, limbs.torso].filter(Boolean));
+
+    if (!limbs.rightUpperArm || !limbs.leftUpperArm) {
+      const shoulderBones = positions
+        .filter(p => !usedBones.has(p.bone) && p.pos.y > shoulderLine - height * 0.1 && Math.abs(p.pos.x - midX) > height * 0.05)
+        .sort((a, b) => Math.abs(b.pos.x - midX) - Math.abs(a.pos.x - midX));
+
+      for (const sb of shoulderBones) {
+        if (sb.pos.x > midX && !limbs.rightUpperArm) {
+          limbs.rightUpperArm = sb.bone;
+          if (!limbs.rightArm) limbs.rightArm = sb.bone;
+        } else if (sb.pos.x <= midX && !limbs.leftUpperArm) {
+          limbs.leftUpperArm = sb.bone;
+          if (!limbs.leftArm) limbs.leftArm = sb.bone;
+        }
+      }
+    }
+
+    if (!limbs.rightUpperLeg || !limbs.leftUpperLeg) {
+      const legBones = positions
+        .filter(p => !usedBones.has(p.bone) && p.pos.y < hipLine + height * 0.05 && p.pos.y > minY + height * 0.2 && Math.abs(p.pos.x - midX) > height * 0.02)
+        .sort((a, b) => b.pos.y - a.pos.y);
+
+      for (const lb of legBones) {
+        if (lb.pos.x > midX && !limbs.rightUpperLeg) {
+          limbs.rightUpperLeg = lb.bone;
+          if (!limbs.rightLeg) limbs.rightLeg = lb.bone;
+        } else if (lb.pos.x <= midX && !limbs.leftUpperLeg) {
+          limbs.leftUpperLeg = lb.bone;
+          if (!limbs.leftLeg) limbs.leftLeg = lb.bone;
+        }
+      }
+    }
+
+    walkBoneChains(limbs);
+    break;
+  }
 }
 
 function assignLimbsFromBones(bones: THREE.Bone[], limbs: LimbRefs) {
