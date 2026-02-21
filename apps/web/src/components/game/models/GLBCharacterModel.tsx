@@ -295,6 +295,7 @@ function GLBModelInner({
     if (isAttacking) {
       if (!wasAttacking.current) {
         anim.attackPhase = 0;
+        anim.comboStep = (anim.comboStep + 1) % 8;
       }
       wasAttacking.current = true;
       if (attackType === "punch") {

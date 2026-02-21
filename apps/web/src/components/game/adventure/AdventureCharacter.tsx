@@ -35,6 +35,7 @@ function CharacterInner({ fighterId, accentColor }: Props) {
   const initialized = useRef(false);
   const prevHealth = useRef(-1);
   const yOffset = useRef(0);
+  const wasAttacking = useRef(false);
 
   const modelPath = config?.path || "/models/blazing-fox-vanguard.glb";
   const modelScale = config?.scale || 2.5;
@@ -87,6 +88,11 @@ function CharacterInner({ fighterId, accentColor }: Props) {
     const hasL = hasAnyLimb(limbs);
 
     if (player.isAttacking) {
+      if (!wasAttacking.current) {
+        anim.attackPhase = 0;
+        anim.comboStep = (anim.comboStep + 1) % 8;
+      }
+      wasAttacking.current = true;
       const attackType = player.attackType || "punch";
 
       if (attackType === "punch") {
@@ -99,6 +105,7 @@ function CharacterInner({ fighterId, accentColor }: Props) {
         animateUltimate(innerRef.current, hasL ? limbs : null, bases, anim, delta);
       }
     } else {
+      wasAttacking.current = false;
       resetAttackPhase(anim, innerRef.current, delta);
 
       if (player.isMoving) {
