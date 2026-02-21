@@ -239,12 +239,22 @@ export function animateIdle(
   delta: number,
   seed: number = 0
 ) {
-  const breathe = Math.sin(t * 2.0 + seed) * 0.012;
-  const sway = Math.sin(t * 0.6 + seed) * 0.015;
+  const noLimbs = !limbs;
+  const breatheAmp = noLimbs ? 0.06 : 0.012;
+  const swayAmp = noLimbs ? 0.06 : 0.015;
+  const breathe = Math.sin(t * 2.0 + seed) * breatheAmp;
+  const sway = Math.sin(t * 0.6 + seed) * swayAmp;
 
   inner.rotation.x = THREE.MathUtils.lerp(inner.rotation.x, 0, delta * 6);
   inner.rotation.z = THREE.MathUtils.lerp(inner.rotation.z, sway, delta * 4);
   inner.position.y = breathe;
+
+  if (noLimbs) {
+    const headBob = Math.sin(t * 1.5 + seed) * 0.04;
+    inner.rotation.x = THREE.MathUtils.lerp(inner.rotation.x, headBob, delta * 5);
+    const yaw = Math.sin(t * 0.8 + seed + 1) * 0.05;
+    inner.rotation.y = THREE.MathUtils.lerp(inner.rotation.y || 0, yaw, delta * 3);
+  }
 
   if (limbs && bases) {
     const idleArm = Math.sin(t * 1.2 + seed) * 0.08;
@@ -269,17 +279,26 @@ export function animateWalk(
   delta: number,
   isRunning: boolean
 ) {
+  const noLimbs = !limbs;
   const rate = isRunning ? 12 : 8;
   anim.walkCycle += delta * rate;
   const stride = Math.sin(anim.walkCycle);
-  const bounce = Math.abs(Math.sin(anim.walkCycle)) * (isRunning ? 0.06 : 0.03);
-  const tilt = isRunning ? 0.12 : 0.06;
+  const bounceBase = isRunning ? 0.06 : 0.03;
+  const bounce = Math.abs(Math.sin(anim.walkCycle)) * (noLimbs ? bounceBase * 3 : bounceBase);
+  const tiltBase = isRunning ? 0.12 : 0.06;
+  const tilt = noLimbs ? tiltBase * 2.5 : tiltBase;
 
   inner.rotation.x = THREE.MathUtils.lerp(inner.rotation.x, tilt, delta * 8);
   inner.position.y = bounce;
 
-  const sideSwing = Math.sin(anim.walkCycle * 0.5) * (isRunning ? 0.06 : 0.03);
+  const sideBase = isRunning ? 0.06 : 0.03;
+  const sideSwing = Math.sin(anim.walkCycle * 0.5) * (noLimbs ? sideBase * 3 : sideBase);
   inner.rotation.z = THREE.MathUtils.lerp(inner.rotation.z, sideSwing, delta * 6);
+
+  if (noLimbs) {
+    const yawSwing = Math.sin(anim.walkCycle * 0.5) * (isRunning ? 0.12 : 0.06);
+    inner.rotation.y = THREE.MathUtils.lerp(inner.rotation.y || 0, yawSwing, delta * 6);
+  }
 
   if (limbs && bases) {
     const armAmp = isRunning ? 0.7 : 0.4;
@@ -305,13 +324,15 @@ export function animatePunch(
   delta: number,
   t: number
 ) {
+  const noLimbs = !limbs;
+  const amp = noLimbs ? 2.5 : 1;
   anim.attackPhase = THREE.MathUtils.lerp(anim.attackPhase, 1, delta * 22);
   const swing = Math.sin(anim.attackPhase * Math.PI);
 
-  inner.rotation.x = swing * 0.25;
-  inner.rotation.z = swing * 0.08;
-  inner.position.z = swing * 0.18;
-  inner.position.y = swing * 0.05;
+  inner.rotation.x = swing * 0.25 * amp;
+  inner.rotation.z = swing * 0.08 * amp;
+  inner.position.z = swing * 0.18 * amp;
+  inner.position.y = swing * 0.05 * amp;
 
   if (limbs && bases) {
     setRotX(limbs.rightArm, bases.rightArm, -swing * 1.4);
@@ -331,12 +352,14 @@ export function animateKick(
   anim: AnimState,
   delta: number
 ) {
+  const noLimbs = !limbs;
+  const amp = noLimbs ? 2.5 : 1;
   anim.attackPhase = THREE.MathUtils.lerp(anim.attackPhase, 1, delta * 20);
   const swing = Math.sin(anim.attackPhase * Math.PI);
 
-  inner.rotation.x = -swing * 0.15;
-  inner.rotation.z = swing * 0.12;
-  inner.position.y = swing * 0.12;
+  inner.rotation.x = -swing * 0.15 * amp;
+  inner.rotation.z = swing * 0.12 * amp;
+  inner.position.y = swing * 0.12 * amp;
 
   if (limbs && bases) {
     setRotX(limbs.rightLeg, bases.rightLeg, -swing * 1.6);
@@ -355,13 +378,15 @@ export function animateSpecial(
   anim: AnimState,
   delta: number
 ) {
+  const noLimbs = !limbs;
+  const amp = noLimbs ? 2.0 : 1;
   anim.attackPhase = THREE.MathUtils.lerp(anim.attackPhase, 1, delta * 16);
   const swing = Math.sin(anim.attackPhase * Math.PI);
   const spin = Math.sin(anim.attackPhase * Math.PI * 2);
 
-  inner.rotation.x = swing * 0.3;
-  inner.rotation.y = spin * 0.7;
-  inner.position.y = swing * 0.2;
+  inner.rotation.x = swing * 0.3 * amp;
+  inner.rotation.y = spin * 0.7 * amp;
+  inner.position.y = swing * 0.2 * amp;
 
   if (limbs && bases) {
     setRotX(limbs.rightArm, bases.rightArm, -swing * 1.6);
@@ -381,12 +406,14 @@ export function animateUltimate(
   anim: AnimState,
   delta: number
 ) {
+  const noLimbs = !limbs;
+  const amp = noLimbs ? 2.0 : 1;
   anim.attackPhase = THREE.MathUtils.lerp(anim.attackPhase, 1, delta * 14);
   const swing = Math.sin(anim.attackPhase * Math.PI);
 
-  inner.rotation.x = swing * 0.4;
-  inner.position.y = swing * 0.4;
-  inner.scale.setScalar(1 + swing * 0.1);
+  inner.rotation.x = swing * 0.4 * amp;
+  inner.position.y = swing * 0.4 * amp;
+  inner.scale.setScalar(1 + swing * (noLimbs ? 0.18 : 0.1));
 
   if (limbs && bases) {
     setRotX(limbs.rightArm, bases.rightArm, -swing * 2.0);
@@ -408,30 +435,32 @@ export function animateEnemyAttack(
   t: number,
   variant: number
 ) {
+  const noLimbs = !limbs;
+  const amp = noLimbs ? 2.5 : 1;
   anim.attackPhase = THREE.MathUtils.lerp(anim.attackPhase, 1, delta * 18);
   const swing = Math.sin(anim.attackPhase * Math.PI);
 
   if (variant % 3 === 0) {
-    inner.rotation.x = swing * 0.3;
-    inner.position.z = swing * 0.15;
-    inner.position.y = swing * 0.05;
+    inner.rotation.x = swing * 0.3 * amp;
+    inner.position.z = swing * 0.15 * amp;
+    inner.position.y = swing * 0.05 * amp;
     if (limbs && bases) {
       setRotX(limbs.rightArm, bases.rightArm, -swing * 1.5);
       setRotZ(limbs.rightArm, bases.rightArm, swing * 0.4);
       setRotX(limbs.leftArm, bases.leftArm, swing * 0.3);
     }
   } else if (variant % 3 === 1) {
-    inner.rotation.x = -swing * 0.2;
-    inner.position.y = swing * 0.1;
+    inner.rotation.x = -swing * 0.2 * amp;
+    inner.position.y = swing * 0.1 * amp;
     if (limbs && bases) {
       setRotX(limbs.rightLeg, bases.rightLeg, -swing * 1.4);
       setRotX(limbs.leftLeg, bases.leftLeg, swing * 0.2);
       setRotX(limbs.rightArm, bases.rightArm, swing * 0.3);
     }
   } else {
-    inner.rotation.x = swing * 0.25;
-    inner.rotation.y = swing * 0.4;
-    inner.position.y = swing * 0.15;
+    inner.rotation.x = swing * 0.25 * amp;
+    inner.rotation.y = swing * 0.4 * amp;
+    inner.position.y = swing * 0.15 * amp;
     if (limbs && bases) {
       setRotX(limbs.rightArm, bases.rightArm, -swing * 1.3);
       setRotX(limbs.leftArm, bases.leftArm, -swing * 1.1);
@@ -477,15 +506,24 @@ export function animateAggroWalk(
   delta: number,
   t: number
 ) {
+  const noLimbs = !limbs;
   anim.walkCycle += delta * 10;
   const stride = Math.sin(anim.walkCycle);
-  const bounce = Math.abs(Math.sin(anim.walkCycle)) * 0.04;
+  const bounceAmp = noLimbs ? 0.14 : 0.04;
+  const bounce = Math.abs(Math.sin(anim.walkCycle)) * bounceAmp;
 
-  inner.rotation.x = THREE.MathUtils.lerp(inner.rotation.x, 0.1, delta * 6);
+  const tiltTarget = noLimbs ? 0.25 : 0.1;
+  inner.rotation.x = THREE.MathUtils.lerp(inner.rotation.x, tiltTarget, delta * 6);
   inner.position.y = bounce;
 
-  const sway = Math.sin(anim.walkCycle * 0.5) * 0.04;
+  const swayAmp = noLimbs ? 0.12 : 0.04;
+  const sway = Math.sin(anim.walkCycle * 0.5) * swayAmp;
   inner.rotation.z = THREE.MathUtils.lerp(inner.rotation.z, sway, delta * 5);
+
+  if (noLimbs) {
+    const yawSwing = Math.sin(anim.walkCycle * 0.5) * 0.1;
+    inner.rotation.y = THREE.MathUtils.lerp(inner.rotation.y || 0, yawSwing, delta * 6);
+  }
 
   if (limbs && bases) {
     lerpRotX(limbs.rightArm, bases.rightArm, stride * 0.55, 10, delta);

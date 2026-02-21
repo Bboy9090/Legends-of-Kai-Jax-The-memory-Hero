@@ -195,10 +195,13 @@ function GLBModelInner({
   hitAnim?: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
+  const offsetGroupRef = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF(config.path);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
   const landSquash = useRef(0);
   const wasGrounded = useRef(true);
+  const offsetComputed = useRef(false);
+  const frameCount = useRef(0);
 
   const cloneRef = useRef<THREE.Group>(null);
   const mixerInitialized = useRef(false);
@@ -219,6 +222,15 @@ function GLBModelInner({
       mixerRef.current.update(delta);
     }
 
+    frameCount.current++;
+    if (cloneRef.current && !offsetComputed.current && frameCount.current > 3) {
+      offsetComputed.current = true;
+      const bbox = new THREE.Box3().setFromObject(cloneRef.current);
+      if (bbox.min.y < -0.05 && offsetGroupRef.current) {
+        offsetGroupRef.current.position.y = -bbox.min.y;
+      }
+    }
+
     if (!wasGrounded.current && isGrounded) {
       landSquash.current = 1;
     }
@@ -228,7 +240,7 @@ function GLBModelInner({
     const squashY = 1 - landSquash.current * 0.2;
     const squashXZ = 1 + landSquash.current * 0.1;
 
-    const breathe = Math.sin(t * 2.0) * 0.02;
+    const breathe = Math.sin(t * 2.0) * 0.04;
     const speed = Math.abs(velocityX);
     const walkRate = 8 + speed * 2;
     const walkAmp = Math.min(speed / 6, 1);
@@ -264,7 +276,7 @@ function GLBModelInner({
       groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, leanAmount, delta * 10);
     } else if (isMoving) {
       groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0.05, delta * 6);
-      groupRef.current.position.y += Math.abs(walk) * 0.03;
+      groupRef.current.position.y += Math.abs(walk) * 0.05;
     } else {
       groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0, delta * 6);
     }
@@ -273,26 +285,28 @@ function GLBModelInner({
   });
 
   return (
-    <group
-      ref={groupRef}
-      position={config.position}
-      rotation={
-        config.rotation
-          ? [config.rotation[0], config.rotation[1], config.rotation[2]]
-          : undefined
-      }
-      scale={config.scale}
-    >
-      <group ref={cloneRef}>
-        <Clone object={scene} castShadow receiveShadow />
+    <group ref={offsetGroupRef}>
+      <group
+        ref={groupRef}
+        position={config.position}
+        rotation={
+          config.rotation
+            ? [config.rotation[0], config.rotation[1], config.rotation[2]]
+            : undefined
+        }
+        scale={config.scale}
+      >
+        <group ref={cloneRef}>
+          <Clone object={scene} castShadow receiveShadow />
+        </group>
+        <pointLight
+          position={[0, 1.5, 0.5]}
+          color={accentColor}
+          intensity={emotionIntensity * 0.5}
+          distance={3}
+          decay={2}
+        />
       </group>
-      <pointLight
-        position={[0, 1.5, 0.5]}
-        color={accentColor}
-        intensity={emotionIntensity * 0.5}
-        distance={3}
-        decay={2}
-      />
     </group>
   );
 }

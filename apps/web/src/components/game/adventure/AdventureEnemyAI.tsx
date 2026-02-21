@@ -40,6 +40,7 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
   const initialized = useRef(false);
   const prevHealth = useRef(enemy.health);
   const attackVariant = useRef(0);
+  const yOffset = useRef(0);
 
   useFrame((state, rawDelta) => {
     if (!groupRef.current || !innerRef.current) return;
@@ -49,6 +50,12 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
 
     if (!initialized.current && innerRef.current) {
       initialized.current = true;
+
+      const bbox = new THREE.Box3().setFromObject(innerRef.current);
+      const minY = bbox.min.y;
+      if (minY < -0.05) {
+        yOffset.current = -minY;
+      }
 
       limbsRef.current = findLimbs(clonedScene);
       basesRef.current = captureBaseRotations(limbsRef.current);
@@ -75,7 +82,7 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
       return;
     }
 
-    groupRef.current.position.set(enemy.posX, enemy.posY, enemy.posZ);
+    groupRef.current.position.set(enemy.posX, enemy.posY + yOffset.current, enemy.posZ);
     groupRef.current.rotation.y = enemy.rotY;
     groupRef.current.scale.set(1, 1, 1);
 

@@ -34,6 +34,7 @@ function CharacterInner({ fighterId, accentColor }: Props) {
   const animRef = useRef<AnimState>(createAnimState());
   const initialized = useRef(false);
   const prevHealth = useRef(-1);
+  const yOffset = useRef(0);
 
   const modelPath = config?.path || "/models/blazing-fox-vanguard.glb";
   const modelScale = config?.scale || 2.5;
@@ -50,6 +51,12 @@ function CharacterInner({ fighterId, accentColor }: Props) {
 
     if (!initialized.current && innerRef.current) {
       initialized.current = true;
+
+      const bbox = new THREE.Box3().setFromObject(innerRef.current);
+      const minY = bbox.min.y;
+      if (minY < -0.05) {
+        yOffset.current = -minY;
+      }
 
       limbsRef.current = findLimbs(clonedScene);
       basesRef.current = captureBaseRotations(limbsRef.current);
@@ -72,7 +79,7 @@ function CharacterInner({ fighterId, accentColor }: Props) {
     }
     prevHealth.current = player.health;
 
-    groupRef.current.position.set(player.posX, player.posY, player.posZ);
+    groupRef.current.position.set(player.posX, player.posY + yOffset.current, player.posZ);
     groupRef.current.rotation.y = player.rotY;
 
     const limbs = limbsRef.current;
