@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useAudio } from "../../lib/stores/useAudio";
+import { useTouchInput } from "../../lib/stores/useTouchInput";
 
 const MOVE_SPEED = 6;
 const GRAVITY = -15;
@@ -34,13 +35,21 @@ export default function PlayerController() {
     const prev = prevKeysRef.current;
     const justPressed = (code: string) => keys[code] && !prev[code];
 
+    const touch = useTouchInput.getState();
+    const touchAttacks = touch.consumeAttacks();
+
     let dx = 0;
     if (keys["ArrowLeft"] || keys["KeyA"]) dx -= MOVE_SPEED * delta;
     if (keys["ArrowRight"] || keys["KeyD"]) dx += MOVE_SPEED * delta;
 
+    if (touch.isJoystickActive) {
+      dx += touch.joystickX * MOVE_SPEED * delta;
+    }
+
     let velY = state.playerVelocityY;
 
-    if (justPressed("Space") || justPressed("ArrowUp") || justPressed("KeyW")) {
+    const wantJump = justPressed("Space") || justPressed("ArrowUp") || justPressed("KeyW") || touchAttacks.includes("jump");
+    if (wantJump) {
       if (state.playerGrounded) {
         velY = JUMP_VELOCITY;
         useAudio.getState().playJump();
@@ -67,10 +76,10 @@ export default function PlayerController() {
       playerFacingRight: state.opponentX > newX,
     });
 
-    if (justPressed("KeyJ") || justPressed("KeyX")) state.playerAttack("punch");
-    if (justPressed("KeyK") || justPressed("KeyZ")) state.playerAttack("kick");
-    if (justPressed("KeyL") || justPressed("KeyC")) state.playerAttack("special");
-    if (justPressed("KeyR")) state.playerAttack("ultimate");
+    if (justPressed("KeyJ") || justPressed("KeyX") || touchAttacks.includes("punch")) state.playerAttack("punch");
+    if (justPressed("KeyK") || justPressed("KeyZ") || touchAttacks.includes("kick")) state.playerAttack("kick");
+    if (justPressed("KeyL") || justPressed("KeyC") || touchAttacks.includes("special")) state.playerAttack("special");
+    if (justPressed("KeyR") || touchAttacks.includes("ultimate")) state.playerAttack("ultimate");
     if (justPressed("KeyT")) state.triggerTransformation();
 
     prevKeysRef.current = { ...keys };

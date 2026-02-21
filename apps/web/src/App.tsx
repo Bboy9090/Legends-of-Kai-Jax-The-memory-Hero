@@ -205,7 +205,7 @@ function App() {
                 </Canvas>
                 <AdventureHUD />
               </div>
-              <MobileControls />
+              <MobileControls showJump={false} />
             </>
           );
         })()}
@@ -261,7 +261,7 @@ function App() {
                   onBack={() => useRunner.getState().setGameState("campaign-map")}
                 />
               </div>
-              <MobileControls />
+              <MobileControls showJump={false} />
             </>
           );
         })()}
@@ -296,7 +296,7 @@ function App() {
                   <BattleScene />
                 </Suspense>
               </Canvas>
-              <div className="absolute bottom-4 left-0 right-0 text-center text-slate-400 text-sm pointer-events-none">
+              <div className="absolute bottom-4 left-0 right-0 text-center text-slate-400 text-sm pointer-events-none hidden md:block">
                 ← → move · Space jump · J punch · K kick · L special · T transform
               </div>
             </div>

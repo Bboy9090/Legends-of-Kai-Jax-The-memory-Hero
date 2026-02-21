@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
+import { useTouchInput } from "../../../lib/stores/useTouchInput";
 import * as THREE from "three";
 
 const WALK_SPEED = 5;
@@ -59,6 +60,9 @@ export default function AdventurePlayerController() {
       }));
     }
 
+    const touch = useTouchInput.getState();
+    const touchAttacks = touch.consumeAttacks();
+
     const isRunning = keys["ShiftLeft"] || keys["ShiftRight"];
     const moveSpeed = isRunning ? RUN_SPEED : WALK_SPEED;
 
@@ -68,6 +72,11 @@ export default function AdventurePlayerController() {
     if (keys["KeyS"] || keys["ArrowDown"]) inputZ += 1;
     if (keys["KeyA"] || keys["ArrowLeft"]) inputX -= 1;
     if (keys["KeyD"] || keys["ArrowRight"]) inputX += 1;
+
+    if (touch.isJoystickActive) {
+      inputX += touch.joystickX;
+      inputZ += touch.joystickY;
+    }
 
     const inputLen = Math.sqrt(inputX * inputX + inputZ * inputZ);
     const hasInput = inputLen > 0.01;
@@ -139,25 +148,25 @@ export default function AdventurePlayerController() {
     );
 
     if (attackTimerRef.current <= 0) {
-      if (justPressed("KeyJ") || justPressed("KeyX")) {
-        store.playerAttack("punch");
-        attackTimerRef.current = ATTACK_COOLDOWNS.punch;
-        comboTimerRef.current = 1.5;
-        if (isStatueFighter(store.player.fighterId)) useAudio.getState().playStoneAttack();
-      } else if (justPressed("KeyK") || justPressed("KeyZ")) {
-        store.playerAttack("kick");
-        attackTimerRef.current = ATTACK_COOLDOWNS.kick;
-        comboTimerRef.current = 1.5;
-        if (isStatueFighter(store.player.fighterId)) useAudio.getState().playStoneAttack();
-      } else if (justPressed("KeyL") || justPressed("KeyC")) {
-        store.playerAttack("special");
-        attackTimerRef.current = ATTACK_COOLDOWNS.special;
-        comboTimerRef.current = 2.0;
-        if (isStatueFighter(store.player.fighterId)) useAudio.getState().playStoneAttack();
-      } else if (justPressed("KeyR")) {
-        store.playerAttack("ultimate");
-        attackTimerRef.current = ATTACK_COOLDOWNS.ultimate;
-        comboTimerRef.current = 2.5;
+      let attackType: string | null = null;
+      if (justPressed("KeyJ") || justPressed("KeyX")) attackType = "punch";
+      else if (justPressed("KeyK") || justPressed("KeyZ")) attackType = "kick";
+      else if (justPressed("KeyL") || justPressed("KeyC")) attackType = "special";
+      else if (justPressed("KeyR")) attackType = "ultimate";
+
+      if (!attackType && touchAttacks.length > 0) {
+        for (const ta of touchAttacks) {
+          if (ta !== "jump" && (ta === "punch" || ta === "kick" || ta === "special" || ta === "ultimate")) {
+            attackType = ta;
+            break;
+          }
+        }
+      }
+
+      if (attackType && (attackType === "punch" || attackType === "kick" || attackType === "special" || attackType === "ultimate")) {
+        store.playerAttack(attackType);
+        attackTimerRef.current = ATTACK_COOLDOWNS[attackType] || 0.3;
+        comboTimerRef.current = attackType === "ultimate" ? 2.5 : attackType === "special" ? 2.0 : 1.5;
         if (isStatueFighter(store.player.fighterId)) useAudio.getState().playStoneAttack();
       }
     }
