@@ -27,43 +27,43 @@ export interface GLBModelConfig {
 
 export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
   "kai-jax": {
-    path: "/models/emberwolf_warlord.glb",
+    path: "/models/Meshy_AI_Character_output9TAILSKAIJAX.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   jax: {
-    path: "/models/Meshy_AI_Jax_Kai_icey_fox_0219223329_texture.glb",
+    path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONIC JAX.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   kai: {
-    path: "/models/Meshy_AI_Blazing_Fox_Warrior_0219223318_texture.glb",
+    path: "/models/Meshy_AI_Meshy_Merged_Animations4KAI.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   jaxon: {
-    path: "/models/jaxon_hero.glb",
+    path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   kaison: {
-    path: "/models/kaison_hero.glb",
+    path: "/models/Meshy_AI_Character_outputSPiDERKAIJAX9TIALS.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   kaxon: {
-    path: "/models/kaxon_hero.glb",
+    path: "/models/Meshy_AI_Character_outputLIONBORAX.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   "voltage-fang": {
-    path: "/models/Meshy_AI_Voltage_Fang_0219222028_texture.glb",
+    path: "/models/Meshy_AI_Meshy_Merged_AnimationsMeshy_AI_bipedBORYNaptFatherTIGER.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -75,7 +75,7 @@ export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
     rotation: [0, 0, 0],
   },
   "ashen-tiger": {
-    path: "/models/Meshy_AI_Ashen_Tiger_Warrior_0219222741_texture.glb",
+    path: "/models/Meshy_AI_Meshy_Merged_AnimationsMeshy_AI_bipedBORYNaptFatherTIGER.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],

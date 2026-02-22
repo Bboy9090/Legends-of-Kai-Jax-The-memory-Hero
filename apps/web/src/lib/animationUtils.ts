@@ -48,16 +48,19 @@ export interface LimbBaseRotations {
   torso: THREE.Euler;
 }
 
-const UPPER_ARM_PAT = /upper.?arm|shoulder|bicep|arm.*upper/i;
+const SHOULDER_PAT = /^(left|right)?shoulder$/i;
+const UPPER_ARM_PAT = /upper.?arm|^(left|right)arm$|bicep|arm.*upper/i;
 const FOREARM_PAT = /fore.?arm|lower.?arm|arm.*lower|elbow/i;
 const HAND_PAT = /hand|wrist|fist|palm|finger|claw/i;
-const UPPER_LEG_PAT = /upper.?leg|thigh|femur|leg.*upper/i;
-const LOWER_LEG_PAT = /lower.?leg|shin|calf|knee|tibia|leg.*lower/i;
-const FOOT_PAT = /foot|ankle|toe|heel|paw/i;
+const UPPER_LEG_PAT = /upper.?leg|up.?leg|thigh|femur|leg.*upper/i;
+const LOWER_LEG_PAT = /lower.?leg|^(left|right)leg$|shin|calf|knee|tibia|leg.*lower/i;
+const FOOT_PAT = /foot|ankle|heel|paw/i;
+const TOE_SKIP = /toe.?base|toe.?end|toe.?tip/i;
 const SPINE_PAT = /spine|chest|rib|trunk|back/i;
 const HIPS_PAT = /hip|pelvis|groin|waist|root/i;
 const NECK_PAT = /neck/i;
-const HEAD_PAT = /head|skull|jaw|face|snout|cranium/i;
+const HEAD_PAT = /^head\d*$|skull|jaw|face|snout|cranium/i;
+const HEAD_SKIP = /head.?end|headfront|head.?top|head.?nub/i;
 const ARM_GENERIC = /arm|shoulder|hand|claw|wing|forelimb|front.?leg|paw|fist/i;
 const LEG_GENERIC = /leg|thigh|knee|foot|hind|rear.?leg|ankle|shin/i;
 const TORSO_GENERIC = /torso|spine|body|chest|hip|pelvis|root|abdomen|rib|trunk/i;
@@ -79,7 +82,9 @@ export function findLimbs(root: THREE.Object3D): LimbRefs {
     const isRight = RIGHT_PAT.test(name);
     const isLeft = LEFT_PAT.test(name);
 
-    if (HEAD_PAT.test(name) && !NECK_PAT.test(name) && !limbs.head) {
+    if (SHOULDER_PAT.test(name) || HEAD_SKIP.test(name) || TOE_SKIP.test(name)) {
+      // Skip shoulder bones and head endpoints
+    } else if (HEAD_PAT.test(name) && !NECK_PAT.test(name) && !limbs.head) {
       limbs.head = child;
     } else if (NECK_PAT.test(name) && !limbs.neck) {
       limbs.neck = child;
