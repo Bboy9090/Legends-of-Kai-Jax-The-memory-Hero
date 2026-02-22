@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useRef, useMemo, useEffect } from "react";
 import { KeyboardControls } from "@react-three/drei";
 import "@fontsource/inter";
 import "@fontsource/bebas-neue";
@@ -24,9 +24,11 @@ import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
 import { useAudio } from "./lib/stores/useAudio";
 import { FIGHTERS, getFighterById } from "./lib/characters";
-import { useEffect } from "react";
 import * as THREE from "three";
 import { getQualitySettings } from "./lib/threejs/PerformanceOptimizer";
+
+// Compute quality settings once (device/pixel-ratio never changes mid-session)
+const QUALITY = getQualitySettings();
 
 // Define control keys for the game
 enum Controls {
@@ -125,10 +127,18 @@ function App() {
     setShowIntro(false);
   };
 
-  // Calculate screen shake transform
-  const shakeTransform = screenShake > 0 
-    ? `translate(${(Math.random() - 0.5) * screenShake * 5}px, ${(Math.random() - 0.5) * screenShake * 5}px)`
-    : 'none';
+  // Calculate screen shake transform - stable random offsets per shake intensity change
+  const shakeOffsetRef = useRef({ x: 0, y: 0 });
+  const shakeTransform = useMemo(() => {
+    if (screenShake > 0) {
+      shakeOffsetRef.current = {
+        x: (Math.random() - 0.5) * screenShake * 5,
+        y: (Math.random() - 0.5) * screenShake * 5,
+      };
+      return `translate(${shakeOffsetRef.current.x}px, ${shakeOffsetRef.current.y}px)`;
+    }
+    return 'none';
+  }, [screenShake]);
 
   return (
     <div 
@@ -181,16 +191,15 @@ function App() {
                     far: 200,
                   }}
                   onCreated={({ gl }) => {
-                    const q = getQualitySettings();
-                    gl.setPixelRatio(q.pixelRatio);
+                    gl.setPixelRatio(QUALITY.pixelRatio);
                     gl.outputColorSpace = THREE.SRGBColorSpace;
                     gl.toneMapping = THREE.ACESFilmicToneMapping;
                     gl.toneMappingExposure = 0.85;
                     gl.shadowMap.enabled = true;
-                    gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
+                    gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
                   }}
                   gl={{
-                    antialias: getQualitySettings().antialias,
+                    antialias: QUALITY.antialias,
                     powerPreference: "high-performance",
                   }}
                 >
@@ -221,16 +230,15 @@ function App() {
                   far: 1000
                 }}
                 onCreated={({ gl }) => {
-                  const q = getQualitySettings();
-                  gl.setPixelRatio(q.pixelRatio);
+                  gl.setPixelRatio(QUALITY.pixelRatio);
                   gl.outputColorSpace = THREE.SRGBColorSpace;
                   gl.toneMapping = THREE.ACESFilmicToneMapping;
                   gl.toneMappingExposure = 0.98;
                   gl.shadowMap.enabled = true;
-                  gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
+                  gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
                 }}
                 gl={{
-                  antialias: getQualitySettings().antialias,
+                  antialias: QUALITY.antialias,
                   powerPreference: "high-performance"
                 }}
               >
