@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
-const DIST_DIR = path.join(__dirname, 'apps', 'web', 'dist');
+const DIST_DIR = path.join(__dirname, 'dist');
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -33,7 +33,12 @@ const indexPath = path.join(DIST_DIR, 'index.html');
 if (!fs.existsSync(indexPath)) {
   console.log('Building app...');
   try {
-    execSync('cd apps/web && npx vite build', { stdio: 'inherit', cwd: __dirname });
+    const webDir = path.join(__dirname, 'apps', 'web');
+    if (!fs.existsSync(path.join(webDir, 'node_modules'))) {
+      console.log('Installing dependencies in apps/web...');
+      execSync('npm install', { stdio: 'inherit', cwd: webDir });
+    }
+    execSync('npx vite build', { stdio: 'inherit', cwd: webDir });
   } catch (err) {
     console.error('Build failed:', err.message);
     process.exit(1);
