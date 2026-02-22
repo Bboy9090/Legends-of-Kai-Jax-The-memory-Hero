@@ -158,6 +158,30 @@ export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
+  "hyena-scout": {
+    path: "/models/hyenaratvbill.glb",
+    scale: 3.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  "rift-drone": {
+    path: "/models/drone.glb",
+    scale: 3.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  malakor: {
+    path: "/models/boss.glb",
+    scale: 4.0,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  behemoth: {
+    path: "/models/bosssss.glb",
+    scale: 5.0,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
 };
 
 interface GLBCharacterModelProps {

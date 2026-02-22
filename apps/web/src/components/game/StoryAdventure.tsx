@@ -246,18 +246,25 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
     const newEnemies = wave.enemies.map((e, i) => {
       const angle = (i / wave.enemies.length) * Math.PI * 2;
       const radius = 8 + waveIndex * 3;
+      const isBoss = mission.bossId === e.fighterId;
       return {
         id: `w${waveIndex}-${i}-${e.fighterId}`,
         fighterId: e.fighterId,
+        tier: (isBoss ? "boss1" : "minion1") as "minion1" | "minion2" | "boss1" | "boss2",
         posX: Math.sin(angle) * radius,
         posY: 0,
         posZ: Math.cos(angle) * radius,
         rotY: 0,
-        health: mission.bossId === e.fighterId ? 200 : 80 + mission.difficulty * 20,
-        maxHealth: mission.bossId === e.fighterId ? 200 : 80 + mission.difficulty * 20,
+        health: isBoss ? 200 : 80 + mission.difficulty * 20,
+        maxHealth: isBoss ? 200 : 80 + mission.difficulty * 20,
         isAggro: false,
         isAttacking: false,
         isDead: false,
+        aiState: "idle" as const,
+        telegraphTimer: 0,
+        patrolTargetX: Math.sin(angle) * radius + (Math.random() - 0.5) * 8,
+        patrolTargetZ: Math.cos(angle) * radius + (Math.random() - 0.5) * 8,
+        stunTimer: 0,
       };
     });
 

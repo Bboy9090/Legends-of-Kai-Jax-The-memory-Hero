@@ -93,13 +93,13 @@ function CharacterInner({ fighterId, accentColor }: Props) {
         anim.comboStep = (anim.comboStep + 1) % 8;
       }
       wasAttacking.current = true;
-      const attackType = player.attackType || "punch";
+      const attackType = player.attackType || "light1";
 
-      if (attackType === "punch") {
+      if (attackType === "light1" || attackType === "light2" || attackType === "light3" || attackType === "punch") {
         animatePunch(innerRef.current, hasL ? limbs : null, bases, anim, delta, t);
-      } else if (attackType === "kick") {
+      } else if (attackType === "heavy" || attackType === "kick") {
         animateKick(innerRef.current, hasL ? limbs : null, bases, anim, delta);
-      } else if (attackType === "special") {
+      } else if (attackType === "skill" || attackType === "special") {
         animateSpecial(innerRef.current, hasL ? limbs : null, bases, anim, delta);
       } else if (attackType === "ultimate") {
         animateUltimate(innerRef.current, hasL ? limbs : null, bases, anim, delta);

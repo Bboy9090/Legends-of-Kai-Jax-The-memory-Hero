@@ -5,6 +5,7 @@ import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
 import { CHARACTER_MODELS } from "../models/GLBCharacterModel";
 import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
+import { ENEMY_TIERS } from "../../../lib/combatSystems";
 import {
   findLimbs, captureBaseRotations, hasAnyLimb, createAnimState,
   animateIdle, animateAggroWalk, animateEnemyAttack, animateHitReaction,
@@ -13,14 +14,27 @@ import {
 } from "../../../lib/animationUtils";
 import * as THREE from "three";
 
-const AGGRO_RANGE = 15;
-const ATTACK_RANGE = 2.5;
-const ENEMY_SPEED = 3;
-const ATTACK_INTERVAL = 1.5;
-const ENEMY_DAMAGE = 8;
-
 interface EnemyMeshProps {
   enemy: AdventureEnemy;
+}
+
+function TelegraphRing({ enemy }: { enemy: AdventureEnemy }) {
+  if (enemy.aiState !== "telegraph" || enemy.isDead) return null;
+  const progress = Math.min(1, enemy.telegraphTimer / (ENEMY_TIERS[enemy.tier]?.telegraphDuration || 0.8));
+  return (
+    <mesh
+      position={[enemy.posX, 0.05, enemy.posZ]}
+      rotation={[-Math.PI / 2, 0, 0]}
+    >
+      <ringGeometry args={[0.5, 0.5 + progress * 2.5, 32]} />
+      <meshBasicMaterial
+        color="#ff2222"
+        transparent
+        opacity={0.4 + progress * 0.4}
+        side={THREE.DoubleSide}
+      />
+    </mesh>
+  );
 }
 
 function EnemyMesh({ enemy }: EnemyMeshProps) {
@@ -41,6 +55,7 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
   const prevHealth = useRef(enemy.health);
   const attackVariant = useRef(0);
   const yOffset = useRef(0);
+  const flashRef = useRef(0);
 
   useFrame((state, rawDelta) => {
     if (!groupRef.current || !innerRef.current) return;
@@ -50,16 +65,11 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
 
     if (!initialized.current && innerRef.current) {
       initialized.current = true;
-
       const bbox = new THREE.Box3().setFromObject(innerRef.current);
       const minY = bbox.min.y;
-      if (minY < -0.05) {
-        yOffset.current = -minY;
-      }
-
+      if (minY < -0.05) yOffset.current = -minY;
       limbsRef.current = findLimbs(clonedScene);
       basesRef.current = captureBaseRotations(limbsRef.current);
-
       const hasProceduralLimbs = hasAnyLimb(limbsRef.current);
       if (animations.length > 0 && !hasProceduralLimbs) {
         const mixer = new THREE.AnimationMixer(clonedScene);
@@ -74,8 +84,11 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
     if (enemy.health < prevHealth.current) {
       triggerHit(anim);
       attackVariant.current++;
+      flashRef.current = 0.2;
     }
     prevHealth.current = enemy.health;
+
+    if (flashRef.current > 0) flashRef.current = Math.max(0, flashRef.current - delta);
 
     if (enemy.isDead) {
       animateDeath(groupRef.current, innerRef.current, anim, delta);
@@ -84,7 +97,9 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
 
     groupRef.current.position.set(enemy.posX, enemy.posY + yOffset.current, enemy.posZ);
     groupRef.current.rotation.y = enemy.rotY;
-    groupRef.current.scale.set(1, 1, 1);
+
+    const sc = enemy.aiState === "telegraph" ? 1 + Math.sin(t * 20) * 0.04 : 1;
+    groupRef.current.scale.set(sc, sc, sc);
 
     const limbs = limbsRef.current;
     const bases = basesRef.current;
@@ -93,9 +108,12 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
 
     if (enemy.isAttacking) {
       animateEnemyAttack(innerRef.current, hasL ? limbs : null, bases, anim, delta, t, attackVariant.current);
-    } else if (enemy.isAggro) {
+    } else if (enemy.aiState === "chase" || enemy.aiState === "retreat" || enemy.aiState === "patrol") {
       resetAttackPhase(anim, innerRef.current, delta);
       animateAggroWalk(innerRef.current, hasL ? limbs : null, bases, anim, delta, t);
+    } else if (enemy.aiState === "telegraph") {
+      resetAttackPhase(anim, innerRef.current, delta);
+      animateIdle(innerRef.current, hasL ? limbs : null, bases, t, delta, seed);
     } else {
       resetAttackPhase(anim, innerRef.current, delta);
       anim.walkCycle = 0;
@@ -107,6 +125,8 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
 
   if (enemy.isDead && animRef.current.deathProgress >= 1) return null;
 
+  const isTelegraphing = enemy.aiState === "telegraph";
+
   return (
     <group ref={groupRef}>
       <group ref={innerRef} scale={modelScale}>
@@ -114,9 +134,9 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
       </group>
       <pointLight
         position={[0, 1.5, 0]}
-        color="#ff3333"
-        intensity={enemy.isAggro ? 0.5 : 0.15}
-        distance={3}
+        color={isTelegraphing ? "#ff4444" : enemy.isAggro ? "#ff3333" : "#883333"}
+        intensity={isTelegraphing ? 1.5 : enemy.isAggro ? 0.5 : 0.15}
+        distance={isTelegraphing ? 6 : 3}
         decay={2}
       />
     </group>
@@ -136,12 +156,69 @@ export default function AdventureEnemyAI() {
     enemies.forEach((enemy) => {
       if (enemy.isDead) return;
 
+      if (enemy.stunTimer > 0) {
+        adv.setEnemyStun(enemy.id, Math.max(0, enemy.stunTimer - delta));
+        return;
+      }
+
+      const tierConfig = ENEMY_TIERS[enemy.tier] || ENEMY_TIERS.minion1;
       const dx = player.posX - enemy.posX;
       const dz = player.posZ - enemy.posZ;
       const dist = Math.sqrt(dx * dx + dz * dz);
 
-      if (dist < AGGRO_RANGE && !enemy.isAggro) {
+      if (dist < tierConfig.aggroRange && !enemy.isAggro) {
         adv.setEnemyAggro(enemy.id, true);
+      }
+
+      const healthPct = enemy.health / enemy.maxHealth;
+
+      if (enemy.aiState === "retreat" && healthPct <= tierConfig.retreatThreshold) {
+        const fleeX = -dx / (dist || 1);
+        const fleeZ = -dz / (dist || 1);
+        const moveX = fleeX * tierConfig.speed * 1.3 * delta;
+        const moveZ = fleeZ * tierConfig.speed * 1.3 * delta;
+        adv.setEnemyPos(enemy.id, enemy.posX + moveX, enemy.posY, enemy.posZ + moveZ);
+        const fleeRot = Math.atan2(-dx, -dz);
+        useAdventure.setState((s) => ({
+          enemies: s.enemies.map((e) =>
+            e.id === enemy.id ? { ...e, rotY: THREE.MathUtils.lerp(e.rotY, fleeRot, 5 * delta) } : e
+          ),
+        }));
+        return;
+      }
+
+      if (enemy.aiState === "idle" || enemy.aiState === "patrol") {
+        if (!enemy.isAggro) {
+          const ptx = enemy.patrolTargetX;
+          const ptz = enemy.patrolTargetZ;
+          const pdx = ptx - enemy.posX;
+          const pdz = ptz - enemy.posZ;
+          const pdist = Math.sqrt(pdx * pdx + pdz * pdz);
+          if (pdist > 1) {
+            const angle = Math.atan2(pdx, pdz);
+            const speed = tierConfig.speed * 0.4;
+            adv.setEnemyPos(
+              enemy.id,
+              enemy.posX + Math.sin(angle) * speed * delta,
+              enemy.posY,
+              enemy.posZ + Math.cos(angle) * speed * delta
+            );
+            useAdventure.setState((s) => ({
+              enemies: s.enemies.map((e) =>
+                e.id === enemy.id ? { ...e, rotY: THREE.MathUtils.lerp(e.rotY, angle, 3 * delta), aiState: "patrol" } : e
+              ),
+            }));
+          } else {
+            const newPtx = enemy.posX + (Math.random() - 0.5) * 16;
+            const newPtz = enemy.posZ + (Math.random() - 0.5) * 16;
+            useAdventure.setState((s) => ({
+              enemies: s.enemies.map((e) =>
+                e.id === enemy.id ? { ...e, patrolTargetX: newPtx, patrolTargetZ: newPtz, aiState: "idle" } : e
+              ),
+            }));
+          }
+          return;
+        }
       }
 
       if (!enemy.isAggro) return;
@@ -149,28 +226,48 @@ export default function AdventureEnemyAI() {
       const targetRot = Math.atan2(dx, dz);
       const newRot = THREE.MathUtils.lerp(enemy.rotY, targetRot, 5 * delta);
 
-      if (dist > ATTACK_RANGE) {
-        const moveX = Math.sin(targetRot) * ENEMY_SPEED * delta;
-        const moveZ = Math.cos(targetRot) * ENEMY_SPEED * delta;
-        adv.setEnemyPos(
-          enemy.id,
-          enemy.posX + moveX,
-          enemy.posY,
-          enemy.posZ + moveZ
-        );
+      if (enemy.aiState === "telegraph") {
+        const newTimer = enemy.telegraphTimer + delta;
+        adv.setEnemyTelegraph(enemy.id, newTimer);
+        useAdventure.setState((s) => ({
+          enemies: s.enemies.map((e) =>
+            e.id === enemy.id ? { ...e, rotY: newRot } : e
+          ),
+        }));
+        if (newTimer >= tierConfig.telegraphDuration) {
+          adv.setEnemyAIState(enemy.id, "attack");
+          adv.setEnemyAttacking(enemy.id, true);
+          adv.setEnemyTelegraph(enemy.id, 0);
+          if (dist < tierConfig.attackRange + 1) {
+            adv.damagePlayer(tierConfig.damage);
+          }
+          if (isStatueFighter(enemy.fighterId)) useAudio.getState().playStoneAttack();
+          setTimeout(() => {
+            const state = useAdventure.getState();
+            const e = state.enemies.find((en) => en.id === enemy.id);
+            if (e && !e.isDead) {
+              state.setEnemyAttacking(enemy.id, false);
+              state.setEnemyAIState(enemy.id, "chase");
+            }
+          }, 500);
+        }
+        return;
+      }
+
+      if (dist > tierConfig.attackRange) {
+        const moveX = Math.sin(targetRot) * tierConfig.speed * delta;
+        const moveZ = Math.cos(targetRot) * tierConfig.speed * delta;
+        adv.setEnemyPos(enemy.id, enemy.posX + moveX, enemy.posY, enemy.posZ + moveZ);
         adv.setEnemyAttacking(enemy.id, false);
+        adv.setEnemyAIState(enemy.id, "chase");
       } else {
         if (!attackTimers.current[enemy.id]) attackTimers.current[enemy.id] = 0;
         attackTimers.current[enemy.id] += delta;
 
-        if (attackTimers.current[enemy.id] >= ATTACK_INTERVAL) {
+        if (attackTimers.current[enemy.id] >= tierConfig.attackInterval) {
           attackTimers.current[enemy.id] = 0;
-          adv.setEnemyAttacking(enemy.id, true);
-          adv.damagePlayer(ENEMY_DAMAGE);
-          if (isStatueFighter(enemy.fighterId)) useAudio.getState().playStoneAttack();
-          setTimeout(() => {
-            useAdventure.getState().setEnemyAttacking(enemy.id, false);
-          }, 400);
+          adv.setEnemyAIState(enemy.id, "telegraph");
+          adv.setEnemyTelegraph(enemy.id, 0);
         }
       }
 
@@ -180,25 +277,6 @@ export default function AdventureEnemyAI() {
         ),
       }));
     });
-
-    if (player.isAttacking && player.attackCooldown > 0) {
-      enemies.forEach((enemy) => {
-        if (enemy.isDead) return;
-        const dx = player.posX - enemy.posX;
-        const dz = player.posZ - enemy.posZ;
-        const dist = Math.sqrt(dx * dx + dz * dz);
-        if (dist < 3.5) {
-          const dmgMap: Record<string, number> = {
-            punch: 12,
-            kick: 15,
-            special: 25,
-            ultimate: 40,
-          };
-          adv.damageEnemy(enemy.id, dmgMap[player.attackType || "punch"] || 10);
-          if (isStatueFighter(enemy.fighterId)) useAudio.getState().playStoneHit();
-        }
-      });
-    }
   });
 
   const enemies = useAdventure((s) => s.enemies);
@@ -208,6 +286,7 @@ export default function AdventureEnemyAI() {
       {enemies.map((enemy) => (
         <Suspense key={enemy.id} fallback={null}>
           <EnemyMesh enemy={enemy} />
+          <TelegraphRing enemy={enemy} />
         </Suspense>
       ))}
     </>

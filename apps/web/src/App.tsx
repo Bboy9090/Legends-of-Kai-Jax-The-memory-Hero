@@ -205,7 +205,7 @@ function App() {
                 </Canvas>
                 <AdventureHUD />
               </div>
-              <MobileControls showJump={false} />
+              <MobileControls />
             </>
           );
         })()}
@@ -261,7 +261,7 @@ function App() {
                   onBack={() => useRunner.getState().setGameState("campaign-map")}
                 />
               </div>
-              <MobileControls showJump={false} />
+              <MobileControls />
             </>
           );
         })()}

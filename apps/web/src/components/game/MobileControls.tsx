@@ -1,15 +1,11 @@
 import { useRef, useEffect, useCallback } from "react";
 import { useTouchInput } from "../../lib/stores/useTouchInput";
 
-const JOYSTICK_SIZE = 140;
-const JOYSTICK_KNOB = 56;
+const JOYSTICK_SIZE = 150;
+const JOYSTICK_KNOB = 60;
 const DEAD_ZONE = 0.12;
 
-interface MobileControlsProps {
-  showJump?: boolean;
-}
-
-export default function MobileControls({ showJump = true }: MobileControlsProps) {
+export default function MobileControls() {
   const isTouchDevice = useTouchInput((s) => s.isTouchDevice);
   const setJoystick = useTouchInput((s) => s.setJoystick);
   const releaseJoystick = useTouchInput((s) => s.releaseJoystick);
@@ -102,25 +98,23 @@ export default function MobileControls({ showJump = true }: MobileControlsProps)
 
   if (!isTouchDevice) return null;
 
-  const btnBase =
-    "rounded-full flex items-center justify-center select-none active:scale-90 transition-transform border-2";
-
   return (
     <div
       className="fixed inset-0 pointer-events-none"
       style={{ zIndex: 9999, touchAction: "none" }}
     >
+      {/* Virtual Joystick — Left Side */}
       <div
         ref={joystickRef}
         className="pointer-events-auto absolute"
         style={{
-          left: 28,
-          bottom: 48,
+          left: 24,
+          bottom: 40,
           width: JOYSTICK_SIZE,
           height: JOYSTICK_SIZE,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
-          border: "2px solid rgba(255,255,255,0.18)",
+          background: "radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%)",
+          border: "2px solid rgba(255,255,255,0.15)",
           touchAction: "none",
         }}
         onTouchStart={handleJoystickStart}
@@ -139,75 +133,70 @@ export default function MobileControls({ showJump = true }: MobileControlsProps)
             width: JOYSTICK_KNOB,
             height: JOYSTICK_KNOB,
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(0,242,255,0.6) 0%, rgba(0,242,255,0.2) 100%)",
-            border: "2px solid rgba(0,242,255,0.5)",
-            boxShadow: "0 0 12px rgba(0,242,255,0.3)",
+            background: "radial-gradient(circle, rgba(0,242,255,0.55) 0%, rgba(0,242,255,0.15) 100%)",
+            border: "2px solid rgba(0,242,255,0.4)",
+            boxShadow: "0 0 16px rgba(0,242,255,0.25)",
             transition: "transform 0.05s ease-out",
           }}
         />
       </div>
 
+      {/* Action Buttons — Right Side (4-button layout) */}
       <div
-        className="pointer-events-auto absolute flex flex-col gap-3 items-center"
-        style={{ right: 24, bottom: 44, touchAction: "none" }}
+        className="pointer-events-auto absolute"
+        style={{ right: 20, bottom: 32, touchAction: "none" }}
       >
-        <div className="flex gap-3">
+        {/* Top row: Skill (cooldown) */}
+        <div className="flex justify-center mb-3">
           <button
-            className={`${btnBase} w-16 h-16 border-yellow-400/50`}
+            className="rounded-full flex items-center justify-center select-none active:scale-90 transition-transform border-2 w-16 h-16 border-yellow-400/50"
             style={{
-              background: "radial-gradient(circle, rgba(234,179,8,0.35) 0%, rgba(234,179,8,0.12) 100%)",
-              boxShadow: "0 0 10px rgba(234,179,8,0.2)",
+              background: "radial-gradient(circle, rgba(234,179,8,0.35) 0%, rgba(234,179,8,0.1) 100%)",
+              boxShadow: "0 0 12px rgba(234,179,8,0.2)",
             }}
-            onTouchStart={attackBtn("special")}
+            onTouchStart={attackBtn("skill")}
           >
-            <span className="text-yellow-300 text-xs font-bold">SP</span>
-          </button>
-          <button
-            className={`${btnBase} w-16 h-16 border-purple-400/50`}
-            style={{
-              background: "radial-gradient(circle, rgba(168,85,247,0.35) 0%, rgba(168,85,247,0.12) 100%)",
-              boxShadow: "0 0 10px rgba(168,85,247,0.2)",
-            }}
-            onTouchStart={attackBtn("ultimate")}
-          >
-            <span className="text-purple-300 text-xs font-bold">ULT</span>
-          </button>
-        </div>
-        <div className="flex gap-3">
-          <button
-            className={`${btnBase} w-[72px] h-[72px] border-cyan-400/50`}
-            style={{
-              background: "radial-gradient(circle, rgba(0,242,255,0.35) 0%, rgba(0,242,255,0.12) 100%)",
-              boxShadow: "0 0 12px rgba(0,242,255,0.25)",
-            }}
-            onTouchStart={attackBtn("punch")}
-          >
-            <span className="text-cyan-200 text-sm font-bold">PUNCH</span>
-          </button>
-          <button
-            className={`${btnBase} w-[72px] h-[72px] border-red-400/50`}
-            style={{
-              background: "radial-gradient(circle, rgba(239,68,68,0.35) 0%, rgba(239,68,68,0.12) 100%)",
-              boxShadow: "0 0 12px rgba(239,68,68,0.25)",
-            }}
-            onTouchStart={attackBtn("kick")}
-          >
-            <span className="text-red-200 text-sm font-bold">KICK</span>
+            <span className="text-yellow-300 text-xs font-black tracking-wider">SKILL</span>
           </button>
         </div>
 
-        {showJump && (
+        {/* Middle row: Heavy + Dodge */}
+        <div className="flex gap-4 mb-3">
           <button
-            className={`${btnBase} w-20 h-12 border-green-400/50`}
+            className="rounded-full flex items-center justify-center select-none active:scale-90 transition-transform border-2 w-[70px] h-[70px] border-orange-400/50"
             style={{
-              background: "radial-gradient(circle, rgba(34,197,94,0.3) 0%, rgba(34,197,94,0.1) 100%)",
-              boxShadow: "0 0 10px rgba(34,197,94,0.15)",
+              background: "radial-gradient(circle, rgba(249,115,22,0.4) 0%, rgba(249,115,22,0.1) 100%)",
+              boxShadow: "0 0 14px rgba(249,115,22,0.25)",
             }}
-            onTouchStart={attackBtn("jump")}
+            onTouchStart={attackBtn("heavy")}
           >
-            <span className="text-green-200 text-xs font-bold">JUMP</span>
+            <span className="text-orange-200 text-sm font-black">HEAVY</span>
           </button>
-        )}
+          <button
+            className="rounded-full flex items-center justify-center select-none active:scale-90 transition-transform border-2 w-[70px] h-[70px] border-green-400/50"
+            style={{
+              background: "radial-gradient(circle, rgba(34,197,94,0.35) 0%, rgba(34,197,94,0.1) 100%)",
+              boxShadow: "0 0 14px rgba(34,197,94,0.2)",
+            }}
+            onTouchStart={attackBtn("dodge")}
+          >
+            <span className="text-green-200 text-sm font-black">DODGE</span>
+          </button>
+        </div>
+
+        {/* Bottom row: Attack (primary, biggest button) */}
+        <div className="flex justify-center">
+          <button
+            className="rounded-full flex items-center justify-center select-none active:scale-90 transition-transform border-2 w-[88px] h-[88px] border-cyan-400/60"
+            style={{
+              background: "radial-gradient(circle, rgba(0,242,255,0.4) 0%, rgba(0,242,255,0.1) 100%)",
+              boxShadow: "0 0 20px rgba(0,242,255,0.3)",
+            }}
+            onTouchStart={attackBtn("attack")}
+          >
+            <span className="text-cyan-100 text-base font-black tracking-wide">ATK</span>
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
 import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useAdventure } from "../../../lib/stores/useAdventure";
+import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
 import { ENEMY_FIGHTERS } from "../../../lib/characters";
+import { ENEMY_TIERS } from "../../../lib/combatSystems";
 import AdventureCharacter from "./AdventureCharacter";
 import AdventureCamera from "./AdventureCamera";
 import AdventurePlayerController from "./AdventurePlayerController";
@@ -165,25 +166,67 @@ function WaveSpawner() {
         spawnTimer.current = 0;
         waveNum.current++;
 
-        const count = Math.min(2 + waveNum.current, 6);
-        const enemyIds = ENEMY_FIGHTERS.map((f) => f.id);
-        const newEnemies = [];
+        const wave = waveNum.current;
+        const count = Math.min(2 + wave, 6);
+        const minionIds = ["hyena-scout", "rift-drone", "blazing-fox", "sparky", "velocity"];
+        const bossIds = ["malakor", "behemoth"];
+        const newEnemies: AdventureEnemy[] = [];
+
+        const spawnBoss = wave > 0 && wave % 3 === 0;
 
         for (let i = 0; i < count; i++) {
           const angle = (i / count) * Math.PI * 2 + Math.random() * 0.5;
           const dist = 15 + Math.random() * 10;
+          const tier = (wave >= 4 ? "minion2" : "minion1") as AdventureEnemy["tier"];
+          const tierConfig = ENEMY_TIERS[tier];
+          const fighterId = minionIds[i % minionIds.length];
+          const hp = tierConfig.health + wave * 8;
           newEnemies.push({
-            id: `wave${waveNum.current}-enemy${i}`,
-            fighterId: enemyIds[i % enemyIds.length],
+            id: `wave${wave}-enemy${i}`,
+            fighterId,
+            tier,
             posX: Math.cos(angle) * dist,
             posY: 0,
             posZ: Math.sin(angle) * dist,
             rotY: 0,
-            health: 60 + waveNum.current * 10,
-            maxHealth: 60 + waveNum.current * 10,
+            health: hp,
+            maxHealth: hp,
             isAggro: false,
             isAttacking: false,
             isDead: false,
+            aiState: "idle",
+            telegraphTimer: 0,
+            patrolTargetX: Math.cos(angle) * dist + (Math.random() - 0.5) * 10,
+            patrolTargetZ: Math.sin(angle) * dist + (Math.random() - 0.5) * 10,
+            stunTimer: 0,
+          });
+        }
+
+        if (spawnBoss) {
+          const bossTier = (wave >= 6 ? "boss2" : "boss1") as AdventureEnemy["tier"];
+          const bossConfig = ENEMY_TIERS[bossTier];
+          const bossAngle = Math.random() * Math.PI * 2;
+          const bossDist = 20;
+          const bossId = bossIds[wave >= 6 ? 1 : 0];
+          const bossHp = bossConfig.health + wave * 15;
+          newEnemies.push({
+            id: `wave${wave}-boss`,
+            fighterId: bossId,
+            tier: bossTier,
+            posX: Math.cos(bossAngle) * bossDist,
+            posY: 0,
+            posZ: Math.sin(bossAngle) * bossDist,
+            rotY: 0,
+            health: bossHp,
+            maxHealth: bossHp,
+            isAggro: false,
+            isAttacking: false,
+            isDead: false,
+            aiState: "idle",
+            telegraphTimer: 0,
+            patrolTargetX: Math.cos(bossAngle) * bossDist + (Math.random() - 0.5) * 8,
+            patrolTargetZ: Math.sin(bossAngle) * bossDist + (Math.random() - 0.5) * 8,
+            stunTimer: 0,
           });
         }
 

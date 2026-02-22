@@ -207,6 +207,42 @@ export const FIGHTERS: Fighter[] = [
     baseStats: { power: 90, speed: 72, defense: 92, gravity: 11.5 },
     role: "boss",
   },
+  {
+    id: "hyena-scout",
+    name: "HyenaScout",
+    displayName: "HYENA SCOUT",
+    color: "#2a1a0a",
+    accentColor: "#c4873a",
+    baseStats: { power: 65, speed: 88, defense: 55, gravity: 9.8 },
+    role: "enemy",
+  },
+  {
+    id: "rift-drone",
+    name: "RiftDrone",
+    displayName: "RIFT DRONE",
+    color: "#0a0a1a",
+    accentColor: "#ff4466",
+    baseStats: { power: 72, speed: 82, defense: 60, gravity: 9.8 },
+    role: "enemy",
+  },
+  {
+    id: "malakor",
+    name: "Malakor",
+    displayName: "MALAKOR",
+    color: "#1a0000",
+    accentColor: "#ff2222",
+    baseStats: { power: 94, speed: 75, defense: 88, gravity: 10.5 },
+    role: "boss",
+  },
+  {
+    id: "behemoth",
+    name: "Behemoth",
+    displayName: "THE BEHEMOTH",
+    color: "#0a0008",
+    accentColor: "#9900ff",
+    baseStats: { power: 98, speed: 60, defense: 96, gravity: 13.0 },
+    role: "boss",
+  },
 ];
 
 export const HERO_FIGHTERS = FIGHTERS.filter((f) => f.role === "hero");

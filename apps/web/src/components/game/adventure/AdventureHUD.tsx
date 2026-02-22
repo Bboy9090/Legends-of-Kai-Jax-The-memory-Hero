@@ -1,24 +1,28 @@
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useRunner } from "../../../lib/stores/useRunner";
+import { CombatState, STAMINA_CONFIG } from "../../../lib/combatSystems";
 
 function HealthBar({
   current,
   max,
   color,
   label,
+  flashLow,
 }: {
   current: number;
   max: number;
   color: string;
   label: string;
+  flashLow?: boolean;
 }) {
   const pct = Math.max(0, Math.min(100, (current / max) * 100));
+  const isLow = flashLow && pct < 25;
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs font-bold text-slate-400 w-6">{label}</span>
       <div className="flex-1 h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
         <div
-          className="h-full rounded-full transition-all duration-200"
+          className={`h-full rounded-full transition-all duration-200 ${isLow ? "animate-pulse" : ""}`}
           style={{
             width: `${pct}%`,
             background: `linear-gradient(90deg, ${color}, ${color}aa)`,
@@ -29,6 +33,112 @@ function HealthBar({
       <span className="text-xs font-mono text-slate-300 w-12 text-right">
         {Math.ceil(current)}
       </span>
+    </div>
+  );
+}
+
+function StaminaBar({ current, max }: { current: number; max: number }) {
+  const pct = Math.max(0, Math.min(100, (current / max) * 100));
+  const exhausted = current < STAMINA_CONFIG.exhaustedThreshold;
+  const color = exhausted ? "#ef4444" : "#a855f7";
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs font-bold text-slate-400 w-6">SP</span>
+      <div className="flex-1 h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+        <div
+          className={`h-full rounded-full transition-all duration-200 ${exhausted ? "animate-pulse" : ""}`}
+          style={{
+            width: `${pct}%`,
+            background: `linear-gradient(90deg, ${color}, ${color}aa)`,
+            boxShadow: `0 0 8px ${color}66`,
+          }}
+        />
+      </div>
+      <span className={`text-xs font-mono w-12 text-right ${exhausted ? "text-red-400" : "text-slate-300"}`}>
+        {Math.ceil(current)}
+      </span>
+    </div>
+  );
+}
+
+function ComboDisplay({ step, state }: { step: number; state: CombatState }) {
+  if (step <= 0 || state !== CombatState.ATTACKING) return null;
+  const comboNum = step + 1;
+  return (
+    <div className="absolute top-1/4 right-8 text-right">
+      <div
+        className="text-5xl font-black text-transparent bg-clip-text animate-pulse"
+        style={{
+          backgroundImage: "linear-gradient(135deg, #00f2ff, #7f00ff)",
+        }}
+      >
+        {comboNum}x
+      </div>
+      <div className="text-sm font-bold text-cyan-300 tracking-widest">
+        COMBO
+      </div>
+    </div>
+  );
+}
+
+function AutoTargetIndicator({ targetId, enemies }: { targetId: string | null; enemies: any[] }) {
+  if (!targetId) return null;
+  const target = enemies.find((e: any) => e.id === targetId);
+  if (!target || target.isDead) return null;
+  const hpPct = Math.max(0, (target.health / target.maxHealth) * 100);
+  return (
+    <div className="absolute bottom-28 left-1/2 -translate-x-1/2">
+      <div className="bg-black/60 backdrop-blur-sm rounded-lg px-4 py-1.5 border border-red-500/30 flex items-center gap-3 min-w-[180px]">
+        <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+        <div className="flex-1">
+          <div className="text-[10px] text-red-300 font-bold uppercase tracking-wider mb-0.5">TARGET</div>
+          <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{
+                width: `${hpPct}%`,
+                background: "linear-gradient(90deg, #ef4444, #dc2626)",
+              }}
+            />
+          </div>
+        </div>
+        <span className="text-[10px] font-mono text-red-300">{Math.ceil(target.health)}</span>
+      </div>
+    </div>
+  );
+}
+
+function ImpactFlash({ color }: { color: string | null }) {
+  if (!color) return null;
+  return (
+    <div
+      className="absolute inset-0 pointer-events-none z-50"
+      style={{
+        background: `radial-gradient(circle, ${color}33 0%, transparent 70%)`,
+        animation: "fadeOut 0.15s ease-out forwards",
+      }}
+    />
+  );
+}
+
+function CombatStateLabel({ state }: { state: CombatState }) {
+  if (state === CombatState.FREE) return null;
+  const labels: Record<CombatState, { text: string; color: string }> = {
+    [CombatState.ATTACKING]: { text: "ATTACKING", color: "#00f2ff" },
+    [CombatState.DODGING]: { text: "DODGE!", color: "#22c55e" },
+    [CombatState.HITSTUN]: { text: "STUNNED", color: "#ef4444" },
+    [CombatState.BLOCKING]: { text: "BLOCK", color: "#eab308" },
+    [CombatState.FREE]: { text: "", color: "" },
+  };
+  const label = labels[state];
+  return (
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+      <div
+        className="text-2xl font-black uppercase tracking-wider opacity-70"
+        style={{ color: label.color, textShadow: `0 0 12px ${label.color}66` }}
+      >
+        {label.text}
+      </div>
     </div>
   );
 }
@@ -74,6 +184,8 @@ export default function AdventureHUD() {
 
   return (
     <div className="absolute inset-0 pointer-events-none z-40">
+      <ImpactFlash color={player.impactFlash} />
+
       <div className="absolute top-4 left-4 right-4 pointer-events-auto">
         <div className="flex items-start justify-between gap-4">
           <div className="w-64 space-y-1 bg-black/50 backdrop-blur-sm rounded-xl p-3 border border-slate-700/50">
@@ -82,13 +194,9 @@ export default function AdventureHUD() {
               max={player.maxHealth}
               color="#22d3ee"
               label="HP"
+              flashLow
             />
-            <HealthBar
-              current={player.stamina}
-              max={player.maxStamina}
-              color="#a855f7"
-              label="SP"
-            />
+            <StaminaBar current={player.stamina} max={player.maxStamina} />
           </div>
 
           <div className="flex items-center gap-4 bg-black/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-slate-700/50">
@@ -110,47 +218,32 @@ export default function AdventureHUD() {
         </div>
       </div>
 
-      {player.combo > 1 && (
-        <div className="absolute top-1/4 right-8 text-right">
-          <div
-            className="text-5xl font-black text-transparent bg-clip-text animate-pulse"
-            style={{
-              backgroundImage: "linear-gradient(135deg, #00f2ff, #7f00ff)",
-            }}
-          >
-            {player.combo}x
-          </div>
-          <div className="text-sm font-bold text-cyan-300 tracking-widest">
-            COMBO
-          </div>
-        </div>
-      )}
-
-      {player.isAttacking && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className="text-2xl font-black text-white uppercase tracking-wider animate-ping opacity-60">
-            {player.attackType}!
-          </div>
-        </div>
-      )}
+      <ComboDisplay step={player.comboStep} state={player.combatState} />
+      <CombatStateLabel state={player.combatState} />
+      <AutoTargetIndicator targetId={player.autoTargetId} enemies={enemies} />
 
       <div className="absolute bottom-4 left-0 right-0 text-center">
         <div className="inline-flex gap-3 bg-black/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-slate-700/50 text-slate-400 text-xs">
           <span>WASD move</span>
           <span className="text-slate-600">|</span>
-          <span>Shift run</span>
+          <span>J attack</span>
           <span className="text-slate-600">|</span>
-          <span>J punch</span>
+          <span>K heavy</span>
           <span className="text-slate-600">|</span>
-          <span>K kick</span>
+          <span>L skill</span>
           <span className="text-slate-600">|</span>
-          <span>L special</span>
-          <span className="text-slate-600">|</span>
-          <span>R ultimate</span>
+          <span>Space dodge</span>
           <span className="text-slate-600">|</span>
           <span>Esc pause</span>
         </div>
       </div>
+
+      <style>{`
+        @keyframes fadeOut {
+          from { opacity: 1; }
+          to { opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 }

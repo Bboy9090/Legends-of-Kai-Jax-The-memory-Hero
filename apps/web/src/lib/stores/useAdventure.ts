@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { CombatState, STAMINA_CONFIG } from "../combatSystems";
 
 export interface AdventurePlayerState {
   fighterId: string;
@@ -18,14 +19,31 @@ export interface AdventurePlayerState {
   maxStamina: number;
   combo: number;
   isAttacking: boolean;
-  attackType: "punch" | "kick" | "special" | "ultimate" | null;
+  attackType: "light1" | "light2" | "light3" | "heavy" | "skill" | "punch" | "kick" | "special" | "ultimate" | null;
   attackCooldown: number;
   attackTimer: number;
+
+  combatState: CombatState;
+  comboStep: number;
+  comboTimer: number;
+  dodgeTimer: number;
+  invulnTimer: number;
+  hitStunTimer: number;
+  hitStopTimer: number;
+  staminaRegenDelay: number;
+  autoTargetId: string | null;
+  superArmor: boolean;
+  screenShake: number;
+  timeScale: number;
+  impactFlash: string | null;
 }
+
+export type EnemyAIState = "idle" | "patrol" | "chase" | "telegraph" | "attack" | "retreat" | "stun";
 
 export interface AdventureEnemy {
   id: string;
   fighterId: string;
+  tier: "minion1" | "minion2" | "boss1" | "boss2";
   posX: number;
   posY: number;
   posZ: number;
@@ -35,6 +53,11 @@ export interface AdventureEnemy {
   isAggro: boolean;
   isAttacking: boolean;
   isDead: boolean;
+  aiState: EnemyAIState;
+  telegraphTimer: number;
+  patrolTargetX: number;
+  patrolTargetZ: number;
+  stunTimer: number;
 }
 
 interface AdventureState {
@@ -51,18 +74,34 @@ interface AdventureState {
   setPlayerVelocity: (vx: number, vz: number) => void;
   setPlayerMoving: (moving: boolean, running: boolean) => void;
   setPlayerCombat: (combat: boolean) => void;
-  playerAttack: (type: "punch" | "kick" | "special" | "ultimate") => void;
+  playerAttack: (type: AdventurePlayerState["attackType"]) => void;
   clearAttack: () => void;
   damagePlayer: (amount: number) => void;
   healPlayer: (amount: number) => void;
   useStamina: (amount: number) => boolean;
   regenStamina: (amount: number) => void;
+  setCombatState: (state: CombatState) => void;
+  setComboStep: (step: number) => void;
+  setComboTimer: (time: number) => void;
+  setDodgeTimer: (time: number) => void;
+  setInvulnTimer: (time: number) => void;
+  setHitStunTimer: (time: number) => void;
+  setHitStopTimer: (time: number) => void;
+  setStaminaRegenDelay: (time: number) => void;
+  setAutoTargetId: (id: string | null) => void;
+  setSuperArmor: (val: boolean) => void;
+  triggerScreenShake: (intensity: number) => void;
+  triggerTimeScale: (scale: number, duration: number) => void;
+  triggerImpactFlash: (color: string) => void;
 
   spawnEnemies: (enemies: AdventureEnemy[]) => void;
   damageEnemy: (id: string, amount: number) => void;
   setEnemyAggro: (id: string, aggro: boolean) => void;
   setEnemyPos: (id: string, x: number, y: number, z: number) => void;
   setEnemyAttacking: (id: string, attacking: boolean) => void;
+  setEnemyAIState: (id: string, aiState: EnemyAIState) => void;
+  setEnemyTelegraph: (id: string, timer: number) => void;
+  setEnemyStun: (id: string, timer: number) => void;
   removeEnemy: (id: string) => void;
 
   initAdventure: (characterId: string, missionId: string | null, arenaId: string) => void;
@@ -84,13 +123,27 @@ const defaultPlayer: AdventurePlayerState = {
   isCombat: false,
   health: 100,
   maxHealth: 100,
-  stamina: 100,
-  maxStamina: 100,
+  stamina: STAMINA_CONFIG.max,
+  maxStamina: STAMINA_CONFIG.max,
   combo: 0,
   isAttacking: false,
   attackType: null,
   attackCooldown: 0,
   attackTimer: 0,
+
+  combatState: CombatState.FREE,
+  comboStep: 0,
+  comboTimer: 0,
+  dodgeTimer: 0,
+  invulnTimer: 0,
+  hitStunTimer: 0,
+  hitStopTimer: 0,
+  staminaRegenDelay: 0,
+  autoTargetId: null,
+  superArmor: false,
+  screenShake: 0,
+  timeScale: 1.0,
+  impactFlash: null,
 };
 
 export const useAdventure = create<AdventureState>((set, get) => ({
@@ -127,20 +180,41 @@ export const useAdventure = create<AdventureState>((set, get) => ({
         ...s.player,
         isAttacking: true,
         attackType: type,
-        attackCooldown: type === "ultimate" ? 1.0 : type === "special" ? 0.6 : 0.3,
-        combo: s.player.combo + 1,
+        combatState: CombatState.ATTACKING,
       },
     })),
 
   clearAttack: () =>
     set((s) => ({
-      player: { ...s.player, isAttacking: false, attackType: null, attackCooldown: 0 },
+      player: {
+        ...s.player,
+        isAttacking: false,
+        attackType: null,
+        attackCooldown: 0,
+        combatState: CombatState.FREE,
+      },
     })),
 
-  damagePlayer: (amount) =>
+  damagePlayer: (amount) => {
+    const p = get().player;
+    if (p.invulnTimer > 0) return;
+    if (p.superArmor) {
+      set((s) => ({
+        player: { ...s.player, health: Math.max(0, s.player.health - amount * 0.5) },
+      }));
+      return;
+    }
     set((s) => ({
-      player: { ...s.player, health: Math.max(0, s.player.health - amount) },
-    })),
+      player: {
+        ...s.player,
+        health: Math.max(0, s.player.health - amount),
+        combatState: CombatState.HITSTUN,
+        hitStunTimer: 0.3,
+        isAttacking: false,
+        attackType: null,
+      },
+    }));
+  },
 
   healPlayer: (amount) =>
     set((s) => ({
@@ -154,7 +228,11 @@ export const useAdventure = create<AdventureState>((set, get) => ({
     const cur = get().player.stamina;
     if (cur < amount) return false;
     set((s) => ({
-      player: { ...s.player, stamina: Math.max(0, s.player.stamina - amount) },
+      player: {
+        ...s.player,
+        stamina: Math.max(0, s.player.stamina - amount),
+        staminaRegenDelay: STAMINA_CONFIG.regenDelay,
+      },
     }));
     return true;
   },
@@ -167,6 +245,53 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       },
     })),
 
+  setCombatState: (combatState) =>
+    set((s) => ({ player: { ...s.player, combatState } })),
+
+  setComboStep: (comboStep) =>
+    set((s) => ({ player: { ...s.player, comboStep } })),
+
+  setComboTimer: (comboTimer) =>
+    set((s) => ({ player: { ...s.player, comboTimer } })),
+
+  setDodgeTimer: (dodgeTimer) =>
+    set((s) => ({ player: { ...s.player, dodgeTimer } })),
+
+  setInvulnTimer: (invulnTimer) =>
+    set((s) => ({ player: { ...s.player, invulnTimer } })),
+
+  setHitStunTimer: (hitStunTimer) =>
+    set((s) => ({ player: { ...s.player, hitStunTimer } })),
+
+  setHitStopTimer: (hitStopTimer) =>
+    set((s) => ({ player: { ...s.player, hitStopTimer } })),
+
+  setStaminaRegenDelay: (staminaRegenDelay) =>
+    set((s) => ({ player: { ...s.player, staminaRegenDelay } })),
+
+  setAutoTargetId: (autoTargetId) =>
+    set((s) => ({ player: { ...s.player, autoTargetId } })),
+
+  setSuperArmor: (superArmor) =>
+    set((s) => ({ player: { ...s.player, superArmor } })),
+
+  triggerScreenShake: (intensity) =>
+    set((s) => ({ player: { ...s.player, screenShake: intensity } })),
+
+  triggerTimeScale: (scale, duration) => {
+    set((s) => ({ player: { ...s.player, timeScale: scale } }));
+    setTimeout(() => {
+      set((s) => ({ player: { ...s.player, timeScale: 1.0 } }));
+    }, duration * 1000);
+  },
+
+  triggerImpactFlash: (color) => {
+    set((s) => ({ player: { ...s.player, impactFlash: color } }));
+    setTimeout(() => {
+      set((s) => ({ player: { ...s.player, impactFlash: null } }));
+    }, 150);
+  },
+
   spawnEnemies: (enemies) => set({ enemies }),
 
   damageEnemy: (id, amount) =>
@@ -174,7 +299,13 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       const enemies = s.enemies.map((e) => {
         if (e.id !== id) return e;
         const newHp = Math.max(0, e.health - amount);
-        return { ...e, health: newHp, isDead: newHp <= 0 };
+        return {
+          ...e,
+          health: newHp,
+          isDead: newHp <= 0,
+          aiState: (newHp <= 0 ? "idle" : newHp / e.maxHealth < 0.3 ? "retreat" : e.aiState) as EnemyAIState,
+          stunTimer: newHp > 0 ? 0.3 : 0,
+        };
       });
       const justKilled = s.enemies.find((e) => e.id === id && !e.isDead);
       const newHp = justKilled ? Math.max(0, justKilled.health - amount) : 1;
@@ -186,7 +317,9 @@ export const useAdventure = create<AdventureState>((set, get) => ({
 
   setEnemyAggro: (id, aggro) =>
     set((s) => ({
-      enemies: s.enemies.map((e) => (e.id === id ? { ...e, isAggro: aggro } : e)),
+      enemies: s.enemies.map((e) =>
+        e.id === id ? { ...e, isAggro: aggro, aiState: aggro ? "chase" as EnemyAIState : "idle" as EnemyAIState } : e
+      ),
     })),
 
   setEnemyPos: (id, x, y, z) =>
@@ -200,6 +333,27 @@ export const useAdventure = create<AdventureState>((set, get) => ({
     set((s) => ({
       enemies: s.enemies.map((e) =>
         e.id === id ? { ...e, isAttacking: attacking } : e
+      ),
+    })),
+
+  setEnemyAIState: (id, aiState) =>
+    set((s) => ({
+      enemies: s.enemies.map((e) =>
+        e.id === id ? { ...e, aiState } : e
+      ),
+    })),
+
+  setEnemyTelegraph: (id, timer) =>
+    set((s) => ({
+      enemies: s.enemies.map((e) =>
+        e.id === id ? { ...e, telegraphTimer: timer } : e
+      ),
+    })),
+
+  setEnemyStun: (id, timer) =>
+    set((s) => ({
+      enemies: s.enemies.map((e) =>
+        e.id === id ? { ...e, stunTimer: timer } : e
       ),
     })),
 
