@@ -1,7 +1,5 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { useRunner } from "../../lib/stores/useRunner";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAdventure } from "../../lib/stores/useAdventure";
-import { useMissions } from "../../lib/stores/useMissions";
 import { getStoryMissionById, type StoryMission, type StoryDialogue } from "../../lib/story_missions";
 
 interface StoryAdventureProps {

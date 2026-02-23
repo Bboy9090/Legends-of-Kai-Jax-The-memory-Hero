@@ -6,7 +6,6 @@ import * as THREE from "three";
 const CAM_HEIGHT = 4.5;
 const CAM_DIST = 6;
 const CAM_LERP = 5;
-const SHAKE_DECAY = 8;
 
 export default function AdventureCamera() {
   const { camera } = useThree();

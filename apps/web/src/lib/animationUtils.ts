@@ -638,7 +638,7 @@ export function animatePunch(
   bases: LimbBaseRotations | null,
   anim: AnimState,
   delta: number,
-  t: number
+  _t: number
 ) {
   const noLimbs = !limbs;
   anim.attackPhase = THREE.MathUtils.lerp(anim.attackPhase, 1, delta * 20);

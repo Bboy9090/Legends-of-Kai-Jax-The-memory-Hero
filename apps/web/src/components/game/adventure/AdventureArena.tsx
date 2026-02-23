@@ -1,7 +1,6 @@
 import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
-import { ENEMY_FIGHTERS } from "../../../lib/characters";
 import { ENEMY_TIERS } from "../../../lib/combatSystems";
 import AdventureCharacter from "./AdventureCharacter";
 import AdventureCamera from "./AdventureCamera";
