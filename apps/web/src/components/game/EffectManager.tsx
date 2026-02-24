@@ -97,15 +97,13 @@ function EnergyBurst({ position, color, active }: { position: [number, number, n
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
+            args={[particlePositions, 3]}
             count={PARTICLE_COUNT}
-            array={particlePositions}
-            itemSize={3}
           />
           <bufferAttribute
             attach="attributes-size"
+            args={[particleSizes, 1]}
             count={PARTICLE_COUNT}
-            array={particleSizes}
-            itemSize={1}
           />
         </bufferGeometry>
         <pointsMaterial
@@ -188,7 +186,6 @@ export default function EffectManager() {
   const {
     playerX, playerY, playerAttacking, playerAttackType,
     opponentX, opponentY, opponentAttacking, opponentAttackType,
-    playerFighterId, opponentFighterId,
   } = useBattle();
 
   const playerUltimate = playerAttacking && playerAttackType === "ultimate";

@@ -212,7 +212,7 @@ function GLBModelInner({
   isAttacking,
   isMoving,
   attackType,
-  velocityX = 0,
+  velocityX: _velocityX = 0,
   velocityY: _velocityY = 0,
   isGrounded = true,
   isJumping = false,

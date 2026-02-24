@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useRunner } from "../../lib/stores/useRunner";
-import { Star, Zap, Swords, BookOpen, Skull, ChevronRight } from "../ui/icons";
+import { Star, Zap, Skull, ChevronRight } from "../ui/icons";
 
 const HERO_IMAGE = "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/htuxfqte_9660FF22-E010-4DF5-A321-DDFE60ADB8CB.png";
 
@@ -461,9 +461,9 @@ function TailsSection() {
                 <div className="flex items-start justify-between mb-3">
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center"
-                    style={{ background: `${tail.color}15`, boxShadow: `0 0 15px ${tail.color}30` }}
+                    style={{ background: `${tail.color}15`, boxShadow: `0 0 15px ${tail.color}30`, color: tail.color }}
                   >
-                    <Icon className="w-5 h-5" style={{ color: tail.color } as React.CSSProperties} />
+                    <Icon className="w-5 h-5" size={20} />
                   </div>
                   <span className="text-3xl font-black text-white/8">{tail.id.toString().padStart(2, "0")}</span>
                 </div>

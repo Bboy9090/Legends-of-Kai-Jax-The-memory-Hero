@@ -7,6 +7,7 @@ export type GameState =
   | "story-mode-select"
   | "story-mode"
   | "mission-select"
+  | "adventure-select"
   | "versus-select"
   | "character-select"
   | "customization"
@@ -29,9 +30,12 @@ interface RunnerState {
   gameState: GameState;
   selectedCharacter: string | null;
   activeStoryMissionId: string | null;
+  /** Selected adventure mission id (free-arena or mission id). */
+  activeAdventureMissionId: string | null;
   setGameState: (s: GameState) => void;
   setCharacter: (id: string | null) => void;
   setActiveStoryMission: (id: string | null) => void;
+  setActiveAdventureMission: (id: string | null) => void;
   addScore: (points: number) => void;
   totalScore: number;
   campaignCompletedNodes: CampaignNodeId[];
@@ -67,12 +71,14 @@ export const useRunner = create<RunnerState>((set, get) => ({
   gameState: "lore-hub",
   selectedCharacter: "jaxon",
   activeStoryMissionId: null,
+  activeAdventureMissionId: null,
   totalScore: 0,
   campaignCompletedNodes: [],
   campaignCurrentNode: null,
   setGameState: (gameState) => set({ gameState }),
   setCharacter: (selectedCharacter) => set({ selectedCharacter }),
   setActiveStoryMission: (activeStoryMissionId) => set({ activeStoryMissionId }),
+  setActiveAdventureMission: (activeAdventureMissionId) => set({ activeAdventureMissionId }),
   addScore: (points) => set({ totalScore: get().totalScore + points }),
   setCampaignCompleted: (nodeId) =>
     set((s) => ({

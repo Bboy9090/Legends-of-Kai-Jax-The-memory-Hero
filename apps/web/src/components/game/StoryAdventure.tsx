@@ -156,7 +156,7 @@ function MissionBriefing({ mission, onStart }: { mission: StoryMission; onStart:
       <div className="max-w-lg w-full">
         <div className="text-center mb-6">
           <p className="text-amber-300/80 text-xs font-semibold tracking-[0.3em] uppercase mb-1">
-            Act {mission.act} — Mission {mission.missionNumber}
+            Raging City · Act {mission.act} — Mission {mission.missionNumber}
           </p>
           <h1 className="text-3xl font-black text-white mb-2">{mission.title}</h1>
           <p className="text-slate-300 text-sm leading-relaxed">{mission.description}</p>
@@ -182,9 +182,9 @@ function MissionBriefing({ mission, onStart }: { mission: StoryMission; onStart:
 
         <button
           onClick={onStart}
-          className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-lg transition-all hover:scale-[1.02] active:scale-[0.98] tracking-wider"
         >
-          Begin Mission
+          Begin Mission — Enter the Arena
         </button>
       </div>
     </div>

@@ -9,6 +9,7 @@ import MobileControls from "./components/game/MobileControls";
 import BattleUI from "./components/game/BattleUI";
 import DialogueDisplay from "./components/game/DialogueDisplay";
 import MainMenu from "./components/game/MainMenu";
+import AdventureModeSelect from "./components/game/AdventureModeSelect";
 import VersusCharacterSelect from "./components/game/VersusCharacterSelect";
 import BeastPreview from "./components/game/BeastPreview";
 import CampaignMap from "./components/game/CampaignMap";
@@ -67,7 +68,7 @@ const controls = [
 
 function App() {
   const { phase } = useGame();
-  const { gameState, selectedCharacter, activeStoryMissionId } = useRunner();
+  const { gameState, selectedCharacter, activeStoryMissionId, activeAdventureMissionId } = useRunner();
   const { setPlayerFighter, setOpponentFighter, screenShake } = useBattle();
   const { 
     setBackgroundMusic, 
@@ -166,11 +167,15 @@ function App() {
         
         {/* Customization Menu */}
         {phase === 'ready' && gameState === 'customization' && <CustomizationMenu />}
+
+        {/* Adventure Mode Select - pick Free Arena or mission */}
+        {phase === "ready" && gameState === "adventure-select" && <AdventureModeSelect />}
         
         {/* ⚡ ADVENTURE MODE - Open World 3D Arena */}
         {gameState === 'adventure' && (() => {
           const charId = selectedCharacter || "kai-jax";
           const fighter = getFighterById(charId);
+          const missionId = activeAdventureMissionId || "free-arena";
           return (
             <>
               <div className="relative w-full h-screen">
@@ -200,10 +205,11 @@ function App() {
                     <AdventureArena
                       characterId={charId}
                       accentColor={fighter?.accentColor || "#00f2ff"}
+                      adventureMissionId={missionId}
                     />
                   </Suspense>
                 </Canvas>
-                <AdventureHUD />
+                <AdventureHUD adventureMissionId={missionId} />
               </div>
               <MobileControls />
             </>
@@ -244,10 +250,11 @@ function App() {
                     <AdventureArena
                       characterId={charId}
                       accentColor={fighter?.accentColor || "#00f2ff"}
+                      adventureMissionId="story-mode"
                     />
                   </Suspense>
                 </Canvas>
-                <AdventureHUD />
+                <AdventureHUD adventureMissionId="story-mode" />
                 <StoryAdventure
                   missionId={storyMissionId}
                   characterId={charId}

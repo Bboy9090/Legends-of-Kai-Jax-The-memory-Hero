@@ -71,10 +71,10 @@ function FighterCard({
   return (
     <button
       onClick={onClick}
-      className={`relative p-2 rounded-xl border-2 transition-all duration-200 text-center ${
+      className={`relative p-3 rounded-xl border-2 transition-all duration-200 text-center ${
         selected
-          ? "scale-[1.05] z-10"
-          : "hover:scale-[1.03] hover:border-slate-500"
+          ? "scale-[1.05] z-10 ring-2 ring-white/20"
+          : "hover:scale-[1.02] hover:border-slate-500"
       }`}
       style={{
         borderColor: selected ? fighter.accentColor : "rgba(100,116,139,0.3)",
@@ -137,9 +137,12 @@ export default function VersusCharacterSelect() {
         >
           ← BACK
         </button>
-        <h1 className="text-2xl font-black tracking-[0.25em] text-white/90 uppercase">
-          Choose Your Fighter
-        </h1>
+        <div className="text-center">
+          <h1 className="text-2xl font-black tracking-[0.25em] text-white/90 uppercase">
+            Choose Your Fighter
+          </h1>
+          <p className="text-slate-500 text-xs mt-0.5 tracking-widest">1v1 · Same combat kernel</p>
+        </div>
         <div className="w-20" />
       </div>
 

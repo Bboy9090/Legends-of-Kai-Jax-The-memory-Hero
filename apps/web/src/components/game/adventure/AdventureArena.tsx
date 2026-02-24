@@ -2,6 +2,7 @@ import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
 import { ENEMY_TIERS } from "../../../lib/combatSystems";
+import { getAdventureMissionById } from "../../../lib/adventure_missions";
 import AdventureCharacter from "./AdventureCharacter";
 import AdventureCamera from "./AdventureCamera";
 import AdventurePlayerController from "./AdventurePlayerController";
@@ -140,15 +141,17 @@ function ArenaLighting() {
   );
 }
 
-function WaveSpawner() {
+function WaveSpawner({ missionId }: { missionId: string }) {
   const spawnTimer = useRef(0);
   const waveNum = useRef(0);
   const cleanupTimer = useRef(0);
+  const mission = getAdventureMissionById(missionId);
 
   useFrame((_, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
     const adv = useAdventure.getState();
-    if (adv.isPaused) return;
+    if (adv.isPaused || adv.missionComplete) return;
+    if (missionId === "story-mode") return;
 
     cleanupTimer.current += delta;
     if (cleanupTimer.current > 1) {
@@ -159,6 +162,9 @@ function WaveSpawner() {
 
     const aliveEnemies = adv.enemies.filter((e) => !e.isDead);
 
+    const hitEliminateTarget = mission?.goalType === "eliminate" && adv.enemiesDefeated >= (mission?.goalValue ?? 0);
+    if (hitEliminateTarget) return;
+
     if (aliveEnemies.length === 0) {
       spawnTimer.current += delta;
       if (spawnTimer.current > 2) {
@@ -166,12 +172,13 @@ function WaveSpawner() {
         waveNum.current++;
 
         const wave = waveNum.current;
-        const count = Math.min(2 + wave, 6);
-        const minionIds = ["hyena-scout", "rift-drone", "blazing-fox", "sparky", "velocity"];
-        const bossIds = ["malakor", "behemoth"];
-        const newEnemies: AdventureEnemy[] = [];
+        const minionIds = mission?.enemyPool ?? ["hyena-scout", "rift-drone", "blazing-fox", "sparky", "velocity"];
+        const bossIds = mission?.bossId ? [mission.bossId, "behemoth"] : ["malakor", "behemoth"];
+        const wavesBeforeBoss = mission?.wavesBeforeBoss ?? 3;
+        const spawnBoss = wave > 0 && wave % wavesBeforeBoss === 0;
 
-        const spawnBoss = wave > 0 && wave % 3 === 0;
+        const count = Math.min(2 + wave, 6);
+        const newEnemies: AdventureEnemy[] = [];
 
         for (let i = 0; i < count; i++) {
           const angle = (i / count) * Math.PI * 2 + Math.random() * 0.5;
@@ -238,18 +245,59 @@ function WaveSpawner() {
   return null;
 }
 
+/** Ticks survive timer and checks eliminate/survive goals. Also detects player death. */
+function MissionGoalTracker({ missionId }: { missionId: string }) {
+  const mission = getAdventureMissionById(missionId);
+  const elapsedRef = useRef(0);
+
+  useFrame((_, rawDelta) => {
+    const adv = useAdventure.getState();
+    if (adv.isPaused || adv.missionComplete) return;
+
+    if (adv.player.health <= 0) {
+      adv.setMissionComplete(false);
+      return;
+    }
+
+    if (!mission || mission.goalType === "free") return;
+
+    if (mission.goalType === "survive") {
+      const delta = Math.min(rawDelta, 0.05);
+      elapsedRef.current += delta;
+      adv.setMissionElapsedSeconds(Math.floor(elapsedRef.current));
+      if (elapsedRef.current >= mission.goalValue) {
+        adv.setMissionComplete(true);
+      }
+    } else if (mission.goalType === "eliminate") {
+      const allDead = adv.enemies.length > 0 && adv.enemies.every((e) => e.isDead);
+      if (adv.enemiesDefeated >= mission.goalValue && allDead) {
+        adv.setMissionComplete(true);
+      }
+    }
+  });
+
+  return null;
+}
+
 interface AdventureArenaProps {
   characterId: string;
   accentColor: string;
+  adventureMissionId: string;
 }
 
 export default function AdventureArena({
   characterId,
   accentColor,
+  adventureMissionId,
 }: AdventureArenaProps) {
+  const mission = getAdventureMissionById(adventureMissionId);
+
   useEffect(() => {
-    useAdventure.getState().initAdventure(characterId, null, "open-world");
-  }, [characterId]);
+    const goalType = mission?.goalType ?? "free";
+    const goalValue = mission?.goalValue ?? 0;
+    const arenaId = mission?.arenaId ?? "open-world";
+    useAdventure.getState().initAdventure(characterId, adventureMissionId, arenaId, goalType, goalValue);
+  }, [characterId, adventureMissionId, mission?.goalType, mission?.goalValue, mission?.arenaId]);
 
   return (
     <>
@@ -260,7 +308,8 @@ export default function AdventureArena({
       <ArenaEnvironment />
       <AdventureCharacter fighterId={characterId} accentColor={accentColor} />
       <AdventureEnemyAI />
-      <WaveSpawner />
+      <WaveSpawner missionId={adventureMissionId} />
+      <MissionGoalTracker missionId={adventureMissionId} />
     </>
   );
 }

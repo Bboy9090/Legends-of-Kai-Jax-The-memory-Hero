@@ -3,7 +3,8 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useMissions } from "../../lib/stores/useMissions";
 import { getStoryMissionsByAct, type StoryMission } from "../../lib/story_missions";
-import { BookOpen, Swords, ArrowLeft, ChevronRight, Skull } from "../ui/icons";
+import { CAMPAIGN_DISTRICTS } from "../../lib/campaign_districts";
+import { BookOpen, Swords, ArrowLeft, ChevronRight, Skull, MapPin } from "../ui/icons";
 
 export default function CampaignMap() {
   const { setGameState, selectedCharacter } = useRunner();
@@ -18,10 +19,10 @@ export default function CampaignMap() {
   );
 
   const missions = useMemo(() => getStoryMissionsByAct(act), [act]);
-  const selected = missions.find((m) => m.id === selectedMissionId) || null;
+  const selected = missions.find((mission) => mission.id === selectedMissionId) ?? null;
 
   const isCompleted = (id: string) => completedMissions.includes(id);
-  const isUnlocked = (m: StoryMission, index: number) => {
+  const isUnlocked = (_mission: StoryMission, index: number) => {
     if (index === 0) return true;
     const prev = missions[index - 1];
     return prev ? isCompleted(prev.id) : true;
@@ -53,13 +54,21 @@ export default function CampaignMap() {
         </button>
 
         <div className="text-center mb-8">
-          <p className="text-amber-300/80 text-xs font-semibold tracking-[0.3em] uppercase mb-1">Story Mode</p>
+          <p className="text-amber-300/80 text-xs font-semibold tracking-[0.3em] uppercase mb-1">Forged in the Raging City</p>
           <h1 className="text-4xl font-black bg-gradient-to-r from-amber-300 via-cyan-300 to-purple-300 bg-clip-text text-transparent mb-2">
             Beast Wars Campaign
           </h1>
           <p className="text-slate-400 text-sm">
-            Follow Kai-Jax's journey to reclaim stolen memories through adventure combat missions.
+            Reclaim stolen memories across Ashblock Heights, the Undercity, Stormward Spires, and the Memory Throne.
           </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {CAMPAIGN_DISTRICTS.filter((d) => !d.nodeId.startsWith("start")).slice(0, 5).map((d) => (
+              <span key={d.nodeId} className="px-2 py-0.5 rounded bg-slate-800/60 text-slate-400 text-xs border border-slate-700 flex items-center gap-1">
+                <MapPin size={12} />
+                {d.name}
+              </span>
+            ))}
+          </div>
         </div>
 
         <div className="mb-6 flex items-center gap-3">
@@ -73,20 +82,27 @@ export default function CampaignMap() {
           <span className="text-cyan-300 font-bold tabular-nums text-sm">{completedMissions.length} / {missions.length}</span>
         </div>
 
-        <div className="flex gap-2 mb-6">
-          {[1, 2, 3].map((a) => (
-            <button
-              key={a}
-              onClick={() => { setAct(a); setSelectedMissionId(null); }}
-              className={`px-4 py-2 rounded-xl border-2 font-bold transition-all ${
-                act === a
-                  ? "bg-amber-500/20 border-amber-300 shadow-[0_0_18px_rgba(253,230,138,0.25)]"
-                  : "bg-slate-900/60 border-slate-700 hover:border-amber-400/40"
-              }`}
-            >
-              ACT {a}
-            </button>
-          ))}
+        <div className="flex gap-2 mb-6 flex-wrap">
+          {[1, 2, 3].map((a) => {
+            const count = getStoryMissionsByAct(a).length;
+            const label = count > 0 ? `Act ${a} · ${count} mission${count > 1 ? "s" : ""}` : `Act ${a}`;
+            return (
+              <button
+                key={a}
+                onClick={() => { setAct(a); setSelectedMissionId(null); }}
+                disabled={count === 0}
+                className={`px-4 py-2 rounded-xl border-2 font-bold transition-all ${
+                  act === a
+                    ? "bg-amber-500/20 border-amber-300 shadow-[0_0_18px_rgba(253,230,138,0.25)]"
+                    : count === 0
+                      ? "bg-slate-900/40 border-slate-800 text-slate-600 cursor-not-allowed"
+                      : "bg-slate-900/60 border-slate-700 hover:border-amber-400/40"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
 
         <div className="space-y-2 mb-8">
