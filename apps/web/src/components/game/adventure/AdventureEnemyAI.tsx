@@ -37,10 +37,16 @@ function TelegraphRing({ enemy }: { enemy: AdventureEnemy }) {
   );
 }
 
+const ENEMY_TARGET_HEIGHTS: Record<string, number> = {
+  minion1: 2.4,
+  minion2: 2.8,
+  boss1: 4.0,
+  boss2: 5.0,
+};
+
 function EnemyMesh({ enemy }: EnemyMeshProps) {
   const config = CHARACTER_MODELS[enemy.fighterId];
   const modelPath = config?.path || "/models/stylized-beast.glb";
-  const modelScale = (config?.scale || 2.5) * 0.85;
 
   const { scene, animations } = useGLTF(modelPath);
   const clonedScene = useMemo(() => SkeletonUtils.clone(scene), [scene]);
@@ -56,6 +62,7 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
   const attackVariant = useRef(0);
   const yOffset = useRef(0);
   const flashRef = useRef(0);
+  const normalizedScale = useRef(config?.scale || 2.5);
 
   useFrame((state, rawDelta) => {
     if (!groupRef.current || !innerRef.current) return;
@@ -66,8 +73,13 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
     if (!initialized.current && innerRef.current) {
       initialized.current = true;
       const bbox = new THREE.Box3().setFromObject(innerRef.current);
+      const modelHeight = bbox.max.y - bbox.min.y;
+      const targetH = ENEMY_TARGET_HEIGHTS[enemy.tier] || 2.6;
+      if (modelHeight > 0.01) {
+        normalizedScale.current = targetH / modelHeight;
+      }
       const minY = bbox.min.y;
-      if (minY < -0.05) yOffset.current = -minY;
+      if (minY < -0.05) yOffset.current = -minY * normalizedScale.current;
       limbsRef.current = findLimbs(clonedScene);
       basesRef.current = captureBaseRotations(limbsRef.current);
       const hasProceduralLimbs = hasAnyLimb(limbsRef.current);
@@ -129,7 +141,7 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
 
   return (
     <group ref={groupRef}>
-      <group ref={innerRef} scale={modelScale}>
+      <group ref={innerRef} scale={normalizedScale.current}>
         <primitive object={clonedScene} castShadow receiveShadow />
       </group>
       <pointLight

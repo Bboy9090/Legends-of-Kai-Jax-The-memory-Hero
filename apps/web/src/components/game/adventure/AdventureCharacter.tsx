@@ -27,8 +27,9 @@ const ANIM_PATHS = {
 
 const HAS_CLIP_ANIMS = new Set(["kai-jax"]);
 
+const TARGET_PLAYER_HEIGHT = 3.2;
+
 function ClipAnimatedCharacter({ fighterId, accentColor }: Props) {
-  const config = CHARACTER_MODELS[fighterId];
   const groupRef = useRef<THREE.Group>(null);
   const innerRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
@@ -38,18 +39,14 @@ function ClipAnimatedCharacter({ fighterId, accentColor }: Props) {
   const prevHealth = useRef(-1);
   const hitFlashRef = useRef(0);
   const dodgeSpinRef = useRef(0);
-  const setupDone = useRef(false);
-
-  const modelPath = config?.path || "/models/blazing-fox-vanguard.glb";
-  const modelScale = config?.scale || 2.5;
-
-  const { scene } = useGLTF(modelPath);
-  const clonedScene = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+  const computedScale = useRef(1);
 
   const walkGltf = useGLTF(ANIM_PATHS.walk);
   const runGltf = useGLTF(ANIM_PATHS.run);
   const kickGltf = useGLTF(ANIM_PATHS.kick);
   const spinKickGltf = useGLTF(ANIM_PATHS.spinKick);
+
+  const clonedScene = useMemo(() => SkeletonUtils.clone(walkGltf.scene), [walkGltf.scene]);
 
   const clips = useMemo(() => ({
     walk: walkGltf.animations[0] || null,
@@ -69,10 +66,13 @@ function ClipAnimatedCharacter({ fighterId, accentColor }: Props) {
     }
 
     const bbox = new THREE.Box3().setFromObject(clonedScene);
-    if (bbox.min.y < -0.05) {
-      yOffset.current = -bbox.min.y;
+    const modelHeight = bbox.max.y - bbox.min.y;
+    if (modelHeight > 0.01) {
+      computedScale.current = TARGET_PLAYER_HEIGHT / modelHeight;
     }
-    setupDone.current = true;
+    if (bbox.min.y < -0.05) {
+      yOffset.current = -bbox.min.y * computedScale.current;
+    }
 
     const mixer = new THREE.AnimationMixer(clonedScene);
     mixerRef.current = mixer;
@@ -233,7 +233,7 @@ function ClipAnimatedCharacter({ fighterId, accentColor }: Props) {
 
   return (
     <group ref={groupRef}>
-      <group ref={innerRef} scale={modelScale}>
+      <group ref={innerRef} scale={computedScale.current}>
         <primitive object={clonedScene} castShadow receiveShadow />
       </group>
       <pointLight position={[0, 2, 0.5]} color={accentColor} intensity={0.4} distance={4} decay={2} />
@@ -253,9 +253,9 @@ function ProceduralCharacter({ fighterId, accentColor }: Props) {
   const yOffset = useRef(0);
   const prevHealth = useRef(-1);
   const wasAttacking = useRef(false);
+  const normalizedScale = useRef(config?.scale || 2.5);
 
   const modelPath = config?.path || "/models/blazing-fox-vanguard.glb";
-  const modelScale = config?.scale || 2.5;
 
   const { scene, animations } = useGLTF(modelPath);
   const clonedScene = useMemo(() => SkeletonUtils.clone(scene), [scene]);
@@ -270,7 +270,11 @@ function ProceduralCharacter({ fighterId, accentColor }: Props) {
     if (!initialized.current && innerRef.current) {
       initialized.current = true;
       const bbox = new THREE.Box3().setFromObject(innerRef.current);
-      if (bbox.min.y < -0.05) yOffset.current = -bbox.min.y;
+      const modelHeight = bbox.max.y - bbox.min.y;
+      if (modelHeight > 0.01) {
+        normalizedScale.current = TARGET_PLAYER_HEIGHT / modelHeight;
+      }
+      if (bbox.min.y < -0.05) yOffset.current = -bbox.min.y * normalizedScale.current;
 
       limbsRef.current = findLimbs(clonedScene);
       basesRef.current = captureBaseRotations(limbsRef.current);
@@ -330,7 +334,7 @@ function ProceduralCharacter({ fighterId, accentColor }: Props) {
 
   return (
     <group ref={groupRef}>
-      <group ref={innerRef} scale={modelScale}>
+      <group ref={innerRef} scale={normalizedScale.current}>
         <primitive object={clonedScene} castShadow receiveShadow />
       </group>
       <pointLight position={[0, 2, 0.5]} color={accentColor} intensity={0.4} distance={4} decay={2} />
