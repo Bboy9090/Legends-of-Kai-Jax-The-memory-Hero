@@ -184,6 +184,14 @@ export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
   },
 };
 
+/** Fallback GLB when fighter has no CHARACTER_MODELS entry — always use our 3D models. */
+const FALLBACK_GLB_CONFIG: GLBModelConfig = {
+  path: "/models/blazing-fox-vanguard.glb",
+  scale: 3.5,
+  position: [0, 0, 0],
+  rotation: [0, 0, 0],
+};
+
 interface GLBCharacterModelProps {
   fighterId: string;
   animTime?: number;
@@ -394,8 +402,7 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
     hitAnim = 0,
   } = props;
 
-  const config = CHARACTER_MODELS[fighterId];
-  if (!config) return null;
+  const config = CHARACTER_MODELS[fighterId] ?? FALLBACK_GLB_CONFIG;
 
   return (
     <Suspense fallback={<GLBModelFallback />}>
@@ -418,10 +425,13 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
   );
 }
 
-const PRELOAD_IDS = ["kai-jax", "jax", "kai"];
+const PRELOAD_IDS = [
+  "kai-jax", "jax", "kai", "jaxon", "kaison", "kaxon",
+  "blazing-fox", "velocity", "sparky", "malakor", "behemoth",
+  "hyena-scout", "rift-drone",
+];
 PRELOAD_IDS.forEach((id) => {
-  const cfg = CHARACTER_MODELS[id];
-  if (cfg) {
-    try { useGLTF.preload(cfg.path); } catch (_e) {}
-  }
+  const cfg = CHARACTER_MODELS[id] ?? FALLBACK_GLB_CONFIG;
+  try { useGLTF.preload(cfg.path); } catch (_e) {}
 });
+try { useGLTF.preload(FALLBACK_GLB_CONFIG.path); } catch (_e) {}

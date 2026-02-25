@@ -39,7 +39,9 @@ function TelegraphRing({ enemy }: { enemy: AdventureEnemy }) {
 
 function EnemyMesh({ enemy }: EnemyMeshProps) {
   const config = CHARACTER_MODELS[enemy.fighterId];
-  const modelPath = config?.path || "/models/stylized-beast.glb";
+  const villainFallbacks = ["/models/hyenaratvbill.glb", "/models/drone.glb", "/models/granite_colossus.glb"];
+  const fallbackIdx = enemy.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % villainFallbacks.length;
+  const modelPath = config?.path || villainFallbacks[fallbackIdx];
   const modelScale = (config?.scale || 2.5) * 0.85;
 
   const { scene, animations } = useGLTF(modelPath);
