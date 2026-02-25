@@ -11,7 +11,7 @@ import { getPortraitPath } from "../../data/characterDesigns";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Zap, RotateCcw, Home, Star, Sparkles, CheckCircle2, XCircle, Target, ChevronRight, Settings } from "../ui/icons";
 
-// ⚡ LEGENDARY SYNERGY METER
+// ⚡ LEGENDARY SYNERGY METER (Jaxon/Kaison fusion)
 function SynergyMeter({ 
   value, 
   maxValue = 100, 
@@ -29,48 +29,59 @@ function SynergyMeter({
   
   return (
     <div className={`flex items-center gap-2 ${side === 'right' ? 'flex-row-reverse' : ''}`}>
-      {/* Synergy Icon */}
       <div 
         className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${isFull ? 'animate-pulse' : ''}`}
         style={{
-          background: isFull 
-            ? 'linear-gradient(135deg, #FFD700, #FF6B6B)' 
-            : isCharging 
-              ? `linear-gradient(135deg, ${fighterColor}, #A855F7)` 
-              : '#374151',
-          boxShadow: isFull 
-            ? '0 0 20px #FFD700, 0 0 40px #FFD70080' 
-            : isCharging 
-              ? `0 0 15px ${fighterColor}` 
-              : 'none',
+          background: isFull ? 'linear-gradient(135deg, #FFD700, #FF6B6B)' : isCharging ? `linear-gradient(135deg, ${fighterColor}, #A855F7)` : '#374151',
+          boxShadow: isFull ? '0 0 20px #FFD700, 0 0 40px #FFD70080' : isCharging ? `0 0 15px ${fighterColor}` : 'none',
         }}
       >
         <Zap className={`w-4 h-4 ${isFull ? 'text-white animate-bounce' : isCharging ? 'text-white' : 'text-gray-500'}`} />
       </div>
-      
-      {/* Synergy Bar */}
       <div className="relative w-24 h-3 bg-gray-800/80 rounded-full overflow-hidden border border-gray-600">
         <div 
           className={`absolute inset-y-0 ${side === 'right' ? 'right-0' : 'left-0'} transition-all duration-300`}
           style={{
             width: `${percentage}%`,
-            background: isFull 
-              ? 'linear-gradient(90deg, #FFD700, #FF6B6B, #A855F7)' 
-              : `linear-gradient(90deg, ${fighterColor}, #A855F7)`,
+            background: isFull ? 'linear-gradient(90deg, #FFD700, #FF6B6B, #A855F7)' : `linear-gradient(90deg, ${fighterColor}, #A855F7)`,
             boxShadow: isFull ? 'inset 0 0 10px rgba(255,255,255,0.5)' : 'none',
           }}
         />
-        {isFull && (
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-[shimmer_1s_infinite]" />
-        )}
+        {isFull && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-[shimmer_1s_infinite]" />}
       </div>
-      
-      {/* Transform Ready Text */}
-      {isFull && (
-        <span className="mk-hud text-xs text-yellow-300 animate-pulse whitespace-nowrap">
-          FUSION READY!
-        </span>
-      )}
+      {isFull && <span className="mk-hud text-xs text-yellow-300 animate-pulse whitespace-nowrap">FUSION READY!</span>}
+    </div>
+  );
+}
+
+// 🌌 OVERDRIVE METER — Ultimate gate (fills on deal/receive damage, drains when camping)
+function OverdriveMeter({ value, maxValue = 100, fighterColor, side = 'left' }: { value: number; maxValue?: number; fighterColor: string; side?: 'left' | 'right' }) {
+  const percentage = (value / maxValue) * 100;
+  const isFull = percentage >= 100;
+  const isCharging = percentage >= 50;
+  return (
+    <div className={`flex items-center gap-2 ${side === 'right' ? 'flex-row-reverse' : ''}`}>
+      <div 
+        className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${isFull ? 'animate-pulse' : ''}`}
+        style={{
+          background: isFull ? 'linear-gradient(135deg, #8B5CF6, #EC4899)' : isCharging ? `linear-gradient(135deg, ${fighterColor}, #8B5CF6)` : '#374151',
+          boxShadow: isFull ? '0 0 20px #8B5CF6, 0 0 40px #EC489980' : isCharging ? `0 0 15px ${fighterColor}` : 'none',
+        }}
+      >
+        <Target className={`w-4 h-4 ${isFull ? 'text-white animate-bounce' : isCharging ? 'text-white' : 'text-gray-500'}`} />
+      </div>
+      <div className="relative w-24 h-3 bg-gray-800/80 rounded-full overflow-hidden border border-gray-600">
+        <div 
+          className={`absolute inset-y-0 ${side === 'right' ? 'right-0' : 'left-0'} transition-all duration-300`}
+          style={{
+            width: `${percentage}%`,
+            background: isFull ? 'linear-gradient(90deg, #8B5CF6, #EC4899)' : `linear-gradient(90deg, ${fighterColor}, #8B5CF6)`,
+            boxShadow: isFull ? 'inset 0 0 10px rgba(255,255,255,0.5)' : 'none',
+          }}
+        />
+        {isFull && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-[shimmer_1s_infinite]" />}
+      </div>
+      {isFull && <span className="mk-hud text-xs text-purple-300 animate-pulse whitespace-nowrap">OVERDRIVE!</span>}
     </div>
   );
 }
@@ -164,6 +175,7 @@ function LegendaryHealthBar({
   side,
   wins,
   synergy = 0,
+  overdrive = 0,
   isTransformed = false,
   displayAccent,
 }: {
@@ -173,6 +185,7 @@ function LegendaryHealthBar({
   side: 'left' | 'right';
   wins: number;
   synergy?: number;
+  overdrive?: number;
   isTransformed?: boolean;
   displayAccent?: string;
 }) {
@@ -301,9 +314,10 @@ function LegendaryHealthBar({
           </div>
         </div>
         
-        {/* Synergy Meter */}
-        <div className={`mt-2 ${side === 'right' ? 'flex justify-end' : ''}`}>
+        {/* Synergy + Overdrive Meters */}
+        <div className={`mt-2 space-y-1 ${side === 'right' ? 'flex flex-col items-end' : ''}`}>
           <SynergyMeter value={synergy} fighterColor={displayAccent ?? fighter.color} side={side} />
+          <OverdriveMeter value={overdrive} fighterColor={displayAccent ?? fighter.color} side={side} />
         </div>
       </div>
     </div>
@@ -822,6 +836,7 @@ export default function BattleUI() {
   // Get actual synergy and combo from battle store
   const { 
     playerSynergy, 
+    playerOverdrive,
     playerTransformed, 
     comboCount, 
     comboDamage,
@@ -875,6 +890,7 @@ export default function BattleUI() {
               side="left"
               wins={playerWins}
               synergy={playerSynergy}
+              overdrive={playerOverdrive}
               isTransformed={playerTransformed}
               displayAccent={getColorblindAccent(playerFighter.accentColor, "player", colorblindMode)}
             />
@@ -890,6 +906,7 @@ export default function BattleUI() {
               side="right"
               wins={opponentWins}
               synergy={0}
+              overdrive={0}
               displayAccent={getColorblindAccent(opponentFighter.accentColor, "opponent", colorblindMode)}
             />
           </div>

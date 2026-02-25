@@ -101,6 +101,18 @@ export const COMBO_CONFIG = {
   resetTime: 1.0,
 };
 
+/** Clash priority: higher wins. When equal, cinematic rebound resets neutral. */
+export const CLASH_PRIORITY: Record<string, number> = {
+  ultimate: 4,
+  special: 3,
+  kick: 2,
+  punch: 1,
+};
+
+export function getClashPriority(attackType: string | null): number {
+  return attackType ? (CLASH_PRIORITY[attackType] ?? 0) : 0;
+}
+
 export interface EnemyTierConfig {
   tier: "minion1" | "minion2" | "boss1" | "boss2";
   health: number;

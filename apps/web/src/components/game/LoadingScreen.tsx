@@ -39,10 +39,16 @@ const INTRO_BEATS = [
     accent: "#7fff00",
   },
   {
+    label: "THE CATALYST EVENT",
+    title: "A forbidden device shattered existence. Realities scattered like glass.",
+    subtitle: "The fighters aren't just battling — they decide which fragments survive.",
+    accent: "#BF5AF2",
+  },
+  {
     label: "LEGENDS OF KAI-JAX",
     title: "Enter the city. Face what refuses to be erased.",
     subtitle: "Fight through the districts. Reach the crown.",
-    accent: "#BF5AF2",
+    accent: "#EC4899",
   },
 ];
 

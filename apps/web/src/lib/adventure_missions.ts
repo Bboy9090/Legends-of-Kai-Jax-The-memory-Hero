@@ -88,7 +88,31 @@ export const ADVENTURE_MISSIONS: AdventureMission[] = [
     bossId: "behemoth",
     wavesBeforeBoss: 5,
   },
+  {
+    id: "null-devourer",
+    name: "The Null Devourer",
+    title: "Boss Raid",
+    description: "A flagship PvE boss. Multi-phase health bar. Weakpoints. Shadow clones. Arena hazards.",
+    arenaId: "open-world",
+    goalType: "eliminate",
+    goalValue: 1,
+    objectives: ["Defeat the Null Devourer", "Target the chest core weakpoint", "Survive Phase 2 clones"],
+    rewards: { xp: 150, currency: 80 },
+    enemyPool: [],
+    bossId: "null-devourer",
+    wavesBeforeBoss: 0,
+  },
 ];
+
+/** Boss phase config for multi-phase encounters (Null Devourer, Worldbreaker Titan). */
+export const BOSS_PHASE_CONFIG: Record<string, { phases: string[]; weakpointId?: string }> = {
+  "null-devourer": {
+    phases: ["predator", "fracture", "collapse"],
+    weakpointId: "chest-core",
+  },
+  behemoth: { phases: ["awakening", "cataclysm"], weakpointId: undefined },
+  malakor: { phases: ["awakening", "rage"], weakpointId: undefined },
+};
 
 export function getAdventureMissionById(id: string): AdventureMission | undefined {
   return ADVENTURE_MISSIONS.find((m) => m.id === id);

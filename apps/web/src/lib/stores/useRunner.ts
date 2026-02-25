@@ -64,6 +64,18 @@ interface RunnerState {
   unlockedSkins: string[];
   unlockedUpgrades: string[];
   unlockWithXp: (id: string, cost: number) => boolean;
+  /** Fighter mastery levels (fighterId -> level). Skill-based, no pay-to-win. */
+  fighterMastery: Record<string, number>;
+  addMastery: (fighterId: string, amount: number) => void;
+  /** Cosmetic unlock shards (earned through play). */
+  cosmeticShards: number;
+  addCosmeticShards: (amount: number) => void;
+  /** Unlocked banner titles (cosmetic prestige). */
+  unlockedBannerTitles: string[];
+  unlockBannerTitle: (id: string) => void;
+  /** Unlocked lore entries (Fracture Archives). */
+  unlockedLoreIds: string[];
+  unlockLore: (id: string) => void;
   campaignCompletedNodes: CampaignNodeId[];
   campaignCurrentNode: CampaignNodeId | null;
   setCampaignCompleted: (nodeId: CampaignNodeId) => void;
@@ -108,6 +120,10 @@ export const useRunner = create<RunnerState>()(
   unlockedArenas: [] as string[],
   unlockedSkins: [] as string[],
   unlockedUpgrades: [] as string[],
+  fighterMastery: {} as Record<string, number>,
+  cosmeticShards: 0,
+  unlockedBannerTitles: ["rookie"] as string[],
+  unlockedLoreIds: [] as string[],
   campaignCompletedNodes: [] as CampaignNodeId[],
   campaignCurrentNode: null,
   setGameState: (gameState) => set({ gameState }),
@@ -138,6 +154,22 @@ export const useRunner = create<RunnerState>()(
     });
     return true;
   },
+  addMastery: (fighterId, amount) => {
+    const { fighterMastery } = get();
+    const current = fighterMastery[fighterId] ?? 0;
+    set({ fighterMastery: { ...fighterMastery, [fighterId]: current + amount } });
+  },
+  addCosmeticShards: (amount) => set({ cosmeticShards: get().cosmeticShards + amount }),
+  unlockBannerTitle: (id) => {
+    const { unlockedBannerTitles } = get();
+    if (unlockedBannerTitles.includes(id)) return;
+    set({ unlockedBannerTitles: [...unlockedBannerTitles, id] });
+  },
+  unlockLore: (id) => {
+    const { unlockedLoreIds } = get();
+    if (unlockedLoreIds.includes(id)) return;
+    set({ unlockedLoreIds: [...unlockedLoreIds, id] });
+  },
   setCampaignCompleted: (nodeId) =>
     set((s) => ({
       campaignCompletedNodes: s.campaignCompletedNodes.includes(nodeId)
@@ -155,6 +187,10 @@ export const useRunner = create<RunnerState>()(
         unlockedArenas: s.unlockedArenas,
         unlockedSkins: s.unlockedSkins,
         unlockedUpgrades: s.unlockedUpgrades,
+        fighterMastery: s.fighterMastery,
+        cosmeticShards: s.cosmeticShards,
+        unlockedBannerTitles: s.unlockedBannerTitles,
+        unlockedLoreIds: s.unlockedLoreIds,
         campaignCompletedNodes: s.campaignCompletedNodes,
       }),
     }

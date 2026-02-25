@@ -4,6 +4,7 @@ import { useMissions } from "./useMissions";
 import { useDifficulty, getDamageTakenMultiplier } from "./useDifficulty";
 import { useRunner } from "./useRunner";
 import { getCharacterMoves } from "../characterMoves";
+import { getClashPriority } from "../combatSystems";
 
 const DEFAULT_MAX_COMBO_TIMER = 2.3;
 const UPGRADED_MAX_COMBO_TIMER = 2.5;
@@ -32,6 +33,13 @@ export interface BattleState {
   transformationTimeRemaining: number;
   maxTransformationTime: number;
   playerPreFusionFighterId: string | null;
+
+  // 🌌 OVERDRIVE METER — "Multiverse Overdrive" ultimate gate
+  playerOverdrive: number;
+  maxOverdrive: number;
+  combatInactivityTimer: number;
+  /** Super armor during ultimate activation (seconds remaining) */
+  ultimateSuperArmorRemaining: number;
   
   // 🔥 COMBO SYSTEM
   comboCount: number;
@@ -113,6 +121,10 @@ export interface BattleState {
   triggerTransformation: () => void;
   updateTransformation: (delta: number) => void;
   endTransformation: () => void;
+
+  // 🌌 OVERDRIVE — fills on deal/receive damage, drains when camping
+  addOverdrive: (amount: number) => void;
+  updateOverdrive: (delta: number) => void;
   
   // 🔥 COMBO SYSTEM
   addToCombo: (damage: number) => void;
@@ -177,6 +189,12 @@ export const useBattle = create<BattleState>((set, get) => ({
   transformationTimeRemaining: 0,
   maxTransformationTime: 30, // 30 seconds of Kai-Jax power!
   playerPreFusionFighterId: null,
+
+  // 🌌 OVERDRIVE
+  playerOverdrive: 0,
+  maxOverdrive: 100,
+  combatInactivityTimer: 0,
+  ultimateSuperArmorRemaining: 0,
   
   // 🔥 COMBO SYSTEM
   comboCount: 0,
@@ -243,6 +261,9 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerSynergy: 0,
       playerTransformed: false,
       transformationTimeRemaining: 0,
+      playerOverdrive: 0,
+      combatInactivityTimer: 0,
+      ultimateSuperArmorRemaining: 0,
       comboCount: 0,
       comboDamage: 0,
       comboTimer: 0,
@@ -283,6 +304,9 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerTransformed: false,
       transformationTimeRemaining: 0,
       playerPreFusionFighterId: null,
+      playerOverdrive: 0,
+      combatInactivityTimer: 0,
+      ultimateSuperArmorRemaining: 0,
       comboCount: 0,
       comboDamage: 0,
       comboTimer: 0,
@@ -312,6 +336,9 @@ export const useBattle = create<BattleState>((set, get) => ({
     
     // Update combo timer
     get().updateCombo(delta);
+
+    // Update overdrive (drain when camping, update super armor)
+    get().updateOverdrive(delta);
 
     // Mission survival timers (only does work if a mission is active)
     useMissions.getState().tickSurvival(delta);
@@ -357,12 +384,20 @@ export const useBattle = create<BattleState>((set, get) => ({
     const { playerAttacking, battlePhase, playerTransformed } = get();
     if (playerAttacking || (battlePhase !== 'fighting' && battlePhase !== 'transforming')) return;
     
-    // Ultimate: Kai-Jax/Kai/Jax/Boryn always have it; Jaxon/Kaison need transformation
-    const { playerFighterId } = get();
+    // Ultimate: requires full Overdrive meter AND (transformed for Jaxon/Kaison OR native for others)
+    const { playerFighterId, playerOverdrive, maxOverdrive } = get();
     const hasNativeUltimate = ['kai-jax', 'kai', 'jax', 'boryn'].includes(playerFighterId);
-    const canUltimate = playerTransformed || hasNativeUltimate;
+    const canUltimate = playerOverdrive >= maxOverdrive && (playerTransformed || hasNativeUltimate);
     if (type === 'ultimate' && !canUltimate) return;
     
+    // Consume overdrive on ultimate & grant super armor
+    if (type === 'ultimate') {
+      set({
+        playerOverdrive: 0,
+        ultimateSuperArmorRemaining: 0.5, // 0.5s super armor on activation
+      });
+    }
+
     set({ 
       playerAttacking: true, 
       playerAttackType: type 
@@ -386,12 +421,33 @@ export const useBattle = create<BattleState>((set, get) => ({
     const range = (type === 'ultimate' ? moves.ultimateRange : type === 'special' ? moves.specialRange : type === 'kick' ? 2 : 1.5) * transformBonus;
     
     if (distance < range && !opponentInvulnerable) {
+      // Clash resolution: if opponent also attacking, compare priority
+      const { opponentAttacking, opponentAttackType } = get();
+      if (opponentAttacking && opponentAttackType) {
+        const myPriority = getClashPriority(type);
+        const theirPriority = getClashPriority(opponentAttackType);
+        if (myPriority === theirPriority) {
+          // Cinematic slow-mo rebound — reset neutral, no damage
+          get().triggerScreenFlash('#FFFFFF');
+          get().triggerHitStop(0.2);
+          get().triggerScreenShake(4);
+          set({ playerAttacking: false, playerAttackType: null });
+          return;
+        }
+        if (theirPriority > myPriority) {
+          // Their attack wins — we don't land, they will damage us
+          set({ playerAttacking: false, playerAttackType: null });
+          return;
+        }
+      }
+
       const baseDamage = type === 'ultimate' ? moves.ultimateDamage : type === 'special' ? moves.specialDamage : type === 'kick' ? 15 : 10;
       const damage = Math.round(baseDamage * transformBonus);
 
       get().opponentTakeDamage(damage, type);
       get().addToCombo(damage);
       get().addSynergy(type === 'special' ? 15 : type === 'kick' ? 10 : 5);
+      get().addOverdrive(damage * 0.4); // Meter fills on dealing damage
 
       useMissions.getState().recordHit(type);
 
@@ -411,8 +467,8 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
   
   playerTakeDamage: (damage, attackType) => {
-    const { playerInvulnerable, playerHealth, battlePhase, playerX, playerY } = get();
-    if (playerInvulnerable || battlePhase !== 'fighting') return;
+    const { playerInvulnerable, playerHealth, battlePhase, playerX, playerY, ultimateSuperArmorRemaining } = get();
+    if (playerInvulnerable || battlePhase !== 'fighting' || ultimateSuperArmorRemaining > 0) return;
     
     const mult = getDamageTakenMultiplier(useDifficulty.getState().difficulty);
     const scaledDamage = Math.round(damage * mult);
@@ -427,6 +483,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     });
     
     get().addDamageNumber(playerX, playerY, scaledDamage, true);
+    get().addOverdrive(scaledDamage * 0.35); // Meter also fills on receiving damage
     const shakeBonus = attackType === 'special' ? 1.5 : 1;
     get().triggerScreenShake(Math.max(0.6, scaledDamage / 6) * shakeBonus);
     get().triggerHitStop(Math.max(0.02, scaledDamage / 400) * (attackType === 'special' ? 1.3 : 1));
@@ -478,12 +535,22 @@ export const useBattle = create<BattleState>((set, get) => ({
     else if (type === 'kick') audio.playKick();
     else if (type === 'special') audio.playSpecial();
     
-    const { playerX, opponentX, playerInvulnerable } = get();
+    const { playerX, opponentX, playerInvulnerable, playerAttacking, playerAttackType } = get();
     const distance = Math.abs(playerX - opponentX);
     const moves = getCharacterMoves(opponentFighterId);
     const range = type === 'special' ? moves.specialRange : type === 'kick' ? 2 : 1.5;
     
     if (distance < range && !playerInvulnerable) {
+      // Clash resolution when both attacking
+      if (playerAttacking && playerAttackType) {
+        const myPriority = getClashPriority(type);
+        const theirPriority = getClashPriority(playerAttackType);
+        if (myPriority === theirPriority) {
+          set({ opponentAttacking: false, opponentAttackType: null });
+          return;
+        }
+        if (theirPriority > myPriority) return;
+      }
       const damage = type === 'special' ? moves.specialDamage : type === 'kick' ? 15 : 10;
       get().playerTakeDamage(damage, type);
     }
@@ -607,6 +674,33 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerPreFusionFighterId: null,
     });
     get().triggerScreenFlash('#A855F7');
+  },
+
+  // 🌌 OVERDRIVE — fills on deal/receive damage, drains when avoiding combat (camping prevention)
+  addOverdrive: (amount) => {
+    const { playerOverdrive, maxOverdrive } = get();
+    const newOverdrive = Math.min(maxOverdrive, playerOverdrive + amount);
+    set({
+      playerOverdrive: newOverdrive,
+      combatInactivityTimer: 0, // Reset — we just had combat
+    });
+  },
+
+  updateOverdrive: (delta) => {
+    const { combatInactivityTimer, playerOverdrive, ultimateSuperArmorRemaining } = get();
+    // Tick super armor down
+    if (ultimateSuperArmorRemaining > 0) {
+      set({ ultimateSuperArmorRemaining: Math.max(0, ultimateSuperArmorRemaining - delta) });
+    }
+    // Drain when camping (no combat for 3+ seconds)
+    const CAMP_THRESHOLD = 3;
+    const DRAIN_RATE = 12; // per second when camping
+    const newInactivity = combatInactivityTimer + delta;
+    set({ combatInactivityTimer: newInactivity });
+    if (newInactivity >= CAMP_THRESHOLD && playerOverdrive > 0) {
+      const drain = delta * DRAIN_RATE;
+      set({ playerOverdrive: Math.max(0, playerOverdrive - drain) });
+    }
   },
   
   // 🔥 COMBO SYSTEM

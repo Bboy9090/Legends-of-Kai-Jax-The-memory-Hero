@@ -159,6 +159,7 @@ function App() {
   // Handle intro completion
   const handleIntroComplete = () => {
     setShowIntro(false);
+    useRunner.getState().unlockLore("catalyst-event");
   };
 
   // Calculate screen shake transform

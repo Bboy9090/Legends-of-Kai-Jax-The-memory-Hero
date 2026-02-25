@@ -44,7 +44,7 @@ export default function BattleScene() {
       screenShake * 1.6 +
         (hitStop > 0 ? 0.65 : 0) +
         (screenFlash ? 0.35 : 0) +
-        (playerAttacking && (playerAttackType === "special" || playerAttackType === "ultimate") ? 0.25 : 0)
+        (playerAttacking && playerAttackType === "ultimate" ? 0.55 : playerAttacking && playerAttackType === "special" ? 0.25 : 0) // Ultimate: camera zoom + arena dim
     ) || 0;
   
   useEffect(() => {
