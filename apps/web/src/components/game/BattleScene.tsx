@@ -74,7 +74,7 @@ export default function BattleScene() {
         enableZoom={false}
         enablePan={false}
         enableRotate={false}
-        target={[cameraX, 1.5, 0]}
+        target={[cameraX, 2, 0]}
       />
       
       {/* Enhanced Lighting System for better character definition */}

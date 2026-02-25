@@ -2,10 +2,14 @@ import { useBattle } from "../../lib/stores/useBattle";
 import { useGame } from "../../lib/stores/useGame";
 import { useRunner } from "../../lib/stores/useRunner";
 import { useMissions } from "../../lib/stores/useMissions";
+import { useSettings, getColorblindAccent } from "../../lib/stores/useSettings";
 import { getFighterById } from "../../lib/characters";
+import DamageNumbers from "./DamageNumbers";
+import DialogueDisplay from "./DialogueDisplay";
+import SettingsPanel from "./SettingsPanel";
 import { getPortraitPath } from "../../data/characterDesigns";
-import { useState, useEffect, useRef } from "react";
-import { Zap, RotateCcw, Home, Star, Sparkles, CheckCircle2, XCircle, Target, ChevronRight } from "../ui/icons";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Zap, RotateCcw, Home, Star, Sparkles, CheckCircle2, XCircle, Target, ChevronRight, Settings } from "../ui/icons";
 
 // ⚡ LEGENDARY SYNERGY METER
 function SynergyMeter({ 
@@ -87,11 +91,19 @@ function ComboCounter({
   const prevComboRef = useRef(combo);
   
   useEffect(() => {
-    if (combo > prevComboRef.current) {
+    const prev = prevComboRef.current;
+    if (combo > prev) {
       setIsPopping(true);
       setDisplayCombo(combo);
       setTimeout(() => setIsPopping(false), 200);
-    } else if (combo === 0 && prevComboRef.current > 0) {
+      // Screen flash when crossing combo thresholds upward (avoid double-firing)
+      if (prev < 10 && combo >= 10) {
+        useBattle.getState().triggerScreenFlash('#A855F7');
+      }
+      if (prev < 20 && combo >= 20) {
+        useBattle.getState().triggerScreenFlash('#FFD700');
+      }
+    } else if (combo === 0 && prev > 0) {
       // Combo dropped
       setTimeout(() => setDisplayCombo(0), 500);
     }
@@ -153,6 +165,7 @@ function LegendaryHealthBar({
   wins,
   synergy = 0,
   isTransformed = false,
+  displayAccent,
 }: {
   health: number;
   maxHealth: number;
@@ -161,11 +174,13 @@ function LegendaryHealthBar({
   wins: number;
   synergy?: number;
   isTransformed?: boolean;
+  displayAccent?: string;
 }) {
   const percentage = (health / maxHealth) * 100;
   const isLow = percentage < 30;
   const isCritical = percentage < 15;
   const portraitPath = fighter.id ? getPortraitPath(fighter.id) : null;
+  const accent = displayAccent ?? fighter.accentColor;
 
   return (
     <div 
@@ -187,10 +202,10 @@ function LegendaryHealthBar({
           ${isTransformed ? 'border-yellow-400 shadow-[0_0_50px_rgba(255,215,0,0.8)]' : ''}
         `}
         style={{
-          borderColor: !isLow && !isCritical && !isTransformed ? fighter.accentColor : undefined,
+          borderColor: !isLow && !isCritical && !isTransformed ? accent : undefined,
           boxShadow:
             !isLow && !isCritical && !isTransformed
-              ? `0 4px 24px rgba(0,0,0,0.5), 0 0 20px ${fighter.accentColor}40`
+              ? `0 4px 24px rgba(0,0,0,0.5), 0 0 20px ${accent}40`
               : undefined,
         }}
       >
@@ -228,7 +243,7 @@ function LegendaryHealthBar({
           <div className={`min-w-0 ${side === 'right' ? 'text-right' : ''}`}>
             <h3 
               className="text-white font-bold text-sm sm:text-base md:text-lg truncate"
-              style={{ textShadow: `0 0 10px ${fighter.accentColor}` }}
+              style={{ textShadow: `0 0 10px ${accent}` }}
             >
               {fighter.displayName}
               {isTransformed && <span className="text-yellow-400 ml-1">⚡</span>}
@@ -288,7 +303,7 @@ function LegendaryHealthBar({
         
         {/* Synergy Meter */}
         <div className={`mt-2 ${side === 'right' ? 'flex justify-end' : ''}`}>
-          <SynergyMeter value={synergy} fighterColor={fighter.color} side={side} />
+          <SynergyMeter value={synergy} fighterColor={displayAccent ?? fighter.color} side={side} />
         </div>
       </div>
     </div>
@@ -530,6 +545,9 @@ function ResultsScreen({
   playerWins,
   opponentWins,
   score,
+  maxCombo,
+  damageDealt,
+  roundTimeSurvived,
   onRematch,
   onMenu,
   onCampaignContinue,
@@ -540,13 +558,22 @@ function ResultsScreen({
   playerWins: number;
   opponentWins: number;
   score: number;
+  maxCombo: number;
+  damageDealt: number;
+  roundTimeSurvived: number;
   onRematch: () => void;
   onMenu: () => void;
   onCampaignContinue?: () => void;
 }) {
-  const { active: activeMission, result: missionResult, lastReward } = useMissions();
+  const { active: activeMission, result: missionResult, lastReward, objectives } = useMissions();
   const isPlayerWin = winner === 'player';
-  
+  const [submitting, setSubmitting] = useState(false);
+  const wrap = useCallback((fn: () => void) => () => {
+    if (submitting) return;
+    setSubmitting(true);
+    fn();
+  }, [submitting]);
+
   return (
     <div 
       className="fixed inset-0 flex items-center justify-center pointer-events-auto z-50 p-4"
@@ -642,11 +669,47 @@ function ResultsScreen({
         </div>
         
         {/* Match Result */}
-        <p className="text-xl sm:text-2xl text-white/90 mb-6">
+        <p className="text-xl sm:text-2xl text-white/90 mb-4">
           {isPlayerWin 
             ? `You defeated ${opponentFighter.displayName}!` 
             : `${opponentFighter.displayName} won this time!`}
         </p>
+
+        {/* Post-Match Stats */}
+        <div className="grid grid-cols-3 gap-3 bg-white/10 rounded-xl p-3 mb-4">
+          <div className="text-center">
+            <p className="text-xs text-cyan-400/90 font-bold uppercase tracking-wider mb-0.5">Combo</p>
+            <p className="text-lg font-black text-white tabular-nums">{maxCombo}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-red-400/90 font-bold uppercase tracking-wider mb-0.5">Damage</p>
+            <p className="text-lg font-black text-white tabular-nums">{damageDealt}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-amber-400/90 font-bold uppercase tracking-wider mb-0.5">Time</p>
+            <p className="text-lg font-black text-white tabular-nums">{Math.round(roundTimeSurvived)}s</p>
+          </div>
+        </div>
+
+        {/* Mission objectives */}
+        {activeMission && objectives.length > 0 && (
+          <div className="mb-4 rounded-xl bg-black/30 border border-white/15 p-3">
+            <p className="text-xs text-white/70 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Target className="w-3.5 h-3.5" />
+              Objectives
+            </p>
+            <div className="space-y-1.5">
+              {objectives.map((o) => (
+                <div key={o.id} className="flex items-center justify-between gap-2 text-sm">
+                  <span className={o.completed ? "text-green-200" : "text-white/85"}>{o.label}</span>
+                  <span className={`tabular-nums font-bold ${o.completed ? "text-green-300" : "text-cyan-300/90"}`}>
+                    {o.completed ? "✓" : formatObjectiveProgress(o.progress, o.target)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 bg-white/10 rounded-xl p-4 mb-6">
@@ -666,11 +729,13 @@ function ResultsScreen({
         <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
           {isPlayerWin && onCampaignContinue && (
             <button
-              onClick={onCampaignContinue}
+              onClick={wrap(onCampaignContinue)}
+              disabled={submitting}
               className="
                 flex items-center justify-center gap-2 
                 px-8 py-4 rounded-xl 
                 font-bold text-lg text-white
+                disabled:opacity-70 disabled:cursor-not-allowed
                 bg-gradient-to-r from-cyan-500 to-blue-600
                 hover:from-cyan-400 hover:to-blue-500
                 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/40
@@ -684,11 +749,13 @@ function ResultsScreen({
             </button>
           )}
           <button
-            onClick={onRematch}
+            onClick={wrap(onRematch)}
+            disabled={submitting}
             className="
               flex items-center justify-center gap-2 
               px-8 py-4 rounded-xl 
               font-bold text-lg text-white
+              disabled:opacity-70 disabled:cursor-not-allowed
               bg-gradient-to-r from-green-500 to-emerald-600
               hover:from-green-400 hover:to-emerald-500
               focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/40
@@ -702,11 +769,13 @@ function ResultsScreen({
           </button>
           
           <button
-            onClick={onMenu}
+            onClick={wrap(onMenu)}
+            disabled={submitting}
             className="
               flex items-center justify-center gap-2 
               px-8 py-4 rounded-xl 
               font-bold text-lg text-white
+              disabled:opacity-70 disabled:cursor-not-allowed
               bg-gradient-to-r from-purple-500 to-pink-600
               hover:from-purple-400 hover:to-pink-500
               focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/40
@@ -738,6 +807,9 @@ export default function BattleUI() {
     playerWins,
     opponentWins,
     battleScore,
+    maxCombo,
+    damageDealt,
+    roundTimeSurvived,
     resetRound,
     returnToMenu
   } = useBattle();
@@ -756,6 +828,8 @@ export default function BattleUI() {
   } = useBattle();
 
   const activeMission = useMissions((s) => s.active);
+  const colorblindMode = useSettings((s) => s.colorblindMode);
+  const [showSettingsInPause, setShowSettingsInPause] = useState(false);
   
   const handleReturnToMenu = () => {
     addScore(battleScore);
@@ -787,6 +861,8 @@ export default function BattleUI() {
   
   return (
     <div className="fixed inset-0 pointer-events-none">
+      <DamageNumbers />
+      <DialogueDisplay />
       {/* Top HUD */}
       <div className="absolute top-0 left-0 right-0 p-2 sm:p-4">
         <div className="max-w-6xl mx-auto">
@@ -800,6 +876,7 @@ export default function BattleUI() {
               wins={playerWins}
               synergy={playerSynergy}
               isTransformed={playerTransformed}
+              displayAccent={getColorblindAccent(playerFighter.accentColor, "player", colorblindMode)}
             />
             
             {/* Timer */}
@@ -813,6 +890,7 @@ export default function BattleUI() {
               side="right"
               wins={opponentWins}
               synergy={0}
+              displayAccent={getColorblindAccent(opponentFighter.accentColor, "opponent", colorblindMode)}
             />
           </div>
         </div>
@@ -824,8 +902,54 @@ export default function BattleUI() {
       {/* Mission HUD */}
       {activeMission && <MissionHUD />}
       
+      {/* Pause Overlay */}
+      {battlePhase === 'paused' && !showSettingsInPause && (
+        <div className="absolute inset-0 bg-black/75 flex items-center justify-center z-50 pointer-events-auto">
+          <div className="text-center space-y-6">
+            <h2 className="text-4xl font-black text-white tracking-tight">PAUSED</h2>
+            <div className="space-y-3">
+              <button
+                onClick={() => useBattle.getState().togglePause?.()}
+                className="block w-48 mx-auto px-6 py-3 rounded-xl bg-cyan-500/20 border-2 border-cyan-400 text-cyan-100 font-bold hover:bg-cyan-500/30 transition-all"
+              >
+                Resume
+              </button>
+              <button
+                onClick={() => setShowSettingsInPause(true)}
+                className="flex items-center justify-center gap-2 w-48 mx-auto px-6 py-3 rounded-xl bg-slate-700/60 border-2 border-slate-500 text-slate-200 font-bold hover:bg-slate-600/60 transition-all"
+              >
+                <Settings className="w-4 h-4" />
+                Settings
+              </button>
+              <button
+                onClick={() => {
+                  const battle = useBattle.getState();
+                  const runner = useRunner.getState();
+                  runner.addScore(battle.battleScore);
+                  useMissions.getState().abandonMission();
+                  battle.returnToMenu();
+                  useGame.getState().end();
+                  runner.setGameState('menu');
+                }}
+                className="block w-48 mx-auto px-6 py-3 rounded-xl bg-slate-700/60 border-2 border-slate-500 text-slate-200 font-bold hover:bg-slate-600/60 transition-all"
+              >
+                Quit to Menu
+              </button>
+            </div>
+            <p className="text-slate-400 text-sm mt-4">ESC or P to resume</p>
+          </div>
+        </div>
+      )}
+
+      {/* Settings in Pause */}
+      {battlePhase === 'paused' && showSettingsInPause && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-auto">
+          <SettingsPanel onClose={() => setShowSettingsInPause(false)} variant="modal" />
+        </div>
+      )}
+
       {/* Controls Guide */}
-      {battlePhase === 'fighting' && (
+      {(battlePhase === 'fighting' || battlePhase === 'transforming') && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex justify-center px-2 w-full max-w-2xl">
           <div className="bg-black/75 backdrop-blur-md rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 border border-cyan-400/40 shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
             <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 text-white text-xs sm:text-sm">
@@ -850,12 +974,16 @@ export default function BattleUI() {
                 <span className="text-purple-200">Special</span>
               </div>
               <div className="flex items-center gap-1.5">
+                <kbd className="bg-amber-500/50 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">R</kbd>
+                <span className="text-amber-200">Ultimate</span>
+              </div>
+              <div className="flex items-center gap-1.5">
                 <kbd className="bg-amber-500/50 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">T</kbd>
                 <span className="text-amber-200">Transform</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <kbd className="bg-white/25 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">Y</kbd>
-                <span className="text-slate-400">Taunt</span>
+                <kbd className="bg-slate-500/50 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">ESC</kbd>
+                <span className="text-slate-300">Pause</span>
               </div>
             </div>
           </div>
@@ -879,6 +1007,9 @@ export default function BattleUI() {
           playerWins={playerWins}
           opponentWins={opponentWins}
           score={battleScore}
+          maxCombo={maxCombo}
+          damageDealt={damageDealt}
+          roundTimeSurvived={roundTimeSurvived}
           onRematch={handleRematch}
           onMenu={handleReturnToMenu}
           onCampaignContinue={campaignCurrentNode && winner === 'player' ? handleCampaignContinue : undefined}

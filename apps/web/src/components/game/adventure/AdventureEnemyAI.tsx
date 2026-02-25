@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
+import { useDifficulty, getMoveSpeedMultiplier, getAttackCooldownMultiplier } from "../../../lib/stores/useDifficulty";
 import { CHARACTER_MODELS } from "../models/GLBCharacterModel";
 import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
 import { ENEMY_TIERS } from "../../../lib/combatSystems";
@@ -153,6 +154,10 @@ export default function AdventureEnemyAI() {
     const adv = useAdventure.getState();
     if (adv.isPaused) return;
 
+    const difficulty = useDifficulty.getState().difficulty;
+    const speedMult = getMoveSpeedMultiplier(difficulty);
+    const cooldownMult = getAttackCooldownMultiplier(difficulty);
+
     const { player, enemies } = adv;
 
     enemies.forEach((enemy) => {
@@ -177,8 +182,9 @@ export default function AdventureEnemyAI() {
       if (enemy.aiState === "retreat" && healthPct <= tierConfig.retreatThreshold) {
         const fleeX = -dx / (dist || 1);
         const fleeZ = -dz / (dist || 1);
-        const moveX = fleeX * tierConfig.speed * 1.3 * delta;
-        const moveZ = fleeZ * tierConfig.speed * 1.3 * delta;
+        const speed = tierConfig.speed * speedMult;
+        const moveX = fleeX * speed * 1.3 * delta;
+        const moveZ = fleeZ * speed * 1.3 * delta;
         adv.setEnemyPos(enemy.id, enemy.posX + moveX, enemy.posY, enemy.posZ + moveZ);
         const fleeRot = Math.atan2(-dx, -dz);
         useAdventure.setState((s) => ({
@@ -198,7 +204,7 @@ export default function AdventureEnemyAI() {
           const pdist = Math.sqrt(pdx * pdx + pdz * pdz);
           if (pdist > 1) {
             const angle = Math.atan2(pdx, pdz);
-            const speed = tierConfig.speed * 0.4;
+            const speed = tierConfig.speed * 0.4 * speedMult;
             adv.setEnemyPos(
               enemy.id,
               enemy.posX + Math.sin(angle) * speed * delta,
@@ -257,8 +263,9 @@ export default function AdventureEnemyAI() {
       }
 
       if (dist > tierConfig.attackRange) {
-        const moveX = Math.sin(targetRot) * tierConfig.speed * delta;
-        const moveZ = Math.cos(targetRot) * tierConfig.speed * delta;
+        const speed = tierConfig.speed * speedMult;
+        const moveX = Math.sin(targetRot) * speed * delta;
+        const moveZ = Math.cos(targetRot) * speed * delta;
         adv.setEnemyPos(enemy.id, enemy.posX + moveX, enemy.posY, enemy.posZ + moveZ);
         adv.setEnemyAttacking(enemy.id, false);
         adv.setEnemyAIState(enemy.id, "chase");
@@ -266,7 +273,8 @@ export default function AdventureEnemyAI() {
         if (!attackTimers.current[enemy.id]) attackTimers.current[enemy.id] = 0;
         attackTimers.current[enemy.id] += delta;
 
-        if (attackTimers.current[enemy.id] >= tierConfig.attackInterval) {
+        const attackInterval = tierConfig.attackInterval * cooldownMult;
+        if (attackTimers.current[enemy.id] >= attackInterval) {
           attackTimers.current[enemy.id] = 0;
           adv.setEnemyAIState(enemy.id, "telegraph");
           adv.setEnemyTelegraph(enemy.id, 0);

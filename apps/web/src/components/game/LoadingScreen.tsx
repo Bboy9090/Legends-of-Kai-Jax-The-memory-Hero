@@ -1,5 +1,29 @@
 import { useState, useEffect } from "react";
 
+export function LoadingView({ progress }: { progress: number }) {
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center text-white p-8"
+      style={{
+        background: "linear-gradient(160deg, #0a0a1a 0%, #1a0a2e 40%, #0d0d1a 100%)",
+      }}
+    >
+      <div className="text-center max-w-md w-full">
+        <h1 className="text-2xl sm:text-3xl font-bold uppercase tracking-tight text-cyan-300/90">
+          Legends of Kai-Jax
+        </h1>
+        <p className="mt-4 text-slate-400">Loading… {Math.round(progress)}%</p>
+        <div className="mt-3 h-2 w-full rounded-full bg-slate-800 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-cyan-500 transition-all duration-300 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Story beats for the Raging City intro sequence */
 const INTRO_BEATS = [
   {
@@ -30,7 +54,6 @@ export function GameIntro({ onComplete }: { onComplete: () => void }) {
   const [beatIndex, setBeatIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
 
-  // Auto-advance through story beats
   useEffect(() => {
     if (skip) return;
     const beat = INTRO_BEATS[beatIndex];
