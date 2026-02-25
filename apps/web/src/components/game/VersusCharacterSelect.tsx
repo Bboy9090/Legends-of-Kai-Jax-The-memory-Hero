@@ -3,8 +3,10 @@ import { Canvas } from "@react-three/fiber";
 import { Environment, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { useGame } from "../../lib/stores/useGame";
-import { useRunner } from "../../lib/stores/useRunner";
+import { useRunner, UNLOCKABLE_ARENAS, isArenaUnlocked } from "../../lib/stores/useRunner";
 import { useBattle } from "../../lib/stores/useBattle";
+import { getArenaById } from "../../lib/arenas";
+import { useDifficulty, DIFFICULTY_LABELS, type Difficulty } from "../../lib/stores/useDifficulty";
 import { Fighter, FIGHTERS, getFighterById } from "../../lib/characters";
 import GLBCharacterModel from "./models/GLBCharacterModel";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
@@ -107,23 +109,39 @@ function FighterCard({
   );
 }
 
+const VERSUS_ARENAS = ["mushroom-plains", "green-valley", "rainbow-castle", "lava-fortress", "space-station", "jungle-ruins"] as const;
+
+function getArenaCost(arenaId: string): number | null {
+  const entry = UNLOCKABLE_ARENAS.find((a) => a.id === arenaId);
+  return entry ? entry.cost : null;
+}
+
 export default function VersusCharacterSelect() {
   const start = useGame((s) => s.start);
   const setGameState = useRunner((s) => s.setGameState);
   const setCharacter = useRunner((s) => s.setCharacter);
+  const unlockedArenas = useRunner((s) => s.unlockedArenas);
+  const currency = useRunner((s) => s.currency);
+  const xp = useRunner((s) => s.xp);
   const setPlayerFighter = useBattle((s) => s.setPlayerFighter);
   const setOpponentFighter = useBattle((s) => s.setOpponentFighter);
+  const setOpponentPersonality = useBattle((s) => s.setOpponentPersonality);
+  const setArena = useBattle((s) => s.setArena);
+  const selectedArenaId = useBattle((s) => s.selectedArenaId);
+  const { difficulty, setDifficulty } = useDifficulty();
 
   const [selectedId, setSelectedId] = useState<string>(FIGHTERS[0]?.id ?? "kai-jax");
   const selected = getFighterById(selectedId);
 
   const handleFight = () => {
     if (!selected) return;
+    setArena(selectedArenaId);
     setCharacter(selectedId);
     setPlayerFighter(selectedId);
     const others = FIGHTERS.map((f) => f.id).filter((id) => id !== selectedId);
     const opponentId = others[Math.floor(Math.random() * others.length)] ?? selectedId;
     setOpponentFighter(opponentId);
+    setOpponentPersonality(Math.random() < 0.5 ? "aggressive" : "defensive");
     start();
     setGameState("playing");
   };
@@ -140,7 +158,34 @@ export default function VersusCharacterSelect() {
         <h1 className="text-2xl font-black tracking-[0.25em] text-white/90 uppercase">
           Choose Your Fighter
         </h1>
-        <div className="w-20" />
+        <div className="flex items-center gap-3">
+          {(currency > 0 || xp > 0) && (
+            <div className="flex items-center gap-2 text-xs">
+              {currency > 0 && (
+                <span className="text-amber-300 font-bold tabular-nums">{currency} gold</span>
+              )}
+              {xp > 0 && (
+                <span className="text-cyan-300 font-bold tabular-nums">{xp} XP</span>
+              )}
+            </div>
+          )}
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Difficulty</span>
+          <div className="flex rounded-lg border border-slate-600 overflow-hidden">
+            {(["easy", "normal", "hard"] as Difficulty[]).map((d) => (
+              <button
+                key={d}
+                onClick={() => setDifficulty(d)}
+                className={`px-3 py-1.5 text-xs font-bold transition-all ${
+                  difficulty === d
+                    ? "bg-cyan-500/40 text-cyan-200 border-cyan-400/60"
+                    : "bg-slate-800/60 text-slate-400 hover:text-white hover:bg-slate-700/60"
+                }`}
+              >
+                {DIFFICULTY_LABELS[d]}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="flex-1 flex gap-6 px-6 py-4 min-h-0">
@@ -162,7 +207,7 @@ export default function VersusCharacterSelect() {
                   gl.outputColorSpace = THREE.SRGBColorSpace;
                   gl.toneMapping = THREE.ACESFilmicToneMapping;
                   gl.toneMappingExposure = 1.2;
-                  gl.shadowMap.enabled = true;
+                  gl.shadowMap.enabled = q.shadowsEnabled;
                   gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
                 }}
                 gl={{
@@ -221,7 +266,50 @@ export default function VersusCharacterSelect() {
           )}
         </div>
 
-        <div className="w-72 flex flex-col gap-2 overflow-y-auto pr-1">
+        <div className="w-72 flex flex-col gap-3 overflow-y-auto pr-1">
+          <div>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Arena</h3>
+            <div className="grid grid-cols-2 gap-1.5">
+              {VERSUS_ARENAS.map((arenaId) => {
+                const arena = getArenaById(arenaId);
+                const unlocked = isArenaUnlocked(unlockedArenas, arenaId);
+                const cost = getArenaCost(arenaId);
+                const isSelected = selectedArenaId === arenaId;
+
+                return (
+                  <button
+                    key={arenaId}
+                    onClick={() => {
+                      if (!unlocked) {
+                        setGameState("shop");
+                        return;
+                      }
+                      setArena(arenaId);
+                    }}
+                    disabled={!unlocked}
+                    className={`relative p-2 rounded-lg border-2 text-left transition-all text-[10px] ${
+                      !unlocked
+                        ? "opacity-60 grayscale bg-slate-900/80 border-slate-700 cursor-pointer hover:border-amber-500/50"
+                        : isSelected
+                          ? "border-cyan-400 bg-cyan-500/20"
+                          : "border-slate-600 bg-slate-800/60 hover:border-cyan-400/50"
+                    }`}
+                  >
+                    <div className="font-bold truncate" style={{ color: arena?.accentColor ?? "#94a3b8" }}>
+                      {arena?.displayName ?? arenaId}
+                    </div>
+                    {!unlocked && cost !== null && (
+                      <div className="mt-0.5 text-amber-400/90 font-medium">Unlock for {cost} gold</div>
+                    )}
+                    {unlocked && isSelected && (
+                      <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Fighter</h3>
           <div className="grid grid-cols-3 gap-2">
             {FIGHTERS.map((f) => (
               <FighterCard

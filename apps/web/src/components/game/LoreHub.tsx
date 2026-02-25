@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useRunner } from "../../lib/stores/useRunner";
-import { Star, Zap, Swords, BookOpen, Skull, ChevronRight } from "../ui/icons";
+import { Star, Zap, Swords, BookOpen, Skull, ChevronRight, Settings } from "../ui/icons";
+import SettingsPanel from "./SettingsPanel";
 
 const HERO_IMAGE = "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/htuxfqte_9660FF22-E010-4DF5-A321-DDFE60ADB8CB.png";
 
@@ -225,6 +226,7 @@ const particles = Array.from({ length: 20 }, (_, i) => ({
 export default function LoreHub() {
   const [section, setSection] = useState<Section>("home");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const setGameState = useRunner((s) => s.setGameState);
 
   const handlePlayGame = () => {
@@ -262,9 +264,18 @@ export default function LoreHub() {
             ))}
           </div>
 
-          <button className="md:hidden text-white" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2 rounded-lg text-white/60 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
+              title="Settings"
+            >
+              <Settings size={20} />
+            </button>
+            <button className="md:hidden text-white" onClick={() => setMobileOpen(!mobileOpen)}>
+              {mobileOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
+            </button>
+          </div>
         </div>
 
         {mobileOpen && (
@@ -289,6 +300,12 @@ export default function LoreHub() {
         {section === "tails" && <TailsSection />}
         {section === "story" && <StorySection />}
       </main>
+
+      {showSettings && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <SettingsPanel onClose={() => setShowSettings(false)} variant="modal" />
+        </div>
+      )}
 
       <footer className="py-10 text-center" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
         <h3 className="text-xl font-black text-white mb-2">

@@ -28,7 +28,7 @@ export default function CharacterPreview3D({ fighter }: CharacterPreview3DProps)
           gl.outputColorSpace = THREE.SRGBColorSpace;
           gl.toneMapping = THREE.ACESFilmicToneMapping;
           gl.toneMappingExposure = 1.2;
-          gl.shadowMap.enabled = true;
+          gl.shadowMap.enabled = q.shadowsEnabled;
           gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
         }}
         gl={{ antialias: getQualitySettings().antialias, powerPreference: "high-performance" }}

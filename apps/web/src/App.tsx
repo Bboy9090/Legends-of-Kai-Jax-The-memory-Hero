@@ -7,24 +7,30 @@ import "@fontsource/bebas-neue";
 import BattleScene from "./components/game/BattleScene";
 import MobileControls from "./components/game/MobileControls";
 import BattleUI from "./components/game/BattleUI";
-import DialogueDisplay from "./components/game/DialogueDisplay";
 import MainMenu from "./components/game/MainMenu";
 import VersusCharacterSelect from "./components/game/VersusCharacterSelect";
 import BeastPreview from "./components/game/BeastPreview";
 import CampaignMap from "./components/game/CampaignMap";
 import TransformationOverlay from "./components/game/TransformationOverlay";
 import ScreenEffects from "./components/game/ScreenEffects";
-import { GameIntro } from "./components/game/LoadingScreen";
+import { GameIntro, LoadingView } from "./components/game/LoadingScreen";
 import CustomizationMenu from "./components/game/CustomizationMenu";
 import LoreHub from "./components/game/LoreHub";
+import MissionSelectHub from "./components/game/MissionSelectHub";
+import ShopView from "./components/game/ShopView";
+import TutorialOverlay from "./components/game/TutorialOverlay";
 import AdventureArena from "./components/game/adventure/AdventureArena";
 import AdventureHUD from "./components/game/adventure/AdventureHUD";
 import StoryAdventure from "./components/game/StoryAdventure";
 import { useGame } from "./lib/stores/useGame";
+import { useLoadingProgress } from "./lib/stores/useLoadingProgress";
+import { useOnline } from "./lib/useOnline";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
 import { useAudio } from "./lib/stores/useAudio";
 import { useMissions } from "./lib/stores/useMissions";
+import { useTutorial } from "./lib/stores/useTutorial";
+import { useSettings, UI_SCALE_VALUES } from "./lib/stores/useSettings";
 import { FIGHTERS, getFighterById } from "./lib/characters";
 import { useEffect } from "react";
 import * as THREE from "three";
@@ -67,19 +73,40 @@ const controls = [
 
 function App() {
   const { phase } = useGame();
+  const { progress, isReady, startLoading } = useLoadingProgress();
+  const online = useOnline();
+  const [offlineBannerDismissed, setOfflineBannerDismissed] = useState(false);
+  useEffect(() => {
+    if (online) setOfflineBannerDismissed(false);
+  }, [online]);
   const { gameState, selectedCharacter, activeStoryMissionId } = useRunner();
-  const { setPlayerFighter, setOpponentFighter, screenShake } = useBattle();
+  const { setPlayerFighter, screenShake } = useBattle();
   const { 
     setBackgroundMusic, 
     setBattleMusic, 
     setHitSound, 
     setSuccessSound,
     backgroundMusic,
-    isMuted
+    battleMusic,
+    isMuted,
+    masterVolume,
+    musicVolume,
   } = useAudio();
+  const hasTutorialBeenSeen = useTutorial((s) => s.hasSeenTutorial);
+  const uiScale = useSettings((s) => s.uiScale);
+  
+  // Sync --ui-scale to root for UI scaling
+  useEffect(() => {
+    document.documentElement.style.setProperty("--ui-scale", String(UI_SCALE_VALUES[uiScale]));
+  }, [uiScale]);
   
   // ⚡ LEGENDARY INTRO SYSTEM
   const [showIntro, setShowIntro] = useState(true);
+
+  // Loading: preload assets, then transition to LoreHub
+  useEffect(() => {
+    startLoading();
+  }, [startLoading]);
 
   // Initialize audio on mount (non-fatal if files missing)
   useEffect(() => {
@@ -99,28 +126,34 @@ function App() {
     }
   }, [setBackgroundMusic, setBattleMusic, setHitSound, setSuccessSound]);
 
+  // Apply volume to music elements when volume or mute changes
+  useEffect(() => {
+    if (!backgroundMusic || !battleMusic) return;
+    const vol = isMuted ? 0 : masterVolume * musicVolume;
+    backgroundMusic.volume = 0.3 * vol;
+    battleMusic.volume = 0.4 * vol;
+  }, [backgroundMusic, battleMusic, isMuted, masterVolume, musicVolume]);
+
   // Play background music in menu states
   useEffect(() => {
     if (!backgroundMusic || isMuted) return;
 
     if (gameState === 'menu' || gameState === 'character-select') {
+      backgroundMusic.volume = 0.3 * masterVolume * musicVolume;
       backgroundMusic.play().catch(() => {
         console.log("Background music autoplay blocked - waiting for user interaction");
       });
     } else {
       backgroundMusic.pause();
     }
-  }, [gameState, backgroundMusic, isMuted]);
+  }, [gameState, backgroundMusic, isMuted, masterVolume, musicVolume]);
 
-  // Set up battle fighters when character is selected
+  // Sync player fighter when character is selected (opponent/personality set by VersusCharacterSelect or MissionSelectHub)
   useEffect(() => {
     if (selectedCharacter && phase === 'playing') {
       setPlayerFighter(selectedCharacter);
-      const opponents = FIGHTERS.map(f => f.id).filter(id => id !== selectedCharacter);
-      const randomOpponent = opponents[Math.floor(Math.random() * opponents.length)] || selectedCharacter;
-      setOpponentFighter(randomOpponent);
     }
-  }, [selectedCharacter, phase, setPlayerFighter, setOpponentFighter]);
+  }, [selectedCharacter, phase, setPlayerFighter]);
 
   // Handle intro completion
   const handleIntroComplete = () => {
@@ -131,6 +164,11 @@ function App() {
   const shakeTransform = screenShake > 0 
     ? `translate(${(Math.random() - 0.5) * screenShake * 5}px, ${(Math.random() - 0.5) * screenShake * 5}px)`
     : 'none';
+
+  // Show loading screen until assets are ready
+  if (!isReady) {
+    return <LoadingView progress={progress} />;
+  }
 
   return (
     <div 
@@ -143,8 +181,28 @@ function App() {
         transform: shakeTransform,
       }}
     >
+      {/* Offline banner - auto-hides when back online, dismissible */}
+      {!online && !offlineBannerDismissed && (
+        <div className="fixed top-0 left-0 right-0 z-[90] flex items-center justify-center gap-2 px-4 py-2 bg-amber-900/95 text-amber-100 text-sm">
+          <span>You&apos;re offline. Some features may be limited.</span>
+          <button
+            type="button"
+            onClick={() => setOfflineBannerDismissed(true)}
+            aria-label="Dismiss"
+            className="text-amber-300/80 hover:text-white ml-2"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* Lore Hub - Landing Page */}
       {gameState === "lore-hub" && <LoreHub />}
+
+      {/* First-run tutorial (versus-select or campaign-map) */}
+      {(gameState === "versus-select" || gameState === "campaign-map") && !hasTutorialBeenSeen && (
+        <TutorialOverlay onComplete={() => {}} />
+      )}
 
       {/* ⚡ LEGENDARY INTRO SEQUENCE */}
       {showIntro && gameState !== "lore-hub" && <GameIntro onComplete={handleIntroComplete} />}
@@ -156,6 +214,9 @@ function App() {
         {/* Campaign: RPG adventure — map, waves, bosses, progression to big bad */}
         {phase === "ready" && gameState === "campaign-map" && <CampaignMap />}
 
+        {/* Challenge Mode - Story + UEE missions */}
+        {phase === "ready" && gameState === "mission-select" && <MissionSelectHub />}
+
         {/* Versus Mode - full 3D beast model character select */}
         {phase === 'ready' && gameState === 'versus-select' && (
           <VersusCharacterSelect />
@@ -166,6 +227,9 @@ function App() {
         
         {/* Customization Menu */}
         {phase === 'ready' && gameState === 'customization' && <CustomizationMenu />}
+
+        {/* Shop / Unlocks */}
+        {phase === "ready" && gameState === "shop" && <ShopView />}
         
         {/* ⚡ ADVENTURE MODE - Open World 3D Arena */}
         {gameState === 'adventure' && (() => {
@@ -188,7 +252,7 @@ function App() {
                     gl.outputColorSpace = THREE.SRGBColorSpace;
                     gl.toneMapping = THREE.ACESFilmicToneMapping;
                     gl.toneMappingExposure = 0.85;
-                    gl.shadowMap.enabled = true;
+                    gl.shadowMap.enabled = q.shadowsEnabled;
                     gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
                   }}
                   gl={{
@@ -232,7 +296,7 @@ function App() {
                     gl.outputColorSpace = THREE.SRGBColorSpace;
                     gl.toneMapping = THREE.ACESFilmicToneMapping;
                     gl.toneMappingExposure = 0.85;
-                    gl.shadowMap.enabled = true;
+                    gl.shadowMap.enabled = q.shadowsEnabled;
                     gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
                   }}
                   gl={{
@@ -273,8 +337,8 @@ function App() {
               <Canvas
                 shadows
                 camera={{
-                  position: [0, 3.5, 7],
-                  fov: 50,
+                  position: [0, 4, 5],
+                  fov: 55,
                   near: 0.1,
                   far: 1000
                 }}
@@ -284,7 +348,7 @@ function App() {
                   gl.outputColorSpace = THREE.SRGBColorSpace;
                   gl.toneMapping = THREE.ACESFilmicToneMapping;
                   gl.toneMappingExposure = 0.98;
-                  gl.shadowMap.enabled = true;
+                  gl.shadowMap.enabled = q.shadowsEnabled;
                   gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
                 }}
                 gl={{
@@ -301,12 +365,16 @@ function App() {
               </div>
             </div>
             
-            {/* ⚡ LEGENDARY UI OVERLAYS */}
-            <BattleUI />
-            <TransformationOverlay />
-            <ScreenEffects />
-            <DialogueDisplay />
-            <MobileControls />
+            {/* ⚡ LEGENDARY UI OVERLAYS (scaled by --ui-scale) */}
+            <div
+              className="fixed inset-0 pointer-events-none z-[100]"
+              style={{ transform: "scale(var(--ui-scale))", transformOrigin: "center center" }}
+            >
+              <BattleUI />
+              <TransformationOverlay />
+              <ScreenEffects />
+              <MobileControls />
+            </div>
           </>
         )}
       </KeyboardControls>

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export type GameState =
   | "lore-hub"
@@ -12,6 +13,7 @@ export type GameState =
   | "customization"
   | "beast-preview"
   | "adventure"
+  | "shop"
   | "playing";
 
 /** Campaign node id. Order: start → districts → final boss. */
@@ -25,6 +27,21 @@ export type CampaignNodeId =
   | "district-5"
   | "final-boss";
 
+const DEFAULT_UNLOCKED_ARENAS = ["mushroom-plains", "green-valley", "jungle-ruins"];
+
+export const UNLOCKABLE_ARENAS: { id: string; cost: number }[] = [
+  { id: "rainbow-castle", cost: 50 },
+  { id: "lava-fortress", cost: 100 },
+  { id: "space-station", cost: 150 },
+];
+
+export function isArenaUnlocked(unlockedArenas: string[], arenaId: string): boolean {
+  return unlockedArenas.includes(arenaId) || DEFAULT_UNLOCKED_ARENAS.includes(arenaId);
+}
+
+/** Ids that unlock skins vs upgrades. Used by unlockWithXp. */
+const XP_SKIN_IDS = new Set(["kai-inferno", "jax-crystal"]);
+
 interface RunnerState {
   gameState: GameState;
   selectedCharacter: string | null;
@@ -34,6 +51,15 @@ interface RunnerState {
   setActiveStoryMission: (id: string | null) => void;
   addScore: (points: number) => void;
   totalScore: number;
+  xp: number;
+  currency: number;
+  addXp: (amount: number) => void;
+  addCurrency: (amount: number) => void;
+  unlockedArenas: string[];
+  unlockArena: (arenaId: string, cost: number) => boolean;
+  unlockedSkins: string[];
+  unlockedUpgrades: string[];
+  unlockWithXp: (id: string, cost: number) => boolean;
   campaignCompletedNodes: CampaignNodeId[];
   campaignCurrentNode: CampaignNodeId | null;
   setCampaignCompleted: (nodeId: CampaignNodeId) => void;
@@ -63,17 +89,49 @@ export function isCampaignNodeUnlocked(completed: CampaignNodeId[], nodeId: Camp
   return prev !== null && completed.includes(prev);
 }
 
-export const useRunner = create<RunnerState>((set, get) => ({
+const RUNNER_STORAGE = "MK_RUNNER_PROGRESS_V1";
+
+export const useRunner = create<RunnerState>()(
+  persist(
+    (set, get) => ({
   gameState: "lore-hub",
   selectedCharacter: "jaxon",
   activeStoryMissionId: null,
   totalScore: 0,
-  campaignCompletedNodes: [],
+  xp: 0,
+  currency: 0,
+  unlockedArenas: [] as string[],
+  unlockedSkins: [] as string[],
+  unlockedUpgrades: [] as string[],
+  campaignCompletedNodes: [] as CampaignNodeId[],
   campaignCurrentNode: null,
   setGameState: (gameState) => set({ gameState }),
   setCharacter: (selectedCharacter) => set({ selectedCharacter }),
   setActiveStoryMission: (activeStoryMissionId) => set({ activeStoryMissionId }),
   addScore: (points) => set({ totalScore: get().totalScore + points }),
+  addXp: (amount) => set({ xp: get().xp + amount }),
+  addCurrency: (amount) => set({ currency: get().currency + amount }),
+  unlockArena: (arenaId, cost) => {
+    const { currency, unlockedArenas } = get();
+    if (unlockedArenas.includes(arenaId) || DEFAULT_UNLOCKED_ARENAS.includes(arenaId)) return true;
+    if (currency < cost) return false;
+    set({ currency: currency - cost, unlockedArenas: [...unlockedArenas, arenaId] });
+    return true;
+  },
+  unlockWithXp: (id, cost) => {
+    const { xp, unlockedSkins, unlockedUpgrades } = get();
+    const type = XP_SKIN_IDS.has(id) ? "skin" : "upgrade";
+    const setIds = type === "skin" ? unlockedSkins : unlockedUpgrades;
+    if (setIds.includes(id)) return true;
+    if (xp < cost) return false;
+    set({
+      xp: get().xp - cost,
+      ...(type === "skin"
+        ? { unlockedSkins: [...unlockedSkins, id] }
+        : { unlockedUpgrades: [...unlockedUpgrades, id] }),
+    });
+    return true;
+  },
   setCampaignCompleted: (nodeId) =>
     set((s) => ({
       campaignCompletedNodes: s.campaignCompletedNodes.includes(nodeId)
@@ -81,4 +139,18 @@ export const useRunner = create<RunnerState>((set, get) => ({
         : [...s.campaignCompletedNodes, nodeId],
     })),
   setCampaignCurrentNode: (nodeId) => set({ campaignCurrentNode: nodeId }),
-}));
+}),
+    {
+      name: RUNNER_STORAGE,
+      partialize: (s) => ({
+        totalScore: s.totalScore,
+        xp: s.xp,
+        currency: s.currency,
+        unlockedArenas: s.unlockedArenas,
+        unlockedSkins: s.unlockedSkins,
+        unlockedUpgrades: s.unlockedUpgrades,
+        campaignCompletedNodes: s.campaignCompletedNodes,
+      }),
+    }
+  )
+);

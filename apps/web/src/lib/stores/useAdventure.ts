@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { CombatState, STAMINA_CONFIG } from "../combatSystems";
+import { useDifficulty, getDamageTakenMultiplier } from "./useDifficulty";
 
 export interface AdventurePlayerState {
   fighterId: string;
@@ -198,16 +199,18 @@ export const useAdventure = create<AdventureState>((set, get) => ({
   damagePlayer: (amount) => {
     const p = get().player;
     if (p.invulnTimer > 0) return;
+    const mult = getDamageTakenMultiplier(useDifficulty.getState().difficulty);
+    const scaledAmount = amount * mult;
     if (p.superArmor) {
       set((s) => ({
-        player: { ...s.player, health: Math.max(0, s.player.health - amount * 0.5) },
+        player: { ...s.player, health: Math.max(0, s.player.health - scaledAmount * 0.5) },
       }));
       return;
     }
     set((s) => ({
       player: {
         ...s.player,
-        health: Math.max(0, s.player.health - amount),
+        health: Math.max(0, s.player.health - scaledAmount),
         combatState: CombatState.HITSTUN,
         hitStunTimer: 0.3,
         isAttacking: false,
