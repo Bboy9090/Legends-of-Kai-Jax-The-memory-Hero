@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 class KaiJaxAPITester:
-    def __init__(self, base_url="https://git-powerup-wizard.preview.emergentagent.com"):
+    def __init__(self, base_url="https://kaijax-combat.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
@@ -39,6 +39,17 @@ class KaiJaxAPITester:
             return success
         except Exception as e:
             self.log_test("API Root", False, str(e))
+            return False
+
+    def test_health_endpoint(self):
+        """Test /api/health endpoint - mentioned in requirements but doesn't exist"""
+        try:
+            response = requests.get(f"{self.api_url}/health", timeout=10)
+            success = response.status_code == 200
+            self.log_test("Health Endpoint", success, f"Status: {response.status_code}")
+            return success
+        except Exception as e:
+            self.log_test("Health Endpoint", False, str(e))
             return False
 
     def test_tails_endpoint(self):
@@ -318,6 +329,9 @@ class KaiJaxAPITester:
         if not self.test_api_root():
             print("❌ API Root failed - stopping tests")
             return False
+
+        # Test health endpoint (mentioned in requirements)
+        self.test_health_endpoint()
 
         # Test main endpoints
         self.test_tails_endpoint()

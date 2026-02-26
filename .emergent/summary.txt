@@ -1,0 +1,141 @@
+<analysis>original_problem_statement:
+The user wants to transition a project from a conceptual/prototype stage into a full-fledged, enterprise-level game. The initial state of the project was described as a sound but idle foundation, lacking core gameplay mechanics.
+
+**PRODUCT REQUIREMENTS:**
+
+1.  **Implement Core Combat Mechanics:**
+    *   Hitbox/Hurtbox system (AABB initially).
+    *   Enforce a single, authoritative data source for game data (e.g., MoveData).
+    *   Implement cancel and buffer rules for combat actions.
+2.  **Develop a Basic HUD:**
+    *   Display meters (Synergy, Resonance, Dread), FSM state, and frame count.
+3.  **Flesh out Game Content:**
+    *   Define the Gate Warden boss with proper MoveData.
+    *   Create a basic arena and a target dummy for testing.
+4.  **Add Core Features:**
+    *   Gamepad support.
+    *   Visual effects (VFX) for feedback on power and actions (bloom, chroma, etc.).
+5.  **Establish CI/CD and Testing:**
+    *   Create a test harness for game logic.
+    *   Protect frame data with tests.
+6.  **Character & World Building:**
+    *   Introduce and define characters: Aurelion (Time-Bound Wanderer) and Selene (Oracle of the Veil).
+    *   Define the main antagonist faction: The Void Fang Covenant, led by Ulgorr (The World Behemoth).
+    *   Establish the Fractured Circle as a group of unlikely allies.
+    *   Map out the game world into distinct regions (Ashblock Heights, Fangforge Wastes, etc.).
+7.  **Define the 9-Tail System:**
+    *   Detail the progression and mechanical identity of Kaijax's nine tails, ensuring they are contextual and not just cosmetic power-ups.
+8.  **Transition to a Professional Game Engine Specification:**
+    *   Convert the web prototype's mechanics into a formal, engine-agnostic design specification suitable for Unreal Engine or Unity. This specification must cover character rendering, combat architecture, the tail system, AI design, and cross-platform scaling.
+
+**User's preferred language**: English
+
+**what currently exists?**
+The project started as a web-based lore hub for the game Legends of Kai-Jax, built with a React frontend and a FastAPI backend. A 2D canvas-based combat prototype was successfully built and integrated into the React application to prove the core fighting game mechanics. After a failed attempt to upgrade this to a 3D WebGL version, the user pivoted. The agent has now created a comprehensive, engine-agnostic **Engine Design Specification** in a markdown file, translating the web prototype's mechanics and the user's detailed lore into a blueprint for development in a professional game engine like Unreal or Unity.
+
+**Last working item**:
+    - Last item agent was working: The agent created a comprehensive, engine-agnostic  and a . This was in response to the user's request to pivot from web development to creating a formal design document for a professional game engine (like Unreal or Unity), using the previously built web prototype only as a mechanical reference.
+    - Status: NONE
+    - Agent Testing Done: Y
+    - Which testing method agent to use? NA(if testing is already done)
+    - User Testing Done: N
+
+**All Pending/In progress Issue list**:
+  - There are no pending issues. The last task was to create the design specification, which was completed.
+
+**In progress Task List**:
+  - There are no tasks currently in progress.
+
+**Upcoming and Future Tasks**
+Upcoming Tasks:
+- **P0: Implement Core Game in a Professional Engine:** Begin the actual game development in an engine like Unreal or Unity, following the . This includes:
+  - Setting up the basic project.
+  - Implementing the character controller for Kaijax.
+  - Creating a greybox arena for testing.
+  - Building a dummy enemy with a basic AI loop (Observe → Commit → Recover).
+
+Future Tasks:
+- Implement the full 9-Tail progression system.
+- Develop the adaptive enemy AI for all specified enemy types (Iterators, Stalkers, etc.).
+- Build out the game regions as defined in the spec.
+- Create character models and animations based on the rendering requirements.
+- Develop the full Ulgorr boss encounter.
+
+**Completed work in this session**
+- **2D Combat Prototype:** Successfully built and integrated a 2D canvas-based combat prototype into the React frontend. This included a game engine, player (KaiJax) and enemy entities, hitbox logic, and a basic HUD.
+- **Engine Design Specification:** Created a comprehensive, engine-agnostic design document () detailing character rendering, combat architecture, the 9-Tail system, and AI behavior for development in a professional game engine.
+- **Quick Reference Card:** Created a summary document () for the design spec.
+- **Reverted 3D Upgrade:** Attempted a major graphics overhaul to 3D using , encountered critical versioning issues with React 19, and successfully reverted the codebase back to the working 2D prototype state.
+
+**Earlier issues found/mentioned but not fixed**
+   - No issues were mentioned and left unfixed.
+
+**Known issue recurrence from previous fork**
+  - None.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- **Frontend**: React, JavaScript (ES6+), Tailwind CSS
+- **Backend**: FastAPI, Python
+- **Game Prototype**: HTML5 Canvas API for 2D rendering and game loop.
+- **Game Design**: The project has now pivoted to a formal, engine-agnostic design specification targeting professional game engines like Unreal or Unity.
+
+**key DB schema**
+  - The application uses a MongoDB database, but the schema is primarily for storing lore and game bible content, not for runtime game state. The backend serves this data to the frontend.
+
+**changes in tech stack**
+  - The project's focus has shifted from a **web-based (React/Canvas) implementation** to the **design and specification phase** for a **professional game engine (Unreal/Unity)**. The web prototype is now considered a disposable proof-of-concept.
+
+**All files of reference**
+- : The primary deliverable of the last user request. It contains the blueprint for building the game in a professional engine. **This is the most critical document for the next agent.**
+- : A summary of the main design specification.
+- : The main component for the working 2D web prototype. Useful as a mechanical reference.
+- : The core logic for the 2D game loop, state management, and rendering.
+- : Defines the player character in the 2D prototype.
+- : Defines the enemy character in the 2D prototype.
+
+**Critical Info for New Agent**
+- **MAJOR PIVOT**: The user's primary goal has shifted. **Do not continue web development.** The project is now about building a game in a professional engine (Unreal/Unity). The existing web code is purely for mechanical reference.
+- **KEY DOCUMENT**: All future work must be based on the . This document is the new source of truth.
+- **FAILED 3D ATTEMPT**: A significant effort to upgrade the web prototype to 3D using  failed due to severe dependency conflicts with React 19. The codebase was successfully reverted. Do not attempt this again unless the user explicitly asks and provides a clear path to resolve the dependency issues.
+
+**documents and test reports created in this job**
+- /app/memory/ENGINE_DESIGN_SPECIFICATION.md
+- /app/memory/QUICK_REFERENCE_CARD.md
+- /app/test_result.md
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User**: Okay proceed (to define enemy combat AI rules).
+2.  **User**: Okay fine forge (the controller & combat feel spec).
+3.  **User**: Yesall (to map the core game loops).
+4.  **User**: What's next to mapp.
+5.  **User**: What about the team of unlikely heroes who are on Kai Jax side.
+6.  **User**: Okay (to the HUD design).
+7.  **User**: Go (to design the map language/UI).
+8.  **User**: Okay open worlds run the map looking for the missions.
+9.  **User**: Yea (to map mission types in Fangforge Wastes).
+10. **User**: Yes (to design the human-level enemies of the Void Fang Covenant).
+
+**Project Health Check:**
+- **Working:** The 2D web combat prototype is functional. The backend lore API is stable.
+- **Broken:** The 3D graphics upgrade was completely broken and has been removed.
+- **Mocked:** No components are currently mocked.
+
+**3rd Party Integrations**
+- None.
+
+**Testing status**
+  - Testing agent used after significant changes: YES (Backend testing was run after the 2D prototype was created).
+  - Troubleshoot agent used after agent stuck in loop: NO
+  - Test files created:
+      - 
+  - Known regressions:
+      - None since the reversion from the failed 3D upgrade.
+
+**Credentials to test flow:**
+N/A
+
+**What agent forgot to execute**
+- The agent has successfully followed the user's pivot. The tasks from the original continuation request (like implementing a hitbox system, HUD, etc.) were first implemented in the 2D web prototype and have now been translated into the formal . No tasks have been forgotten; the implementation platform has just changed.</analysis>
