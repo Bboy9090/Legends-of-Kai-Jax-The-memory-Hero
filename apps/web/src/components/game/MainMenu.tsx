@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRunner } from "../../lib/stores/useRunner";
 import { useBattle } from "../../lib/stores/useBattle";
+import { useGame } from "../../lib/stores/useGame";
 import { useDifficulty, DIFFICULTY_LABELS, type Difficulty } from "../../lib/stores/useDifficulty";
 import { Swords, BookOpen, Palette, ArrowLeft, Store, Settings } from "../ui/icons";
 import SettingsPanel from "./SettingsPanel";
@@ -36,6 +37,15 @@ export default function MainMenu() {
     setCharacter("kai-jax");
     setPlayerFighter("kai-jax");
     setGameState("adventure-select");
+  };
+
+  const startTraining = () => {
+    setCharacter("kai-jax");
+    setPlayerFighter("kai-jax");
+    useBattle.getState().setOpponentFighter("kaison");
+    useBattle.getState().setTimeScale(0.5);
+    setGameState("training");
+    useGame.getState().start();
   };
 
   return (
@@ -95,6 +105,13 @@ export default function MainMenu() {
             >
               <Swords className="w-5 h-5" />
               Versus
+            </button>
+            <button
+              onClick={startTraining}
+              className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-emerald-500/20 border-2 border-emerald-400/60 text-emerald-100 font-bold text-base hover:bg-emerald-500/30 hover:border-emerald-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+            >
+              <Swords className="w-5 h-5" />
+              Training
             </button>
             <button
               onClick={() => setGameState("beast-preview")}
