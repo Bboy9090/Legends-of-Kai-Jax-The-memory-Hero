@@ -4,17 +4,14 @@
  * Mobile/Tablet/PC optimized Three.js character model
  */
 
-import { useRef, useMemo, useEffect } from 'react';
+import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
-import { LegendaryBeast } from '@legends-of-kai-jax/shared';
-import { useAnimationStateMachine, type AnimationState } from '../../../lib/threejs/AnimationStateMachine';
 import { useBattle } from '../../../lib/stores/useBattle';
-import { getDeviceType } from '../../../lib/threejs/PerformanceOptimizer';
 
 interface OptimizedBeastModelProps {
-  beast: LegendaryBeast;
+  beast: any;
   bodyRef?: React.RefObject<THREE.Group>;
   headRef?: React.RefObject<THREE.Group>;
   emotionIntensity?: number;
@@ -26,24 +23,186 @@ interface OptimizedBeastModelProps {
   scale?: number;
 }
 
+// Fallback model path for missing assets
+const FALLBACK_MODEL_PATH = '/models/default_beast.glb';
+
 /**
  * Get GLB model path for beast
  */
 function getBeastModelPath(beastId: string): string {
-  // Real GLB paths - adjust based on your asset structure
-  const modelMap: Record<string, string> = {
-    'kaison': '/models/characters/kaison/kaison.glb',
-    'jaxon': '/models/characters/jaxon/jaxon.glb',
-    'kai-jax': '/models/characters/kai-jax/kai-jax.glb',
-    'zephyr-drake': '/models/characters/zephyr-drake/zephyr-drake.glb',
-    // Add more as needed
-  };
-  
-  return modelMap[beastId] || '/models/characters/default/default.glb';
+  // Check common naming patterns for the generated models
+  const cleanId = beastId.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  return `/models/${cleanId}.glb`;
 }
 
 /**
- * OPTIMIZED BEAST MODEL - Real GLB with animations
+ * Procedural fallback geometry for when model loading fails
+ */
+function ProceduralBeastFallback({ beast, scale = 2.5 }: { beast: any; scale?: number }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const color = beast?.color || beast?.visual?.color || '#8844ff';
+  const accentColor = beast?.accentColor || beast?.visual?.accentColor || '#00ffff';
+
+  useFrame((state) => {
+    if (groupRef.current) {
+      // Idle breathing animation
+      const pulse = 1 + Math.sin(state.clock.elapsedTime * 2) * 0.02;
+      groupRef.current.scale.setScalar(scale * pulse);
+    }
+  });
+
+  return (
+    <group ref={groupRef} scale={scale}>
+      {/* Body */}
+      <mesh castShadow receiveShadow position={[0, 0.8, 0]}>
+        <capsuleGeometry args={[0.4, 0.8, 8, 16]} />
+        <meshStandardMaterial color={color} roughness={0.3} metalness={0.7} />
+      </mesh>
+      {/* Head */}
+      <mesh castShadow receiveShadow position={[0, 1.6, 0.1]}>
+        <sphereGeometry args={[0.3, 16, 16]} />
+        <meshStandardMaterial color={color} roughness={0.3} metalness={0.7} />
+      </mesh>
+      {/* Eyes (accent glow) */}
+      <mesh position={[0.1, 1.65, 0.3]}>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshStandardMaterial color={accentColor} emissive={accentColor} emissiveIntensity={0.8} />
+      </mesh>
+      <mesh position={[-0.1, 1.65, 0.3]}>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshStandardMaterial color={accentColor} emissive={accentColor} emissiveIntensity={0.8} />
+      </mesh>
+    </group>
+  );
+}
+
+/**
+ * Wrapper that safely loads GLB with fallback
+ */
+function SafeGLTFModel({
+  modelPath,
+  beast,
+  groupRef,
+  bodyRef,
+  scale,
+  hitAnim,
+  emotionIntensity,
+  isAttacking,
+  isMoving,
+}: {
+  modelPath: string;
+  beast: any;
+  groupRef: React.RefObject<THREE.Group>;
+  bodyRef?: React.RefObject<THREE.Group>;
+  scale: number;
+  hitAnim: number;
+  emotionIntensity: number;
+  isAttacking: boolean;
+  isMoving: boolean;
+}) {
+  const [loadError, setLoadError] = useState(false);
+  
+  // Attempt to load the model - useGLTF will throw if it fails
+  // We catch this by trying fallback path first if main fails
+  let gltfResult;
+  let pathToUse = modelPath;
+  
+  try {
+    gltfResult = useGLTF(modelPath);
+  } catch {
+    // If primary path fails, try fallback
+    try {
+      gltfResult = useGLTF(FALLBACK_MODEL_PATH);
+      pathToUse = FALLBACK_MODEL_PATH;
+    } catch {
+      // Both failed - will render procedural fallback
+      setLoadError(true);
+    }
+  }
+  
+  const scene = gltfResult?.scene;
+  const animations = gltfResult?.animations || [];
+  const { actions, mixer } = useAnimations(animations, groupRef);
+  
+  // Apply visual enhancements (shading/coloring)
+  const enhancedScene = useMemo(() => {
+    if (!scene) return null;
+    const cloned = scene.clone();
+    cloned.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        
+        if (child.material) {
+          const mat = child.material as THREE.MeshStandardMaterial;
+          mat.roughness = 0.15;
+          mat.metalness = 0.8;
+          mat.envMapIntensity = 2.0;
+          
+          if (beast.accentColor || beast.visual?.accentColor) {
+            mat.emissive = new THREE.Color(beast.accentColor || beast.visual.accentColor);
+            mat.emissiveIntensity = 0.2;
+          }
+        }
+      }
+    });
+    return cloned;
+  }, [scene, beast]);
+
+  // Handle animations
+  useEffect(() => {
+    if (!actions) return;
+    const actionName = isAttacking ? 'attack' : isMoving ? 'run' : 'idle';
+    const action = actions[actionName] || actions['idle'] || Object.values(actions)[0];
+    
+    if (action) {
+      action.reset().fadeIn(0.2).play();
+      return () => { action.fadeOut(0.2); };
+    }
+  }, [actions, isAttacking, isMoving]);
+
+  // Apply scale
+  useEffect(() => {
+    if (groupRef.current) {
+      groupRef.current.scale.setScalar(scale);
+    }
+  }, [scale, groupRef]);
+
+  // Hit animation and effects
+  useFrame((state, delta) => {
+    if (!groupRef.current) return;
+    
+    if (hitAnim > 0) {
+      const shake = Math.sin(state.clock.elapsedTime * 20) * 0.05 * hitAnim;
+      groupRef.current.rotation.z = shake;
+    }
+    
+    if (emotionIntensity > 0) {
+      const pulse = 1 + Math.sin(state.clock.elapsedTime * 3) * 0.02 * emotionIntensity;
+      groupRef.current.scale.setScalar(scale * pulse);
+    }
+
+    if (mixer) {
+      mixer.update(delta);
+    }
+  });
+
+  // If we couldn't load any model, return null (parent will show procedural fallback)
+  if (loadError || !enhancedScene) {
+    return null;
+  }
+
+  return (
+    <primitive 
+      ref={bodyRef as any}
+      object={enhancedScene} 
+      position={[0, 0, 0]}
+    />
+  );
+}
+
+/**
+ * OPTIMIZED BEAST MODEL - Real GLB with animations and fallback
  */
 export default function OptimizedBeastModel({
   beast,
@@ -58,187 +217,40 @@ export default function OptimizedBeastModel({
   scale = 2.5,
 }: OptimizedBeastModelProps) {
   const groupRef = useRef<THREE.Group>(null);
+  const [useFallback, setUseFallback] = useState(false);
   const modelPath = getBeastModelPath(beast.id);
   
-  // Load GLB model - REAL IMPLEMENTATION
-  // Note: useGLTF will throw if file not found, so we use a fallback path
-  const fallbackPath = '/models/characters/default/default.glb';
-  let gltf: any = null;
-  let animations: THREE.AnimationClip[] = [];
-  let mixer: THREE.AnimationMixer | null = null;
-  let actions: Record<string, THREE.AnimationAction> = {};
-  
-  // Try to load model (useGLTF must be called unconditionally)
-  try {
-    gltf = useGLTF(modelPath, true); // true = error on fail
-  } catch {
-    // If model not found, try fallback or use procedural
-    try {
-      gltf = useGLTF(fallbackPath, false); // false = don't error
-    } catch {
-      gltf = null;
-    }
-  }
-  
-  // Get animations if GLB loaded
-  if (gltf) {
-    animations = gltf.animations || [];
-    const animData = useAnimations(animations, groupRef);
-    actions = animData.actions;
-    mixer = animData.mixer;
-  }
-  
-  // Animation state machine - REAL IMPLEMENTATION
-  const { stateMachine, setState, playOnce } = useAnimationStateMachine(
-    mixer,
-    animations,
-    'idle'
-  );
-
-  // Determine animation state from battle state
-  const { playerAttacking, playerAttackType, playerGrounded } = useBattle();
-  
-  const animationState: AnimationState = useMemo(() => {
-    if (isAttacking || playerAttacking) {
-      if (playerAttackType === 'punch') return 'punch';
-      if (playerAttackType === 'kick') return 'kick';
-      if (playerAttackType === 'special') return 'special';
-      return 'punch';
-    }
-    if (isMoving) return 'run';
-    if (!playerGrounded) return 'jump';
-    return 'idle';
-  }, [isAttacking, playerAttacking, playerAttackType, isMoving, playerGrounded]);
-
-  // Update animation state
+  // Error boundary for model loading - if SafeGLTFModel fails, use procedural fallback
   useEffect(() => {
-    if (isAttacking || playerAttacking) {
-      // Play attack animation once
-      playOnce(animationState, () => {
-        setState('idle');
-      });
-    } else {
-      setState(animationState);
-    }
-  }, [animationState, isAttacking, playerAttacking, setState, playOnce]);
+    // Reset fallback state when beast changes
+    setUseFallback(false);
+  }, [beast.id]);
 
-  // Clone and optimize scene for mobile
-  const optimizedScene = useMemo(() => {
-    const cloned = scene.clone();
-    
-    // Mobile optimizations
-    const isMobile = window.innerWidth < 768;
-    
-    cloned.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        
-        // Reduce geometry complexity on mobile
-        if (isMobile && child.geometry) {
-          // Simplify geometry if needed
-          // Note: This is expensive, better to export LOD models
-        }
-        
-        // Optimize materials
-        if (child.material instanceof THREE.MeshStandardMaterial) {
-          child.material.needsUpdate = true;
-          
-          if (isMobile) {
-            // Mobile: simpler materials
-            child.material.roughness = 0.8;
-            child.material.metalness = 0.2;
-            // Disable expensive features
-            child.material.envMapIntensity = 0.5;
-          } else {
-            // Desktop: full quality
-            child.material.roughness = 0.6;
-            child.material.metalness = 0.3;
-            child.material.envMapIntensity = 1.0;
-          }
-        }
-      }
-    });
-    
-    return cloned;
-  }, [scene]);
-
-  // Apply scale
-  useEffect(() => {
-    if (groupRef.current) {
-      groupRef.current.scale.setScalar(scale);
-    }
-  }, [scale]);
-
-  // Hit animation
-  useFrame((state) => {
-    if (!groupRef.current) return;
-    
-    if (hitAnim > 0) {
-      const shake = Math.sin(state.clock.elapsedTime * 20) * 0.05 * hitAnim;
-      groupRef.current.rotation.z = shake;
-    }
-    
-    // Emotion intensity affects scale
-    if (emotionIntensity > 0) {
-      const pulse = 1 + Math.sin(state.clock.elapsedTime * 3) * 0.02 * emotionIntensity;
-      groupRef.current.scale.setScalar(scale * pulse);
-    }
-  });
-
-  // Update mixer - REAL IMPLEMENTATION
-  useFrame((state, delta) => {
-    if (mixer) {
-      mixer.update(delta);
-    }
-    if (stateMachine) {
-      stateMachine.update(delta);
-    }
-  });
-
-  // Update animation state
-  useEffect(() => {
-    if (!stateMachine || !mixer) return;
-    
-    if (isAttacking || playerAttacking) {
-      // Play attack animation once
-      playOnce(animationState, () => {
-        setState('idle');
-      });
-    } else {
-      setState(animationState);
-    }
-  }, [animationState, isAttacking, playerAttacking, setState, playOnce, stateMachine, mixer]);
-
-  // Fallback if GLB not found - use procedural model
-  if (!scene || scene.children.length === 0) {
-    return (
-      <group ref={groupRef}>
-        {/* Fallback procedural model */}
-        <mesh ref={bodyRef as any} position={[0, 1, 0]} castShadow receiveShadow>
-          <capsuleGeometry args={[0.4, 1.0, 8, 16]} />
-          <meshStandardMaterial 
-            color={beast.visual.primaryColor || '#88d0ff'}
-            metalness={0.3}
-            roughness={0.6}
-          />
-        </mesh>
-      </group>
-    );
+  // If we need procedural fallback
+  if (useFallback) {
+    return <ProceduralBeastFallback beast={beast} scale={scale} />;
   }
 
   return (
     <group ref={groupRef}>
-      <primitive 
-        ref={bodyRef as any}
-        object={optimizedScene} 
-        position={[0, 0, 0]}
-      />
+      <React.Suspense fallback={<ProceduralBeastFallback beast={beast} scale={scale} />}>
+        <SafeGLTFModel
+          modelPath={modelPath}
+          beast={beast}
+          groupRef={groupRef}
+          bodyRef={bodyRef}
+          scale={scale}
+          hitAnim={hitAnim}
+          emotionIntensity={emotionIntensity}
+          isAttacking={isAttacking}
+          isMoving={isMoving}
+        />
+      </React.Suspense>
     </group>
   );
 }
 
-// Preload models
-useGLTF.preload('/models/characters/kaison/kaison.glb');
-useGLTF.preload('/models/characters/jaxon/jaxon.glb');
-useGLTF.preload('/models/characters/kai-jax/kai-jax.glb');
+// Preload common models
+useGLTF.preload('/models/kaison.glb');
+useGLTF.preload('/models/jaxon.glb');
+useGLTF.preload('/models/kai_jax.glb');

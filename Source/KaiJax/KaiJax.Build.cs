@@ -13,7 +13,12 @@ public class KaiJax : ModuleRules
             "Engine", 
             "InputCore",
             "EnhancedInput",
-            "GameplayTasks"
+            "GameplayTasks",
+            "Json",
+            "JsonUtilities"
+            "ControlRig",
+            "RigVM",
+            "AnimGraphRuntime"
         });
 
         PrivateDependencyModuleNames.AddRange(new string[] { });

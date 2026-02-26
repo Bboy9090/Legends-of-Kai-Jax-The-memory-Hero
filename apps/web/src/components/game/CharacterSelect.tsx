@@ -226,7 +226,7 @@ function FighterStats({ fighter }: { fighter: Fighter }) {
 
 // 🎮 MAIN CHARACTER SELECT
 export default function CharacterSelect() {
-  const { selectedCharacter, setCharacter, setGameState, stats } = useRunner();
+  const { selectedCharacter, setCharacter, setGameState, gameState, stats } = useRunner();
   const { start } = useGame();
   const beastPreset = useBeastPreset((s) => s.preset);
   const setBeastPreset = useBeastPreset((s) => s.setPreset);
@@ -239,12 +239,26 @@ export default function CharacterSelect() {
     setIsStarting(true);
     setTimeout(() => {
       start();
-      setGameState("playing");
+      // Check if we came from mission select (story mode) or versus mode
+      if (gameState === 'mission-team-select') {
+        // Story/Mission mode - use open-world combat
+        setGameState("mission-gameplay");
+      } else {
+        // Versus/Quick battle - use arcade 1v1
+        setGameState("playing");
+      }
     }, 500);
   };
   
   const goBack = () => {
-    setGameState("menu");
+    // Go back to the appropriate previous screen
+    if (gameState === 'mission-team-select') {
+      setGameState("story-mode-select");
+    } else if (gameState === 'versus-select') {
+      setGameState("menu");  
+    } else {
+      setGameState("menu");
+    }
   };
   
   const handleFighterSelect = (fighter: Fighter) => {

@@ -1,4 +1,4 @@
-// SUPER SMASH GRAND SAGA - OPEN WORLD ZONES
+// AETERNA COVENANT: GENESIS ARENA - OPEN WORLD ZONES
 
 export interface ZoneChallenge {
   id: string;

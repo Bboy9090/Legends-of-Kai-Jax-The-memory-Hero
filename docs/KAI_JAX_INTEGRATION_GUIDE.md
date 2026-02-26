@@ -110,6 +110,32 @@ void GameLoop(float deltaTime) {
 
 ### Unreal Engine (Source/KaiJax)
 
+**Character Data Loader:**
+```cpp
+// Source/KaiJax/Characters/KaiJaxCharacterData.h/cpp
+// Singleton loader for canonical lockfiles
+
+// Get singleton instance (loads data on first access)
+UKaiJaxCharacterData* CharData = UKaiJaxCharacterData::Get();
+
+// Get evolution rules from lockfile
+FCharacterEvolution Evolution = CharData->GetEvolutionRules();
+// Evolution.StartingTailCount = 3
+// Evolution.FinalTailCount = 9
+// Evolution.UnlockRule = "sequential_only"
+
+// Get tail tier reaction for current count
+FTailTierReaction Reaction = CharData->GetTailTierReaction(6);
+// Reaction.TierName = "myth_in_motion"
+// Reaction.FodderConfidence = "very_low"
+// Reaction.PercussionIntensity = 0.75
+
+// Get tail role definition
+FTailRole Role = CharData->GetTailRole(1);
+// Role.Name = "bond"
+// Role.Function = "parry_counter_revive"
+```
+
 **Character Class:**
 ```cpp
 // Source/KaiJax/Characters/KaiJaxCharacter.h
@@ -121,6 +147,7 @@ class AKaiJaxCharacter : public ACharacter {
     TArray<ETailState> TailStates;  // 9 entries (3 active, 6 inactive)
     
     void UnlockTail(int32 TailNumber);  // Sequential only
+    void ApplyTailTierReaction(int32 CurrentTailCount);  // Trigger world systems
 };
 ```
 
@@ -128,19 +155,24 @@ class AKaiJaxCharacter : public ACharacter {
 ```cpp
 void AKaiJaxCharacter::UnlockTail(int32 TailNumber) {
     // Enforce canonical sequential unlock rule: 3→4→5→6→7→8→9
-    // TailNumber is the target tail count (4, 5, 6, 7, 8, or 9)
-    // ActiveTailCount is current count (3, 4, 5, 6, 7, or 8)
+    // TailNumber is 0-indexed array index (0-8)
+    // Pass ActiveTailCount as TailNumber to unlock next tail
+    // E.g., with 3 active tails (indices 0,1,2), call UnlockTail(3) to unlock 4th tail
     
     if (ActiveTailCount >= 9) return;  // Max tails reached
-    if (TailNumber != ActiveTailCount + 1) return;  // Must be sequential
+    if (TailNumber != ActiveTailCount) return;  // Must be sequential
     
-    // Unlock next tail (use 0-based array indexing)
-    int32 arrayIndex = ActiveTailCount;  // Array is 0-indexed, so index 3 is the 4th tail
-    TailStates[arrayIndex] = ETailState::Active;
-    ActiveTailCount++;
-    
-    // Trigger world reactions
-    ApplyTailTierReaction(ActiveTailCount);
+    // Unlock next tail (0-based array indexing)
+    if (TailNumber >= 0 && TailNumber < 9) {
+        if (TailStates[TailNumber] == ETailState::Inactive) {
+            TailStates[TailNumber] = ETailState::Active;
+            ActiveTailCount++;
+            UpdateTailVisuals();
+            
+            // Trigger world reactions
+            ApplyTailTierReaction(ActiveTailCount);
+        }
+    }
 }
 ```
 
@@ -359,6 +391,7 @@ Before deploying Kai-Jax:
 - **C++ Example:** `/engine_core/character/example_load_kai_jax.cpp`
 - **TypeScript Loader:** `/packages/shared/src/character/kaiJaxLoader.ts`
 - **Unreal Character:** `/Source/KaiJax/Characters/KaiJaxCharacter.cpp`
+- **Unreal Character Data Loader:** `/Source/KaiJax/Characters/KaiJaxCharacterData.cpp`
 
 ## Contact
 

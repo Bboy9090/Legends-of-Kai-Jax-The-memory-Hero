@@ -1,0 +1,36 @@
+{
+  "quest_id": "memory_trial",
+  "quest_type": "main",
+  "name": "Memory Trial",
+  "description": "The Corruption Den holds a powerful enemy. Elder Kaito believes defeating it will unlock your fourth tail.",
+  "giver_npc_id": "elder_kaito",
+  "requirements": {
+    "min_tail_count": 3,
+    "prerequisite_quests": ["first_awakening"]
+  },
+  "objectives": [
+    {
+      "id": "enter_corruption_den",
+      "type": "reach_location",
+      "description": "Enter the Corruption Den",
+      "target": "corruption_den",
+      "count": 1
+    },
+    {
+      "id": "defeat_corruption_guardian",
+      "type": "defeat_enemies",
+      "description": "Defeat the Corruption Guardian (Boss)",
+      "target": "corruption_guardian",
+      "count": 1
+    }
+  ],
+  "rewards": {
+    "experience": 500,
+    "unlocks": ["fourth_tail", "proven_predator_title"]
+  },
+  "dialogue": {
+    "intro": "The Corruption Den is a wound in our city. Within lurks a guardian of darkness. Defeat it, and the Memory Weave will recognize your strength. Your fourth tail awaits.",
+    "progress": "The den seethes with dark power. Steel yourself, and remember: precision over panic.",
+    "completion": "You've done it. The corruption recedes, and I see it—your fourth tail emerges! You are no longer awakening. You are becoming."
+  }
+}

@@ -5,6 +5,9 @@ import "@fontsource/inter";
 import "@fontsource/bebas-neue";
 
 import BattleScene from "./components/game/BattleScene";
+import OpenWorldCombat from "./components/game/OpenWorldCombat";
+import RagingCityWorld from "./components/game/RagingCityWorld";
+import ExplorationUI from "./components/game/ExplorationUI";
 import MobileControls from "./components/game/MobileControls";
 import BattleUI from "./components/game/BattleUI";
 import DialogueDisplay from "./components/game/DialogueDisplay";
@@ -74,6 +77,14 @@ function App() {
   
   // ⚡ LEGENDARY INTRO SYSTEM
   const [showIntro, setShowIntro] = useState(true);
+  
+  // Open-world exploration state
+  const [currentDistrict, setCurrentDistrict] = useState("Ashblock Heights");
+  const [encounterAlert, setEncounterAlert] = useState<{
+    type: 'battle' | 'boss' | 'story' | 'loot';
+    district: string;
+    level: number;
+  } | null>(null);
 
   // Initialize audio on mount
   useEffect(() => {
@@ -147,12 +158,57 @@ function App() {
         {/* Main Menu */}
         {phase === 'ready' && gameState === 'menu' && !showIntro && <MainMenu />}
         
-        {/* Story Mode - redirect to character select for now */}
+        {/* OPEN WORLD EXPLORATION - Pokemon-style walk around Raging City */}
         {phase === 'ready' && gameState === 'story-mode-select' && (
-          <CharacterSelect />
+          <>
+            <Canvas
+              shadows
+              camera={{
+                position: [0, 12, 18],
+                fov: 60,
+                near: 0.1,
+                far: 500
+              }}
+              onCreated={({ gl }) => {
+                gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                gl.outputColorSpace = THREE.SRGBColorSpace;
+                gl.toneMapping = THREE.ACESFilmicToneMapping;
+                gl.toneMappingExposure = 0.8;
+                gl.shadowMap.enabled = true;
+              }}
+              gl={{ antialias: true, powerPreference: "high-performance" }}
+            >
+              <Suspense fallback={null}>
+                <RagingCityWorld 
+                  onEncounter={(enc) => {
+                    console.log("Encounter triggered:", enc);
+                    setEncounterAlert({
+                      type: enc.type,
+                      district: enc.district,
+                      level: enc.enemyLevel
+                    });
+                  }}
+                  onDistrictChange={(district) => {
+                    console.log("District changed:", district);
+                    setCurrentDistrict(district);
+                  }}
+                />
+              </Suspense>
+            </Canvas>
+            <ExplorationUI 
+              currentDistrict={currentDistrict}
+              encounterAlert={encounterAlert}
+              onDismissAlert={() => {
+                if (encounterAlert?.type === 'battle' || encounterAlert?.type === 'boss') {
+                  setGameState('mission-team-select');
+                }
+                setEncounterAlert(null);
+              }}
+            />
+          </>
         )}
         
-        {/* Versus Mode - redirect to character select for now */}
+        {/* Versus Mode - Show character select for arcade-style fighting */}
         {phase === 'ready' && gameState === 'versus-select' && (
           <CharacterSelect />
         )}
@@ -179,7 +235,7 @@ function App() {
                 gl.setPixelRatio(q.pixelRatio);
                 gl.outputColorSpace = THREE.SRGBColorSpace;
                 gl.toneMapping = THREE.ACESFilmicToneMapping;
-                gl.toneMappingExposure = 1.15;
+                gl.toneMappingExposure = 1.5;
                 gl.shadowMap.enabled = true;
                 gl.shadowMap.type = q.shadowMap.type;
               }}
@@ -191,7 +247,14 @@ function App() {
               <color attach="background" args={["#1a1a2e"]} />
               
               <Suspense fallback={null}>
-                <BattleScene />
+                {/* Render different combat modes based on game state */}
+                {gameState === 'mission-gameplay' ? (
+                  // RPG Open-World Combat for Story/Mission Mode
+                  <OpenWorldCombat missionId="placeholder-mission" />
+                ) : (
+                  // Arcade-Style 1v1 for Versus/Quick Battle
+                  <BattleScene />
+                )}
               </Suspense>
             </Canvas>
             

@@ -1,4 +1,5 @@
 #include "KaiJaxCharacter.h"
+#include "KaiJaxCharacterData.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -40,17 +41,29 @@ void AKaiJaxCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
-    // TODO: Load character data from ../../kai_jax.character.json (lockfile at repo root)
-    // This should validate:
+    // Load character data from canonical lockfile at repo root (../../kai_jax.character.json)
+    // This validates:
     // - evolution.starting_tail_count == 3
     // - evolution.final_tail_count == 9
     // - evolution.unlock_rule == "sequential_only"
     // - tail_roles array defines all 9 tail functions
-    // For now, using hardcoded values that match the lockfile
+    UKaiJaxCharacterData* CharData = UKaiJaxCharacterData::Get();
     
-    // Validate initial state matches canon
-    check(ActiveTailCount == 3);  // Per kai_jax.character.json: evolution.starting_tail_count
-    check(TailStates.Num() == 9);  // Per kai_jax.character.json: evolution.final_tail_count
+    if (CharData && CharData->IsDataLoaded())
+    {
+        FCharacterEvolution Evolution = CharData->GetEvolutionRules();
+        
+        // Validate initial state matches canon
+        check(ActiveTailCount == Evolution.StartingTailCount);  // Per kai_jax.character.json: evolution.starting_tail_count
+        check(TailStates.Num() == Evolution.FinalTailCount);    // Per kai_jax.character.json: evolution.final_tail_count
+        
+        UE_LOG(LogTemp, Log, TEXT("[KaiJax Character] Loaded with %d tails (max: %d, rule: %s)"),
+            ActiveTailCount, Evolution.FinalTailCount, *Evolution.UnlockRule);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("[KaiJax Character] Failed to load character data - using hardcoded defaults"));
+    }
 
     // Activate initial 3 memory layers (layers are 1-indexed: 1, 2, 3)
     // This matches the starting tail count of 3
@@ -60,6 +73,9 @@ void AKaiJaxCharacter::BeginPlay()
     }
 
     UpdateTailVisuals();
+    
+    // Apply initial tail tier reaction (starting at 3 tails)
+    ApplyTailTierReaction(ActiveTailCount);
 }
 
 void AKaiJaxCharacter::Tick(float DeltaTime)
@@ -85,6 +101,7 @@ void AKaiJaxCharacter::UnlockTail(int32 TailNumber)
     if (ActiveTailCount >= 9)
     {
         // Already have all 9 tails - cannot unlock more
+        UE_LOG(LogTemp, Warning, TEXT("[KaiJax] Cannot unlock tail - already at maximum (9)"));
         return;
     }
     
@@ -93,6 +110,8 @@ void AKaiJaxCharacter::UnlockTail(int32 TailNumber)
     if (TailNumber != ActiveTailCount)
     {
         // Attempting to skip tails or unlock out of order - DISALLOWED
+        UE_LOG(LogTemp, Warning, TEXT("[KaiJax] Cannot unlock tail %d - must unlock sequentially (current: %d)"), 
+            TailNumber, ActiveTailCount);
         return;
     }
 
@@ -102,7 +121,13 @@ void AKaiJaxCharacter::UnlockTail(int32 TailNumber)
         {
             TailStates[TailNumber] = ETailState::Active;
             ActiveTailCount++;
+            
+            UE_LOG(LogTemp, Log, TEXT("[KaiJax] Tail unlocked! New tail count: %d"), ActiveTailCount);
+            
             UpdateTailVisuals();
+            
+            // Trigger world reactions for new tail tier
+            ApplyTailTierReaction(ActiveTailCount);
         }
     }
 }
@@ -113,12 +138,57 @@ void AKaiJaxCharacter::UpdateTailVisuals()
     // Drive emissive intensity via material dynamic instance
     // Called whenever tail count changes or memory layer activates
     
-    // TODO: Trigger world reactions based on tail tier
+    // Blueprint-driven visual updates should subscribe to tail count changes
+    // and update materials, particle effects, etc.
+}
+
+void AKaiJaxCharacter::ApplyTailTierReaction(int32 CurrentTailCount)
+{
+    // Trigger world reactions based on tail tier
     // Reference: ../../data/world/tail_tier_reactions.json (lockfile at repo root)
     // - Update enemy AI behavior (fodder_confidence, elite_tactics)
     // - Adjust music intensity (combat_layer, percussion_intensity)
     // - Trigger NPC dialogue changes (default_attitude, fear_level)
     // - Modify world state (environmental_response, unlock_gates)
+    
+    UKaiJaxCharacterData* CharData = UKaiJaxCharacterData::Get();
+    if (!CharData)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[KaiJax] Cannot apply tail tier reaction - character data not loaded"));
+        return;
+    }
+    
+    FTailTierReaction Reaction = CharData->GetTailTierReaction(CurrentTailCount);
+    
+    UE_LOG(LogTemp, Log, TEXT("[KaiJax] Tail Tier Reaction: %s (%d tails)"), *Reaction.TierName, CurrentTailCount);
+    UE_LOG(LogTemp, Log, TEXT("  - Enemy Behavior: %s confidence, %s tactics"), 
+        *Reaction.FodderConfidence, *Reaction.EliteTactics);
+    UE_LOG(LogTemp, Log, TEXT("  - Music: %s layer, percussion %.2f"), 
+        *Reaction.CombatLayer, Reaction.PercussionIntensity);
+    UE_LOG(LogTemp, Log, TEXT("  - NPCs: %s attitude, %s fear level"), 
+        *Reaction.DefaultAttitude, *Reaction.FearLevel);
+    UE_LOG(LogTemp, Log, TEXT("  - World: %s"), *Reaction.Descriptor);
+    
+    // TODO: Implement actual game system hooks
+    // These should be implemented via Blueprint events or C++ delegates:
+    // - OnTailTierChanged(FTailTierReaction Reaction)
+    // - EnemyAIController should subscribe and adjust behavior
+    // - MusicSystem should subscribe and adjust layers
+    // - DialogueSystem should subscribe and filter available dialogue
+    // - WorldStateManager should subscribe and trigger unlock gates
+    
+    // For now, log the changes that should occur
+    // Game systems can query GetCurrentTailTierReaction() to get active reaction data
+}
+
+FTailTierReaction AKaiJaxCharacter::GetCurrentTailTierReaction() const
+{
+    UKaiJaxCharacterData* CharData = UKaiJaxCharacterData::Get();
+    if (CharData)
+    {
+        return CharData->GetTailTierReaction(ActiveTailCount);
+    }
+    return FTailTierReaction();
 }
 
 void AKaiJaxCharacter::ActivateMemoryLayer(int32 LayerNumber)

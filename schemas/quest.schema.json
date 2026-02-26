@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://legends-of-kai-jax.com/schemas/quest.schema.json",
+  "title": "Quest System Schema",
+  "description": "Schema for quest and NPC interaction systems in Legends of Kai-Jax",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["quest_id", "quest_type", "name", "objectives"],
+  "properties": {
+    "quest_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$",
+      "description": "Unique identifier for the quest"
+    },
+    "quest_type": {
+      "type": "string",
+      "enum": ["main", "side", "mythological", "challenge"],
+      "description": "Type of quest"
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name of the quest"
+    },
+    "description": {
+      "type": "string",
+      "description": "Quest description shown to player"
+    },
+    "giver_npc_id": {
+      "type": "string",
+      "description": "NPC who gives this quest"
+    },
+    "requirements": {
+      "type": "object",
+      "properties": {
+        "min_tail_count": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 9,
+          "description": "Minimum tail count required to accept quest"
+        },
+        "prerequisite_quests": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Quests that must be completed first"
+        }
+      }
+    },
+    "objectives": {
+      "type": "array",
+      "description": "List of objectives for this quest",
+      "items": {
+        "$ref": "#/definitions/objective"
+      },
+      "minItems": 1
+    },
+    "rewards": {
+      "type": "object",
+      "properties": {
+        "experience": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unlocks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "What gets unlocked upon completion"
+        }
+      }
+    },
+    "dialogue": {
+      "type": "object",
+      "properties": {
+        "intro": {
+          "type": "string",
+          "description": "Dialogue when quest is given"
+        },
+        "progress": {
+          "type": "string",
+          "description": "Dialogue during quest"
+        },
+        "completion": {
+          "type": "string",
+          "description": "Dialogue when quest is completed"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "objective": {
+      "type": "object",
+      "required": ["id", "type", "description"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["defeat_enemies", "reach_location", "interact_npc", "collect_item"],
+          "description": "Type of objective"
+        },
+        "description": {
+          "type": "string",
+          "description": "Objective description shown to player"
+        },
+        "target": {
+          "type": "string",
+          "description": "Target entity (enemy type, location ID, NPC ID, item ID)"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number required (for enemies, items, etc.)"
+        }
+      }
+    }
+  }
+}
