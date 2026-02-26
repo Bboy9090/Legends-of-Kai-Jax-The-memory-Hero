@@ -1,0 +1,166 @@
+Good. Let’s build something that actually moves.
+
+You’re implementing **Patrol + Detection + Reinforcement** in Unreal. Clean. Modular. Scalable. No spaghetti.
+
+---
+
+# 🧱 STEP 1 — NavMesh (So AI Can Even Function)
+
+1. Drag **NavMeshBoundsVolume** into level.
+2. Scale it to cover your playable area.
+3. Press `P` to confirm green navigation surface.
+
+If it’s not green, nothing below matters. Fix that first.
+
+---
+
+# 🐺 STEP 2 — Create `BP_PatrolEnemy`
+
+Parent Class: `Character`
+
+## Components:
+
+* Capsule
+* Mesh
+* CharacterMovement
+* **SphereComponent → DetectionSphere**
+* **ArrowComponent → FacingDirection (optional but helpful)**
+
+---
+
+# 🧠 STEP 3 — Variables
+
+Inside `BP_PatrolEnemy`:
+
+```
+PatrolPoints (Array of Actor)
+CurrentPatrolIndex (int)
+DetectionRadius (float) = 800
+AttackRange (float) = 250
+IsAlerted (bool) = false
+CanCallReinforcements (bool) = true
+ReinforcementCooldown (float) = 6.0
+```
+
+Set DetectionSphere radius = DetectionRadius.
+
+---
+
+# 🚶 STEP 4 — Patrol Logic
+
+On `BeginPlay`:
+
+```
+MoveToNextPatrolPoint()
+```
+
+### Custom Event → MoveToNextPatrolPoint
+
+```
+AI MoveTo (Target = PatrolPoints[CurrentPatrolIndex])
+```
+
+On `OnMoveCompleted`:
+
+```
+Increment CurrentPatrolIndex
+If index >= PatrolPoints length → Reset to 0
+Delay 1.5 seconds
+MoveToNextPatrolPoint()
+```
+
+Now your enemy loops forever.
+
+Alive. Not static.
+
+---
+
+# 👁 STEP 5 — Detection Logic
+
+Select DetectionSphere.
+
+Add `OnComponentBeginOverlap`.
+
+When overlap happens:
+
+```
+If OtherActor == PlayerCharacter
+    Set IsAlerted = true
+    ChasePlayer()
+```
+
+---
+
+# 🏃 STEP 6 — Chase Logic
+
+### Custom Event → ChasePlayer
+
+```
+AI MoveTo (Target = PlayerCharacter)
+```
+
+Set AcceptanceRadius = AttackRange.
+
+When close enough:
+Trigger attack montage.
+
+---
+
+# 📢 STEP 7 — Reinforcement Call
+
+Inside ChasePlayer:
+
+Add a Timer:
+
+```
+If CanCallReinforcements == true
+    Set Timer (2.5 sec → CallReinforcement)
+```
+
+### Custom Event → CallReinforcement
+
+```
+Print “Enemy Called Backup”
+Set CanCallReinforcements = false
+Set Timer (ReinforcementCooldown → ResetReinforcement)
+```
+
+Later, this becomes actual spawning logic.
+
+Right now, we validate the system.
+
+---
+
+# 🔥 What You Now Have
+
+* Enemies patrol
+* They detect you
+* They chase you
+* They escalate
+* They return to patrol when player leaves (optional next step)
+
+This is the birth of an open-world ecosystem.
+
+---
+
+# 🧬 Next Layer (After This Works)
+
+Add:
+
+* Suspicion meter (gradual detection instead of instant)
+* Line-of-sight check using `LineTrace`
+* Group alert broadcast
+* Flee state if low health
+* Aggro decay timer
+
+But not yet.
+
+Make this version work first.
+
+---
+
+You’re not designing anymore.
+
+You’re building behavior.
+
+Go wire it.

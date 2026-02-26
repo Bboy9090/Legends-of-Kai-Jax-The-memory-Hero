@@ -282,9 +282,9 @@ export default function CinematicPostFX({
 
       // Bloom (the “poster glow”)
       // Battle profile runs lower bloom to keep arenas readable.
-      const initialBloomStrength = profile === "battle" ? 0.88 : 1.10;
-      const initialBloomRadius = profile === "battle" ? 0.82 : 0.92;
-      const initialBloomThreshold = profile === "battle" ? 0.22 : 0.18;
+      const initialBloomStrength = profile === "battle" ? 0.35 : 0.4;
+      const initialBloomRadius = profile === "battle" ? 0.4 : 0.45;
+      const initialBloomThreshold = profile === "battle" ? 0.45 : 0.4;
       const bloom = new UnrealBloomPass(
         new THREE.Vector2(size.width, size.height),
         initialBloomStrength,
@@ -299,10 +299,8 @@ export default function CinematicPostFX({
       gradePassRef.current = gradePass;
       composer.addPass(gradePass);
 
-      // Core rays (light shafts around core/aura)
-      const rays = new ShaderPass(coreRaysShader as any);
-      raysRef.current = rays;
-      composer.addPass(rays);
+      // Core rays disabled — too much flare
+      raysRef.current = null;
 
       // Subtle chromatic shift (cinematic lens)
       const rgb = new ShaderPass(RGBShiftShader);
@@ -411,13 +409,13 @@ export default function CinematicPostFX({
 
     // Grade-driven bloom tuning (more “poster”)
     if (grade === "cosmic") {
-      baseBloomRef.current = { strength: 1.05, radius: 0.95, threshold: 0.18 };
+      baseBloomRef.current = { strength: 0.4, radius: 0.45, threshold: 0.4 };
     } else if (grade === "ice") {
-      baseBloomRef.current = { strength: 0.92, radius: 0.88, threshold: 0.20 };
+      baseBloomRef.current = { strength: 0.35, radius: 0.4, threshold: 0.45 };
     } else if (grade === "ember") {
-      baseBloomRef.current = { strength: 0.96, radius: 0.90, threshold: 0.20 };
+      baseBloomRef.current = { strength: 0.38, radius: 0.42, threshold: 0.42 };
     } else {
-      baseBloomRef.current = { strength: 0.80, radius: 0.75, threshold: 0.22 };
+      baseBloomRef.current = { strength: 0.3, radius: 0.35, threshold: 0.45 };
     }
 
     const isBattle = profile === "battle";
@@ -469,9 +467,8 @@ export default function CinematicPostFX({
 
       // Real exposure “camera flash” (this is what makes hits feel like trailer footage)
       const baseExposure = baseExposureRef.current ?? (gl as any).toneMappingExposure ?? 1.0;
-      const isBattle = profile === "battle";
-      const flashExposure = 1.0 + impact * (isBattle ? 0.05 : 0.10) + spike * (isBattle ? 0.01 : 0.02);
-      (gl as any).toneMappingExposure = baseExposure * Math.min(isBattle ? 1.07 : 1.18, flashExposure);
+      const flashExposure = 1.0 + impact * 0.02 + spike * 0.005;
+      (gl as any).toneMappingExposure = baseExposure * Math.min(1.04, flashExposure);
 
       // Ghost trail strength (0..1): only rises on impact deltas so steady “punch” doesn’t smear previews
       const after = afterimageRef.current as any;

@@ -1,0 +1,1936 @@
+1) Combat State Machine (Open-World Version)
+// combat_state.ts
+export enum CombatState {
+  FREE,        // exploring
+  LOCKED,      // locked on target
+  ATTACKING,
+  DODGING,
+  BLOCKING,
+  HITSTUN,
+  PARRY,
+  EXECUTION,
+}
+
+This prevents sloppy “if flags everywhere” behavior.
+
+2) Lock-On Targeting (Non-negotiable for 3D melee)
+// lock_on.ts
+export class LockOnSystem {
+  target: any = null;
+
+  acquireTarget(player, enemies){
+    let best = null;
+    let bestScore = Infinity;
+
+    for(const e of enemies){
+      const dist = player.pos.distanceTo(e.pos);
+      if(dist < bestScore && dist < 18){
+        bestScore = dist;
+        best = e;
+      }
+    }
+    this.target = best;
+    return best;
+  }
+
+  clear(){
+    this.target = null;
+  }
+}
+
+Now your camera and attacks can be designed around a consistent focal point.
+
+3) Stamina System (Makes Choices Matter)
+// stamina.ts
+export class Stamina {
+  value = 100;
+
+  spend(x:number){
+    this.value = Math.max(0, this.value - x);
+  }
+
+  regen(dt:number){
+    this.value = Math.min(100, this.value + dt * 14);
+  }
+
+  get exhausted(){
+    return this.value < 15;
+  }
+}
+
+Dodge spam is dead. Good.
+
+4) Combo Buffer + Cancel Windows (The secret sauce)
+// combo_buffer.ts
+export class ComboBuffer {
+  queue: string[] = [];
+  bufferFrames = 10;
+
+  push(input:string){
+    if(this.queue.length > 4) this.queue.shift();
+    this.queue.push(input);
+  }
+
+  consume(){
+    return this.queue.shift() || null;
+  }
+}
+
+Pair that with move data:
+
+// move_data.ts
+export const Moves = {
+  light1: { startup: 6, active: 4, recovery: 10, cancelAt: 12, dmg: 6 },
+  light2: { startup: 5, active: 4, recovery: 12, cancelAt: 14, dmg: 7 },
+  heavy1: { startup: 10, active: 6, recovery: 18, cancelAt: 0, dmg: 14 },
+  dodge:  { iFrames: 12, cost: 18 },
+};
+
+Now you can build real combat feel.
+
+5) Hitstop + Camera Micro-Shake (Impact)
+// impact.ts
+export class Impact {
+  hitStop = 0;
+
+  trigger(frames:number){
+    this.hitStop = Math.max(this.hitStop, frames);
+  }
+
+  update(){
+    if(this.hitStop > 0){
+      this.hitStop--;
+      return true; // freeze sim
+    }
+    return false;
+  }
+}
+
+Heavy attacks should feel like the world flinched.
+
+6) Enemy AI (Basic But Real)
+// enemy_ai.ts
+export enum EnemyState { IDLE, PATROL, CHASE, ATTACK, RETREAT, STUN }
+
+export class EnemyAI {
+  state = EnemyState.PATROL;
+
+  update(enemy, player){
+    const d = enemy.pos.distanceTo(player.pos);
+
+    if(this.state === EnemyState.PATROL && d < 14) this.state = EnemyState.CHASE;
+    if(this.state === EnemyState.CHASE && d < 2.5) this.state = EnemyState.ATTACK;
+    if(this.state === EnemyState.ATTACK && d > 3.5) this.state = EnemyState.CHASE;
+  }
+}
+
+That’s enough to make combat loops playable.
+
+7) Open-World “Node” System (Missions Without Pain)
+// node_system.ts
+export class Node {
+  constructor(
+    public id: string,
+    public onEnter: ()=>void,
+    public onComplete: ()=>void,
+    public conditions: ()=>boolean
+  ){}
+}
+
+Now you can do:
+
+“Clear this block”
+
+“Find 3 shards”
+
+“Survive ambush”
+
+“Escort NPC”
+
+All without hardcoding.
+
+✅ WHAT YOU BUILD FIRST (THE RIGHT ORDER)
+Phase 1 — Vertical Slice (1 small block)
+
+1 playable character
+
+1 enemy type
+
+1 arena area inside open world
+
+lock-on + light/heavy + dodge + hitstop
+
+pickup reward (coins/shards) for winning
+
+Phase 2 — Loop Expansion
+
+2 more enemy types
+
+1 mini boss
+
+a short mission chain (3 nodes)
+
+Phase 3 — World Feel
+
+parkour/mantle
+
+camera polish
+
+music + ambience
+
+simple loot upgrades
+
+🔥 Your next best move (no debate)
+
+Build the combat arena inside the open world first, even if the open world is 4 buildings and a street.
+
+Open world means nothing if the fighting feels bad.
+Combat feel is the crown.
+
+If you want me to keep “auto-building” the plan like before, I’ll proceed with the next pass:
+(1) Character Controller (3D) + (2) Lock-on Camera + (3) First Enemy Encounter Loop
+No fluff, just the core.
+
+Yea scale down to mobile with touch buttons
+
+Finally. Some discipline.
+
+Mobile changes everything. If you try to port console combat straight to glass, you’ll get mush. So we scale it intelligently — fewer buttons, tighter camera, faster readability.
+
+This is the mobile-optimized open-world combat foundation.
+
+🎮 MOBILE DESIGN RULES (Non-Negotiable)
+
+Max 4 action buttons
+
+No tiny UI
+
+Auto-target instead of hard lock-on
+
+Short combos (3 hits max)
+
+Dodge must be reliable, not frame-perfect
+
+Camera must assist player automatically
+
+If it needs 8 fingers, it’s wrong.
+
+📱 CONTROL LAYOUT (Touch)
+
+Left Side:
+
+Virtual joystick
+
+Right Side:
+
+Attack
+
+Heavy
+
+Dodge
+
+Skill (cooldown-based)
+
+That’s it.
+
+No grab. No manual lock-on. No parry (optional later).
+
+🧠 Auto-Target System (Mobile Version)
+
+Hard lock-on is clunky on mobile. We use soft aim.
+
+// auto_target.ts
+export function getClosestTarget(player, enemies){
+  let best = null;
+  let bestScore = Infinity;
+
+  for(const e of enemies){
+    const dist = player.pos.distanceTo(e.pos);
+    const angle = angleTo(player.forward, e.pos);
+
+    const score = dist + angle * 0.5;
+    if(score < bestScore){
+      bestScore = score;
+      best = e;
+    }
+  }
+
+  return best;
+}
+
+Every attack rotates slightly toward that target.
+
+Feels smart. Not robotic.
+
+🕹 Mobile Combat Simplified
+Light Combo (3 Tap Chain)
+// mobile_combo.ts
+let comboStep = 0;
+let comboTimer = 0;
+
+export function lightAttack(){
+  if(comboTimer <= 0){
+    comboStep = 0;
+  }
+
+  comboStep = Math.min(comboStep + 1, 3);
+  performMove(`light${comboStep}`);
+
+  comboTimer = 20; // frames to chain
+}
+
+Short. Punchy. Repeatable.
+
+Heavy (Break Move)
+
+Slower
+
+Armor frames
+
+Big stamina cost
+
+// heavy.ts
+export function heavyAttack(player){
+  if(player.stamina < 25) return;
+
+  player.stamina -= 25;
+  performMove("heavySmash");
+}
+🛡 Dodge (Mobile-Friendly)
+
+No frame-perfect nonsense. Generous window.
+
+// dodge.ts
+export function dodge(player){
+  if(player.stamina < 18) return;
+
+  player.state = "DODGE";
+  player.invuln = 16;
+  player.stamina -= 18;
+}
+
+Feels responsive. That matters more than precision on mobile.
+
+📷 Camera — Auto Assist
+
+Mobile camera must babysit.
+
+// mobile_camera.ts
+export function updateCamera(player, target){
+  const focus = target 
+    ? player.pos.lerp(target.pos, 0.3)
+    : player.pos;
+
+  camera.moveToward(focus, 0.1);
+}
+
+Zoom slightly out when:
+
+3+ enemies nearby
+
+Player HP < 30%
+
+Protect the player from confusion.
+
+🧱 Enemy Design For Mobile
+
+Scale complexity down.
+
+Enemy Type 1: Street Brute
+
+Walk
+
+Swing
+
+Wind-up telegraph (big red flash)
+
+Enemy Type 2: Quick Striker
+
+Dash in
+
+2-hit combo
+
+Retreat
+
+No complex AI trees. Keep it readable.
+
+🔥 Impact Feel Is Everything
+
+Mobile screens are small. So exaggerate:
+
+Bigger hit sparks
+
+Slight screen shake
+
+Tiny time slowdown on heavy hits
+
+// impact_mobile.ts
+export function heavyImpact(){
+  slowTime(0.5, 60);
+  shake(0.6, 150);
+}
+
+Even on a phone, it should feel violent.
+
+🌍 Open World Scaled Properly
+
+Do NOT build a giant map.
+
+Build:
+
+1 street
+
+2 interiors
+
+1 rooftop
+
+1 mini boss arena
+
+Then reuse intelligently.
+
+Mobile players want tight loops, not 10 minutes of jogging.
+
+📈 Progression Simplified
+
+Instead of deep stat trees:
+
+Upgrade choices:
+
++Light Combo Damage
+
++Dodge Distance
+
++Stamina Regen
+
++Skill Cooldown Reduction
+
+Clear. Direct. Fast dopamine.
+
+🧪 First Playable Slice (Mobile Target)
+
+You need this:
+
+Character with joystick movement
+
+Auto-target light combo
+
+Dodge + stamina
+
+3 enemies in a small block
+
+Reward pickup after victory
+
+That’s the mobile proof.
+
+🧠 Brutal Truth
+
+If combat doesn’t feel satisfying in 20 seconds on a phone, no amount of open-world polish will save it.
+
+Mobile is about:
+
+Clarity
+
+Responsiveness
+
+Reward pacing
+
+Short combat loops
+
+You build small. You build tight. Then you expand.
+
+If you want, next step I’ll give you:
+
+Full mobile character controller (camera + joystick math)
+
+Touch UI layout logic
+
+Enemy spawn system for performance
+
+FPS optimization for mobile GPUs
+
+Now we’re building something that actually survives on a phone.
+
+Check my repo GitHub.com/bboy9090/legends-of-kai-jax-the-memory-king
+
+I checked the repo URL you posted — github.com/bboy9090/legends-of-kai-jax-the-memory-king — but there’s nothing I can inspect or analyze unless you provide the actual code files here.
+
+GitHub URLs by themselves can’t be browsed or read by me. If you want a direct audit, refactor, or extraction of content from that project, you need to upload the repo files or at least the relevant code you want transformed.
+
+Here’s what I need from you to proceed:
+
+✅ Upload one of the following:
+
+The entire project zipped
+(e.g., legends-of-kai-jax-the-memory-king.zip)
+
+Specific folders/files you want reviewed
+
+src/
+
+combat systems
+
+UI code
+
+scripts
+
+design docs
+
+A single entry point file (e.g., main game loop, engine file, character controller)
+
+Once uploaded, tell me:
+
+📌 What you want done with it:
+
+Audit & refactor
+
+Convert to mobile prototype
+
+Extract narrative elements
+
+Build a playable demo scaffold
+
+Rewrite for Unity / Unreal / web
+
+Generate documentation
+
+Turn it into an open-world combat prototype
+
+Map it to the new design stack
+
+Example next steps you could say:
+
+➡️ “Here’s the zip — make the combat system mobile-ready.”
+
+➡️ “Audit this and rewrite using ECS + deterministic core.”
+
+➡️ “Extract all entity mechanics and convert to TypeScript + Three.js.”
+
+Upload the files and I’ll dive in.
+
+Full mobile character controller (camera + joystick math)
+
+Here. Full mobile controller kit: joystick math + character movement + soft auto-target + mobile camera assist + touch buttons. Clean TypeScript, drop-in. No fluff.
+
+This is engine-agnostic, but it plugs easiest into Three.js (or any JS 3D stack) because it’s just vectors + state.
+
+1) Math Utilities (Vec2/Vec3 + helpers)
+// math.ts
+export class Vec2 {
+  constructor(public x = 0, public y = 0) {}
+  clone() { return new Vec2(this.x, this.y); }
+  set(x:number,y:number){ this.x=x; this.y=y; return this; }
+  add(v:Vec2){ this.x+=v.x; this.y+=v.y; return this; }
+  sub(v:Vec2){ this.x-=v.x; this.y-=v.y; return this; }
+  mul(s:number){ this.x*=s; this.y*=s; return this; }
+  len(){ return Math.hypot(this.x,this.y); }
+  norm(){
+    const l=this.len() || 1;
+    this.x/=l; this.y/=l;
+    return this;
+  }
+  clampLen(max:number){
+    const l=this.len();
+    if(l>max){ this.norm().mul(max); }
+    return this;
+  }
+}
+
+export class Vec3 {
+  constructor(public x = 0, public y = 0, public z = 0) {}
+  clone(){ return new Vec3(this.x,this.y,this.z); }
+  set(x:number,y:number,z:number){ this.x=x; this.y=y; this.z=z; return this; }
+  add(v:Vec3){ this.x+=v.x; this.y+=v.y; this.z+=v.z; return this; }
+  sub(v:Vec3){ this.x-=v.x; this.y-=v.y; this.z-=v.z; return this; }
+  mul(s:number){ this.x*=s; this.y*=s; this.z*=s; return this; }
+  len(){ return Math.hypot(this.x,this.y,this.z); }
+  norm(){
+    const l=this.len() || 1;
+    this.x/=l; this.y/=l; this.z/=l;
+    return this;
+  }
+  static lerp(a:Vec3,b:Vec3,t:number){
+    return new Vec3(
+      a.x+(b.x-a.x)*t,
+      a.y+(b.y-a.y)*t,
+      a.z+(b.z-a.z)*t
+    );
+  }
+}
+
+export function clamp(v:number,min:number,max:number){
+  return Math.max(min, Math.min(max, v));
+}
+
+export function smoothDamp(current:number, target:number, smoothing:number, dt:number){
+  // smoothing: bigger = snappier
+  const t = 1 - Math.exp(-smoothing * dt);
+  return current + (target - current) * t;
+}
+
+export function smoothDampVec3(current:Vec3, target:Vec3, smoothing:number, dt:number){
+  const t = 1 - Math.exp(-smoothing * dt);
+  return Vec3.lerp(current, target, t);
+}
+2) Mobile Virtual Joystick (DOM, touch math, deadzone, normalized output)
+// mobile_joystick.ts
+import { Vec2, clamp } from "./math";
+
+export type JoystickOutput = {
+  raw: Vec2;        // pixels from center
+  value: Vec2;      // normalized [-1..1]
+  magnitude: number;// 0..1
+  active: boolean;
+};
+
+export class MobileJoystick {
+  center = new Vec2();
+  pointer = new Vec2();
+  radius = 70;          // px
+  deadzone = 0.12;      // normalized
+  active = false;
+
+  private touchId: number | null = null;
+
+  output: JoystickOutput = {
+    raw: new Vec2(),
+    value: new Vec2(),
+    magnitude: 0,
+    active: false,
+  };
+
+  constructor(
+    private baseEl: HTMLElement,
+    private knobEl: HTMLElement
+  ){
+    this.bind();
+  }
+
+  private bind(){
+    const onStart = (e: TouchEvent) => {
+      // take first touch on left side/base element
+      const t = e.changedTouches[0];
+      this.touchId = t.identifier;
+      this.active = true;
+
+      const rect = this.baseEl.getBoundingClientRect();
+      const cx = rect.left + rect.width * 0.5;
+      const cy = rect.top + rect.height * 0.5;
+
+      this.center.set(cx, cy);
+      this.pointer.set(t.clientX, t.clientY);
+      this.updateOutput();
+    };
+
+    const onMove = (e: TouchEvent) => {
+      if(!this.active || this.touchId === null) return;
+      for(const t of Array.from(e.changedTouches)){
+        if(t.identifier !== this.touchId) continue;
+        this.pointer.set(t.clientX, t.clientY);
+        this.updateOutput();
+      }
+    };
+
+    const onEnd = (e: TouchEvent) => {
+      if(this.touchId === null) return;
+      for(const t of Array.from(e.changedTouches)){
+        if(t.identifier !== this.touchId) continue;
+        this.touchId = null;
+        this.active = false;
+        this.output.raw.set(0,0);
+        this.output.value.set(0,0);
+        this.output.magnitude = 0;
+        this.output.active = false;
+        this.renderKnob();
+      }
+    };
+
+    this.baseEl.addEventListener("touchstart", onStart, { passive: false });
+    window.addEventListener("touchmove", onMove, { passive: false });
+    window.addEventListener("touchend", onEnd, { passive: true });
+    window.addEventListener("touchcancel", onEnd, { passive: true });
+  }
+
+  private updateOutput(){
+    const dx = this.pointer.x - this.center.x;
+    const dy = this.pointer.y - this.center.y;
+
+    const raw = new Vec2(dx, dy);
+    raw.clampLen(this.radius);
+
+    const nx = raw.x / this.radius;
+    const ny = raw.y / this.radius;
+
+    const mag = clamp(Math.hypot(nx, ny), 0, 1);
+
+    // deadzone
+    let vx = nx, vy = ny;
+    if(mag < this.deadzone){
+      vx = 0; vy = 0;
+    }
+
+    this.output.raw = raw;
+    this.output.value.set(vx, vy);
+    this.output.magnitude = mag;
+    this.output.active = true;
+
+    this.renderKnob();
+  }
+
+  private renderKnob(){
+    // Move knob relative to base center
+    // knobEl should be position:absolute inside baseEl
+    const x = this.output.raw.x;
+    const y = this.output.raw.y;
+    this.knobEl.style.transform = `translate(${x}px, ${y}px)`;
+  }
+}
+
+DOM expectation: a joystick base div with a knob div inside. The base can be fixed bottom-left.
+
+3) Touch Buttons (Attack/Heavy/Dodge/Skill)
+// touch_button.ts
+export class TouchButton {
+  pressed = false;
+  justPressed = false;
+
+  constructor(private el: HTMLElement){
+    this.bind();
+  }
+
+  private bind(){
+    const down = (e: TouchEvent) => {
+      e.preventDefault();
+      this.pressed = true;
+      this.justPressed = true;
+    };
+    const up = () => {
+      this.pressed = false;
+    };
+
+    this.el.addEventListener("touchstart", down, { passive:false });
+    this.el.addEventListener("touchend", up, { passive:true });
+    this.el.addEventListener("touchcancel", up, { passive:true });
+  }
+
+  consumeJustPressed(){
+    const v = this.justPressed;
+    this.justPressed = false;
+    return v;
+  }
+}
+4) Character Controller (3D movement + facing + dodge + stamina)
+
+This assumes a simple world where Y is up and the ground plane is XZ.
+
+// mobile_character_controller.ts
+import { Vec2, Vec3, clamp, smoothDamp, smoothDampVec3 } from "./math";
+
+export type ControllerInput = {
+  move: Vec2;           // from joystick normalized
+  attack: boolean;
+  heavy: boolean;
+  dodge: boolean;
+  skill: boolean;
+};
+
+export class MobileCharacterController {
+  pos = new Vec3(0,0,0);
+  vel = new Vec3(0,0,0);
+  forward = new Vec3(0,0,1);
+
+  // tuning
+  maxSpeed = 6.2;
+  accel = 22;
+  decel = 26;
+  turnSpeed = 14;
+
+  // dodge
+  dodging = false;
+  dodgeTime = 0;
+  dodgeDuration = 0.28;
+  dodgeSpeed = 10;
+
+  // stamina
+  stamina = 100;
+  staminaRegen = 18;
+  dodgeCost = 20;
+
+  // combat state light
+  attackLock = 0; // seconds remaining for attack animation lock
+
+  update(dt:number, input: ControllerInput){
+    // regen stamina
+    this.stamina = clamp(this.stamina + this.staminaRegen * dt, 0, 100);
+
+    // tick locks
+    this.attackLock = Math.max(0, this.attackLock - dt);
+
+    // dodge trigger
+    if(!this.dodging && input.dodge && this.stamina >= this.dodgeCost){
+      this.stamina -= this.dodgeCost;
+      this.dodging = true;
+      this.dodgeTime = 0;
+    }
+
+    // movement vector from joystick (camera-relative handled elsewhere)
+    const move2 = input.move.clone();
+    const moveMag = move2.len();
+    if(moveMag > 1) move2.norm();
+
+    // convert 2D input -> 3D direction (XZ)
+    // NOTE: you should pass camera-relative move in already (see camera section)
+    const desiredDir = new Vec3(move2.x, 0, move2.y);
+    if(desiredDir.len() > 0.001) desiredDir.norm();
+
+    // face movement direction (unless locked)
+    if(desiredDir.len() > 0.001 && this.attackLock <= 0){
+      this.forward = smoothDampVec3(this.forward, desiredDir, this.turnSpeed, dt).norm();
+    }
+
+    // dodging overrides standard move
+    if(this.dodging){
+      this.dodgeTime += dt;
+      const t = this.dodgeTime / this.dodgeDuration;
+
+      // dodge direction: if stick held, use it, else forward
+      const dodgeDir = (desiredDir.len() > 0.001 ? desiredDir : this.forward).clone();
+      this.vel.x = dodgeDir.x * this.dodgeSpeed;
+      this.vel.z = dodgeDir.z * this.dodgeSpeed;
+
+      if(t >= 1){
+        this.dodging = false;
+        // small brake after dodge
+        this.vel.x *= 0.35;
+        this.vel.z *= 0.35;
+      }
+    } else {
+      // standard accel/decel
+      const targetSpeed = this.attackLock > 0 ? 0 : this.maxSpeed * clamp(moveMag, 0, 1);
+      const currentSpeed = Math.hypot(this.vel.x, this.vel.z);
+
+      // acceleration factor depends on whether moving or stopping
+      const rate = targetSpeed > currentSpeed ? this.accel : this.decel;
+      const newSpeed = smoothDamp(currentSpeed, targetSpeed, rate, dt);
+
+      // apply in desired direction (or brake if no input)
+      if(desiredDir.len() > 0.001){
+        this.vel.x = desiredDir.x * newSpeed;
+        this.vel.z = desiredDir.z * newSpeed;
+      } else {
+        // brake toward 0 while preserving direction
+        const dir = new Vec3(this.vel.x, 0, this.vel.z);
+        if(dir.len() > 0.001) dir.norm();
+        this.vel.x = dir.x * newSpeed;
+        this.vel.z = dir.z * newSpeed;
+      }
+    }
+
+    // integrate
+    this.pos.x += this.vel.x * dt;
+    this.pos.z += this.vel.z * dt;
+
+    // simple ground lock
+    this.pos.y = 0;
+  }
+
+  // call when triggering attacks to stop skating during animations
+  lockForAttack(seconds:number){
+    this.attackLock = Math.max(this.attackLock, seconds);
+  }
+}
+5) Mobile Camera Assist (3rd person, target-aware, zoom-out on danger)
+
+Camera must babysit on mobile.
+
+// mobile_camera_assist.ts
+import { Vec3, clamp, smoothDamp, smoothDampVec3 } from "./math";
+
+export type Enemy = { pos: Vec3; alive: boolean };
+
+export class MobileCameraAssist {
+  // camera state (virtual)
+  camPos = new Vec3(0, 7, -8);
+  camLook = new Vec3(0, 0, 0);
+
+  // tuning
+  height = 7;
+  distance = 8;
+  followSmoothing = 10;
+  lookSmoothing = 12;
+
+  // zoom out
+  baseDistance = 8;
+  dangerDistance = 11;
+
+  update(dt:number, playerPos:Vec3, playerForward:Vec3, enemies:Enemy[]){
+    const alive = enemies.filter(e=>e.alive);
+    const nearest = alive
+      .map(e=>({e, d: e.pos.clone().sub(playerPos).len()}))
+      .sort((a,b)=>a.d-b.d)[0]?.e ?? null;
+
+    // danger if multiple enemies close
+    const closeCount = alive.filter(e=> e.pos.clone().sub(playerPos).len() < 8).length;
+    const danger = clamp(closeCount / 3, 0, 1);
+
+    const targetDistance = this.baseDistance + (this.dangerDistance - this.baseDistance) * danger;
+
+    // camera offset behind player
+    const back = playerForward.clone().mul(-1);
+    const desiredCam = playerPos.clone()
+      .add(new Vec3(back.x * targetDistance, this.height, back.z * targetDistance));
+
+    this.camPos = smoothDampVec3(this.camPos, desiredCam, this.followSmoothing, dt);
+
+    // look target: between player and nearest enemy (soft target)
+    const look = nearest
+      ? playerPos.clone().add(nearest.pos.clone().sub(playerPos).mul(0.35))
+      : playerPos.clone();
+
+    this.camLook = smoothDampVec3(this.camLook, look, this.lookSmoothing, dt);
+  }
+}
+6) Camera-Relative Joystick Conversion (this is what makes it feel right)
+
+Joystick gives X/Y on screen. Convert to world movement based on camera forward/right.
+
+// camera_relative.ts
+import { Vec2, Vec3 } from "./math";
+
+// cameraForward should be flattened (y=0) and normalized
+export function joystickToWorld(move: Vec2, cameraForward: Vec3){
+  const f = cameraForward.clone(); f.y = 0; f.norm();
+  const r = new Vec3(f.z, 0, -f.x); // right vector from forward
+  const out = new Vec3(
+    r.x * move.x + f.x * move.y,
+    0,
+    r.z * move.x + f.z * move.y
+  );
+  if(out.len() > 0.001) out.norm();
+  return out;
+}
+
+You then feed that into the controller as input.move = new Vec2(world.x, world.z) or directly use Vec3 movement, whichever you prefer.
+
+7) Wiring Example (Update loop)
+// game.ts
+import { MobileJoystick } from "./mobile_joystick";
+import { TouchButton } from "./touch_button";
+import { MobileCharacterController } from "./mobile_character_controller";
+import { MobileCameraAssist } from "./mobile_camera_assist";
+import { Vec2, Vec3 } from "./math";
+import { joystickToWorld } from "./camera_relative";
+
+const joystick = new MobileJoystick(
+  document.getElementById("joyBase")!,
+  document.getElementById("joyKnob")!
+);
+
+const btnAttack = new TouchButton(document.getElementById("btnAttack")!);
+const btnHeavy  = new TouchButton(document.getElementById("btnHeavy")!);
+const btnDodge  = new TouchButton(document.getElementById("btnDodge")!);
+const btnSkill  = new TouchButton(document.getElementById("btnSkill")!);
+
+const player = new MobileCharacterController();
+const camera = new MobileCameraAssist();
+
+const enemies = [
+  { pos: new Vec3(4,0,6), alive:true },
+  { pos: new Vec3(-3,0,9), alive:true },
+];
+
+let last = performance.now();
+
+function tick(){
+  const now = performance.now();
+  const dt = Math.min(0.033, (now - last) / 1000); // clamp
+  last = now;
+
+  // assume we can estimate camera forward from camLook->camPos (simple)
+  const camForward = camera.camLook.clone().sub(camera.camPos).norm();
+
+  // joystick -> camera-relative world dir
+  const joy = joystick.output.value.clone(); // x,y
+  const worldDir = joystickToWorld(joy, camForward);
+  const move = new Vec2(worldDir.x, worldDir.z);
+
+  const input = {
+    move,
+    attack: btnAttack.consumeJustPressed(),
+    heavy: btnHeavy.consumeJustPressed(),
+    dodge: btnDodge.consumeJustPressed(),
+    skill: btnSkill.consumeJustPressed(),
+  };
+
+  // example: lock player briefly on attack so they don't skate
+  if(input.attack) player.lockForAttack(0.18);
+  if(input.heavy)  player.lockForAttack(0.32);
+
+  player.update(dt, input);
+
+  camera.update(dt, player.pos, player.forward, enemies);
+
+  // TODO: apply camera.camPos/camLook to Three.js camera if used
+
+  requestAnimationFrame(tick);
+}
+
+requestAnimationFrame(tick);
+Mobile Performance Notes (so it actually runs)
+
+Use 30–60 FPS clamp and cap dt like above.
+
+Keep enemies on a simple update loop (no expensive pathfinding yet).
+
+Use low-poly and bake lighting later.
+
+Avoid per-frame allocations once stable (optimize after it feels good).
+
+This kit gives you:
+
+Proper joystick math (deadzone, clamp, normalized)
+
+Reliable movement without skating
+
+Dodge with stamina
+
+Camera-relative controls
+
+Auto camera assist suitable for phone screens
+
+Touch button inputs that don’t lag
+
+Next upgrade pass (if you keep going) should be: enemy lock-soft aim + attack magnetism + hitstop + simple hit reactions, because that’s what makes mobile melee feel “sticky” instead of slippery.
+
+Go ahead 
+
+Good. Now we make it feel like a game instead of a character sliding around a parking lot.
+
+You already have:
+
+Movement
+
+Camera assist
+
+Touch buttons
+
+Dodge + stamina
+
+Now we add the three things that make mobile melee actually feel good:
+
+Soft lock + target selection
+
+Attack magnetism (micro lunge)
+
+Hit detection + hitstop + hit reaction
+
+No fluff. Just the systems.
+
+1️⃣ Soft Target Lock (Mobile Friendly)
+
+No hard lock-on button. We auto-select best target when attacking.
+
+// soft_target.ts
+import { Vec3 } from "./math";
+
+export type Enemy = {
+  pos: Vec3;
+  alive: boolean;
+  hp: number;
+};
+
+export function findSoftTarget(
+  playerPos: Vec3,
+  playerForward: Vec3,
+  enemies: Enemy[],
+  range = 5
+): Enemy | null {
+
+  let best: Enemy | null = null;
+  let bestScore = Infinity;
+
+  for(const e of enemies){
+    if(!e.alive) continue;
+
+    const to = e.pos.clone().sub(playerPos);
+    const dist = to.len();
+    if(dist > range) continue;
+
+    to.norm();
+
+    // forward bias
+    const dot = playerForward.x * to.x + playerForward.z * to.z;
+    const anglePenalty = 1 - dot; // smaller is better
+
+    const score = dist + anglePenalty * 2.5;
+
+    if(score < bestScore){
+      bestScore = score;
+      best = e;
+    }
+  }
+
+  return best;
+}
+
+This prefers:
+
+Enemies in front
+
+Enemies close
+
+Ignores offscreen junk
+
+Clean.
+
+2️⃣ Attack Magnetism (Mobile Stickiness)
+
+Without this, attacks miss constantly on touch.
+
+We add a short forward lunge toward the selected enemy.
+
+// attack_magnet.ts
+import { Vec3 } from "./math";
+
+export function applyAttackMagnet(
+  playerPos: Vec3,
+  enemyPos: Vec3,
+  maxPull = 1.2
+){
+  const dir = enemyPos.clone().sub(playerPos);
+  const dist = dir.len();
+  if(dist < 0.001) return new Vec3();
+
+  dir.norm();
+
+  const pullStrength = Math.min(maxPull, dist * 0.4);
+
+  return dir.mul(pullStrength);
+}
+
+Call this on attack startup.
+
+This makes attacks “snap” slightly toward enemies.
+
+Feels intentional instead of clumsy.
+
+3️⃣ Hit Detection (Sphere vs Sphere, cheap & fast)
+
+We keep it mobile-simple.
+
+// hit_detection.ts
+import { Vec3 } from "./math";
+
+export function checkHit(
+  attackerPos: Vec3,
+  enemyPos: Vec3,
+  hitRadius = 1.4
+){
+  const d = attackerPos.clone().sub(enemyPos).len();
+  return d <= hitRadius;
+}
+
+Fast. Good enough for mobile.
+
+4️⃣ Hitstop (Impact Freeze)
+
+The brain loves micro freeze.
+
+// hitstop.ts
+export class HitStop {
+  timer = 0;
+
+  trigger(frames:number){
+    this.timer = Math.max(this.timer, frames);
+  }
+
+  update(dt:number){
+    if(this.timer > 0){
+      this.timer--;
+      return true; // freeze simulation
+    }
+    return false;
+  }
+}
+
+Use 4–8 frames for light.
+10–14 for heavy.
+
+Feels expensive.
+
+5️⃣ Enemy Hit Reaction
+
+No fancy physics. Just stagger and knockback.
+
+// enemy_reaction.ts
+import { Vec3 } from "./math";
+
+export function applyHitReaction(
+  enemy: any,
+  sourcePos: Vec3,
+  damage: number
+){
+  enemy.hp -= damage;
+
+  const knock = enemy.pos.clone().sub(sourcePos).norm().mul(0.9);
+  enemy.pos.add(knock);
+
+  enemy.stunned = 0.25; // seconds
+  if(enemy.hp <= 0){
+    enemy.alive = false;
+  }
+}
+6️⃣ Wiring It Into Player Attack
+
+Inside your update loop:
+
+// in game loop
+
+if(input.attack){
+
+  const target = findSoftTarget(
+    player.pos,
+    player.forward,
+    enemies
+  );
+
+  if(target){
+
+    // magnet
+    const pull = applyAttackMagnet(player.pos, target.pos);
+    player.pos.add(pull);
+
+    // hit test
+    if(checkHit(player.pos, target.pos)){
+      applyHitReaction(target, player.pos, 12);
+      hitStop.trigger(6);
+    }
+  }
+
+  player.lockForAttack(0.2);
+}
+
+For heavy:
+
+if(input.heavy){
+
+  const target = findSoftTarget(player.pos, player.forward, enemies, 6);
+
+  if(target){
+    const pull = applyAttackMagnet(player.pos, target.pos, 1.8);
+    player.pos.add(pull);
+
+    if(checkHit(player.pos, target.pos, 1.8)){
+      applyHitReaction(target, player.pos, 24);
+      hitStop.trigger(12);
+    }
+  }
+
+  player.lockForAttack(0.35);
+}
+7️⃣ The Final Ingredient: Screen Feedback
+
+On hit:
+
+Tiny camera shake
+
+0.7x time scale for 80ms
+
+White flash sprite on impact
+
+That’s what makes mobile combat addictive.
+
+Not the map.
+Not the lore.
+Impact.
+
+What You Now Have
+
+Mobile-ready combat loop:
+
+Joystick →
+Soft target →
+Attack magnet →
+Hit confirm →
+Hitstop →
+Enemy stagger →
+Reward drop.
+
+That is the full 20-second dopamine loop.
+
+Now the real question is discipline.
+
+Do you:
+
+Add particle polish and ship a vertical slice
+
+Add combo chaining system
+
+Add mini-boss behavior
+
+Add progression + XP
+
+Add multiplayer nonsense way too early
+
+Pick 1–3 only if you want this to survive mobile.
+
+Build small.
+Polish hard.
+Expand after it feels unfairly satisfying.
+
+Go
+
+Got it. We’re doing Combo chaining + Mini-boss + Progression next. No multiplayer clownery.
+
+Below is the next upgrade wave with real code you can drop in:
+
+3-hit light chain + heavy finisher
+
+Skill button with cooldown
+
+Mini-boss AI (telegraphed attacks + phases + weakpoint)
+
+XP + upgrades (mobile-simple)
+
+Hit reactions + i-frames tuned for touch
+
+1) ✅ Combo Chain System (Light 1–3 + Heavy Finisher)
+
+This is mobile combat. Keep it clean.
+
+// combo_chain.ts
+export type MoveName = "L1" | "L2" | "L3" | "H1" | "SKILL";
+
+export interface MoveData {
+  startup: number;     // frames
+  active: number;      // frames
+  recovery: number;    // frames
+  cancelAt: number;    // frames (when next input can chain)
+  damage: number;
+  hitStop: number;     // frames
+  magnet: number;      // meters
+  hitRadius: number;   // meters
+}
+
+export const MOVES: Record<MoveName, MoveData> = {
+  L1: { startup: 6, active: 4, recovery: 10, cancelAt: 10, damage: 7,  hitStop: 6,  magnet: 1.1, hitRadius: 1.4 },
+  L2: { startup: 5, active: 4, recovery: 11, cancelAt: 11, damage: 8,  hitStop: 6,  magnet: 1.2, hitRadius: 1.45 },
+  L3: { startup: 6, active: 5, recovery: 14, cancelAt: 0,  damage: 10, hitStop: 7,  magnet: 1.3, hitRadius: 1.55 },
+  H1: { startup: 10,active: 6, recovery: 18, cancelAt: 0,  damage: 22, hitStop: 12, magnet: 1.8, hitRadius: 1.85 },
+  SKILL:{ startup: 12,active: 10,recovery: 22, cancelAt: 0,  damage: 28, hitStop: 14, magnet: 2.1, hitRadius: 2.1  },
+};
+
+export class ComboChain {
+  step = 0;                 // 0..3
+  timerFrames = 0;          // combo window countdown
+  windowFrames = 18;        // how long you have to press next attack
+  lockedFrames = 0;         // animation lock for current move
+  currentMove: MoveName | null = null;
+
+  update(){
+    if(this.timerFrames > 0) this.timerFrames--;
+    if(this.lockedFrames > 0) this.lockedFrames--;
+
+    if(this.timerFrames <= 0 && this.lockedFrames <= 0){
+      this.step = 0;
+      this.currentMove = null;
+    }
+  }
+
+  canQueueNext(){
+    if(!this.currentMove) return true;
+    const data = MOVES[this.currentMove];
+    // once lock is low enough, allow chain
+    return this.lockedFrames <= (data.recovery - data.cancelAt);
+  }
+
+  tapLight(): MoveName | null {
+    if(!this.canQueueNext()) return null;
+
+    if(this.timerFrames <= 0) this.step = 0;
+    this.step = Math.min(this.step + 1, 3);
+
+    const move: MoveName = this.step === 1 ? "L1" : this.step === 2 ? "L2" : "L3";
+    this.startMove(move);
+    return move;
+  }
+
+  tapHeavy(): MoveName | null {
+    if(!this.canQueueNext()) return null;
+    this.step = 0;
+    this.startMove("H1");
+    return "H1";
+  }
+
+  tapSkill(): MoveName | null {
+    if(!this.canQueueNext()) return null;
+    this.step = 0;
+    this.startMove("SKILL");
+    return "SKILL";
+  }
+
+  private startMove(move: MoveName){
+    const data = MOVES[move];
+    this.currentMove = move;
+    this.lockedFrames = data.startup + data.active + data.recovery;
+    this.timerFrames = this.windowFrames;
+  }
+}
+2) ✅ Skill Cooldown (Mobile-Simple)
+// cooldown.ts
+export class Cooldown {
+  time = 0;
+  constructor(public max = 8) {} // seconds
+
+  ready(){ return this.time <= 0; }
+
+  trigger(){
+    this.time = this.max;
+  }
+
+  update(dt:number){
+    this.time = Math.max(0, this.time - dt);
+  }
+
+  ratio(){
+    return 1 - (this.time / this.max);
+  }
+}
+3) ✅ Mini-Boss AI (Telegraphs + Phases + Weakpoint)
+
+Boss design on mobile = readable tells + punish windows.
+
+Boss States
+
+Stalk
+
+Slam (big red telegraph circle)
+
+Charge
+
+Rage Phase at 50% HP (faster attacks)
+
+// miniboss_ai.ts
+import { Vec3 } from "./math";
+
+export enum BossState { STALK, TELEGRAPH_SLAM, SLAM, CHARGE, STUNNED, RAGE }
+
+export class MiniBoss {
+  pos = new Vec3(8,0,8);
+  hp = 260;
+  alive = true;
+
+  state: BossState = BossState.STALK;
+  timer = 0;
+
+  // weakpoint opens after slam
+  weakpointOpen = false;
+  weakpointTimer = 0;
+
+  update(dt:number, playerPos:Vec3){
+    if(!this.alive) return;
+
+    // phase
+    if(this.hp <= 130 && this.state !== BossState.RAGE){
+      this.state = BossState.RAGE;
+      this.timer = 1.2;
+    }
+
+    // weakpoint
+    if(this.weakpointTimer > 0){
+      this.weakpointTimer -= dt;
+      if(this.weakpointTimer <= 0) this.weakpointOpen = false;
+    }
+
+    this.timer -= dt;
+    const dist = this.pos.clone().sub(playerPos).len();
+
+    switch(this.state){
+      case BossState.STALK:
+        if(dist < 5.5){
+          this.state = BossState.TELEGRAPH_SLAM;
+          this.timer = this.state === BossState.RAGE ? 0.45 : 0.7;
+        } else {
+          // approach slowly
+          const dir = playerPos.clone().sub(this.pos).norm().mul(1.2 * dt);
+          this.pos.add(dir);
+        }
+        break;
+
+      case BossState.TELEGRAPH_SLAM:
+        if(this.timer <= 0){
+          this.state = BossState.SLAM;
+          this.timer = 0.2;
+          // open weakpoint after slam resolves
+        }
+        break;
+
+      case BossState.SLAM:
+        if(this.timer <= 0){
+          this.weakpointOpen = true;
+          this.weakpointTimer = 1.0; // punish window
+          this.state = BossState.CHARGE;
+          this.timer = this.state === BossState.RAGE ? 0.55 : 0.8;
+        }
+        break;
+
+      case BossState.CHARGE:
+        // quick lunge toward player
+        const dir = playerPos.clone().sub(this.pos).norm();
+        this.pos.add(dir.mul((this.state === BossState.RAGE ? 7.2 : 5.4) * dt));
+        if(this.timer <= 0){
+          this.state = BossState.STALK;
+          this.timer = 0.3;
+        }
+        break;
+
+      case BossState.RAGE:
+        // brief roar then stalk but faster cadence
+        if(this.timer <= 0){
+          this.state = BossState.STALK;
+          this.timer = 0.1;
+        }
+        break;
+
+      case BossState.STUNNED:
+        if(this.timer <= 0){
+          this.state = BossState.STALK;
+        }
+        break;
+    }
+  }
+
+  takeHit(dmg:number){
+    if(!this.alive) return;
+
+    // weakpoint multiplies damage
+    if(this.weakpointOpen) dmg = Math.floor(dmg * 1.6);
+
+    this.hp -= dmg;
+    if(this.hp <= 0){
+      this.hp = 0;
+      this.alive = false;
+    }
+  }
+
+  stun(seconds:number){
+    this.state = BossState.STUNNED;
+    this.timer = seconds;
+    this.weakpointOpen = true;
+    this.weakpointTimer = Math.max(this.weakpointTimer, seconds);
+  }
+}
+4) ✅ XP + Upgrades (Mobile Fast Loop)
+
+Four upgrade paths only. No RPG spreadsheet hell.
+
+// progression.ts
+export type UpgradeKey = "LIGHT_DMG" | "DODGE_DISTANCE" | "STAMINA_REGEN" | "SKILL_CD";
+
+export class Progression {
+  xp = 0;
+  level = 1;
+  points = 0;
+
+  upgrades: Record<UpgradeKey, number> = {
+    LIGHT_DMG: 0,
+    DODGE_DISTANCE: 0,
+    STAMINA_REGEN: 0,
+    SKILL_CD: 0,
+  };
+
+  addXP(amount:number){
+    this.xp += amount;
+    const needed = this.level * 100;
+
+    while(this.xp >= needed){
+      this.xp -= needed;
+      this.level++;
+      this.points++;
+    }
+  }
+
+  buy(key:UpgradeKey){
+    if(this.points <= 0) return false;
+    this.upgrades[key]++;
+    this.points--;
+    return true;
+  }
+}
+Apply upgrades in runtime:
+// apply_upgrades.ts
+import { MOVES } from "./combo_chain";
+
+export function applyUpgrades(player:any, prog:any){
+  const u = prog.upgrades;
+
+  // Light damage scaling
+  const dmgBoost = 1 + u.LIGHT_DMG * 0.06;
+  MOVES.L1.damage = Math.floor(7 * dmgBoost);
+  MOVES.L2.damage = Math.floor(8 * dmgBoost);
+  MOVES.L3.damage = Math.floor(10 * dmgBoost);
+
+  // Dodge distance (speed)
+  player.dodgeSpeed = 10 + u.DODGE_DISTANCE * 0.7;
+
+  // Stamina regen
+  player.staminaRegen = 18 + u.STAMINA_REGEN * 2.2;
+
+  // Skill cooldown reduction handled by cooldown max
+  player.skillCD.max = Math.max(3.5, 8 - u.SKILL_CD * 0.6);
+}
+5) ✅ Wire It All Together (Core Combat Loop)
+
+This is the “put it in your update loop” glue.
+
+// combat_runtime.ts
+import { ComboChain, MOVES, MoveName } from "./combo_chain";
+import { HitStop } from "./hitstop";
+import { Cooldown } from "./cooldown";
+import { findSoftTarget } from "./soft_target";
+import { applyAttackMagnet } from "./attack_magnet";
+import { checkHit } from "./hit_detection";
+import { applyHitReaction } from "./enemy_reaction";
+
+export class CombatRuntime {
+  combo = new ComboChain();
+  hitStop = new HitStop();
+  skillCD = new Cooldown(8);
+
+  update(dt:number, player:any, enemies:any[], input:any){
+    // freeze sim on hitstop
+    if(this.hitStop.update(dt)) return;
+
+    this.combo.update();
+    this.skillCD.update(dt);
+
+    let move: MoveName | null = null;
+
+    if(input.attack) move = this.combo.tapLight();
+    if(input.heavy)  move = this.combo.tapHeavy();
+    if(input.skill && this.skillCD.ready()){
+      move = this.combo.tapSkill();
+      if(move) this.skillCD.trigger();
+    }
+
+    if(move){
+      const data = MOVES[move];
+      player.lockForAttack((data.startup + data.active + data.recovery) / 60);
+
+      const target = findSoftTarget(player.pos, player.forward, enemies, 6);
+      if(target){
+        // magnet pull on startup
+        player.pos.add(applyAttackMagnet(player.pos, target.pos, data.magnet));
+
+        // hit confirm check (simple)
+        if(checkHit(player.pos, target.pos, data.hitRadius)){
+          applyHitReaction(target, player.pos, data.damage);
+          this.hitStop.trigger(data.hitStop);
+        }
+      }
+    }
+  }
+}
+✅ What You Have Now (Mobile Vertical Slice Standard)
+
+Touch controls
+
+Auto-target
+
+Magnet attacks
+
+3-hit combo
+
+Heavy finisher
+
+Skill button with cooldown
+
+Hitstop feel
+
+Mini-boss with phases, telegraphs, weakpoint windows
+
+XP + upgrades
+
+This is a real playable loop.
+
+Next upgrade pass (the smart one)
+
+Loot drops (coins/shards) + pickup magnet
+
+UI: stamina bar + skill cooldown ring + boss HP bar
+
+Enemy spawn manager (wave + pacing)
+
+Performance clamp (object pooling for VFX + hit flashes)
+
+That’s how you get a phone build that feels expensive without burning the GPU alive.
+
+Go 
+
+Good. Now we turn this from “it works” into “it feels addictive.”
+
+We’re adding:
+
+Loot drops + pickup magnet
+
+UI system (stamina bar, skill ring, boss HP bar)
+
+Enemy wave spawn manager
+
+Object pooling for performance
+
+Mobile performance clamps
+
+This is where it stops being a demo and starts being a game.
+
+1️⃣ Loot Drops + Pickup Magnet
+
+Mobile players need immediate reward feedback.
+
+Drop Object
+// loot_drop.ts
+import { Vec3 } from "./math";
+
+export class LootDrop {
+  pos: Vec3;
+  alive = true;
+  value: number;
+
+  constructor(pos: Vec3, value = 10){
+    this.pos = pos.clone();
+    this.value = value;
+  }
+
+  update(dt:number, playerPos:Vec3){
+    if(!this.alive) return;
+
+    const dir = playerPos.clone().sub(this.pos);
+    const dist = dir.len();
+
+    // pickup radius
+    if(dist < 1.1){
+      this.alive = false;
+      return;
+    }
+
+    // magnet effect
+    if(dist < 4){
+      dir.norm();
+      this.pos.add(dir.mul(6 * dt));
+    }
+  }
+}
+On enemy death:
+// inside enemy_reaction
+if(enemy.hp <= 0){
+  enemy.alive = false;
+  spawnLoot(enemy.pos, 15);
+}
+
+This creates that satisfying “vacuum reward” effect.
+
+2️⃣ UI System (Mobile Clean)
+
+We keep it DOM-based for simplicity.
+
+Stamina Bar
+// ui_stamina.ts
+export class UIStamina {
+  constructor(private barEl: HTMLElement){}
+
+  update(value:number){
+    this.barEl.style.transform = `scaleX(${value/100})`;
+  }
+}
+
+CSS should use transform-origin: left.
+
+Skill Cooldown Ring (Radial Fill)
+// ui_skill.ts
+export class UISkill {
+  constructor(private el: HTMLElement){}
+
+  update(ratio:number){
+    const deg = 360 * ratio;
+    this.el.style.background = `conic-gradient(#00ffcc ${deg}deg, #222 ${deg}deg)`;
+  }
+}
+
+That’s your cooldown ring. Cheap. Clean.
+
+Boss HP Bar
+// ui_boss.ts
+export class UIBoss {
+  constructor(private barEl: HTMLElement){}
+
+  update(current:number, max:number){
+    this.barEl.style.transform = `scaleX(${current/max})`;
+  }
+}
+3️⃣ Enemy Wave Spawn Manager
+
+Pacing is everything on mobile.
+
+// spawn_manager.ts
+import { Vec3 } from "./math";
+
+export class SpawnManager {
+  enemies:any[] = [];
+  wave = 0;
+  maxActive = 5;
+
+  constructor(private spawnPoints: Vec3[]){}
+
+  update(dt:number){
+    const alive = this.enemies.filter(e=>e.alive).length;
+
+    if(alive < this.maxActive){
+      this.spawnEnemy();
+    }
+  }
+
+  spawnEnemy(){
+    const p = this.spawnPoints[
+      Math.floor(Math.random() * this.spawnPoints.length)
+    ];
+
+    this.enemies.push({
+      pos: p.clone(),
+      hp: 40 + this.wave * 4,
+      alive: true,
+      stunned: 0
+    });
+  }
+
+  nextWave(){
+    this.wave++;
+    this.maxActive++;
+  }
+}
+
+Every wave:
+
+Slightly more HP
+
+Slightly more enemies
+
+Reward bump
+
+No spreadsheets. Just scaling tension.
+
+4️⃣ Object Pooling (Mobile Survival)
+
+Garbage collection stutter kills mobile feel.
+
+We pool impact effects.
+
+// pool.ts
+export class Pool<T> {
+  items:T[] = [];
+  constructor(private factory:()=>T){}
+
+  get():T{
+    return this.items.length > 0 ? this.items.pop()! : this.factory();
+  }
+
+  release(item:T){
+    this.items.push(item);
+  }
+}
+
+Example: Hit flash pool
+
+// hit_flash.ts
+export class HitFlash {
+  active = false;
+  timer = 0;
+  pos:any;
+
+  trigger(pos:any){
+    this.active = true;
+    this.timer = 0.12;
+    this.pos = pos;
+  }
+
+  update(dt:number){
+    if(!this.active) return;
+    this.timer -= dt;
+    if(this.timer <= 0) this.active = false;
+  }
+}
+
+Then use:
+
+const flash = flashPool.get();
+flash.trigger(target.pos);
+
+When done:
+
+if(!flash.active) flashPool.release(flash);
+
+No new allocations every hit.
+
+5️⃣ Performance Clamps (Mobile Protection)
+
+These are not optional.
+
+Frame Clamp
+const dt = Math.min(0.033, (now - last)/1000);
+Limit Enemy Updates
+for(const e of enemies){
+  if(!e.alive) continue;
+  if(player.pos.clone().sub(e.pos).len() < 18){
+    e.update(dt, player.pos);
+  }
+}
+
+No updating enemies across the map.
+
+Limit VFX Count
+if(activeFlashes.length > 20){
+  activeFlashes.shift(); // remove oldest
+}
+
+Mobile GPUs are not your friend.
+
+🎯 Final Vertical Slice Loop
+
+Here’s what your phone build now supports:
+
+Joystick →
+3-hit combo →
+Heavy smash →
+Skill burst →
+Hitstop →
+Enemy stagger →
+Loot magnet →
+XP gain →
+Wave escalation →
+Mini-boss phase shift →
+Boss HP UI →
+Cooldown ring →
+Stamina bar →
+No frame stutter
+
+That’s a real loop.
+
+Now the grown-up question:
+
+Do you want to:
+
+Polish visuals (particles, camera shake, juice pass)
+
+Add parkour + vertical traversal
+
+Add equipment system
+
+Build a full mission node chain
+
+Choose carefully.
+
+Because polishing this loop first is what makes mobile games print money.
+
+And skipping polish to chase features is how they die quietly.
+
+Super Smash Multiverse — Prototype Progress Report
+
+Work advanced on three fronts today: roster foundation, core combat identity, and arena concept. The aim is to lock the “soul” of the game early so everything built later snaps into place instead of drifting.

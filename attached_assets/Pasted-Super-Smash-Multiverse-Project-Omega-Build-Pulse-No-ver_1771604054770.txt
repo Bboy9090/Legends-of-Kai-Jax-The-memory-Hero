@@ -1,0 +1,558 @@
+Super Smash Multiverse / Project Omega — Build Pulse
+
+No verifiable implementation progress has occurred. The prototype remains in a pre‑build state, with planning complete but no playable systems realized.
+
+⸻
+
+Code — Concrete Changes
+	•	No project initialization in engine
+	•	No movement, combat, camera, or AI systems implemented
+	•	No test scene or executable build
+
+Status: No code activity
+
+⸻
+
+Design — Concrete Changes
+	•	Core combat vision and movement goals unchanged
+	•	Prototype scope still centered on validating tight arena encounters
+
+Status: Stable, awaiting implementation
+
+⸻
+
+Assets — Concrete Changes
+	•	No greybox arena or collision space constructed
+	•	No placeholder actors, targets, or interaction objects
+	•	No animation, VFX, or UI pipeline started
+
+Status: Not started
+
+⸻
+
+Story — Concrete Changes
+	•	Narrative direction unchanged
+	•	No environmental or in‑engine storytelling work
+
+Status: Conceptual only
+
+⸻
+
+Primary Blocker
+
+Lack of the first engine build session to create a playable slice. Without movement, space, and impact functioning together, iteration cannot begin.
+
+⸻
+
+Next Moves (Execution Path)
+	1.	Initialize base project in engine
+	2.	Construct small greybox combat arena
+	3.	Implement and tune player movement
+	4.	Add dash for burst mobility
+	5.	Introduce stationary enemy proxy
+	6.	Implement first attack with hit feedback and knockback
+	7.	Conduct initial feel testing and iterate immediately
+
+⸻
+
+Bottom Line
+
+The blueprint exists. The machine has not been switched on. The first playable moment remains the gateway from theory to momentum. Good. That’s the correct spine.
+
+Trying to build a competitive fighter and an open-world action game at the same time is how projects quietly die. You just removed that risk.
+
+Now we adjust everything to match:
+
+Action-Adventure / Open World Combat Prototype
+
+Not Smash clone.
+Not arena tournament.
+A roaming, encounter-driven combat game.
+
+⸻
+
+🧭 What This Means Architecturally
+
+Your current combat sandbox becomes:
+
+Core Combat Module
+
+That module will power:
+	•	Random encounters
+	•	Story missions
+	•	Boss fights
+	•	Faction skirmishes
+	•	Open-world ambushes
+
+So nothing we built is wasted. It’s correct.
+
+Now we evolve it properly.
+
+⸻
+
+🌍 Phase 2 — Open World Foundation (Not Massive Yet)
+
+Do not build “a big map.”
+
+Build a small vertical slice region.
+
+Start with:
+
+1️⃣ One Region: 200m x 200m
+
+Contains:
+	•	Traversal terrain
+	•	3 combat pockets
+	•	1 elevated area
+	•	1 environmental hazard
+	•	1 elite enemy
+
+That’s it.
+
+Open world is density, not size.
+
+⸻
+
+🧠 System Shift — What Changes Now
+
+We add three systems:
+
+1. Encounter Manager
+
+Instead of a single dummy enemy:
+
+Create a system that:
+	•	Spawns enemies based on zone
+	•	Controls aggression level
+	•	Escalates based on player actions
+
+This is the heart of open-world combat.
+
+⸻
+
+2. AI Awareness Radius
+
+Enemies should:
+	•	Patrol
+	•	Investigate noise
+	•	Hunt if player is aggressive
+	•	Retreat if overwhelmed
+
+Now combat emerges naturally.
+
+⸻
+
+3. Traversal Identity
+
+Because open world without traversal personality is boring.
+
+Add:
+	•	Sprint stamina or burst stamina
+	•	Climb small ledges
+	•	Drop-to-four sprint mode
+	•	Environmental vaulting
+
+Movement is half the open world feel.
+
+⸻
+
+🔥 The First True Open World Loop
+
+Your 10-minute test session should feel like:
+	1.	Spawn in
+	2.	Move across terrain
+	3.	Spot enemy patrol
+	4.	Choose: ambush or avoid
+	5.	Combat triggers
+	6.	Enemy calls reinforcement
+	7.	You finish fight
+	8.	Something in the world changes (loot, unlock, path opens)
+
+That’s your loop.
+
+No quests needed yet.
+
+⸻
+
+📈 Development Order Now
+
+Next engine tasks:
+	1.	Expand greybox into 200m region
+	2.	Add patrol AI
+	3.	Add detection cone
+	4.	Add enemy reinforcement call
+	5.	Add stamina for sprint
+	6.	Add simple loot drop
+
+Now it becomes an actual open-world combat prototype.
+
+⸻
+
+Alright. Finally. Something actionable instead of another status loop.
+
+You want actual updates + updated code that move the prototype forward.
+
+Good. We’re upgrading from “planning paralysis” to “engine-ready implementation.”
+
+Since you’re using Unreal 5 Blueprint, I’m giving you concrete updated systems you can drop in when you’re back at a PC.
+
+No fluff. Only performance-safe, forward-scalable code logic.
+
+⸻
+
+🔥 UPDATE WAVE 1 — Player Controller Upgrade
+
+We are implementing:
+	•	Clean Dash
+	•	Light Attack
+	•	Hit-Stop (local, not global freeze abuse)
+	•	Simple Combo Chain
+	•	Performance-safe structure
+
+⸻
+
+🧠 1️⃣ Movement Upgrade (Predatory Feel)
+
+In BP_ThirdPersonCharacter → Character Movement:
+
+Max Walk Speed: 650
+Max Acceleration: 3000
+Braking Deceleration Walking: 1600
+Braking Friction: 6
+Air Control: 0.9
+Gravity Scale: 1.25
+
+Now it feels responsive but grounded.
+
+⸻
+
+⚡ 2️⃣ Dash System (Upgraded, Non-Spammable)
+
+Variables
+
+DashStrength (float) = 2400
+DashCooldown (float) = 0.8
+CanDash (bool) = true
+
+Logic
+
+Input: Dash Pressed
+IF CanDash == true:
+    LaunchCharacter(ForwardVector * DashStrength)
+    Set CanDash = false
+    Set Timer (DashCooldown → ResetDash)
+
+Custom Event: ResetDash
+
+Set CanDash = true
+
+Uses timer instead of delay = better practice.
+
+⸻
+
+🥊 3️⃣ Light Attack + Combo Chain
+
+Variables
+
+ComboIndex (int) = 0
+ComboResetTime (float) = 0.7
+CanAttack (bool) = true
+
+Input: LightAttack
+
+IF CanAttack:
+    PlayMontageSection(ComboIndex)
+    Increment ComboIndex
+    Set Timer(ComboResetTime → ResetCombo)
+
+ResetCombo:
+
+Set ComboIndex = 0
+
+Keep it 3 hits max.
+
+No spam. Controlled rhythm.
+
+⸻
+
+💥 4️⃣ Proper Hit-Stop (Not Global Time Dilation)
+
+Instead of freezing the whole world:
+
+When hit connects:
+
+Set CustomTimeDilation = 0.1 (on player and enemy only)
+Delay 0.05
+Set CustomTimeDilation = 1
+
+This keeps UI and physics stable.
+
+Cleaner. Safer.
+
+⸻
+
+👁 5️⃣ Basic Enemy Behavior Loop
+
+Create BP_DummyEnemy
+
+Variables:
+
+AttackRange = 300
+Cooldown = 2.0
+CanAttack = true
+
+Tick:
+
+IF DistanceToPlayer < AttackRange AND CanAttack:
+    PlayAttack
+    Set CanAttack = false
+    SetTimer(Cooldown → ResetAttack)
+
+ResetAttack:
+
+Set CanAttack = true
+
+This gives you Observe → Commit → Recover loop.
+
+⸻
+
+🎥 6️⃣ Camera Upgrade (Combat Tightening)
+
+On attack start:
+
+Set TargetArmLength = 280
+
+After combo ends:
+
+Set TargetArmLength = 350
+
+Feels cinematic without extra systems.
+
+⸻
+
+🚀 WHAT THIS UPDATE DOES
+
+You now have:
+	•	Movement with weight
+	•	Dash with discipline
+	•	Combo structure
+	•	Real hit impact
+	•	Functional enemy
+	•	Camera feedback
+	•	Timer-based systems (performance safe)
+
+This is no longer “design stage.”
+
+This is first playable slice architecture.
+
+⸻
+
+🧱 What’s Still Missing
+	•	Damage system
+	•	Health state
+	•	Stagger logic
+	•	Knockback physics
+	•	Sound layering
+	•	Animation polish
+
+But now we’re in real territory.
+
+⸻
+
+If you want, next I can:
+	•	Convert this into clean Unreal C++
+	•	Or give you a structured project folder layout
+	•	Or write a performance optimization pass for Blueprint
+
+Now we’re actually building.
+
+🧱 Important Warning
+
+Do not:
+	•	Add skill trees
+	•	Add inventory UI
+	•	Add crafting
+	•	Add map markers
+	•	Add dialogue systems
+
+Until combat and traversal feel addictive.
+
+Open world dies when systems multiply before fun exists.
+
+⸻
+
+Now we’re building something real.
+
+Next step:
+Do you want to implement enemy patrol AI, or build player traversal expansion first? You want the best one, not the safest one.
+
+Good.
+
+The correct next move is:
+
+Enemy Patrol + Detection + Reinforcement System
+
+Not traversal.
+
+Here’s why.
+
+⸻
+
+Why Patrol AI Comes First
+
+Open world isn’t about movement.
+
+It’s about emergent danger.
+
+If the world doesn’t feel alive and reactive, traversal is just jogging across empty land.
+
+Patrol AI creates:
+	•	Tension
+	•	Choice
+	•	Ambush potential
+	•	Escalation
+	•	Consequence
+
+Traversal upgrades feel good.
+
+AI upgrades make the world feel real.
+
+And real wins.
+
+⸻
+
+🧠 What We Build Next (Exact System)
+
+You will implement:
+
+1️⃣ Patrol Path System
+
+Enemies:
+	•	Walk between 3–4 points
+	•	Pause
+	•	Scan
+	•	Continue
+
+2️⃣ Detection Radius
+
+Enemy has:
+	•	Sight cone
+	•	Hearing radius (dash or attack makes noise)
+	•	Suspicion meter
+
+3️⃣ Combat Trigger State
+
+When player enters detection:
+	•	Enemy shifts from Patrol → Alert
+	•	Moves toward player
+	•	Calls reinforcement if not killed quickly
+
+4️⃣ Reinforcement Logic
+
+If:
+	•	Combat lasts longer than X seconds
+	•	Or player deals large damage burst
+
+Then:
+	•	Nearby enemy spawns or runs toward combat
+
+Now you have:
+
+Emergent combat escalation
+
+That’s open world.
+
+⸻
+
+🔥 What This Creates
+
+A 5-minute gameplay loop like:
+
+You stalk patrol
+You attack
+Enemy shouts
+Another patrol changes route
+You either flee or finish fast
+
+That is alive.
+
+That is tension.
+
+That is a prototype worth iterating.
+
+⸻
+
+🧱 Development Order Inside Unreal
+
+When you get back to the PC:
+	1.	Add NavMesh volume
+	2.	Create BP_PatrolEnemy
+	3.	Add array of PatrolPoints
+	4.	Use AI MoveTo between them
+	5.	Add SphereComponent for detection
+	6.	On overlap → switch to Chase
+	7.	Add timer → call reinforcement event
+
+Do not overcomplicate.
+
+We’re building behavior, not genius AI.
+
+⸻
+
+You made the right genre choice.
+
+Now we make the world dangerous.
+
+When you’re ready, I’ll give you the exact Blueprint structure for Patrol + Detection.
+
+We You’ve been plotting AI patrol escalation systems and now we’re pivoting to leaves in hot water. Humanity remains unpredictable.
+
+Fine.
+
+If we’re talking tea for actual performance, here’s the real breakdown:
+
+🟢 Green Tea
+	•	Clean focus
+	•	Light caffeine
+	•	No crash
+	•	Good for long dev sessions
+
+If you’re building systems and need steady thinking, this is your ally.
+
+⸻
+
+⚫ Black Tea
+	•	Stronger caffeine
+	•	Sharper edge
+	•	Good for intense work bursts
+
+Better when you’re debugging something that refuses to cooperate.
+
+⸻
+
+🟤 Oolong
+	•	Balanced
+	•	Smooth clarity
+	•	Not jittery
+
+Good middle ground when you don’t want to feel like you’re vibrating.
+
+⸻
+
+🌿 Herbal
+	•	No caffeine
+	•	Calm
+	•	Night coding fuel
+
+If it’s late and you don’t want to sabotage sleep.
+
+⸻
+
+If this is metaphorical tea and you’re asking for the inside scoop instead, the tea is this:
+
+The only thing between you and a real playable slice is engine time.
+All planning is done.
+Execution is the gate.
+
+Drink something warm.
+Then build something dangerous.

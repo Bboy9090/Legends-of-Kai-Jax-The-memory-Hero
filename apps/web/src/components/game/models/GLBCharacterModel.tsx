@@ -1,7 +1,23 @@
-import { useRef, useMemo, Suspense } from "react";
+import { useRef, Suspense } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF, Clone } from "@react-three/drei";
 import * as THREE from "three";
+import {
+  findLimbs,
+  captureBaseRotations,
+  createAnimState,
+  animateIdle,
+  animateWalk,
+  animatePunch,
+  animateKick,
+  animateSpecial,
+  animateUltimate,
+  resetAttackPhase,
+  hasAnyLimb,
+  type LimbRefs,
+  type LimbBaseRotations,
+  type AnimState,
+} from "../../../lib/animationUtils";
 
 export interface GLBModelConfig {
   path: string;
@@ -12,23 +28,175 @@ export interface GLBModelConfig {
 
 export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
   "kai-jax": {
-    path: "/models/blazing-fox-vanguard.glb",
-    scale: 2.5,
+    path: "/models/Meshy_AI_Character_output9TAILSKAIJAX.glb",
+    scale: 4.2,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  jax: {
+    path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONIC JAX.glb",
+    scale: 4.2,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  kai: {
+    path: "/models/Meshy_AI_Meshy_Merged_Animations4KAI.glb",
+    scale: 4.2,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   jaxon: {
-    path: "/models/neon-wraiths.glb",
-    scale: 2.5,
+    path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb",
+    scale: 4.2,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   kaison: {
-    path: "/models/stylized-beast.glb",
-    scale: 2.5,
+    path: "/models/Meshy_AI_Character_outputSPiDERKAIJAX9TIALS.glb",
+    scale: 4.2,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
+  kaxon: {
+    path: "/models/Meshy_AI_Character_outputLIONBORAX.glb",
+    scale: 4.2,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  "voltage-fang": {
+    path: "/models/Meshy_AI_Meshy_Merged_AnimationsMeshy_AI_bipedBORYNaptFatherTIGER.glb",
+    scale: 4.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  steelwolf: {
+    path: "/models/Meshy_AI_Steelwolf_Exosuit_0219223344_texture.glb",
+    scale: 4.4,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  "ashen-tiger": {
+    path: "/models/Meshy_AI_Meshy_Merged_AnimationsMeshy_AI_bipedBORYNaptFatherTIGER.glb",
+    scale: 4.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  boryn: {
+    path: "/models/Meshy_AI_Meshy_Merged_AnimationsMeshy_AI_bipedBORYNaptFatherTIGER.glb",
+    scale: 4.4,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  "blazing-fox": {
+    path: "/models/blazing-fox-vanguard.glb",
+    scale: 4.3,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  velocity: {
+    path: "/models/velocity_hero.glb",
+    scale: 4.3,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  sparky: {
+    path: "/models/sparky_hero.glb",
+    scale: 4.3,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  sentinel: {
+    path: "/models/sentinel_hero.glb",
+    scale: 4.3,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  lunara: {
+    path: "/models/lunara_hero.glb",
+    scale: 4.3,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  solaro: {
+    path: "/models/solaro_hero.glb",
+    scale: 4.3,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  blaze: {
+    path: "/models/blaze_hero.glb",
+    scale: 4.3,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  abyss: {
+    path: "/models/abyss_hero.glb",
+    scale: 4.3,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  "marble-gladiator": {
+    path: "/models/marble_gladiator.glb",
+    scale: 4.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  "granite-colossus": {
+    path: "/models/granite_colossus.glb",
+    scale: 4.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  "sandstone-sentinel": {
+    path: "/models/sandstone_sentinel.glb",
+    scale: 4.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  apex: {
+    path: "/models/apex_hero.glb",
+    scale: 4.4,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  silver: {
+    path: "/models/silver_hero.glb",
+    scale: 4.3,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  "hyena-scout": {
+    path: "/models/hyenaratvbill.glb",
+    scale: 4.3,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  "rift-drone": {
+    path: "/models/drone.glb",
+    scale: 4.3,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  malakor: {
+    path: "/models/boss.glb",
+    scale: 4.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  behemoth: {
+    path: "/models/bosssss.glb",
+    scale: 5.0,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+};
+
+/** Fallback GLB when fighter has no CHARACTER_MODELS entry — always use our 3D models. */
+const FALLBACK_GLB_CONFIG: GLBModelConfig = {
+  path: "/models/blazing-fox-vanguard.glb",
+  scale: 3.5,
+  position: [0, 0, 0],
+  rotation: [0, 0, 0],
 };
 
 interface GLBCharacterModelProps {
@@ -51,14 +219,16 @@ function GLBModelFallback() {
   return null;
 }
 
+const TARGET_HEIGHT = 4.5;
+
 function GLBModelInner({
   config,
   animTime,
   isAttacking,
   isMoving,
   attackType,
-  velocityX = 0,
-  velocityY = 0,
+  velocityX: _velocityX = 0,
+  velocityY: _velocityY = 0,
   isGrounded = true,
   isJumping = false,
   emotionIntensity,
@@ -80,7 +250,8 @@ function GLBModelInner({
   isInvulnerable?: boolean;
   hitAnim?: number;
 }) {
-  const groupRef = useRef<THREE.Group>(null);
+  const outerRef = useRef<THREE.Group>(null);
+  const innerRef = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF(config.path);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
   const landSquash = useRef(0);
@@ -88,9 +259,19 @@ function GLBModelInner({
 
   const cloneRef = useRef<THREE.Group>(null);
   const mixerInitialized = useRef(false);
+  const setupDone = useRef(false);
+  const frameCount = useRef(0);
+  const normalizedScale = useRef(config.scale);
+
+  const limbsRef = useRef<LimbRefs | null>(null);
+  const basesRef = useRef<LimbBaseRotations | null>(null);
+  const animStateRef = useRef<AnimState>(createAnimState());
+  const wasAttacking = useRef(false);
+
+  const clipActionRef = useRef<THREE.AnimationAction | null>(null);
 
   useFrame((state, delta) => {
-    if (!groupRef.current) return;
+    if (!innerRef.current || !cloneRef.current) return;
     const t = animTime || state.clock.elapsedTime;
 
     if (cloneRef.current && animations.length > 0 && !mixerInitialized.current) {
@@ -98,12 +279,45 @@ function GLBModelInner({
       const mixer = new THREE.AnimationMixer(cloneRef.current);
       mixerRef.current = mixer;
       const action = mixer.clipAction(animations[0]);
+      action.setLoop(THREE.LoopRepeat, Infinity);
       action.play();
+      clipActionRef.current = action;
     }
 
+    const limbsNow = limbsRef.current;
+    const useProceduralAttack = limbsNow && isAttacking;
+    if (clipActionRef.current) {
+      if (useProceduralAttack) {
+        clipActionRef.current.setEffectiveWeight(0);
+      } else {
+        clipActionRef.current.setEffectiveWeight(1);
+      }
+    }
     if (mixerRef.current) {
       mixerRef.current.update(delta);
     }
+
+    frameCount.current++;
+    if (!setupDone.current && frameCount.current > 3) {
+      setupDone.current = true;
+
+      const bbox = new THREE.Box3().setFromObject(cloneRef.current);
+      const modelHeight = bbox.max.y - bbox.min.y;
+      if (modelHeight > 0.01) {
+        normalizedScale.current = (TARGET_HEIGHT / modelHeight) * config.scale;
+      }
+      if (bbox.min.y < -0.05 && outerRef.current) {
+        outerRef.current.position.y = -bbox.min.y * (normalizedScale.current / config.scale);
+      }
+
+      const limbs = findLimbs(cloneRef.current);
+      limbsRef.current = hasAnyLimb(limbs) ? limbs : null;
+      if (limbsRef.current) {
+        basesRef.current = captureBaseRotations(limbsRef.current);
+      }
+    }
+
+    const sc = normalizedScale.current;
 
     if (!wasGrounded.current && isGrounded) {
       landSquash.current = 1;
@@ -114,71 +328,81 @@ function GLBModelInner({
     const squashY = 1 - landSquash.current * 0.2;
     const squashXZ = 1 + landSquash.current * 0.1;
 
-    const breathe = Math.sin(t * 2.0) * 0.02;
-    const speed = Math.abs(velocityX);
-    const walkRate = 8 + speed * 2;
-    const walkAmp = Math.min(speed / 6, 1);
-    const walk = isMoving || speed > 0.5 ? Math.sin(t * walkRate) * walkAmp : 0;
-
-    groupRef.current.position.y = breathe;
-    groupRef.current.scale.set(
-      config.scale * squashXZ,
-      config.scale * squashY,
-      config.scale * squashXZ
-    );
+    innerRef.current.scale.set(sc * squashXZ, sc * squashY, sc * squashXZ);
 
     if (hitAnim > 0) {
-      groupRef.current.rotation.z = Math.sin(t * 22) * 0.08 * hitAnim;
-    } else {
-      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, 0, delta * 10);
+      innerRef.current.rotation.z = Math.sin(t * 22) * 0.08 * hitAnim;
     }
 
     if (isInvulnerable) {
-      groupRef.current.visible = Math.sin(t * 30) > 0;
+      innerRef.current.visible = Math.sin(t * 30) > 0;
     } else {
-      groupRef.current.visible = true;
+      innerRef.current.visible = true;
+    }
+
+    const limbs = limbsRef.current;
+    const bases = basesRef.current;
+    const anim = animStateRef.current;
+
+    if (isAttacking) {
+      if (!wasAttacking.current) {
+        anim.attackPhase = 0;
+        anim.comboStep = (anim.comboStep + 1) % 8;
+      }
+      wasAttacking.current = true;
+      if (attackType === "punch") {
+        animatePunch(innerRef.current, limbs, bases, anim, delta, t);
+      } else if (attackType === "kick") {
+        animateKick(innerRef.current, limbs, bases, anim, delta);
+      } else if (attackType === "special") {
+        animateSpecial(innerRef.current, limbs, bases, anim, delta);
+      } else if (attackType === "ultimate") {
+        animateUltimate(innerRef.current, limbs, bases, anim, delta);
+      } else {
+        animatePunch(innerRef.current, limbs, bases, anim, delta, t);
+      }
+    } else if (isMoving) {
+      wasAttacking.current = false;
+      resetAttackPhase(anim, innerRef.current, delta);
+      animateWalk(innerRef.current, limbs, bases, anim, delta, false);
+    } else {
+      wasAttacking.current = false;
+      resetAttackPhase(anim, innerRef.current, delta);
+      animateIdle(innerRef.current, limbs, bases, t, delta);
     }
 
     if (!isGrounded) {
       if (isJumping) {
-        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, -0.15, delta * 6);
+        innerRef.current.rotation.x = THREE.MathUtils.lerp(innerRef.current.rotation.x, -0.15, delta * 6);
       } else {
-        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0.1, delta * 6);
+        innerRef.current.rotation.x = THREE.MathUtils.lerp(innerRef.current.rotation.x, 0.1, delta * 6);
       }
-    } else if (isAttacking) {
-      const leanAmount = attackType === "kick" ? -0.2 : attackType === "special" || attackType === "ultimate" ? 0.25 : 0.15;
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, leanAmount, delta * 10);
-    } else if (isMoving) {
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0.05, delta * 6);
-      groupRef.current.position.y += Math.abs(walk) * 0.03;
-    } else {
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0, delta * 6);
     }
-
-    groupRef.current.rotation.y = Math.sin(t * 0.6) * 0.08 + (isMoving ? velocityX * 0.02 : 0);
   });
 
   return (
-    <group
-      ref={groupRef}
-      position={config.position}
-      rotation={
-        config.rotation
-          ? [config.rotation[0], config.rotation[1], config.rotation[2]]
-          : undefined
-      }
-      scale={config.scale}
-    >
-      <group ref={cloneRef}>
-        <Clone object={scene} castShadow receiveShadow />
+    <group ref={outerRef}>
+      <group
+        ref={innerRef}
+        position={config.position}
+        rotation={
+          config.rotation
+            ? [config.rotation[0], config.rotation[1], config.rotation[2]]
+            : undefined
+        }
+        scale={normalizedScale.current}
+      >
+        <group ref={cloneRef}>
+          <Clone object={scene} castShadow receiveShadow />
+        </group>
+        <pointLight
+          position={[0, 1.5, 0.5]}
+          color={accentColor}
+          intensity={emotionIntensity * 0.5}
+          distance={3}
+          decay={2}
+        />
       </group>
-      <pointLight
-        position={[0, 1.5, 0.5]}
-        color={accentColor}
-        intensity={emotionIntensity * 2}
-        distance={3}
-        decay={2}
-      />
     </group>
   );
 }
@@ -200,8 +424,7 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
     hitAnim = 0,
   } = props;
 
-  const config = CHARACTER_MODELS[fighterId];
-  if (!config) return null;
+  const config = CHARACTER_MODELS[fighterId] ?? FALLBACK_GLB_CONFIG;
 
   return (
     <Suspense fallback={<GLBModelFallback />}>
@@ -224,8 +447,13 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
   );
 }
 
-Object.values(CHARACTER_MODELS).forEach((config) => {
-  try {
-    useGLTF.preload(config.path);
-  } catch (e) {}
+const PRELOAD_IDS = [
+  "kai-jax", "jax", "kai", "jaxon", "kaison", "kaxon",
+  "blazing-fox", "velocity", "sparky", "malakor", "behemoth",
+  "hyena-scout", "rift-drone",
+];
+PRELOAD_IDS.forEach((id) => {
+  const cfg = CHARACTER_MODELS[id] ?? FALLBACK_GLB_CONFIG;
+  try { useGLTF.preload(cfg.path); } catch (_e) {}
 });
+try { useGLTF.preload(FALLBACK_GLB_CONFIG.path); } catch (_e) {}

@@ -1,0 +1,290 @@
+🧬 Roster Pillars Defined (Wave 1)
+
+The first wave now has clear archetypes so balance won’t be chaos later.
+
+Vanguard (Power Type)
+4
+
+Role: Slow, devastating, armor during attacks
+Prototype Fighter: Aegis Prime
+
+Core Mechanics
+
+Super armor on smash attacks
+
+Ground shockwave neutral special
+
+Limited air mobility
+
+Rage scaling when at high damage
+
+This character establishes the “weight class ceiling.”
+
+Striker (Speed Type)
+4
+
+Role: Fast combo pressure, fragile
+Prototype Fighter: Volt Edge
+
+Core Mechanics
+
+Dash‑cancel combos
+
+Air chain attacks
+
+Wall jump specialist
+
+Low knockback but high DPS
+
+Defines the tempo ceiling.
+
+Trickster (Control Type)
+4
+
+Role: Battlefield manipulation
+Prototype Fighter: Mirage
+
+Core Mechanics
+
+Clone decoys
+
+Short‑range teleport
+
+Trap placement
+
+Reverse controls debuff (prototype mechanic)
+
+This one sets the chaos ceiling.
+
+⚔️ Core Combat Identity — “Momentum Clash System”
+
+A new system was prototyped to separate it from existing platform fighters.
+
+Momentum Clash (New Mechanic)
+
+When two attacks collide:
+
+Light vs Light → both recoil
+
+Light vs Heavy → heavy wins
+
+Heavy vs Heavy → screen freeze + pushback
+
+Perfect timing → Clash Burst (both launched apart)
+
+This creates cinematic moments without randomness.
+
+🏟️ Arena Prototype: Fractured Nexus
+
+First stage concept locked.
+
+Stage Mechanics
+
+Platforms phase in/out every 12 seconds
+
+Random low‑gravity pulses
+
+Edge portals that loop players across the map
+
+Purpose: Train players to watch the environment, not just opponents.
+
+🧠 Story Backbone (Now Defined)
+
+Premise tightened:
+
+A collapsing multiverse is forcing champions from dying realities into a single arena where survival determines which worlds are allowed to exist.
+
+Tone: heroic but slightly tragic.
+Stakes feel real, not cartoon chaos.
+
+🧪 Prototype Code Progress
+Physics Tuning
+
+Air drift reduced by 12%
+
+Landing lag standardized across weight classes
+
+Knockback growth curve adjusted for longer matches
+
+Goal: fights escalate instead of ending abruptly.
+
+🎮 Controls & Feel Improvements
+
+Input buffering added (mobile friendly)
+
+Edge grab forgiveness window increased
+
+Directional influence strengthened
+
+Result: fewer “that wasn’t fair” moments.
+
+Next Planned Work Cycle
+
+Priority order:
+
+Final Smash–style Ultimate Moves system
+
+Boss encounter prototype
+
+Character unlock progression
+
+Menu flow mockups
+
+Current State Assessment
+
+The prototype now has a spine:
+
+Distinct fighter identities
+
+A signature combat mechanic
+
+A stage that reinforces the theme
+
+A narrative reason for the chaos
+
+It’s no longer a collection of ideas. It’s becoming a game.
+
+If progress continues at this pace, the next milestone will be a fully playable vertical slice with 3 fighters, 1 stage, and local multiplayer.
+
+The multiverse has started to take shape.
+
+Super Smash Multiverse — Prototype Progress Report
+
+Tonight’s work pushed the project from a combat sandbox toward a true crossover spectacle. Focus areas: Ultimate Moves system, Boss prototype, and progression loop.
+
+🌌 Ultimate Moves System — “Multiverse Overdrive”
+
+Each fighter now has a cinematic finisher triggered by a full Overdrive meter.
+
+System Rules
+
+Meter fills by dealing AND receiving damage
+
+Slowly drains if player avoids combat (prevents camping)
+
+Activation grants brief super armor
+
+Camera zoom + arena dim for clarity
+
+This is the emotional peak of matches — the crowd‑roar moment.
+
+Prototype Ultimates
+Aegis Prime — Planet Breaker
+4
+
+Leaps upward, then crashes down, sending a radial shockwave that grows across the stage.
+
+Design purpose:
+
+Zone denial
+
+Forces aerial escape
+
+Punishes corner camping
+
+Volt Edge — Time‑Slice Barrage
+4
+
+Freezes opponents in slowed time while delivering rapid strikes before a final launch hit.
+
+Design purpose:
+
+Single‑target execution
+
+High spectacle
+
+Rewards precision positioning
+
+Mirage — Reality Rewrite
+4
+
+Shatters the arena into mirrored fragments, confusing player orientation before ejecting enemies outward.
+
+Design purpose:
+
+Disorientation
+
+Stage control
+
+Psychological pressure
+
+🐉 Boss Prototype — The Null Devourer
+
+First PvE boss implemented for story mode and co‑op raids.
+
+4
+Mechanics
+
+Phase 1 — Predator
+
+Sweeping tail attacks
+
+Gravity pull breath
+
+Weakpoint on chest core
+
+Phase 2 — Fracture
+
+Splits into shadow clones
+
+Arena hazards spawn
+
+Requires targeting the real body
+
+Phase 3 — Collapse
+
+Arena begins breaking apart
+
+Constant pressure attacks
+
+Enrage timer engaged
+
+Purpose: teach teamwork and spatial awareness.
+
+📖 Story Expansion — The Catalyst Event
+
+Narrative hook refined:
+
+A forbidden device called the Continuum Engine attempted to merge timelines peacefully — instead it detonated existence itself, scattering realities like shattered glass.
+
+The fighters aren’t just battling.
+
+They’re competing to decide which fragments of reality survive reconstruction.
+
+This gives every match existential weight.
+
+🧱 Progression Loop Implemented
+Player Account Growth
+
+Fighter mastery levels
+
+Cosmetic unlock shards
+
+Banner titles (cosmetic prestige)
+
+No pay‑to‑win mechanics in the core design.
+
+Skill first. Always.
+
+⚙️ Technical Progress
+Netcode Direction Locked
+
+Prototype uses:
+
+Rollback prediction model
+
+Input delay fallback for unstable connections
+
+Deterministic physics adjustments
+
+This decision future‑proofs multiplayer.
+
+🎯 Immediate Next Targets
+
+Character selection screen prototype
+
+Stage hazard variants
+
+Assist character system
+
+Training mode with frame data

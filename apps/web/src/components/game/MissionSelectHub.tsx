@@ -3,9 +3,11 @@ import { ArrowLeft, BookOpen, Swords } from "../ui/icons";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useGame } from "../../lib/stores/useGame";
 import { useMissions } from "../../lib/stores/useMissions";
-import { useRunner } from "../../lib/stores/useRunner";
+import { useRunner, isArenaUnlocked } from "../../lib/stores/useRunner";
+import { useDifficulty, DIFFICULTY_LABELS, type Difficulty } from "../../lib/stores/useDifficulty";
 import { FIGHTERS, getFighterById } from "../../lib/characters";
 import { getStoryMissionById } from "../../lib/story_missions";
+import { getUEEMissionById } from "../../lib/uee_missions";
 import UEEMissionSelect from "./UEEMissionSelect";
 import StoryMissionSelect from "./StoryMissionSelect";
 import CharacterPreview3D from "./CharacterPreview3D";
@@ -18,10 +20,11 @@ function pickRandomOpponent(excludeId: string): string {
 }
 
 export default function MissionSelectHub() {
-  const { setGameState, selectedCharacter, setCharacter } = useRunner();
+  const { setGameState, selectedCharacter, setCharacter, unlockedArenas } = useRunner();
   const { start } = useGame();
-  const { setArena, setPlayerFighter, setOpponentFighter } = useBattle();
+  const { setArena, setPlayerFighter, setOpponentFighter, setOpponentPersonality } = useBattle();
   const { completedKeys, startMission } = useMissions();
+  const { difficulty, setDifficulty } = useDifficulty();
 
   const [tab, setTab] = useState<Tab>("story");
   const missionCharacter = useMemo(
@@ -39,25 +42,40 @@ export default function MissionSelectHub() {
   );
 
   const beginMission = (source: "story" | "uee", id: string) => {
+    let playerId = selectedCharacter as unknown as string;
+
+    const arenaId = source === "story"
+      ? (getStoryMissionById(id)?.arenaId ?? getStoryMissionById(id)?.arena)
+      : (getUEEMissionById(id)?.arenaId ?? getUEEMissionById(id)?.arena);
+
+    if (arenaId && !isArenaUnlocked(unlockedArenas, arenaId)) {
+      setGameState("shop");
+      return;
+    }
+
+    if (source === "story") {
+      const m = getStoryMissionById(id);
+      const locked = m?.requiredCharacter ?? m?.requiredCharacters?.[0];
+      if (locked && getFighterById(locked)) playerId = locked;
+
+      setCharacter(playerId as any);
+      setPlayerFighter(playerId);
+      startMission(source, id);
+      useRunner.getState().setActiveStoryMission(id);
+      setGameState("story-mode");
+      return;
+    }
+
     startMission(source, id);
 
     const active = useMissions.getState().active;
     if (active?.arenaId) setArena(active.arenaId);
 
-    // Story missions may suggest required characters; only enforce if that fighter exists.
-    let playerId = selectedCharacter as unknown as string;
-    if (source === "story") {
-      const m = getStoryMissionById(id);
-      const required = m?.requiredCharacters ?? [];
-      const playableRequired = required.find((cid) => !!getFighterById(cid));
-      if (playableRequired) playerId = playableRequired;
-    }
-
     setCharacter(playerId as any);
     setPlayerFighter(playerId);
     setOpponentFighter(pickRandomOpponent(playerId));
+    setOpponentPersonality(Math.random() < 0.5 ? "aggressive" : "defensive");
 
-    // Enter battle
     start();
     setGameState("playing");
   };
@@ -88,7 +106,25 @@ export default function MissionSelectHub() {
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Difficulty</span>
+              <div className="flex rounded-lg border border-slate-600 overflow-hidden">
+                {(["easy", "normal", "hard"] as Difficulty[]).map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDifficulty(d)}
+                    className={`px-3 py-1.5 text-xs font-bold transition-all ${
+                      difficulty === d
+                        ? "bg-cyan-500/40 text-cyan-200 border-cyan-400/60"
+                        : "bg-slate-900/60 text-slate-400 hover:text-white hover:bg-slate-700/60"
+                    }`}
+                  >
+                    {DIFFICULTY_LABELS[d]}
+                  </button>
+                ))}
+              </div>
+            </div>
             <button
               onClick={() => setTab("story")}
               className={`px-4 py-2 rounded-xl border-2 transition-all flex items-center gap-2 ${
