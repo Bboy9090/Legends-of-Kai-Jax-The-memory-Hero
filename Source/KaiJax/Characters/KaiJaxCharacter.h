@@ -92,11 +92,12 @@ public:
     bool HasMemory(int32 LayerNumber) const { return ActiveMemories.Contains(LayerNumber); }
 
     // Combat
-    // Note: This is a custom damage function. For full UE5 damage system integration,
-    // override AActor::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
-    // AController* EventInstigator, AActor* DamageCauser)
+    // Note: This is a custom damage function, not the UE damage pipeline entry point.
+    // For full UE5 damage system integration, override:
+    // float AActor::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+    //                          AController* EventInstigator, AActor* DamageCauser)
     UFUNCTION(BlueprintCallable, Category = "Combat")
-    void TakeDamage(float DamageAmount);
+    void ApplyDamage(float DamageAmount);
 
     UFUNCTION(BlueprintCallable, Category = "Combat")
     void RegenerateStamina(float DeltaTime);
