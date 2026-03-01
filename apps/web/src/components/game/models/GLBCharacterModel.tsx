@@ -14,6 +14,7 @@ import {
   animateUltimate,
   resetAttackPhase,
   hasAnyLimb,
+  validateLimbs,
   type LimbRefs,
   type LimbBaseRotations,
   type AnimState,
@@ -205,6 +206,8 @@ interface GLBCharacterModelProps {
   isAttacking?: boolean;
   isMoving?: boolean;
   attackType?: "punch" | "kick" | "special" | "ultimate" | null;
+  /** 0-1 progress through attack (combat-synced). When provided, overrides procedural lerp. */
+  attackProgress?: number;
   velocityX?: number;
   velocityY?: number;
   isGrounded?: boolean;
@@ -227,6 +230,7 @@ function GLBModelInner({
   isAttacking,
   isMoving,
   attackType,
+  attackProgress,
   velocityX: _velocityX = 0,
   velocityY: _velocityY = 0,
   isGrounded = true,
@@ -241,6 +245,7 @@ function GLBModelInner({
   isAttacking: boolean;
   isMoving: boolean;
   attackType?: "punch" | "kick" | "special" | "ultimate" | null;
+  attackProgress?: number;
   velocityX?: number;
   velocityY?: number;
   isGrounded?: boolean;
@@ -313,6 +318,7 @@ function GLBModelInner({
       const limbs = findLimbs(cloneRef.current);
       limbsRef.current = hasAnyLimb(limbs) ? limbs : null;
       if (limbsRef.current) {
+        validateLimbs(limbsRef.current, config.path);
         basesRef.current = captureBaseRotations(limbsRef.current);
       }
     }
@@ -350,16 +356,17 @@ function GLBModelInner({
         anim.comboStep = (anim.comboStep + 1) % 8;
       }
       wasAttacking.current = true;
+      const phaseOverride = typeof attackProgress === "number" ? attackProgress : undefined;
       if (attackType === "punch") {
-        animatePunch(innerRef.current, limbs, bases, anim, delta, t);
+        animatePunch(innerRef.current, limbs, bases, anim, delta, t, phaseOverride);
       } else if (attackType === "kick") {
-        animateKick(innerRef.current, limbs, bases, anim, delta);
+        animateKick(innerRef.current, limbs, bases, anim, delta, phaseOverride);
       } else if (attackType === "special") {
-        animateSpecial(innerRef.current, limbs, bases, anim, delta);
+        animateSpecial(innerRef.current, limbs, bases, anim, delta, phaseOverride);
       } else if (attackType === "ultimate") {
-        animateUltimate(innerRef.current, limbs, bases, anim, delta);
+        animateUltimate(innerRef.current, limbs, bases, anim, delta, phaseOverride);
       } else {
-        animatePunch(innerRef.current, limbs, bases, anim, delta, t);
+        animatePunch(innerRef.current, limbs, bases, anim, delta, t, phaseOverride);
       }
     } else if (isMoving) {
       wasAttacking.current = false;
@@ -414,6 +421,7 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
     isAttacking = false,
     isMoving = false,
     attackType = null,
+    attackProgress,
     velocityX = 0,
     velocityY = 0,
     isGrounded = true,
@@ -434,6 +442,7 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
         isAttacking={isAttacking}
         isMoving={isMoving}
         attackType={attackType}
+        attackProgress={attackProgress}
         velocityX={velocityX}
         velocityY={velocityY}
         isGrounded={isGrounded}

@@ -67,6 +67,19 @@ const TORSO_GENERIC = /torso|spine|body|chest|hip|pelvis|root|abdomen|rib|trunk/
 const RIGHT_PAT = /right|_r$|\.r$|_r_|\.R\.|_R_|\.R$/i;
 const LEFT_PAT = /left|_l$|\.l$|_l_|\.L\.|_L_|\.L$/i;
 
+/** Critical bones for procedural animation. Missing = fallback to simplified poses. */
+const CRITICAL_LIMBS: (keyof LimbRefs)[] = ["head", "spine", "hips", "rightUpperArm", "leftUpperArm"];
+
+/** Logs a dev warning when critical bones are missing from the rig. */
+export function validateLimbs(limbs: LimbRefs, modelPath?: string): void {
+  const missing = CRITICAL_LIMBS.filter((k) => !limbs[k]);
+  if (missing.length > 0 && typeof console !== "undefined" && console.warn) {
+    console.warn(
+      `[Rig] Missing critical bones: ${missing.join(", ")}${modelPath ? ` (${modelPath})` : ""}. Procedural animation may be degraded.`
+    );
+  }
+}
+
 export function findLimbs(root: THREE.Object3D): LimbRefs {
   const limbs: LimbRefs = {
     rightUpperArm: null, rightForearm: null, rightHand: null,
@@ -638,10 +651,11 @@ export function animatePunch(
   bases: LimbBaseRotations | null,
   anim: AnimState,
   delta: number,
-  _t: number
+  _t: number,
+  phaseOverride?: number
 ) {
   const noLimbs = !limbs;
-  anim.attackPhase = THREE.MathUtils.lerp(anim.attackPhase, 1, delta * 20);
+  anim.attackPhase = phaseOverride !== undefined ? phaseOverride : THREE.MathUtils.lerp(anim.attackPhase, 1, delta * 20);
   const p = anim.attackPhase;
   const swing = Math.sin(p * Math.PI);
   const snap = Math.sin(p * Math.PI * 0.5);
@@ -727,10 +741,11 @@ export function animateKick(
   limbs: LimbRefs | null,
   bases: LimbBaseRotations | null,
   anim: AnimState,
-  delta: number
+  delta: number,
+  phaseOverride?: number
 ) {
   const noLimbs = !limbs;
-  anim.attackPhase = THREE.MathUtils.lerp(anim.attackPhase, 1, delta * 18);
+  anim.attackPhase = phaseOverride !== undefined ? phaseOverride : THREE.MathUtils.lerp(anim.attackPhase, 1, delta * 18);
   const p = anim.attackPhase;
   const swing = Math.sin(p * Math.PI);
   const snap = Math.sin(p * Math.PI * 0.5);
@@ -798,10 +813,11 @@ export function animateSpecial(
   limbs: LimbRefs | null,
   bases: LimbBaseRotations | null,
   anim: AnimState,
-  delta: number
+  delta: number,
+  phaseOverride?: number
 ) {
   const noLimbs = !limbs;
-  anim.attackPhase = THREE.MathUtils.lerp(anim.attackPhase, 1, delta * 16);
+  anim.attackPhase = phaseOverride !== undefined ? phaseOverride : THREE.MathUtils.lerp(anim.attackPhase, 1, delta * 16);
   const p = anim.attackPhase;
   const swing = Math.sin(p * Math.PI);
   const spin = Math.sin(p * Math.PI * 2);
@@ -860,10 +876,11 @@ export function animateUltimate(
   limbs: LimbRefs | null,
   bases: LimbBaseRotations | null,
   anim: AnimState,
-  delta: number
+  delta: number,
+  phaseOverride?: number
 ) {
   const noLimbs = !limbs;
-  anim.attackPhase = THREE.MathUtils.lerp(anim.attackPhase, 1, delta * 10);
+  anim.attackPhase = phaseOverride !== undefined ? phaseOverride : THREE.MathUtils.lerp(anim.attackPhase, 1, delta * 10);
   const p = anim.attackPhase;
 
   const charge = Math.min(1, p * 2.5);

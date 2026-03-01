@@ -104,6 +104,8 @@ export interface BattleState {
   playerAttackHasHit: boolean;
   opponentAttacking: boolean;
   opponentAttackType: 'punch' | 'kick' | 'special' | null;
+  opponentAttackElapsed: number;
+  opponentAttackHasHit: boolean;
   playerInvulnerable: boolean;
   opponentInvulnerable: boolean;
   opponentPersonality: 'aggressive' | 'defensive';
@@ -113,6 +115,7 @@ export interface BattleState {
   resetRound: () => void;
   updateRoundTimer: (delta: number) => void;
   tickPlayerAttack: (delta: number) => void;
+  tickOpponentAttack: (delta: number) => void;
   
   // Player actions
   movePlayer: (x: number, y: number) => void;
@@ -253,6 +256,8 @@ export const useBattle = create<BattleState>((set, get) => ({
   playerAttackHasHit: false,
   opponentAttacking: false,
   opponentAttackType: null,
+  opponentAttackElapsed: 0,
+  opponentAttackHasHit: false,
   playerInvulnerable: false,
   opponentInvulnerable: false,
   opponentPersonality: 'aggressive',
@@ -313,6 +318,8 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerAttackHasHit: false,
       opponentAttacking: false,
       opponentAttackType: null,
+      opponentAttackElapsed: 0,
+      opponentAttackHasHit: false,
       winner: null,
       playerSynergy: 0,
       playerTransformed: false,
@@ -346,6 +353,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     set({ roundTime: newTime });
     
     get().tickPlayerAttack(delta);
+    get().tickOpponentAttack(delta);
     get().updateTransformation(delta);
     get().updateCombo(delta);
 
@@ -551,48 +559,79 @@ export const useBattle = create<BattleState>((set, get) => ({
   opponentAttack: (type) => {
     const { opponentAttacking, battlePhase, opponentFighterId } = get();
     if (opponentAttacking || battlePhase !== 'fighting') return;
-    
-    set({ 
-      opponentAttacking: true, 
-      opponentAttackType: type 
-    });
-    
-    const audio = useAudio.getState();
-    if (type === 'punch') audio.playPunch();
-    else if (type === 'kick') audio.playKick();
-    else if (type === 'special') audio.playSpecial();
-    
+
     const { playerX, opponentX, playerInvulnerable, playerAttacking, playerAttackType } = get();
     const distance = Math.abs(playerX - opponentX);
     const moves = getCharacterMoves(opponentFighterId);
     const range = type === 'special' ? moves.specialRange : type === 'kick' ? 2 : 1.5;
-    
+
     if (distance < range && !playerInvulnerable) {
-      // Clash resolution when both attacking
       if (playerAttacking && playerAttackType) {
         const myPriority = getClashPriority(type);
         const theirPriority = getClashPriority(playerAttackType);
-        if (myPriority === theirPriority) {
-          set({ opponentAttacking: false, opponentAttackType: null });
-          return;
-        }
+        if (myPriority === theirPriority) return;
         if (theirPriority > myPriority) return;
       }
-      const damage = type === 'special' ? moves.specialDamage : type === 'kick' ? 15 : 10;
-      get().playerTakeDamage(damage, type);
     }
-    
-    const duration = type === 'special' ? 800 : type === 'kick' ? 600 : 400;
-    setTimeout(() => {
-      set({ opponentAttacking: false, opponentAttackType: null });
-    }, duration);
+
+    set({
+      opponentAttacking: true,
+      opponentAttackType: type,
+      opponentAttackElapsed: 0,
+      opponentAttackHasHit: false,
+    });
+
+    const audio = useAudio.getState();
+    if (type === 'punch') audio.playPunch();
+    else if (type === 'kick') audio.playKick();
+    else if (type === 'special') audio.playSpecial();
+  },
+
+  tickOpponentAttack: (delta) => {
+    const { opponentAttacking, opponentAttackType, opponentAttackElapsed, opponentAttackHasHit } = get();
+    if (!opponentAttacking || !opponentAttackType) return;
+
+    const moveKey = ATTACK_TYPE_TO_MOVE[opponentAttackType];
+    const move = moveKey ? MOVES[moveKey] : null;
+    if (!move) {
+      set({ opponentAttacking: false, opponentAttackType: null, opponentAttackElapsed: 0, opponentAttackHasHit: false });
+      return;
+    }
+
+    const timing = getMoveFrameTime(move);
+    const newElapsed = opponentAttackElapsed + delta;
+
+    if (!opponentAttackHasHit && isInActiveWindow(move, newElapsed)) {
+      const { playerX, opponentX, playerInvulnerable, opponentFighterId } = get();
+      const moves = getCharacterMoves(opponentFighterId);
+      const range = opponentAttackType === 'special' ? moves.specialRange : opponentAttackType === 'kick' ? 2 : 1.5;
+      const distance = Math.abs(playerX - opponentX);
+
+      if (distance < range && !playerInvulnerable) {
+        const damage = opponentAttackType === 'special' ? moves.specialDamage : move.damage;
+        get().playerTakeDamage(damage, opponentAttackType);
+        set({ opponentAttackHasHit: true });
+      }
+    }
+
+    if (newElapsed >= timing.totalTime) {
+      set({ opponentAttacking: false, opponentAttackType: null, opponentAttackElapsed: 0, opponentAttackHasHit: false });
+    } else {
+      set({ opponentAttackElapsed: newElapsed });
+    }
   },
   
   opponentTakeDamage: (damage, attackType) => {
     const { opponentInvulnerable, opponentHealth, battlePhase, opponentX, opponentY, damageDealt } = get();
     if (opponentInvulnerable || battlePhase !== 'fighting') return;
-    
-    set({ damageDealt: damageDealt + damage });
+
+    set({
+      damageDealt: damageDealt + damage,
+      opponentAttacking: false,
+      opponentAttackType: null,
+      opponentAttackElapsed: 0,
+      opponentAttackHasHit: false,
+    });
     get().addDamageNumber(opponentX, opponentY, damage, false);
     const newHealth = Math.max(0, opponentHealth - damage);
     const knockbackMult = attackType === 'ultimate' ? 0.1 : attackType === 'special' ? 0.08 : 0.06;

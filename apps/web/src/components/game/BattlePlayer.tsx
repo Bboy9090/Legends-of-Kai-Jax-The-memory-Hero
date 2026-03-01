@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
+import { ATTACK_TYPE_TO_MOVE, MOVES, getMoveFrameTime } from "../../lib/combatSystems";
 import GLBCharacterModel from "./models/GLBCharacterModel";
 
 export default function BattlePlayer() {
@@ -15,6 +16,7 @@ export default function BattlePlayer() {
     playerFacingRight,
     playerAttacking,
     playerAttackType,
+    playerAttackElapsed,
     playerInvulnerable,
     playerVelocityX,
     playerVelocityY,
@@ -40,6 +42,11 @@ export default function BattlePlayer() {
         isAttacking={playerAttacking}
         isMoving={Math.abs(playerVelocityX) > 0.5}
         attackType={playerAttackType}
+        attackProgress={playerAttacking && playerAttackType ? (() => {
+          const key = ATTACK_TYPE_TO_MOVE[playerAttackType];
+          const move = key ? MOVES[key] : null;
+          return move ? Math.min(1, playerAttackElapsed / getMoveFrameTime(move).totalTime) : undefined;
+        })() : undefined}
         velocityX={playerVelocityX}
         velocityY={playerVelocityY}
         isGrounded={playerGrounded}

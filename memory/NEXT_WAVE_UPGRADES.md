@@ -101,7 +101,7 @@
 |-------|-------|-------------|--------|
 | **Phase 1** | Frame data unification, hitbox phases | Medium | ✅ Done |
 | **Phase 2** | Animation state machine (layers), clip vs procedural split | High |
-| **Phase 3** | Rig validation, LOD alignment, silhouette polish | Medium |
+| **Phase 3** | Rig validation, LOD alignment, silhouette polish | Medium | ⬜ Rig validation done |
 | **Phase 4** | Tail system expansion, Kai/Jax asymmetry | High |
 | **Phase 5** | GLB pipeline, morph targets, facial layer | Medium |
 
