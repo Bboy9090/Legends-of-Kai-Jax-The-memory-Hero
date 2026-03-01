@@ -1,7 +1,9 @@
-import { useRef, Suspense } from "react";
+import { useRef, Suspense, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF, Clone } from "@react-three/drei";
 import * as THREE from "three";
+import ModelRouter from "./ModelRouter";
+import type { SovereigntyInput } from "./SovereigntyModelInner";
 import {
   findLimbs,
   captureBaseRotations,
@@ -206,6 +208,8 @@ interface GLBCharacterModelProps {
   isAttacking?: boolean;
   isMoving?: boolean;
   attackType?: "punch" | "kick" | "special" | "ultimate" | null;
+  /** Combo step for light chain (0=light1, 1=light2, 2+=finisher). */
+  comboStep?: number;
   /** 0-1 progress through attack (combat-synced). When provided, overrides procedural lerp. */
   attackProgress?: number;
   velocityX?: number;
@@ -421,6 +425,7 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
     isAttacking = false,
     isMoving = false,
     attackType = null,
+    comboStep = 0,
     attackProgress,
     velocityX = 0,
     velocityY = 0,
@@ -434,23 +439,47 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
 
   const config = CHARACTER_MODELS[fighterId] ?? FALLBACK_GLB_CONFIG;
 
+  const sovereigntyInput: SovereigntyInput = useMemo(
+    () => ({
+      isMoving,
+      speed: Math.min(1, Math.abs(velocityX) / 6.5 + (velocityY > 0 ? 0.3 : 0)),
+      isAttacking,
+      attackType,
+      comboStep,
+      isGrounded,
+      isJumping: velocityY > 0 && !isGrounded,
+      isInvulnerable,
+      isHitHeavy: hitAnim > 0.5,
+      isBlocking: false,
+      isBurstStepping: false,
+      isErasureActive: false,
+    }),
+    [isMoving, velocityX, velocityY, isAttacking, attackType, comboStep, isGrounded, isInvulnerable, hitAnim]
+  );
+
   return (
     <Suspense fallback={<GLBModelFallback />}>
-      <GLBModelInner
+      <ModelRouter
         config={config}
-        animTime={animTime}
-        isAttacking={isAttacking}
-        isMoving={isMoving}
-        attackType={attackType}
-        attackProgress={attackProgress}
-        velocityX={velocityX}
-        velocityY={velocityY}
-        isGrounded={isGrounded}
-        isJumping={isJumping}
-        emotionIntensity={emotionIntensity}
+        sovereigntyInput={sovereigntyInput}
+        ProceduralInner={GLBModelInner}
+        proceduralProps={{
+          animTime,
+          isAttacking,
+          isMoving,
+          attackType,
+          comboStep,
+          attackProgress,
+          velocityX,
+          velocityY,
+          isGrounded,
+          isJumping,
+          isInvulnerable,
+          hitAnim,
+        }}
         accentColor={accentColor}
-        isInvulnerable={isInvulnerable}
-        hitAnim={hitAnim}
+        emotionIntensity={emotionIntensity}
+        animTime={animTime}
       />
     </Suspense>
   );
