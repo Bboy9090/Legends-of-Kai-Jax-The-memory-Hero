@@ -102,6 +102,7 @@ export interface BattleState {
   playerAttackType: 'punch' | 'kick' | 'special' | 'ultimate' | null;
   playerAttackElapsed: number;
   playerAttackHasHit: boolean;
+  playerComboStep: number;
   opponentAttacking: boolean;
   opponentAttackType: 'punch' | 'kick' | 'special' | null;
   opponentAttackElapsed: number;
@@ -121,6 +122,7 @@ export interface BattleState {
   movePlayer: (x: number, y: number) => void;
   playerJump: () => void;
   playerAttack: (type: 'punch' | 'kick' | 'special' | 'ultimate') => void;
+  attemptComboCancel: () => boolean;
   playerTakeDamage: (damage: number, attackType?: 'punch' | 'kick' | 'special') => void;
   
   // Opponent actions
@@ -151,6 +153,7 @@ export interface BattleState {
   
   // Battle results
   endBattle: (winner: 'player' | 'opponent') => void;
+  legendaryFinish: boolean;
   returnToMenu: () => void;
   setTimeScale: (scale: number) => void;
   
@@ -254,6 +257,8 @@ export const useBattle = create<BattleState>((set, get) => ({
   playerAttackType: null,
   playerAttackElapsed: 0,
   playerAttackHasHit: false,
+  playerComboStep: 0,
+  legendaryFinish: false,
   opponentAttacking: false,
   opponentAttackType: null,
   opponentAttackElapsed: 0,
@@ -316,6 +321,8 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerAttackType: null,
       playerAttackElapsed: 0,
       playerAttackHasHit: false,
+      playerComboStep: 0,
+      legendaryFinish: false,
       opponentAttacking: false,
       opponentAttackType: null,
       opponentAttackElapsed: 0,
@@ -436,11 +443,13 @@ export const useBattle = create<BattleState>((set, get) => ({
       }
     }
 
+    const comboStep = type === 'punch' ? 0 : 0;
     set({
       playerAttacking: true,
       playerAttackType: type,
       playerAttackElapsed: 0,
       playerAttackHasHit: false,
+      playerComboStep: type === 'kick' || type === 'special' || type === 'ultimate' ? 0 : comboStep,
     });
 
     if (type === 'special' || type === 'ultimate') useMissions.getState().recordMove(type);
@@ -451,14 +460,33 @@ export const useBattle = create<BattleState>((set, get) => ({
     else if (type === 'special' || type === 'ultimate') audio.playSpecial();
   },
 
+  attemptComboCancel: () => {
+    const { playerAttacking, playerAttackType, playerComboStep, playerAttackElapsed } = get();
+    if (!playerAttacking || playerAttackType !== 'punch' || playerComboStep >= 2) return false;
+    const moveKey = `light${playerComboStep + 1}` as keyof typeof MOVES;
+    const move = MOVES[moveKey];
+    if (!move || move.cancelAt <= 0) return false;
+    const timing = getMoveFrameTime(move);
+    if (playerAttackElapsed < timing.cancelTime) return false;
+    set({
+      playerAttackType: 'punch',
+      playerAttackElapsed: 0,
+      playerAttackHasHit: false,
+      playerComboStep: playerComboStep + 1,
+    });
+    useAudio.getState().playPunch();
+    return true;
+  },
+
   tickPlayerAttack: (delta) => {
-    const { playerAttacking, playerAttackType, playerAttackElapsed, playerAttackHasHit } = get();
+    const { playerAttacking, playerAttackType, playerAttackElapsed, playerAttackHasHit, playerComboStep } = get();
     if (!playerAttacking || !playerAttackType) return;
 
-    const moveKey = ATTACK_TYPE_TO_MOVE[playerAttackType];
+    const baseMoveKey = ATTACK_TYPE_TO_MOVE[playerAttackType];
+    const moveKey = (playerAttackType === 'punch' ? (`light${Math.min(playerComboStep + 1, 3)}` as keyof typeof MOVES) : baseMoveKey);
     const move = moveKey ? MOVES[moveKey] : null;
     if (!move) {
-      set({ playerAttacking: false, playerAttackType: null, playerAttackElapsed: 0, playerAttackHasHit: false });
+      set({ playerAttacking: false, playerAttackType: null, playerAttackElapsed: 0, playerAttackHasHit: false, playerComboStep: 0 });
       return;
     }
 
@@ -491,12 +519,12 @@ export const useBattle = create<BattleState>((set, get) => ({
     }
 
     if (newElapsed >= timing.totalTime) {
-      set({ playerAttacking: false, playerAttackType: null, playerAttackElapsed: 0, playerAttackHasHit: false });
+      set({ playerAttacking: false, playerAttackType: null, playerAttackElapsed: 0, playerAttackHasHit: false, playerComboStep: 0 });
     } else {
       set({ playerAttackElapsed: newElapsed });
     }
   },
-  
+
   playerTakeDamage: (damage, attackType) => {
     const { playerInvulnerable, playerHealth, battlePhase, playerX, playerY, ultimateSuperArmorRemaining } = get();
     if (playerInvulnerable || battlePhase !== 'fighting' || ultimateSuperArmorRemaining > 0) return;
@@ -515,8 +543,9 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerAttackType: null,
       playerAttackElapsed: 0,
       playerAttackHasHit: false,
+      playerComboStep: 0,
     });
-    
+
     get().addDamageNumber(playerX, playerY, scaledDamage, true);
     get().addOverdrive(scaledDamage * 0.35); // Meter also fills on receiving damage
     const shakeBonus = attackType === 'special' ? 1.5 : 1;
@@ -651,10 +680,11 @@ export const useBattle = create<BattleState>((set, get) => ({
     }, 500);
     
     if (newHealth <= 0) {
+      set({ legendaryFinish: attackType === 'ultimate' });
       get().endBattle('player');
     }
   },
-  
+
   // ⚡ LEGENDARY SYNERGY SYSTEM (Resonance for Jaxon/Kaison -> Kai-Jax)
   addSynergy: (amount) => {
     const { playerSynergy, maxSynergy, playerTransformed, playerFighterId } = get();
@@ -847,21 +877,20 @@ export const useBattle = create<BattleState>((set, get) => ({
 
   endBattle: (winner) => {
     hapticKO();
+    const { legendaryFinish } = get();
 
-    // Mission result evaluation happens at battle end.
     useMissions.getState().recordBattleEnd(winner);
-    
-    // LEGENDARY KO SEQUENCE
-    set({ 
+
+    set({
       battlePhase: 'ko',
       winner,
-      timeScale: 0.3,
+      timeScale: legendaryFinish && winner === 'player' ? 0.15 : 0.3,
       playerTransformed: false, // End transformation on KO
       transformationTimeRemaining: 0,
     });
     
-    get().triggerScreenFlash(winner === 'player' ? '#FFD700' : '#FF0000');
-    get().triggerScreenShake(8);
+    get().triggerScreenFlash(winner === 'player' ? (legendaryFinish ? '#FFE066' : '#FFD700') : '#FF0000');
+    get().triggerScreenShake(legendaryFinish && winner === 'player' ? 12 : 8);
 
     const { maxRoundTime, roundTime } = get();
     set({ roundTimeSurvived: Math.max(0, maxRoundTime - roundTime) });
@@ -886,28 +915,30 @@ export const useBattle = create<BattleState>((set, get) => ({
       totalBattles: get().totalBattles + 1
     });
     
-    // Gradually speed back up
+    const startScale = legendaryFinish && winner === 'player' ? 0.15 : 0.3;
     let timeElapsed = 0;
     const speedUpInterval = setInterval(() => {
       timeElapsed += 50;
-      const progress = timeElapsed / 1500;
-      const newTimeScale = 0.3 + (0.7 * progress);
+      const progress = timeElapsed / (legendaryFinish && winner === 'player' ? 2000 : 1500);
+      const newTimeScale = startScale + (1 - startScale) * Math.min(1, progress);
       set({ timeScale: Math.min(1.0, newTimeScale) });
-      
-      if (timeElapsed >= 1500) {
+
+      if (timeElapsed >= (legendaryFinish && winner === 'player' ? 2000 : 1500)) {
         clearInterval(speedUpInterval);
       }
     }, 50);
     
+    const koDuration = legendaryFinish && winner === 'player' ? 3200 : 2500;
     setTimeout(() => {
-      set({ 
+      set({
         battlePhase: 'results',
-        timeScale: 1.0
+        timeScale: 1.0,
+        legendaryFinish: false,
       });
       if (winner === 'player') {
         useAudio.getState().playVictory();
       }
-    }, 2500);
+    }, koDuration);
   },
   
   returnToMenu: () => {

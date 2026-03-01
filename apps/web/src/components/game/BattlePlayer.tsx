@@ -17,6 +17,7 @@ export default function BattlePlayer() {
     playerAttacking,
     playerAttackType,
     playerAttackElapsed,
+    playerComboStep,
     playerInvulnerable,
     playerVelocityX,
     playerVelocityY,
@@ -43,7 +44,8 @@ export default function BattlePlayer() {
         isMoving={Math.abs(playerVelocityX) > 0.5}
         attackType={playerAttackType}
         attackProgress={playerAttacking && playerAttackType ? (() => {
-          const key = ATTACK_TYPE_TO_MOVE[playerAttackType];
+          const baseKey = ATTACK_TYPE_TO_MOVE[playerAttackType];
+          const key = playerAttackType === "punch" ? (`light${Math.min(playerComboStep + 1, 3)}` as keyof typeof MOVES) : baseKey;
           const move = key ? MOVES[key] : null;
           return move ? Math.min(1, playerAttackElapsed / getMoveFrameTime(move).totalTime) : undefined;
         })() : undefined}

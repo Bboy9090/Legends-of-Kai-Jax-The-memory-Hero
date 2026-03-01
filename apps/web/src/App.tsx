@@ -14,6 +14,7 @@ import BeastPreview from "./components/game/BeastPreview";
 import CampaignMap from "./components/game/CampaignMap";
 import TransformationOverlay from "./components/game/TransformationOverlay";
 import ScreenEffects from "./components/game/ScreenEffects";
+import LegendaryFinishOverlay from "./components/game/LegendaryFinishOverlay";
 import { GameIntro, LoadingView } from "./components/game/LoadingScreen";
 import CustomizationMenu from "./components/game/CustomizationMenu";
 import LoreHub from "./components/game/LoreHub";
@@ -380,6 +381,7 @@ function App() {
             >
               <BattleUI />
               <TransformationOverlay />
+              <LegendaryFinishOverlay />
               <ScreenEffects />
               <MobileControls />
             </div>

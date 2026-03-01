@@ -20,11 +20,11 @@
 
 ### 1.3 Combo & Cancel System
 - **Current:** `COMBO_CONFIG` (maxChain: 3, chainWindow, resetTime). Cancel windows in `MOVES.cancelAt`.
-- **Upgrade:** Implement hit-confirm cancels. Add special cancel on hit vs on block. Consider gatling tables (which moves chain into which). Align with ENGINE_DESIGN §3.
+- **Upgrade:** ✅ Battle mode: light1→light2→light3 cancel chains (attemptComboCancel during cancel window). Add special cancel on hit vs on block. Consider gatling tables. Align with ENGINE_DESIGN §3.
 
 ### 1.4 Hit Feedback & Juice
 - **Current:** Screen shake, hit stop, damage numbers.
-- **Upgrade:** Per-move hit stop values fully honored. Add attack-specific camera rumble curves. Improve damage number spawn (offset, scale by damage). Consider hit spark VFX per attack type.
+- **Upgrade:** ✅ Per-move hit stop honored. Damage numbers: 3 tiers (standard, big 40+, legendary 60+). Consider hit spark VFX per attack type.
 
 ---
 
