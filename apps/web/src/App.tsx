@@ -345,8 +345,8 @@ function App() {
               <Canvas
                 shadows
                 camera={{
-                  position: [0, 4, 5],
-                  fov: 55,
+                  position: [0, 5.5, 8],
+                  fov: 62,
                   near: 0.1,
                   far: 1000
                 }}
