@@ -454,6 +454,6 @@ const PRELOAD_IDS = [
 ];
 PRELOAD_IDS.forEach((id) => {
   const cfg = CHARACTER_MODELS[id] ?? FALLBACK_GLB_CONFIG;
-  try { useGLTF.preload(cfg.path); } catch (_e) {}
+  try { useGLTF.preload(cfg.path); } catch { /* preload best-effort */ }
 });
-try { useGLTF.preload(FALLBACK_GLB_CONFIG.path); } catch (_e) {}
+try { useGLTF.preload(FALLBACK_GLB_CONFIG.path); } catch { /* preload best-effort */ }

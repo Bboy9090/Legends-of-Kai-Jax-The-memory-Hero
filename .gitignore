@@ -27,6 +27,8 @@ next-env.d.ts
 
 # Production builds
 /build
+dist/
+apps/web/dist/
 
 # Environment files (comprehensive coverage)
 

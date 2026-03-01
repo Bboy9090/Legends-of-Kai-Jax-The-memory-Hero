@@ -181,7 +181,7 @@ function walkArmChain(limbs: LimbRefs, side: "right" | "left") {
   const hKey = side === "right" ? "rightHand" : "leftHand";
   const armKey = side === "right" ? "rightArm" : "leftArm";
 
-  let start = limbs[uaKey] || limbs[armKey];
+  const start = limbs[uaKey] || limbs[armKey];
   if (!start) return;
 
   if (!limbs[uaKey]) limbs[uaKey] = start;
@@ -208,7 +208,7 @@ function walkLegChain(limbs: LimbRefs, side: "right" | "left") {
   const ftKey = side === "right" ? "rightFoot" : "leftFoot";
   const legKey = side === "right" ? "rightLeg" : "leftLeg";
 
-  let start = limbs[ulKey] || limbs[legKey];
+  const start = limbs[ulKey] || limbs[legKey];
   if (!start) return;
 
   if (!limbs[ulKey]) limbs[ulKey] = start;
