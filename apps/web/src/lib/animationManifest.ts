@@ -3,7 +3,7 @@
  * One GLB per character. String IDs. 60 FPS. g=18.0 weight.
  */
 
-import type * as THREE from "three";
+import * as THREE from "three";
 
 /** Clip identifiers — must match exported GLB clip names exactly. */
 export const CLIP_IDS = {
@@ -53,12 +53,26 @@ export const CLIP_CATEGORY: Record<string, StateCategory> = {
   [CLIP_IDS.ERASURE_GLITCH]: "special",
 };
 
-/** Clips that can overlay additively on locomotion (upper body only).
- *  TODO: Implement bone-masked additive layer for web_launch during run.
- *  Currently uses full crossfade (0.05s loco→combat) for snap-to feel. */
+/** Clips that can overlay additively on locomotion (upper body only). */
 export const ADDITIVE_OVERLAY_CLIPS: Set<string> = new Set([
   CLIP_IDS.WEB_LAUNCH,
 ]);
+
+/** Bone name patterns for upper body — used for additive overlay masking. */
+const UPPER_BODY_PATTERNS = [
+  /spine|chest|rib|trunk|back|torso|abdomen/i,
+  /neck/i,
+  /^head\d*$|skull|jaw|face|snout|cranium/i,
+  /shoulder|arm|forearm|bicep|elbow|hand|wrist|claw|fist|finger/i,
+  /tail/i, // Kai-Jax tails are upper-body expressives
+];
+
+/** True if bone name indicates upper body (spine up, arms, head, tails). */
+export function isUpperBodyBone(name: string): boolean {
+  const n = name.toLowerCase();
+  if (/leg|thigh|knee|shin|calf|foot|ankle|toe|hip|pelvis|groin/i.test(n)) return false;
+  return UPPER_BODY_PATTERNS.some((p) => p.test(n));
+}
 
 /** Get blend duration for transition from prev to next. */
 export function getBlendDuration(prevClip: string | null, nextClip: string): number {
@@ -102,4 +116,25 @@ export function battleAttackToClip(
 /** Find a clip in the GLB animations array by name. */
 export function findClipByName(animations: THREE.AnimationClip[], name: string): THREE.AnimationClip | null {
   return animations.find((a) => a.name === name) ?? null;
+}
+
+/** Copy upper-body bone transforms from overlay skeleton to main. */
+export function copyUpperBodyBones(mainRoot: THREE.Object3D, overlayRoot: THREE.Object3D): void {
+  const mainBones = new Map<string, THREE.Bone>();
+  const overlayBones = new Map<string, THREE.Bone>();
+
+  mainRoot.traverse((obj) => {
+    if (obj.type === "Bone" && obj.name) mainBones.set(obj.name, obj as THREE.Bone);
+  });
+  overlayRoot.traverse((obj) => {
+    if (obj.type === "Bone" && obj.name) overlayBones.set(obj.name, obj as THREE.Bone);
+  });
+
+  for (const [name, mainBone] of mainBones) {
+    if (!isUpperBodyBone(name)) continue;
+    const overlayBone = overlayBones.get(name);
+    if (!overlayBone) continue;
+    mainBone.quaternion.copy(overlayBone.quaternion);
+    mainBone.position.copy(overlayBone.position);
+  }
 }

@@ -44,6 +44,19 @@ export function resolveBaseClip(input: SovereigntyAnimInput): string {
   return CLIP_IDS.IDLE;
 }
 
+/** When additive overlay is active: overlay clip + base loco clip. Returns { overlay, base } or null. */
+export function resolveAdditiveMode(
+  targetClip: string,
+  prevClip: string | null,
+  input: SovereigntyAnimInput
+): { overlay: string; base: string } | null {
+  if (!isAdditiveOverlay(targetClip)) return null;
+  const isLoco = prevClip === CLIP_IDS.RUN || prevClip === CLIP_IDS.WALK;
+  if (!isLoco) return null;
+  const base = input.speed > 0.7 ? CLIP_IDS.RUN : CLIP_IDS.WALK;
+  return { overlay: targetClip, base };
+}
+
 /** Check if this clip can be additive overlay (upper body only). */
 export function isAdditiveOverlay(clipId: string): boolean {
   return ADDITIVE_OVERLAY_CLIPS.has(clipId);

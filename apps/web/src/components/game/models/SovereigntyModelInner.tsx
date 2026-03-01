@@ -3,10 +3,11 @@
  * Replaces procedural. One GLB, string clip IDs, strict crossfade durations.
  */
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF, Clone } from "@react-three/drei";
 import * as THREE from "three";
+import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import {
   resolveBaseClip,
   createActions,
@@ -14,8 +15,9 @@ import {
   getExpectedClipIds,
   getLoopMode,
   shouldClampWhenFinished,
+  resolveAdditiveMode,
 } from "../../../lib/sovereigntyAnimationController";
-import { findClipByName } from "../../../lib/animationManifest";
+import { findClipByName, copyUpperBodyBones } from "../../../lib/animationManifest";
 import type { GLBModelConfig } from "./GLBCharacterModel";
 
 const TARGET_HEIGHT = 4.5;
@@ -58,16 +60,22 @@ export default function SovereigntyModelInner({
   const outerRef = useRef<THREE.Group>(null);
   const innerRef = useRef<THREE.Group>(null);
   const cloneRef = useRef<THREE.Group>(null);
+  const overlayRef = useRef<THREE.Object3D | null>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
+  const overlayMixerRef = useRef<THREE.AnimationMixer | null>(null);
+  const overlayActionsRef = useRef<Map<string, THREE.AnimationAction>>(new Map());
   const actionsRef = useRef<Map<string, THREE.AnimationAction>>(new Map());
   const currentClipRef = useRef<string | null>(null);
   const currentActionRef = useRef<THREE.AnimationAction | null>(null);
+  const additiveModeRef = useRef<{ overlay: string; base: string } | null>(null);
+  const overlayActionRef = useRef<THREE.AnimationAction | null>(null);
   const setupDoneRef = useRef(false);
   const normalizedScaleRef = useRef(config.scale);
   const landSquashRef = useRef(0);
   const wasGroundedRef = useRef(true);
 
   const { scene, animations } = useGLTF(config.path);
+  const overlayScene = useMemo(() => SkeletonUtils.clone(scene), [scene]);
 
   useEffect(() => {
     if (!cloneRef.current || animations.length === 0) return;
@@ -75,11 +83,18 @@ export default function SovereigntyModelInner({
     const mixer = new THREE.AnimationMixer(cloneRef.current);
     mixerRef.current = mixer;
 
+    const overlayMixer = new THREE.AnimationMixer(overlayScene);
+    overlayMixerRef.current = overlayMixer;
+    overlayRef.current = overlayScene;
+
     const clipIds = getExpectedClipIds().filter(
       (id) => findClipByName(animations, id) !== null
     );
     const actions = createActions(mixer, animations, clipIds, findClipByName);
     actionsRef.current = actions;
+
+    const overlayActions = createActions(overlayMixer, animations, clipIds, findClipByName);
+    overlayActionsRef.current = overlayActions;
 
     const idleClip = findClipByName(animations, "idle");
     if (idleClip) {
@@ -94,10 +109,15 @@ export default function SovereigntyModelInner({
     return () => {
       mixer.stopAllAction();
       mixer.uncacheRoot(cloneRef.current!);
+      overlayMixer.stopAllAction();
+      overlayMixer.uncacheRoot(overlayScene);
       mixerRef.current = null;
+      overlayMixerRef.current = null;
+      overlayRef.current = null;
       actionsRef.current = new Map();
+      overlayActionsRef.current = new Map();
     };
-  }, [config.path, animations]);
+  }, [config.path, animations, overlayScene]);
 
   useFrame((state, delta) => {
     if (!innerRef.current || !cloneRef.current || !mixerRef.current) return;
@@ -116,12 +136,39 @@ export default function SovereigntyModelInner({
 
     const t = animTime || state.clock.elapsedTime;
     const targetClip = resolveBaseClip(input);
+    const additive = resolveAdditiveMode(targetClip, currentClipRef.current, input);
 
-    if (targetClip !== currentClipRef.current) {
+    if (additive && !additiveModeRef.current) {
+      const { overlay, base } = additive;
+      const baseAction = actionsRef.current.get(base);
+      const overlayAction = overlayActionsRef.current.get(overlay);
+      if (baseAction && overlayAction) {
+        additiveModeRef.current = additive;
+        mixerRef.current!.stopAllAction();
+        baseAction.setEffectiveWeight(1);
+        baseAction.play();
+        currentClipRef.current = base;
+        currentActionRef.current = baseAction;
+
+        overlayMixerRef.current!.stopAllAction();
+        overlayAction.clampWhenFinished = true;
+        overlayAction.setLoop(THREE.LoopOnce, 1);
+        overlayAction.setEffectiveWeight(1);
+        overlayAction.reset();
+        overlayAction.play();
+        overlayActionRef.current = overlayAction;
+      }
+    } else if (!additive && additiveModeRef.current) {
+      additiveModeRef.current = null;
+      overlayActionRef.current = null;
+      overlayMixerRef.current?.stopAllAction();
+    }
+
+    if (targetClip !== currentClipRef.current && !additiveModeRef.current) {
       const targetAction = actionsRef.current.get(targetClip);
       if (targetAction) {
         crossfadeTo(
-          mixerRef.current,
+          mixerRef.current!,
           currentActionRef.current,
           currentClipRef.current,
           targetAction,
@@ -132,7 +179,7 @@ export default function SovereigntyModelInner({
 
         const clip = findClipByName(animations, targetClip);
         if (clip) {
-          targetAction.setLoop(getLoopMode(targetClip), Infinity);
+          targetAction.setLoop(getLoopMode(targetClip), getLoopMode(targetClip) === THREE.LoopRepeat ? Infinity : 1);
           targetAction.clampWhenFinished = shouldClampWhenFinished(targetClip);
         }
       }
@@ -144,8 +191,28 @@ export default function SovereigntyModelInner({
       "web_launch", "hit_light", "hit_heavy", "burst_step",
     ];
     const isCombatClip = clipId && combatClipIds.includes(clipId);
-    if (isCombatClip && currentActionRef.current) {
-      const clip = findClipByName(animations, clipId);
+
+    if (additiveModeRef.current && overlayActionRef.current) {
+      const overlayClip = findClipByName(animations, additiveModeRef.current.overlay);
+      if (overlayClip && overlayActionRef.current.time >= overlayClip.duration - 0.001) {
+        additiveModeRef.current = null;
+        overlayActionRef.current = null;
+        overlayMixerRef.current?.stopAllAction();
+        const idleAction = actionsRef.current.get("idle");
+        if (idleAction) {
+          crossfadeTo(
+            mixerRef.current!,
+            currentActionRef.current,
+            currentClipRef.current,
+            idleAction,
+            "idle"
+          );
+          currentClipRef.current = "idle";
+          currentActionRef.current = idleAction;
+        }
+      }
+    } else if (isCombatClip && currentActionRef.current && !additiveModeRef.current) {
+      const clip = findClipByName(animations, clipId!);
       if (clip) {
         const dur = clip.duration;
         if (currentActionRef.current.time >= dur - 0.001) {
@@ -165,7 +232,13 @@ export default function SovereigntyModelInner({
       }
     }
 
-    mixerRef.current.update(delta);
+    mixerRef.current!.update(delta);
+    if (overlayMixerRef.current) {
+      overlayMixerRef.current.update(delta);
+      if (additiveModeRef.current && cloneRef.current && overlayRef.current) {
+        copyUpperBodyBones(cloneRef.current, overlayRef.current);
+      }
+    }
 
     if (wasGroundedRef.current && !input.isGrounded) {
       landSquashRef.current = 1;
