@@ -79,7 +79,42 @@ export const MOVES: Record<string, MoveData> = {
     knockback: 5,
     hitStopFrames: 6,
   },
+  /** Synthetic: ultimate uses characterMoves for damage/range, this for timing. */
+  ultimate: {
+    startup: 12,
+    active: 24,
+    recovery: 30,
+    cancelAt: 0,
+    damage: 40,
+    staminaCost: 0,
+    knockback: 8,
+    hitStopFrames: 12,
+  },
 };
+
+/** Maps battle attack type to MOVES key for frame data. */
+export const ATTACK_TYPE_TO_MOVE: Record<string, keyof typeof MOVES> = {
+  punch: "light1",
+  kick: "heavy",
+  special: "skill",
+  ultimate: "ultimate",
+};
+
+/** Move phase for hitbox: startup = no hitbox, active = hitbox, recovery = vulnerable. */
+export type MovePhase = "startup" | "active" | "recovery";
+
+/** Get move phase from elapsed time. */
+export function getMovePhase(move: MoveData, elapsed: number): MovePhase {
+  const ft = getMoveFrameTime(move);
+  if (elapsed < ft.startupTime) return "startup";
+  if (elapsed < ft.startupTime + ft.activeTime) return "active";
+  return "recovery";
+}
+
+/** Check if elapsed is in active window (hitbox present). */
+export function isInActiveWindow(move: MoveData, elapsed: number): boolean {
+  return getMovePhase(move, elapsed) === "active";
+}
 
 export const DODGE: DodgeData = {
   iFrames: 16,

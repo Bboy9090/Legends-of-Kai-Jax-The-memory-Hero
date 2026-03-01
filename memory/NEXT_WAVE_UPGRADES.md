@@ -97,9 +97,9 @@
 
 ## 5. IMPLEMENTATION ORDER
 
-| Phase | Focus | Est. Effort |
-|-------|-------|-------------|
-| **Phase 1** | Frame data unification, hitbox phases, cancel clarity | Medium |
+| Phase | Focus | Est. Effort | Status |
+|-------|-------|-------------|--------|
+| **Phase 1** | Frame data unification, hitbox phases | Medium | ✅ Done |
 | **Phase 2** | Animation state machine (layers), clip vs procedural split | High |
 | **Phase 3** | Rig validation, LOD alignment, silhouette polish | Medium |
 | **Phase 4** | Tail system expansion, Kai/Jax asymmetry | High |
