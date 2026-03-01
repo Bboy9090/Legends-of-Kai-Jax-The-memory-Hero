@@ -135,7 +135,8 @@ export default function SovereigntyModelInner({
     }
 
     const t = animTime || state.clock.elapsedTime;
-    const targetClip = resolveBaseClip(input);
+    const availableClips = new Set(actionsRef.current.keys());
+    const targetClip = resolveBaseClip(input, availableClips);
     const additive = resolveAdditiveMode(targetClip, currentClipRef.current, input);
 
     if (additive && !additiveModeRef.current) {
@@ -188,7 +189,9 @@ export default function SovereigntyModelInner({
     const clipId = currentClipRef.current;
     const combatClipIds = [
       "atk_light_1", "atk_light_2", "atk_heavy_finisher",
-      "web_launch", "hit_light", "hit_heavy", "burst_step",
+      "punch_light", "punch_med", "punch_heavy",
+      "kick_light", "kick_med", "kick_heavy",
+      "lunge", "web_launch", "hit_light", "hit_heavy", "burst_step",
     ];
     const isCombatClip = clipId && combatClipIds.includes(clipId);
 

@@ -27,12 +27,15 @@ export interface SovereigntyAnimInput {
 }
 
 /** Resolve which base clip to play from game state. Combat > Locomotion. */
-export function resolveBaseClip(input: SovereigntyAnimInput): string {
+export function resolveBaseClip(
+  input: SovereigntyAnimInput,
+  availableClipIds?: Set<string>
+): string {
   if (input.isErasureActive) return CLIP_IDS.ERASURE_GLITCH;
   if (input.isInvulnerable) return input.isHitHeavy ? CLIP_IDS.HIT_HEAVY : CLIP_IDS.HIT_LIGHT;
   if (input.isBlocking) return CLIP_IDS.BLOCK_IDLE;
   if (input.isAttacking && input.attackType) {
-    return battleAttackToClip(input.attackType, input.comboStep);
+    return battleAttackToClip(input.attackType, input.comboStep, availableClipIds);
   }
   if (input.isBurstStepping) return CLIP_IDS.BURST_STEP;
   if (!input.isGrounded && input.isJumping) {
@@ -75,12 +78,17 @@ export function getLoopMode(clipId: string): THREE.AnimationActionLoopStyles {
   }
 }
 
+const COMBAT_CLIP_IDS = new Set<string>([
+  CLIP_IDS.ATK_LIGHT_1, CLIP_IDS.ATK_LIGHT_2, CLIP_IDS.ATK_HEAVY,
+  CLIP_IDS.PUNCH_LIGHT, CLIP_IDS.PUNCH_MED, CLIP_IDS.PUNCH_HEAVY,
+  CLIP_IDS.KICK_LIGHT, CLIP_IDS.KICK_MED, CLIP_IDS.KICK_HEAVY,
+  CLIP_IDS.LUNGE, CLIP_IDS.WEB_LAUNCH,
+  CLIP_IDS.HIT_LIGHT, CLIP_IDS.HIT_HEAVY, CLIP_IDS.BURST_STEP,
+]);
+
 /** Should clamp at end when LoopOnce finishes. */
 export function shouldClampWhenFinished(clipId: string): boolean {
-  return clipId === CLIP_IDS.ATK_LIGHT_1 || clipId === CLIP_IDS.ATK_LIGHT_2 ||
-    clipId === CLIP_IDS.ATK_HEAVY || clipId === CLIP_IDS.WEB_LAUNCH ||
-    clipId === CLIP_IDS.HIT_LIGHT || clipId === CLIP_IDS.HIT_HEAVY ||
-    clipId === CLIP_IDS.BURST_STEP;
+  return COMBAT_CLIP_IDS.has(clipId);
 }
 
 export interface ActionEntry {
@@ -136,6 +144,7 @@ export function crossfadeTo(
 
 /**
  * Get the list of clip IDs we expect to find in the GLB.
+ * Includes both legacy (atk_*) and granular (punch_*, kick_*, lunge) names.
  */
 export function getExpectedClipIds(): string[] {
   return [
@@ -143,9 +152,16 @@ export function getExpectedClipIds(): string[] {
     CLIP_IDS.WALK,
     CLIP_IDS.RUN,
     CLIP_IDS.BURST_STEP,
+    CLIP_IDS.LUNGE,
     CLIP_IDS.ATK_LIGHT_1,
     CLIP_IDS.ATK_LIGHT_2,
     CLIP_IDS.ATK_HEAVY,
+    CLIP_IDS.PUNCH_LIGHT,
+    CLIP_IDS.PUNCH_MED,
+    CLIP_IDS.PUNCH_HEAVY,
+    CLIP_IDS.KICK_LIGHT,
+    CLIP_IDS.KICK_MED,
+    CLIP_IDS.KICK_HEAVY,
     CLIP_IDS.WEB_LAUNCH,
     CLIP_IDS.HIT_LIGHT,
     CLIP_IDS.HIT_HEAVY,

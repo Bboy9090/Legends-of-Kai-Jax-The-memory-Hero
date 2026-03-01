@@ -11,9 +11,16 @@ export const CLIP_IDS = {
   WALK: "walk",
   RUN: "run",
   BURST_STEP: "burst_step",
+  LUNGE: "lunge",
   ATK_LIGHT_1: "atk_light_1",
   ATK_LIGHT_2: "atk_light_2",
   ATK_HEAVY: "atk_heavy_finisher",
+  PUNCH_LIGHT: "punch_light",
+  PUNCH_MED: "punch_med",
+  PUNCH_HEAVY: "punch_heavy",
+  KICK_LIGHT: "kick_light",
+  KICK_MED: "kick_med",
+  KICK_HEAVY: "kick_heavy",
   WEB_LAUNCH: "web_launch",
   HIT_LIGHT: "hit_light",
   HIT_HEAVY: "hit_heavy",
@@ -42,9 +49,16 @@ export const CLIP_CATEGORY: Record<string, StateCategory> = {
   [CLIP_IDS.WALK]: "loco",
   [CLIP_IDS.RUN]: "loco",
   [CLIP_IDS.BURST_STEP]: "loco",
+  [CLIP_IDS.LUNGE]: "combat",
   [CLIP_IDS.ATK_LIGHT_1]: "combat",
   [CLIP_IDS.ATK_LIGHT_2]: "combat",
   [CLIP_IDS.ATK_HEAVY]: "combat",
+  [CLIP_IDS.PUNCH_LIGHT]: "combat",
+  [CLIP_IDS.PUNCH_MED]: "combat",
+  [CLIP_IDS.PUNCH_HEAVY]: "combat",
+  [CLIP_IDS.KICK_LIGHT]: "combat",
+  [CLIP_IDS.KICK_MED]: "combat",
+  [CLIP_IDS.KICK_HEAVY]: "combat",
   [CLIP_IDS.WEB_LAUNCH]: "combat",
   [CLIP_IDS.HIT_LIGHT]: "reaction",
   [CLIP_IDS.HIT_HEAVY]: "reaction",
@@ -94,16 +108,27 @@ export function getBlendDuration(prevClip: string | null, nextClip: string): num
   return BLEND_DURATIONS.locoToLoco;
 }
 
-/** Map battle attack types to manifest clip IDs. */
+/** Fallback order: prefer rigged clip, else legacy ID. */
+function pickClip(available: Set<string>, preferred: string, fallback: string): string {
+  return available.has(preferred) ? preferred : fallback;
+}
+
+/** Map battle attack types to manifest clip IDs. Uses granular clips when available. */
 export function battleAttackToClip(
   attackType: "punch" | "kick" | "special" | "ultimate",
-  comboStep: number
+  comboStep: number,
+  availableClipIds?: Set<string>
 ): string {
+  const avail = availableClipIds ?? new Set<string>();
+  const pick = (pref: string, fb: string) => pickClip(avail, pref, fb);
+
   switch (attackType) {
     case "punch":
-      return comboStep === 0 ? CLIP_IDS.ATK_LIGHT_1 : comboStep === 1 ? CLIP_IDS.ATK_LIGHT_2 : CLIP_IDS.ATK_HEAVY;
+      if (comboStep === 0) return pick(CLIP_IDS.PUNCH_LIGHT, CLIP_IDS.ATK_LIGHT_1);
+      if (comboStep === 1) return pick(CLIP_IDS.PUNCH_MED, CLIP_IDS.ATK_LIGHT_2);
+      return pick(CLIP_IDS.PUNCH_HEAVY, CLIP_IDS.ATK_HEAVY);
     case "kick":
-      return CLIP_IDS.ATK_HEAVY;
+      return pick(CLIP_IDS.KICK_HEAVY, CLIP_IDS.ATK_HEAVY);
     case "special":
       return CLIP_IDS.WEB_LAUNCH;
     case "ultimate":
