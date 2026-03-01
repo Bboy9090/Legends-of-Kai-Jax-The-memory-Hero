@@ -4,7 +4,14 @@ import { useMissions } from "./useMissions";
 import { useDifficulty, getDamageTakenMultiplier } from "./useDifficulty";
 import { useRunner } from "./useRunner";
 import { getCharacterMoves } from "../characterMoves";
-import { getClashPriority } from "../combatSystems";
+import {
+  getClashPriority,
+  MOVES,
+  ATTACK_TYPE_TO_MOVE,
+  getMoveFrameTime,
+  isInActiveWindow,
+  FRAME_TIME,
+} from "../combatSystems";
 
 const DEFAULT_MAX_COMBO_TIMER = 2.3;
 const UPGRADED_MAX_COMBO_TIMER = 2.5;
@@ -93,8 +100,13 @@ export interface BattleState {
   // Combat state
   playerAttacking: boolean;
   playerAttackType: 'punch' | 'kick' | 'special' | 'ultimate' | null;
+  playerAttackElapsed: number;
+  playerAttackHasHit: boolean;
+  playerComboStep: number;
   opponentAttacking: boolean;
   opponentAttackType: 'punch' | 'kick' | 'special' | null;
+  opponentAttackElapsed: number;
+  opponentAttackHasHit: boolean;
   playerInvulnerable: boolean;
   opponentInvulnerable: boolean;
   opponentPersonality: 'aggressive' | 'defensive';
@@ -103,11 +115,14 @@ export interface BattleState {
   startBattle: () => void;
   resetRound: () => void;
   updateRoundTimer: (delta: number) => void;
+  tickPlayerAttack: (delta: number) => void;
+  tickOpponentAttack: (delta: number) => void;
   
   // Player actions
   movePlayer: (x: number, y: number) => void;
   playerJump: () => void;
   playerAttack: (type: 'punch' | 'kick' | 'special' | 'ultimate') => void;
+  attemptComboCancel: () => boolean;
   playerTakeDamage: (damage: number, attackType?: 'punch' | 'kick' | 'special') => void;
   
   // Opponent actions
@@ -145,6 +160,7 @@ export interface BattleState {
   
   // Battle results
   endBattle: (winner: 'player' | 'opponent') => void;
+  legendaryFinish: boolean;
   returnToMenu: () => void;
   setTimeScale: (scale: number) => void;
   
@@ -248,8 +264,14 @@ export const useBattle = create<BattleState>((set, get) => ({
   
   playerAttacking: false,
   playerAttackType: null,
+  playerAttackElapsed: 0,
+  playerAttackHasHit: false,
+  playerComboStep: 0,
+  legendaryFinish: false,
   opponentAttacking: false,
   opponentAttackType: null,
+  opponentAttackElapsed: 0,
+  opponentAttackHasHit: false,
   playerInvulnerable: false,
   opponentInvulnerable: false,
   opponentPersonality: 'aggressive',
@@ -306,8 +328,14 @@ export const useBattle = create<BattleState>((set, get) => ({
       opponentVelocityY: 0,
       playerAttacking: false,
       playerAttackType: null,
+      playerAttackElapsed: 0,
+      playerAttackHasHit: false,
+      playerComboStep: 0,
+      legendaryFinish: false,
       opponentAttacking: false,
       opponentAttackType: null,
+      opponentAttackElapsed: 0,
+      opponentAttackHasHit: false,
       winner: null,
       playerSynergy: 0,
       playerTransformed: false,
@@ -342,10 +370,9 @@ export const useBattle = create<BattleState>((set, get) => ({
     const newTime = Math.max(0, roundTime - delta);
     set({ roundTime: newTime });
     
-    // Update transformation timer
+    get().tickPlayerAttack(delta);
+    get().tickOpponentAttack(delta);
     get().updateTransformation(delta);
-    
-    // Update combo timer
     get().updateCombo(delta);
 
     // Update overdrive (drain when camping, update super armor)
@@ -394,105 +421,142 @@ export const useBattle = create<BattleState>((set, get) => ({
   playerAttack: (type) => {
     const { playerAttacking, battlePhase, playerTransformed } = get();
     if (playerAttacking || (battlePhase !== 'fighting' && battlePhase !== 'transforming')) return;
-    
-    // Ultimate: requires full Overdrive meter AND (transformed for Jaxon/Kaison OR native for others)
+
     const { playerFighterId, playerOverdrive, maxOverdrive } = get();
     const hasNativeUltimate = ['kai-jax', 'kai', 'jax', 'boryn'].includes(playerFighterId);
     const canUltimate = playerOverdrive >= maxOverdrive && (playerTransformed || hasNativeUltimate);
     if (type === 'ultimate' && !canUltimate) return;
-    
-    // Consume overdrive on ultimate & grant super armor
+
     if (type === 'ultimate') {
       set({
         playerOverdrive: 0,
-        ultimateSuperArmorRemaining: 0.5, // 0.5s super armor on activation
+        ultimateSuperArmorRemaining: 0.5,
       });
     }
 
-    set({ 
-      playerAttacking: true, 
-      playerAttackType: type 
-    });
-
-    // Count specials/ultimates for mission objectives (even if they miss).
-    if (type === "special" || type === "ultimate") {
-      useMissions.getState().recordMove(type);
-    }
-    
-    const audio = useAudio.getState();
-    if (type === 'punch') audio.playPunch();
-    else if (type === 'kick') audio.playKick();
-    else if (type === 'special' || type === 'ultimate') audio.playSpecial();
-    
-    const { playerX, opponentX, opponentInvulnerable, playerFighterId: fid } = get();
+    const { playerX, opponentX, opponentInvulnerable, opponentAttacking, opponentAttackType } = get();
     const distance = Math.abs(playerX - opponentX);
-    const moves = getCharacterMoves(fid);
-    
+    const moves = getCharacterMoves(playerFighterId);
     const transformBonus = playerTransformed ? 1.5 : 1;
     const range = (type === 'ultimate' ? moves.ultimateRange : type === 'special' ? moves.specialRange : type === 'kick' ? 2 : 1.5) * transformBonus;
-    
+
     if (distance < range && !opponentInvulnerable) {
-      // Clash resolution: if opponent also attacking, compare priority
-      const { opponentAttacking, opponentAttackType } = get();
       if (opponentAttacking && opponentAttackType) {
         const myPriority = getClashPriority(type);
         const theirPriority = getClashPriority(opponentAttackType);
         if (myPriority === theirPriority) {
-          // Cinematic slow-mo rebound — reset neutral, no damage
           get().triggerScreenFlash('#FFFFFF');
           get().triggerHitStop(0.2);
           get().triggerScreenShake(4);
-          set({ playerAttacking: false, playerAttackType: null });
           return;
         }
-        if (theirPriority > myPriority) {
-          // Their attack wins — we don't land, they will damage us
-          set({ playerAttacking: false, playerAttackType: null });
-          return;
-        }
-      }
-
-      const baseDamage = type === 'ultimate' ? moves.ultimateDamage : type === 'special' ? moves.specialDamage : type === 'kick' ? 15 : 10;
-      const damage = Math.round(baseDamage * transformBonus);
-
-      get().opponentTakeDamage(damage, type);
-      get().addToCombo(damage);
-      get().addSynergy(type === 'special' ? 15 : type === 'kick' ? 10 : 5);
-      get().addOverdrive(damage * 0.4); // Meter fills on dealing damage
-
-      useMissions.getState().recordHit(type);
-
-      const shakeBase = type === 'ultimate' ? 5 + (moves.ultimateShakeBonus ?? 0) * 3 : Math.max(0.5, damage / 8);
-      const stopBase = type === 'ultimate' ? 0.15 + (moves.ultimateStopBonus ?? 0) : Math.max(0.02, damage / 500);
-      get().triggerScreenShake(shakeBase);
-      get().triggerHitStop(stopBase);
-      if (type === 'ultimate') {
-        get().triggerScreenFlash('#FFD700');
+        if (theirPriority > myPriority) return;
       }
     }
-    
-    const duration = type === 'ultimate' ? 1200 : type === 'special' ? 800 : type === 'kick' ? 600 : 400;
-    setTimeout(() => {
-      set({ playerAttacking: false, playerAttackType: null });
-    }, duration);
+
+    const comboStep = type === 'punch' ? 0 : 0;
+    set({
+      playerAttacking: true,
+      playerAttackType: type,
+      playerAttackElapsed: 0,
+      playerAttackHasHit: false,
+      playerComboStep: type === 'kick' || type === 'special' || type === 'ultimate' ? 0 : comboStep,
+    });
+
+    if (type === 'special' || type === 'ultimate') useMissions.getState().recordMove(type);
+
+    const audio = useAudio.getState();
+    if (type === 'punch') audio.playPunch();
+    else if (type === 'kick') audio.playKick();
+    else if (type === 'special' || type === 'ultimate') audio.playSpecial();
   },
-  
+
+  attemptComboCancel: () => {
+    const { playerAttacking, playerAttackType, playerComboStep, playerAttackElapsed } = get();
+    if (!playerAttacking || playerAttackType !== 'punch' || playerComboStep >= 2) return false;
+    const moveKey = `light${playerComboStep + 1}` as keyof typeof MOVES;
+    const move = MOVES[moveKey];
+    if (!move || move.cancelAt <= 0) return false;
+    const timing = getMoveFrameTime(move);
+    if (playerAttackElapsed < timing.cancelTime) return false;
+    set({
+      playerAttackType: 'punch',
+      playerAttackElapsed: 0,
+      playerAttackHasHit: false,
+      playerComboStep: playerComboStep + 1,
+    });
+    useAudio.getState().playPunch();
+    return true;
+  },
+
+  tickPlayerAttack: (delta) => {
+    const { playerAttacking, playerAttackType, playerAttackElapsed, playerAttackHasHit, playerComboStep } = get();
+    if (!playerAttacking || !playerAttackType) return;
+
+    const baseMoveKey = ATTACK_TYPE_TO_MOVE[playerAttackType];
+    const moveKey = (playerAttackType === 'punch' ? (`light${Math.min(playerComboStep + 1, 3)}` as keyof typeof MOVES) : baseMoveKey);
+    const move = moveKey ? MOVES[moveKey] : null;
+    if (!move) {
+      set({ playerAttacking: false, playerAttackType: null, playerAttackElapsed: 0, playerAttackHasHit: false, playerComboStep: 0 });
+      return;
+    }
+
+    const timing = getMoveFrameTime(move);
+    const newElapsed = playerAttackElapsed + delta;
+
+    if (!playerAttackHasHit && isInActiveWindow(move, newElapsed)) {
+      const { playerX, opponentX, opponentInvulnerable, playerFighterId, playerTransformed } = get();
+      const moves = getCharacterMoves(playerFighterId);
+      const transformBonus = playerTransformed ? 1.5 : 1;
+      const range = (playerAttackType === 'ultimate' ? moves.ultimateRange : playerAttackType === 'special' ? moves.specialRange : playerAttackType === 'kick' ? 2 : 1.5) * transformBonus;
+      const distance = Math.abs(playerX - opponentX);
+
+      if (distance < range && !opponentInvulnerable) {
+        const baseDamage = playerAttackType === 'ultimate' ? moves.ultimateDamage : playerAttackType === 'special' ? moves.specialDamage : move.damage;
+        const damage = Math.round(baseDamage * transformBonus);
+        get().opponentTakeDamage(damage, playerAttackType);
+        get().addToCombo(damage);
+        get().addSynergy(playerAttackType === 'special' ? 15 : playerAttackType === 'kick' ? 10 : 5);
+        get().addOverdrive(damage * 0.4);
+        useMissions.getState().recordHit(playerAttackType);
+        const stopSec = (move.hitStopFrames * FRAME_TIME);
+        get().triggerHitStop(stopSec);
+        get().triggerScreenShake(Math.max(0.5, damage / 8));
+        if (playerAttackType === 'ultimate') {
+          get().triggerScreenFlash('#FFD700');
+        }
+        set({ playerAttackHasHit: true });
+      }
+    }
+
+    if (newElapsed >= timing.totalTime) {
+      set({ playerAttacking: false, playerAttackType: null, playerAttackElapsed: 0, playerAttackHasHit: false, playerComboStep: 0 });
+    } else {
+      set({ playerAttackElapsed: newElapsed });
+    }
+  },
+
   playerTakeDamage: (damage, attackType) => {
     const { playerInvulnerable, playerHealth, battlePhase, playerX, playerY, ultimateSuperArmorRemaining } = get();
     if (playerInvulnerable || battlePhase !== 'fighting' || ultimateSuperArmorRemaining > 0) return;
-    
+
     const mult = getDamageTakenMultiplier(useDifficulty.getState().difficulty);
     const scaledDamage = Math.round(damage * mult);
     const newHealth = Math.max(0, playerHealth - scaledDamage);
     const knockbackMult = attackType === 'special' ? 0.08 : 0.06;
     const knockback = Math.min(1.2, damage * knockbackMult);
     const newX = Math.max(-10, Math.min(10, playerX - knockback));
-    set({ 
+    set({
       playerHealth: newHealth,
       playerInvulnerable: true,
       playerX: newX,
+      playerAttacking: false,
+      playerAttackType: null,
+      playerAttackElapsed: 0,
+      playerAttackHasHit: false,
+      playerComboStep: 0,
     });
-    
+
     get().addDamageNumber(playerX, playerY, scaledDamage, true);
     get().addOverdrive(scaledDamage * 0.35); // Meter also fills on receiving damage
     const shakeBonus = attackType === 'special' ? 1.5 : 1;
@@ -535,51 +599,82 @@ export const useBattle = create<BattleState>((set, get) => ({
   opponentAttack: (type) => {
     const { opponentAttacking, battlePhase, opponentFighterId } = get();
     if (opponentAttacking || battlePhase !== 'fighting') return;
-    
-    set({ 
-      opponentAttacking: true, 
-      opponentAttackType: type 
-    });
-    
-    const audio = useAudio.getState();
-    if (type === 'punch') audio.playPunch();
-    else if (type === 'kick') audio.playKick();
-    else if (type === 'special') audio.playSpecial();
-    
+
     const { playerX, opponentX, playerInvulnerable, playerAttacking, playerAttackType } = get();
     const distance = Math.abs(playerX - opponentX);
     const moves = getCharacterMoves(opponentFighterId);
     const range = type === 'special' ? moves.specialRange : type === 'kick' ? 2 : 1.5;
-    
+
     if (distance < range && !playerInvulnerable) {
-      // Clash resolution when both attacking
       if (playerAttacking && playerAttackType) {
         const myPriority = getClashPriority(type);
         const theirPriority = getClashPriority(playerAttackType);
-        if (myPriority === theirPriority) {
-          set({ opponentAttacking: false, opponentAttackType: null });
-          return;
-        }
+        if (myPriority === theirPriority) return;
         if (theirPriority > myPriority) return;
       }
-      const damage = type === 'special' ? moves.specialDamage : type === 'kick' ? 15 : 10;
-      get().playerTakeDamage(damage, type);
     }
-    
-    const duration = type === 'special' ? 800 : type === 'kick' ? 600 : 400;
-    setTimeout(() => {
-      set({ opponentAttacking: false, opponentAttackType: null });
-    }, duration);
+
+    set({
+      opponentAttacking: true,
+      opponentAttackType: type,
+      opponentAttackElapsed: 0,
+      opponentAttackHasHit: false,
+    });
+
+    const audio = useAudio.getState();
+    if (type === 'punch') audio.playPunch();
+    else if (type === 'kick') audio.playKick();
+    else if (type === 'special') audio.playSpecial();
+  },
+
+  tickOpponentAttack: (delta) => {
+    const { opponentAttacking, opponentAttackType, opponentAttackElapsed, opponentAttackHasHit } = get();
+    if (!opponentAttacking || !opponentAttackType) return;
+
+    const moveKey = ATTACK_TYPE_TO_MOVE[opponentAttackType];
+    const move = moveKey ? MOVES[moveKey] : null;
+    if (!move) {
+      set({ opponentAttacking: false, opponentAttackType: null, opponentAttackElapsed: 0, opponentAttackHasHit: false });
+      return;
+    }
+
+    const timing = getMoveFrameTime(move);
+    const newElapsed = opponentAttackElapsed + delta;
+
+    if (!opponentAttackHasHit && isInActiveWindow(move, newElapsed)) {
+      const { playerX, opponentX, playerInvulnerable, opponentFighterId } = get();
+      const moves = getCharacterMoves(opponentFighterId);
+      const range = opponentAttackType === 'special' ? moves.specialRange : opponentAttackType === 'kick' ? 2 : 1.5;
+      const distance = Math.abs(playerX - opponentX);
+
+      if (distance < range && !playerInvulnerable) {
+        const damage = opponentAttackType === 'special' ? moves.specialDamage : move.damage;
+        get().playerTakeDamage(damage, opponentAttackType);
+        set({ opponentAttackHasHit: true });
+      }
+    }
+
+    if (newElapsed >= timing.totalTime) {
+      set({ opponentAttacking: false, opponentAttackType: null, opponentAttackElapsed: 0, opponentAttackHasHit: false });
+    } else {
+      set({ opponentAttackElapsed: newElapsed });
+    }
   },
   
   opponentTakeDamage: (damage, attackType) => {
     const { opponentInvulnerable, opponentHealth, battlePhase, opponentX, opponentY, damageDealt, stageCrackLevel } = get();
     if (opponentInvulnerable || battlePhase !== 'fighting') return;
-    
+
     if (damage >= 15 || attackType === 'special' || attackType === 'ultimate') {
       set({ stageCrackLevel: Math.min(1, stageCrackLevel + 0.15) });
     }
-    set({ damageDealt: damageDealt + damage });
+    set({
+      damageDealt: damageDealt + damage,
+      opponentAttacking: false,
+      opponentAttackType: null,
+      opponentAttackElapsed: 0,
+      opponentAttackHasHit: false,
+    });
     get().addDamageNumber(opponentX, opponentY, damage, false);
     const newHealth = Math.max(0, opponentHealth - damage);
     const knockbackMult = attackType === 'ultimate' ? 0.1 : attackType === 'special' ? 0.08 : 0.06;
@@ -599,10 +694,11 @@ export const useBattle = create<BattleState>((set, get) => ({
     }, 500);
     
     if (newHealth <= 0) {
+      set({ legendaryFinish: attackType === 'ultimate' });
       get().endBattle('player');
     }
   },
-  
+
   // ⚡ LEGENDARY SYNERGY SYSTEM (Resonance for Jaxon/Kaison -> Kai-Jax)
   addSynergy: (amount) => {
     const { playerSynergy, maxSynergy, playerTransformed, playerFighterId } = get();
@@ -808,21 +904,20 @@ export const useBattle = create<BattleState>((set, get) => ({
 
   endBattle: (winner) => {
     hapticKO();
+    const { legendaryFinish } = get();
 
-    // Mission result evaluation happens at battle end.
     useMissions.getState().recordBattleEnd(winner);
-    
-    // LEGENDARY KO SEQUENCE
-    set({ 
+
+    set({
       battlePhase: 'ko',
       winner,
-      timeScale: 0.3,
+      timeScale: legendaryFinish && winner === 'player' ? 0.15 : 0.3,
       playerTransformed: false, // End transformation on KO
       transformationTimeRemaining: 0,
     });
     
-    get().triggerScreenFlash(winner === 'player' ? '#FFD700' : '#FF0000');
-    get().triggerScreenShake(8);
+    get().triggerScreenFlash(winner === 'player' ? (legendaryFinish ? '#FFE066' : '#FFD700') : '#FF0000');
+    get().triggerScreenShake(legendaryFinish && winner === 'player' ? 12 : 8);
 
     const { maxRoundTime, roundTime } = get();
     set({ roundTimeSurvived: Math.max(0, maxRoundTime - roundTime) });
@@ -847,28 +942,30 @@ export const useBattle = create<BattleState>((set, get) => ({
       totalBattles: get().totalBattles + 1
     });
     
-    // Gradually speed back up
+    const startScale = legendaryFinish && winner === 'player' ? 0.15 : 0.3;
     let timeElapsed = 0;
     const speedUpInterval = setInterval(() => {
       timeElapsed += 50;
-      const progress = timeElapsed / 1500;
-      const newTimeScale = 0.3 + (0.7 * progress);
+      const progress = timeElapsed / (legendaryFinish && winner === 'player' ? 2000 : 1500);
+      const newTimeScale = startScale + (1 - startScale) * Math.min(1, progress);
       set({ timeScale: Math.min(1.0, newTimeScale) });
-      
-      if (timeElapsed >= 1500) {
+
+      if (timeElapsed >= (legendaryFinish && winner === 'player' ? 2000 : 1500)) {
         clearInterval(speedUpInterval);
       }
     }, 50);
     
+    const koDuration = legendaryFinish && winner === 'player' ? 3200 : 2500;
     setTimeout(() => {
-      set({ 
+      set({
         battlePhase: 'results',
-        timeScale: 1.0
+        timeScale: 1.0,
+        legendaryFinish: false,
       });
       if (winner === 'player') {
         useAudio.getState().playVictory();
       }
-    }, 2500);
+    }, koDuration);
   },
   
   returnToMenu: () => {

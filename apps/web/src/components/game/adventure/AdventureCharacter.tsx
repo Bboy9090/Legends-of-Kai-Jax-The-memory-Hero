@@ -356,4 +356,4 @@ try {
   useGLTF.preload(ANIM_PATHS.run);
   useGLTF.preload(ANIM_PATHS.kick);
   useGLTF.preload(ANIM_PATHS.spinKick);
-} catch (_e) {}
+} catch { /* preload best-effort */ }

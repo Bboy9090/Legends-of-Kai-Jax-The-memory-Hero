@@ -101,6 +101,9 @@ export default function PlayerController() {
       t === "ultimate" ? 4 : t === "special" ? 3 : t === "kick" ? 2 : t === "punch" ? 1 : 0;
     const tryAttack = (type: "punch" | "kick" | "special" | "ultimate") => {
       if (state.playerAttacking) {
+        if (type === "punch" && state.playerAttackType === "punch") {
+          if (state.attemptComboCancel()) return;
+        }
         if (priority(type) >= priority(queuedAttackRef.current)) queuedAttackRef.current = type;
       } else {
         state.playerAttack(type);

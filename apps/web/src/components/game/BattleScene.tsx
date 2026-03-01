@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useAudio } from "../../lib/stores/useAudio";
+import BattleCamera from "./BattleCamera";
 import { getFighterById } from "../../lib/characters";
 import BattleArena from "./BattleArena";
 import BattlePlayer from "./BattlePlayer";
@@ -23,8 +23,6 @@ export default function BattleScene() {
     startBattle,
     updateRoundTimer,
     battlePhase,
-    playerX,
-    opponentX,
     playerFighterId,
     screenShake,
     hitStop,
@@ -75,17 +73,10 @@ export default function BattleScene() {
     }
   });
   
-  // MOBILE-OPTIMIZED camera - fills the screen!
-  const cameraX = (playerX + opponentX) / 2;
   return (
     <>
-      {/* Camera follows the action - CENTERED for mobile! */}
-      <OrbitControls
-        enableZoom={false}
-        enablePan={false}
-        enableRotate={false}
-        target={[cameraX, 2, 0]}
-      />
+      {/* Smooth follow camera - wide view so both fighters stay visible */}
+      <BattleCamera />
       
       {/* Enhanced Lighting System for better character definition */}
       <LegendaryLightingRig />

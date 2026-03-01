@@ -71,6 +71,7 @@ cd apps/web && npm run dev
 | [design_guidelines.json](./design_guidelines.json) | Visual identity, typography, colors |
 | [memory/PRD.md](./memory/PRD.md) | Master product requirements |
 | [specs/primary/](./specs/primary/) | Technical specifications |
+| [memory/NEXT_WAVE_UPGRADES.md](./memory/NEXT_WAVE_UPGRADES.md) | Combat, animation, rigging roadmap |
 
 ---
 
