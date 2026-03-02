@@ -112,6 +112,8 @@ interface AudioState {
   playStoneMove: () => void;
   playStoneAttack: () => void;
   playStoneHit: () => void;
+  battleIntensity: number;
+  setBattleIntensity: (v: number) => void;
 }
 
 function tryPlay(a: HTMLAudioElement | null, muted = false, playbackRate = 1) {
@@ -144,6 +146,7 @@ export const useAudio = create<AudioState>()(
   masterVolume: 1,
   musicVolume: 1,
   sfxVolume: 1,
+  battleIntensity: 0,
   setBackgroundMusic: (backgroundMusic) => set({ backgroundMusic }),
   setBattleMusic: (battleMusic) => set({ battleMusic }),
   setHitSound: (hitSound) => set({ hitSound }),
@@ -176,6 +179,19 @@ export const useAudio = create<AudioState>()(
   playStoneMove: () => { if (!get().isMuted) playStoneGrind("move"); },
   playStoneAttack: () => { if (!get().isMuted) playStoneGrind("attack"); },
   playStoneHit: () => { if (!get().isMuted) playStoneGrind("hit"); },
+
+  // Adaptive music: intensity 0-1 (combo, low health = higher). Affects volume/pitch.
+  battleIntensity: 0,
+  setBattleIntensity: (v: number) => {
+    const s = get();
+    const intensity = Math.max(0, Math.min(1, v));
+    set({ battleIntensity: intensity });
+    if (s.battleMusic && !s.isMuted) {
+      const base = 0.4 * s.masterVolume * s.musicVolume;
+      s.battleMusic.volume = base * (0.7 + intensity * 0.5);
+      s.battleMusic.playbackRate = 0.98 + intensity * 0.08;
+    }
+  },
 }),
     {
       name: AUDIO_STORAGE,

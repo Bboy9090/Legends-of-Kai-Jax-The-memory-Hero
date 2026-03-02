@@ -15,6 +15,7 @@ export type GameState =
   | "beast-preview"
   | "adventure"
   | "shop"
+  | "training"
   | "playing";
 
 /** Campaign node id. Order: start → districts → final boss. */

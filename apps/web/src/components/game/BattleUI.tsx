@@ -840,6 +840,8 @@ export default function BattleUI() {
     playerTransformed, 
     comboCount, 
     comboDamage,
+    playerAssistsRemaining,
+    summonAssist,
   } = useBattle();
 
   const activeMission = useMissions((s) => s.active);
@@ -915,6 +917,18 @@ export default function BattleUI() {
       
       {/* Combo Counter */}
       <ComboCounter combo={comboCount} maxCombo={50} damage={comboDamage} />
+
+      {/* Assist — one per round */}
+      {battlePhase === 'fighting' && playerAssistsRemaining > 0 && (
+        <div className="absolute bottom-24 left-4 pointer-events-auto">
+          <button
+            onClick={() => summonAssist()}
+            className="px-4 py-2 rounded-lg bg-purple-500/30 border-2 border-purple-400/70 text-purple-100 font-bold text-sm hover:bg-purple-500/50 transition-all"
+          >
+            Assist (Q) · {playerAssistsRemaining}
+          </button>
+        </div>
+      )}
 
       {/* Mission HUD */}
       {activeMission && <MissionHUD />}

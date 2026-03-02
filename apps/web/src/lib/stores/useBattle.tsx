@@ -140,6 +140,13 @@ export interface BattleState {
   // 🌌 OVERDRIVE — fills on deal/receive damage, drains when camping
   addOverdrive: (amount: number) => void;
   updateOverdrive: (delta: number) => void;
+
+  // 🤝 ASSIST — one per stock/round (Support Summons)
+  playerAssistsRemaining: number;
+  summonAssist: () => void;
+
+  // 🏛️ ENVIRONMENT — terrain breaks under heavy hits (0-1)
+  stageCrackLevel: number;
   
   // 🔥 COMBO SYSTEM
   addToCombo: (damage: number) => void;
@@ -211,6 +218,8 @@ export const useBattle = create<BattleState>((set, get) => ({
   maxOverdrive: 100,
   combatInactivityTimer: 0,
   ultimateSuperArmorRemaining: 0,
+  playerAssistsRemaining: 1,
+  stageCrackLevel: 0,
   
   // 🔥 COMBO SYSTEM
   comboCount: 0,
@@ -335,6 +344,8 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerOverdrive: 0,
       combatInactivityTimer: 0,
       ultimateSuperArmorRemaining: 0,
+      playerAssistsRemaining: 1,
+      stageCrackLevel: 0,
       comboCount: 0,
       comboDamage: 0,
       comboTimer: 0,
@@ -651,8 +662,9 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
   
   opponentTakeDamage: (damage, attackType) => {
-    const { opponentInvulnerable, opponentHealth, battlePhase, opponentX, opponentY, damageDealt } = get();
+    const { opponentInvulnerable, opponentHealth, battlePhase, opponentX, opponentY, damageDealt, stageCrackLevel } = get();
     if (opponentInvulnerable || battlePhase !== 'fighting') return;
+<<<<<<< HEAD
 
     set({
       damageDealt: damageDealt + damage,
@@ -661,6 +673,13 @@ export const useBattle = create<BattleState>((set, get) => ({
       opponentAttackElapsed: 0,
       opponentAttackHasHit: false,
     });
+=======
+    
+    if (damage >= 15 || attackType === 'special' || attackType === 'ultimate') {
+      set({ stageCrackLevel: Math.min(1, stageCrackLevel + 0.15) });
+    }
+    set({ damageDealt: damageDealt + damage });
+>>>>>>> origin
     get().addDamageNumber(opponentX, opponentY, damage, false);
     const newHealth = Math.max(0, opponentHealth - damage);
     const knockbackMult = attackType === 'ultimate' ? 0.1 : attackType === 'special' ? 0.08 : 0.06;
@@ -797,6 +816,19 @@ export const useBattle = create<BattleState>((set, get) => ({
       const drain = delta * DRAIN_RATE;
       set({ playerOverdrive: Math.max(0, playerOverdrive - drain) });
     }
+  },
+
+  summonAssist: () => {
+    const { playerAssistsRemaining, battlePhase, playerX, opponentX } = get();
+    if (playerAssistsRemaining <= 0 || battlePhase !== 'fighting') return;
+    const dist = Math.abs(playerX - opponentX);
+    if (dist < 6) {
+      get().opponentTakeDamage(12, 'special');
+      get().addToCombo(12);
+      get().triggerScreenShake(2);
+      useAudio.getState().playHit();
+    }
+    set({ playerAssistsRemaining: playerAssistsRemaining - 1 });
   },
   
   // 🔥 COMBO SYSTEM

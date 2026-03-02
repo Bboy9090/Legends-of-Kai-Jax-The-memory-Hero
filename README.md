@@ -1,35 +1,73 @@
 # Legends of Kai-Jax: The Memory King
 
-**Status:** PRODUCTION CANON LOCKED  
-**Version:** 1.0.0
+**A 3D fighting game set in the Raging City — where nine tails, memory, and myth collide.**
+
+[![Deploy](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/actions/workflows/deploy.yml/badge.svg)](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/actions/workflows/deploy.yml)
 
 ---
 
 ## Quick Start
 
-### For Developers
-1. Read **[copilot-instructions.md](./copilot-instructions.md)** — Complete development guidelines
-2. Review **[kai_jax.character.json](./kai_jax.character.json)** — Canonical character specification
-3. Check **[design_guidelines.json](./design_guidelines.json)** — Visual design rules
-4. See **[memory/PRD.md](./memory/PRD.md)** — Master product requirements
+```bash
+npm install
+npm run build          # Build the web game
+npm start              # Serve the built app
+```
 
-### For Contributors
-All changes must:
-- ✅ Match JSON spec ([kai_jax.character.json](./kai_jax.character.json))
-- ✅ Follow PC-first design approach
-- ✅ Maintain deterministic behavior
-- ✅ Pass validation: `python validate_characters.py`
+**Development (hot reload):**
+```bash
+cd apps/web && npm run dev
+```
+
+---
+
+## Game Modes
+
+| Mode | Description |
+|------|-------------|
+| **Adventure** | Wave-based arena combat — Free Arena, Gauntlets, Survival Trials |
+| **Campaign** | Story mode with missions across the Raging City districts |
+| **Versus** | 1v1 battles against AI with full combat kernel |
+| **Training** | Frame data lab, 50% speed, move reference |
+| **Challenge** | UEE trials and objective-based missions |
+
+### Combat Features
+
+- **Overdrive Meter** — Fills on dealing/receiving damage, drains when camping. Gates ultimate moves.
+- **Clash Priority** — Ultimate > Special > Kick > Punch. Cinematic rebound on equal clashes.
+- **Assist System** — One summon per round (Q key).
+- **Adaptive Music** — Intensity scales with combos and health.
+- **Synergy & Fusion** — Jaxon/Kaison can transform into Kai-Jax.
+
+---
+
+## Project Structure
+
+```
+├── apps/web/          # Main game (React + Three.js + Vite)
+├── backend/           # Python FastAPI API
+├── frontend/          # Marketing site
+├── packages/          # Shared libraries
+├── memory/            # PRD, design docs
+├── specs/             # Technical specifications
+└── render.yaml        # Render.com deploy config
+```
+
+---
+
+## Deployment
+
+- **Web Game** — Deploys to GitHub Pages on push to `main` ([deploy workflow](.github/workflows/deploy.yml))
+- **Backend API** — Render.com (`uvicorn server:app`)
+- **Static Site** — Render.com (Vite build from `apps/web`)
 
 ---
 
 ## Canonical References
 
-These files are the **single source of truth**:
-
 | File | Purpose |
 |------|---------|
 | [kai_jax.character.json](./kai_jax.character.json) | Character specs, stats, rendering layers |
-| [copilot-instructions.md](./copilot-instructions.md) | Development guidelines and workflow |
 | [design_guidelines.json](./design_guidelines.json) | Visual identity, typography, colors |
 | [memory/PRD.md](./memory/PRD.md) | Master product requirements |
 | [specs/primary/](./specs/primary/) | Technical specifications |
@@ -39,17 +77,8 @@ These files are the **single source of truth**:
 
 ## Validation
 
-Before committing, run:
-
 ```bash
-# Comprehensive validation (recommended)
 python validate_all.py
-
-# Individual validators
-python validate_characters.py      # Character data only
-python test_schema_validation.py   # Story schema only
-
-# Build check
 cd apps/web && npm run build
 ```
 
@@ -61,9 +90,9 @@ cd apps/web && npm run build
 
 - **Unified Core** — One source of truth, no logic divergence
 - **PC-First** — Design for desktop, scale to mobile
-- **Deterministic** — Same input → same output, always
-- **No Placeholders** — Features are complete or clearly disabled
+- **Deterministic** — Same input → same output
+- **Skill First** — No pay-to-win; progression is cosmetic and mastery-based
 
 ---
 
-For detailed instructions, see [copilot-instructions.md](./copilot-instructions.md)
+*Forged in the Raging City. Crowned by Memory.*

@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
+<<<<<<< HEAD
 import BattleCamera from "./BattleCamera";
+=======
+import { useAudio } from "../../lib/stores/useAudio";
+>>>>>>> origin
 import { getFighterById } from "../../lib/characters";
 import BattleArena from "./BattleArena";
 import BattlePlayer from "./BattlePlayer";
@@ -28,6 +32,11 @@ export default function BattleScene() {
     screenFlash,
     playerAttacking,
     playerAttackType,
+    comboCount,
+    maxCombo,
+    playerHealth,
+    opponentHealth,
+    maxHealth,
   } = useBattle();
   const playerFighter = getFighterById(playerFighterId);
   const grade =
@@ -56,10 +65,14 @@ export default function BattleScene() {
     return () => clearTimeout(timer);
   }, [startBattle]);
   
-  // Update round timer every frame
+  // Update round timer and adaptive music intensity
   useFrame((_state, delta) => {
     if (battlePhase === 'fighting') {
       updateRoundTimer(delta);
+      const comboIntensity = Math.min(1, (comboCount + (maxCombo > 0 ? maxCombo * 0.2 : 0)) / 8);
+      const healthIntensity = 1 - Math.min(playerHealth, opponentHealth) / maxHealth;
+      const intensity = comboIntensity * 0.6 + healthIntensity * 0.4;
+      useAudio.getState().setBattleIntensity(intensity);
     }
   });
   

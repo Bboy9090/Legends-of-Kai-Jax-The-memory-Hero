@@ -21,6 +21,7 @@ import LoreHub from "./components/game/LoreHub";
 import MissionSelectHub from "./components/game/MissionSelectHub";
 import ShopView from "./components/game/ShopView";
 import TutorialOverlay from "./components/game/TutorialOverlay";
+import TrainingOverlay from "./components/game/TrainingOverlay";
 import AdventureArena from "./components/game/adventure/AdventureArena";
 import AdventureHUD from "./components/game/adventure/AdventureHUD";
 import StoryAdventure from "./components/game/StoryAdventure";
@@ -340,7 +341,7 @@ function App() {
         })()}
 
         {/* ⚡ BATTLE CANVAS - THE MAIN EVENT! */}
-        {(phase === 'playing' || phase === 'ended') && gameState === 'playing' && (
+        {(phase === 'playing' || phase === 'ended') && (gameState === 'playing' || gameState === 'training') && (
           <>
             <div className="relative w-full h-screen">
               <Canvas
@@ -384,6 +385,7 @@ function App() {
               <LegendaryFinishOverlay />
               <ScreenEffects />
               <MobileControls />
+              {gameState === 'training' && <TrainingOverlay />}
             </div>
           </>
         )}

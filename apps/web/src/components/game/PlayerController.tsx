@@ -118,6 +118,7 @@ export default function PlayerController() {
     if (justPressed(kb.special) || justPressed("KeyC") || touchAttacks.includes("special")) tryAttack("special");
     if (justPressed(kb.ultimate) || touchAttacks.includes("ultimate")) tryAttack("ultimate");
     if (justPressed(kb.transform)) state.triggerTransformation();
+    if (justPressed("KeyQ")) state.summonAssist?.();
     if (justPressed("Escape") || justPressed(kb.pause)) state.togglePause?.();
 
     prevKeysRef.current = { ...keys };
