@@ -2,7 +2,7 @@
 
 **A 3D fighting game set in the Raging City — where nine tails, memory, and myth collide.**
 
-[![Deploy](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/actions/workflows/deploy.yml/badge.svg)](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/actions/workflows/deploy.yml)
+[![CI](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/actions/workflows/ci.yml/badge.svg)](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/actions/workflows/ci.yml)
 
 ---
 
@@ -35,9 +35,13 @@ cd apps/web && npm run dev
 
 - **Overdrive Meter** — Fills on dealing/receiving damage, drains when camping. Gates ultimate moves.
 - **Clash Priority** — Ultimate > Special > Kick > Punch. Cinematic rebound on equal clashes.
+- **Combo Cancel** — Light1→Light2→Light3 punch chain during cancel windows.
+- **Phased Hitboxes** — Startup / active / recovery; damage only in active phase.
+- **Legendary Finish** — Ultimate KO triggers gold slow-mo, screen flash, "LEGENDARY" overlay.
 - **Assist System** — One summon per round (Q key).
 - **Adaptive Music** — Intensity scales with combos and health.
 - **Synergy & Fusion** — Jaxon/Kaison can transform into Kai-Jax.
+- **Animation Controller** — Sovereignty clip-based system, additive upper-body layering (e.g. web_launch during run).
 
 ---
 
@@ -57,9 +61,10 @@ cd apps/web && npm run dev
 
 ## Deployment
 
-- **Web Game** — Deploys to GitHub Pages on push to `main` ([deploy workflow](.github/workflows/deploy.yml))
-- **Backend API** — Render.com (`uvicorn server:app`)
-- **Static Site** — Render.com (Vite build from `apps/web`)
+- **Web Game (Static)** — Render.com ([legends-of-kai-jax-game](https://dashboard.render.com)) — Vite build from `apps/web`
+- **Backend API** — Render.com ([legends-of-kai-jax-api](https://dashboard.render.com)) — `uvicorn server:app`
+
+Configured in [render.yaml](./render.yaml).
 
 ---
 
@@ -72,14 +77,16 @@ cd apps/web && npm run dev
 | [memory/PRD.md](./memory/PRD.md) | Master product requirements |
 | [specs/primary/](./specs/primary/) | Technical specifications |
 | [memory/NEXT_WAVE_UPGRADES.md](./memory/NEXT_WAVE_UPGRADES.md) | Combat, animation, rigging roadmap |
+| [apps/web/docs/ANIMATION_CLIP_SPEC.md](./apps/web/docs/ANIMATION_CLIP_SPEC.md) | Fighting animation clip IDs for riggers |
 
 ---
 
-## Validation
+## Validation & Lint
 
 ```bash
-python validate_all.py
-cd apps/web && npm run build
+npm run validate     # Character schemas
+npm run lint         # ESLint (apps/web)
+npm run build        # Vite build (apps/web)
 ```
 
 ---
