@@ -34,22 +34,13 @@ export class ErrorFallback extends Component<Props, State> {
           <p className="text-slate-400 text-sm font-mono max-w-lg mb-4">
             {this.state.error.message}
           </p>
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => this.setState({ hasError: false, error: null })}
-              className="px-4 py-2 rounded-lg bg-cyan-600 text-white font-medium hover:bg-cyan-500"
-            >
-              Try again
-            </button>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 rounded-lg bg-slate-600 text-white font-medium hover:bg-slate-500"
-            >
-              Reload Game
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="px-4 py-2 rounded-lg bg-cyan-600 text-white font-medium"
+          >
+            Try again
+          </button>
         </div>
       );
     }

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import "@/App.css";
 import axios from "axios";
 import { Zap, Flame, Wind, Shield, Droplet, Leaf, Sun, Star, Skull, Menu, X, ChevronRight, Loader2, Gamepad2 } from "lucide-react";
-import { CombatArena, TestArena } from "./game";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -30,7 +29,7 @@ const ParticleBackground = () => {
 // Navigation Component
 const Navigation = ({ activeSection, setActiveSection }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const sections = ['home', 'play', 'testlab', 'characters', 'tails', 'story', 'gods', 'regions', 'bible', 'ui'];
+  const sections = ['home', 'characters', 'tails', 'story', 'gods', 'regions', 'bible', 'ui'];
 
   return (
     <nav className="glass-nav" data-testid="main-navigation">
@@ -121,13 +120,13 @@ const HeroSection = ({ onNavigate }) => {
           </p>
           
           <div className="flex flex-wrap gap-4">
-            <button 
-              onClick={() => onNavigate('play')} 
-              className="btn-cyber flex items-center gap-2 bg-primary/20 border-primary hover:bg-primary/30 animate-pulse"
-              data-testid="cta-play"
+            <a 
+              href="/game"
+              className="btn-cyber flex items-center gap-2 bg-gradient-to-r from-primary/20 to-fire/20 border-primary hover:border-primary hover:shadow-[0_0_30px_rgba(46,46,254,0.4)] text-lg px-8 py-4 font-heading uppercase tracking-wider"
+              data-testid="cta-play-game"
             >
-              <Gamepad2 className="w-5 h-5" /> PLAY NOW
-            </button>
+              <Gamepad2 className="w-5 h-5 text-primary" /> Play Game
+            </a>
             <button 
               onClick={() => onNavigate('characters')} 
               className="btn-cyber flex items-center gap-2"
@@ -1461,10 +1460,6 @@ function App() {
 
   const renderSection = () => {
     switch (activeSection) {
-      case 'play':
-        return <CombatArena onExit={() => setActiveSection('home')} />;
-      case 'testlab':
-        return <TestArena />;
       case 'characters':
         return <CharactersSection onGenerateImage={handleGenerateImage} isGenerating={isGenerating} />;
       case 'tails':
@@ -1484,19 +1479,16 @@ function App() {
     }
   };
 
-  // Full screen mode for game
-  const isGameMode = activeSection === 'play' || activeSection === 'testlab';
-
   return (
     <div className="min-h-screen bg-background">
-      {!isGameMode && <ParticleBackground />}
-      {!isGameMode && <Navigation activeSection={activeSection} setActiveSection={setActiveSection} />}
+      <ParticleBackground />
+      <Navigation activeSection={activeSection} setActiveSection={setActiveSection} />
       
       <main>
         {renderSection()}
       </main>
 
-      {!isGameMode && <Footer />}
+      <Footer />
     </div>
   );
 }

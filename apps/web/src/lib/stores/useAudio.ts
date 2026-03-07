@@ -1,9 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 const STATUE_IDS = new Set(["marble-gladiator", "granite-colossus", "sandstone-sentinel"]);
-
-const AUDIO_STORAGE = "MK_AUDIO_SETTINGS_V1";
 
 export function isStatueFighter(id: string): boolean {
   return STATUE_IDS.has(id);
@@ -34,20 +31,10 @@ if (typeof window !== "undefined") {
   window.addEventListener("keydown", unlock, { once: true });
 }
 
-function getSfxMultiplier(): number {
-  try {
-    const s = useAudio.getState();
-    return s.masterVolume * s.sfxVolume;
-  } catch {
-    return 1;
-  }
-}
-
 function playStoneGrind(type: "move" | "attack" | "hit") {
   try {
     const ctx = getAudioCtx();
     if (!ctx) return;
-    const mult = getSfxMultiplier();
     const duration = type === "move" ? 0.25 : type === "attack" ? 0.4 : 0.15;
     const baseFreq = type === "move" ? 80 : type === "attack" ? 120 : 200;
 
@@ -73,14 +60,11 @@ function playStoneGrind(type: "move" | "attack" | "hit") {
     filter.Q.value = 1.5;
 
     const gain = ctx.createGain();
-    const baseGain = type === "move" ? 0.15 : type === "attack" ? 0.25 : 0.2;
-    gain.gain.value = baseGain * mult;
+    gain.gain.value = type === "move" ? 0.15 : type === "attack" ? 0.25 : 0.2;
 
     source.connect(filter).connect(gain).connect(ctx.destination);
     source.start();
-  } catch (err) {
-    if (import.meta.env?.DEV) console.warn("[useAudio] playStoneGrind error:", err);
-  }
+  } catch (_e) {}
 }
 
 interface AudioState {
@@ -89,17 +73,11 @@ interface AudioState {
   hitSound: HTMLAudioElement | null;
   successSound: HTMLAudioElement | null;
   isMuted: boolean;
-  masterVolume: number;
-  musicVolume: number;
-  sfxVolume: number;
   setBackgroundMusic: (a: HTMLAudioElement | null) => void;
   setBattleMusic: (a: HTMLAudioElement | null) => void;
   setHitSound: (a: HTMLAudioElement | null) => void;
   setSuccessSound: (a: HTMLAudioElement | null) => void;
   setMuted: (m: boolean) => void;
-  setMasterVolume: (v: number) => void;
-  setMusicVolume: (v: number) => void;
-  setSfxVolume: (v: number) => void;
   startBattleMusic: () => void;
   stopBattleMusic: () => void;
   playJump: () => void;
@@ -112,95 +90,35 @@ interface AudioState {
   playStoneMove: () => void;
   playStoneAttack: () => void;
   playStoneHit: () => void;
-  battleIntensity: number;
-  setBattleIntensity: (v: number) => void;
 }
 
-function tryPlay(a: HTMLAudioElement | null, muted = false, playbackRate = 1) {
-  try {
-    if (!a || muted) return;
-    const s = useAudio.getState();
-    a.volume = s.masterVolume * s.sfxVolume;
-    a.playbackRate = playbackRate;
-    a.currentTime = 0;
-    a.play().catch((err) => {
-      if (import.meta.env?.DEV) {
-        console.warn("[useAudio] Play failed (e.g. file missing):", err);
-      }
-    });
-  } catch (err) {
-    if (import.meta.env?.DEV) {
-      console.warn("[useAudio] tryPlay error:", err);
-    }
-  }
+function tryPlay(a: HTMLAudioElement | null) {
+  if (!a) return;
+  a.currentTime = 0;
+  a.play().catch(() => {});
 }
 
-export const useAudio = create<AudioState>()(
-  persist(
-    (set, get) => ({
+export const useAudio = create<AudioState>((set, get) => ({
   backgroundMusic: null,
   battleMusic: null,
   hitSound: null,
   successSound: null,
   isMuted: false,
-  masterVolume: 1,
-  musicVolume: 1,
-  sfxVolume: 1,
-  battleIntensity: 0,
   setBackgroundMusic: (backgroundMusic) => set({ backgroundMusic }),
   setBattleMusic: (battleMusic) => set({ battleMusic }),
   setHitSound: (hitSound) => set({ hitSound }),
   setSuccessSound: (successSound) => set({ successSound }),
   setMuted: (isMuted) => set({ isMuted }),
-  setMasterVolume: (masterVolume) => set({ masterVolume: Math.max(0, Math.min(1, masterVolume)) }),
-  setMusicVolume: (musicVolume) => set({ musicVolume: Math.max(0, Math.min(1, musicVolume)) }),
-  setSfxVolume: (sfxVolume) => set({ sfxVolume: Math.max(0, Math.min(1, sfxVolume)) }),
-  startBattleMusic: () => {
-    try {
-      const s = get();
-      if (s.isMuted || !s.battleMusic) return;
-      s.battleMusic.volume = 0.4 * s.masterVolume * s.musicVolume;
-      s.battleMusic.currentTime = 0;
-      s.battleMusic.play().catch((err) => {
-        if (import.meta.env?.DEV) console.warn("[useAudio] Battle music play failed:", err);
-      });
-    } catch (err) {
-      if (import.meta.env?.DEV) console.warn("[useAudio] startBattleMusic error:", err);
-    }
-  },
+  startBattleMusic: () => { if (!get().isMuted) tryPlay(get().battleMusic); },
   stopBattleMusic: () => { const b = get().battleMusic; if (b) b.pause(); },
-  playJump: () => tryPlay(get().hitSound, get().isMuted),
-  playPunch: () => tryPlay(get().hitSound, get().isMuted, 1),
-  playKick: () => tryPlay(get().hitSound, get().isMuted, 1.1),
-  playSpecial: () => tryPlay(get().successSound, get().isMuted),
-  playHit: () => tryPlay(get().hitSound, get().isMuted),
-  playKO: () => tryPlay(get().hitSound, get().isMuted),
-  playVictory: () => tryPlay(get().successSound, get().isMuted),
+  playJump: () => tryPlay(get().hitSound),
+  playPunch: () => tryPlay(get().hitSound),
+  playKick: () => tryPlay(get().hitSound),
+  playSpecial: () => tryPlay(get().successSound),
+  playHit: () => tryPlay(get().hitSound),
+  playKO: () => tryPlay(get().hitSound),
+  playVictory: () => tryPlay(get().successSound),
   playStoneMove: () => { if (!get().isMuted) playStoneGrind("move"); },
   playStoneAttack: () => { if (!get().isMuted) playStoneGrind("attack"); },
   playStoneHit: () => { if (!get().isMuted) playStoneGrind("hit"); },
-
-  // Adaptive music: intensity 0-1 (combo, low health = higher). Affects volume/pitch.
-  battleIntensity: 0,
-  setBattleIntensity: (v: number) => {
-    const s = get();
-    const intensity = Math.max(0, Math.min(1, v));
-    set({ battleIntensity: intensity });
-    if (s.battleMusic && !s.isMuted) {
-      const base = 0.4 * s.masterVolume * s.musicVolume;
-      s.battleMusic.volume = base * (0.7 + intensity * 0.5);
-      s.battleMusic.playbackRate = 0.98 + intensity * 0.08;
-    }
-  },
-}),
-    {
-      name: AUDIO_STORAGE,
-      partialize: (s) => ({
-        isMuted: s.isMuted,
-        masterVolume: s.masterVolume,
-        musicVolume: s.musicVolume,
-        sfxVolume: s.sfxVolume,
-      }),
-    }
-  )
-);
+}));

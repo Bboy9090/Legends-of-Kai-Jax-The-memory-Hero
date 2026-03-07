@@ -3,7 +3,6 @@ import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
-import { getFighterById } from "../../lib/characters";
 
 const PARTICLE_COUNT = 60;
 const RING_SEGMENTS = 48;
@@ -98,13 +97,15 @@ function EnergyBurst({ position, color, active }: { position: [number, number, n
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
-            args={[particlePositions, 3]}
             count={PARTICLE_COUNT}
+            array={particlePositions}
+            itemSize={3}
           />
           <bufferAttribute
             attach="attributes-size"
-            args={[particleSizes, 1]}
             count={PARTICLE_COUNT}
+            array={particleSizes}
+            itemSize={1}
           />
         </bufferGeometry>
         <pointsMaterial
@@ -189,15 +190,13 @@ export default function EffectManager() {
     opponentX, opponentY, opponentAttacking, opponentAttackType,
     playerFighterId, opponentFighterId,
   } = useBattle();
-  const playerFighter = getFighterById(playerFighterId);
-  const opponentFighter = getFighterById(opponentFighterId);
 
   const playerUltimate = playerAttacking && playerAttackType === "ultimate";
   const playerSpecial = playerAttacking && playerAttackType === "special";
-  const opponentUltimate = opponentAttacking && opponentAttackType === "special";
+  const opponentBigAttack = opponentAttacking && opponentAttackType === "special";
 
-  const playerColor = playerFighter?.accentColor ?? "#ff6600";
-  const opponentColor = opponentFighter?.accentColor ?? "#00aaff";
+  const playerColor = "#ff6600";
+  const opponentColor = "#00aaff";
 
   return (
     <>
@@ -224,12 +223,12 @@ export default function EffectManager() {
       <EnergyBurst
         position={[opponentX, opponentY + 1.4, 0]}
         color={opponentColor}
-        active={opponentUltimate}
+        active={opponentBigAttack}
       />
       <ShockwaveRing
         position={[opponentX, opponentY + 0.1, 0]}
         color={opponentColor}
-        active={opponentUltimate}
+        active={opponentBigAttack}
       />
     </>
   );

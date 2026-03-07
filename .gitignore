@@ -27,8 +27,6 @@ next-env.d.ts
 
 # Production builds
 /build
-dist/
-apps/web/dist/
 
 # Environment files (comprehensive coverage)
 
@@ -78,14 +76,6 @@ agenthub/agents/youtube/db
 
 # Mobile development
 android-sdk/ -e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
 # Environment files
 *.env
 *.env.*

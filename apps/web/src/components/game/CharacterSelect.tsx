@@ -12,7 +12,6 @@ export default function CharacterSelect() {
   const selectedCharacter = useRunner((s) => s.selectedCharacter);
   const setPlayerFighter = useBattle((s) => s.setPlayerFighter);
   const setOpponentFighter = useBattle((s) => s.setOpponentFighter);
-  const setOpponentPersonality = useBattle((s) => s.setOpponentPersonality);
 
   const [previewId, setPreviewId] = useState<string | null>(selectedCharacter ?? FIGHTERS[0]?.id ?? null);
   const previewFighter = useMemo(
@@ -25,7 +24,6 @@ export default function CharacterSelect() {
     setPlayerFighter(fighterId);
     const others = FIGHTERS.map((f) => f.id).filter((id) => id !== fighterId);
     setOpponentFighter(others[Math.floor(Math.random() * others.length)] ?? fighterId);
-    setOpponentPersonality(Math.random() < 0.5 ? "aggressive" : "defensive");
     start();
     setGameState("playing");
   };

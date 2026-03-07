@@ -6,9 +6,7 @@
   "main": "serve.js",
   "scripts": {
     "start": "node serve.js",
-    "build": "cd apps/web && npx vite build",
-    "lint": "eslint apps/web/src",
-    "validate": "python validate_all.py"
+    "build": "cd apps/web && npx vite build"
   },
   "dependencies": {
     "@fontsource/bebas-neue": "^5.2.7",
@@ -20,20 +18,13 @@
     "@types/three": "^0.183.0",
     "@vitejs/plugin-react": "^5.1.4",
     "autoprefixer": "^10.4.24",
-    "postcss": "^8.4.49",
+    "postcss": "^8.5.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^3.4.0",
     "three": "^0.183.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "zustand": "^5.0.11"
-  },
-  "devDependencies": {
-    "eslint": "^9.15.0",
-    "@eslint/js": "^9.15.0",
-    "typescript-eslint": "^8.15.0",
-    "eslint-plugin-react": "^7.37.2",
-    "eslint-plugin-react-hooks": "^5.0.0"
   }
 }

@@ -340,13 +340,11 @@ export const useMissions = create<MissionsState>()(
       const prev = get().completedKeys;
       if (!prev.includes(k)) {
         const reward = resolveRewards(active.source, active.id);
-        const xp = reward?.xp ?? 0;
-        const currency = reward?.currency ?? 0;
-        const totalPoints = xp + currency;
-        const runner = useRunner.getState();
-        if (xp > 0) runner.addXp(xp);
-        if (currency > 0) runner.addCurrency(currency);
-        if (totalPoints > 0) runner.addScore(totalPoints);
+        const totalPoints = (reward?.xp ?? 0) + (reward?.currency ?? 0);
+        if (totalPoints > 0) {
+          // Treat mission XP/currency as score rewards (no wallet system yet).
+          useRunner.getState().addScore(totalPoints);
+        }
         const next = [...prev, k];
         safeSaveCompleted(next);
         set({

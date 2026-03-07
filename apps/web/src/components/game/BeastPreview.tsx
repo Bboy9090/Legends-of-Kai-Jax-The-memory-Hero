@@ -27,7 +27,7 @@ function BeastModelPanel({ fighterId }: { fighterId: string }) {
         gl.outputColorSpace = THREE.SRGBColorSpace;
         gl.toneMapping = THREE.ACESFilmicToneMapping;
         gl.toneMappingExposure = 1.2;
-        gl.shadowMap.enabled = q.shadowsEnabled;
+        gl.shadowMap.enabled = true;
         gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
       }}
       gl={{ antialias: getQualitySettings().antialias, powerPreference: "high-performance" }}

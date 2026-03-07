@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --ui-scale: 1;
-}
-
 * {
   margin: 0;
   padding: 0;

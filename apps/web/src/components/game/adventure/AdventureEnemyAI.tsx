@@ -3,7 +3,6 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
-import { useDifficulty, getMoveSpeedMultiplier, getAttackCooldownMultiplier } from "../../../lib/stores/useDifficulty";
 import { CHARACTER_MODELS } from "../models/GLBCharacterModel";
 import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
 import { ENEMY_TIERS } from "../../../lib/combatSystems";
@@ -47,14 +46,7 @@ const ENEMY_TARGET_HEIGHTS: Record<string, number> = {
 
 function EnemyMesh({ enemy }: EnemyMeshProps) {
   const config = CHARACTER_MODELS[enemy.fighterId];
-<<<<<<< HEAD
   const modelPath = config?.path || "/models/stylized-beast.glb";
-=======
-  const villainFallbacks = ["/models/hyenaratvbill.glb", "/models/drone.glb", "/models/granite_colossus.glb"];
-  const fallbackIdx = enemy.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % villainFallbacks.length;
-  const modelPath = config?.path || villainFallbacks[fallbackIdx];
-  const modelScale = (config?.scale || 2.5) * 0.85;
->>>>>>> 778c90f5e6d65bdc8f6e6696352c9e7e53c21c28
 
   const { scene, animations } = useGLTF(modelPath);
   const clonedScene = useMemo(() => SkeletonUtils.clone(scene), [scene]);
@@ -171,10 +163,6 @@ export default function AdventureEnemyAI() {
     const adv = useAdventure.getState();
     if (adv.isPaused) return;
 
-    const difficulty = useDifficulty.getState().difficulty;
-    const speedMult = getMoveSpeedMultiplier(difficulty);
-    const cooldownMult = getAttackCooldownMultiplier(difficulty);
-
     const { player, enemies } = adv;
 
     enemies.forEach((enemy) => {
@@ -199,9 +187,8 @@ export default function AdventureEnemyAI() {
       if (enemy.aiState === "retreat" && healthPct <= tierConfig.retreatThreshold) {
         const fleeX = -dx / (dist || 1);
         const fleeZ = -dz / (dist || 1);
-        const speed = tierConfig.speed * speedMult;
-        const moveX = fleeX * speed * 1.3 * delta;
-        const moveZ = fleeZ * speed * 1.3 * delta;
+        const moveX = fleeX * tierConfig.speed * 1.3 * delta;
+        const moveZ = fleeZ * tierConfig.speed * 1.3 * delta;
         adv.setEnemyPos(enemy.id, enemy.posX + moveX, enemy.posY, enemy.posZ + moveZ);
         const fleeRot = Math.atan2(-dx, -dz);
         useAdventure.setState((s) => ({
@@ -221,7 +208,7 @@ export default function AdventureEnemyAI() {
           const pdist = Math.sqrt(pdx * pdx + pdz * pdz);
           if (pdist > 1) {
             const angle = Math.atan2(pdx, pdz);
-            const speed = tierConfig.speed * 0.4 * speedMult;
+            const speed = tierConfig.speed * 0.4;
             adv.setEnemyPos(
               enemy.id,
               enemy.posX + Math.sin(angle) * speed * delta,
@@ -280,9 +267,8 @@ export default function AdventureEnemyAI() {
       }
 
       if (dist > tierConfig.attackRange) {
-        const speed = tierConfig.speed * speedMult;
-        const moveX = Math.sin(targetRot) * speed * delta;
-        const moveZ = Math.cos(targetRot) * speed * delta;
+        const moveX = Math.sin(targetRot) * tierConfig.speed * delta;
+        const moveZ = Math.cos(targetRot) * tierConfig.speed * delta;
         adv.setEnemyPos(enemy.id, enemy.posX + moveX, enemy.posY, enemy.posZ + moveZ);
         adv.setEnemyAttacking(enemy.id, false);
         adv.setEnemyAIState(enemy.id, "chase");
@@ -290,8 +276,7 @@ export default function AdventureEnemyAI() {
         if (!attackTimers.current[enemy.id]) attackTimers.current[enemy.id] = 0;
         attackTimers.current[enemy.id] += delta;
 
-        const attackInterval = tierConfig.attackInterval * cooldownMult;
-        if (attackTimers.current[enemy.id] >= attackInterval) {
+        if (attackTimers.current[enemy.id] >= tierConfig.attackInterval) {
           attackTimers.current[enemy.id] = 0;
           adv.setEnemyAIState(enemy.id, "telegraph");
           adv.setEnemyTelegraph(enemy.id, 0);

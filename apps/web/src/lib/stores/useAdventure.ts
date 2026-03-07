@@ -1,7 +1,5 @@
 import { create } from "zustand";
 import { CombatState, STAMINA_CONFIG } from "../combatSystems";
-import type { AdventureGoalType } from "../adventure_missions";
-import { useDifficulty, getDamageTakenMultiplier } from "./useDifficulty";
 
 export interface AdventurePlayerState {
   fighterId: string;
@@ -70,14 +68,6 @@ interface AdventureState {
   waveCount: number;
   enemiesDefeated: number;
   isPaused: boolean;
-  /** Mission goal: free = endless, eliminate = KOs, survive = time (seconds). */
-  goalType: AdventureGoalType;
-  goalValue: number;
-  /** Elapsed seconds (for survive goal). */
-  missionElapsedSeconds: number;
-  /** Mission completed successfully (trigger results screen). */
-  missionComplete: boolean;
-  missionSuccess: boolean | null;
 
   setPlayerPos: (x: number, y: number, z: number) => void;
   setPlayerRot: (rotY: number) => void;
@@ -114,9 +104,7 @@ interface AdventureState {
   setEnemyStun: (id: string, timer: number) => void;
   removeEnemy: (id: string) => void;
 
-  initAdventure: (characterId: string, missionId: string | null, arenaId: string, goalType?: AdventureGoalType, goalValue?: number) => void;
-  setMissionElapsedSeconds: (seconds: number) => void;
-  setMissionComplete: (success: boolean) => void;
+  initAdventure: (characterId: string, missionId: string | null, arenaId: string) => void;
   togglePause: () => void;
   reset: () => void;
 }
@@ -166,11 +154,6 @@ export const useAdventure = create<AdventureState>((set, get) => ({
   waveCount: 0,
   enemiesDefeated: 0,
   isPaused: false,
-  goalType: "free",
-  goalValue: 0,
-  missionElapsedSeconds: 0,
-  missionComplete: false,
-  missionSuccess: null,
 
   setPlayerPos: (x, y, z) =>
     set((s) => ({ player: { ...s.player, posX: x, posY: y, posZ: z } })),
@@ -215,18 +198,16 @@ export const useAdventure = create<AdventureState>((set, get) => ({
   damagePlayer: (amount) => {
     const p = get().player;
     if (p.invulnTimer > 0) return;
-    const mult = getDamageTakenMultiplier(useDifficulty.getState().difficulty);
-    const scaledAmount = amount * mult;
     if (p.superArmor) {
       set((s) => ({
-        player: { ...s.player, health: Math.max(0, s.player.health - scaledAmount * 0.5) },
+        player: { ...s.player, health: Math.max(0, s.player.health - amount * 0.5) },
       }));
       return;
     }
     set((s) => ({
       player: {
         ...s.player,
-        health: Math.max(0, s.player.health - scaledAmount),
+        health: Math.max(0, s.player.health - amount),
         combatState: CombatState.HITSTUN,
         hitStunTimer: 0.3,
         isAttacking: false,
@@ -379,7 +360,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
   removeEnemy: (id) =>
     set((s) => ({ enemies: s.enemies.filter((e) => e.id !== id) })),
 
-  initAdventure: (characterId, missionId, arenaId, goalType = "free", goalValue = 0) =>
+  initAdventure: (characterId, missionId, arenaId) =>
     set({
       player: { ...defaultPlayer, fighterId: characterId },
       enemies: [],
@@ -388,15 +369,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       waveCount: 0,
       enemiesDefeated: 0,
       isPaused: false,
-      goalType,
-      goalValue,
-      missionElapsedSeconds: 0,
-      missionComplete: false,
-      missionSuccess: null,
     }),
-
-  setMissionElapsedSeconds: (missionElapsedSeconds) => set({ missionElapsedSeconds }),
-  setMissionComplete: (success) => set({ missionComplete: true, missionSuccess: success }),
 
   togglePause: () => set((s) => ({ isPaused: !s.isPaused })),
 
@@ -409,10 +382,5 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       waveCount: 0,
       enemiesDefeated: 0,
       isPaused: false,
-      goalType: "free",
-      goalValue: 0,
-      missionElapsedSeconds: 0,
-      missionComplete: false,
-      missionSuccess: null,
     }),
 }));

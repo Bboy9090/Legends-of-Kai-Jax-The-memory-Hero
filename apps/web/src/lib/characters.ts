@@ -55,15 +55,6 @@ export const FIGHTERS: Fighter[] = [
     role: "rival",
   },
   {
-    id: "boryn",
-    name: "Boryn",
-    displayName: "BORYN",
-    color: "#e8e0d0",
-    accentColor: "#f59e0b",
-    baseStats: { power: 92, speed: 72, defense: 95, gravity: 10.5 },
-    role: "hero",
-  },
-  {
     id: "kaxon",
     name: "Kaxon",
     displayName: "KAXON",
