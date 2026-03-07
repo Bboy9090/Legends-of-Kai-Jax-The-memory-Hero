@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
-const DIST_DIR = path.join(__dirname, 'dist');
+const DIST_DIR = path.join(__dirname, 'apps', 'web', 'dist');
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -53,8 +53,28 @@ if (!fs.existsSync(indexPath)) {
 console.log('Serving from:', DIST_DIR);
 
 const server = http.createServer((req, res) => {
-  const url = req.url.split('?')[0];
-  let filePath = path.join(DIST_DIR, url === '/' ? 'index.html' : url);
+  const rawUrl = req.url.split('?')[0] || '/';
+  const requestPath = rawUrl === '/' ? '/index.html' : rawUrl;
+
+  let filePath;
+  try {
+    // Resolve the requested path within DIST_DIR and ensure it cannot escape
+    const resolvedPath = path.resolve(DIST_DIR, '.' + requestPath);
+    const realPath = fs.realpathSync(resolvedPath);
+
+    const distRoot = fs.realpathSync(DIST_DIR);
+    if (!realPath.startsWith(distRoot + path.sep) && realPath !== distRoot) {
+      // Forbidden path traversal attempt
+      res.writeHead(403, { 'Content-Type': 'text/plain' });
+      res.end('Forbidden');
+      return;
+    }
+
+    filePath = realPath;
+  } catch (e) {
+    // If resolution or realpath fails, fall back to index.html
+    filePath = path.join(DIST_DIR, 'index.html');
+  }
 
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     filePath = path.join(DIST_DIR, 'index.html');

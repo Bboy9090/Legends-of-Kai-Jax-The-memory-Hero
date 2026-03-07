@@ -1,6 +1,7 @@
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useRunner } from "../../../lib/stores/useRunner";
 import { CombatState, STAMINA_CONFIG } from "../../../lib/combatSystems";
+import { getAdventureMissionById } from "../../../lib/adventure_missions";
 
 function HealthBar({
   current,
@@ -143,15 +144,114 @@ function CombatStateLabel({ state }: { state: CombatState }) {
   );
 }
 
-export default function AdventureHUD() {
+function AdventureResultsOverlay({
+  missionId,
+  success,
+  onQuit,
+}: {
+  missionId: string;
+  success: boolean;
+  onQuit: () => void;
+}) {
+  const mission = getAdventureMissionById(missionId);
+
+  return (
+    <div className="absolute inset-0 bg-black/85 flex items-center justify-center z-50">
+      <div className="max-w-md w-full text-center p-6">
+        <h1 className={`text-4xl font-black mb-4 ${success ? "text-green-400" : "text-red-400"}`}>
+          {success ? "Mission Complete" : "Defeated"}
+        </h1>
+        <p className="text-slate-300 text-sm mb-6">
+          {success && mission
+            ? `You completed the ${mission.title}.`
+            : `You fell in the Raging City. Train harder and try again.`}
+        </p>
+        {success && mission && mission.rewards.xp > 0 && (
+          <div className="flex justify-center gap-3 mb-6">
+            <span className="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 font-bold">+{mission.rewards.xp} XP</span>
+            <span className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-300 font-bold">+{mission.rewards.currency} Gold</span>
+          </div>
+        )}
+        <button
+          onClick={onQuit}
+          className="w-full py-4 rounded-xl font-bold text-lg transition-all hover:scale-[1.02] active:scale-[0.98] bg-cyan-500/30 border-2 border-cyan-400 text-cyan-100 hover:bg-cyan-500/40"
+        >
+          Return to Menu
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MissionObjectiveDisplay({
+  missionId,
+  enemiesDefeated,
+  missionElapsedSeconds,
+}: {
+  missionId: string;
+  enemiesDefeated: number;
+  missionElapsedSeconds: number;
+}) {
+  const mission = getAdventureMissionById(missionId);
+  if (!mission || mission.goalType === "free") return null;
+
+  if (mission.goalType === "eliminate") {
+    const current = Math.min(enemiesDefeated, mission.goalValue);
+    return (
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm rounded-lg px-4 py-2 border border-cyan-500/30">
+        <div className="text-xs text-cyan-300 font-bold uppercase tracking-wider mb-1">Objective</div>
+        <div className="text-lg font-black text-white">
+          {current} / {mission.goalValue} KOs
+        </div>
+      </div>
+    );
+  }
+
+  if (mission.goalType === "survive") {
+    const remaining = Math.max(0, mission.goalValue - Math.floor(missionElapsedSeconds));
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    return (
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm rounded-lg px-4 py-2 border border-amber-500/30">
+        <div className="text-xs text-amber-300 font-bold uppercase tracking-wider mb-1">Survive</div>
+        <div className="text-lg font-black text-white">
+          {mins}:{secs.toString().padStart(2, "0")} remaining
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+export default function AdventureHUD({ adventureMissionId = "free-arena" }: { adventureMissionId?: string }) {
   const player = useAdventure((s) => s.player);
   const enemies = useAdventure((s) => s.enemies);
   const waveCount = useAdventure((s) => s.waveCount);
   const enemiesDefeated = useAdventure((s) => s.enemiesDefeated);
   const isPaused = useAdventure((s) => s.isPaused);
+  const missionComplete = useAdventure((s) => s.missionComplete);
+  const missionSuccess = useAdventure((s) => s.missionSuccess);
+  const missionElapsedSeconds = useAdventure((s) => s.missionElapsedSeconds);
   const setGameState = useRunner((s) => s.setGameState);
 
-  const aliveEnemies = enemies.filter((e) => !e.isDead).length;
+  const aliveEnemies = enemies.filter((e) => !e.isDead);
+
+  const handleQuit = () => {
+    useAdventure.getState().reset();
+    useRunner.getState().setActiveAdventureMission(null);
+    setGameState("adventure-select");
+  };
+
+  if (missionComplete) {
+    return (
+      <AdventureResultsOverlay
+        missionId={adventureMissionId}
+        success={missionSuccess ?? false}
+        onQuit={handleQuit}
+      />
+    );
+  }
 
   if (isPaused) {
     return (
@@ -170,7 +270,8 @@ export default function AdventureHUD() {
             <button
               onClick={() => {
                 useAdventure.getState().reset();
-                setGameState("menu");
+                useRunner.getState().setActiveAdventureMission(null);
+                setGameState("adventure-select");
               }}
               className="block w-48 mx-auto px-6 py-3 rounded-xl bg-slate-700/60 border-2 border-slate-500 text-slate-200 font-bold hover:bg-slate-600/60 transition-all"
             >
@@ -207,7 +308,7 @@ export default function AdventureHUD() {
             <div className="w-px h-8 bg-slate-700" />
             <div className="text-center">
               <div className="text-xs text-slate-400">Enemies</div>
-              <div className="text-lg font-black text-red-400">{aliveEnemies}</div>
+              <div className="text-lg font-black text-red-400">{aliveEnemies.length}</div>
             </div>
             <div className="w-px h-8 bg-slate-700" />
             <div className="text-center">
@@ -218,6 +319,11 @@ export default function AdventureHUD() {
         </div>
       </div>
 
+      <MissionObjectiveDisplay
+        missionId={adventureMissionId}
+        enemiesDefeated={enemiesDefeated}
+        missionElapsedSeconds={missionElapsedSeconds}
+      />
       <ComboDisplay step={player.comboStep} state={player.combatState} />
       <CombatStateLabel state={player.combatState} />
       <AutoTargetIndicator targetId={player.autoTargetId} enemies={enemies} />

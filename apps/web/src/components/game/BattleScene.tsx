@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
 import { useBattle } from "../../lib/stores/useBattle";
+import { useAudio } from "../../lib/stores/useAudio";
+import BattleCamera from "./BattleCamera";
 import { getFighterById } from "../../lib/characters";
 import BattleArena from "./BattleArena";
 import BattlePlayer from "./BattlePlayer";
@@ -22,14 +23,17 @@ export default function BattleScene() {
     startBattle,
     updateRoundTimer,
     battlePhase,
-    playerX,
-    opponentX,
     playerFighterId,
     screenShake,
     hitStop,
     screenFlash,
     playerAttacking,
     playerAttackType,
+    comboCount,
+    maxCombo,
+    playerHealth,
+    opponentHealth,
+    maxHealth,
   } = useBattle();
   const playerFighter = getFighterById(playerFighterId);
   const grade =
@@ -44,7 +48,7 @@ export default function BattleScene() {
       screenShake * 1.6 +
         (hitStop > 0 ? 0.65 : 0) +
         (screenFlash ? 0.35 : 0) +
-        (playerAttacking && (playerAttackType === "special" || playerAttackType === "ultimate") ? 0.25 : 0)
+        (playerAttacking && playerAttackType === "ultimate" ? 0.55 : playerAttacking && playerAttackType === "special" ? 0.25 : 0) // Ultimate: camera zoom + arena dim
     ) || 0;
   
   useEffect(() => {
@@ -58,24 +62,21 @@ export default function BattleScene() {
     return () => clearTimeout(timer);
   }, [startBattle]);
   
-  // Update round timer every frame
+  // Update round timer and adaptive music intensity
   useFrame((_state, delta) => {
     if (battlePhase === 'fighting') {
       updateRoundTimer(delta);
+      const comboIntensity = Math.min(1, (comboCount + (maxCombo > 0 ? maxCombo * 0.2 : 0)) / 8);
+      const healthIntensity = 1 - Math.min(playerHealth, opponentHealth) / maxHealth;
+      const intensity = comboIntensity * 0.6 + healthIntensity * 0.4;
+      useAudio.getState().setBattleIntensity(intensity);
     }
   });
   
-  // MOBILE-OPTIMIZED camera - fills the screen!
-  const cameraX = (playerX + opponentX) / 2;
   return (
     <>
-      {/* Camera follows the action - CENTERED for mobile! */}
-      <OrbitControls
-        enableZoom={false}
-        enablePan={false}
-        enableRotate={false}
-        target={[cameraX, 1.5, 0]}
-      />
+      {/* Smooth follow camera - wide view so both fighters stay visible */}
+      <BattleCamera />
       
       {/* Enhanced Lighting System for better character definition */}
       <LegendaryLightingRig />

@@ -467,7 +467,6 @@ export default function CinematicPostFX({
 
       // Real exposure “camera flash” (this is what makes hits feel like trailer footage)
       const baseExposure = baseExposureRef.current ?? (gl as any).toneMappingExposure ?? 1.0;
-      const isBattle = profile === "battle";
       const flashExposure = 1.0 + impact * 0.02 + spike * 0.005;
       (gl as any).toneMappingExposure = baseExposure * Math.min(1.04, flashExposure);
 

@@ -950,7 +950,7 @@ export default function AnatomicalBeastModel({
 
     let bodyPosY = Math.sin(t * 2.0) * 0.02;
     let bodyRotX = 0;
-    let bodyRotY = Math.sin(t * 0.6) * 0.08;
+    const bodyRotY = Math.sin(t * 0.6) * 0.08;
     let bodyRotZ = 0;
 
     let leftArmX = 0;
@@ -962,7 +962,7 @@ export default function AnatomicalBeastModel({
 
     let headRotX = 0.06 + emotionIntensity * 0.06;
     let headRotY = Math.sin(t * 1.5) * 0.06;
-    let headRotZ = 0;
+    const headRotZ = 0;
 
     if (moving && isGrounded && !isAttacking) {
       leftArmX = -0.45 * walkPhase * (0.5 + speed * 0.5);

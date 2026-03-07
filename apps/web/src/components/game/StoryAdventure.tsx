@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAdventure } from "../../lib/stores/useAdventure";
-import { getStoryMissionById, type StoryMission, type StoryDialogue } from "../../lib/story_missions";
+import { getStoryMissionById, getLoreBriefing, type StoryMission, type StoryDialogue } from "../../lib/story_missions";
 
 interface StoryAdventureProps {
   missionId: string;
@@ -105,10 +105,11 @@ function DialogueOverlay({
             {displayText}
             {isTyping && <span className="animate-pulse">|</span>}
           </p>
-          <div className="mt-3 text-right">
+          <div className="mt-3 flex items-center justify-between">
             <span className="text-xs text-slate-500">
               {isTyping ? "Click to skip" : isLastLine ? "Click to continue" : `${lineIndex + 1} / ${lines.length} — Click to advance`}
             </span>
+            <span className="text-xs text-slate-500/80">Skip [Space] or [Click]</span>
           </div>
         </div>
       </div>
@@ -150,15 +151,45 @@ function WaveTransition({ waveNum, total, onContinue }: { waveNum: number; total
   );
 }
 
-function MissionBriefing({ mission, onStart }: { mission: StoryMission; onStart: () => void }) {
+function MissionBriefing({
+  mission,
+  onStart,
+  onSkipToIntro,
+}: {
+  mission: StoryMission;
+  onStart: () => void;
+  onSkipToIntro: () => void;
+}) {
+  const loreBlurb = getLoreBriefing(mission.id);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === "Space" || e.code === "Enter") {
+        e.preventDefault();
+        onSkipToIntro();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onSkipToIntro]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "radial-gradient(ellipse at center, rgba(10,10,30,0.95), rgba(0,0,0,0.98))" }}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "radial-gradient(ellipse at center, rgba(10,10,30,0.95), rgba(0,0,0,0.98))" }}
+      onClick={(e) => {
+        if ((e.target as HTMLElement).closest('[data-briefing-skip]')) onSkipToIntro();
+      }}
+    >
       <div className="max-w-lg w-full">
         <div className="text-center mb-6">
           <p className="text-amber-300/80 text-xs font-semibold tracking-[0.3em] uppercase mb-1">
-            Act {mission.act} — Mission {mission.missionNumber}
+            Raging City · Act {mission.act} — Mission {mission.missionNumber}
           </p>
           <h1 className="text-3xl font-black text-white mb-2">{mission.title}</h1>
+          {loreBlurb && (
+            <p className="text-cyan-300/90 italic text-sm mb-3">&quot;{loreBlurb}&quot;</p>
+          )}
           <p className="text-slate-300 text-sm leading-relaxed">{mission.description}</p>
         </div>
 
@@ -182,10 +213,13 @@ function MissionBriefing({ mission, onStart }: { mission: StoryMission; onStart:
 
         <button
           onClick={onStart}
-          className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-lg transition-all hover:scale-[1.02] active:scale-[0.98] tracking-wider"
         >
-          Begin Mission
+          Begin Mission — Enter the Arena
         </button>
+        <p className="text-center mt-4 text-xs text-slate-500" data-briefing-skip>
+          Skip [Space] or [Click]
+        </p>
       </div>
     </div>
   );
@@ -327,7 +361,11 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
   return (
     <>
       {phase === "briefing" && (
-        <MissionBriefing mission={mission} onStart={() => setPhase("intro")} />
+        <MissionBriefing
+          mission={mission}
+          onStart={() => setPhase("intro")}
+          onSkipToIntro={() => setPhase("intro")}
+        />
       )}
 
       {phase === "intro" && (

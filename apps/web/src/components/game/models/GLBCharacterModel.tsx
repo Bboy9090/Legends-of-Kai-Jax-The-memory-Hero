@@ -1,7 +1,9 @@
-import { useRef, Suspense } from "react";
+import { useRef, Suspense, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF, Clone } from "@react-three/drei";
 import * as THREE from "three";
+import ModelRouter from "./ModelRouter";
+import type { SovereigntyInput } from "./SovereigntyModelInner";
 import {
   findLimbs,
   captureBaseRotations,
@@ -12,7 +14,9 @@ import {
   animateKick,
   animateSpecial,
   animateUltimate,
+  resetAttackPhase,
   hasAnyLimb,
+  validateLimbs,
   type LimbRefs,
   type LimbBaseRotations,
   type AnimState,
@@ -28,109 +32,115 @@ export interface GLBModelConfig {
 export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
   "kai-jax": {
     path: "/models/Meshy_AI_Character_output9TAILSKAIJAX.glb",
-    scale: 3.5,
+    scale: 4.2,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   jax: {
     path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONIC JAX.glb",
-    scale: 3.5,
+    scale: 4.2,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   kai: {
     path: "/models/Meshy_AI_Meshy_Merged_Animations4KAI.glb",
-    scale: 3.5,
+    scale: 4.2,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   jaxon: {
     path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb",
-    scale: 3.5,
+    scale: 4.2,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   kaison: {
     path: "/models/Meshy_AI_Character_outputSPiDERKAIJAX9TIALS.glb",
-    scale: 3.5,
+    scale: 4.2,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   kaxon: {
     path: "/models/Meshy_AI_Character_outputLIONBORAX.glb",
-    scale: 3.5,
+    scale: 4.2,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   "voltage-fang": {
     path: "/models/Meshy_AI_Meshy_Merged_AnimationsMeshy_AI_bipedBORYNaptFatherTIGER.glb",
-    scale: 3.5,
+    scale: 4.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   steelwolf: {
     path: "/models/Meshy_AI_Steelwolf_Exosuit_0219223344_texture.glb",
-    scale: 3.5,
+    scale: 4.4,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   "ashen-tiger": {
     path: "/models/Meshy_AI_Meshy_Merged_AnimationsMeshy_AI_bipedBORYNaptFatherTIGER.glb",
-    scale: 3.5,
+    scale: 4.5,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+  },
+  boryn: {
+    path: "/models/Meshy_AI_Meshy_Merged_AnimationsMeshy_AI_bipedBORYNaptFatherTIGER.glb",
+    scale: 4.4,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   "blazing-fox": {
     path: "/models/blazing-fox-vanguard.glb",
-    scale: 3.5,
+    scale: 4.3,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   velocity: {
     path: "/models/velocity_hero.glb",
-    scale: 3.5,
+    scale: 4.3,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   sparky: {
     path: "/models/sparky_hero.glb",
-    scale: 3.5,
+    scale: 4.3,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   sentinel: {
     path: "/models/sentinel_hero.glb",
-    scale: 3.5,
+    scale: 4.3,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   lunara: {
     path: "/models/lunara_hero.glb",
-    scale: 3.5,
+    scale: 4.3,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   solaro: {
     path: "/models/solaro_hero.glb",
-    scale: 3.5,
+    scale: 4.3,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   blaze: {
     path: "/models/blaze_hero.glb",
-    scale: 3.5,
+    scale: 4.3,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   abyss: {
     path: "/models/abyss_hero.glb",
-    scale: 3.5,
+    scale: 4.3,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   "marble-gladiator": {
     path: "/models/marble_gladiator.glb",
-    scale: 4.2,
+    scale: 4.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
@@ -142,37 +152,37 @@ export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
   },
   "sandstone-sentinel": {
     path: "/models/sandstone_sentinel.glb",
-    scale: 3.9,
+    scale: 4.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   apex: {
     path: "/models/apex_hero.glb",
-    scale: 3.5,
+    scale: 4.4,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   silver: {
     path: "/models/silver_hero.glb",
-    scale: 3.5,
+    scale: 4.3,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   "hyena-scout": {
     path: "/models/hyenaratvbill.glb",
-    scale: 3.5,
+    scale: 4.3,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   "rift-drone": {
     path: "/models/drone.glb",
-    scale: 3.5,
+    scale: 4.3,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
   malakor: {
     path: "/models/boss.glb",
-    scale: 4.0,
+    scale: 4.5,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
   },
@@ -184,12 +194,24 @@ export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
   },
 };
 
+/** Fallback GLB when fighter has no CHARACTER_MODELS entry — always use our 3D models. */
+const FALLBACK_GLB_CONFIG: GLBModelConfig = {
+  path: "/models/blazing-fox-vanguard.glb",
+  scale: 3.5,
+  position: [0, 0, 0],
+  rotation: [0, 0, 0],
+};
+
 interface GLBCharacterModelProps {
   fighterId: string;
   animTime?: number;
   isAttacking?: boolean;
   isMoving?: boolean;
   attackType?: "punch" | "kick" | "special" | "ultimate" | null;
+  /** Combo step for light chain (0=light1, 1=light2, 2+=finisher). */
+  comboStep?: number;
+  /** 0-1 progress through attack (combat-synced). When provided, overrides procedural lerp. */
+  attackProgress?: number;
   velocityX?: number;
   velocityY?: number;
   isGrounded?: boolean;
@@ -204,7 +226,7 @@ function GLBModelFallback() {
   return null;
 }
 
-const TARGET_HEIGHT = 3.5;
+const TARGET_HEIGHT = 4.5;
 
 function GLBModelInner({
   config,
@@ -212,7 +234,8 @@ function GLBModelInner({
   isAttacking,
   isMoving,
   attackType,
-  velocityX = 0,
+  attackProgress,
+  velocityX: _velocityX = 0,
   velocityY: _velocityY = 0,
   isGrounded = true,
   isJumping = false,
@@ -226,6 +249,7 @@ function GLBModelInner({
   isAttacking: boolean;
   isMoving: boolean;
   attackType?: "punch" | "kick" | "special" | "ultimate" | null;
+  attackProgress?: number;
   velocityX?: number;
   velocityY?: number;
   isGrounded?: boolean;
@@ -253,6 +277,8 @@ function GLBModelInner({
   const animStateRef = useRef<AnimState>(createAnimState());
   const wasAttacking = useRef(false);
 
+  const clipActionRef = useRef<THREE.AnimationAction | null>(null);
+
   useFrame((state, delta) => {
     if (!innerRef.current || !cloneRef.current) return;
     const t = animTime || state.clock.elapsedTime;
@@ -262,9 +288,20 @@ function GLBModelInner({
       const mixer = new THREE.AnimationMixer(cloneRef.current);
       mixerRef.current = mixer;
       const action = mixer.clipAction(animations[0]);
+      action.setLoop(THREE.LoopRepeat, Infinity);
       action.play();
+      clipActionRef.current = action;
     }
 
+    const limbsNow = limbsRef.current;
+    const useProceduralAttack = limbsNow && isAttacking;
+    if (clipActionRef.current) {
+      if (useProceduralAttack) {
+        clipActionRef.current.setEffectiveWeight(0);
+      } else {
+        clipActionRef.current.setEffectiveWeight(1);
+      }
+    }
     if (mixerRef.current) {
       mixerRef.current.update(delta);
     }
@@ -285,6 +322,7 @@ function GLBModelInner({
       const limbs = findLimbs(cloneRef.current);
       limbsRef.current = hasAnyLimb(limbs) ? limbs : null;
       if (limbsRef.current) {
+        validateLimbs(limbsRef.current, config.path);
         basesRef.current = captureBaseRotations(limbsRef.current);
       }
     }
@@ -322,22 +360,25 @@ function GLBModelInner({
         anim.comboStep = (anim.comboStep + 1) % 8;
       }
       wasAttacking.current = true;
+      const phaseOverride = typeof attackProgress === "number" ? attackProgress : undefined;
       if (attackType === "punch") {
-        animatePunch(innerRef.current, limbs, bases, anim, delta, t);
+        animatePunch(innerRef.current, limbs, bases, anim, delta, t, phaseOverride);
       } else if (attackType === "kick") {
-        animateKick(innerRef.current, limbs, bases, anim, delta);
+        animateKick(innerRef.current, limbs, bases, anim, delta, phaseOverride);
       } else if (attackType === "special") {
-        animateSpecial(innerRef.current, limbs, bases, anim, delta);
+        animateSpecial(innerRef.current, limbs, bases, anim, delta, phaseOverride);
       } else if (attackType === "ultimate") {
-        animateUltimate(innerRef.current, limbs, bases, anim, delta);
+        animateUltimate(innerRef.current, limbs, bases, anim, delta, phaseOverride);
       } else {
-        animatePunch(innerRef.current, limbs, bases, anim, delta, t);
+        animatePunch(innerRef.current, limbs, bases, anim, delta, t, phaseOverride);
       }
     } else if (isMoving) {
       wasAttacking.current = false;
+      resetAttackPhase(anim, innerRef.current, delta);
       animateWalk(innerRef.current, limbs, bases, anim, delta, false);
     } else {
       wasAttacking.current = false;
+      resetAttackPhase(anim, innerRef.current, delta);
       animateIdle(innerRef.current, limbs, bases, t, delta);
     }
 
@@ -384,6 +425,8 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
     isAttacking = false,
     isMoving = false,
     attackType = null,
+    comboStep = 0,
+    attackProgress,
     velocityX = 0,
     velocityY = 0,
     isGrounded = true,
@@ -394,34 +437,61 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
     hitAnim = 0,
   } = props;
 
-  const config = CHARACTER_MODELS[fighterId];
-  if (!config) return null;
+  const config = CHARACTER_MODELS[fighterId] ?? FALLBACK_GLB_CONFIG;
+
+  const sovereigntyInput: SovereigntyInput = useMemo(
+    () => ({
+      isMoving,
+      speed: Math.min(1, Math.abs(velocityX) / 6.5 + (velocityY > 0 ? 0.3 : 0)),
+      isAttacking,
+      attackType,
+      comboStep,
+      isGrounded,
+      isJumping: velocityY > 0 && !isGrounded,
+      isInvulnerable,
+      isHitHeavy: hitAnim > 0.5,
+      isBlocking: false,
+      isBurstStepping: false,
+      isErasureActive: false,
+    }),
+    [isMoving, velocityX, velocityY, isAttacking, attackType, comboStep, isGrounded, isInvulnerable, hitAnim]
+  );
 
   return (
     <Suspense fallback={<GLBModelFallback />}>
-      <GLBModelInner
+      <ModelRouter
         config={config}
-        animTime={animTime}
-        isAttacking={isAttacking}
-        isMoving={isMoving}
-        attackType={attackType}
-        velocityX={velocityX}
-        velocityY={velocityY}
-        isGrounded={isGrounded}
-        isJumping={isJumping}
-        emotionIntensity={emotionIntensity}
+        sovereigntyInput={sovereigntyInput}
+        ProceduralInner={GLBModelInner}
+        proceduralProps={{
+          animTime,
+          isAttacking,
+          isMoving,
+          attackType,
+          comboStep,
+          attackProgress,
+          velocityX,
+          velocityY,
+          isGrounded,
+          isJumping,
+          isInvulnerable,
+          hitAnim,
+        }}
         accentColor={accentColor}
-        isInvulnerable={isInvulnerable}
-        hitAnim={hitAnim}
+        emotionIntensity={emotionIntensity}
+        animTime={animTime}
       />
     </Suspense>
   );
 }
 
-const PRELOAD_IDS = ["kai-jax", "jax", "kai"];
+const PRELOAD_IDS = [
+  "kai-jax", "jax", "kai", "jaxon", "kaison", "kaxon",
+  "blazing-fox", "velocity", "sparky", "malakor", "behemoth",
+  "hyena-scout", "rift-drone",
+];
 PRELOAD_IDS.forEach((id) => {
-  const cfg = CHARACTER_MODELS[id];
-  if (cfg) {
-    try { useGLTF.preload(cfg.path); } catch (_e) {}
-  }
+  const cfg = CHARACTER_MODELS[id] ?? FALLBACK_GLB_CONFIG;
+  try { useGLTF.preload(cfg.path); } catch { /* preload best-effort */ }
 });
+try { useGLTF.preload(FALLBACK_GLB_CONFIG.path); } catch { /* preload best-effort */ }
