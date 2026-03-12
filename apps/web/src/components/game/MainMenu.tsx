@@ -118,6 +118,13 @@ export default function MainMenu() {
               <Palette className="w-5 h-5" />
               Beast Preview
             </button>
+            <button
+              onClick={() => setGameState("controller-test")}
+              className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-slate-800/50 border-2 border-emerald-700 text-emerald-300 font-medium text-base hover:border-emerald-400/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+            >
+              <Swords className="w-5 h-5" />
+              Controller Test
+            </button>
           </div>
 
           <button
