@@ -17,6 +17,7 @@ import ScreenEffects from "./components/game/ScreenEffects";
 import { GameIntro } from "./components/game/LoadingScreen";
 import CustomizationMenu from "./components/game/CustomizationMenu";
 import LoreHub from "./components/game/LoreHub";
+import ControllerTestScene from "./components/game/ControllerTestScene";
 import AdventureArena from "./components/game/adventure/AdventureArena";
 import AdventureHUD from "./components/game/adventure/AdventureHUD";
 import StoryAdventure from "./components/game/StoryAdventure";
@@ -176,6 +177,9 @@ function App() {
         
         {/* Customization Menu */}
         {phase === 'ready' && gameState === 'customization' && <CustomizationMenu />}
+
+        {/* Controller Test - movement state foundation */}
+        {gameState === 'controller-test' && <ControllerTestScene />}
         
         {/* ⚡ ADVENTURE MODE - Open World 3D Arena */}
         {gameState === 'adventure' && (() => {
