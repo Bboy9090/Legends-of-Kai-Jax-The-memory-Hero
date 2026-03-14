@@ -664,6 +664,7 @@ export const useBattle = create<BattleState>((set, get) => ({
   opponentTakeDamage: (damage, attackType) => {
     const { opponentInvulnerable, opponentHealth, battlePhase, opponentX, opponentY, damageDealt, stageCrackLevel } = get();
     if (opponentInvulnerable || battlePhase !== 'fighting') return;
+<<<<<<< HEAD
 
     if (damage >= 15 || attackType === 'special' || attackType === 'ultimate') {
       set({ stageCrackLevel: Math.min(1, stageCrackLevel + 0.15) });
@@ -675,6 +676,13 @@ export const useBattle = create<BattleState>((set, get) => ({
       opponentAttackElapsed: 0,
       opponentAttackHasHit: false,
     });
+=======
+    
+    if (damage >= 15 || attackType === 'special' || attackType === 'ultimate') {
+      set({ stageCrackLevel: Math.min(1, stageCrackLevel + 0.15) });
+    }
+    set({ damageDealt: damageDealt + damage });
+>>>>>>> origin
     get().addDamageNumber(opponentX, opponentY, damage, false);
     const newHealth = Math.max(0, opponentHealth - damage);
     const knockbackMult = attackType === 'ultimate' ? 0.1 : attackType === 'special' ? 0.08 : 0.06;
