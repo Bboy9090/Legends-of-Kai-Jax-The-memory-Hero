@@ -21,58 +21,19 @@ void Character::Update(float deltaTime) {
             SetAnimationState(nextState);
         }
         
-        // Step 4: Update animation progress for state manager
-        // In a full implementation, this would come from the animation system
-        // For now, we increment a simple counter
-        animationProgressTime += deltaTime;
-        float progress = animationProgressTime / GetEstimatedAnimationDuration(currentAnimationState);
-        if (progress > 1.0f) {
-            progress = 1.0f;
-        }
-        stateManager->UpdateAnimationProgress(currentAnimationState, progress);
+        // Step 4: Update animation progress tracking
+        stateManager->UpdateProgress(deltaTime);
+        
+        // Step 5: Update animation blending
+        stateManager->UpdateBlend(deltaTime);
     }
     
     // Additional character update logic
-    // - Physics integration would happen here
-    // - Tail physics simulation
-    // - Combat state transitions (damage application, hit reactions)
-    // - VFX system updates
-    // - Audio event triggers
-}
-
-float Character::GetEstimatedAnimationDuration(AnimationState state) const {
-    // Estimated animation durations for progress tracking
-    // In a full implementation, these would come from the animation system
-    switch (state) {
-        case AnimationState::IDLE_CALM:
-        case AnimationState::IDLE_COMBAT:
-            return 2.0f; // Idle loops are long
-        case AnimationState::WALK:
-            return 1.0f;
-        case AnimationState::SPRINT:
-            return 0.8f;
-        case AnimationState::LIGHT_COMBO:
-            return 0.5f; // Quick attack
-        case AnimationState::HEAVY_COMBO:
-            return 0.8f; // Slower, heavier attack
-        case AnimationState::SPECIAL_ATTACKS:
-            return 1.2f;
-        case AnimationState::FINISHER:
-            return 2.0f; // Long dramatic animation
-        case AnimationState::PARRY:
-            return 0.3f; // Quick defensive action
-        case AnimationState::COUNTER:
-            return 0.6f;
-        case AnimationState::DODGE_GROUND:
-        case AnimationState::DODGE_AIR:
-            return 0.5f;
-        case AnimationState::HIT_REACTIONS:
-            return 0.4f;
-        case AnimationState::DEATH:
-            return 3.0f; // Long death animation
-        default:
-            return 1.0f;
-    }
+    // - Physics would be applied here
+    // - Tail physics would be updated
+    // - VFX systems would be updated
+    // - Combat state transitions would be handled
+    (void)deltaTime; // Suppress unused parameter warning for additional logic
 }
 
 void Character::SetAnimationState(AnimationState newState) {
@@ -86,10 +47,24 @@ void Character::SetAnimationState(AnimationState newState) {
             return;
         }
         
+        // Start blend transition if state manager is available
+        if (stateManager) {
+            stateManager->StartBlend(currentAnimationState, newState);
+        }
+        
         // Log the state transition for debugging
         std::cout << "Character animation state changed from: " 
                   << static_cast<int>(currentAnimationState) 
-                  << " to: " << static_cast<int>(newState) << std::endl;
+                  << " to: " << static_cast<int>(newState);
+        
+        // Log blend time if blending
+        if (stateManager) {
+            const AnimationBlendState& blend = stateManager->GetBlendState();
+            if (blend.isBlending) {
+                std::cout << " (blending over " << blend.blendTime << "s)";
+            }
+        }
+        std::cout << std::endl;
         
         // Update the current state
         currentAnimationState = newState;
@@ -99,6 +74,41 @@ void Character::SetAnimationState(AnimationState newState) {
         
         // Trigger the new animation via the animation component
         animationComponent.PlayAnimation(currentAnimationState);
+        
+        // Set animation duration for progress tracking
+        if (stateManager) {
+            // In a real engine, animation duration would come from the asset
+            // For now, use default durations based on animation type
+            float duration = 1.0f; // Default 1 second
+            
+            // Different animation types have different typical durations
+            switch (newState) {
+                case AnimationState::LIGHT_COMBO:
+                    duration = 0.6f;  // Fast attack
+                    break;
+                case AnimationState::HEAVY_COMBO:
+                    duration = 1.2f;  // Slower, more powerful
+                    break;
+                case AnimationState::FINISHER:
+                    duration = 2.5f;  // Cinematic
+                    break;
+                case AnimationState::PARRY:
+                    duration = 0.4f;  // Quick timing window
+                    break;
+                case AnimationState::DODGE_GROUND:
+                case AnimationState::DODGE_AIR:
+                    duration = 0.5f;  // Evasive
+                    break;
+                case AnimationState::HIT_REACTIONS:
+                    duration = 0.8f;  // Stagger
+                    break;
+                default:
+                    duration = 1.0f;  // Default for movement/idle
+                    break;
+            }
+            
+            stateManager->SetAnimationDuration(newState, duration);
+        }
     }
 }
 

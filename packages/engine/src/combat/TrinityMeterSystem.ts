@@ -135,17 +135,17 @@ export class TrinityMeterSystem {
         break;
         
       case 'phase_break':
-        meter.dread = Math.min(100, meter.dread + this.config.dreadOnPhaseBreak);
+        meter.dread = Math.max(0, Math.min(100, meter.dread + this.config.dreadOnPhaseBreak));
         // Phase break log line: "A truth fails to persist."
         break;
         
       case 'low_health':
-        meter.dread = Math.min(100, meter.dread + this.config.dreadOnLowHealth * deltaTime);
+        meter.dread = Math.max(0, Math.min(100, meter.dread + this.config.dreadOnLowHealth * deltaTime));
         break;
         
       case 'time':
         // Passive time-based updates
-        meter.dread = Math.min(100, meter.dread + this.config.dreadPassiveGain * deltaTime);
+        meter.dread = Math.max(0, Math.min(100, meter.dread + this.config.dreadPassiveGain * deltaTime));
         // Decay synergy and resonance over time
         meter.synergy = Math.max(0, meter.synergy - this.config.synergyDecayRate * deltaTime);
         meter.resonance = Math.max(0, meter.resonance - this.config.resonanceDecayRate * deltaTime);
@@ -159,7 +159,7 @@ export class TrinityMeterSystem {
   update(deltaTime: number): void {
     for (const [entityId, meter] of this.meters) {
       // Passive dread gain
-      meter.dread = Math.min(100, meter.dread + this.config.dreadPassiveGain * deltaTime);
+      meter.dread = Math.max(0, Math.min(100, meter.dread + this.config.dreadPassiveGain * deltaTime));
       
       // Decay synergy and resonance
       meter.synergy = Math.max(0, meter.synergy - this.config.synergyDecayRate * deltaTime);

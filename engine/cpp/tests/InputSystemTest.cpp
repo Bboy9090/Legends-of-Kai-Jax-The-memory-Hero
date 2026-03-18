@@ -24,7 +24,7 @@ int main() {
     totalTests++;
     std::cout << "\n[Test 1] Creating InputHandler..." << std::endl;
     
-    InputHandler inputHandler;
+    InputHandler inputHandler(Platform::PC);
     std::cout << "  Successfully created InputHandler instance" << std::endl;
     printTestResult("Create InputHandler", true);
     testsPassed++;

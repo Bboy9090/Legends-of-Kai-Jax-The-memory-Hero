@@ -21,7 +21,9 @@
     "validate:canon": "node validate-canon.mjs",
     "validate:memory": "node validate-memory-layers.mjs",
     "validate:model": "python3 assets/models/characters/kai-jax/validate_model.py",
-    "test": "echo 'Testing...' && node -e \"console.log('✅ Node.js ready')\""
+    "type-check": "pnpm -C apps/web typecheck",
+    "test": "echo 'Testing...' && node -e \"console.log('✅ Node.js ready')\"",
+    "start": "npx vite preview --host 0.0.0.0 --port 5000"
   },
   "keywords": [
     "pwa",

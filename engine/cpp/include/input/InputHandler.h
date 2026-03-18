@@ -3,13 +3,14 @@
 namespace LegendsEngine {
 
 /**
- * PlatformType - Platform-specific input device detection
- * Used to determine which input mapping to apply
+ * Platform - Enum representing different platform types
+ * Used to select appropriate input handling strategy
  */
-enum class PlatformType {
-    PC,        // Keyboard + Mouse
-    GAMEPAD,   // Console/Tablet gamepad
-    TOUCH      // Mobile touch controls
+enum class Platform {
+    PC,           // Desktop (keyboard/mouse)
+    CONSOLE,      // Console (gamepad)
+    TABLET,       // Tablet (gamepad or touch)
+    MOBILE        // Mobile (touch)
 };
 
 /**
@@ -61,7 +62,12 @@ struct InputState {
  */
 class InputHandler {
 public:
-    InputHandler() = default;
+    /**
+     * Construct InputHandler with platform detection
+     * 
+     * @param platform The platform to use for input handling (default: PC)
+     */
+    explicit InputHandler(Platform platform = Platform::PC);
     ~InputHandler() = default;
 
     // Disable copy/move
@@ -81,24 +87,14 @@ public:
     InputState GetCurrentInput();
 
     /**
-     * Set the platform type for input mapping
+     * Get the current platform
      * 
-     * Configures which input device mapping to use. This should be called
-     * during initialization based on the target platform.
-     * 
-     * @param platform The platform type to use for input mapping
+     * @return The platform type this handler is configured for
      */
-    void SetPlatform(PlatformType platform) { currentPlatform = platform; }
-
-    /**
-     * Get the current platform type
-     * 
-     * @return The current platform type being used for input mapping
-     */
-    PlatformType GetPlatform() const { return currentPlatform; }
+    Platform GetPlatform() const { return currentPlatform; }
 
 private:
-    PlatformType currentPlatform = PlatformType::PC;
+    Platform currentPlatform;
 
     // Platform-specific input reading methods
     InputState ReadKeyboardInput();

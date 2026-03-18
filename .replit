@@ -91,6 +91,33 @@ author = "agent"
 task = "shell.exec"
 args = "npx vite --host 0.0.0.0 --port 5000"
 
+[[workflows.workflow]]
+name = "Got push "
+mode = "sequential"
+author = 25499735
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "Git push origin main"
+
+[[workflows.workflow]]
+name = "Pull "
+mode = "sequential"
+author = 25499735
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "Git pull origin main"
+
+[[workflows.workflow]]
+name = "Fetch"
+mode = "sequential"
+author = 25499735
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "Git fetch "
+
 [agent]
 integrations = ["javascript_openai:1.0.0"]
 
