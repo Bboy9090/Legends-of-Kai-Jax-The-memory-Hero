@@ -1,7 +1,7 @@
 # 🎮 LEGENDS OF KAI-JAX: THE MEMORY WARRIOR
 ### "Forged in the Bronx. Mastered in the Silence."
 
-**A Mythic Platform Fighter** - built for family, playable on PC + iPad/iPhone (same Wi‑Fi)
+**A Mythic Platform Fighter** - built for family, playable on PC + iPad/iPhone (same Wi-Fi)
 
 [![Deploy to GitHub Pages](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/actions/workflows/deploy.yml/badge.svg)](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/actions)
 
@@ -29,7 +29,7 @@ pnpm dev
 
 Open what it prints (usually `http://localhost:5173`).
 
-### Play it on your kids’ iPads (same Wi‑Fi)
+### Play it on your kids’ iPads (same Wi-Fi)
 
 1. On your PC, run:
 
@@ -37,7 +37,7 @@ Open what it prints (usually `http://localhost:5173`).
 pnpm dev
 ```
 
-2. Find your PC’s Wi‑Fi IP:
+2. Find your PC’s Wi-Fi IP:
 
 ```powershell
 ipconfig
@@ -45,7 +45,7 @@ ipconfig
 
 Look for something like `IPv4 Address . . . : 192.168.x.x`.
 
-3. On the iPad (same Wi‑Fi), open Safari and go to:
+3. On the iPad (same Wi-Fi), open Safari and go to:
 
 `http://<YOUR-PC-IP>:5173`
 
@@ -78,7 +78,7 @@ Safari → Share → **Add to Home Screen**
 ### For Players:
 1. Run `pnpm dev` on the PC
 2. Open on PC: `http://localhost:5173`
-3. Open on iPad (same Wi‑Fi): `http://<YOUR-PC-IP>:5173`
+3. Open on iPad (same Wi-Fi): `http://<YOUR-PC-IP>:5173`
 
 ### For Developers:
 1. Clone this repository

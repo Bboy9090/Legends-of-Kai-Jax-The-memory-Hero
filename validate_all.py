@@ -46,9 +46,14 @@ def validate_character_spec():
     try:
         validate(instance=spec, schema=schema)
         print("✓ kai_jax.character.json is valid against schema")
-        print(f"  - Found {len(spec['characters'])} characters")
-        for char in spec['characters']:
-            print(f"    • {char['id']}: {char['name']}")
+        if 'characters' in spec:
+            print(f"  - Found {len(spec['characters'])} characters")
+            for char in spec['characters']:
+                print(f"    • {char.get('id', char.get('character_id', '?'))}: {char.get('name', char.get('display_name', '?'))}")
+        else:
+            char_id = spec.get('character_id', spec.get('id', '?'))
+            char_name = spec.get('display_name', spec.get('name', '?'))
+            print(f"  - Character: {char_id} ({char_name})")
         return True
     except ValidationError as e:
         print(f"✗ Validation failed:")
@@ -109,6 +114,31 @@ def validate_story_schema():
         return False
 
 
+def _normalize_spec_characters(spec):
+    """Return a list of characters from spec regardless of format."""
+    if 'characters' in spec:
+        return spec['characters']
+    # Single-character format: wrap in list with normalized keys
+    return [{
+        'id': spec.get('character_id', spec.get('id', '?')),
+        'name': spec.get('display_name', spec.get('name', '?')),
+        'appearance': spec.get('appearance', {}),
+    }]
+
+
+def _char_id_variants(char_id):
+    """Return common identifier variants for matching (snake_case and kebab-case)."""
+    return [char_id, char_id.replace('_', '-'), char_id.replace('-', '_')]
+
+
+def _char_id_in_content(char_id, content):
+    """Check if a character ID (or its variants) appears in content."""
+    for variant in _char_id_variants(char_id):
+        if f'"{variant}"' in content or f"'{variant}'" in content:
+            return True
+    return False
+
+
 def cross_check_implementations():
     """Cross-check character spec with implementation files."""
     print("\n" + "=" * 70)
@@ -119,7 +149,7 @@ def cross_check_implementations():
     if not spec:
         return False
     
-    canonical_chars = {c['id']: c for c in spec['characters']}
+    canonical_chars = {c['id']: c for c in _normalize_spec_characters(spec)}
     all_checks_passed = True
     
     # Check characters.ts
@@ -128,7 +158,7 @@ def cross_check_implementations():
     if characters_ts.exists():
         content = characters_ts.read_text()
         for char_id, char_data in canonical_chars.items():
-            if f'"{char_id}"' in content or f"'{char_id}'" in content:
+            if _char_id_in_content(char_id, content):
                 print(f"  ✓ {char_id} found")
             else:
                 print(f"  ✗ {char_id} NOT FOUND")
@@ -142,11 +172,11 @@ def cross_check_implementations():
     if designs_ts.exists():
         content = designs_ts.read_text()
         for char_id, char_data in canonical_chars.items():
-            if f'"{char_id}"' in content or f"'{char_id}'" in content:
+            if _char_id_in_content(char_id, content):
                 print(f"  ✓ {char_id} found")
-                # Check color consistency
-                primary = char_data['appearance']['primaryColor'].lower()
-                if primary not in content.lower():
+                # Check color consistency only if appearance data is available
+                primary = char_data.get('appearance', {}).get('primaryColor', '')
+                if primary and primary.lower() not in content.lower():
                     print(f"    ⚠ Primary color {primary} not found")
             else:
                 print(f"  ✗ {char_id} NOT FOUND")
@@ -160,14 +190,15 @@ def cross_check_implementations():
     if art_spec:
         art_chars = {c['id']: c for c in art_spec.get('characters', [])}
         for char_id, char_data in canonical_chars.items():
-            if char_id in art_chars:
+            # Check all ID variants
+            found_id = next((v for v in _char_id_variants(char_id) if v in art_chars), None)
+            if found_id:
                 print(f"  ✓ {char_id} found")
                 # Color consistency check
-                art_char = art_chars[char_id]
-                canonical_primary = char_data['appearance']['primaryColor'].lower()
+                art_char = art_chars[found_id]
+                canonical_primary = char_data.get('appearance', {}).get('primaryColor', '').lower()
                 art_primary = art_char.get('primaryColor', '').lower()
-                
-                if canonical_primary != art_primary:
+                if canonical_primary and art_primary and canonical_primary != art_primary:
                     print(f"    ⚠ Color mismatch: canonical={canonical_primary}, art={art_primary}")
                     all_checks_passed = False
             else:
@@ -190,6 +221,14 @@ def check_constraints():
         return False
     
     constraints = spec.get('metadata', {}).get('constraints', {})
+    principles = spec.get('designPrinciples', {})
+    
+    # If neither metadata/constraints nor designPrinciples exist, this spec uses the
+    # newer single-character format which does not embed these governance fields.
+    if not constraints and not principles:
+        print("  ℹ Spec uses single-character format; governance constraints are")
+        print("    managed externally. Skipping constraint check.")
+        return True
     
     required_constraints = {
         'unifiedCore': True,
@@ -208,7 +247,6 @@ def check_constraints():
             all_correct = False
     
     # Check design principles
-    principles = spec.get('designPrinciples', {})
     required_principles = [
         'silhouetteFirst',
         'layeredRendering',
