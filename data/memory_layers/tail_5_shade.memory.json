@@ -1,0 +1,30 @@
+{
+  "$schema": "../../schemas/memory_layer.schema.json",
+  "memory_id": "memory_disappearance_patience",
+  "tail_number": 5,
+  "memory_type": "disappearance",
+  "name": "Disappearance",
+  "description": "Memory of surviving by not being seen. The cost of patience.",
+  "read": "You lived because you waited.",
+  "gameplay_effects": {
+    "perception_shifts": [
+      "stealth_becomes_mental_not_mechanical",
+      "shadow_density_readable",
+      "threat_meter_visible"
+    ],
+    "behavior_modifications": [
+      "combat_rhythm_slows_deliberately",
+      "patience_rewarded_deeply"
+    ],
+    "enemy_reactions": [
+      "enemies_lose_track_faster",
+      "stealth_transitions_smoother",
+      "threat_resets_feel_natural"
+    ],
+    "world_interactions": [
+      "darkness_becomes_refuge"
+    ]
+  },
+  "stacking_rule": "cumulative",
+  "persistence": "irreversible"
+}

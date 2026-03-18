@@ -1,0 +1,8 @@
+{
+  "platform": "pc",
+  "max_enemies": 20,
+  "tail_physics": "full",
+  "ai_depth": "high",
+  "vfx_quality": "ultra",
+  "lod_bias": 0.0
+}

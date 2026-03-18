@@ -1,0 +1,107 @@
+👑 Ultimate Replit Agent Prompt (The Master Instruction)
+This single block of text contains the full design and integration instructions for the Replit Agent to create the 2.5D game. Copy and paste this directly into the Replit chat prompt.
+
+Plaintext
+
+Analyze the existing React/Three.js project and transform it into a functional 2.5D side-scrolling platformer called "Hyper Sonic Quest" with complex physics and visual transformations.
+
+1.  **Perspective & Setup:** Implement a 2.5D side-scroller. Lock all character and camera movement to the **X and Y axes** (Z-depth must be fixed). Define placeholder models/geometries for Kaison, Jaxon, Germ Monster, and Booger Ghost. Use the existing Zustand store for all game state.
+
+2.  **Core Physics:**
+    * Implement reliable **ground collision detection** against a fixed Y=0 plane (`groundLevel`) and gravity application (`update_movement`).
+    * Implement **pendulum web-swinging physics**: When the 'Web' button is held, the character must orbit a fixed `webAnchorPoint`. Use **angular velocity** and **gravity** calculations to simulate a natural arc.
+    * Implement **Launch/Release**: Upon releasing the 'Web' button, calculate the character's **tangential velocity** at the release point and apply it as the new X and Y velocity for freefall.
+
+3.  **Combat Mechanics:**
+    * **Charged Web Kick (Melee):** Implement a **charge timer** when the 'Kick' button is held while swinging. Upon release, apply damage (`kick_power`) proportional to the charge time.
+    * **Energy Web Shots (Jaxon Only):** Implement a **projectile system**. The aiming logic must use **auto-aim assist**: projectiles should slightly snap to the nearest enemy within a 60-degree cone. Apply minor **recoil force** to Jaxon opposite the shot direction.
+
+4.  **Transformation (Visual & Power Boost):**
+    * Implement a `transformHero()` function that sets the `powerLevel` state to 1 for a 10-second duration.
+    * **Kaison (Super Sonic):** When powered up, override his material to an **emissive gold/yellow color**. Add an **upward-flowing particle system**.
+    * **Jaxon (Hyper Sonic):** When powered up, implement a **rapidly cycling prismatic color effect** (flashing rainbow hues) on his model. Render a highly visible **energy trail** using a component like MeshLine.
+    * **Gameplay Enhancement:** Double the base damage and remove attack cooldowns for the duration of the transformation.
+
+5.  **Structure:** Create separate TypeScript modules for Physics, Combat, and State (`gameStore.ts`) and ensure all logic is correctly imported and runs within the main **`useFrame`** loop in the main player component. Design simple on-screen **virtual button components** for Jump, Web, Kick, and Blast.
+🛠️ Implementation Strategy Codes (Verification Guide)
+Once the Replit Agent runs the prompt above, it will modify existing files and create new ones. Use this guide to check and confirm the essential code blocks in the files it creates.
+
+File 1: gameStore.ts (State Setup)
+Check that these variables exist in your Zustand PlayerState interface:
+
+TypeScript
+
+// --- gameStore.ts: Check for these variables ---
+
+// Core State
+position: [number, number, number]; // Lock Z to 0
+velocity: [number, number]; 
+isGrounded: boolean;
+gravity: number;
+groundLevel: number; 
+
+// Web-Swinging State
+webAttached: boolean;
+webButtonPressed: boolean;
+webAngle: number;
+webAngularVelocity: number;
+webAnchorPoint: [number, number, number] | null; 
+webLength: number;
+
+// Combat State
+kickButtonPressed: boolean;
+isKicking: boolean;
+kickChargeTimer: number;
+kickPower: number;
+energyBlastButtonPressed: boolean;
+
+// Transformation State
+activeHero: 'Kaison' | 'Jaxon'; 
+powerLevel: 0 | 1;         // 0=Normal, 1=Transformed
+transformHero: () => void;
+File 2: Player.tsx (UseFrame Logic - The Heart of the Game)
+Verify that the useFrame hook correctly sequences the logic:
+
+TypeScript
+
+// --- Player.tsx: Check structure inside useFrame((state, dt) => { ... }) ---
+
+// 1. Check for Transformation Timer (Reverts powerLevel to 0 after X frames)
+
+// 2. Web-Swinging Physics (Highest Priority)
+if (store.webAttached && store.webButtonPressed) {
+    // Pendulum physics (calculates new position based on angle/length)
+} else if (store.webAttached && !store.webButtonPressed) {
+    // Release Logic (Calculates tangential launch velocity and sets webAttached=false)
+} 
+
+// 3. Ground/Freefall Physics (Runs only if NOT attached)
+if (!store.webAttached) {
+    // Gravity application (velocity.y -= gravity * dt)
+    // Ground/Platform collision check (sets isGrounded=true, velocity.y=0 on hit)
+    
+    // Horizontal movement and friction application
+}
+
+// 4. Combat Updates
+// Charged Kick Logic (Updates kickChargeTimer, executes kick on release)
+// Energy Blast Aiming Logic (Tracks charge, finds nearest enemy for auto-aim)
+
+// 5. Final Position Update (Updates the R3F mesh based on store.position)
+File 3: PlayerVisuals.tsx (R3F Visual Implementation)
+Ensure the visual component uses the powerLevel state to switch materials and effects:
+
+TypeScript
+
+// --- PlayerVisuals.tsx: Check conditional rendering/material switching ---
+
+// Inside the component return (JSX):
+
+if (powerLevel === 1 && activeHero === 'Kaison') {
+    // Renders gold/emissive material and the <Sparkles /> component for particles
+} else if (powerLevel === 1 && activeHero === 'Jaxon') {
+    // Renders material with rapidly cycling HSL color logic 
+    // Renders the Meshline trail component
+} 
+// else { Renders default material }
+This structured approach will ensure the Agent builds a functional game that adheres to all our design specifications. Good luck!

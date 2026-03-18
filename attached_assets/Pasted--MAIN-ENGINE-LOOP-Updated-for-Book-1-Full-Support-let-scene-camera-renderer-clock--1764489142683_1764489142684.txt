@@ -1,0 +1,2575 @@
+// --- MAIN ENGINE LOOP (Updated for Book 1 Full Support) ---
+
+
+
+let scene, camera, renderer, clock;
+
+let playerController;
+
+let currentMissionIndex = 0;
+
+let missionRunner = null;
+
+let enemies = []; // Global enemy list
+
+
+
+// UI Refs
+
+const hudTitle = document.getElementById('mission-title');
+
+const hudObj = document.getElementById('objective-text');
+
+const hudHint = document.getElementById('hud-hint');
+
+
+
+// --- INIT ---
+
+function init() {
+
+    // Basic Three.js Setup (Scene, Camera, Renderer)
+
+    scene = new THREE.Scene();
+
+    scene.background = new THREE.Color(0x101015);
+
+    scene.fog = new THREE.Fog(0x101015, 10, 60);
+
+
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    camera.position.set(0, 10, 15);
+
+    camera.lookAt(0, 0, 0);
+
+
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    renderer.shadowMap.enabled = true;
+
+    document.getElementById('game-container').appendChild(renderer.domElement);
+
+
+
+    clock = new THREE.Clock();
+
+
+
+    // Lighting
+
+    const ambient = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+
+    scene.add(ambient);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+
+    dirLight.position.set(10, 20, 10);
+
+    scene.add(dirLight);
+
+
+
+    // Floor (Arena)
+
+    const floor = new THREE.Mesh(
+
+        new THREE.CylinderGeometry(30, 30, 1, 32),
+
+        new THREE.MeshStandardMaterial({ color: 0x333333 })
+
+    );
+
+    floor.position.y = -0.5;
+
+    scene.add(floor);
+
+
+
+    // Start Game at Mission 1
+
+    loadMission(0); 
+
+    animate();
+
+}
+
+
+
+// --- MISSION LOGIC ---
+
+function loadMission(index) {
+
+    const mission = MissionDefinitions[index];
+
+    if (!mission) return console.log("Book 1 Complete.");
+
+
+
+    currentMissionIndex = index;
+
+    
+
+    // UI Update
+
+    hudTitle.innerText = mission.title;
+
+    hudObj.innerText = "LOADING...";
+
+    hudHint.innerText = "";
+
+
+
+    // Clear Scene
+
+    if (playerController) scene.remove(playerController.model);
+
+    enemies.forEach(e => scene.remove(e.model));
+
+    enemies = [];
+
+
+
+    // Spawn Player
+
+    playerController = new Player(mission.playable[0], scene);
+
+
+
+    // Init Runner
+
+    missionRunner = {
+
+        phases: mission.phases,
+
+        idx: -1,
+
+        timer: 0,
+
+        active: true
+
+    };
+
+    nextPhase();
+
+}
+
+
+
+function nextPhase() {
+
+    missionRunner.idx++;
+
+    if (missionRunner.idx >= missionRunner.phases.length) {
+
+        console.log("Mission Complete");
+
+        hudObj.innerText = "MISSION COMPLETE";
+
+        setTimeout(() => loadMission(currentMissionIndex + 1), 3000);
+
+        return;
+
+    }
+
+
+
+    const phase = missionRunner.phases[missionRunner.idx];
+
+    console.log("Starting Phase:", phase.type);
+
+
+
+    // UI Updates
+
+    if (phase.hint) hudHint.innerText = phase.hint;
+
+
+
+    // Phase Logic
+
+    switch(phase.type) {
+
+        case "tutorial":
+
+        case "cinematic":
+
+            hudObj.innerText = phase.type === "tutorial" ? "TRAINING" : "WATCHING";
+
+            setTimeout(nextPhase, phase.duration ? phase.duration * 1000 : 4000);
+
+            break;
+
+
+
+        case "wave":
+
+        case "boss":
+
+            hudObj.innerText = "COMBAT ACTIVE";
+
+            // Spawn logic (using WaveSystem if available, or manual for MVP)
+
+            if (window.WaveSystem) {
+
+                WaveSystem.spawnBatch(phase.enemyId, phase.count, phase.spawnPoint, scene, playerController);
+
+            }
+
+            break;
+
+
+
+        case "survival":
+
+            hudObj.innerText = "SURVIVE";
+
+            missionRunner.timer = phase.duration;
+
+            // Spawn infinite trickle of enemies here in a real build
+
+            break;
+
+
+
+        case "puzzle":
+
+            hudObj.innerText = "SOLVE PUZZLE";
+
+            // Mock puzzle completion for MVP
+
+            setTimeout(nextPhase, 5000); 
+
+            break;
+
+            
+
+        case "defend_objective":
+
+            hudObj.innerText = "DEFEND CORE";
+
+            missionRunner.timer = phase.durationSeconds;
+
+            break;
+
+    }
+
+}
+
+
+
+// --- UPDATE LOOP ---
+
+function animate() {
+
+    requestAnimationFrame(animate);
+
+    const delta = clock.getDelta();
+
+
+
+    if (playerController) {
+
+        playerController.update(delta);
+
+        
+
+        // Camera Follow
+
+        const target = playerController.model.position.clone();
+
+        target.y += 5; 
+
+        target.z += 10;
+
+        camera.position.lerp(target, 0.1);
+
+        camera.lookAt(playerController.model.position);
+
+    }
+
+
+
+    // Enemy Updates
+
+    if (window.WaveSystem) {
+
+        WaveSystem.update(delta);
+
+        enemies = WaveSystem.activeEnemies; // Sync local list
+
+        window.ENEMIES_LIST = enemies; // Sync global for player hit detection
+
+    }
+
+
+
+    // Phase Monitor
+
+    if (missionRunner && missionRunner.active) {
+
+        const phase = missionRunner.phases[missionRunner.idx];
+
+        
+
+        // Combat Check: Advance if all enemies dead
+
+        if ((phase.type === "wave" || phase.type === "boss") && enemies.length === 0) {
+
+            nextPhase();
+
+        }
+
+
+
+        // Timer Check (Survival / Defend)
+
+        if ((phase.type === "survival" || phase.type === "defend_objective") && missionRunner.timer > 0) {
+
+            missionRunner.timer -= delta;
+
+            hudObj.innerText = `TIME: ${Math.ceil(missionRunner.timer)}`;
+
+            if (missionRunner.timer <= 0) {
+
+                nextPhase();
+
+            }
+
+        }
+
+    }
+
+
+
+    renderer.render(scene, camera);
+
+}
+
+
+
+// Resize Handler
+
+window.addEventListener('resize', () => {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+});
+
+
+
+// Start
+
+init();                           // --- CRITICAL NOTE: This file assumes character_defs.js and mission_defs.js are loaded globally ---
+
+// --- It uses placeholder functions for Three.js rendering and combat logic from the previous skeleton ---
+
+
+
+// ===== GLOBALS & STATE (Existing) =====
+
+let scene, camera, renderer;
+
+let player;
+
+let enemies = [];
+
+let gameState = "MENU"; // MENU, RUNNING, CUTSCENE, MISSION_COMPLETE, GAME_OVER
+
+
+
+let activeMissionId = null;
+
+let missionRunner = null;
+
+let currentPhaseIndex = 0;
+
+
+
+// Helper to get character data (Reads from the structure defined in your character_defs.js)
+
+function getCharDef(id) {
+
+    // Note: Assumes CharacterDefinitions object is globally available or imported.
+
+    return CharacterDefinitions[id];
+
+}
+
+
+
+// Helper to get mission data
+
+function getMissionDef(id) {
+
+    // Note: Assumes MissionDefinitions array is globally available or imported.
+
+    return MissionDefinitions.find(m => m.id === id);
+
+}
+
+
+
+// Helper for quick placeholder spawning (Use to represent player/enemies)
+
+function spawnPlaceholder(color, scale) {
+
+    const geo = new THREE.BoxGeometry(scale, scale * 2, scale);
+
+    const mat = new THREE.MeshStandardMaterial({ color: color });
+
+    const mesh = new THREE.Mesh(geo, mat);
+
+    return mesh;
+
+}
+
+
+
+// ===== CORE MISSION LOADER =====
+
+function loadMission(missionId, heroId = 'RADIANT_JUMPER') {
+
+    const missionData = getMissionDef(missionId);
+
+    if (!missionData) {
+
+        console.error("Mission not found:", missionId);
+
+        return;
+
+    }
+
+
+
+    // 1. Scene Setup (Clear old, setup new environment)
+
+    // resetSceneToDefaultArena(missionData.locationType);
+
+    
+
+    // 2. Player Setup (Load defined hero)
+
+    const heroDef = getCharDef(heroId);
+
+    if (!player) {
+
+        const mesh = spawnPlaceholder(heroDef.color, 1.5);
+
+        mesh.position.set(0, 0, 8);
+
+        scene.add(mesh);
+
+        // player = new Player(mesh, heroDef); // Instantiate player with full stat data
+
+    } else {
+
+        // Reset position and health for existing player
+
+        // player.health = player.maxHealth;
+
+        // player.model.position.set(0, 0, 8);
+
+    }
+
+    
+
+    // 3. Initialize Mission Runner
+
+    activeMissionId = missionId;
+
+    missionRunner = { 
+
+        data: missionData,
+
+        currentPhaseIndex: 0,
+
+        update: updateMissionPhases 
+
+    };
+
+    
+
+    // Start the first phase
+
+    startNextPhase();
+
+}
+
+
+
+// ===== PHASE ADVANCEMENT SYSTEM =====
+
+function startNextPhase() {
+
+    const mission = missionRunner.data;
+
+    const phases = mission.phases;
+
+
+
+    if (missionRunner.currentPhaseIndex >= phases.length) {
+
+        onMissionComplete();
+
+        return;
+
+    }
+
+
+
+    const phase = phases[missionRunner.currentPhaseIndex];
+
+    console.log(`--- Starting Phase ${missionRunner.currentPhaseIndex + 1}: ${phase.type} ---`);
+
+
+
+    switch (phase.type) {
+
+        case "tutorial":
+
+            startTutorialPhase(phase);
+
+            break;
+
+        case "wave":
+
+            startWaveCombatPhase(phase);
+
+            break;
+
+        case "boss":
+
+            startBossPhase(phase);
+
+            break;
+
+        case "cinematic":
+
+            runScriptEvent(phase.script);
+
+            // Cinematics advance phase automatically after completion
+
+            setTimeout(startNextPhase, 5000); // Wait 5 seconds for cinematic to finish
+
+            break;
+
+        case "checkpoint":
+
+            // saveCheckpoint(phase.label);
+
+            missionRunner.currentPhaseIndex++; // Move past checkpoint immediately
+
+            startNextPhase();
+
+            break;
+
+        default:
+
+            console.warn("Unknown phase type:", phase.type);
+
+            missionRunner.currentPhaseIndex++;
+
+            startNextPhase();
+
+            break;
+
+    }
+
+}
+
+
+
+// Call this from your Enemy/Combat system when a wave or boss is defeated
+
+function onPhaseComplete(success = true) {
+
+    if (success) {
+
+        missionRunner.currentPhaseIndex++;
+
+        startNextPhase();
+
+    } else {
+
+        // Handle fail condition based on missionData.loseCondition
+
+        onMissionFailed();
+
+    }
+
+}
+
+
+
+// --- PHASE STARTERS (Stub Implementations) ---
+
+
+
+function startTutorialPhase(phaseCfg) {
+
+    // Logic to show on-screen prompts for WASD, J/K/L
+
+    hudHintText.textContent = `TUTORIAL: ${phaseCfg.steps.join(', ')}`;
+
+    // After duration, call onPhaseComplete()
+
+    setTimeout(onPhaseComplete, phaseCfg.duration * 1000);
+
+}
+
+// --- ENEMY DEFINITIONS (Data Layer) ---
+
+// Maps Enemy IDs to stats and behaviors.
+
+
+
+window.ENEMIES = {
+
+    'RIFT_GRUNT': {
+
+        id: "RIFT_GRUNT",
+
+        displayName: "Rift Grunt",
+
+        type: "grunt",
+
+        hp: 40,
+
+        atk: 5,
+
+        spd: 3.5,
+
+        behavior: "rush_player",
+
+        color: 0x5500aa, 
+
+        scale: 1.0
+
+    },
+
+    'RIFT_CHAMPION': {
+
+        id: "RIFT_CHAMPION",
+
+        displayName: "Rift Champion",
+
+        type: "mini_boss",
+
+        hp: 200,
+
+        atk: 15,
+
+        spd: 2.5,
+
+        behavior: "aggressive_duelist",
+
+        color: 0xff0000, 
+
+        scale: 1.5
+
+    },
+
+    'RIFT_BEAST': {
+
+        id: "RIFT_BEAST",
+
+        displayName: "Rift Beast",
+
+        type: "boss",
+
+        hp: 600,
+
+        atk: 25,
+
+        spd: 4.0,
+
+        behavior: "boss_pattern_A",
+
+        color: 0x222222, 
+
+        scale: 2.5
+
+    }
+
+};function startWaveCombatPhase(phaseCfg) {
+
+    // Logic to spawn enemies based on phaseCfg.enemyId and count
+
+    console.log(`Spawning ${phaseCfg.count} x ${phaseCfg.enemyId}`);
+
+    // Example: spawnEnemies(phaseCfg.enemyId, phaseCfg.count, phaseCfg.spawnPoint);
+
+    // Enemy AI update loop should call onPhaseComplete() when enemies are filtered out.
+
+}
+
+
+
+function startBossPhase(phaseCfg) {
+
+    // Logic to play intro, then spawn boss
+
+    if (phaseCfg.introCutscene) runScriptEvent(phaseCfg.introCutscene);
+
+    console.log(`Spawning BOSS: ${phaseCfg.enemyId}`);
+
+    // spawnBoss(phaseCfg.enemyId);
+
+}
+
+
+
+function runScriptEvent(scriptId) {
+
+    // Logic for camera movements, dialogue, environmental changes (M3 morph)
+
+    console.log(`--- RUNNING SCRIPT: ${scriptId} ---`);
+
+    if (scriptId === "M3_ARENA_MORPH_GLITCH") {
+
+        // triggerArenaGlitchForM3(); // Trigger environment change (e.g., hole, color swap)
+
+        // audioManager.playSFX("rift_glitch");
+
+    }
+
+    // Note: Cinematic events (scripts) should call startNextPhase() after they finish.
+
+}
+
+
+
+// --- GAME FLOW HANDLERS ---
+
+
+
+function onMissionComplete() {
+
+    console.log(`Mission Complete: ${missionRunner.data.title}`);
+
+    // Check missionRunner.data.unlockNext to see what to load next
+
+    // Trigger victory UI and save progress
+
+}
+
+
+
+function onMissionFailed() {
+
+    // Handle Game Over UI logic
+
+    console.log("Mission Failed.");
+
+}
+
+
+
+function updateMissionPhases(delta) {
+
+    // This function is called every frame in the main game loop (animate())
+
+    // It primarily checks if the current combat/wave/defend phase is complete
+
+    
+
+    if (missionRunner && missionRunner.data.phases[missionRunner.currentPhaseIndex]?.type !== 'cinematic') {
+
+        // If the mission is running a wave, check if enemies are alive
+
+        const aliveEnemies = enemies.filter(e => !e.isDead);
+
+        if (aliveEnemies.length === 0 && (missionRunner.data.phases[missionRunner.currentPhaseIndex].type === 'wave' || missionRunner.data.phases[missionRunner.currentPhaseIndex].type === 'boss')) {
+
+            onPhaseComplete(); // Advance if enemies are cleared
+
+        }
+
+        // Add checks here for 'defend_objective' timer completion
+
+    }
+
+}
+
+
+
+// ===== STARTUP HOOK (Example) =====
+
+// When the game starts (after initScene()):
+
+// loadMission("B1_M1");              // --- ENEMY AI (System Layer) ---
+
+// Controls enemy movement and attacks.
+
+
+
+class Enemy {
+
+    constructor(def, scene, playerRef) {
+
+        this.def = def;
+
+        this.scene = scene;
+
+        this.player = playerRef;
+
+        this.hp = def.hp;
+
+        this.isDead = false;
+
+        this.attackCooldown = 0;
+
+
+
+        // Placeholder Mesh
+
+        const geometry = new THREE.BoxGeometry(def.scale, def.scale * 2, def.scale);
+
+        const material = new THREE.MeshStandardMaterial({ color: def.color });
+
+        this.model = new THREE.Mesh(geometry, material);
+
+        this.scene.add(this.model);
+
+    }
+
+
+
+    setPosition(x, y, z) {
+
+        this.model.position.set(x, y, z);
+
+    }
+
+
+
+    update(delta) {
+
+        if (this.isDead || !this.player) return;
+
+
+
+        const dist = this.model.position.distanceTo(this.player.model.position);
+
+
+
+        // Simple State Machine
+
+        if (this.def.behavior === "rush_player") {
+
+            if (dist > 1.5) {
+
+                const dir = new THREE.Vector3().subVectors(this.player.model.position, this.model.position).normalize();
+
+                this.model.position.add(dir.multiplyScalar(this.def.spd * delta));
+
+                this.model.lookAt(this.player.model.position);
+
+            } else {
+
+                this.attack();
+
+            }
+
+        }
+
+        
+
+        if (this.attackCooldown > 0) this.attackCooldown -= delta;
+
+    }
+
+
+
+    attack() {
+
+        if (this.attackCooldown <= 0) {
+
+            this.attackCooldown = 1.5;
+
+            // Visual Flash
+
+            this.model.material.emissive.setHex(0xFFFFFF);
+
+            setTimeout(() => this.model.material.emissive.setHex(0x000000), 100);
+
+            
+
+            // Logic: Assume hit if close (simplified)
+
+            // In full engine, player.takeDamage() is called here
+
+        }
+
+    }
+
+
+
+    takeDamage(amount) {
+
+        this.hp -= amount;
+
+        this.model.material.color.setHex(0xFF0000); // Red Flash
+
+        setTimeout(() => this.model.material.color.setHex(this.def.color), 100);
+
+
+
+        if (this.hp <= 0) {
+
+            this.die();
+
+        }
+
+    }
+
+
+
+    die() {
+
+        this.isDead = true;
+
+        this.model.visible = false;
+
+        // In full engine: play particle effect, drop loot
+
+    }
+
+}             // --- WAVE SYSTEM (System Layer) ---
+
+// Spawns enemies based on Mission Phases.
+
+
+
+const WaveSystem = {
+
+    activeEnemies: [],
+
+
+
+    spawnBatch: function(enemyId, count, pattern, scene, player) {
+
+        const def = window.ENEMIES[enemyId];
+
+        if (!def) return console.error("Missing Enemy Def:", enemyId);
+
+
+
+        for (let i = 0; i < count; i++) {
+
+            const enemy = new Enemy(def, scene, player);
+
+            
+
+            // Simple Pattern Logic
+
+            const angle = (i / count) * Math.PI * 2;
+
+            const radius = 10;
+
+            enemy.setPosition(Math.sin(angle) * radius, 1, Math.cos(angle) * radius);
+
+            
+
+            this.activeEnemies.push(enemy);
+
+        }
+
+        
+
+        // Sync global list for player hit detection
+
+        if(window.ENEMIES_LIST) window.ENEMIES_LIST = this.activeEnemies;
+
+    },
+
+
+
+    update: function(delta) {
+
+        // Filter dead enemies
+
+        this.activeEnemies = this.activeEnemies.filter(e => !e.isDead);
+
+        
+
+        // Update living enemies
+
+        this.activeEnemies.forEach(e => e.update(delta));
+
+        
+
+        // Update global list
+
+        if(window.ENEMIES_LIST) window.ENEMIES_LIST = this.activeEnemies;
+
+    }
+
+};             // --- PLAYER CONTROLLER (Logic Layer) ---
+
+// Now supports Modular Kits (Brawler, Speedster, Relic, etc.)
+
+// ALL COPYRIGHTED NAMES REMOVED.
+
+
+
+class Player {
+
+    constructor(charId, scene) {
+
+        this.def = window.CHARACTERS[charId];
+
+        this.scene = scene;
+
+        
+
+        // Base Stats
+
+        this.hp = this.def.stats.HP;
+
+        this.maxHp = this.def.stats.HP;
+
+        
+
+        // Physics State
+
+        this.velocity = new THREE.Vector3();
+
+        this.isGrounded = false;
+
+        this.isDead = false;
+
+        
+
+        // Kit State
+
+        this.currentKit = this.determineKit(charId); 
+
+        // Kits: "BRAWLER" (Jumper), "SPEEDSTER" (Blur), "RELIC" (Knight)
+
+        
+
+        this.momentum = 0; // For Speedster Kit
+
+        this.isSpinning = false;
+
+        this.lockOnTarget = null; // For Homing Attacks
+
+
+
+        // Mesh Setup
+
+        const geometry = new THREE.CapsuleGeometry(0.5, 1.8, 4, 8);
+
+        const material = new THREE.MeshStandardMaterial({ 
+
+            color: this.def.color, // Pulls the signature color (e.g. Crimson)
+
+            emissive: this.def.color,
+
+            emissiveIntensity: 0.2
+
+        });
+
+        this.model = new THREE.Mesh(geometry, material);
+
+        this.model.position.set(0, 5, 0);
+
+        this.scene.add(this.model);
+
+        
+
+        // Input
+
+        this.keys = { w: false, a: false, s: false, d: false, space: false, shift: false };
+
+        this.initInput();
+
+    }
+
+
+
+    determineKit(id) {
+
+        // Map ID to Generic Archetype Kit
+
+        if (id === 'REDHOUND_FLOW' || id === 'CRIMSON_BLUR' || id === 'OBSIDIAN_ECHO') return "SPEEDSTER";
+
+        if (id === 'HYLLIAN_VALOUR') return "RELIC";
+
+        return "BRAWLER"; // Default (Radiant Jumper style)
+
+    }
+
+
+
+    initInput() {
+
+        window.addEventListener('keydown', (e) => this.onKey(e, true));
+
+        window.addEventListener('keyup', (e) => this.onKey(e, false));
+
+    }
+
+
+
+    onKey(e, pressed) {
+
+        switch(e.key.toLowerCase()) {
+
+            case 'w': this.keys.w = pressed; break;
+
+            case 'a': this.keys.a = pressed; break;
+
+            case 's': this.keys.s = pressed; break;
+
+            case 'd': this.keys.d = pressed; break;
+
+            case ' ': this.keys.space = pressed; break;
+
+            case 'shift': this.keys.shift = pressed; break;
+
+        }
+
+    }
+
+
+
+    update(delta) {
+
+        if (this.isDead) return;
+
+
+
+        // Delegate to the specific Kit Logic
+
+        if (this.currentKit === "SPEEDSTER") {
+
+            this.updateSpeedsterKit(delta);
+
+        } else if (this.currentKit === "RELIC") {
+
+            this.updateRelicKit(delta); 
+
+        } else {
+
+            this.updateBrawlerKit(delta); // Standard platformer
+
+        }
+
+
+
+        // Global Gravity (unless kit overrides)
+
+        this.applyGravity(delta);
+
+        this.handleFloorCollision();
+
+    }
+
+
+
+    // --- KIT 1: STANDARD PLATFORMER (BRAWLER) ---
+
+    updateBrawlerKit(delta) {
+
+        const speed = this.def.stats.SPD * 1.5;
+
+        const moveDir = new THREE.Vector3();
+
+        
+
+        if (this.keys.w) moveDir.z -= 1;
+
+        if (this.keys.s) moveDir.z += 1;
+
+        if (this.keys.a) moveDir.x -= 1;
+
+        if (this.keys.d) moveDir.x += 1;
+
+
+
+        if (moveDir.length() > 0) {
+
+            moveDir.normalize();
+
+            this.model.position.add(moveDir.multiplyScalar(speed * delta));
+
+            this.model.rotation.y = Math.atan2(moveDir.x, moveDir.z);
+
+        }
+
+
+
+        if (this.isGrounded && this.keys.space) {
+
+            this.velocity.y = 20; // High instant jump
+
+            this.isGrounded = false;
+
+        }
+
+    }
+
+
+
+    // --- KIT 2: SPEED CORRIDOR (SPEEDSTER) ---
+
+    updateSpeedsterKit(delta) {
+
+        // 1. MOMENTUM MECHANICS
+
+        // Speedsters accelerate; they don't just walk.
+
+        const ACCEL = 15.0;
+
+        const DRAG = 4.0;
+
+        const MAX_SPEED = this.def.stats.SPD * 3.0;
+
+        
+
+        const moveInput = new THREE.Vector3();
+
+        if (this.keys.w) moveInput.z -= 1;
+
+        if (this.keys.s) moveInput.z += 1;
+
+        if (this.keys.a) moveInput.x -= 1;
+
+        if (this.keys.d) moveInput.x += 1;
+
+
+
+        if (moveInput.length() > 0) {
+
+            // Accelerate in input direction
+
+            moveInput.normalize();
+
+            
+
+            // Rotate model smoothly (Drift feel)
+
+            const targetAngle = Math.atan2(moveInput.x, moveInput.z);
+
+            const currentAngle = this.model.rotation.y;
+
+            // Simple lerp for rotation
+
+            this.model.rotation.y += (targetAngle - currentAngle) * 0.1;
+
+
+
+            // Add momentum
+
+            this.momentum += ACCEL * delta;
+
+        } else {
+
+            // Decelerate (Drag)
+
+            this.momentum -= DRAG * delta * 5;
+
+        }
+
+
+
+        // Clamp Momentum
+
+        this.momentum = Math.max(0, Math.min(this.momentum, MAX_SPEED));
+
+
+
+        // Apply Movement based on Model Facing (Tank controls feel)
+
+        const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0,1,0), this.model.rotation.y);
+
+        this.model.position.add(forward.multiplyScalar(this.momentum * delta));
+
+
+
+        // 2. SPIN CHARGE (Ground Special)
+
+        if (this.isGrounded && this.keys.shift) {
+
+            this.isSpinning = true;
+
+            this.momentum = 0; // Stop moving to charge
+
+            // Visual: Squish model
+
+            this.model.scale.y = 0.5;
+
+        } else if (this.isSpinning && !this.keys.shift) {
+
+            // RELEASE CHARGE
+
+            this.isSpinning = false;
+
+            this.momentum = MAX_SPEED * 1.5; // Super burst
+
+            this.model.scale.y = 1.0;
+
+            // Add damage hitbox logic here
+
+        }
+
+
+
+        // 3. HOMING DASH (Air Special)
+
+        // If in air + jump pressed again + near enemy
+
+        if (!this.isGrounded && this.keys.space && !this.jumpLocked) {
+
+            const target = this.findHomingTarget();
+
+            if (target) {
+
+                this.performHomingAttack(target);
+
+            } else {
+
+                // Double Jump logic could go here
+
+            }
+
+            this.jumpLocked = true; // Prevent spam
+
+        }
+
+
+
+        if (this.isGrounded && !this.keys.space) {
+
+            this.jumpLocked = false;
+
+        }
+
+
+
+        // Standard Jump
+
+        if (this.isGrounded && this.keys.space) {
+
+            this.velocity.y = 15;
+
+            this.isGrounded = false;
+
+            this.jumpLocked = true;
+
+        }
+
+    }
+
+
+
+    // --- PHYSICS HELPERS ---
+
+    applyGravity(delta) {
+
+        this.velocity.y += -40 * delta; // Gravity constant
+
+        this.model.position.y += this.velocity.y * delta;
+
+    }
+
+
+
+    handleFloorCollision() {
+
+        if (this.model.position.y <= 0.9) {
+
+            this.model.position.y = 0.9;
+
+            this.velocity.y = 0;
+
+            this.isGrounded = true;
+
+        } else {
+
+            this.isGrounded = false;
+
+        }
+
+    }
+
+
+
+    // --- SPEEDSTER SPECIFIC UTILS ---
+
+    findHomingTarget() {
+
+        if (!window.ENEMIES_LIST) return null;
+
+        let closest = null;
+
+        let minDst = 10.0; // Homing range
+
+
+
+        window.ENEMIES_LIST.forEach(e => {
+
+            if (e.isDead) return;
+
+            const dst = this.model.position.distanceTo(e.model.position);
+
+            if (dst < minDst) {
+
+                minDst = dst;
+
+                closest = e;
+
+            }
+
+        });
+
+        return closest;
+
+    }
+
+
+
+    performHomingAttack(target) {
+
+        // Visual flare using character's definition color
+
+        this.model.material.emissive.setHex(0xFFFFFF); 
+
+        setTimeout(() => this.model.material.emissive.setHex(this.def.color), 200);
+
+
+
+        // Physics launch
+
+        const dir = new THREE.Vector3().subVectors(target.model.position, this.model.position).normalize();
+
+        
+
+        // Instant dash logic
+
+        this.model.position.add(dir.multiplyScalar(2)); 
+
+        this.velocity.y = 5; // Bounce off
+
+        
+
+        // Deal Damage
+
+        target.takeDamage(this.def.moves.special);
+
+    }
+
+}                    <!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Super Smash Grand Saga: Convergence</title>
+
+    <style>
+
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+
+        #game-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+
+        
+
+        /* UI LAYER */
+
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; color: white; }
+
+        
+
+        /* PLAYER STATS */
+
+        #player-stats { position: absolute; top: 20px; left: 20px; width: 300px; }
+
+        #char-name { font-weight: 800; font-size: 24px; text-shadow: 2px 2px 0px #000; margin-bottom: 5px; font-style: italic; text-transform: uppercase; }
+
+        #hp-bar-bg { width: 100%; height: 20px; background: rgba(0, 0, 0, 0.8); border: 2px solid #fff; transform: skewX(-15deg); }
+
+        #hp-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #ff3333, #ff6600); transition: width 0.2s; }
+
+        
+
+        /* MISSION INFO */
+
+        #mission-info { position: absolute; top: 20px; right: 20px; text-align: right; }
+
+        #mission-title { font-size: 28px; font-weight: bold; text-transform: uppercase; text-shadow: 0 0 10px rgba(0,0,0,0.5); letter-spacing: 2px; margin: 0; }
+
+        #objective-text { font-size: 18px; color: #ffcc00; text-shadow: 1px 1px 0 #000; margin-top: 5px; }
+
+        
+
+        /* HINTS */
+
+        #hud-hint { position: absolute; bottom: 50px; width: 100%; text-align: center; color: rgba(255, 255, 255, 0.8); font-size: 16px; font-weight: bold; text-transform: uppercase; }
+
+        
+
+        /* ORACLE LINK */
+
+        #oracle-container { position: absolute; bottom: 100px; right: 20px; width: 300px; text-align: right; pointer-events: auto; }
+
+        #oracle-display { background: rgba(0, 20, 40, 0.9); border: 1px solid #00ccff; color: #00ccff; padding: 10px; margin-bottom: 10px; border-radius: 5px; font-size: 14px; display: none; text-shadow: 0 0 2px #000; }
+
+        #oracle-btn { background: linear-gradient(45deg, #0044FF, #0088FF); color: white; border: 2px solid white; padding: 8px 16px; font-weight: bold; text-transform: uppercase; cursor: pointer; transform: skewX(-10deg); transition: all 0.2s; box-shadow: 0 0 15px rgba(0, 68, 255, 0.5); }
+
+        #oracle-btn:hover { background: #00ccff; box-shadow: 0 0 25px rgba(0, 204, 255, 0.8); }
+
+        #oracle-btn:disabled { background: #555; cursor: wait; }
+
+
+
+        /* OVERLAY */
+
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; pointer-events: auto; }
+
+        #overlay h1 { font-size: 48px; color: #ffcc00; text-transform: uppercase; letter-spacing: 5px; margin-bottom: 20px; }
+
+        #overlay button { padding: 15px 40px; font-size: 24px; background: #0044FF; color: white; border: none; cursor: pointer; text-transform: uppercase; font-weight: bold; transform: skewX(-10deg); transition: transform 0.1s; margin: 10px; }
+
+        #overlay button:hover { transform: skewX(-10deg) scale(1.1); background: #3377FF; }
+
+        .hidden { display: none !important; }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div id="game-container"></div>
+
+
+
+    <div id="ui-layer">
+
+        <div id="player-stats">
+
+            <div id="char-name">RADIANT JUMPER</div>
+
+            <div id="hp-bar-bg"><div id="hp-fill"></div></div>
+
+        </div>
+
+        <div id="mission-info">
+
+            <h1 id="mission-title">LOADING...</h1>
+
+            <div id="objective-text">Initializing Systems...</div>
+
+        </div>
+
+        <div id="hud-hint">WASD Move | Space Jump | Shift Dodge | E Special</div>
+
+        
+
+        <div id="oracle-container">
+
+            <div id="oracle-display"></div>
+
+            <button id="oracle-btn">✨ ORACLE LINK</button>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="overlay">
+
+        <h1>SAGA ENGINE READY</h1>
+
+        <button id="btn-mario">PLAY AS RADIANT JUMPER</button>
+
+        <button id="btn-sonic" style="background: #cc0000;">PLAY AS REDHOUND FLOW</button>
+
+    </div>
+
+
+
+    <!-- THREE.JS LIBRARY (r146 for CapsuleGeometry) -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
+
+
+
+    <script>
+
+        // ==========================================
+
+        // 1. DATA DEFINITIONS (The Saga Bible)
+
+        // ==========================================
+
+
+
+        window.CHARACTERS = {
+
+            'RADIANT_JUMPER': {
+
+                name: "Marlo Zenith",
+
+                stats: { HP: 1200, ATK: 9, DEF: 9, SPD: 8 },
+
+                color: 0x0044FF, 
+
+                archetype: "BRAWLER"
+
+            },
+
+            'REDHOUND_FLOW': {
+
+                name: "Redhound Flow",
+
+                stats: { HP: 900, ATK: 9, DEF: 7, SPD: 12 },
+
+                color: 0xCC0000, 
+
+                archetype: "SPEEDSTER"
+
+            }
+
+        };
+
+
+
+        window.ENEMIES = {
+
+            'RIFT_GRUNT': { id: 'RIFT_GRUNT', hp: 40, atk: 5, spd: 3.5, color: 0x5500aa, scale: 1.0, behavior: "rush", name: "Rift Grunt" },
+
+            'RIFT_CHAMPION': { id: 'RIFT_CHAMPION', hp: 200, atk: 15, spd: 2.5, color: 0xff0000, scale: 1.5, behavior: "duelist", name: "Rift Champion" },
+
+            'RIFT_BEAST': { id: 'RIFT_BEAST', hp: 600, atk: 25, spd: 4.0, color: 0x222222, scale: 2.5, behavior: "boss", name: "Rift Beast" }
+
+        };
+
+
+
+        const MissionDefinitions = [
+
+            {
+
+                id: "B1_M1",
+
+                title: "Grand Arena: First Light",
+
+                playable: ["RADIANT_JUMPER"],
+
+                phases: [
+
+                    { type: "tutorial", duration: 3, hint: "WASD to Move | Space to Jump" },
+
+                    { type: "wave", enemyId: "RIFT_GRUNT", count: 3, hint: "WAVE 1: Basic Combat" },
+
+                    { type: "wave", enemyId: "RIFT_CHAMPION", count: 1, hint: "MINI-BOSS: Use Special (E)" }
+
+                ]
+
+            }
+
+        ];
+
+
+
+        // ==========================================
+
+        // 2. SYSTEMS LAYER (AI & Waves)
+
+        // ==========================================
+
+
+
+        class Enemy {
+
+            constructor(def, scene, playerRef) {
+
+                this.def = def;
+
+                this.scene = scene;
+
+                this.player = playerRef;
+
+                this.hp = def.hp;
+
+                this.isDead = false;
+
+                this.attackCooldown = 0;
+
+
+
+                // Procedural Enemy Mesh
+
+                const geometry = new THREE.BoxGeometry(def.scale, def.scale * 2, def.scale);
+
+                const material = new THREE.MeshStandardMaterial({ color: def.color });
+
+                this.model = new THREE.Mesh(geometry, material);
+
+                this.scene.add(this.model);
+
+            }
+
+
+
+            setPosition(x, y, z) {
+
+                this.model.position.set(x, y, z);
+
+            }
+
+
+
+            update(delta) {
+
+                if (this.isDead || !this.player) return;
+
+                const dist = this.model.position.distanceTo(this.player.model.position);
+
+
+
+                if (dist > 1.5) {
+
+                    const dir = new THREE.Vector3().subVectors(this.player.model.position, this.model.position).normalize();
+
+                    this.model.position.add(dir.multiplyScalar(this.def.spd * delta));
+
+                    this.model.lookAt(this.player.model.position);
+
+                } else {
+
+                    this.attack();
+
+                }
+
+                
+
+                if (this.attackCooldown > 0) this.attackCooldown -= delta;
+
+            }
+
+
+
+            attack() {
+
+                if (this.attackCooldown <= 0) {
+
+                    this.attackCooldown = 1.5;
+
+                    this.model.material.emissive.setHex(0xFFFFFF);
+
+                    setTimeout(() => { if(!this.isDead) this.model.material.emissive.setHex(0x000000); }, 100);
+
+                    
+
+                    if(this.player.model.position.distanceTo(this.model.position) < 2.5) {
+
+                        this.player.takeDamage(this.def.atk);
+
+                    }
+
+                }
+
+            }
+
+
+
+            takeDamage(amount) {
+
+                this.hp -= amount;
+
+                this.model.material.color.setHex(0xFF0000);
+
+                setTimeout(() => { if(!this.isDead) this.model.material.color.setHex(this.def.color); }, 100);
+
+                
+
+                if (this.hp <= 0) this.die();
+
+            }
+
+
+
+            die() {
+
+                this.isDead = true;
+
+                this.model.visible = false;
+
+            }
+
+        }
+
+
+
+        const WaveSystem = {
+
+            activeEnemies: [],
+
+            spawnBatch: function(enemyId, count, scene, player) {
+
+                const def = window.ENEMIES[enemyId];
+
+                for (let i = 0; i < count; i++) {
+
+                    const enemy = new Enemy(def, scene, player);
+
+                    const angle = (i / count) * Math.PI * 2;
+
+                    const radius = 15;
+
+                    enemy.setPosition(Math.sin(angle) * radius, 1, Math.cos(angle) * radius);
+
+                    WaveSystem.activeEnemies.push(enemy);
+
+                }
+
+            },
+
+            update: function(delta) {
+
+                WaveSystem.activeEnemies = WaveSystem.activeEnemies.filter(e => !e.isDead);
+
+                WaveSystem.activeEnemies.forEach(e => e.update(delta));
+
+            }
+
+        };
+
+
+
+        // ==========================================
+
+        // 3. PLAYER CONTROLLER (Procedural Animation)
+
+        // ==========================================
+
+
+
+        class Player {
+
+            constructor(charId, scene) {
+
+                this.def = window.CHARACTERS[charId];
+
+                this.scene = scene;
+
+                this.hp = this.def.stats.HP;
+
+                this.maxHp = this.def.stats.HP;
+
+                this.speed = this.def.stats.SPD * 1.5;
+
+                this.velocity = new THREE.Vector3();
+
+                this.isGrounded = false;
+
+                this.attackCooldown = 0;
+
+                this.animTime = 0;
+
+
+
+                // --- PROCEDURAL MESH GENERATION ---
+
+                // This creates a character with arms and legs without external assets
+
+                this.model = new THREE.Group();
+
+                
+
+                const mat = new THREE.MeshStandardMaterial({ color: this.def.color });
+
+                const headMat = new THREE.MeshStandardMaterial({ color: 0xffccaa }); // Skin tone
+
+
+
+                // Torso
+
+                this.body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 0.4), mat);
+
+                this.body.position.y = 0.9;
+
+                
+
+                // Head
+
+                this.head = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), headMat);
+
+                this.head.position.y = 1.6;
+
+
+
+                // Arms (Pivots)
+
+                this.armL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.6, 0.2), mat);
+
+                this.armL.position.set(-0.4, 1.1, 0);
+
+                
+
+                this.armR = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.6, 0.2), mat);
+
+                this.armR.position.set(0.4, 1.1, 0);
+
+
+
+                // Legs
+
+                this.legL = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.7, 0.25), new THREE.MeshStandardMaterial({ color: 0x333333 }));
+
+                this.legL.position.set(-0.2, 0.35, 0);
+
+
+
+                this.legR = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.7, 0.25), new THREE.MeshStandardMaterial({ color: 0x333333 }));
+
+                this.legR.position.set(0.2, 0.35, 0);
+
+
+
+                // Assemble
+
+                this.model.add(this.body);
+
+                this.model.add(this.head);
+
+                this.model.add(this.armL);
+
+                this.model.add(this.armR);
+
+                this.model.add(this.legL);
+
+                this.model.add(this.legR);
+
+
+
+                this.scene.add(this.model);
+
+                this.model.position.set(0, 5, 0);
+
+
+
+                this.keys = { w: false, a: false, s: false, d: false, space: false, shift: false };
+
+                this.initInput();
+
+            }
+
+
+
+            initInput() {
+
+                window.addEventListener('keydown', (e) => this.onKey(e, true));
+
+                window.addEventListener('keyup', (e) => this.onKey(e, false));
+
+                window.addEventListener('mousedown', (e) => {
+
+                    // Prevent attack if clicking UI
+
+                    if (e.target.tagName === 'BUTTON') return;
+
+                    this.attack('light');
+
+                });
+
+                window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'e') this.attack('special'); });
+
+            }
+
+
+
+            onKey(e, pressed) {
+
+                switch(e.key.toLowerCase()) {
+
+                    case 'w': this.keys.w = pressed; break;
+
+                    case 'a': this.keys.a = pressed; break;
+
+                    case 's': this.keys.s = pressed; break;
+
+                    case 'd': this.keys.d = pressed; break;
+
+                    case ' ': this.keys.space = pressed; break;
+
+                    case 'shift': this.keys.shift = pressed; break;
+
+                }
+
+            }
+
+
+
+            update(delta) {
+
+                const moveDir = new THREE.Vector3();
+
+                if (this.keys.w) moveDir.z -= 1;
+
+                if (this.keys.s) moveDir.z += 1;
+
+                if (this.keys.a) moveDir.x -= 1;
+
+                if (this.keys.d) moveDir.x += 1;
+
+
+
+                let isMoving = moveDir.length() > 0;
+
+                let currentSpeed = this.speed;
+
+                if (this.keys.shift) currentSpeed *= 2.0;
+
+
+
+                // --- PROCEDURAL ANIMATION LOGIC ---
+
+                if (isMoving) {
+
+                    this.animTime += delta * 10;
+
+                    // Sine wave rotation for limbs
+
+                    this.legL.rotation.x = Math.sin(this.animTime) * 0.5;
+
+                    this.legR.rotation.x = Math.sin(this.animTime + Math.PI) * 0.5;
+
+                    this.armL.rotation.x = Math.sin(this.animTime + Math.PI) * 0.5;
+
+                    this.armR.rotation.x = Math.sin(this.animTime) * 0.5;
+
+                } else {
+
+                    // Reset Pose
+
+                    this.legL.rotation.x = 0;
+
+                    this.legR.rotation.x = 0;
+
+                    this.armL.rotation.x = 0;
+
+                    this.armR.rotation.x = 0;
+
+                }
+
+
+
+                if (isMoving) {
+
+                    moveDir.normalize();
+
+                    this.model.position.add(moveDir.multiplyScalar(currentSpeed * delta));
+
+                    const targetRot = Math.atan2(moveDir.x, moveDir.z);
+
+                    this.model.rotation.y = targetRot;
+
+                }
+
+
+
+                // Gravity
+
+                if (this.isGrounded && this.keys.space) {
+
+                    this.velocity.y = 15;
+
+                    this.isGrounded = false;
+
+                }
+
+                this.velocity.y += -40 * delta;
+
+                this.model.position.y += this.velocity.y * delta;
+
+
+
+                if (this.model.position.y <= 0) {
+
+                    this.model.position.y = 0;
+
+                    this.velocity.y = 0;
+
+                    this.isGrounded = true;
+
+                }
+
+
+
+                if (this.attackCooldown > 0) this.attackCooldown -= delta;
+
+            }
+
+
+
+            attack(type) {
+
+                if (this.attackCooldown > 0) return;
+
+                
+
+                let range = 3.5;
+
+                let damage = 10;
+
+                let color = 0xFFFFFF;
+
+
+
+                if (type === 'special') {
+
+                    damage = 30;
+
+                    range = 6.0;
+
+                    color = this.def.color;
+
+                    this.attackCooldown = 1.0;
+
+                    // Special Animation: Raise Arms
+
+                    this.armL.rotation.x = -Math.PI;
+
+                    this.armR.rotation.x = -Math.PI;
+
+                    setTimeout(() => { this.armL.rotation.x = 0; this.armR.rotation.x = 0; }, 300);
+
+                } else {
+
+                    this.attackCooldown = 0.3;
+
+                    // Light Animation: Punch Left
+
+                    this.armL.rotation.x = -Math.PI / 2;
+
+                    setTimeout(() => { this.armL.rotation.x = 0; }, 200);
+
+                }
+
+
+
+                WaveSystem.activeEnemies.forEach(enemy => {
+
+                    if (enemy.isDead) return;
+
+                    const dist = this.model.position.distanceTo(enemy.model.position);
+
+                    const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.model.rotation.y);
+
+                    const toEnemy = new THREE.Vector3().subVectors(enemy.model.position, this.model.position).normalize();
+
+                    const dot = forward.dot(toEnemy);
+
+
+
+                    if (dist <= range && dot > 0.5) {
+
+                        enemy.takeDamage(damage);
+
+                        // Knockback
+
+                        const push = toEnemy.multiplyScalar(type === 'special' ? 3 : 1);
+
+                        enemy.model.position.add(push);
+
+                    }
+
+                });
+
+            }
+
+
+
+            takeDamage(amount) {
+
+                const reduced = Math.max(1, amount - (this.def.stats.DEF * 0.2));
+
+                this.hp -= reduced;
+
+                const pct = Math.max(0, (this.hp / this.maxHp) * 100);
+
+                document.getElementById('hp-fill').style.width = pct + '%';
+
+                
+
+                if (this.hp <= 0) {
+
+                    alert("HERO FALLEN. REFRESH TO RESTART.");
+
+                    location.reload();
+
+                }
+
+            }
+
+        }
+
+
+
+        // ==========================================
+
+        // 4. MAIN ENGINE
+
+        // ==========================================
+
+
+
+        let scene, camera, renderer, clock, player;
+
+        let missionRunner = null;
+
+
+
+        function init() {
+
+            scene = new THREE.Scene();
+
+            scene.background = new THREE.Color(0x101015);
+
+            scene.fog = new THREE.Fog(0x101015, 10, 60);
+
+
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            camera.position.set(0, 12, 18);
+
+            camera.lookAt(0, 0, 0);
+
+
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            renderer.shadowMap.enabled = true;
+
+            document.getElementById('game-container').appendChild(renderer.domElement);
+
+
+
+            clock = new THREE.Clock();
+
+
+
+            // Lights
+
+            const ambient = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+
+            scene.add(ambient);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+
+            dirLight.position.set(10, 20, 10);
+
+            dirLight.castShadow = true;
+
+            scene.add(dirLight);
+
+
+
+            // Arena Floor
+
+            const floor = new THREE.Mesh(
+
+                new THREE.CylinderGeometry(30, 30, 1, 32),
+
+                new THREE.MeshStandardMaterial({ color: 0x333333 })
+
+            );
+
+            floor.position.y = -0.5;
+
+            floor.receiveShadow = true;
+
+            scene.add(floor);
+
+
+
+            document.getElementById('btn-mario').addEventListener('click', () => startGame('RADIANT_JUMPER'));
+
+            document.getElementById('btn-sonic').addEventListener('click', () => startGame('REDHOUND_FLOW'));
+
+            document.getElementById('oracle-btn').addEventListener('click', callOracle);
+
+
+
+            animate();
+
+        }
+
+
+
+        function startGame(charId) {
+
+            document.getElementById('overlay').classList.add('hidden');
+
+            document.getElementById('char-name').innerText = window.CHARACTERS[charId].name;
+
+            loadMission(0, charId);
+
+        }
+
+
+
+        function loadMission(index, charId) {
+
+            const mission = MissionDefinitions[index];
+
+            document.getElementById('mission-title').innerText = mission.title;
+
+            
+
+            player = new Player(charId, scene);
+
+            missionRunner = { data: mission, phaseIdx: -1 };
+
+            nextPhase();
+
+        }
+
+
+
+        function nextPhase() {
+
+            if (!missionRunner) return;
+
+            missionRunner.phaseIdx++;
+
+            if (missionRunner.phaseIdx >= missionRunner.data.phases.length) {
+
+                document.getElementById('objective-text').innerText = "MISSION COMPLETE";
+
+                return;
+
+            }
+
+
+
+            const phase = missionRunner.data.phases[missionRunner.phaseIdx];
+
+            if (phase.hint) document.getElementById('hud-hint').innerText = phase.hint;
+
+
+
+            if (phase.type === "tutorial") {
+
+                document.getElementById('objective-text').innerText = "TRAINING...";
+
+                setTimeout(nextPhase, phase.duration * 1000);
+
+            } 
+
+            else if (phase.type === "wave") {
+
+                document.getElementById('objective-text').innerText = "COMBAT ACTIVE";
+
+                WaveSystem.spawnBatch(phase.enemyId, phase.count, scene, player);
+
+            }
+
+        }
+
+
+
+        function animate() {
+
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+
+
+
+            if (player) {
+
+                player.update(delta);
+
+                // Camera Follow
+
+                const targetPos = player.model.position.clone();
+
+                targetPos.y += 10; targetPos.z += 15;
+
+                camera.position.lerp(targetPos, 0.1);
+
+                camera.lookAt(player.model.position);
+
+            }
+
+
+
+            WaveSystem.update(delta);
+
+
+
+            if (missionRunner) {
+
+                const phase = missionRunner.data.phases[missionRunner.phaseIdx];
+
+                if (phase && phase.type === "wave" && WaveSystem.activeEnemies.length === 0) {
+
+                    nextPhase();
+
+                }
+
+            }
+
+
+
+            renderer.render(scene, camera);
+
+        }
+
+
+
+        window.addEventListener('resize', () => {
+
+            camera.aspect = window.innerWidth / window.innerHeight;
+
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+        });
+
+
+
+        // --- GEMINI API INTEGRATION ---
+
+        async function callOracle() {
+
+            const btn = document.getElementById('oracle-btn');
+
+            const display = document.getElementById('oracle-display');
+
+            
+
+            if (!player || !missionRunner) return;
+
+
+
+            btn.disabled = true;
+
+            btn.innerText = "CONNECTING...";
+
+            display.style.display = "none";
+
+
+
+            const enemyNames = WaveSystem.activeEnemies.map(e => e.def.name).join(", ") || "None";
+
+            const currentPhase = missionRunner.data.phases[missionRunner.phaseIdx]?.hint || "Unknown";
+
+            const hpPercent = Math.round((player.hp / player.maxHp) * 100);
+
+            
+
+            const promptText = `You are Oracle Celeste, a divine tactical advisor in a fighting game. 
+
+            Context:
+
+            - Mission: ${missionRunner.data.title}
+
+            - Current Objective: ${currentPhase}
+
+            - Enemies Present: ${enemyNames}
+
+            - Player Health: ${hpPercent}%
+
+            
+
+            Provide a short, intense tactical tip or lore insight (max 2 sentences) for the player. Be encouraging but serious.`;
+
+
+
+            const apiKey = ""; // API Key injected by environment
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+
+
+            try {
+
+                const response = await fetch(url, {
+
+                    method: 'POST',
+
+                    headers: { 'Content-Type': 'application/json' },
+
+                    body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+
+                });
+
+
+
+                if (!response.ok) throw new Error("Oracle connection failed.");
+
+
+
+                const data = await response.json();
+
+                const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Link unclear. Press on, hero.";
+
+
+
+                display.innerText = aiText;
+
+                display.style.display = "block";
+
+            } catch (e) {
+
+                console.error(e);
+
+                display.innerText = "Oracle Link disrupted. Static interference detected.";
+
+                display.style.display = "block";
+
+            } finally {
+
+                btn.disabled = false;
+
+                btn.innerText = "✨ ORACLE LINK";
+
+            }
+
+        }
+
+
+
+        init();
+
+    </script>
+
+</body>
+
+</html>             body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+
+#ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; color: white; }
+
+#mission-info { position: absolute; top: 20px; left: 20px; }
+
+#mission-title { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+
+#objective-text { color: #ffcc00; font-weight: bold; font-size: 18px; }
+
+#controls-hint { position: absolute; bottom: 20px; width: 100%; text-align: center; opacity: 0.7; }

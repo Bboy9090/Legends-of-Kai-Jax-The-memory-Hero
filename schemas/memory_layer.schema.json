@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://legends-of-kai-jax.com/schemas/memory_layer.schema.json",
+  "title": "Memory Layer Schema",
+  "description": "JSON Schema for memory layer definitions in Legends of Kai-Jax. Memory layers are behavioral modifiers that stack with every tail unlock.",
+  "type": "object",
+  "required": [
+    "memory_id",
+    "tail_number",
+    "memory_type",
+    "name",
+    "description",
+    "read",
+    "gameplay_effects"
+  ],
+  "properties": {
+    "memory_id": {
+      "type": "string",
+      "description": "Unique identifier for this memory layer",
+      "pattern": "^memory_[a-z_]+$"
+    },
+    "tail_number": {
+      "type": "integer",
+      "description": "The tail number this memory is associated with (1-9)",
+      "minimum": 1,
+      "maximum": 9
+    },
+    "memory_type": {
+      "type": "string",
+      "description": "The type/category of this memory",
+      "enum": [
+        "bond",
+        "chase",
+        "connection",
+        "pain_remembered",
+        "disappearance",
+        "holding_line",
+        "alternate_futures",
+        "cost_of_power",
+        "time_paid"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name for this memory"
+    },
+    "description": {
+      "type": "string",
+      "description": "Narrative description of this memory and its significance"
+    },
+    "read": {
+      "type": "string",
+      "description": "The core lesson or truth this memory teaches"
+    },
+    "gameplay_effects": {
+      "type": "object",
+      "description": "The gameplay effects this memory layer provides",
+      "required": [
+        "perception_shifts",
+        "behavior_modifications",
+        "enemy_reactions",
+        "world_interactions"
+      ],
+      "properties": {
+        "perception_shifts": {
+          "type": "array",
+          "description": "How this memory changes how the world appears to the player",
+          "items": {
+            "type": "string"
+          }
+        },
+        "behavior_modifications": {
+          "type": "array",
+          "description": "How this memory changes how the player acts and feels in combat",
+          "items": {
+            "type": "string"
+          }
+        },
+        "enemy_reactions": {
+          "type": "array",
+          "description": "How enemies respond differently due to this memory",
+          "items": {
+            "type": "string"
+          }
+        },
+        "world_interactions": {
+          "type": "array",
+          "description": "How the world reacts differently due to this memory",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "stacking_rule": {
+      "type": "string",
+      "description": "How this memory stacks with others (always cumulative)",
+      "const": "cumulative"
+    },
+    "persistence": {
+      "type": "string",
+      "description": "Persistence rule for this memory (always irreversible)",
+      "const": "irreversible"
+    }
+  },
+  "additionalProperties": false
+}

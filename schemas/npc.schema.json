@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://legends-of-kai-jax.com/schemas/npc.schema.json",
+  "title": "NPC System Schema",
+  "description": "Schema for NPC definitions and interactions in Legends of Kai-Jax",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["npc_id", "name", "npc_type", "dialogue_tree"],
+  "properties": {
+    "npc_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$",
+      "description": "Unique identifier for the NPC"
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name of the NPC"
+    },
+    "npc_type": {
+      "type": "string",
+      "enum": ["quest_giver", "merchant", "story_character", "ambient"],
+      "description": "Type of NPC"
+    },
+    "location": {
+      "type": "object",
+      "required": ["district_id", "zone_id"],
+      "properties": {
+        "district_id": {
+          "type": "string",
+          "description": "District where NPC is located"
+        },
+        "zone_id": {
+          "type": "string",
+          "description": "Zone where NPC is located"
+        },
+        "position": {
+          "type": "object",
+          "properties": {
+            "x": {"type": "number"},
+            "y": {"type": "number"},
+            "z": {"type": "number"}
+          }
+        }
+      }
+    },
+    "appearance": {
+      "type": "object",
+      "properties": {
+        "model_id": {
+          "type": "string",
+          "description": "3D model identifier"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 5.0
+        }
+      }
+    },
+    "dialogue_tree": {
+      "type": "object",
+      "required": ["default"],
+      "properties": {
+        "default": {
+          "$ref": "#/definitions/dialogue_node"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/dialogue_node"
+      },
+      "description": "Dialogue options based on context"
+    },
+    "tail_tier_reactions": {
+      "type": "object",
+      "description": "NPC reactions based on player's tail count (references tail_tier_reactions.json)",
+      "properties": {
+        "3": {"$ref": "#/definitions/tier_reaction"},
+        "4": {"$ref": "#/definitions/tier_reaction"},
+        "5": {"$ref": "#/definitions/tier_reaction"},
+        "6": {"$ref": "#/definitions/tier_reaction"},
+        "7": {"$ref": "#/definitions/tier_reaction"},
+        "8": {"$ref": "#/definitions/tier_reaction"},
+        "9": {"$ref": "#/definitions/tier_reaction"}
+      },
+      "additionalProperties": false
+    },
+    "quests": {
+      "type": "array",
+      "description": "Quests this NPC can give",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "definitions": {
+    "dialogue_node": {
+      "type": "object",
+      "required": ["text"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Dialogue text to display"
+        },
+        "emotion": {
+          "type": "string",
+          "enum": ["neutral", "friendly", "fearful", "reverent", "hostile"],
+          "description": "Emotional state during this dialogue"
+        },
+        "options": {
+          "type": "array",
+          "description": "Player response options",
+          "items": {
+            "type": "object",
+            "required": ["text", "next_node"],
+            "properties": {
+              "text": {
+                "type": "string",
+                "description": "Response option text"
+              },
+              "next_node": {
+                "type": "string",
+                "description": "Next dialogue node ID"
+              },
+              "triggers_quest": {
+                "type": "string",
+                "description": "Quest ID to trigger if this option is selected"
+              }
+            }
+          }
+        }
+      }
+    },
+    "tier_reaction": {
+      "type": "object",
+      "properties": {
+        "override_dialogue": {
+          "type": "string",
+          "description": "Override default dialogue based on tail tier"
+        },
+        "fear_modifier": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Fear level (0 = none, 1 = terrified)"
+        },
+        "respect_modifier": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Respect/worship level (0 = none, 1 = absolute)"
+        }
+      }
+    }
+  }
+}

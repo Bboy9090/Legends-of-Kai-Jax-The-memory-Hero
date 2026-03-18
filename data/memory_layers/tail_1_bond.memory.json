@@ -1,0 +1,28 @@
+{
+  "$schema": "../../schemas/memory_layer.schema.json",
+  "memory_id": "memory_bond_trust",
+  "tail_number": 1,
+  "memory_type": "bond",
+  "name": "First Trust",
+  "description": "Memory of relying on someone other than yourself. The moment Kai and Jax stopped fighting alone.",
+  "read": "You don't survive alone.",
+  "gameplay_effects": {
+    "perception_shifts": [
+      "parry_windows_feel_clearer",
+      "ally_positions_more_visible"
+    ],
+    "behavior_modifications": [
+      "revives_feel_deliberate_slower",
+      "natural_grouping_with_allies"
+    ],
+    "enemy_reactions": [
+      "npcs_hold_ground_near_kai_jax",
+      "enemies_hesitate_when_outnumbered"
+    ],
+    "world_interactions": [
+      "npc_trust_increases"
+    ]
+  },
+  "stacking_rule": "cumulative",
+  "persistence": "irreversible"
+}

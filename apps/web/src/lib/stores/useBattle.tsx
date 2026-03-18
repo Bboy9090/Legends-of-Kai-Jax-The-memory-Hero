@@ -1,6 +1,7 @@
 import { create } from "zustand";
+import { getFighterById } from "../characters";
+import { getArenaById } from "../arenas";
 import { useAudio } from "./useAudio";
-import { useMissions } from "./useMissions";
 
 export interface BattleState {
   // Selected fighters
@@ -250,9 +251,6 @@ export const useBattle = create<BattleState>((set, get) => ({
     
     // Update combo timer
     get().updateCombo(delta);
-
-    // Mission survival timers (only does work if a mission is active)
-    useMissions.getState().tickSurvival(delta);
     
     // Decay screen shake
     if (get().screenShake > 0) {
@@ -304,11 +302,6 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerAttacking: true, 
       playerAttackType: type 
     });
-
-    // Count specials/ultimates for mission objectives (even if they miss).
-    if (type === "special" || type === "ultimate") {
-      useMissions.getState().recordMove(type);
-    }
     
     const audio = useAudio.getState();
     if (type === 'punch') audio.playPunch();
@@ -329,9 +322,6 @@ export const useBattle = create<BattleState>((set, get) => ({
       get().opponentTakeDamage(damage);
       get().addToCombo(damage);
       get().addSynergy(type === 'special' ? 15 : type === 'kick' ? 10 : 5);
-
-      // Mission hit tracking (hit-confirmed only).
-      useMissions.getState().recordHit(type);
       
       // Screen effects for big hits!
       if (damage >= 20) {
@@ -553,9 +543,6 @@ export const useBattle = create<BattleState>((set, get) => ({
       comboTimer: maxComboTimer,
       maxCombo: newMaxCombo,
     });
-
-    // Mission combo tracking (tracks peak combo reached)
-    useMissions.getState().recordCombo(newCombo);
     
     console.log("[Battle] 🔥 COMBO:", newCombo, "| Damage:", comboDamage + damage);
     
@@ -603,9 +590,6 @@ export const useBattle = create<BattleState>((set, get) => ({
   
   endBattle: (winner) => {
     console.log("[Battle] 🏆 Battle ended. Winner:", winner);
-
-    // Mission result evaluation happens at battle end.
-    useMissions.getState().recordBattleEnd(winner);
     
     // LEGENDARY KO SEQUENCE
     set({ 
@@ -622,7 +606,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     useAudio.getState().playKO();
     
     // Calculate score with bonuses
-    const { maxCombo, playerHealth, maxHealth } = get();
+    const { comboCount, maxCombo, playerHealth, maxHealth } = get();
     const baseScore = winner === 'player' ? 100 : 0;
     const comboBonus = maxCombo * 5;
     const healthBonus = winner === 'player' ? Math.round((playerHealth / maxHealth) * 50) : 0;

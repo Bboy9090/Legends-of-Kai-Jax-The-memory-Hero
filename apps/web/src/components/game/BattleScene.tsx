@@ -6,17 +6,15 @@ import { getFighterById } from "../../lib/characters";
 import BattleArena from "./BattleArena";
 import BattlePlayer from "./BattlePlayer";
 import Opponent from "./Opponent";
-import PlayerController from "./PlayerController";
-import OpponentAI from "./OpponentAI";
 import ParticleManager from "./ParticleManager";
 import CameraEffects from "./CameraEffects";
 import AttackTrails from "./AttackTrails";
 import EffectManager from "./EffectManager";
+import { RimLight } from "./EnhancedGraphics";
 import { Environment } from "@react-three/drei";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
 import CinematicPostFX from "./graphics/CinematicPostFX";
 
-/* eslint-disable react/no-unknown-property */
 export default function BattleScene() {
   const {
     startBattle,
@@ -47,19 +45,16 @@ export default function BattleScene() {
         (playerAttacking && (playerAttackType === "special" || playerAttackType === "ultimate") ? 0.25 : 0)
     ) || 0;
   
+  // Start battle on mount
   useEffect(() => {
     console.log("[BattleScene] Initializing battle");
-    const timer = setTimeout(() => {
-      const phase = useBattle.getState().battlePhase;
-      if (phase === "preRound") {
-        startBattle();
-      }
+    setTimeout(() => {
+      startBattle();
     }, 1000);
-    return () => clearTimeout(timer);
   }, [startBattle]);
   
   // Update round timer every frame
-  useFrame((_state, delta) => {
+  useFrame((state, delta) => {
     if (battlePhase === 'fighting') {
       updateRoundTimer(delta);
     }
@@ -67,6 +62,9 @@ export default function BattleScene() {
   
   // MOBILE-OPTIMIZED camera - fills the screen!
   const cameraX = (playerX + opponentX) / 2;
+  const cameraY = 5;  // Lowered from 8 to center action vertically
+  const cameraZ = 10; // Zoomed in from 15 to fill screen!
+  
   return (
     <>
       {/* Camera follows the action - CENTERED for mobile! */}
@@ -74,14 +72,17 @@ export default function BattleScene() {
         enableZoom={false}
         enablePan={false}
         enableRotate={false}
-        target={[cameraX, 1.5, 0]}
+        target={[cameraX, 2, 0]}  // Lowered from 3 to center fighters on screen
       />
       
       {/* Enhanced Lighting System for better character definition */}
+      <RimLight intensity={1.0} />
+      {/* Lift ambient so arena + shadows don’t crush to black */}
+      <ambientLight intensity={0.22} />
+      <hemisphereLight intensity={0.28} color={"#ffffff"} groundColor={"#1a1530"} />
       <LegendaryLightingRig />
-      {/* "city" can read very bright; night keeps the arena readable */}
-      <Environment preset="night" environmentIntensity={0.45} />
-      <CinematicPostFX profile="battle" grade={grade} accent={accent} punch={punch} center={[0.5, 0.44]} />
+      <Environment preset="city" />
+      <CinematicPostFX grade={grade} accent={accent} punch={punch} center={[0.5, 0.44]} />
 
       {/* Scene background/fog grade (pushes full-frame “poster” mood) */}
       <color attach="background" args={[bgColor]} />
@@ -94,12 +95,6 @@ export default function BattleScene() {
       
       {/* Opponent Fighter */}
       <Opponent />
-      
-      {/* Player Input Controller */}
-      <PlayerController />
-      
-      {/* Opponent AI */}
-      <OpponentAI />
       
       {/* EPIC Particle Effects! ✨💥 */}
       <ParticleManager />

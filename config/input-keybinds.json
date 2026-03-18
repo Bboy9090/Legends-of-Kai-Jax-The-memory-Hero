@@ -1,0 +1,161 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://legends-of-kai-jax.com/config/input-keybinds.json",
+  "title": "Input Keybindings Configuration",
+  "description": "Configuration-driven input mapping for all platforms. Supports runtime remapping and user preferences.",
+  "version": "1.0.0",
+  "last_updated": "2026-01-27",
+  
+  "pc_defaults": {
+    "keyboard": {
+      "movement": {
+        "move_left": ["KeyA", "ArrowLeft"],
+        "move_right": ["KeyD", "ArrowRight"],
+        "move_up": ["KeyW", "ArrowUp"],
+        "move_down": ["KeyS", "ArrowDown"]
+      },
+      "actions": {
+        "jump": ["Space"],
+        "dash": ["ShiftLeft", "ShiftRight"],
+        "crouch": ["KeyC", "ControlLeft"]
+      },
+      "combat": {
+        "light_attack": ["KeyJ", "Mouse0"],
+        "heavy_attack": ["KeyK", "Mouse2"],
+        "special": ["KeyL"],
+        "grab": ["KeyG"],
+        "block": ["KeyB"],
+        "dodge": ["KeyE"],
+        "parry": ["KeyQ"]
+      },
+      "special": {
+        "ultimate": ["KeyR"],
+        "taunt": ["KeyT"],
+        "pause": ["Escape"]
+      }
+    },
+    "mouse": {
+      "sensitivity": 1.0,
+      "invert_y": false,
+      "left_click": "light_attack",
+      "right_click": "heavy_attack",
+      "middle_click": "special"
+    }
+  },
+  
+  "gamepad_defaults": {
+    "layout": "xbox",
+    "buttons": {
+      "0": "light_attack",
+      "1": "dodge",
+      "2": "jump",
+      "3": "heavy_attack",
+      "4": "block",
+      "5": "special",
+      "6": "grab",
+      "7": "ultimate",
+      "8": "pause",
+      "9": "taunt"
+    },
+    "axes": {
+      "left_stick_x": "move_horizontal",
+      "left_stick_y": "move_vertical",
+      "right_stick_x": "camera_horizontal",
+      "right_stick_y": "camera_vertical",
+      "left_trigger": "parry",
+      "right_trigger": "dash"
+    },
+    "deadzone": {
+      "stick": 0.15,
+      "trigger": 0.1
+    },
+    "vibration": {
+      "enabled": true,
+      "intensity": 0.8
+    }
+  },
+  
+  "mobile_defaults": {
+    "touch_zones": {
+      "left_virtual_stick": {
+        "position": { "x": "15%", "y": "70%" },
+        "radius": 60,
+        "deadzone": 0.2,
+        "actions": ["move_left", "move_right", "move_up", "move_down"]
+      },
+      "right_virtual_stick": {
+        "position": { "x": "85%", "y": "70%" },
+        "radius": 60,
+        "deadzone": 0.2,
+        "actions": ["camera_horizontal", "camera_vertical"]
+      },
+      "attack_buttons": {
+        "light_attack": { "position": { "x": "85%", "y": "50%" }, "radius": 40 },
+        "heavy_attack": { "position": { "x": "90%", "y": "35%" }, "radius": 40 },
+        "special": { "position": { "x": "95%", "y": "20%" }, "radius": 35 }
+      },
+      "action_buttons": {
+        "jump": { "position": { "x": "75%", "y": "60%" }, "radius": 45 },
+        "dodge": { "position": { "x": "70%", "y": "45%" }, "radius": 35 },
+        "dash": { "position": { "x": "65%", "y": "30%" }, "radius": 35 }
+      },
+      "utility_buttons": {
+        "pause": { "position": { "x": "95%", "y": "5%" }, "radius": 25 },
+        "ultimate": { "position": { "x": "50%", "y": "90%" }, "radius": 50 }
+      }
+    },
+    "gestures": {
+      "swipe_up": "jump",
+      "swipe_down": "crouch",
+      "swipe_left": "dodge_left",
+      "swipe_right": "dodge_right",
+      "double_tap": "dash",
+      "long_press": "charge_attack",
+      "pinch_in": "zoom_in",
+      "pinch_out": "zoom_out"
+    },
+    "haptics": {
+      "enabled": true,
+      "on_hit": { "duration": 100, "intensity": 0.7 },
+      "on_attack": { "duration": 50, "intensity": 0.5 },
+      "on_parry": { "duration": 150, "intensity": 0.9 },
+      "on_state_change": { "duration": 30, "intensity": 0.3 }
+    },
+    "ui_behavior": {
+      "auto_hide_delay": 3000,
+      "hide_during_input": true,
+      "show_on_pause": true
+    },
+    "performance": {
+      "disable_emissive_materials": true,
+      "reduce_particle_effects": true,
+      "lower_shadow_quality": true,
+      "use_simplified_animations": false
+    }
+  },
+  
+  "input_buffer": {
+    "max_size": 6,
+    "buffer_window_frames": 10,
+    "allow_negative_edge": true
+  },
+  
+  "remapping": {
+    "allow_runtime_remap": true,
+    "save_to_local_storage": true,
+    "restore_defaults_key": "F12"
+  },
+  
+  "validation": {
+    "no_duplicate_bindings": true,
+    "require_all_actions_bound": false,
+    "platform_specific_validation": true
+  },
+  
+  "notes": {
+    "governance": "This file is configuration for input handling. Changes here affect UX but not gameplay rules.",
+    "mobile_performance": "Mobile performance settings reference kai_jax.character.json mobile_profile.allowed_cuts",
+    "frame_perfect_input": "Buffer system supports frame-perfect inputs for competitive play",
+    "accessibility": "All inputs can be remapped for accessibility"
+  }
+}

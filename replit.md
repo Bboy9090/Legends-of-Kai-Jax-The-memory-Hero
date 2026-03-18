@@ -1,99 +1,121 @@
-# Legends of Kai-Jax: The Memory King
+# BEAST-KIN SOVEREIGNTY: GENESIS™
+## Legends of Kai-Jax - The Memory Hero
 
 ## Overview
-
-This is a mythic action game called "Legends of Kai-Jax: The Memory King" featuring a hybrid sabertooth character with a 9-tail progression system. The project has two main parts:
-
-1. **Game Hub Frontend** (`frontend/`) — A React-based informational hub with 8 sections (Home, Characters, Tails, Story, Gods, Regions, Bible, UI) that presents lore, character data, and game information.
-2. **3D Game Client** (`apps/web/`) — A Three.js + React Three Fiber fighting game with battles, campaign mode, character selection, missions, a layered beast character rendering system, an open-world Adventure Mode with omnidirectional 3D locomotion and wave-based combat, ancient stone statue fighters (marble, granite, sandstone) with synthesized stone-grinding sound effects, and mobile/iPad touch controls (virtual joystick + action buttons).
-3. **Backend API** (`backend/`) — A FastAPI server providing game data endpoints (tails, characters, story, gods, regions, bible) and story mode progression enforcement, backed by MongoDB.
-
-The project enforces a "canonical spec" approach where `kai_jax.character.json` is the single source of truth for all character data, and all implementations must validate against it. The canon status is "PRODUCTION CANON LOCKED" at version 1.0.0.
+BEAST-KIN SOVEREIGNTY: GENESIS™ is an epic platform fighting RPG featuring 100% original Beast-Kin warriors. Players control Genesis heroes like KAI-JAX (The Memory King), Boryx Zenith (Guardian King), and Lunara Solis (Oracle Sentinel) through story-driven missions. Battle across the Aeterna Covenant, unlock Resonance transformations, and face the ultimate darkness: Voidonus Imperion. The game features original IP, cinematic combat, and deep lore spanning Books 1-3 of the Genesis saga.
 
 ## User Preferences
+- Preferred communication style: Simple, everyday language
+- Legal approach: Copyright-safe parody with minor name/color modifications while keeping characters recognizable
+- Development philosophy: Take time, build systematically, no time limits
 
-Preferred communication style: Simple, everyday language.
+## Recent Major Work (Current Session)
+**PHASE 1: 100 Legendary Polishes** - COMPLETED
+- ✅ Post-processing effects (Bloom, Vignette)
+- ✅ Enhanced lighting system
+- ✅ Particle effects on attacks
+- ✅ Role-based character body types
+- ✅ 37+ unique character visual features
+- ✅ Floating damage numbers with combo scaling
+- ✅ Animated arena elements
+- ✅ Victory/defeat screens with animated stats
+- ✅ Enhanced character select with gradients and glow
+- ✅ Timeout cleanup system with useRef
+
+**PHASE 2: Authentic Character Specifications** - COMPLETED
+- ✅ Deep research into 10+ game franchises with sprite specifications
+- ✅ Created characterSpecs.ts with authenticated source data
+- ✅ Copyright-safe character name/color modifications
+
+**PHASE 3: Real 3D Character Models** - COMPLETED
+- ✅ Generated 59 high-quality GLB 3D character models in client/public/models/
+- ✅ Created GLBCharacterModel.tsx component with:
+  - Error boundary for failed model loads
+  - Suspense fallback for loading states
+  - Animation integration (hit, attack, idle, emotion)
+  - Visual effects (invulnerability shield, hit flash, attack aura)
+- ✅ Integrated GLB loader into BattlePlayer.tsx
+- ✅ All characters now use real 3D models instead of placeholder boxes
+- ✅ Models generated include:
+  - Nintendo: Mario, Luigi, Peach, Zelda, Link/Ren, Kirby/Puffy, Yoshi, DK/Kong, Bowser, Fox, Falco, Rosalina, Pit, Marth, Ness, Meta Knight, Dedede, Wario, Waluigi, Ice Climbers, Little Mac, Shulk, Pyra, Banjo, Min Min
+  - Sega: Sonic/Velocity, Shadow/Abyss, Tails, Silver
+  - Pokemon: Pikachu/Sparky, Mewtwo, Greninja, Lucario, Ash
+  - Capcom: Mega Man/Blaze, Ryu, Ken, Chun-Li
+  - Third Party: Snake, Bayonetta, Cloud, Sephiroth, Sora, Simon, Joker, Steve, Kazuya, Terry, Hero, Ridley, Inkling, Pac-Man
+  - Original: Solaro, Lunara, Impa, Palutena
+
+**PHASE 4: Fluid Combat System (Spider-Man Style)** - COMPLETED (Current Session)
+- ✅ Created useFluidCombat.ts Zustand store with:
+  - Free 3D WASD movement with smooth acceleration
+  - Light attack chain (light1→light2→light3→light4→light5)
+  - Heavy attack finishers (heavy1→heavy2→heavy3)
+  - Launcher → aerial combo → slam system
+  - Attack canceling during recovery windows
+  - Input buffering for smooth combo flow
+  - Special and Ultimate meter management
+  - Dash/dodge with i-frames
+  - Attack range checking (ATTACK_RANGE = 4.0 units)
+  - Enemy position tracking
+- ✅ Created FluidCombatPlayer.tsx component with:
+  - Full keyboard input handling (WASD, JKL, Shift, Ctrl)
+  - Smooth running/walking with Ctrl toggle
+  - Attack phase animations (windup→active→recovery)
+  - Visual effects for dashing, invincibility, combos
+  - GLB model integration
+- ✅ Created FluidBattleArena.tsx with:
+  - KeyboardControls wrapper for full input mapping
+  - Camera that follows player movement
+  - Combo counter and damage number display
+  - Special/Ultimate meter UI
+  - Enemy AI attacks on interval
+  - Victory/defeat screens with animated stats
+  - Real-time enemy position sync to combat store
 
 ## System Architecture
 
-### Backend (FastAPI + MongoDB)
+### Frontend
+- **Frameworks**: React 18 with TypeScript
+- **3D Rendering**: Three.js with React Three Fiber
+- **State Management**: Zustand for game-specific stores
+- **Styling**: Tailwind CSS with a custom design system
+- **Build Tool**: Vite
 
-- **Framework**: FastAPI with Pydantic models, running from `backend/server.py`
-- **Database**: MongoDB via Motor (async driver). Connection configured through `MONGO_URL` and `DB_NAME` environment variables loaded from `backend/.env`
-- **API Pattern**: All endpoints live under `/api` prefix via an APIRouter
-- **Key Endpoints**:
-  - `/api/` — Root status
-  - `/api/tails` — 9-tail system data
-  - `/api/characters` — 5 core characters
-  - `/api/story` — 5 story acts
-  - `/api/gods` — 4 Sabertooth Gods
-  - `/api/regions` — 5 world regions
-  - `/api/bible` — Complete game bible
-  - `/api/story-progress/{player_id}/*` — Story mode progression enforcement (StoryModeManager)
-- **StoryModeManager**: Enforces sequential tail progression tied to story acts (Act 1→3 tails, Act 2→5, Act 3→6, Act 4→8, Act 5→9). Prevents skipping acts, going backwards, or exceeding tail limits.
+### Game Systems
+- **Roster**: 59 unique characters with defined roles
+- **Character Specifications**: Authenticated specs from original source materials with legal-safe modifications
+- **Squad System**: 4-hero teams with tag switching, entrance strikes, revival mechanics
+- **Combat**: Advanced formula with floating damage, combo scaling, particle effects
+- **Rendering**: Role-based body types, 37+ visual features, post-processing effects
 
-### Game Hub Frontend (`frontend/`)
+### Data Layer
+- **characterSpecs.ts**: Authentic specifications with legal safeguards (NEW)
+- **roster.ts**: 59 characters with copyright-safe modifications integrated
+- **missions.ts**: 100 story missions across 9 acts
+- **bosses.ts**: Multi-phase boss encounters
+- **zones.ts**: 5 distinct open-world zones
+- **endgameModes.ts**: 8 diverse endgame modes
+- **teamSystem.ts**: 4-hero squads with synergies
+- **storyMode.ts**: 9-act narrative structure
+- **teamSynergy.ts**: 100+ unique team bonuses
 
-- **Framework**: React 19 with Create React App (via CRACO for config overrides)
-- **Styling**: Tailwind CSS with custom theme matching `design_guidelines.json` (dark mythic theme, neon accents)
-- **UI Components**: shadcn/ui (Radix primitives + Tailwind), configured in `components.json`
-- **Fonts**: Unbounded (headings), Rajdhani (body), Cinzel (lore/accents)
-- **State**: Simple `useState` for section navigation, axios for API calls
-- **Path aliases**: `@/` maps to `src/` via CRACO webpack alias and jsconfig
-- **Custom plugins**: Visual edits system (dev-only babel metadata plugin) and optional health check webpack plugin
+### External Dependencies
+- **Database & Backend**: Drizzle ORM (PostgreSQL)
+- **API**: Express.js with TypeScript
+- **AI Integration**: Google Generative AI (Gemini 2.5 Flash)
+- **3D Graphics**: React Three Fiber ecosystem
+- **UI Components**: Radix UI with Tailwind CSS
 
-### 3D Game Client (`apps/web/`)
+## Legal Framework
+- **Strategy**: Transformative parody with minor modifications
+- **Name Changes**: Single-letter or synonym modifications (Sonic→Velocity, Link→Ren)
+- **Color Changes**: Palette shifts while maintaining recognition
+- **Recognition Points**: Each character retains iconic silhouettes, abilities, and design elements
+- **Source Documentation**: All changes based on authenticated dev manuals and official specifications
 
-- **Framework**: React 18 + TypeScript + Vite
-- **3D Engine**: Three.js via React Three Fiber (`@react-three/fiber`) + Drei helpers (`@react-three/drei`)
-- **State Management**: Zustand stores (`useGame`, `useRunner`, `useBattle`, `useAudio`, `useMissions`, `useBeastPreset`)
-- **Character Rendering**: Layered anatomical beast model system following renderer spec — silhouette first, then fur shell, emissive veins, elemental tails, aura, particles. LOD system strips layers by camera distance.
-- **Game Modes**: Campaign (node-based map), Quick Battle, Story Missions (3 acts), UEE Trials
-- **Fighters**: 3 playable characters (Kai-Jax, Jaxon, Kaison) with locked design specs
-- **Arenas**: Multiple battle arenas with distinct visual themes
-- **Design Data**: `data/characterDesigns.ts` and `data/beastRoster.ts` mirror the canonical JSON specs
-
-### Canonical Data & Validation
-
-- `kai_jax.character.json` — Master character specification (colors, stats, rendering layers, features)
-- `design_guidelines.json` — Visual identity (colors, typography, theme)
-- `schemas/character.schema.json` — JSON Schema for character validation
-- `schemas/story_mode.schema.json` — JSON Schema for story mode configuration
-- Validation scripts: `validate_all.py`, `validate_characters.py`, `test_schema_validation.py`
-- All character properties must be added to the JSON spec first, then consumed everywhere
-
-### Key Design Decisions
-
-1. **PC-First**: Desktop experience is primary; mobile/tablet scale down via responsive design and LOD
-2. **Unified Core**: Same game logic across all platforms; platform-specific code only for input, rendering quality, and performance
-3. **Deterministic Behavior**: Combat calculations and game rules must be platform-agnostic
-4. **Spec-Driven**: No hard-coded character values that diverge from canonical JSON specs
-5. **Layered Rendering**: Characters are "walking VFX stacks" — base mesh, fur shell, emissive veins, elemental tails, aura, particles — each layer can be toggled for performance
-
-## External Dependencies
-
-### Database
-- **MongoDB** — Primary data store, accessed via Motor async driver. Required env vars: `MONGO_URL`, `DB_NAME`
-
-### Frontend Libraries
-- **React Three Fiber / Three.js / Drei** — 3D rendering engine for the game client
-- **Zustand** — Lightweight state management for game state
-- **Radix UI** — Accessible UI primitives (dialog, tabs, accordion, etc.) used via shadcn/ui
-- **Tailwind CSS** — Utility-first styling with custom game theme
-- **Axios** — HTTP client for API communication
-- **Lucide React** — Icon library
-
-### Backend Libraries
-- **FastAPI** — Python web framework
-- **Motor** — Async MongoDB driver
-- **Pydantic** — Data validation and serialization
-- **Google GenAI / OpenAI** — AI integrations present in requirements (likely for character image generation)
-- **Boto3** — AWS SDK (present in requirements)
-
-### Validation
-- **jsonschema** — Python library for validating JSON data against schemas
-
-### Build Tools
-- **Vite** — Build tool for `apps/web/` (3D game client)
-- **CRACO** — Create React App configuration override for `frontend/` (game hub)
-- **Turborepo** — Monorepo tooling (config present in `.config/turborepo/`)
+## Next Steps (Future Work)
+1. Research remaining 47 characters with authentic specifications
+2. Update all remaining characters with legal-safe modifications
+3. Implement sprite rendering system with correct aspect ratios
+4. Test all 59 characters with authentic designs
+5. Create procedural color palette system based on role + source specs
+6. Build character stat generator using canonical heights and proportions

@@ -55,8 +55,6 @@
         },
         "unlock_requirement": {
           "type": "object",
-          "required": ["type", "value"],
-          "additionalProperties": false,
           "properties": {
             "type": {
               "type": "string",

@@ -1,37 +1,30 @@
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useState, useRef, useMemo, useEffect } from "react";
+import { Suspense, useState } from "react";
 import { KeyboardControls } from "@react-three/drei";
 import "@fontsource/inter";
 import "@fontsource/bebas-neue";
 
 import BattleScene from "./components/game/BattleScene";
+import OpenWorldCombat from "./components/game/OpenWorldCombat";
 import MobileControls from "./components/game/MobileControls";
 import BattleUI from "./components/game/BattleUI";
 import DialogueDisplay from "./components/game/DialogueDisplay";
 import MainMenu from "./components/game/MainMenu";
-import VersusCharacterSelect from "./components/game/VersusCharacterSelect";
-import BeastPreview from "./components/game/BeastPreview";
-import CampaignMap from "./components/game/CampaignMap";
+import CharacterSelect from "./components/game/CharacterSelect";
+import UEEMissionSelect from "./components/game/UEEMissionSelect";
 import TransformationOverlay from "./components/game/TransformationOverlay";
 import ScreenEffects from "./components/game/ScreenEffects";
 import { GameIntro } from "./components/game/LoadingScreen";
 import CustomizationMenu from "./components/game/CustomizationMenu";
-import LoreHub from "./components/game/LoreHub";
-import ControllerTestScene from "./components/game/ControllerTestScene";
-import AdventureArena from "./components/game/adventure/AdventureArena";
-import AdventureHUD from "./components/game/adventure/AdventureHUD";
-import StoryAdventure from "./components/game/StoryAdventure";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
 import { useAudio } from "./lib/stores/useAudio";
-import { useMissions } from "./lib/stores/useMissions";
-import { FIGHTERS, getFighterById } from "./lib/characters";
+import { FIGHTERS } from "./lib/characters";
+import { BRAND } from "./lib/brand";
+import { useEffect } from "react";
 import * as THREE from "three";
 import { getQualitySettings } from "./lib/threejs/PerformanceOptimizer";
-
-// Compute quality settings once (device/pixel-ratio never changes mid-session)
-const QUALITY = getQualitySettings();
 
 // Define control keys for the game
 enum Controls {
@@ -70,7 +63,7 @@ const controls = [
 
 function App() {
   const { phase } = useGame();
-  const { gameState, selectedCharacter, activeStoryMissionId } = useRunner();
+  const { gameState, selectedCharacter, setGameState } = useRunner();
   const { setPlayerFighter, setOpponentFighter, screenShake } = useBattle();
   const { 
     setBackgroundMusic, 
@@ -83,23 +76,29 @@ function App() {
   
   // ⚡ LEGENDARY INTRO SYSTEM
   const [showIntro, setShowIntro] = useState(true);
+  
+  // Track selected mission for story mode
+  const [selectedMission, setSelectedMission] = useState<string>("placeholder-mission");
 
-  // Initialize audio on mount (non-fatal if files missing)
+  // Initialize audio on mount
   useEffect(() => {
-    try {
-      const bgMusic = new Audio("/sounds/background.mp3");
-      bgMusic.loop = true;
-      bgMusic.volume = 0.3;
-      setBackgroundMusic(bgMusic);
-      const battleMusic = new Audio("/sounds/background.mp3");
-      battleMusic.loop = true;
-      battleMusic.volume = 0.4;
-      setBattleMusic(battleMusic);
-      setHitSound(new Audio("/sounds/hit.mp3"));
-      setSuccessSound(new Audio("/sounds/success.mp3"));
-    } catch (e) {
-      console.warn("Audio init skipped:", e);
-    }
+    const bgMusic = new Audio('/sounds/background.mp3');
+    bgMusic.loop = true;
+    bgMusic.volume = 0.3;
+    setBackgroundMusic(bgMusic);
+
+    const battleMusic = new Audio('/sounds/background.mp3');
+    battleMusic.loop = true;
+    battleMusic.volume = 0.4;
+    setBattleMusic(battleMusic);
+
+    const hit = new Audio('/sounds/hit.mp3');
+    setHitSound(hit);
+
+    const success = new Audio('/sounds/success.mp3');
+    setSuccessSound(success);
+
+    console.log(`⚡ ${BRAND.title} - Audio initialized`);
   }, [setBackgroundMusic, setBattleMusic, setHitSound, setSuccessSound]);
 
   // Play background music in menu states
@@ -130,188 +129,99 @@ function App() {
     setShowIntro(false);
   };
 
-  // Calculate screen shake transform - stable random offsets per shake intensity change
-  const shakeOffsetRef = useRef({ x: 0, y: 0 });
-  const shakeTransform = useMemo(() => {
-    if (screenShake > 0) {
-      shakeOffsetRef.current = {
-        x: (Math.random() - 0.5) * screenShake * 5,
-        y: (Math.random() - 0.5) * screenShake * 5,
-      };
-      return `translate(${shakeOffsetRef.current.x}px, ${shakeOffsetRef.current.y}px)`;
-    }
-    return 'none';
-  }, [screenShake]);
+  // Calculate screen shake transform
+  const shakeTransform = screenShake > 0 
+    ? `translate(${(Math.random() - 0.5) * screenShake * 5}px, ${(Math.random() - 0.5) * screenShake * 5}px)`
+    : 'none';
 
   return (
     <div 
       style={{ 
         width: '100vw', 
-        height: '100vh', 
+        minHeight: '100vh', 
         position: 'relative', 
-        overflow: gameState === 'lore-hub' ? 'auto' : 'hidden',
+        overflow: 'auto',
         background: 'linear-gradient(to bottom, #0a0a1a, #1a0a2e)',
         transform: shakeTransform,
       }}
     >
-      {/* Lore Hub - Landing Page */}
-      {gameState === "lore-hub" && <LoreHub />}
-
       {/* ⚡ LEGENDARY INTRO SEQUENCE */}
-      {showIntro && gameState !== "lore-hub" && <GameIntro onComplete={handleIntroComplete} />}
+      {showIntro && <GameIntro onComplete={handleIntroComplete} />}
       
       <KeyboardControls map={controls}>
         {/* Main Menu */}
-        {phase === "ready" && gameState === "menu" && !showIntro && <MainMenu />}
-
-        {/* Campaign: RPG adventure — map, waves, bosses, progression to big bad */}
-        {phase === "ready" && gameState === "campaign-map" && <CampaignMap />}
-
-        {/* Versus Mode - full 3D beast model character select */}
-        {phase === 'ready' && gameState === 'versus-select' && (
-          <VersusCharacterSelect />
+        {phase === 'ready' && gameState === 'menu' && !showIntro && <MainMenu />}
+        
+        {/* Story Mode - Show mission selection */}
+        {phase === 'ready' && gameState === 'story-mode-select' && (
+          <div className="w-full min-h-screen">
+            <UEEMissionSelect 
+              onSelectMission={(missionId) => {
+                console.log("Mission selected:", missionId);
+                // Store selected mission and go to character select
+                setSelectedMission(missionId);
+                setGameState('mission-team-select');
+              }}
+              onBack={() => setGameState('menu')}
+              completedMissions={[]}
+            />
+          </div>
         )}
         
-        {/* Beast Preview - inspect the layered rendering system */}
-        {phase === 'ready' && gameState === 'beast-preview' && <BeastPreview />}
+        {/* Mission Team Select - Choose your character for the mission */}
+        {phase === 'ready' && gameState === 'mission-team-select' && (
+          <CharacterSelect />
+        )}
+        
+        {/* Versus Mode - Show character select for arcade-style fighting */}
+        {phase === 'ready' && gameState === 'versus-select' && (
+          <CharacterSelect />
+        )}
+        
+        {/* Character Selection */}
+        {phase === 'ready' && gameState === 'character-select' && <CharacterSelect />}
         
         {/* Customization Menu */}
         {phase === 'ready' && gameState === 'customization' && <CustomizationMenu />}
-
-        {/* Controller Test - movement state foundation */}
-        {gameState === 'controller-test' && <ControllerTestScene />}
         
-        {/* ⚡ ADVENTURE MODE - Open World 3D Arena */}
-        {gameState === 'adventure' && (() => {
-          const charId = selectedCharacter || "kai-jax";
-          const fighter = getFighterById(charId);
-          return (
-            <>
-              <div className="relative w-full h-screen">
-                <Canvas
-                  shadows
-                  camera={{
-                    position: [0, 4, 7],
-                    fov: 50,
-                    near: 0.1,
-                    far: 200,
-                  }}
-                  onCreated={({ gl }) => {
-                    gl.setPixelRatio(QUALITY.pixelRatio);
-                    gl.outputColorSpace = THREE.SRGBColorSpace;
-                    gl.toneMapping = THREE.ACESFilmicToneMapping;
-                    gl.toneMappingExposure = 0.85;
-                    gl.shadowMap.enabled = true;
-                    gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
-                  }}
-                  gl={{
-                    antialias: QUALITY.antialias,
-                    powerPreference: "high-performance",
-                  }}
-                >
-                  <Suspense fallback={null}>
-                    <AdventureArena
-                      characterId={charId}
-                      accentColor={fighter?.accentColor || "#00f2ff"}
-                    />
-                  </Suspense>
-                </Canvas>
-                <AdventureHUD />
-              </div>
-              <MobileControls />
-            </>
-          );
-        })()}
-
-        {/* ⚡ STORY MODE - Adventure with narrative */}
-        {gameState === 'story-mode' && (() => {
-          const charId = selectedCharacter || "kai-jax";
-          const fighter = getFighterById(charId);
-          const storyMissionId = activeStoryMissionId || "act1-1";
-          return (
-            <>
-              <div className="relative w-full h-screen">
-                <Canvas
-                  shadows
-                  camera={{
-                    position: [0, 4, 7],
-                    fov: 50,
-                    near: 0.1,
-                    far: 200,
-                  }}
-                  onCreated={({ gl }) => {
-                    const q = getQualitySettings();
-                    gl.setPixelRatio(q.pixelRatio);
-                    gl.outputColorSpace = THREE.SRGBColorSpace;
-                    gl.toneMapping = THREE.ACESFilmicToneMapping;
-                    gl.toneMappingExposure = 0.85;
-                    gl.shadowMap.enabled = true;
-                    gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
-                  }}
-                  gl={{
-                    antialias: getQualitySettings().antialias,
-                    powerPreference: "high-performance",
-                  }}
-                >
-                  <Suspense fallback={null}>
-                    <AdventureArena
-                      characterId={charId}
-                      accentColor={fighter?.accentColor || "#00f2ff"}
-                    />
-                  </Suspense>
-                </Canvas>
-                <AdventureHUD />
-                <StoryAdventure
-                  missionId={storyMissionId}
-                  characterId={charId}
-                  onComplete={(success) => {
-                    if (success) {
-                      useMissions.getState().startMission("story", storyMissionId);
-                      useMissions.getState().completeMission(true);
-                    }
-                    useRunner.getState().setGameState("campaign-map");
-                  }}
-                  onBack={() => useRunner.getState().setGameState("campaign-map")}
-                />
-              </div>
-              <MobileControls />
-            </>
-          );
-        })()}
-
         {/* ⚡ BATTLE CANVAS - THE MAIN EVENT! */}
-        {(phase === 'playing' || phase === 'ended') && gameState === 'playing' && (
+        {(phase === 'playing' || phase === 'ended') && (
           <>
-            <div className="relative w-full h-screen">
-              <Canvas
-                shadows
-                camera={{
-                  position: [0, 3.5, 7],
-                  fov: 50,
-                  near: 0.1,
-                  far: 1000
-                }}
-                onCreated={({ gl }) => {
-                  gl.setPixelRatio(QUALITY.pixelRatio);
-                  gl.outputColorSpace = THREE.SRGBColorSpace;
-                  gl.toneMapping = THREE.ACESFilmicToneMapping;
-                  gl.toneMappingExposure = 0.98;
-                  gl.shadowMap.enabled = true;
-                  gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
-                }}
-                gl={{
-                  antialias: QUALITY.antialias,
-                  powerPreference: "high-performance"
-                }}
-              >
-                <Suspense fallback={null}>
+            <Canvas
+              shadows
+              camera={{
+                position: [0, 5, 10],
+                fov: 60,
+                near: 0.1,
+                far: 1000
+              }}
+              onCreated={({ gl }) => {
+                const q = getQualitySettings();
+                gl.setPixelRatio(q.pixelRatio);
+                gl.outputColorSpace = THREE.SRGBColorSpace;
+                gl.toneMapping = THREE.ACESFilmicToneMapping;
+                gl.toneMappingExposure = 1.15;
+                gl.shadowMap.enabled = true;
+                gl.shadowMap.type = q.shadowMap.type;
+              }}
+              gl={{
+                antialias: getQualitySettings().antialias,
+                powerPreference: "high-performance"
+              }}
+            >
+              <color attach="background" args={["#1a1a2e"]} />
+              
+              <Suspense fallback={null}>
+                {/* Render different combat modes based on game state */}
+                {gameState === 'mission-gameplay' ? (
+                  // RPG Open-World Combat for Story/Mission Mode
+                  <OpenWorldCombat missionId={selectedMission} />
+                ) : (
+                  // Arcade-Style 1v1 for Versus/Quick Battle
                   <BattleScene />
-                </Suspense>
-              </Canvas>
-              <div className="absolute bottom-4 left-0 right-0 text-center text-slate-400 text-sm pointer-events-none hidden md:block">
-                ← → move · Space jump · J punch · K kick · L special · T transform
-              </div>
-            </div>
+                )}
+              </Suspense>
+            </Canvas>
             
             {/* ⚡ LEGENDARY UI OVERLAYS */}
             <BattleUI />

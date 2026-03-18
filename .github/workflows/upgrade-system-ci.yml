@@ -1,0 +1,42 @@
+name: Upgrade System CI
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+    paths:
+      - 'packages/shared/src/types/upgrade.types.ts'
+      - 'packages/shared/src/data/**/*.ts'
+      - 'packages/shared/src/utils/*Upgrade*.ts'
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm run type-check
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm test
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm run build

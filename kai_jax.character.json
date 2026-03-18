@@ -1,262 +1,215 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Kai-Jax Character Specification",
-  "description": "Canonical character specification for Legends of Kai-Jax: The Memory King. All implementations must validate against this spec. PC-first, unified core, deterministic behavior.",
+  "character_id": "kai_jax",
+  "display_name": "Kai-Jax",
+  "title": "The Memory Hero",
   "version": "1.0.0",
-  "lastUpdated": "2026-02-08",
-  "metadata": {
-    "projectName": "Legends of Kai-Jax: The Memory King",
-    "canonStatus": "LOCKED",
-    "constraints": {
-      "unifiedCore": true,
-      "pcFirst": true,
-      "noLogicDivergence": true,
-      "mustValidate": true
+  "authoritative_reference": {
+    "type": "image",
+    "rule": "single_source_of_truth",
+    "notes": "Match silhouette, proportions, materials, and tail count exactly. No reinterpretation."
+  },
+
+  "anatomy": {
+    "species_composite": ["wolf", "fox", "hedgehog", "spider"],
+    "body_type": "humanoid_beast",
+    "height_multiplier": 1.15,
+    "build": "athletic_sinewy_predator",
+    "legs": "digitigrade",
+    "hands": "clawed_tool_capable",
+    "head": "wolf_fox_hybrid_muzzle",
+    "spine": "reinforced_with_ridge",
+    "tail_count": 9
+  },
+
+  "evolution": {
+    "starting_tail_count": 3,
+    "final_tail_count": 9,
+    "unlock_rule": "sequential_only",
+    "skip_unlocks_disallowed": true,
+    "tails_are_permanent": true
+  },
+
+  "silhouette_rules": {
+    "readable_in_shadow": true,
+    "no_mascot_proportions": true,
+    "no_cape_substitution": true,
+    "tails_must_arc": "crescent",
+    "anti_derivative_enforced": true
+  },
+
+  "modeling": {
+    "units": "meters",
+    "scale": 1.0,
+    "topology": "clean_quads",
+    "lod_targets": {
+      "lod0": { "triangles": [80000, 120000] },
+      "lod1": { "triangles": [50000, 70000] },
+      "lod2": { "triangles": [25000, 35000] }
+    },
+    "edge_loops_required": [
+      "jaw",
+      "eyes",
+      "shoulders",
+      "hips",
+      "tail_bases"
+    ]
+  },
+
+  "materials": {
+    "fur": {
+      "type": "card_or_shell",
+      "pbr": true,
+      "maps": ["albedo", "normal", "roughness"],
+      "notes": "No painted fur. Density varies by region."
+    },
+    "skin": {
+      "pbr": true,
+      "subsurface_scattering": true
+    },
+    "armor": {
+      "material": "worn_foundry_steel",
+      "roughness_range": [0.4, 0.6],
+      "edge_wear": true,
+      "clean_surfaces_disallowed": true
+    },
+    "spikes": {
+      "material": "bone_tech_hybrid",
+      "emissive": "subtle_event_only"
+    },
+    "weave_energy": {
+      "emissive": true,
+      "always_on": false,
+      "mobile_disabled": true
     }
   },
-  "characters": [
-    {
-      "id": "kai-jax",
-      "name": "KAIJAX",
-      "displayName": "KAI-JAX",
-      "title": "Memory Hybrid",
-      "species": "Sabertooth Hybrid",
-      "description": "The Memory King. Fusion of Kai and Jax, bearer of 9 tails.",
-      "appearance": {
-        "primaryColor": "#1a1a1a",
-        "accentColor": "#00ff00",
-        "secondaryColor": "#cc5500",
-        "webbingColor": "#00ff00",
-        "eyeColors": ["#00ff00", "#00f2ff", "#ffb000"],
-        "features": [
-          "no_clothes",
-          "charcoal_fur",
-          "lime_webbing",
-          "tri_color_eyes",
-          "tribal_scars",
-          "tail_streaks"
-        ]
+
+  "rigging": {
+    "skeleton_type": "humanoid_extended",
+    "single_skeleton_only": true,
+    "extra_bones": {
+      "tails": {
+        "count": 9,
+        "bones_per_tail": [5, 7],
+        "physics_enabled": true,
+        "constraints": {
+          "swing_limit": true,
+          "twist_limit": true,
+          "noodle_physics": false
+        }
       },
-      "combat": {
-        "baseStats": {
-          "power": 88,
-          "speed": 85,
-          "defense": 82,
-          "gravity": 9.8
-        },
-        "tailCount": 9,
-        "abilities": [
-          "memory_fusion",
-          "elemental_mastery",
-          "tail_resonance"
-        ]
-      },
-      "rendering": {
-        "lodLevels": {
-          "close": {
-            "distance": 12,
-            "layers": ["base", "fur_shell", "vein_emissive", "aura", "particles"]
-          },
-          "mid": {
-            "distance": 28,
-            "layers": ["base", "fur_shell", "vein_emissive"]
-          },
-          "far": {
-            "distance": 50,
-            "layers": ["base", "vein_emissive", "tail"]
-          },
-          "veryFar": {
-            "distance": 999,
-            "layers": ["base", "vein_emissive"]
-          }
-        },
-        "materials": {
-          "furShell": {
-            "technique": "shell_offset",
-            "rimGlow": true,
-            "vertexNoise": 0.02
-          },
-          "veinEmissive": {
-            "maskBased": true,
-            "pulsing": true,
-            "blendMode": "additive"
-          },
-          "clawSpec": {
-            "roughness": 0.2,
-            "metalness": 0.6,
-            "emissive": 0.1
-          }
-        },
-        "silhouetteFirst": true
-      },
-      "portraitPath": "",
-      "canonicalSources": [
-        "specs/primary/character_art_spec.json",
-        "specs/primary/character_renderer_spec.md",
-        "design_guidelines.json"
-      ]
+      "spine_deformation": true,
+      "jaw": true,
+      "ears": true
     },
-    {
-      "id": "jaxon",
-      "name": "JAXON",
-      "displayName": "JAXON",
-      "title": "Prime Striker",
-      "species": "Sabertooth",
-      "description": "The electric blade. Fast, precise, tactical.",
-      "appearance": {
-        "primaryColor": "#0b1020",
-        "accentColor": "#4fd2ff",
-        "secondaryColor": "#4fd2ff",
-        "webbingColor": "",
-        "eyeColors": ["#ffb000"],
-        "features": ["tactical_jacket"]
-      },
-      "combat": {
-        "baseStats": {
-          "power": 82,
-          "speed": 88,
-          "defense": 78,
-          "gravity": 9.8
-        },
-        "tailCount": 1,
-        "abilities": ["lightning_strike", "tactical_precision"]
-      },
-      "rendering": {
-        "lodLevels": {
-          "close": {
-            "distance": 12,
-            "layers": ["base", "fur_shell", "vein_emissive", "aura", "particles"]
-          },
-          "mid": {
-            "distance": 28,
-            "layers": ["base", "fur_shell", "vein_emissive"]
-          },
-          "far": {
-            "distance": 50,
-            "layers": ["base", "vein_emissive", "tail"]
-          },
-          "veryFar": {
-            "distance": 999,
-            "layers": ["base", "vein_emissive"]
-          }
-        },
-        "materials": {
-          "furShell": {
-            "technique": "shell_offset",
-            "rimGlow": true,
-            "vertexNoise": 0.02
-          },
-          "veinEmissive": {
-            "maskBased": true,
-            "pulsing": true,
-            "blendMode": "additive"
-          },
-          "clawSpec": {
-            "roughness": 0.2,
-            "metalness": 0.6,
-            "emissive": 0.1
-          }
-        },
-        "silhouetteFirst": true
-      },
-      "portraitPath": "",
-      "canonicalSources": [
-        "specs/primary/character_art_spec.json"
-      ]
-    },
-    {
-      "id": "kaison",
-      "name": "KAISON",
-      "displayName": "KAISON",
-      "title": "Prime Guardian",
-      "species": "Sabertooth",
-      "description": "The shield father. Defensive, strategic, protective.",
-      "appearance": {
-        "primaryColor": "#1a0a0a",
-        "accentColor": "#ffb000",
-        "secondaryColor": "#ffb000",
-        "webbingColor": "",
-        "eyeColors": ["#00f2ff"],
-        "features": ["tactical_jacket"]
-      },
-      "combat": {
-        "baseStats": {
-          "power": 85,
-          "speed": 82,
-          "defense": 85,
-          "gravity": 9.8
-        },
-        "tailCount": 1,
-        "abilities": ["shield_wall", "protective_aura"]
-      },
-      "rendering": {
-        "lodLevels": {
-          "close": {
-            "distance": 12,
-            "layers": ["base", "fur_shell", "vein_emissive", "aura", "particles"]
-          },
-          "mid": {
-            "distance": 28,
-            "layers": ["base", "fur_shell", "vein_emissive"]
-          },
-          "far": {
-            "distance": 50,
-            "layers": ["base", "vein_emissive", "tail"]
-          },
-          "veryFar": {
-            "distance": 999,
-            "layers": ["base", "vein_emissive"]
-          }
-        },
-        "materials": {
-          "furShell": {
-            "technique": "shell_offset",
-            "rimGlow": true,
-            "vertexNoise": 0.02
-          },
-          "veinEmissive": {
-            "maskBased": true,
-            "pulsing": true,
-            "blendMode": "additive"
-          },
-          "clawSpec": {
-            "roughness": 0.2,
-            "metalness": 0.6,
-            "emissive": 0.1
-          }
-        },
-        "silhouetteFirst": true
-      },
-      "portraitPath": "",
-      "canonicalSources": [
-        "specs/primary/character_art_spec.json"
-      ]
+    "facial_system": {
+      "type": "blendshapes",
+      "required": ["snarl", "focus", "pain", "rage"],
+      "anime_exaggeration": false
     }
-  ],
-  "designPrinciples": {
-    "silhouetteFirst": "If the silhouette reads, you win. If it breaks when scaled down, you lose.",
-    "layeredRendering": "Characters are stacked render layers, not textures on geometry",
-    "lodStrategy": "Reduce layers, not polycount. Identity must survive all distances.",
-    "pcFirst": "Design for PC, scale to tablet, then mobile. Never compromise core experience.",
-    "deterministicBehavior": "Same input always produces same output. No randomness in core systems.",
-    "noPlaceholderLogic": "All features must be fully implemented or clearly marked as future."
   },
-  "validation": {
-    "requiredFields": [
-      "id",
-      "name",
-      "displayName",
-      "appearance.primaryColor",
-      "appearance.accentColor",
-      "combat.baseStats",
-      "rendering.lodLevels"
+
+  "animation": {
+    "philosophy": "mass_and_inertia",
+    "no_floaty_motion": true,
+    "root_motion_only_for": [
+      "finishers",
+      "heavy_knockdowns"
     ],
-    "colorFormat": "Must be valid hex color (#RRGGBB or #RGB)",
-    "statRanges": {
-      "power": [0, 100],
-      "speed": [0, 100],
-      "defense": [0, 100],
-      "gravity": [0, 20]
+    "required_sets": [
+      "idle_calm",
+      "idle_combat",
+      "walk",
+      "run",
+      "sprint",
+      "light_combo",
+      "heavy_combo",
+      "special_attacks",
+      "dodge_ground",
+      "dodge_air",
+      "parry",
+      "counter",
+      "finisher",
+      "hit_reactions",
+      "death"
+    ],
+    "frame_rules": {
+      "min_frames_per_action": 12,
+      "cancel_rules": "hit_confirm_or_perfect_parry_only"
     }
+  },
+
+  "combat_identity": {
+    "role": "stance_shifting_battlefield_controller",
+    "scales_from": "1v1",
+    "scales_to": "1v20_plus",
+    "strengths": [
+      "crowd_control",
+      "posture_break",
+      "zone_dominance"
+    ],
+    "weaknesses": [
+      "overextension",
+      "corruption_overuse"
+    ]
+  },
+
+  "memory_weave": {
+    "enabled": true,
+    "applies_to_all_tails": true,
+    "stacks_progressively": true,
+    "affects": [
+      "player_perception",
+      "combat_decision_making",
+      "enemy_behavior",
+      "world_reaction"
+    ],
+    "cannot_be_removed": true
+  },
+
+  "tail_roles": [
+    { "index": 1, "name": "bond", "function": "parry_counter_revive" },
+    { "index": 2, "name": "hunter", "function": "dash_pursuit_execute" },
+    { "index": 3, "name": "thread", "function": "web_pull_group" },
+    { "index": 4, "name": "quill", "function": "retaliation_posture_damage" },
+    { "index": 5, "name": "shade", "function": "stealth_threat_reset" },
+    { "index": 6, "name": "anchor", "function": "anti_knockback_root" },
+    { "index": 7, "name": "echo", "function": "after_image_repeat" },
+    { "index": 8, "name": "rift", "function": "reality_tear_aoe" },
+    { "index": 9, "name": "crown", "function": "aura_command" }
+  ],
+
+  "engine_integration": {
+    "renderer": "pbr",
+    "gpu_skinning": true,
+    "physics_bones": true,
+    "lod_system": true,
+    "event_driven_vfx": true,
+    "lighting": {
+      "no_baked_character_lighting": true,
+      "validation_lighting": "neutral_studio"
+    }
+  },
+
+  "mobile_profile": {
+    "allowed_cuts": [
+      "fur_shell_layers",
+      "secondary_emissive",
+      "minor_decals"
+    ],
+    "never_cut": [
+      "silhouette",
+      "tail_count",
+      "animation_timing",
+      "posture_system",
+      "hit_stop"
+    ]
+  },
+
+  "acceptance_criteria": {
+    "silhouette_match": true,
+    "tail_independence_visible": true,
+    "armor_reads_worn": true,
+    "idle_feels_dangerous": true,
+    "combat_weight_preserved": true
   }
 }
