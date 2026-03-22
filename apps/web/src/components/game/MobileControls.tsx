@@ -1,13 +1,11 @@
 import { useRef, useEffect, useCallback } from "react";
 import { useTouchInput } from "../../lib/stores/useTouchInput";
-import { useSettings, JOYSTICK_SIZES } from "../../lib/stores/useSettings";
 
+const JOYSTICK_SIZE = 150;
 const JOYSTICK_KNOB = 60;
 const DEAD_ZONE = 0.12;
 
 export default function MobileControls() {
-  const joystickSize = useSettings((s) => s.joystickSize);
-  const joystickPx = JOYSTICK_SIZES[joystickSize];
   const isTouchDevice = useTouchInput((s) => s.isTouchDevice);
   const setJoystick = useTouchInput((s) => s.setJoystick);
   const releaseJoystick = useTouchInput((s) => s.releaseJoystick);
@@ -56,7 +54,7 @@ export default function MobileControls() {
 
       const dx = touch.clientX - originRef.current.x;
       const dy = touch.clientY - originRef.current.y;
-      const maxR = joystickPx / 2 - JOYSTICK_KNOB / 2;
+      const maxR = JOYSTICK_SIZE / 2 - JOYSTICK_KNOB / 2;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const clamped = Math.min(dist, maxR);
       const angle = Math.atan2(dy, dx);
@@ -73,7 +71,7 @@ export default function MobileControls() {
       if (Math.abs(ny) < DEAD_ZONE) ny = 0;
       setJoystick(nx, ny, true);
     },
-    [setJoystick, joystickPx]
+    [setJoystick]
   );
 
   const handleJoystickEnd = useCallback(
@@ -112,8 +110,8 @@ export default function MobileControls() {
         style={{
           left: 24,
           bottom: 40,
-          width: joystickPx,
-          height: joystickPx,
+          width: JOYSTICK_SIZE,
+          height: JOYSTICK_SIZE,
           borderRadius: "50%",
           background: "radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%)",
           border: "2px solid rgba(255,255,255,0.15)",
@@ -143,39 +141,29 @@ export default function MobileControls() {
         />
       </div>
 
-      {/* Action Buttons — Right Side (5-button layout for battle) */}
+      {/* Action Buttons — Right Side (4-button layout) */}
       <div
         className="pointer-events-auto absolute"
         style={{ right: 20, bottom: 32, touchAction: "none" }}
       >
-        {/* Top row: Skill + Ultimate */}
-        <div className="flex gap-3 justify-center mb-3">
+        {/* Top row: Skill (cooldown) */}
+        <div className="flex justify-center mb-3">
           <button
-            className="rounded-full flex items-center justify-center select-none active:scale-90 transition-transform border-2 w-14 h-14 min-w-[44px] min-h-[44px] border-purple-400/50"
+            className="rounded-full flex items-center justify-center select-none active:scale-90 transition-transform border-2 w-16 h-16 border-yellow-400/50"
             style={{
-              background: "radial-gradient(circle, rgba(168,85,247,0.4) 0%, rgba(168,85,247,0.1) 100%)",
-              boxShadow: "0 0 12px rgba(168,85,247,0.25)",
+              background: "radial-gradient(circle, rgba(234,179,8,0.35) 0%, rgba(234,179,8,0.1) 100%)",
+              boxShadow: "0 0 12px rgba(234,179,8,0.2)",
             }}
             onTouchStart={attackBtn("skill")}
           >
-            <span className="text-purple-200 text-[10px] font-black">SKILL</span>
-          </button>
-          <button
-            className="rounded-full flex items-center justify-center select-none active:scale-90 transition-transform border-2 w-14 h-14 min-w-[44px] min-h-[44px] border-amber-400/60"
-            style={{
-              background: "radial-gradient(circle, rgba(245,158,11,0.45) 0%, rgba(245,158,11,0.15) 100%)",
-              boxShadow: "0 0 14px rgba(245,158,11,0.3)",
-            }}
-            onTouchStart={attackBtn("ultimate")}
-          >
-            <span className="text-amber-100 text-[10px] font-black">ULT</span>
+            <span className="text-yellow-300 text-xs font-black tracking-wider">SKILL</span>
           </button>
         </div>
 
         {/* Middle row: Heavy + Dodge */}
         <div className="flex gap-4 mb-3">
           <button
-            className="rounded-full flex items-center justify-center select-none active:scale-90 transition-transform border-2 w-[70px] h-[70px] min-w-[44px] min-h-[44px] border-orange-400/50"
+            className="rounded-full flex items-center justify-center select-none active:scale-90 transition-transform border-2 w-[70px] h-[70px] border-orange-400/50"
             style={{
               background: "radial-gradient(circle, rgba(249,115,22,0.4) 0%, rgba(249,115,22,0.1) 100%)",
               boxShadow: "0 0 14px rgba(249,115,22,0.25)",
@@ -185,7 +173,7 @@ export default function MobileControls() {
             <span className="text-orange-200 text-sm font-black">HEAVY</span>
           </button>
           <button
-            className="rounded-full flex items-center justify-center select-none active:scale-90 transition-transform border-2 w-[70px] h-[70px] min-w-[44px] min-h-[44px] border-green-400/50"
+            className="rounded-full flex items-center justify-center select-none active:scale-90 transition-transform border-2 w-[70px] h-[70px] border-green-400/50"
             style={{
               background: "radial-gradient(circle, rgba(34,197,94,0.35) 0%, rgba(34,197,94,0.1) 100%)",
               boxShadow: "0 0 14px rgba(34,197,94,0.2)",
@@ -199,7 +187,7 @@ export default function MobileControls() {
         {/* Bottom row: Attack (primary, biggest button) */}
         <div className="flex justify-center">
           <button
-            className="rounded-full flex items-center justify-center select-none active:scale-90 transition-transform border-2 w-[88px] h-[88px] min-w-[44px] min-h-[44px] border-cyan-400/60"
+            className="rounded-full flex items-center justify-center select-none active:scale-90 transition-transform border-2 w-[88px] h-[88px] border-cyan-400/60"
             style={{
               background: "radial-gradient(circle, rgba(0,242,255,0.4) 0%, rgba(0,242,255,0.1) 100%)",
               boxShadow: "0 0 20px rgba(0,242,255,0.3)",

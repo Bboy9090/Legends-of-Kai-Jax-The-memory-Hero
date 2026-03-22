@@ -26,8 +26,6 @@ export interface StoryMission {
   storyBeat: string;
   arena: string;
   arenaId?: string;
-  /** Locked character for this mission. Kai/Jax early, Boryn mid, Kai-Jax late. */
-  requiredCharacter?: string;
   requiredCharacters?: string[];
   objectives: string[];
   rewards: StoryMissionRewards;
@@ -41,7 +39,6 @@ const STORY_MISSIONS: StoryMission[] = [
   {
     id: "act1-1",
     missionNumber: 1,
-    requiredCharacter: "kai",
     name: "Awakening",
     title: "The Awakening",
     description: "Kai-Jax awakens in the Mushroom Plains with fragmented memories. Defeat the shadow beasts to prove you still have the fight in you.",
@@ -69,7 +66,6 @@ const STORY_MISSIONS: StoryMission[] = [
   {
     id: "act1-2",
     missionNumber: 2,
-    requiredCharacter: "jax",
     name: "The Rival Appears",
     title: "Old Rivals",
     description: "A familiar face blocks your path. Jaxon has been waiting — and he's not letting you pass without a fight.",
@@ -99,7 +95,6 @@ const STORY_MISSIONS: StoryMission[] = [
   {
     id: "act1-3",
     missionNumber: 3,
-    requiredCharacter: "kai",
     name: "Ambush at the Frontier",
     title: "Hold the Line",
     description: "Enemy forces ambush you at the Emerald Frontier. Survive wave after wave and prove your endurance.",
@@ -128,7 +123,6 @@ const STORY_MISSIONS: StoryMission[] = [
   {
     id: "act1-4",
     missionNumber: 4,
-    requiredCharacter: "jax",
     name: "Temple of the First God",
     title: "The First God",
     description: "You reach the ancient temple. But the God's guardian — Voltage Fang — demands you prove your worth through combat.",
@@ -160,7 +154,6 @@ const STORY_MISSIONS: StoryMission[] = [
   {
     id: "act1-5",
     missionNumber: 5,
-    requiredCharacter: "kai",
     name: "The Memory Fragments",
     title: "Shattered Past",
     description: "With the First God's blessing, fragments of memory begin to return — but so do memory-corrupted versions of old foes.",
@@ -189,7 +182,6 @@ const STORY_MISSIONS: StoryMission[] = [
   {
     id: "act1-6",
     missionNumber: 6,
-    requiredCharacter: "jax",
     name: "Kai's Warning",
     title: "The Other Half",
     description: "Kai appears with a dire warning: the Memory Thief is building an army. You must combine forces.",
@@ -220,7 +212,6 @@ const STORY_MISSIONS: StoryMission[] = [
   {
     id: "act1-7",
     missionNumber: 7,
-    requiredCharacter: "boryn",
     name: "The Stone Guardians",
     title: "Ancient Defenders",
     description: "Ancient stone statue fighters guard the path to the second temple. They answer to no one — only strength.",
@@ -249,7 +240,6 @@ const STORY_MISSIONS: StoryMission[] = [
   {
     id: "act1-8",
     missionNumber: 8,
-    requiredCharacter: "kai-jax",
     name: "Steelwolf Interceptor",
     title: "The Iron Blockade",
     description: "Steelwolf has been hired by the Memory Thief to stop you. His mechanical exosuit makes him a terrifying foe.",
@@ -281,7 +271,6 @@ const STORY_MISSIONS: StoryMission[] = [
   {
     id: "act1-9",
     missionNumber: 9,
-    requiredCharacter: "kai-jax",
     name: "Gates of Memory",
     title: "The Final Gate",
     description: "The Memory Throne lies ahead. Fight through the Thief's last defenses to reach the truth.",
@@ -311,7 +300,6 @@ const STORY_MISSIONS: StoryMission[] = [
   {
     id: "act1-10",
     missionNumber: 10,
-    requiredCharacter: "kai-jax",
     name: "The Memory Throne",
     title: "Act I Finale — The Memory Throne",
     description: "Face the Ashen Tiger, the first agent of the Memory Thief, at the Throne. Reclaim your stolen legacy.",
@@ -342,178 +330,6 @@ const STORY_MISSIONS: StoryMission[] = [
     ],
     bossId: "ashen-tiger",
   },
-
-  // ===== ACT 2 (placeholder missions) =====
-  {
-    id: "act2-1",
-    missionNumber: 11,
-    requiredCharacter: "kai-jax",
-    name: "Raging City Gates",
-    title: "Raging City Gates",
-    description: "Storm the city gates as chaos erupts. Fight through waves of corrupted forces.",
-    act: 2,
-    difficulty: 2,
-    gameplayType: "adventure",
-    storyBeat: "The city burns. Kai-Jax must breach the gates before the Memory Thief consolidates power.",
-    arena: "space-station",
-    arenaId: "space-station",
-    objectives: ["Defeat all enemies at the gates", "Survive the assault"],
-    rewards: { xp: 220, currency: 110, loot: [] },
-    introCutscene: [
-      { speaker: "Kai-Jax", text: "The gates are overrun. Whatever's inside... we end this." },
-      { speaker: "???", text: "Come then, Memory King. Your reckoning awaits." },
-    ],
-    outroCutscene: [
-      { speaker: "Kai-Jax", text: "The gates are down. The city lies ahead. So does Steelwolf." },
-    ],
-    enemyWaves: [
-      { enemies: [{ fighterId: "sparky", label: "Gate Guard" }, { fighterId: "blaze", label: "Gate Guard" }] },
-      { enemies: [{ fighterId: "velocity", label: "Enforcer" }, { fighterId: "sentinel", label: "Enforcer" }], spawnDelay: 2 },
-    ],
-  },
-  {
-    id: "act2-2",
-    missionNumber: 12,
-    requiredCharacter: "kai-jax",
-    name: "Mid-Boss: Steelwolf",
-    title: "Mid-Boss: Steelwolf",
-    description: "Face Steelwolf at the district crossing. His exosuit has been upgraded.",
-    act: 2,
-    difficulty: 3,
-    gameplayType: "adventure",
-    storyBeat: "Steelwolf blocks the path to the undercity. A rematch—with new stakes.",
-    arena: "space-station",
-    arenaId: "space-station",
-    objectives: ["Defeat Steelwolf"],
-    rewards: { xp: 280, currency: 140, loot: [] },
-    introCutscene: [
-      { speaker: "Steelwolf", text: "You again. This time, I've adapted. Every move you showed me—countered." },
-      { speaker: "Kai-Jax", text: "Then I'll show you moves you've never seen." },
-    ],
-    outroCutscene: [
-      { speaker: "Kai-Jax", text: "He's down. But the Thief's reach goes deeper. The undercity awaits." },
-    ],
-    enemyWaves: [
-      { enemies: [{ fighterId: "sentinel", label: "Drone" }, { fighterId: "apex", label: "Drone" }] },
-      { enemies: [{ fighterId: "steelwolf", label: "Steelwolf" }], spawnDelay: 2 },
-    ],
-    bossId: "steelwolf",
-  },
-  {
-    id: "act2-3",
-    missionNumber: 13,
-    requiredCharacter: "kai-jax",
-    name: "District Breach",
-    title: "District Breach",
-    description: "Break through the Memory Thief's district defenses. Waves of corrupted fighters stand in your way.",
-    act: 2,
-    difficulty: 2,
-    gameplayType: "adventure",
-    storyBeat: "The district falls. One last push before the undercity descent.",
-    arena: "jungle-ruins",
-    arenaId: "jungle-ruins",
-    objectives: ["Defeat all waves", "Clear the district"],
-    rewards: { xp: 240, currency: 120, loot: [] },
-    introCutscene: [
-      { speaker: "Kai-Jax", text: "They're falling back. But the Thief won't give up the undercity easily." },
-      { speaker: "???", text: "Descend, then. Malakor waits below." },
-    ],
-    outroCutscene: [
-      { speaker: "Kai-Jax", text: "The undercity entrance. Down there—the final battle." },
-    ],
-    enemyWaves: [
-      { enemies: [{ fighterId: "lunara", label: "Tracker" }, { fighterId: "solaro", label: "Tracker" }] },
-      { enemies: [{ fighterId: "kaison", label: "Corrupted" }, { fighterId: "kaxon", label: "Corrupted" }], spawnDelay: 3 },
-      { enemies: [{ fighterId: "blazing-fox", label: "Elite" }], spawnDelay: 2 },
-    ],
-  },
-
-  // ===== ACT 3 (placeholder missions) =====
-  {
-    id: "act3-1",
-    missionNumber: 14,
-    requiredCharacter: "kai-jax",
-    name: "Undercity Entrance",
-    title: "Undercity Entrance",
-    description: "Enter the undercity. Shadows and echoes lurk in every corridor.",
-    act: 3,
-    difficulty: 2,
-    gameplayType: "adventure",
-    storyBeat: "Below the streets, the Memory Thief's stronghold begins. Kai-Jax descends.",
-    arena: "jungle-ruins",
-    arenaId: "jungle-ruins",
-    objectives: ["Fight through the entrance", "Reach the depths"],
-    rewards: { xp: 260, currency: 130, loot: [] },
-    introCutscene: [
-      { speaker: "Kai-Jax", text: "So this is where it ends. Where my memories were stolen." },
-      { speaker: "???", text: "Welcome home, Memory King. Too bad you won't remember any of it." },
-    ],
-    outroCutscene: [
-      { speaker: "Kai-Jax", text: "The entrance is clear. Deeper. I need to go deeper." },
-    ],
-    enemyWaves: [
-      { enemies: [{ fighterId: "sparky", label: "Shadow" }, { fighterId: "blaze", label: "Shadow" }, { fighterId: "velocity", label: "Shadow" }] },
-      { enemies: [{ fighterId: "ashen-tiger", label: "Memory Agent" }], spawnDelay: 3 },
-    ],
-  },
-  {
-    id: "act3-2",
-    missionNumber: 15,
-    requiredCharacter: "kai-jax",
-    name: "The Depths",
-    title: "The Depths",
-    description: "Descend into the depths where the Memory Thief harvests stolen memories.",
-    act: 3,
-    difficulty: 3,
-    gameplayType: "adventure",
-    storyBeat: "The heart of the undercity. Malakor's lair is near.",
-    arena: "lava-fortress",
-    arenaId: "lava-fortress",
-    objectives: ["Survive the depths", "Reach Malakor's chamber"],
-    rewards: { xp: 300, currency: 150, loot: [] },
-    introCutscene: [
-      { speaker: "Kai-Jax", text: "These echoes... they're fragments of people I knew. The Thief did this." },
-      { speaker: "???", text: "And soon, you'll be just another echo. Malakor will see to that." },
-    ],
-    outroCutscene: [
-      { speaker: "Kai-Jax", text: "There. The final chamber. Malakor." },
-    ],
-    enemyWaves: [
-      { enemies: [{ fighterId: "kaison", label: "Echo" }, { fighterId: "kaxon", label: "Echo" }] },
-      { enemies: [{ fighterId: "steelwolf", label: "Phantom Steelwolf" }], spawnDelay: 2 },
-      { enemies: [{ fighterId: "granite-colossus", label: "Guardian" }, { fighterId: "sandstone-sentinel", label: "Guardian" }], spawnDelay: 3 },
-    ],
-  },
-  {
-    id: "act3-3",
-    missionNumber: 16,
-    requiredCharacter: "kai-jax",
-    name: "Final Boss: Malakor",
-    title: "Final Boss: Malakor",
-    description: "Face Malakor, the Memory Thief's champion. Reclaim what was stolen—or lose everything.",
-    act: 3,
-    difficulty: 3,
-    gameplayType: "adventure",
-    storyBeat: "The final confrontation. Malakor holds the stolen memories. Kai-Jax will take them back.",
-    arena: "rainbow-castle",
-    arenaId: "rainbow-castle",
-    objectives: ["Defeat Malakor", "Reclaim the memories"],
-    rewards: { xp: 400, currency: 200, loot: [] },
-    introCutscene: [
-      { speaker: "Malakor", text: "So the Memory King arrives. I've tasted your power. It's delicious." },
-      { speaker: "Kai-Jax", text: "Those memories aren't yours. Give them back." },
-      { speaker: "Malakor", text: "Come and take them. If you can." },
-    ],
-    outroCutscene: [
-      { speaker: "Kai-Jax", text: "It's over. The memories... they're returning." },
-      { speaker: "Kai-Jax", text: "The Memory Thief is defeated. But the scars remain. The fight goes on." },
-    ],
-    enemyWaves: [
-      { enemies: [{ fighterId: "kaxon", label: "Shade" }, { fighterId: "kaison", label: "Shade" }] },
-      { enemies: [{ fighterId: "malakor", label: "Malakor — Memory Thief Champion" }], spawnDelay: 3 },
-    ],
-    bossId: "malakor",
-  },
 ];
 
 export function getStoryMissionById(id: string): StoryMission | null {
@@ -522,28 +338,4 @@ export function getStoryMissionById(id: string): StoryMission | null {
 
 export function getStoryMissionsByAct(act: number): StoryMission[] {
   return STORY_MISSIONS.filter((m) => m.act === act);
-}
-
-/** Short lore blurbs shown in mission briefing before "Play". Bronx/post-apocalyptic tone. */
-export const LORE_BRIEFINGS: Record<string, string> = {
-  "act1-1": "The Bronx streets are quiet. Too quiet.",
-  "act1-2": "Old rivals. Old grudges. Same block.",
-  "act1-3": "They've been watching. Now they strike.",
-  "act1-4": "Sacred ground. Prove your worth.",
-  "act1-5": "Memory fragments. Twisted faces.",
-  "act1-6": "Two halves. One threat. No time.",
-  "act1-7": "Boryn answers the call. Father's Sacrifice awaits.",
-  "act1-8": "Steelwolf blocks the path. Iron meets fury.",
-  "act1-9": "One gauntlet. One throne. Everything.",
-  "act1-10": "The Memory Throne. Reclaim what was stolen.",
-  "act2-1": "Raging City burns. Breach the gates.",
-  "act2-2": "Steelwolf returns. Upgraded. Hungry.",
-  "act2-3": "District by district. One push to the depths.",
-  "act3-1": "Below the streets. Shadows and echoes.",
-  "act3-2": "Echoes of the fallen. Malakor awaits.",
-  "act3-3": "The final reckoning. Memory or dust.",
-};
-
-export function getLoreBriefing(missionId: string): string | null {
-  return LORE_BRIEFINGS[missionId] ?? null;
 }

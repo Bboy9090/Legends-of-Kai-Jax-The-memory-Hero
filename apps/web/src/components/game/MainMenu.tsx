@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { useRunner } from "../../lib/stores/useRunner";
 import { useBattle } from "../../lib/stores/useBattle";
-import { useGame } from "../../lib/stores/useGame";
-import { useDifficulty, DIFFICULTY_LABELS, type Difficulty } from "../../lib/stores/useDifficulty";
-import { Swords, BookOpen, Palette, ArrowLeft, Store, Settings } from "../ui/icons";
-import SettingsPanel from "./SettingsPanel";
+import { HERO_FIGHTERS } from "../../lib/characters";
+import { Swords, BookOpen, Palette, ArrowLeft } from "../ui/icons";
 
 function GlobeIcon({ className }: { className?: string }) {
   return (
@@ -19,13 +17,8 @@ function GlobeIcon({ className }: { className?: string }) {
 export default function MainMenu() {
   const setGameState = useRunner((s) => s.setGameState);
   const setCharacter = useRunner((s) => s.setCharacter);
-  const difficulty = useDifficulty((s) => s.difficulty);
-  const setDifficulty = useDifficulty((s) => s.setDifficulty);
-  const totalScore = useRunner((s) => s.totalScore);
-  const currency = useRunner((s) => s.currency);
-  const xp = useRunner((s) => s.xp);
   const setPlayerFighter = useBattle((s) => s.setPlayerFighter);
-  const [showSettings, setShowSettings] = useState(false);
+  const [showHeroPicker, setShowHeroPicker] = useState(false);
 
   const startStoryMode = () => {
     setCharacter("kai-jax");
@@ -33,19 +26,10 @@ export default function MainMenu() {
     setGameState("campaign-map");
   };
 
-  const startAdventureSelect = () => {
-    setCharacter("kai-jax");
-    setPlayerFighter("kai-jax");
-    setGameState("adventure-select");
-  };
-
-  const startTraining = () => {
-    setCharacter("kai-jax");
-    setPlayerFighter("kai-jax");
-    useBattle.getState().setOpponentFighter("kaison");
-    useBattle.getState().setTimeScale(0.5);
-    setGameState("training");
-    useGame.getState().start();
+  const launchAdventure = (heroId: string) => {
+    setCharacter(heroId);
+    setPlayerFighter(heroId);
+    setGameState("adventure");
   };
 
   return (
@@ -56,30 +40,58 @@ export default function MainMenu() {
         </h1>
         <p className="mt-2 text-slate-400 text-lg md:text-xl">The Memory King</p>
         <p className="mt-1 text-slate-600 text-sm">Adventure · Campaign · Battle · Transform</p>
-        {(totalScore > 0 || xp > 0 || currency > 0) && (
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-4 text-sm">
-            {totalScore > 0 && (
-              <span className="text-cyan-400/90 font-bold">
-                Score: <span className="text-cyan-300">{totalScore.toLocaleString()}</span>
-              </span>
-            )}
-            {xp > 0 && (
-              <span className="text-amber-400/90 font-bold">
-                XP: <span className="text-amber-300">{xp.toLocaleString()}</span>
-              </span>
-            )}
-            {currency > 0 && (
-              <span className="text-yellow-400/90 font-bold">
-                Gold: <span className="text-yellow-300">{currency.toLocaleString()}</span>
-              </span>
-            )}
-          </div>
-        )}
       </div>
 
-      <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 mt-4 max-w-xl">
+      {showHeroPicker ? (
+        <div className="flex flex-col items-center gap-4 mt-2">
+          <h2 className="text-xl font-bold text-white tracking-wide">Choose Your Hero</h2>
+          <div className="flex gap-3">
+            {HERO_FIGHTERS.map((hero) => (
+              <button
+                key={hero.id}
+                onClick={() => launchAdventure(hero.id)}
+                className="flex flex-col items-center gap-2 px-5 py-4 rounded-xl border-2 transition-all duration-200 hover:scale-[1.05] active:scale-[0.97]"
+                style={{
+                  borderColor: `${hero.accentColor}88`,
+                  background: `linear-gradient(180deg, ${hero.accentColor}15, ${hero.color}60)`,
+                  boxShadow: `0 0 20px ${hero.accentColor}22`,
+                }}
+              >
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-black"
+                  style={{
+                    background: `linear-gradient(135deg, ${hero.accentColor}44, ${hero.color})`,
+                    color: hero.accentColor,
+                    border: `3px solid ${hero.accentColor}66`,
+                  }}
+                >
+                  {hero.name[0]}
+                </div>
+                <span className="text-sm font-bold" style={{ color: hero.accentColor }}>
+                  {hero.displayName}
+                </span>
+                {hero.baseStats && (
+                  <div className="text-[10px] text-slate-400 space-x-2">
+                    <span>PWR {hero.baseStats.power}</span>
+                    <span>SPD {hero.baseStats.speed}</span>
+                    <span>DEF {hero.baseStats.defense}</span>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setShowHeroPicker(false)}
+            className="mt-2 text-slate-500 text-sm hover:text-slate-300 transition-colors"
+          >
+            ← Back to Menu
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 mt-4 max-w-xl">
             <button
-              onClick={startAdventureSelect}
+              onClick={() => setShowHeroPicker(true)}
               className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-gradient-to-r from-purple-500/25 to-cyan-500/25 border-2 border-purple-400/80 text-purple-100 font-bold text-base shadow-lg shadow-purple-500/20 hover:from-purple-500/35 hover:to-cyan-500/35 hover:border-purple-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
             >
               <GlobeIcon className="w-5 h-5" />
@@ -93,25 +105,11 @@ export default function MainMenu() {
               Story Mode
             </button>
             <button
-              onClick={() => setGameState("mission-select")}
-              className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-amber-500/25 border-2 border-amber-400/70 text-amber-100 font-bold text-base shadow-lg shadow-amber-500/20 hover:bg-amber-500/35 hover:border-amber-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
-            >
-              <Swords className="w-5 h-5" />
-              Challenge Mode
-            </button>
-            <button
               onClick={() => setGameState("versus-select")}
               className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-slate-700/60 border-2 border-slate-500 text-slate-200 font-bold text-base hover:bg-slate-600/60 hover:border-cyan-400/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
             >
               <Swords className="w-5 h-5" />
               Versus
-            </button>
-            <button
-              onClick={startTraining}
-              className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-emerald-500/20 border-2 border-emerald-400/60 text-emerald-100 font-bold text-base hover:bg-emerald-500/30 hover:border-emerald-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
-            >
-              <Swords className="w-5 h-5" />
-              Training
             </button>
             <button
               onClick={() => setGameState("beast-preview")}
@@ -121,52 +119,22 @@ export default function MainMenu() {
               Beast Preview
             </button>
             <button
-              onClick={() => setGameState("shop")}
-              className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-amber-500/20 border-2 border-amber-400/60 text-amber-200 font-bold text-base hover:bg-amber-500/30 hover:border-amber-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+              onClick={() => setGameState("controller-test")}
+              className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-slate-800/50 border-2 border-emerald-700 text-emerald-300 font-medium text-base hover:border-emerald-400/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
             >
-              <Store className="w-5 h-5" />
-              Unlocks
+              <Swords className="w-5 h-5" />
+              Controller Test
             </button>
           </div>
 
-          <div className="flex items-center justify-center gap-2 mt-3">
-            <span className="text-slate-500 text-sm">Difficulty:</span>
-            {(["easy", "normal", "hard"] as Difficulty[]).map((d) => (
-              <button
-                key={d}
-                onClick={() => setDifficulty(d)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                  difficulty === d
-                    ? "bg-cyan-500/30 border border-cyan-400/60 text-cyan-100"
-                    : "bg-slate-800/60 border border-slate-600 text-slate-400 hover:text-slate-200 hover:border-slate-500"
-                }`}
-              >
-                {DIFFICULTY_LABELS[d]}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center justify-center gap-4 mt-4">
-            <button
-              onClick={() => setShowSettings(true)}
-              className="flex items-center gap-2 text-slate-500 text-sm hover:text-cyan-400 transition-colors"
-            >
-              <Settings className="w-4 h-4" />
-              Settings
-            </button>
-            <button
-              onClick={() => setGameState("lore-hub")}
-              className="flex items-center gap-2 text-slate-500 text-sm hover:text-slate-300 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Hub
-            </button>
-          </div>
-
-      {showSettings && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <SettingsPanel onClose={() => setShowSettings(false)} variant="modal" />
-        </div>
+          <button
+            onClick={() => setGameState("lore-hub")}
+            className="flex items-center gap-2 mt-4 text-slate-500 text-sm hover:text-slate-300 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Hub
+          </button>
+        </>
       )}
     </div>
   );

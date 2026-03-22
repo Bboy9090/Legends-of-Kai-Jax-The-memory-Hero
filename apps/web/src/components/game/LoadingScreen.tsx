@@ -1,154 +1,31 @@
-import { useState, useEffect } from "react";
-
-export function LoadingView({ progress }: { progress: number }) {
-  return (
-    <div
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center text-white p-8"
-      style={{
-        background: "linear-gradient(160deg, #0a0a1a 0%, #1a0a2e 40%, #0d0d1a 100%)",
-      }}
-    >
-      <div className="text-center max-w-md w-full">
-        <h1 className="text-2xl sm:text-3xl font-bold uppercase tracking-tight text-cyan-300/90">
-          Legends of Kai-Jax
-        </h1>
-        <p className="mt-4 text-slate-400">Loading… {Math.round(progress)}%</p>
-        <div className="mt-3 h-2 w-full rounded-full bg-slate-800 overflow-hidden">
-          <div
-            className="h-full rounded-full bg-cyan-500 transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** Story beats for the Raging City intro sequence */
-const INTRO_BEATS = [
-  {
-    label: "THE RAGING CITY",
-    title: "A mythic megacity fractured by forgotten gods and engineered extinction.",
-    subtitle: "Gritty. Neon-soaked. Ancient power in a broken city.",
-    accent: "#64D2FF",
-  },
-  {
-    label: "THE MEMORY KING",
-    title: "Forged in the Raging City. Crowned by Memory.",
-    subtitle: "Survival is not strength. Survival is memory that refuses erasure.",
-    accent: "#7fff00",
-  },
-  {
-    label: "THE CATALYST EVENT",
-    title: "A forbidden device shattered existence. Realities scattered like glass.",
-    subtitle: "The fighters aren't just battling — they decide which fragments survive.",
-    accent: "#BF5AF2",
-  },
-  {
-    label: "LEGENDS OF KAI-JAX",
-    title: "Enter the city. Face what refuses to be erased.",
-    subtitle: "Fight through the districts. Reach the crown.",
-    accent: "#EC4899",
-  },
-];
-
-const BEAT_DURATION_MS = 4500;
-const FADE_MS = 600;
+import { useState } from "react";
 
 export function GameIntro({ onComplete }: { onComplete: () => void }) {
   const [skip, setSkip] = useState(false);
-  const [beatIndex, setBeatIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
-
-  useEffect(() => {
-    if (skip) return;
-    const beat = INTRO_BEATS[beatIndex];
-    if (!beat) return;
-    const t = setTimeout(() => {
-      if (beatIndex < INTRO_BEATS.length - 1) {
-        setIsVisible(false);
-        setTimeout(() => {
-          setBeatIndex((i) => i + 1);
-          setIsVisible(true);
-        }, FADE_MS);
-      } else {
-        onComplete();
-      }
-    }, BEAT_DURATION_MS);
-    return () => clearTimeout(t);
-  }, [beatIndex, skip, onComplete]);
-
-  const handleSkip = () => {
-    setSkip(true);
-    onComplete();
-  };
 
   if (skip) {
+    onComplete();
     return null;
   }
-
-  const beat = INTRO_BEATS[beatIndex];
-  if (!beat) return null;
 
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col items-center justify-center text-white p-8 cursor-pointer select-none"
-      style={{
-        background: "linear-gradient(160deg, #0a0a1a 0%, #1a0a2e 40%, #0d0d1a 100%)",
-      }}
-      onClick={handleSkip}
-      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), handleSkip())}
+      style={{ background: "linear-gradient(160deg, #0a0a1a 0%, #1a0a2e 40%, #0d0d1a 100%)" }}
+      onClick={() => setSkip(true)}
+      onKeyDown={(e) => e.key === "Enter" && setSkip(true)}
       role="button"
       tabIndex={0}
-      aria-label="Click or press Enter to continue"
+      aria-label="Click or press Enter to start"
     >
-      <div
-        className="text-center max-w-2xl transition-opacity duration-[600ms]"
-        style={{
-          opacity: isVisible ? 1 : 0,
-          transitionProperty: "opacity",
-        }}
-      >
-        {/* Beat label */}
-        <p
-          className="text-xs md:text-sm font-semibold tracking-[0.4em] uppercase mb-4"
-          style={{ color: beat.accent, textShadow: `0 0 20px ${beat.accent}40` }}
-        >
-          {beat.label}
-        </p>
-        {/* Main title / tagline */}
-        <h1
-          className="text-2xl sm:text-4xl md:text-5xl font-black uppercase tracking-tighter leading-tight"
-          style={{
-            color: "white",
-            textShadow: `0 0 30px ${beat.accent}50`,
-          }}
-        >
-          {beat.title}
+      <div className="text-center max-w-lg">
+        <h1 className="text-4xl sm:text-5xl font-black uppercase tracking-tighter drop-shadow-[0_0_30px_rgba(34,211,238,0.3)]">
+          Legends of Kai-Jax
         </h1>
-        <p className="mt-4 text-slate-400 text-base md:text-lg max-w-lg mx-auto">
-          {beat.subtitle}
-        </p>
+        <p className="mt-2 text-cyan-300/90 text-lg font-medium">The Memory King</p>
+        <p className="mt-4 text-slate-500 text-sm">Fight through the city. Face the Big Bad.</p>
       </div>
-
-      {/* Progress dots */}
-      <div className="flex gap-2 mt-12">
-        {INTRO_BEATS.map((_, i) => (
-          <div
-            key={i}
-            className="w-2 h-2 rounded-full transition-all duration-300"
-            style={{
-              backgroundColor: i === beatIndex ? beat.accent : "rgba(255,255,255,0.2)",
-              opacity: i === beatIndex ? 1 : 0.5,
-              transform: i === beatIndex ? "scale(1.2)" : "scale(1)",
-            }}
-          />
-        ))}
-      </div>
-
-      <p className="mt-8 text-cyan-400/90 text-sm font-medium animate-pulse">
-        Click or press Enter to skip
-      </p>
+      <p className="mt-10 text-cyan-400/90 text-sm font-medium animate-pulse">Click or press Enter to start</p>
     </div>
   );
 }

@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
-import { useKeybinds } from "../../../lib/stores/useKeybinds";
 import { useTouchInput } from "../../../lib/stores/useTouchInput";
 import {
   CombatState, MOVES, DODGE, STAMINA_CONFIG, COMBO_CONFIG,
@@ -60,7 +59,6 @@ export default function AdventurePlayerController() {
 
     const touch = useTouchInput.getState();
     const touchAttacks = touch.consumeAttacks();
-    const kb = useKeybinds.getState();
 
     if (p.staminaRegenDelay > 0) {
       store.setStaminaRegenDelay(Math.max(0, p.staminaRegenDelay - delta));
@@ -179,7 +177,7 @@ export default function AdventurePlayerController() {
         const elapsed = timing.totalTime - attackTimerRef.current;
         if (elapsed >= timing.cancelTime) {
           let nextAttack: string | null = null;
-          if (justPressed(kb.punch) || justPressed("KeyX") || touchAttacks.includes("attack")) {
+          if (justPressed("KeyJ") || justPressed("KeyX") || touchAttacks.includes("attack")) {
             const nextStep = p.comboStep + 1;
             if (nextStep < COMBO_CONFIG.maxChain) {
               const moveKey = `light${nextStep + 1}`;
@@ -214,7 +212,7 @@ export default function AdventurePlayerController() {
 
     const exhausted = p.stamina < STAMINA_CONFIG.exhaustedThreshold;
 
-    const wantDodge = justPressed(kb.jump) || justPressed("Space") || touchAttacks.includes("dodge");
+    const wantDodge = justPressed("Space") || touchAttacks.includes("dodge");
     if (wantDodge && !exhausted && store.useStamina(DODGE.staminaCost)) {
       store.setCombatState(CombatState.DODGING);
       store.setDodgeTimer(DODGE.duration);
@@ -227,11 +225,11 @@ export default function AdventurePlayerController() {
     }
 
     let attackInput: string | null = null;
-    if (justPressed(kb.punch) || justPressed("KeyX") || touchAttacks.includes("attack")) {
+    if (justPressed("KeyJ") || justPressed("KeyX") || touchAttacks.includes("attack")) {
       attackInput = "light1";
-    } else if (justPressed(kb.kick) || justPressed("KeyZ") || touchAttacks.includes("heavy")) {
+    } else if (justPressed("KeyK") || justPressed("KeyZ") || touchAttacks.includes("heavy")) {
       attackInput = "heavy";
-    } else if (justPressed(kb.special) || justPressed("KeyC") || touchAttacks.includes("skill")) {
+    } else if (justPressed("KeyL") || justPressed("KeyC") || touchAttacks.includes("skill")) {
       attackInput = "skill";
     }
 
@@ -312,7 +310,7 @@ export default function AdventurePlayerController() {
       }
     }
 
-    if (justPressed("Escape") || justPressed(kb.pause)) {
+    if (justPressed("Escape") || justPressed("KeyP")) {
       store.togglePause();
     }
 

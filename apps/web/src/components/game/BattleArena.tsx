@@ -3,9 +3,8 @@ import { useBattle } from "../../lib/stores/useBattle";
 import { getArenaById } from "../../lib/arenas";
 
 export default function BattleArena() {
-  const { selectedArenaId, stageCrackLevel } = useBattle();
+  const { selectedArenaId } = useBattle();
   const arena = getArenaById(selectedArenaId);
-  const groundMultiplier = 1 - stageCrackLevel * 0.25;
   
   // Pre-calculate platform positions
   const platforms = useMemo(() => [
@@ -28,7 +27,7 @@ export default function BattleArena() {
       >
         <boxGeometry args={[25, 0.5, 10]} />
         <meshStandardMaterial 
-          color={`rgb(${Math.round(parseInt(arena.groundColor.slice(1, 3), 16) * groundMultiplier)},${Math.round(parseInt(arena.groundColor.slice(3, 5), 16) * groundMultiplier)},${Math.round(parseInt(arena.groundColor.slice(5, 7), 16) * groundMultiplier)})`}
+          color={arena.groundColor}
           roughness={0.8}
           metalness={0.2}
         />
