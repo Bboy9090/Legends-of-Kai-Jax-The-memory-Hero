@@ -101,6 +101,35 @@ export const COMBO_CONFIG = {
   resetTime: 1.0,
 };
 
+export type AttackType = "punch" | "kick" | "special" | "ultimate";
+
+export const ATTACK_TYPE_TO_MOVE: Record<AttackType, string> = {
+  punch: "light1",
+  kick: "light2",
+  special: "skill",
+  ultimate: "heavy",
+};
+
+export function isInActiveWindow(move: MoveData, elapsedSeconds: number): boolean {
+  const timing = getMoveFrameTime(move);
+  return elapsedSeconds >= timing.startupTime && elapsedSeconds <= timing.startupTime + timing.activeTime;
+}
+
+export function getClashPriority(type: AttackType | null | undefined): number {
+  switch (type) {
+    case "ultimate":
+      return 4;
+    case "special":
+      return 3;
+    case "kick":
+      return 2;
+    case "punch":
+      return 1;
+    default:
+      return 0;
+  }
+}
+
 export interface EnemyTierConfig {
   tier: "minion1" | "minion2" | "boss1" | "boss2";
   health: number;

@@ -1,15 +1,8 @@
 import { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
-<<<<<<< Current (Your changes)
 import { useAudio } from "../../lib/stores/useAudio";
-=======
-<<<<<<< HEAD
->>>>>>> Incoming (Background Agent changes)
 import BattleCamera from "./BattleCamera";
-=======
-import { useAudio } from "../../lib/stores/useAudio";
->>>>>>> origin
 import { getFighterById } from "../../lib/characters";
 import BattleArena from "./BattleArena";
 import BattlePlayer from "./BattlePlayer";
