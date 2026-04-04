@@ -321,6 +321,19 @@ export default function AdventurePlayerController() {
       THREE.MathUtils.clamp(newZ, -boundary, boundary)
     );
 
+    const aliveForCombat = store.enemies.filter((e) => !e.isDead);
+    const enemyNearby = aliveForCombat.some((e) => {
+      const dx = newX - e.posX;
+      const dz = newZ - e.posZ;
+      return dx * dx + dz * dz < 14 * 14;
+    });
+    store.setPlayerCombat(
+      enemyNearby ||
+        p.isAttacking ||
+        p.hitStunTimer > 0 ||
+        p.combatState !== CombatState.FREE
+    );
+
     if (p.comboTimer > 0) {
       const newTimer = p.comboTimer - delta;
       if (newTimer <= 0) {

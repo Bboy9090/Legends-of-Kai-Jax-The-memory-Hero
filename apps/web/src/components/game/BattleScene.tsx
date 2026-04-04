@@ -29,11 +29,13 @@ export default function BattleScene() {
     screenFlash,
     playerAttacking,
     playerAttackType,
+    opponentAttacking,
     comboCount,
     maxCombo,
     playerHealth,
     opponentHealth,
     maxHealth,
+    playerCombatState,
   } = useBattle();
   const playerFighter = getFighterById(playerFighterId);
   const grade =
@@ -42,14 +44,23 @@ export default function BattleScene() {
   // Lift the “poster grade” blacks so the arena isn’t swallowed.
   const bgColor = grade === "cosmic" ? "#0b0b18" : grade === "ice" ? "#0b1d34" : grade === "ember" ? "#2a0d0d" : "#121224";
   const fogColor = grade === "cosmic" ? "#111128" : grade === "ice" ? "#11384a" : grade === "ember" ? "#3a1410" : "#14142a";
-  const punch =
-    Math.min(
-      1,
-      screenShake * 1.6 +
-        (hitStop > 0 ? 0.65 : 0) +
-        (screenFlash ? 0.35 : 0) +
-        (playerAttacking && playerAttackType === "ultimate" ? 0.55 : playerAttacking && playerAttackType === "special" ? 0.25 : 0) // Ultimate: camera zoom + arena dim
-    ) || 0;
+  const chaos =
+    (playerAttacking ? 0.12 : 0) +
+    (opponentAttacking ? 0.12 : 0) +
+    (comboCount >= 5 ? Math.min(0.2, (comboCount - 5) * 0.02) : 0) +
+    (playerCombatState === "BLOCKING" || playerCombatState === "PARRY_WINDOW" ? 0.15 : 0);
+
+  const rawPunch =
+    screenShake * 1.6 +
+    (hitStop > 0 ? 0.65 : 0) +
+    (screenFlash ? 0.35 : 0) +
+    (playerAttacking && playerAttackType === "ultimate"
+      ? 0.55
+      : playerAttacking && playerAttackType === "special"
+        ? 0.25
+        : 0);
+
+  const punch = Math.min(1, rawPunch * Math.max(0.45, 1 - chaos * 0.85)) || 0;
   
   useEffect(() => {
     console.log("[BattleScene] Initializing battle");

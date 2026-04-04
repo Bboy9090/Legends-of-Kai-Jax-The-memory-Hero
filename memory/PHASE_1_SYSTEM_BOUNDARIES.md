@@ -46,11 +46,14 @@ This file documents *ownership* and *allowed dependencies* between gameplay syst
   - Must not mutate battle rules; can call store methods only for lifecycle glue (e.g. kick off battle start) and cross-cutting outputs (e.g. audio intensity).
 
 - **Battle camera (read-only)**: `apps/web/src/components/game/BattleCamera.tsx`
-  - Reads battle positions and screen shake intent from `useBattle` and sets the Three.js camera transform.
+  - Reads battle positions, combat FSM, attacks, and screen shake from `useBattle`; applies **exploration / combat / lock-on** framing (implicit modes) and **deterministic** shake offsets.
   - Must not change gameplay state.
 
 - **Adventure camera (read-only)**: `apps/web/src/components/game/adventure/AdventureCamera.tsx`
-  - Reads `useAdventure` and frames exploration/combat readability.
+  - Reads `useAdventure` (`isCombat`, `autoTargetId`, `combatState`) for **exploration / combat / lock-on** framing and deterministic shake.
+
+- **Camera helpers (pure)**: `apps/web/src/lib/cameraModes.ts`
+  - `detRand11` and shared mode type aliases only — no store writes.
 
 #### Input glue (intent → store)
 
