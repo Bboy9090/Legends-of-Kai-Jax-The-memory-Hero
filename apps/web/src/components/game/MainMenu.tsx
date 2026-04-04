@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRunner } from "../../lib/stores/useRunner";
 import { useBattle } from "../../lib/stores/useBattle";
+import { useAccessibility } from "../../lib/stores/useAccessibility";
 import { HERO_FIGHTERS } from "../../lib/characters";
 import { Swords, BookOpen, Palette, ArrowLeft } from "../ui/icons";
 
@@ -18,6 +19,8 @@ export default function MainMenu() {
   const setGameState = useRunner((s) => s.setGameState);
   const setCharacter = useRunner((s) => s.setCharacter);
   const setPlayerFighter = useBattle((s) => s.setPlayerFighter);
+  const reduceMotion = useAccessibility((s) => s.reduceMotion);
+  const setReduceMotion = useAccessibility((s) => s.setReduceMotion);
   const [showHeroPicker, setShowHeroPicker] = useState(false);
 
   const startStoryMode = () => {
@@ -35,6 +38,15 @@ export default function MainMenu() {
   return (
     <div className="h-screen w-full flex flex-col items-center justify-center gap-8 p-6 bg-gradient-to-b from-[#07070d] via-purple-950/25 to-[#07070d] overflow-auto">
       <div className="text-center">
+        <label className="inline-flex items-center gap-2 text-slate-500 text-xs mb-3 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={reduceMotion}
+            onChange={(e) => setReduceMotion(e.target.checked)}
+            className="rounded border-slate-600"
+          />
+          Reduce screen motion (accessibility)
+        </label>
         <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase drop-shadow-[0_0_24px_rgba(34,211,238,0.2)]">
           Legends of Kai-Jax
         </h1>

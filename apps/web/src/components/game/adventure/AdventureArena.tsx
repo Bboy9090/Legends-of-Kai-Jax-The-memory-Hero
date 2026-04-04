@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
 import { ENEMY_TIERS } from "../../../lib/combatSystems";
 import { buildEncounterEnemies, getDistrictMeta } from "../../../lib/encounters";
+import { useMissions } from "../../../lib/stores/useMissions";
 import AdventureCharacter from "./AdventureCharacter";
 import AdventureCamera from "./AdventureCamera";
 import AdventurePlayerController from "./AdventurePlayerController";
@@ -141,10 +142,16 @@ function ArenaLighting() {
   );
 }
 
-function WaveSpawner() {
+function WaveSpawner({ roamSessionId }: { roamSessionId: number }) {
   const spawnTimer = useRef(0);
   const waveNum = useRef(0);
   const cleanupTimer = useRef(0);
+  const prevAlive = useRef(-1);
+
+  useEffect(() => {
+    prevAlive.current = -1;
+    spawnTimer.current = 0;
+  }, [roamSessionId]);
 
   useFrame((_, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
@@ -159,6 +166,7 @@ function WaveSpawner() {
     }
 
     const aliveEnemies = adv.enemies.filter((e) => !e.isDead);
+    const aliveCount = aliveEnemies.length;
 
     if (adv.roamDistrictId) {
       const meta = getDistrictMeta(adv.roamDistrictId);
@@ -168,13 +176,28 @@ function WaveSpawner() {
         return;
       }
 
-      if (aliveEnemies.length > 0) {
+      if (aliveCount > 0) {
+        prevAlive.current = aliveCount;
         spawnTimer.current = 0;
         return;
       }
 
+      if (
+        prevAlive.current > 0 &&
+        aliveCount === 0 &&
+        adv.encounterIndex > 0 &&
+        adv.encounterIndex < meta.encounters.length &&
+        adv.checkpointBetweenEncounters
+      ) {
+        useAdventure.getState().applyDistrictCheckpoint();
+      }
+      prevAlive.current = 0;
+
       if (adv.encounterIndex >= meta.encounters.length) {
         useAdventure.setState({ districtCompleted: true });
+        if (adv.roamDistrictId) {
+          useMissions.getState().completeDistrictRoam(adv.roamDistrictId);
+        }
         return;
       }
 
@@ -287,6 +310,8 @@ export default function AdventureArena({
   characterId,
   accentColor,
 }: AdventureArenaProps) {
+  const roamSessionId = useAdventure((s) => s.roamSessionId);
+
   useEffect(() => {
     const s = useAdventure.getState();
     if (s.roamDistrictId) return;
@@ -302,7 +327,7 @@ export default function AdventureArena({
       <ArenaEnvironment />
       <AdventureCharacter fighterId={characterId} accentColor={accentColor} />
       <AdventureEnemyAI />
-      <WaveSpawner />
+      <WaveSpawner roamSessionId={roamSessionId} />
     </>
   );
 }

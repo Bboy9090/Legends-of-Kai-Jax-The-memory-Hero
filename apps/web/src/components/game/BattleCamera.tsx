@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { BattleCombatState } from "../../lib/combatSystems";
 import { detRand11, type BattleCameraMode } from "../../lib/cameraModes";
+import { useAccessibility } from "../../lib/stores/useAccessibility";
 
 const BASE_HEIGHT = 4.2;
 const BASE_DIST = 9.5;
@@ -30,6 +31,7 @@ function resolveBattleCameraMode(s: {
 
 export default function BattleCamera() {
   const { camera } = useThree();
+  const reduceMotion = useAccessibility((s) => s.reduceMotion);
   const targetRef = useRef(new THREE.Vector3());
   const posRef = useRef(new THREE.Vector3(0, BASE_HEIGHT, BASE_DIST));
   const frameRef = useRef(0);
@@ -83,6 +85,7 @@ export default function BattleCamera() {
     let shakeScale = 1;
     if (mode === "combat") shakeScale = 0.72;
     if (mode === "lockOn") shakeScale = 0.55;
+    if (reduceMotion) shakeScale *= 0.2;
 
     let shakeX = 0;
     let shakeY = 0;

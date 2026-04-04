@@ -2,6 +2,7 @@ import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useRunner } from "../../../lib/stores/useRunner";
 import { CombatState, STAMINA_CONFIG } from "../../../lib/combatSystems";
 import { getDistrictMeta } from "../../../lib/encounters";
+import { useMissions } from "../../../lib/stores/useMissions";
 
 function HealthBar({
   current,
@@ -156,6 +157,7 @@ export default function AdventureHUD() {
   const setGameState = useRunner((s) => s.setGameState);
 
   const districtMeta = roamDistrictId ? getDistrictMeta(roamDistrictId) : null;
+  const lastReward = useMissions((s) => s.lastReward);
 
   const aliveEnemies = enemies.filter((e) => !e.isDead).length;
 
@@ -235,7 +237,14 @@ export default function AdventureHUD() {
           <div className="text-[10px] text-cyan-300/90 font-bold uppercase tracking-wider">{districtMeta.name}</div>
           <div className="text-[11px] text-slate-400 mt-0.5 line-clamp-2">{districtMeta.theme}</div>
           {districtCompleted && (
-            <div className="text-xs text-emerald-400 font-bold mt-1">District cleared — exit via pause menu.</div>
+            <div className="text-xs text-emerald-400 font-bold mt-1 space-y-1">
+              <div>District cleared — exit via pause menu.</div>
+              {lastReward?.granted && lastReward.totalPoints > 0 && (
+                <div className="text-cyan-200/90 font-mono text-[11px]">
+                  +{lastReward.totalPoints} score (first clear)
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}

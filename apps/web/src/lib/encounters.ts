@@ -23,6 +23,8 @@ export interface DistrictRoamMeta {
   theme: string;
   /** Scripted encounters in order (replaces pure wave-loop for this district) */
   encounters: EncounterSpec[];
+  /** One-time patrol clear reward (granted via missions store; score = xp + currency) */
+  rewards: { xp: number; currency: number };
 }
 
 const MINION_POOL = ["hyena-scout", "rift-drone", "blazing-fox", "sparky", "velocity"] as const;
@@ -43,6 +45,7 @@ export const DISTRICTS: Record<Exclude<CampaignNodeId, "start" | "mid-boss" | "f
     id: "district-1",
     name: "Ashblock Heights",
     theme: "Industrial outskirts — scout packs and rooftop strays.",
+    rewards: { xp: 120, currency: 35 },
     encounters: [
       { id: "d1-e1", label: "Street sweep", minionCount: 2, includeBoss: false, tierScale: 0 },
       { id: "d1-e2", label: "Alley ambush", minionCount: 3, includeBoss: false, tierScale: 1 },
@@ -53,6 +56,7 @@ export const DISTRICTS: Record<Exclude<CampaignNodeId, "start" | "mid-boss" | "f
     id: "district-2",
     name: "Fangforge Wastes",
     theme: "Ash storms and beast trails — heavier packs.",
+    rewards: { xp: 160, currency: 50 },
     encounters: [
       { id: "d2-e1", label: "Dust patrol", minionCount: 3, includeBoss: false, tierScale: 1 },
       { id: "d2-e2", label: "Hunter pair", minionCount: 4, includeBoss: false, tierScale: 2 },
@@ -63,6 +67,7 @@ export const DISTRICTS: Record<Exclude<CampaignNodeId, "start" | "mid-boss" | "f
     id: "district-3",
     name: "Memory Wells",
     theme: "Unstable ground — echo creatures cluster tight.",
+    rewards: { xp: 200, currency: 65 },
     encounters: [
       { id: "d3-e1", label: "Echo skirmish", minionCount: 3, includeBoss: false, tierScale: 2 },
       { id: "d3-e2", label: "Well breach", minionCount: 4, includeBoss: false, tierScale: 3 },
@@ -73,6 +78,7 @@ export const DISTRICTS: Record<Exclude<CampaignNodeId, "start" | "mid-boss" | "f
     id: "district-4",
     name: "Rift Undercroft",
     theme: "Tight tunnels — fewer but tougher foes.",
+    rewards: { xp: 240, currency: 80 },
     encounters: [
       { id: "d4-e1", label: "Under patrol", minionCount: 3, includeBoss: false, tierScale: 3 },
       { id: "d4-e2", label: "Collapsed arena", minionCount: 4, includeBoss: false, tierScale: 4 },
@@ -83,6 +89,7 @@ export const DISTRICTS: Record<Exclude<CampaignNodeId, "start" | "mid-boss" | "f
     id: "district-5",
     name: "Crown Spire Approach",
     theme: "Elite lines before the final ascent.",
+    rewards: { xp: 300, currency: 100 },
     encounters: [
       { id: "d5-e1", label: "Elite line", minionCount: 4, includeBoss: false, tierScale: 4 },
       { id: "d5-e2", label: "Spire guard", minionCount: 4, includeBoss: false, tierScale: 5 },

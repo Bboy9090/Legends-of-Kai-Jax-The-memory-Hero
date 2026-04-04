@@ -34,11 +34,15 @@
 - `apps/web/src/App.tsx`
 - `memory/PHASE_5_OPEN_WORLD.md`
 
+### Follow-up (completed in same branch)
+
+- **First-clear rewards**: `useMissions.completeDistrictRoam` + `localStorage` key `MK_ROAM_DISTRICTS_V1` (`roam:<id>`). XP + currency from `encounters.ts` → **runner score** via `addScore`.
+- **Checkpoints**: `applyDistrictCheckpoint` between encounters (~22% HP, ~35% stamina) + brief impact flash.
+
 ### Risks
 
-- **Rewards / checkpoints / NPCs** are not built yet; UI states that patrol rewards follow in a later phase.
 - Unlock rules reuse **campaign node** completion; if a player never opens Story map, only `district-1` may be unlocked.
 
 ### Next recommended step
 
-- Wire **mission rewards** (`useMissions` or a dedicated roam ledger) on `districtCompleted`, and add a minimal **checkpoint** (heal partial) between encounters if canon allows.
+- Optional **NPC/dialogue** hooks at district start/end; optional **currency wallet** separate from score.

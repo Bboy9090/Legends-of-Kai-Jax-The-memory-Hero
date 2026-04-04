@@ -4,6 +4,7 @@ import { useAdventure } from "../../../lib/stores/useAdventure";
 import { CombatState } from "../../../lib/combatSystems";
 import * as THREE from "three";
 import { detRand11 } from "../../../lib/cameraModes";
+import { useAccessibility } from "../../../lib/stores/useAccessibility";
 
 const CAM_HEIGHT = 4.5;
 const CAM_DIST = 6;
@@ -22,6 +23,7 @@ function resolveAdventureCameraMode(p: {
 
 export default function AdventureCamera() {
   const { camera } = useThree();
+  const reduceMotion = useAccessibility((s) => s.reduceMotion);
   const targetRef = useRef(new THREE.Vector3());
   const posRef = useRef(new THREE.Vector3(0, CAM_HEIGHT, CAM_DIST));
   const frameRef = useRef(0);
@@ -103,6 +105,7 @@ export default function AdventureCamera() {
 
     let shakeScale = 1;
     if (mode === "combat" || mode === "lockOn") shakeScale = 0.65;
+    if (reduceMotion) shakeScale *= 0.2;
 
     let shakeX = 0;
     let shakeY = 0;

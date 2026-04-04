@@ -16,6 +16,7 @@ import EffectManager from "./EffectManager";
 import { Environment } from "@react-three/drei";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
 import CinematicPostFX from "./graphics/CinematicPostFX";
+import { useAccessibility } from "../../lib/stores/useAccessibility";
 
 /* eslint-disable react/no-unknown-property */
 export default function BattleScene() {
@@ -37,6 +38,7 @@ export default function BattleScene() {
     maxHealth,
     playerCombatState,
   } = useBattle();
+  const reduceMotion = useAccessibility((s) => s.reduceMotion);
   const playerFighter = getFighterById(playerFighterId);
   const grade =
     playerFighterId === "kai-jax" ? "cosmic" : playerFighterId === "jaxon" ? "ice" : playerFighterId === "kaison" ? "ember" : "neutral";
@@ -60,7 +62,8 @@ export default function BattleScene() {
         ? 0.25
         : 0);
 
-  const punch = Math.min(1, rawPunch * Math.max(0.45, 1 - chaos * 0.85)) || 0;
+  const punch =
+    Math.min(1, rawPunch * Math.max(0.45, 1 - chaos * 0.85) * (reduceMotion ? 0.38 : 1)) || 0;
   
   useEffect(() => {
     console.log("[BattleScene] Initializing battle");

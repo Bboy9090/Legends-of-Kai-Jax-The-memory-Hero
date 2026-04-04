@@ -44,7 +44,7 @@ export default function DistrictSelectScreen() {
             District patrol
           </h1>
           <p className="text-slate-400 text-sm mt-2">
-            Scripted encounters per district — clear all three to finish the patrol. Rewards follow in a later phase.
+            Scripted encounters per district — clear all to finish the patrol. First clear grants XP + currency as score (see each district).
           </p>
         </div>
 
@@ -71,7 +71,7 @@ export default function DistrictSelectScreen() {
                   <div className="font-bold text-white">{meta.name}</div>
                   <div className="text-xs text-slate-400 line-clamp-2">{meta.theme}</div>
                   <div className="text-[10px] text-slate-500 mt-1">
-                    {meta.encounters.length} encounters
+                    {meta.encounters.length} encounters · first clear +{meta.rewards.xp} XP +{meta.rewards.currency} score
                     {!unlocked && " — complete the previous district in Story campaign map first"}
                   </div>
                 </div>

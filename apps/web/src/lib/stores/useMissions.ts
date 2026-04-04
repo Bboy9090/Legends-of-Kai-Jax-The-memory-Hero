@@ -2,7 +2,8 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { getUEEMissionById } from "../uee_missions";
 import { getStoryMissionById } from "../story_missions";
-import { useRunner } from "./useRunner";
+import { useRunner, type CampaignNodeId } from "./useRunner";
+import { getDistrictMeta } from "../encounters";
 
 export type MissionSource = "uee" | "story";
 
@@ -44,6 +45,7 @@ export interface MissionRewardSummary {
 type MissionResult = "success" | "fail" | null;
 
 const STORAGE_KEY = "MK_MISSIONS_V1";
+const ROAM_DISTRICT_KEY = "MK_ROAM_DISTRICTS_V1";
 
 const KNOWN_ARENAS = new Set([
   "mushroom-plains",
@@ -103,6 +105,28 @@ function safeSaveCompleted(keys: string[]) {
   try {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(keys));
+  } catch {
+    // ignore
+  }
+}
+
+function safeLoadRoamDistricts(): string[] {
+  try {
+    if (typeof window === "undefined") return [];
+    const raw = window.localStorage.getItem(ROAM_DISTRICT_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((x) => typeof x === "string");
+  } catch {
+    return [];
+  }
+}
+
+function safeSaveRoamDistricts(keys: string[]) {
+  try {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(ROAM_DISTRICT_KEY, JSON.stringify(keys));
   } catch {
     // ignore
   }
@@ -292,12 +316,16 @@ interface MissionsState {
   objectives: MissionObjectiveRuntime[];
   result: MissionResult;
   completedKeys: string[];
+  /** District patrol clears (roam:<districtId>) */
+  completedRoamDistrictKeys: string[];
   lastReward: MissionRewardSummary | null;
 
   // lifecycle
   startMission: (source: MissionSource, id: string) => void;
   abandonMission: () => void;
   completeMission: (success: boolean) => void;
+  /** Grant one-time score + persist when a district patrol is fully cleared */
+  completeDistrictRoam: (districtId: CampaignNodeId) => void;
 
   // battle hooks
   recordHit: (attackType: BattleAttackType) => void;
@@ -313,6 +341,7 @@ export const useMissions = create<MissionsState>()(
     objectives: [],
     result: null,
     completedKeys: typeof window !== "undefined" ? safeLoadCompleted() : [],
+    completedRoamDistrictKeys: typeof window !== "undefined" ? safeLoadRoamDistricts() : [],
     lastReward: null,
 
     startMission: (source, id) => {
@@ -328,6 +357,42 @@ export const useMissions = create<MissionsState>()(
     },
 
     abandonMission: () => set({ active: null, objectives: [], result: null, lastReward: null }),
+
+    completeDistrictRoam: (districtId) => {
+      const meta = getDistrictMeta(districtId);
+      if (!meta) return;
+      const k = `roam:${districtId}`;
+      const prev = get().completedRoamDistrictKeys;
+      if (prev.includes(k)) {
+        const totalPoints = meta.rewards.xp + meta.rewards.currency;
+        set({
+          lastReward: {
+            xp: meta.rewards.xp,
+            currency: meta.rewards.currency,
+            loot: [],
+            totalPoints,
+            granted: false,
+          },
+        });
+        return;
+      }
+      const totalPoints = meta.rewards.xp + meta.rewards.currency;
+      if (totalPoints > 0) {
+        useRunner.getState().addScore(totalPoints);
+      }
+      const next = [...prev, k];
+      safeSaveRoamDistricts(next);
+      set({
+        completedRoamDistrictKeys: next,
+        lastReward: {
+          xp: meta.rewards.xp,
+          currency: meta.rewards.currency,
+          loot: [`Memory shard — ${meta.name}`],
+          totalPoints,
+          granted: true,
+        },
+      });
+    },
 
     completeMission: (success) => {
       const active = get().active;

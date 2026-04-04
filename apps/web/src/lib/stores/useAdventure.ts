@@ -71,9 +71,13 @@ interface AdventureState {
   isPaused: boolean;
   /** When set, open-world uses scripted district encounters instead of infinite waves */
   roamDistrictId: CampaignNodeId | null;
+  /** Bumps when starting a new district patrol (spawner resets) */
+  roamSessionId: number;
   encounterIndex: number;
   /** All encounters in district cleared */
   districtCompleted: boolean;
+  /** Between scripted encounters: partial restore (checkpoint) */
+  checkpointBetweenEncounters: boolean;
 
   setPlayerPos: (x: number, y: number, z: number) => void;
   setPlayerRot: (rotY: number) => void;
@@ -113,6 +117,7 @@ interface AdventureState {
   initAdventure: (characterId: string, missionId: string | null, arenaId: string) => void;
   /** Phase 5: district-based roam (scripted encounters) */
   startDistrictRoam: (districtId: CampaignNodeId, characterId: string) => void;
+  applyDistrictCheckpoint: () => void;
   togglePause: () => void;
   reset: () => void;
 }
@@ -163,8 +168,10 @@ export const useAdventure = create<AdventureState>((set, get) => ({
   enemiesDefeated: 0,
   isPaused: false,
   roamDistrictId: null,
+  roamSessionId: 0,
   encounterIndex: 0,
   districtCompleted: false,
+  checkpointBetweenEncounters: true,
 
   setPlayerPos: (x, y, z) =>
     set((s) => ({ player: { ...s.player, posX: x, posY: y, posZ: z } })),
@@ -381,11 +388,14 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       enemiesDefeated: 0,
       isPaused: false,
       roamDistrictId: null,
+      roamSessionId: 0,
       encounterIndex: 0,
       districtCompleted: false,
+      checkpointBetweenEncounters: true,
     }),
 
-  startDistrictRoam: (districtId, characterId) =>
+  startDistrictRoam: (districtId, characterId) => {
+    const sid = get().roamSessionId + 1;
     set({
       player: { ...defaultPlayer, fighterId: characterId },
       enemies: [],
@@ -395,9 +405,29 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       enemiesDefeated: 0,
       isPaused: false,
       roamDistrictId: districtId,
+      roamSessionId: sid,
       encounterIndex: 0,
       districtCompleted: false,
-    }),
+      checkpointBetweenEncounters: true,
+    });
+  },
+
+  applyDistrictCheckpoint: () => {
+    const s = get();
+    if (!s.roamDistrictId || !s.checkpointBetweenEncounters) return;
+    const p = s.player;
+    const heal = Math.round(p.maxHealth * 0.22);
+    const stam = Math.round(STAMINA_CONFIG.max * 0.35);
+    set({
+      player: {
+        ...p,
+        health: Math.min(p.maxHealth, p.health + heal),
+        stamina: Math.min(p.maxStamina, p.stamina + stam),
+        staminaRegenDelay: 0,
+      },
+    });
+    get().triggerImpactFlash("#22d3ee");
+  },
 
   togglePause: () => set((s) => ({ isPaused: !s.isPaused })),
 
@@ -411,7 +441,9 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       enemiesDefeated: 0,
       isPaused: false,
       roamDistrictId: null,
+      roamSessionId: 0,
       encounterIndex: 0,
       districtCompleted: false,
+      checkpointBetweenEncounters: true,
     }),
 }));
