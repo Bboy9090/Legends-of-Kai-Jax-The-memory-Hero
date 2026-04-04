@@ -13,7 +13,7 @@ This file documents *ownership* and *allowed dependencies* between gameplay syst
 #### Stores (authoritative runtime state)
 
 - **Battle (arena/duel) runtime state**: `apps/web/src/lib/stores/useBattle.tsx`
-  - **Owns**: duel state, timers, meter values, deterministic combat resolution for duel mode, screen FX intent (shake/flash/hitstop), and fighter kinematics in the duel plane (x/y).
+  - **Owns**: duel state, timers, meter values, deterministic combat resolution for duel mode, screen FX intent (shake/flash/hitstop), fighter kinematics in the duel plane (x/y), and **ground dodge timing** (`playerDodgeTimer` / `playerDodgeDirection`) ticked with the round clock (including hit-stop behavior).
   - **May depend on**:
     - Pure data or pure helpers: `apps/web/src/lib/combatSystems.ts`, `apps/web/src/lib/characterMoves.ts`
     - Cross-cutting services with no gameplay authority: `apps/web/src/lib/stores/useAudio.ts`
@@ -51,6 +51,15 @@ This file documents *ownership* and *allowed dependencies* between gameplay syst
 
 - **Adventure camera (read-only)**: `apps/web/src/components/game/adventure/AdventureCamera.tsx`
   - Reads `useAdventure` and frames exploration/combat readability.
+
+#### Input glue (intent → store)
+
+- **Battle input**: `apps/web/src/components/game/PlayerController.tsx`
+  - Translates keyboard/touch intent into `useBattle` actions and horizontal kinematics updates.
+  - Must not own authoritative duel rules; dodge start goes through `useBattle.startPlayerDodge`.
+
+- **Adventure input**: `apps/web/src/components/game/adventure/AdventurePlayerController.tsx`
+  - Translates keyboard/touch + camera-relative axes into `useAdventure` updates.
 
 ### Phase 1 foundation rules (enforced by convention)
 

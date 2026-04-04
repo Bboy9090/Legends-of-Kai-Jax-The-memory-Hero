@@ -12,6 +12,8 @@ import * as THREE from "three";
 const WALK_SPEED = 5;
 const RUN_SPEED = 10;
 const TURN_SPEED = 8;
+const MOVE_ACCEL = 42;
+const MOVE_DECEL = 50;
 
 const _camDir = new THREE.Vector3();
 const _camRight = new THREE.Vector3();
@@ -24,6 +26,7 @@ export default function AdventurePlayerController() {
   const stoneStepTimer = useRef(0);
   const dodgeDirRef = useRef({ x: 0, z: 0 });
   const attackHitRef = useRef(false);
+  const velSmoothRef = useRef({ x: 0, z: 0 });
 
   useEffect(() => {
     const keys = keysRef.current;
@@ -214,6 +217,8 @@ export default function AdventurePlayerController() {
 
     const wantDodge = justPressed("Space") || touchAttacks.includes("dodge");
     if (wantDodge && !exhausted && store.useStamina(DODGE.staminaCost)) {
+      velSmoothRef.current = { x: 0, z: 0 };
+      store.setPlayerVelocity(0, 0);
       store.setCombatState(CombatState.DODGING);
       store.setDodgeTimer(DODGE.duration);
       store.setInvulnTimer(DODGE.iFrames / 60);
@@ -257,10 +262,26 @@ export default function AdventurePlayerController() {
       }
     }
 
-    const vx = worldX * moveSpeed;
-    const vz = worldZ * moveSpeed;
-    store.setPlayerVelocity(vx, vz);
-    store.setPlayerMoving(hasInput, hasInput && isRunning);
+    const targetVx = worldX * moveSpeed;
+    const targetVz = worldZ * moveSpeed;
+    let svx = velSmoothRef.current.x;
+    let svz = velSmoothRef.current.z;
+    const rate = hasInput ? MOVE_ACCEL : MOVE_DECEL;
+    svx += Math.sign(targetVx - svx) * rate * delta;
+    svz += Math.sign(targetVz - svz) * rate * delta;
+    if (!hasInput) {
+      if (Math.abs(svx) < 0.05) svx = 0;
+      if (Math.abs(svz) < 0.05) svz = 0;
+    }
+    const cap = moveSpeed + 0.01;
+    const vlen = Math.sqrt(svx * svx + svz * svz);
+    if (vlen > cap && vlen > 0) {
+      svx = (svx / vlen) * cap;
+      svz = (svz / vlen) * cap;
+    }
+    velSmoothRef.current = { x: svx, z: svz };
+    store.setPlayerVelocity(svx, svz);
+    store.setPlayerMoving(hasInput || vlen > 0.15, (hasInput && isRunning) || (isRunning && vlen > 0.15));
 
     if (hasInput && isStatueFighter(p.fighterId)) {
       stoneStepTimer.current += delta;
@@ -291,8 +312,8 @@ export default function AdventurePlayerController() {
       store.setPlayerRot(newRot);
     }
 
-    const newX = p.posX + vx * delta;
-    const newZ = p.posZ + vz * delta;
+    const newX = p.posX + svx * delta;
+    const newZ = p.posZ + svz * delta;
     const boundary = 45;
     store.setPlayerPos(
       THREE.MathUtils.clamp(newX, -boundary, boundary),

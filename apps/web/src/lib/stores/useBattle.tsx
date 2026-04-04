@@ -88,6 +88,10 @@ export interface BattleState {
   playerVelocityY: number;
   playerFacingRight: boolean;
   playerGrounded: boolean;
+  /** Ground dodge (1D arena): time remaining; movement is ticked in updateRoundTimer */
+  playerDodgeTimer: number;
+  /** +1 = right, -1 = left */
+  playerDodgeDirection: 1 | -1;
   
   // Opponent position/state
   opponentX: number;
@@ -121,6 +125,8 @@ export interface BattleState {
   // Player actions
   movePlayer: (x: number, y: number) => void;
   playerJump: () => void;
+  /** Begin a short ground dodge if allowed; direction is along arena X */
+  startPlayerDodge: (direction: 1 | -1) => boolean;
   playerAttack: (type: 'punch' | 'kick' | 'special' | 'ultimate') => void;
   attemptComboCancel: () => boolean;
   playerTakeDamage: (damage: number, attackType?: 'punch' | 'kick' | 'special') => void;
@@ -254,6 +260,8 @@ export const useBattle = create<BattleState>((set, get) => ({
   playerVelocityY: 0,
   playerFacingRight: true,
   playerGrounded: true,
+  playerDodgeTimer: 0,
+  playerDodgeDirection: 1,
   
   opponentX: 5,
   opponentY: 0.8,
@@ -305,6 +313,10 @@ export const useBattle = create<BattleState>((set, get) => ({
       screenFlash: null,
       hitStop: 0,
       damageNumbers: [],
+      playerDodgeTimer: 0,
+      playerDodgeDirection: 1,
+      playerVelocityX: 0,
+      playerVelocityY: 0,
     });
     
     useAudio.getState().startBattleMusic();
@@ -350,6 +362,8 @@ export const useBattle = create<BattleState>((set, get) => ({
       comboDamage: 0,
       comboTimer: 0,
       damageNumbers: [],
+      playerDodgeTimer: 0,
+      playerDodgeDirection: 1,
     });
     
     setTimeout(() => {
@@ -365,6 +379,33 @@ export const useBattle = create<BattleState>((set, get) => ({
     if (hitStop > 0) {
       set({ hitStop: hitStop - delta });
       return;
+    }
+
+    const dodgeT = get().playerDodgeTimer;
+    if (dodgeT > 0) {
+      const BATTLE_DODGE_DIST = 2.35;
+      const BATTLE_DODGE_DURATION = 0.22;
+      const speed = BATTLE_DODGE_DIST / BATTLE_DODGE_DURATION;
+      const snap = get();
+      const dir = snap.playerDodgeDirection;
+      const step = speed * delta * dir;
+      const newX = Math.max(-10, Math.min(10, snap.playerX + step));
+      const newT = dodgeT - delta;
+      const faceRight = snap.opponentX > newX;
+      if (newT <= 0) {
+        set({
+          playerDodgeTimer: 0,
+          playerX: newX,
+          playerVelocityX: 0,
+          playerFacingRight: faceRight,
+        });
+      } else {
+        set({
+          playerDodgeTimer: newT,
+          playerX: newX,
+          playerFacingRight: faceRight,
+        });
+      }
     }
     
     const newTime = Math.max(0, roundTime - delta);
@@ -406,6 +447,21 @@ export const useBattle = create<BattleState>((set, get) => ({
     });
   },
   
+  startPlayerDodge: (direction) => {
+    const { battlePhase, playerDodgeTimer, playerGrounded, playerAttacking, playerVelocityY } = get();
+    if (battlePhase !== "fighting" && battlePhase !== "transforming") return false;
+    if (playerDodgeTimer > 0) return false;
+    if (!playerGrounded || Math.abs(playerVelocityY) >= 0.1) return false;
+    if (playerAttacking) return false;
+    set({
+      playerDodgeTimer: 0.22,
+      playerDodgeDirection: direction,
+      playerVelocityX: 0,
+    });
+    useAudio.getState().playDodge();
+    return true;
+  },
+
   playerJump: () => {
     const { playerGrounded, playerVelocityY, playerY } = get();
     if (playerGrounded && Math.abs(playerVelocityY) < 0.1) {
@@ -419,7 +475,8 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
   
   playerAttack: (type) => {
-    const { playerAttacking, battlePhase, playerTransformed } = get();
+    const { playerAttacking, battlePhase, playerTransformed, playerDodgeTimer } = get();
+    if (playerDodgeTimer > 0) return;
     if (playerAttacking || (battlePhase !== 'fighting' && battlePhase !== 'transforming')) return;
 
     const { playerFighterId, playerOverdrive, maxOverdrive } = get();
@@ -537,7 +594,8 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
 
   playerTakeDamage: (damage, attackType) => {
-    const { playerInvulnerable, playerHealth, battlePhase, playerX, playerY, ultimateSuperArmorRemaining } = get();
+    const { playerInvulnerable, playerHealth, battlePhase, playerX, playerY, ultimateSuperArmorRemaining, playerDodgeTimer } = get();
+    if (playerDodgeTimer > 0) return;
     if (playerInvulnerable || battlePhase !== 'fighting' || ultimateSuperArmorRemaining > 0) return;
 
     const mult = getDamageTakenMultiplier(useDifficulty.getState().difficulty);
@@ -555,6 +613,7 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerAttackElapsed: 0,
       playerAttackHasHit: false,
       playerComboStep: 0,
+      playerDodgeTimer: 0,
     });
 
     get().addDamageNumber(playerX, playerY, scaledDamage, true);
@@ -600,12 +659,12 @@ export const useBattle = create<BattleState>((set, get) => ({
     const { opponentAttacking, battlePhase, opponentFighterId } = get();
     if (opponentAttacking || battlePhase !== 'fighting') return;
 
-    const { playerX, opponentX, playerInvulnerable, playerAttacking, playerAttackType } = get();
+    const { playerX, opponentX, playerInvulnerable, playerAttacking, playerAttackType, playerDodgeTimer } = get();
     const distance = Math.abs(playerX - opponentX);
     const moves = getCharacterMoves(opponentFighterId);
     const range = type === 'special' ? moves.specialRange : type === 'kick' ? 2 : 1.5;
 
-    if (distance < range && !playerInvulnerable) {
+    if (distance < range && !playerInvulnerable && playerDodgeTimer <= 0) {
       if (playerAttacking && playerAttackType) {
         const myPriority = getClashPriority(type);
         const theirPriority = getClashPriority(playerAttackType);
@@ -642,12 +701,12 @@ export const useBattle = create<BattleState>((set, get) => ({
     const newElapsed = opponentAttackElapsed + delta;
 
     if (!opponentAttackHasHit && isInActiveWindow(move, newElapsed)) {
-      const { playerX, opponentX, playerInvulnerable, opponentFighterId } = get();
+      const { playerX, opponentX, playerInvulnerable, opponentFighterId, playerDodgeTimer } = get();
       const moves = getCharacterMoves(opponentFighterId);
       const range = opponentAttackType === 'special' ? moves.specialRange : opponentAttackType === 'kick' ? 2 : 1.5;
       const distance = Math.abs(playerX - opponentX);
 
-      if (distance < range && !playerInvulnerable) {
+      if (distance < range && !playerInvulnerable && playerDodgeTimer <= 0) {
         const damage = opponentAttackType === 'special' ? moves.specialDamage : move.damage;
         get().playerTakeDamage(damage, opponentAttackType);
         set({ opponentAttackHasHit: true });

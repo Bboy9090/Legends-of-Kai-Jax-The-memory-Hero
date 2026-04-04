@@ -67,6 +67,33 @@ function playStoneGrind(type: "move" | "attack" | "hit") {
   } catch (_e) {}
 }
 
+function playDodgeWhoosh() {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const duration = 0.12;
+    const bufferSize = ctx.sampleRate * duration;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      const t = i / ctx.sampleRate;
+      const env = Math.sin((Math.PI * t) / duration);
+      const sweep = Math.sin(2 * Math.PI * (2200 * t * (1 - t * 3)));
+      data[i] = sweep * 0.35 * env;
+    }
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 900;
+    filter.Q.value = 0.9;
+    const gain = ctx.createGain();
+    gain.gain.value = 0.12;
+    source.connect(filter).connect(gain).connect(ctx.destination);
+    source.start();
+  } catch (_e) {}
+}
+
 interface AudioState {
   backgroundMusic: HTMLAudioElement | null;
   battleMusic: HTMLAudioElement | null;
@@ -90,6 +117,8 @@ interface AudioState {
   playStoneMove: () => void;
   playStoneAttack: () => void;
   playStoneHit: () => void;
+  /** Short movement whoosh (procedural; battle dodge / roll) */
+  playDodge: () => void;
 }
 
 function tryPlay(a: HTMLAudioElement | null) {
@@ -121,4 +150,5 @@ export const useAudio = create<AudioState>((set, get) => ({
   playStoneMove: () => { if (!get().isMuted) playStoneGrind("move"); },
   playStoneAttack: () => { if (!get().isMuted) playStoneGrind("attack"); },
   playStoneHit: () => { if (!get().isMuted) playStoneGrind("hit"); },
+  playDodge: () => { if (!get().isMuted) playDodgeWhoosh(); },
 }));
