@@ -6,6 +6,50 @@ export enum CombatState {
   BLOCKING = "BLOCKING",
 }
 
+/** Duel / arena mode: formal FSM for player combat posture (separate from round `battlePhase`). */
+export enum BattleCombatState {
+  FREE = "FREE",
+  ATTACKING = "ATTACKING",
+  DODGING = "DODGING",
+  BLOCKING = "BLOCKING",
+  /** Brief window after block start — perfect parry */
+  PARRY_WINDOW = "PARRY_WINDOW",
+  HITSTUN = "HITSTUN",
+  GUARD_BROKEN = "GUARD_BROKEN",
+}
+
+/** Battle mode stamina (block / specials / parry). */
+export const BATTLE_STAMINA = {
+  max: 100,
+  regenPerSec: 18,
+  regenDelayAfterBlock: 0.35,
+  blockDrainPerSec: 32,
+  /** First frames after holding block — parry if hit connects */
+  parryWindowSec: 0.1,
+  chipDamageMult: 0.18,
+  chipStaminaCost: 10,
+  parryOpponentStaggerSec: 0.65,
+  guardBreakDurationSec: 0.55,
+  guardBreakOnEmptyHit: true,
+} as const;
+
+export type AttackType = "punch" | "kick" | "special" | "ultimate";
+
+export function attackBreaksGuard(type: AttackType): number {
+  switch (type) {
+    case "ultimate":
+      return 55;
+    case "special":
+      return 40;
+    case "kick":
+      return 22;
+    case "punch":
+      return 12;
+    default:
+      return 0;
+  }
+}
+
 export interface MoveData {
   startup: number;
   active: number;
@@ -100,8 +144,6 @@ export const COMBO_CONFIG = {
   chainWindow: 20,
   resetTime: 1.0,
 };
-
-export type AttackType = "punch" | "kick" | "special" | "ultimate";
 
 export const ATTACK_TYPE_TO_MOVE: Record<AttackType, string> = {
   punch: "light1",

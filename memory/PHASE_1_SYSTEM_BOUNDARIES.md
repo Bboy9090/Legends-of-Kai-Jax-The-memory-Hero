@@ -13,7 +13,7 @@ This file documents *ownership* and *allowed dependencies* between gameplay syst
 #### Stores (authoritative runtime state)
 
 - **Battle (arena/duel) runtime state**: `apps/web/src/lib/stores/useBattle.tsx`
-  - **Owns**: duel state, timers, meter values, deterministic combat resolution for duel mode, screen FX intent (shake/flash/hitstop), fighter kinematics in the duel plane (x/y), and **ground dodge timing** (`playerDodgeTimer` / `playerDodgeDirection`) ticked with the round clock (including hit-stop behavior).
+  - **Owns**: duel state, timers, meter values, deterministic combat resolution for duel mode, screen FX intent (shake/flash/hitstop), fighter kinematics in the duel plane (x/y), **ground dodge timing** (`playerDodgeTimer` / `playerDodgeDirection`), **battle combat FSM** (`playerCombatState` + `tickBattleCombatFsm`), **duel stamina** (`playerStamina`), block/parry/guard-break resolution, and opponent stagger/hitstun timers.
   - **May depend on**:
     - Pure data or pure helpers: `apps/web/src/lib/combatSystems.ts`, `apps/web/src/lib/characterMoves.ts`
     - Cross-cutting services with no gameplay authority: `apps/web/src/lib/stores/useAudio.ts`

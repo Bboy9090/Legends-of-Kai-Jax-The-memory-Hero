@@ -753,6 +753,10 @@ export default function BattleUI() {
     playerTransformed, 
     comboCount, 
     comboDamage,
+    playerStamina,
+    maxPlayerStamina,
+    playerCombatState,
+    playerGuardPressure,
   } = useBattle();
 
   const activeMission = useMissions((s) => s.active);
@@ -821,6 +825,43 @@ export default function BattleUI() {
       {/* Combo Counter */}
       <ComboCounter combo={comboCount} maxCombo={50} damage={comboDamage} />
 
+      {/* Stamina + combat state (Phase 3) */}
+      {battlePhase === "fighting" && (
+        <div className="absolute left-4 bottom-24 sm:bottom-28 pointer-events-none max-w-[min(90vw,280px)]">
+          <div className="bg-black/70 backdrop-blur-md rounded-lg px-3 py-2 border border-white/15">
+            <div className="flex justify-between items-center gap-2 mb-1">
+              <span className="mk-hud text-[10px] sm:text-xs text-slate-400 uppercase tracking-wider">Stamina</span>
+              <span className="text-[10px] sm:text-xs text-cyan-200/90 font-mono">
+                {Math.round(playerStamina)} / {maxPlayerStamina}
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-gray-800/90 overflow-hidden border border-white/10">
+              <div
+                className="h-full rounded-full transition-[width] duration-100"
+                style={{
+                  width: `${Math.max(0, Math.min(100, (playerStamina / Math.max(1, maxPlayerStamina)) * 100))}%`,
+                  background:
+                    playerStamina < 18
+                      ? "linear-gradient(90deg, #ef4444, #f97316)"
+                      : "linear-gradient(90deg, #22d3ee, #3b82f6)",
+                }}
+              />
+            </div>
+            {playerGuardPressure > 8 && (
+              <div className="mt-1.5 h-1 rounded-full bg-gray-800/80 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-amber-500 to-red-500"
+                  style={{ width: `${Math.min(100, playerGuardPressure)}%` }}
+                />
+              </div>
+            )}
+            <div className="mt-1.5 text-[10px] sm:text-xs text-slate-400 font-mono truncate">
+              {playerCombatState.replace(/_/g, " ")}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mission HUD */}
       {activeMission && <MissionHUD />}
       
@@ -832,6 +873,10 @@ export default function BattleUI() {
               <div className="flex items-center gap-1.5">
                 <kbd className="bg-white/25 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">←→</kbd>
                 <span className="text-slate-300">Move</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <kbd className="bg-emerald-500/40 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">ALT</kbd>
+                <span className="text-emerald-200/90">Block</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <kbd className="bg-white/25 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">SPACE</kbd>

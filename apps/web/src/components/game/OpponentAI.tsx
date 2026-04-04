@@ -19,6 +19,7 @@ export default function OpponentAI() {
     const state = useBattle.getState();
     if (state.battlePhase !== "fighting") return;
     if (state.hitStop > 0) return;
+    if (state.opponentStaggerTimer > 0 || state.opponentHitStunTimer > 0) return;
 
     const delta = rawDelta * state.timeScale;
 

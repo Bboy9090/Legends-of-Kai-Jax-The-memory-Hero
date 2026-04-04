@@ -11,6 +11,10 @@ import {
   getMoveFrameTime,
   isInActiveWindow,
   FRAME_TIME,
+  BattleCombatState,
+  BATTLE_STAMINA,
+  attackBreaksGuard,
+  type AttackType,
 } from "../combatSystems";
 
 const DEFAULT_MAX_COMBO_TIMER = 2.3;
@@ -114,6 +118,27 @@ export interface BattleState {
   playerInvulnerable: boolean;
   opponentInvulnerable: boolean;
   opponentPersonality: 'aggressive' | 'defensive';
+
+  /** Formal duel combat FSM (player posture): FREE | ATTACKING | DODGING | BLOCKING | PARRY_WINDOW | HITSTUN | GUARD_BROKEN */
+  playerCombatState: BattleCombatState;
+  playerStamina: number;
+  maxPlayerStamina: number;
+  /** Delay before stamina regen after blocking or taking chip */
+  battleStaminaRegenDelay: number;
+  /** Seconds remaining in perfect-parry window after starting block */
+  playerBlockParryWindow: number;
+  /** Guard break buildup while blocking (0–100) */
+  playerGuardPressure: number;
+  /** Remaining guard-break stun on player */
+  guardBreakTimer: number;
+  /** Hitstun lockout (movement/attacks) */
+  playerHitStunTimer: number;
+  /** Opponent cannot act (parry stagger) */
+  opponentStaggerTimer: number;
+  /** Brief lockout on opponent after taking a solid hit */
+  opponentHitStunTimer: number;
+  /** True while holding block input (drives BLOCKING / PARRY_WINDOW) */
+  playerBlockHeld: boolean;
   
   // Actions
   startBattle: () => void;
@@ -177,6 +202,9 @@ export interface BattleState {
   setOpponentPersonality: (personality: 'aggressive' | 'defensive') => void;
 
   togglePause: () => void;
+
+  setPlayerBlockHeld: (held: boolean) => void;
+  tickBattleCombatFsm: (delta: number) => void;
 }
 
 let _damageNumberId = 0;
@@ -198,6 +226,20 @@ function hapticKO(): void {
     }
   } catch {
     // ignore
+  }
+}
+
+function hitStunDurationForAttack(attackType: AttackType | undefined): number {
+  switch (attackType) {
+    case "ultimate":
+      return 0.42;
+    case "special":
+      return 0.32;
+    case "kick":
+      return 0.22;
+    case "punch":
+    default:
+      return 0.16;
   }
 }
 
@@ -283,6 +325,18 @@ export const useBattle = create<BattleState>((set, get) => ({
   playerInvulnerable: false,
   opponentInvulnerable: false,
   opponentPersonality: 'aggressive',
+
+  playerCombatState: BattleCombatState.FREE,
+  playerStamina: BATTLE_STAMINA.max,
+  maxPlayerStamina: BATTLE_STAMINA.max,
+  battleStaminaRegenDelay: 0,
+  playerBlockParryWindow: 0,
+  playerGuardPressure: 0,
+  guardBreakTimer: 0,
+  playerHitStunTimer: 0,
+  opponentStaggerTimer: 0,
+  opponentHitStunTimer: 0,
+  playerBlockHeld: false,
   
   startBattle: () => {
     const maxComboTimer = getEffectiveMaxComboTimer();
@@ -317,6 +371,17 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerDodgeDirection: 1,
       playerVelocityX: 0,
       playerVelocityY: 0,
+      playerCombatState: BattleCombatState.FREE,
+      playerStamina: BATTLE_STAMINA.max,
+      maxPlayerStamina: BATTLE_STAMINA.max,
+      battleStaminaRegenDelay: 0,
+      playerBlockParryWindow: 0,
+      playerGuardPressure: 0,
+      guardBreakTimer: 0,
+      playerHitStunTimer: 0,
+      opponentStaggerTimer: 0,
+      opponentHitStunTimer: 0,
+      playerBlockHeld: false,
     });
     
     useAudio.getState().startBattleMusic();
@@ -364,6 +429,16 @@ export const useBattle = create<BattleState>((set, get) => ({
       damageNumbers: [],
       playerDodgeTimer: 0,
       playerDodgeDirection: 1,
+      playerCombatState: BattleCombatState.FREE,
+      playerStamina: BATTLE_STAMINA.max,
+      battleStaminaRegenDelay: 0,
+      playerBlockParryWindow: 0,
+      playerGuardPressure: 0,
+      guardBreakTimer: 0,
+      playerHitStunTimer: 0,
+      opponentStaggerTimer: 0,
+      opponentHitStunTimer: 0,
+      playerBlockHeld: false,
     });
     
     setTimeout(() => {
@@ -410,6 +485,8 @@ export const useBattle = create<BattleState>((set, get) => ({
     
     const newTime = Math.max(0, roundTime - delta);
     set({ roundTime: newTime });
+
+    get().tickBattleCombatFsm(delta);
     
     get().tickPlayerAttack(delta);
     get().tickOpponentAttack(delta);
@@ -448,15 +525,20 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
   
   startPlayerDodge: (direction) => {
-    const { battlePhase, playerDodgeTimer, playerGrounded, playerAttacking, playerVelocityY } = get();
+    const { battlePhase, playerDodgeTimer, playerGrounded, playerAttacking, playerVelocityY, playerStamina, guardBreakTimer, playerHitStunTimer } = get();
     if (battlePhase !== "fighting" && battlePhase !== "transforming") return false;
     if (playerDodgeTimer > 0) return false;
+    if (guardBreakTimer > 0 || playerHitStunTimer > 0) return false;
     if (!playerGrounded || Math.abs(playerVelocityY) >= 0.1) return false;
     if (playerAttacking) return false;
+    const dodgeCost = 18;
+    if (playerStamina < dodgeCost) return false;
     set({
       playerDodgeTimer: 0.22,
       playerDodgeDirection: direction,
       playerVelocityX: 0,
+      playerStamina: Math.max(0, playerStamina - dodgeCost),
+      battleStaminaRegenDelay: Math.max(get().battleStaminaRegenDelay, 0.2),
     });
     useAudio.getState().playDodge();
     return true;
@@ -475,14 +557,20 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
   
   playerAttack: (type) => {
-    const { playerAttacking, battlePhase, playerTransformed, playerDodgeTimer } = get();
+    const { playerAttacking, battlePhase, playerTransformed, playerDodgeTimer, guardBreakTimer, playerHitStunTimer, playerStamina } = get();
     if (playerDodgeTimer > 0) return;
+    if (guardBreakTimer > 0 || playerHitStunTimer > 0) return;
     if (playerAttacking || (battlePhase !== 'fighting' && battlePhase !== 'transforming')) return;
 
     const { playerFighterId, playerOverdrive, maxOverdrive } = get();
     const hasNativeUltimate = ['kai-jax', 'kai', 'jax', 'boryn'].includes(playerFighterId);
     const canUltimate = playerOverdrive >= maxOverdrive && (playerTransformed || hasNativeUltimate);
     if (type === 'ultimate' && !canUltimate) return;
+
+    const moveKeyForCost = ATTACK_TYPE_TO_MOVE[type];
+    const moveForCost = moveKeyForCost ? MOVES[moveKeyForCost] : null;
+    const staminaCost = type === "ultimate" ? (MOVES.heavy?.staminaCost ?? 25) : moveForCost?.staminaCost ?? 0;
+    if (playerStamina < staminaCost) return;
 
     if (type === 'ultimate') {
       set({
@@ -518,6 +606,8 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerAttackElapsed: 0,
       playerAttackHasHit: false,
       playerComboStep: type === 'kick' || type === 'special' || type === 'ultimate' ? 0 : comboStep,
+      playerStamina: Math.max(0, get().playerStamina - staminaCost),
+      battleStaminaRegenDelay: Math.max(get().battleStaminaRegenDelay, 0.12),
     });
 
     if (type === 'special' || type === 'ultimate') useMissions.getState().recordMove(type);
@@ -529,7 +619,8 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
 
   attemptComboCancel: () => {
-    const { playerAttacking, playerAttackType, playerComboStep, playerAttackElapsed } = get();
+    const { playerAttacking, playerAttackType, playerComboStep, playerAttackElapsed, guardBreakTimer, playerHitStunTimer } = get();
+    if (guardBreakTimer > 0 || playerHitStunTimer > 0) return false;
     if (!playerAttacking || playerAttackType !== 'punch' || playerComboStep >= 2) return false;
     const moveKey = `light${playerComboStep + 1}` as keyof typeof MOVES;
     const move = MOVES[moveKey];
@@ -594,14 +685,80 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
 
   playerTakeDamage: (damage, attackType) => {
-    const { playerInvulnerable, playerHealth, battlePhase, playerX, playerY, ultimateSuperArmorRemaining, playerDodgeTimer } = get();
-    if (playerDodgeTimer > 0) return;
-    if (playerInvulnerable || battlePhase !== 'fighting' || ultimateSuperArmorRemaining > 0) return;
+    const atk: AttackType = attackType ?? "punch";
+    const s = get();
+    if (s.playerDodgeTimer > 0) return;
+    if (s.battlePhase !== "fighting" || s.ultimateSuperArmorRemaining > 0) return;
+    if (s.playerInvulnerable) return;
 
     const mult = getDamageTakenMultiplier(useDifficulty.getState().difficulty);
     const scaledDamage = Math.round(damage * mult);
+
+    const blocking =
+      s.playerBlockHeld &&
+      s.playerGrounded &&
+      s.playerDodgeTimer <= 0 &&
+      !s.playerAttacking &&
+      s.playerHitStunTimer <= 0 &&
+      s.guardBreakTimer <= 0 &&
+      s.playerStamina > 0.5;
+
+    if (blocking) {
+      if (s.playerBlockParryWindow > 0) {
+        set({
+          opponentStaggerTimer: Math.max(s.opponentStaggerTimer, BATTLE_STAMINA.parryOpponentStaggerSec),
+          playerBlockParryWindow: 0,
+          playerGuardPressure: 0,
+          battleStaminaRegenDelay: Math.max(s.battleStaminaRegenDelay, BATTLE_STAMINA.regenDelayAfterBlock),
+          opponentAttacking: false,
+          opponentAttackType: null,
+          opponentAttackElapsed: 0,
+          opponentAttackHasHit: false,
+        });
+        get().triggerScreenFlash("#a8ffff");
+        get().triggerHitStop(0.09);
+        get().triggerScreenShake(2);
+        useAudio.getState().playSpecial();
+        return;
+      }
+
+      const chip = Math.max(1, Math.round(scaledDamage * BATTLE_STAMINA.chipDamageMult));
+      const breakVal = attackBreaksGuard(atk);
+      const nextPressure = Math.min(100, s.playerGuardPressure + breakVal);
+      const newStam = Math.max(0, s.playerStamina - BATTLE_STAMINA.chipStaminaCost);
+
+      if (nextPressure >= 100 || (newStam <= 0 && BATTLE_STAMINA.guardBreakOnEmptyHit)) {
+        set({
+          playerGuardPressure: 0,
+          playerStamina: newStam,
+          guardBreakTimer: BATTLE_STAMINA.guardBreakDurationSec,
+          playerBlockHeld: false,
+          playerBlockParryWindow: 0,
+          battleStaminaRegenDelay: Math.max(s.battleStaminaRegenDelay, BATTLE_STAMINA.regenDelayAfterBlock),
+        });
+        get().triggerScreenFlash("#ff4466");
+        get().triggerScreenShake(4);
+        useAudio.getState().playHit();
+        return;
+      }
+
+      const newHp = Math.max(0, s.playerHealth - chip);
+      set({
+        playerGuardPressure: nextPressure,
+        playerStamina: newStam,
+        battleStaminaRegenDelay: Math.max(s.battleStaminaRegenDelay, BATTLE_STAMINA.regenDelayAfterBlock),
+        playerHealth: newHp,
+      });
+      get().addDamageNumber(s.playerX, s.playerY, chip, true);
+      get().triggerHitStop(Math.max(0.02, scaledDamage / 900));
+      useAudio.getState().playKick();
+      if (newHp <= 0) get().endBattle("opponent");
+      return;
+    }
+
+    const { playerHealth, playerX, playerY } = get();
     const newHealth = Math.max(0, playerHealth - scaledDamage);
-    const knockbackMult = attackType === 'special' ? 0.08 : 0.06;
+    const knockbackMult = atk === "special" ? 0.08 : 0.06;
     const knockback = Math.min(1.2, damage * knockbackMult);
     const newX = Math.max(-10, Math.min(10, playerX - knockback));
     set({
@@ -614,22 +771,25 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerAttackHasHit: false,
       playerComboStep: 0,
       playerDodgeTimer: 0,
+      playerGuardPressure: 0,
+      playerBlockParryWindow: 0,
+      playerHitStunTimer: Math.max(get().playerHitStunTimer, hitStunDurationForAttack(atk)),
     });
 
     get().addDamageNumber(playerX, playerY, scaledDamage, true);
-    get().addOverdrive(scaledDamage * 0.35); // Meter also fills on receiving damage
-    const shakeBonus = attackType === 'special' ? 1.5 : 1;
+    get().addOverdrive(scaledDamage * 0.35);
+    const shakeBonus = atk === "special" ? 1.5 : 1;
     get().triggerScreenShake(Math.max(0.6, scaledDamage / 6) * shakeBonus);
-    get().triggerHitStop(Math.max(0.02, scaledDamage / 400) * (attackType === 'special' ? 1.3 : 1));
+    get().triggerHitStop(Math.max(0.02, scaledDamage / 400) * (atk === "special" ? 1.3 : 1));
     useAudio.getState().playHit();
-    get().resetCombo(); // Getting hit breaks combo
-    
+    get().resetCombo();
+
     setTimeout(() => {
       set({ playerInvulnerable: false });
     }, 500);
-    
+
     if (newHealth <= 0) {
-      get().endBattle('opponent');
+      get().endBattle("opponent");
     }
   },
   
@@ -656,7 +816,8 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
   
   opponentAttack: (type) => {
-    const { opponentAttacking, battlePhase, opponentFighterId } = get();
+    const { opponentAttacking, battlePhase, opponentFighterId, opponentStaggerTimer } = get();
+    if (opponentStaggerTimer > 0) return;
     if (opponentAttacking || battlePhase !== 'fighting') return;
 
     const { playerX, opponentX, playerInvulnerable, playerAttacking, playerAttackType, playerDodgeTimer } = get();
@@ -687,7 +848,8 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
 
   tickOpponentAttack: (delta) => {
-    const { opponentAttacking, opponentAttackType, opponentAttackElapsed, opponentAttackHasHit } = get();
+    const { opponentAttacking, opponentAttackType, opponentAttackElapsed, opponentAttackHasHit, opponentStaggerTimer, opponentHitStunTimer } = get();
+    if (opponentStaggerTimer > 0 || opponentHitStunTimer > 0) return;
     if (!opponentAttacking || !opponentAttackType) return;
 
     const moveKey = ATTACK_TYPE_TO_MOVE[opponentAttackType];
@@ -739,10 +901,12 @@ export const useBattle = create<BattleState>((set, get) => ({
     const knockbackMult = attackType === 'ultimate' ? 0.1 : attackType === 'special' ? 0.08 : 0.06;
     const knockback = Math.min(1.2, damage * knockbackMult);
     const newX = Math.max(-10, Math.min(10, opponentX + knockback));
+    const atk = attackType ?? "punch";
     set({ 
       opponentHealth: newHealth,
       opponentInvulnerable: true,
       opponentX: newX,
+      opponentHitStunTimer: Math.max(get().opponentHitStunTimer, hitStunDurationForAttack(atk)),
     });
     
     useAudio.getState().playHit();
@@ -1056,6 +1220,109 @@ export const useBattle = create<BattleState>((set, get) => ({
 
   setOpponentPersonality: (personality) => {
     set({ opponentPersonality: personality });
+  },
+
+  setPlayerBlockHeld: (held) => {
+    const s = get();
+    if (s.battlePhase !== "fighting" && s.battlePhase !== "transforming") return;
+    if (held && !s.playerBlockHeld) {
+      set({
+        playerBlockHeld: true,
+        playerBlockParryWindow: BATTLE_STAMINA.parryWindowSec,
+        battleStaminaRegenDelay: Math.max(s.battleStaminaRegenDelay, BATTLE_STAMINA.regenDelayAfterBlock),
+      });
+      return;
+    }
+    set({ playerBlockHeld: held });
+    if (!held) {
+      set({ playerBlockParryWindow: 0 });
+    }
+  },
+
+  tickBattleCombatFsm: (delta) => {
+    let {
+      opponentStaggerTimer,
+      opponentHitStunTimer,
+      guardBreakTimer,
+      playerHitStunTimer,
+      playerBlockHeld,
+      playerGrounded,
+      playerStamina,
+      battleStaminaRegenDelay,
+      playerBlockParryWindow,
+      playerAttacking,
+      playerDodgeTimer,
+      playerInvulnerable,
+    } = get();
+
+    opponentStaggerTimer = Math.max(0, opponentStaggerTimer - delta);
+    opponentHitStunTimer = Math.max(0, opponentHitStunTimer - delta);
+    guardBreakTimer = Math.max(0, guardBreakTimer - delta);
+    playerHitStunTimer = Math.max(0, playerHitStunTimer - delta);
+
+    if (battleStaminaRegenDelay > 0) {
+      battleStaminaRegenDelay = Math.max(0, battleStaminaRegenDelay - delta);
+    } else if (playerStamina < BATTLE_STAMINA.max) {
+      playerStamina = Math.min(BATTLE_STAMINA.max, playerStamina + BATTLE_STAMINA.regenPerSec * delta);
+    }
+
+    const canBlockBase =
+      playerGrounded &&
+      playerDodgeTimer <= 0 &&
+      !playerAttacking &&
+      playerHitStunTimer <= 0 &&
+      guardBreakTimer <= 0 &&
+      !playerInvulnerable;
+
+    let blocking = playerBlockHeld && canBlockBase && playerStamina > 0.5;
+
+    if (blocking) {
+      const drain = BATTLE_STAMINA.blockDrainPerSec * delta;
+      playerStamina = Math.max(0, playerStamina - drain);
+      battleStaminaRegenDelay = Math.max(battleStaminaRegenDelay, BATTLE_STAMINA.regenDelayAfterBlock);
+      playerBlockParryWindow = Math.max(0, playerBlockParryWindow - delta);
+      if (playerStamina <= 0) {
+        blocking = false;
+        guardBreakTimer = BATTLE_STAMINA.guardBreakDurationSec;
+        playerBlockHeld = false;
+        playerBlockParryWindow = 0;
+        get().triggerScreenFlash("#ff4466");
+        get().triggerScreenShake(3);
+      }
+    } else {
+      playerBlockParryWindow = 0;
+    }
+
+    let nextGuardPressure = get().playerGuardPressure;
+    if (!blocking) {
+      nextGuardPressure = Math.max(0, nextGuardPressure - delta * 28);
+    }
+
+    let nextState: BattleCombatState = BattleCombatState.FREE;
+    if (playerDodgeTimer > 0) {
+      nextState = BattleCombatState.DODGING;
+    } else if (playerAttacking) {
+      nextState = BattleCombatState.ATTACKING;
+    } else if (guardBreakTimer > 0) {
+      nextState = BattleCombatState.GUARD_BROKEN;
+    } else if (playerHitStunTimer > 0) {
+      nextState = BattleCombatState.HITSTUN;
+    } else if (blocking) {
+      nextState = playerBlockParryWindow > 0 ? BattleCombatState.PARRY_WINDOW : BattleCombatState.BLOCKING;
+    }
+
+    set({
+      opponentStaggerTimer,
+      opponentHitStunTimer,
+      guardBreakTimer,
+      playerHitStunTimer,
+      playerStamina,
+      battleStaminaRegenDelay,
+      playerBlockParryWindow,
+      playerGuardPressure: nextGuardPressure,
+      playerCombatState: nextState,
+      ...(playerStamina <= 0 && !blocking ? { playerBlockHeld: false } : {}),
+    });
   },
 
   togglePause: () => {

@@ -43,6 +43,9 @@ export default function PlayerController() {
     if (state.battlePhase !== "fighting" && state.battlePhase !== "transforming") return;
     if (state.hitStop > 0) return;
 
+    const blockHeld = !!(keys["AltLeft"] || keys["AltRight"]);
+    useBattle.getState().setPlayerBlockHeld(blockHeld);
+
     const delta = rawDelta * state.timeScale;
     const keys = keysRef.current;
     const prev = prevKeysRef.current;
@@ -52,6 +55,27 @@ export default function PlayerController() {
     const touchAttacks = touch.consumeAttacks();
 
     if (state.playerDodgeTimer > 0) {
+      prevKeysRef.current = { ...keys };
+      return;
+    }
+
+    if (state.guardBreakTimer > 0 || state.playerHitStunTimer > 0) {
+      let velY = state.playerVelocityY;
+      velY += GRAVITY * delta;
+      let newY = state.playerY + velY * delta;
+      let grounded = false;
+      if (newY <= GROUND_Y) {
+        newY = GROUND_Y;
+        velY = 0;
+        grounded = true;
+      }
+      useBattle.setState({
+        playerY: newY,
+        playerVelocityY: velY,
+        playerGrounded: grounded,
+        playerVelocityX: 0,
+        playerFacingRight: state.opponentX > state.playerX,
+      });
       prevKeysRef.current = { ...keys };
       return;
     }
@@ -70,8 +94,16 @@ export default function PlayerController() {
     const maxSpeed =
       (sprintHeld ? SPRINT_MAX_SPEED : WALK_MAX_SPEED) * (state.playerGrounded ? 1 : AIR_CONTROL_MULT);
 
+    const blockMove =
+      blockHeld &&
+      state.playerGrounded &&
+      !state.playerAttacking;
+
     let targetVx = inputX * maxSpeed;
     if (Math.abs(inputX) < 0.08) targetVx = 0;
+    if (blockMove) {
+      targetVx *= 0.35;
+    }
 
     let vx = state.playerVelocityX;
     const rate = targetVx === 0 ? DECEL : ACCEL;
@@ -90,7 +122,7 @@ export default function PlayerController() {
       justPressed("ArrowUp") ||
       justPressed("KeyW") ||
       touchAttacks.includes("jump");
-    if (wantJump && state.playerGrounded) {
+    if (wantJump && state.playerGrounded && !blockMove) {
       velY = JUMP_VELOCITY;
       useAudio.getState().playJump();
     }
@@ -109,7 +141,7 @@ export default function PlayerController() {
 
     const towardOpp = Math.sign(state.opponentX - state.playerX) || 1;
     const wantDodge =
-      justPressed("KeyQ") || justPressed("KeyE") || touchAttacks.includes("dodge");
+      (justPressed("KeyQ") || justPressed("KeyE") || touchAttacks.includes("dodge")) && !blockMove;
     if (wantDodge) {
       const dir = (keys["KeyE"] ? 1 : keys["KeyQ"] ? -1 : inputX !== 0 ? (Math.sign(inputX) as 1 | -1) : ((-towardOpp) as 1 | -1)) as 1 | -1;
       if (state.startPlayerDodge(dir)) {
@@ -127,11 +159,13 @@ export default function PlayerController() {
       playerFacingRight: faceTowardOpponent,
     });
 
-    if (justPressed("KeyJ") || justPressed("KeyX") || touchAttacks.includes("punch") || touchAttacks.includes("attack")) state.playerAttack("punch");
-    if (justPressed("KeyK") || justPressed("KeyZ") || touchAttacks.includes("kick") || touchAttacks.includes("heavy")) state.playerAttack("kick");
-    if (justPressed("KeyL") || justPressed("KeyC") || touchAttacks.includes("special") || touchAttacks.includes("skill")) state.playerAttack("special");
-    if (justPressed("KeyR") || touchAttacks.includes("ultimate")) state.playerAttack("ultimate");
-    if (justPressed("KeyT")) state.triggerTransformation();
+    if (!blockMove) {
+      if (justPressed("KeyJ") || justPressed("KeyX") || touchAttacks.includes("punch") || touchAttacks.includes("attack")) state.playerAttack("punch");
+      if (justPressed("KeyK") || justPressed("KeyZ") || touchAttacks.includes("kick") || touchAttacks.includes("heavy")) state.playerAttack("kick");
+      if (justPressed("KeyL") || justPressed("KeyC") || touchAttacks.includes("special") || touchAttacks.includes("skill")) state.playerAttack("special");
+      if (justPressed("KeyR") || touchAttacks.includes("ultimate")) state.playerAttack("ultimate");
+      if (justPressed("KeyT")) state.triggerTransformation();
+    }
 
     prevKeysRef.current = { ...keys };
   });
