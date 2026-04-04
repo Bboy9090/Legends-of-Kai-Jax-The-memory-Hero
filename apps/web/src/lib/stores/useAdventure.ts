@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { CombatState, STAMINA_CONFIG } from "../combatSystems";
+import type { CampaignNodeId } from "./useRunner";
 
 export interface AdventurePlayerState {
   fighterId: string;
@@ -68,6 +69,11 @@ interface AdventureState {
   waveCount: number;
   enemiesDefeated: number;
   isPaused: boolean;
+  /** When set, open-world uses scripted district encounters instead of infinite waves */
+  roamDistrictId: CampaignNodeId | null;
+  encounterIndex: number;
+  /** All encounters in district cleared */
+  districtCompleted: boolean;
 
   setPlayerPos: (x: number, y: number, z: number) => void;
   setPlayerRot: (rotY: number) => void;
@@ -105,6 +111,8 @@ interface AdventureState {
   removeEnemy: (id: string) => void;
 
   initAdventure: (characterId: string, missionId: string | null, arenaId: string) => void;
+  /** Phase 5: district-based roam (scripted encounters) */
+  startDistrictRoam: (districtId: CampaignNodeId, characterId: string) => void;
   togglePause: () => void;
   reset: () => void;
 }
@@ -154,6 +162,9 @@ export const useAdventure = create<AdventureState>((set, get) => ({
   waveCount: 0,
   enemiesDefeated: 0,
   isPaused: false,
+  roamDistrictId: null,
+  encounterIndex: 0,
+  districtCompleted: false,
 
   setPlayerPos: (x, y, z) =>
     set((s) => ({ player: { ...s.player, posX: x, posY: y, posZ: z } })),
@@ -369,6 +380,23 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       waveCount: 0,
       enemiesDefeated: 0,
       isPaused: false,
+      roamDistrictId: null,
+      encounterIndex: 0,
+      districtCompleted: false,
+    }),
+
+  startDistrictRoam: (districtId, characterId) =>
+    set({
+      player: { ...defaultPlayer, fighterId: characterId },
+      enemies: [],
+      missionId: null,
+      arenaId: `roam-${districtId}`,
+      waveCount: 0,
+      enemiesDefeated: 0,
+      isPaused: false,
+      roamDistrictId: districtId,
+      encounterIndex: 0,
+      districtCompleted: false,
     }),
 
   togglePause: () => set((s) => ({ isPaused: !s.isPaused })),
@@ -382,5 +410,8 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       waveCount: 0,
       enemiesDefeated: 0,
       isPaused: false,
+      roamDistrictId: null,
+      encounterIndex: 0,
+      districtCompleted: false,
     }),
 }));

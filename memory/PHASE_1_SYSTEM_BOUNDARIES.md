@@ -25,9 +25,12 @@ This file documents *ownership* and *allowed dependencies* between gameplay syst
     - Anything that introduces non-determinism into game rules (randomness without a seeded RNG)
 
 - **Adventure (open-world / exploration) runtime state**: `apps/web/src/lib/stores/useAdventure.ts`
-  - **Owns**: player/world positional state in 3D space, enemy list + lightweight AI state, stamina/combat state timers, mission progression for adventure mode.
-  - **May depend on**: `apps/web/src/lib/combatSystems.ts` (shared enums/tuning).
+  - **Owns**: player/world positional state in 3D space, enemy list + lightweight AI state, stamina/combat state timers, mission progression for adventure mode, and **district roam session** flags (`roamDistrictId`, `encounterIndex`, `districtCompleted`) when using scripted patrols.
+  - **May depend on**: `apps/web/src/lib/combatSystems.ts` (shared enums/tuning); `apps/web/src/lib/encounters.ts` (pure encounter specs + spawn builders).
   - **Must not depend on**: Battle store (mode separation keeps state ownership unambiguous).
+
+- **Encounter definitions (pure data + spawn helpers)**: `apps/web/src/lib/encounters.ts`
+  - Owns district encounter tables and deterministic `buildEncounterEnemies`. No store writes.
 
 #### Pure gameplay data / rules (deterministic, side-effect free)
 

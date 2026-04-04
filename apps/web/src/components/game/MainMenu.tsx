@@ -98,6 +98,13 @@ export default function MainMenu() {
               Adventure Mode
             </button>
             <button
+              type="button"
+              onClick={() => setGameState("district-select")}
+              className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-indigo-500/20 border-2 border-indigo-400/70 text-indigo-100 font-bold text-base hover:bg-indigo-500/30 hover:border-indigo-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+            >
+              District patrol
+            </button>
+            <button
               onClick={startStoryMode}
               className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-cyan-500/25 border-2 border-cyan-400/80 text-cyan-100 font-bold text-base shadow-lg shadow-cyan-500/20 hover:bg-cyan-500/35 hover:border-cyan-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
             >

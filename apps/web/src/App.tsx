@@ -12,6 +12,7 @@ import MainMenu from "./components/game/MainMenu";
 import VersusCharacterSelect from "./components/game/VersusCharacterSelect";
 import BeastPreview from "./components/game/BeastPreview";
 import CampaignMap from "./components/game/CampaignMap";
+import DistrictSelectScreen from "./components/game/DistrictSelectScreen";
 import TransformationOverlay from "./components/game/TransformationOverlay";
 import ScreenEffects from "./components/game/ScreenEffects";
 import { GameIntro } from "./components/game/LoadingScreen";
@@ -166,6 +167,8 @@ function App() {
 
         {/* Campaign: RPG adventure — map, waves, bosses, progression to big bad */}
         {phase === "ready" && gameState === "campaign-map" && <CampaignMap />}
+
+        {phase === "ready" && gameState === "district-select" && <DistrictSelectScreen />}
 
         {/* Versus Mode - full 3D beast model character select */}
         {phase === 'ready' && gameState === 'versus-select' && (

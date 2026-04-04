@@ -4,6 +4,7 @@ export type GameState =
   | "lore-hub"
   | "menu"
   | "campaign-map"
+  | "district-select"
   | "story-mode-select"
   | "story-mode"
   | "mission-select"

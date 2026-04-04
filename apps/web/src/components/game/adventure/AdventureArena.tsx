@@ -2,6 +2,7 @@ import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
 import { ENEMY_TIERS } from "../../../lib/combatSystems";
+import { buildEncounterEnemies, getDistrictMeta } from "../../../lib/encounters";
 import AdventureCharacter from "./AdventureCharacter";
 import AdventureCamera from "./AdventureCamera";
 import AdventurePlayerController from "./AdventurePlayerController";
@@ -159,6 +160,45 @@ function WaveSpawner() {
 
     const aliveEnemies = adv.enemies.filter((e) => !e.isDead);
 
+    if (adv.roamDistrictId) {
+      const meta = getDistrictMeta(adv.roamDistrictId);
+      if (!meta) return;
+
+      if (adv.districtCompleted) {
+        return;
+      }
+
+      if (aliveEnemies.length > 0) {
+        spawnTimer.current = 0;
+        return;
+      }
+
+      if (adv.encounterIndex >= meta.encounters.length) {
+        useAdventure.setState({ districtCompleted: true });
+        return;
+      }
+
+      spawnTimer.current += delta;
+      const isFirst = adv.waveCount === 0;
+      const delay = isFirst ? 2 : 1.5;
+      if (spawnTimer.current <= delay) return;
+
+      const spec = meta.encounters[adv.encounterIndex];
+      const list = buildEncounterEnemies({
+        districtId: adv.roamDistrictId,
+        encounterIndex: adv.encounterIndex,
+        spec,
+      });
+      adv.spawnEnemies(list);
+      useAdventure.setState({
+        waveCount: adv.encounterIndex + 1,
+        encounterIndex: adv.encounterIndex + 1,
+      });
+      waveNum.current = adv.encounterIndex + 1;
+      spawnTimer.current = 0;
+      return;
+    }
+
     if (aliveEnemies.length === 0) {
       spawnTimer.current += delta;
       if (spawnTimer.current > 2) {
@@ -248,6 +288,8 @@ export default function AdventureArena({
   accentColor,
 }: AdventureArenaProps) {
   useEffect(() => {
+    const s = useAdventure.getState();
+    if (s.roamDistrictId) return;
     useAdventure.getState().initAdventure(characterId, null, "open-world");
   }, [characterId]);
 

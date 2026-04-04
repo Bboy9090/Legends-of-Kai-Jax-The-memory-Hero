@@ -1,6 +1,7 @@
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useRunner } from "../../../lib/stores/useRunner";
 import { CombatState, STAMINA_CONFIG } from "../../../lib/combatSystems";
+import { getDistrictMeta } from "../../../lib/encounters";
 
 function HealthBar({
   current,
@@ -148,8 +149,13 @@ export default function AdventureHUD() {
   const enemies = useAdventure((s) => s.enemies);
   const waveCount = useAdventure((s) => s.waveCount);
   const enemiesDefeated = useAdventure((s) => s.enemiesDefeated);
+  const roamDistrictId = useAdventure((s) => s.roamDistrictId);
+  const encounterIndex = useAdventure((s) => s.encounterIndex);
+  const districtCompleted = useAdventure((s) => s.districtCompleted);
   const isPaused = useAdventure((s) => s.isPaused);
   const setGameState = useRunner((s) => s.setGameState);
+
+  const districtMeta = roamDistrictId ? getDistrictMeta(roamDistrictId) : null;
 
   const aliveEnemies = enemies.filter((e) => !e.isDead).length;
 
@@ -201,8 +207,14 @@ export default function AdventureHUD() {
 
           <div className="flex items-center gap-4 bg-black/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-slate-700/50">
             <div className="text-center">
-              <div className="text-xs text-slate-400">Wave</div>
-              <div className="text-lg font-black text-cyan-300">{waveCount}</div>
+              <div className="text-xs text-slate-400">{districtMeta ? "Encounter" : "Wave"}</div>
+              <div className="text-lg font-black text-cyan-300">
+                {districtMeta
+                  ? districtCompleted
+                    ? "Done"
+                    : `${Math.min(encounterIndex + 1, districtMeta.encounters.length)}/${districtMeta.encounters.length}`
+                  : waveCount}
+              </div>
             </div>
             <div className="w-px h-8 bg-slate-700" />
             <div className="text-center">
@@ -217,6 +229,16 @@ export default function AdventureHUD() {
           </div>
         </div>
       </div>
+
+      {districtMeta && (
+        <div className="absolute top-20 left-4 max-w-xs bg-black/55 backdrop-blur-sm rounded-lg px-3 py-2 border border-cyan-500/25 pointer-events-none">
+          <div className="text-[10px] text-cyan-300/90 font-bold uppercase tracking-wider">{districtMeta.name}</div>
+          <div className="text-[11px] text-slate-400 mt-0.5 line-clamp-2">{districtMeta.theme}</div>
+          {districtCompleted && (
+            <div className="text-xs text-emerald-400 font-bold mt-1">District cleared — exit via pause menu.</div>
+          )}
+        </div>
+      )}
 
       <ComboDisplay step={player.comboStep} state={player.combatState} />
       <CombatStateLabel state={player.combatState} />
