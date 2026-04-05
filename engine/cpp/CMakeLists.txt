@@ -133,8 +133,17 @@ target_link_libraries(CompleteIntegrationTest
     PRIVATE LegendsEngineCore
 )
 
+# Test executable for Story Mode
+add_executable(StoryModeTest
+    tests/StoryModeTest.cpp
+)
+
+target_link_libraries(StoryModeTest
+    PRIVATE LegendsEngineCore
+)
+
 # Set output directories
-set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest AnimationComponentTest AnimationIntegrationTest InputSystemTest CharacterInputIntegrationTest PlatformInputTest StateInterruptionTest AnimationBlendingTest CompleteIntegrationTest
+set_target_properties(LegendsEngineCore CharacterLoaderTest CharacterFactoryTest AnimationComponentTest AnimationIntegrationTest InputSystemTest CharacterInputIntegrationTest PlatformInputTest StateInterruptionTest AnimationBlendingTest CompleteIntegrationTest EndToEndIntegrationTest StoryModeTest
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -164,3 +173,5 @@ add_test(NAME PlatformInputTest COMMAND PlatformInputTest)
 add_test(NAME StateInterruptionTest COMMAND StateInterruptionTest)
 add_test(NAME AnimationBlendingTest COMMAND AnimationBlendingTest)
 add_test(NAME CompleteIntegrationTest COMMAND CompleteIntegrationTest)
+add_test(NAME EndToEndIntegrationTest COMMAND EndToEndIntegrationTest)
+add_test(NAME StoryModeTest COMMAND StoryModeTest)

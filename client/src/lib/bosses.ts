@@ -1,4 +1,4 @@
-// SUPER SMASH GRAND SAGA - BOSS SYSTEM
+// AETERNA COVENANT: GENESIS ARENA - BOSS SYSTEM
 
 export interface BossAttack {
   id: string;

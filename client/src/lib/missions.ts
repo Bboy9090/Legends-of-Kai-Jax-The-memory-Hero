@@ -1,4 +1,4 @@
-// SUPER SMASH GRAND SAGA - 100 MISSIONS ACROSS 9 ACTS
+// AETERNA COVENANT: GENESIS ARENA - 100 MISSIONS ACROSS 9 ACTS
 import { ActNumber } from './storyMode';
 import { getUEEMissionById } from './uee_missions';
 import { getStoryMissionById } from './story_missions';
