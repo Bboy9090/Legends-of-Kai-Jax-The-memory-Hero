@@ -1,0 +1,17 @@
+Warning: Cannot update a component (&#x60;Player&#x60;) while rendering a different component (&#x60;GameScene&#x60;). To locate the bad setState() call inside &#x60;GameScene&#x60;, follow the stack trace as described in https://reactjs.org/link/setstate-in-render
+    at GameScene (https://ccf3650f-78b5-4898-be4f-d5bceeb1cfc6-00-2hmv44d2pewu7.spock.replit.dev/src/components/game/GameScene.tsx:36:96)
+    at Suspense
+    at Suspense
+    at ErrorBoundary (https://ccf3650f-78b5-4898-be4f-d5bceeb1cfc6-00-2hmv44d2pewu7.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T6SUJGNB.js?v=ebd88d7a:16490:5)
+    at FiberProvider (https://ccf3650f-78b5-4898-be4f-d5bceeb1cfc6-00-2hmv44d2pewu7.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T6SUJGNB.js?v=ebd88d7a:18170:21)
+    at Provider (https://ccf3650f-78b5-4898-be4f-d5bceeb1cfc6-00-2hmv44d2pewu7.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T6SUJGNB.js?v=ebd88d7a:17779:3)
+at GameScene (https://ccf3650f-78b5-4898-be4f-d5bceeb1cfc6-00-2hmv44d2pewu7.spock.replit.dev/src/components/game/GameScene.tsx:36:96)
+at Suspense
+at Suspense
+at ErrorBoundary (https://ccf3650f-78b5-4898-be4f-d5bceeb1cfc6-00-2hmv44d2pewu7.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T6SUJGNB.js?v=ebd88d7a:16490:5)
+at FiberProvider (https://ccf3650f-78b5-4898-be4f-d5bceeb1cfc6-00-2hmv44d2pewu7.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T6SUJGNB.js?v=ebd88d7a:18170:21)
+at Provider (https://ccf3650f-78b5-4898-be4f-d5bceeb1cfc6-00-2hmv44d2pewu7.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T6SUJGNB.js?v=ebd88d7a:17779:3)
+at t.value (https://ccf3650f-78b5-4898-be4f-d5bceeb1cfc6-00-2hmv44d2pewu7.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://ccf3650f-78b5-4898-be4f-d5bceeb1cfc6-00-2hmv44d2pewu7.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://ccf3650f-78b5-4898-be4f-d5bceeb1cfc6-00-2hmv44d2pewu7.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://ccf3650f-78b5-4898-be4f-d5bceeb1cfc6-00-2hmv44d2pewu7.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400

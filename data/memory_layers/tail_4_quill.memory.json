@@ -1,0 +1,27 @@
+{
+  "$schema": "../../schemas/memory_layer.schema.json",
+  "memory_id": "memory_pain_remembered",
+  "tail_number": 4,
+  "memory_type": "pain_remembered",
+  "name": "Pain Remembered",
+  "description": "Memory of being hit and standing anyway. Pain as information, not trauma.",
+  "read": "Pain teaches faster than mercy.",
+  "gameplay_effects": {
+    "perception_shifts": [
+      "damage_taken_becomes_readable",
+      "enemy_attack_patterns_clearer",
+      "dodge_windows_feel_wider"
+    ],
+    "behavior_modifications": [
+      "baiting_attacks_feels_intuitive",
+      "dodging_into_danger_feels_correct"
+    ],
+    "enemy_reactions": [
+      "enemies_hesitate_after_failed_strikes",
+      "posture_breaks_satisfy_deeply"
+    ],
+    "world_interactions": []
+  },
+  "stacking_rule": "cumulative",
+  "persistence": "irreversible"
+}

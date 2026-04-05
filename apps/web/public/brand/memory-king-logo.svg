@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="500" viewBox="0 0 1400 500">
+  <defs>
+    <linearGradient id="mk_g1" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#FFD700"/>
+      <stop offset="0.25" stop-color="#FF6B6B"/>
+      <stop offset="0.55" stop-color="#A855F7"/>
+      <stop offset="1" stop-color="#00FFFF"/>
+    </linearGradient>
+    <linearGradient id="mk_g2" x1="0" x2="1" y1="1" y2="0">
+      <stop offset="0" stop-color="#00FFFF"/>
+      <stop offset="0.35" stop-color="#3B82F6"/>
+      <stop offset="0.7" stop-color="#A855F7"/>
+      <stop offset="1" stop-color="#FFD700"/>
+    </linearGradient>
+    <filter id="mk_glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feColorMatrix in="b" type="matrix"
+        values="
+          1 0 0 0 0
+          0 1 0 0 0
+          0 0 1 0 0
+          0 0 0 0.75 0" result="c"/>
+      <feMerge>
+        <feMergeNode in="c"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1400" height="500" fill="transparent"/>
+
+  <!-- Crown + Memory Core -->
+  <g transform="translate(90,125)" filter="url(#mk_glow)">
+    <path d="M130 170 L170 85 L215 145 L260 70 L305 145 L350 85 L390 170 Z"
+          fill="none" stroke="url(#mk_g1)" stroke-width="10" stroke-linejoin="round"/>
+    <circle cx="260" cy="195" r="42" fill="none" stroke="url(#mk_g2)" stroke-width="10"/>
+    <circle cx="260" cy="195" r="12" fill="url(#mk_g1)"/>
+    <path d="M210 195 C235 160, 285 160, 310 195" fill="none" stroke="url(#mk_g2)" stroke-width="7" stroke-linecap="round"/>
+  </g>
+
+  <!-- Title -->
+  <g transform="translate(470,170)" filter="url(#mk_glow)">
+    <text x="0" y="0" font-family="Impact, Haettenschweiler, 'Arial Black', sans-serif" font-size="78"
+          letter-spacing="2" fill="url(#mk_g1)">LEGENDS OF KAI-JAX</text>
+    <text x="0" y="78" font-family="Impact, Haettenschweiler, 'Arial Black', sans-serif" font-size="62"
+          letter-spacing="6" fill="url(#mk_g2)">THE MEMORY KING</text>
+  </g>
+
+  <!-- Tagline -->
+  <g transform="translate(470,330)">
+    <text x="0" y="0" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif" font-size="20"
+          letter-spacing="3" fill="#FFE8A3" opacity="0.9">FORGED IN THE BRONX " CROWNED BY MEMORY</text>
+  </g>
+</svg>

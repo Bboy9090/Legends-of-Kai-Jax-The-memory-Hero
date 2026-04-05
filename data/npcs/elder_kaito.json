@@ -1,0 +1,102 @@
+{
+  "npc_id": "elder_kaito",
+  "name": "Elder Kaito",
+  "npc_type": "quest_giver",
+  "location": {
+    "district_id": "awakening_district",
+    "zone_id": "awakening_plaza",
+    "position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  "appearance": {
+    "model_id": "elder_sage",
+    "scale": 1.0
+  },
+  "dialogue_tree": {
+    "default": {
+      "text": "Ah, Kai-Jax. The Memory Weave connects us all. Seek wisdom, and you shall find strength.",
+      "emotion": "neutral",
+      "options": [
+        {
+          "text": "Tell me about the Memory Weave.",
+          "next_node": "memory_weave_explanation"
+        },
+        {
+          "text": "I'm ready for my next task.",
+          "next_node": "quest_check"
+        },
+        {
+          "text": "Farewell.",
+          "next_node": "farewell"
+        }
+      ]
+    },
+    "memory_weave_explanation": {
+      "text": "The Memory Weave binds our reality. It is both gift and burden. As your tails grow, so too does your connection to it—and the weight you must bear.",
+      "emotion": "neutral",
+      "options": [
+        {
+          "text": "I understand.",
+          "next_node": "default"
+        }
+      ]
+    },
+    "quest_check": {
+      "text": "Your determination is admirable. Let me see what tasks await you.",
+      "emotion": "friendly",
+      "options": [
+        {
+          "text": "I accept.",
+          "next_node": "default",
+          "triggers_quest": "first_awakening"
+        }
+      ]
+    },
+    "farewell": {
+      "text": "May the ancestors guide your path, young one.",
+      "emotion": "friendly",
+      "options": []
+    }
+  },
+  "tail_tier_reactions": {
+    "3": {
+      "override_dialogue": "",
+      "fear_modifier": 0.0,
+      "respect_modifier": 0.3
+    },
+    "4": {
+      "override_dialogue": "I see your fourth tail has emerged. The Memory Weave recognizes your growth.",
+      "fear_modifier": 0.0,
+      "respect_modifier": 0.5
+    },
+    "5": {
+      "override_dialogue": "Five tails... You are becoming a force to be reckoned with. The city will remember your name.",
+      "fear_modifier": 0.1,
+      "respect_modifier": 0.7
+    },
+    "6": {
+      "override_dialogue": "Six tails. Few have reached such heights. Even I feel the weight of your presence.",
+      "fear_modifier": 0.3,
+      "respect_modifier": 0.85
+    },
+    "7": {
+      "override_dialogue": "Seven... The legends spoke of such power. I am honored to stand before you.",
+      "fear_modifier": 0.5,
+      "respect_modifier": 0.95
+    },
+    "8": {
+      "override_dialogue": "*Eyes wide with awe* Eight tails. You are approaching divinity. I... I barely know how to speak to you anymore.",
+      "fear_modifier": 0.7,
+      "respect_modifier": 1.0
+    },
+    "9": {
+      "override_dialogue": "*Kneels, trembling* Nine tails... The Crown of Memory. I am not worthy.",
+      "fear_modifier": 0.9,
+      "respect_modifier": 1.0
+    }
+  },
+  "quests": ["first_awakening", "memory_trial"]
+}

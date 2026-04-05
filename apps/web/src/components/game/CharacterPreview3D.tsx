@@ -1,8 +1,10 @@
 import { Canvas } from "@react-three/fiber";
 import { Environment, OrbitControls } from "@react-three/drei";
-import { Suspense } from "react";
+import { Suspense, useRef } from "react";
 import { Fighter } from "../../lib/characters";
-import GLBCharacterModel from "./models/GLBCharacterModel";
+import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
+import { Group } from "three";
+import type { BeastPresetKind } from "../../lib/stores/useBeastPreset";
 import * as THREE from "three";
 import CinematicPostFX from "./graphics/CinematicPostFX";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
@@ -10,16 +12,43 @@ import { getQualitySettings } from "../../lib/threejs/PerformanceOptimizer";
 
 interface CharacterPreview3DProps {
   fighter: Fighter;
-  preset?: string;
+  preset?: BeastPresetKind;
 }
 
-export default function CharacterPreview3D({ fighter }: CharacterPreview3DProps) {
+export default function CharacterPreview3D({ fighter, preset = "auto" }: CharacterPreview3DProps) {
+  const bodyRef = useRef<Group>(null);
+  const headRef = useRef<Group>(null);
+  const leftArmRef = useRef<Group>(null);
+  const rightArmRef = useRef<Group>(null);
+  const leftLegRef = useRef<Group>(null);
+  const rightLegRef = useRef<Group>(null);
+
+  const renderCharacterModel = () => {
+    const modelProps = {
+      fighter,
+      bodyRef,
+      headRef,
+      leftArmRef,
+      rightArmRef,
+      leftLegRef,
+      rightLegRef,
+      emotionIntensity: 0.5,
+      hitAnim: 0,
+      animTime: 0,
+      isAttacking: false,
+      isInvulnerable: false,
+      presetOverride: preset === "auto" ? null : preset
+    };
+
+    return <AnatomicalBeastModel {...modelProps} />;
+  };
+
   return (
     <div className="w-full h-full">
       <Canvas
         camera={{
-          position: [0, 1.65, 6.4],
-          fov: 42
+          position: [0, 1.5, 4],
+          fov: 50
         }}
         shadows
         onCreated={({ gl }) => {
@@ -29,7 +58,7 @@ export default function CharacterPreview3D({ fighter }: CharacterPreview3DProps)
           gl.toneMapping = THREE.ACESFilmicToneMapping;
           gl.toneMappingExposure = 1.2;
           gl.shadowMap.enabled = true;
-          gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
+          gl.shadowMap.type = q.shadowMap.type;
         }}
         gl={{ antialias: getQualitySettings().antialias, powerPreference: "high-performance" }}
       >
@@ -46,13 +75,10 @@ export default function CharacterPreview3D({ fighter }: CharacterPreview3DProps)
         
         <Suspense fallback={null}>
           <group position={[0, -1, 0]}>
-            <GLBCharacterModel
-              fighterId={fighter.id}
-              accentColor={fighter.accentColor}
-              emotionIntensity={0.5}
-            />
+            {renderCharacterModel()}
           </group>
           
+          {/* Ground shadow plane */}
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.7, 0]} receiveShadow>
             <planeGeometry args={[10, 10]} />
             <shadowMaterial opacity={0.3} />

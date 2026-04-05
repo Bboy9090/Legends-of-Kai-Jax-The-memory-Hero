@@ -1,23 +1,29 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2020",
-    "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "jsx": "react-jsx",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
-    "paths": { "@/*": ["./src/*"] }
+    "paths": {
+      "@/*": ["./src/*"],
+      "@beast-kin/engine": ["../../packages/engine/src"],
+      "@beast-kin/characters": ["../../packages/characters/src"],
+      "@beast-kin/shared": ["../../packages/shared/src"],
+      "@beast-kin/ui": ["../../packages/ui/src"]
+    }
   },
   "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "references": [
+    { "path": "../../packages/engine" },
+    { "path": "../../packages/characters" },
+    { "path": "../../packages/shared" },
+    { "path": "../../packages/ui" }
+  ]
 }

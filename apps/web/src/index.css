@@ -1,32 +1,95 @@
+/* Import legendary design systems */
+@import './styles/design-system.css';
+@import './styles/bronx_grit.css';
+@import './styles/legendary-effects.css';
+
+/**
+ * ⚡ LEGENDS OF KAI-JAX - MAIN STYLESHEET ⚡
+ * Ultimate God-Tier Visual System
+ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    background: #050508;
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    width: 100vw;
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
-html, body, #root {
+#root {
   width: 100%;
-  height: 100%;
-  min-height: 100vh;
-}
-
-body {
-  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #0a0a1a;
-  color: #fff;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-
-::selection {
-  background: rgba(34, 211, 238, 0.35);
-  color: #fff;
+  min-height: 100%;
+  position: relative;
 }
 
 canvas {
-  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+}
+
+/* Legendary color variables for Tailwind */
+:root {
+  --legendary-gold: #ffd700;
+  --legendary-cyan: #00f2ff;
+  --legendary-purple: #9d4edd;
+}
+
+/* Epic battle game animations */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }

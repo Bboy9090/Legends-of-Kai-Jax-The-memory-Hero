@@ -1,44 +1,34 @@
 import { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 import { useBattle } from "../../lib/stores/useBattle";
-import { useAudio } from "../../lib/stores/useAudio";
-import BattleCamera from "./BattleCamera";
 import { getFighterById } from "../../lib/characters";
 import BattleArena from "./BattleArena";
 import BattlePlayer from "./BattlePlayer";
 import Opponent from "./Opponent";
-import PlayerController from "./PlayerController";
-import OpponentAI from "./OpponentAI";
 import ParticleManager from "./ParticleManager";
 import CameraEffects from "./CameraEffects";
 import AttackTrails from "./AttackTrails";
 import EffectManager from "./EffectManager";
+import { RimLight } from "./EnhancedGraphics";
 import { Environment } from "@react-three/drei";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
 import CinematicPostFX from "./graphics/CinematicPostFX";
-import { useAccessibility } from "../../lib/stores/useAccessibility";
 
-/* eslint-disable react/no-unknown-property */
 export default function BattleScene() {
   const {
     startBattle,
     updateRoundTimer,
     battlePhase,
+    playerX,
+    opponentX,
     playerFighterId,
     screenShake,
     hitStop,
     screenFlash,
     playerAttacking,
     playerAttackType,
-    opponentAttacking,
-    comboCount,
-    maxCombo,
-    playerHealth,
-    opponentHealth,
-    maxHealth,
-    playerCombatState,
   } = useBattle();
-  const reduceMotion = useAccessibility((s) => s.reduceMotion);
   const playerFighter = getFighterById(playerFighterId);
   const grade =
     playerFighterId === "kai-jax" ? "cosmic" : playerFighterId === "jaxon" ? "ice" : playerFighterId === "kaison" ? "ember" : "neutral";
@@ -46,57 +36,53 @@ export default function BattleScene() {
   // Lift the “poster grade” blacks so the arena isn’t swallowed.
   const bgColor = grade === "cosmic" ? "#0b0b18" : grade === "ice" ? "#0b1d34" : grade === "ember" ? "#2a0d0d" : "#121224";
   const fogColor = grade === "cosmic" ? "#111128" : grade === "ice" ? "#11384a" : grade === "ember" ? "#3a1410" : "#14142a";
-  const chaos =
-    (playerAttacking ? 0.12 : 0) +
-    (opponentAttacking ? 0.12 : 0) +
-    (comboCount >= 5 ? Math.min(0.2, (comboCount - 5) * 0.02) : 0) +
-    (playerCombatState === "BLOCKING" || playerCombatState === "PARRY_WINDOW" ? 0.15 : 0);
-
-  const rawPunch =
-    screenShake * 1.6 +
-    (hitStop > 0 ? 0.65 : 0) +
-    (screenFlash ? 0.35 : 0) +
-    (playerAttacking && playerAttackType === "ultimate"
-      ? 0.55
-      : playerAttacking && playerAttackType === "special"
-        ? 0.25
-        : 0);
-
   const punch =
-    Math.min(1, rawPunch * Math.max(0.45, 1 - chaos * 0.85) * (reduceMotion ? 0.38 : 1)) || 0;
+    Math.min(
+      1,
+      screenShake * 1.6 +
+        (hitStop > 0 ? 0.65 : 0) +
+        (screenFlash ? 0.35 : 0) +
+        (playerAttacking && (playerAttackType === "special" || playerAttackType === "ultimate") ? 0.25 : 0)
+    ) || 0;
   
+  // Start battle on mount
   useEffect(() => {
     console.log("[BattleScene] Initializing battle");
-    const timer = setTimeout(() => {
-      const phase = useBattle.getState().battlePhase;
-      if (phase === "preRound") {
-        startBattle();
-      }
+    setTimeout(() => {
+      startBattle();
     }, 1000);
-    return () => clearTimeout(timer);
   }, [startBattle]);
   
-  // Update round timer and adaptive music intensity
-  useFrame((_state, delta) => {
+  // Update round timer every frame
+  useFrame((state, delta) => {
     if (battlePhase === 'fighting') {
       updateRoundTimer(delta);
-      const comboIntensity = Math.min(1, (comboCount + (maxCombo > 0 ? maxCombo * 0.2 : 0)) / 8);
-      const healthIntensity = 1 - Math.min(playerHealth, opponentHealth) / maxHealth;
-      const intensity = comboIntensity * 0.6 + healthIntensity * 0.4;
-      useAudio.getState().setBattleIntensity(intensity);
     }
   });
   
+  // MOBILE-OPTIMIZED camera - fills the screen!
+  const cameraX = (playerX + opponentX) / 2;
+  const cameraY = 5;  // Lowered from 8 to center action vertically
+  const cameraZ = 10; // Zoomed in from 15 to fill screen!
+  
   return (
     <>
-      {/* Smooth follow camera - wide view so both fighters stay visible */}
-      <BattleCamera />
+      {/* Camera follows the action - CENTERED for mobile! */}
+      <OrbitControls
+        enableZoom={false}
+        enablePan={false}
+        enableRotate={false}
+        target={[cameraX, 2, 0]}  // Lowered from 3 to center fighters on screen
+      />
       
       {/* Enhanced Lighting System for better character definition */}
+      <RimLight intensity={1.0} />
+      {/* Lift ambient so arena + shadows don’t crush to black */}
+      <ambientLight intensity={0.22} />
+      <hemisphereLight intensity={0.28} color={"#ffffff"} groundColor={"#1a1530"} />
       <LegendaryLightingRig />
-      {/* "city" can read very bright; night keeps the arena readable */}
-      <Environment preset="night" environmentIntensity={0.45} />
-      <CinematicPostFX profile="battle" grade={grade} accent={accent} punch={punch} center={[0.5, 0.44]} />
+      <Environment preset="city" />
+      <CinematicPostFX grade={grade} accent={accent} punch={punch} center={[0.5, 0.44]} />
 
       {/* Scene background/fog grade (pushes full-frame “poster” mood) */}
       <color attach="background" args={[bgColor]} />
@@ -109,12 +95,6 @@ export default function BattleScene() {
       
       {/* Opponent Fighter */}
       <Opponent />
-      
-      {/* Player Input Controller */}
-      <PlayerController />
-      
-      {/* Opponent AI */}
-      <OpponentAI />
       
       {/* EPIC Particle Effects! ✨💥 */}
       <ParticleManager />

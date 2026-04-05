@@ -79,85 +79,6 @@ export const ARENAS: Arena[] = [
     platformColor: '#8B7355', // Burlywood
     accentColor: '#FFD700', // Gold
     unlocked: true
-  },
-
-  // ===== Mission arenas (UEE + Story Act I) =====
-  {
-    id: 'bronx_streets',
-    name: 'Bronx Streets',
-    displayName: 'Bronx Streets',
-    description: 'Neon grit, wet asphalt, and undefeated swagger.',
-    groundColor: '#2a2a2f',
-    skyColor: '#0b0b18',
-    platformColor: '#3a3a44',
-    accentColor: '#FFD700',
-    unlocked: true,
-  },
-  {
-    id: 'memory_nexus',
-    name: 'Memory Nexus',
-    displayName: 'Memory Nexus',
-    description: 'Where echoes and futures collide in electric blue.',
-    groundColor: '#0b1020',
-    skyColor: '#070814',
-    platformColor: '#1a2442',
-    accentColor: '#00f2ff',
-    unlocked: true,
-  },
-  {
-    id: 'beast_colosseum',
-    name: 'Beast Colosseum',
-    displayName: 'Beast Colosseum',
-    description: 'Stone, roar, and spotlight—pure arena pressure.',
-    groundColor: '#4a3f35',
-    skyColor: '#141018',
-    platformColor: '#6b5b4a',
-    accentColor: '#FF6B6B',
-    unlocked: true,
-  },
-  {
-    id: 'rift_arena',
-    name: 'Rift Arena',
-    displayName: 'Rift Arena',
-    description: 'Reality tears at the edges. Don’t blink.',
-    groundColor: '#24132b',
-    skyColor: '#08030a',
-    platformColor: '#3a1d44',
-    accentColor: '#A855F7',
-    unlocked: true,
-  },
-  {
-    id: 'rooftop_battlefield',
-    name: 'Rooftop Battlefield',
-    displayName: 'Rooftop Battlefield',
-    description: 'Wind, skyline, and a fight you can hear for miles.',
-    groundColor: '#2c2f36',
-    skyColor: '#0a0a1a',
-    platformColor: '#4b5563',
-    accentColor: '#FFA500',
-    unlocked: true,
-  },
-  {
-    id: 'cross_point_arena',
-    name: 'Cross Point Arena',
-    displayName: 'Cross Point Arena',
-    description: 'A tournament stage stitched across dimensions.',
-    groundColor: '#0f2a2a',
-    skyColor: '#07121a',
-    platformColor: '#17424a',
-    accentColor: '#00FFFF',
-    unlocked: true,
-  },
-  {
-    id: 'emerald_frontier',
-    name: 'Emerald Frontier',
-    displayName: 'Emerald Frontier',
-    description: 'Momentum lanes and impossible geometry at full speed.',
-    groundColor: '#0f2a16',
-    skyColor: '#06110b',
-    platformColor: '#1c4a2a',
-    accentColor: '#FFD700',
-    unlocked: true,
   }
 ];
 
@@ -169,6 +90,6 @@ export function getUnlockedArenas(): Arena[] {
   return ARENAS; // all unlocked
 }
 
-export function canUnlockArena(_arena: Arena, _score: number): boolean {
+export function canUnlockArena(arena: Arena, score: number): boolean {
   return true;
 }

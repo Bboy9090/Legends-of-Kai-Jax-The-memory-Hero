@@ -1,12 +1,10 @@
-/* eslint-disable react/no-unknown-property */
 import { useMemo, useRef } from "react";
 import type { RefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Fighter } from "../../../lib/characters";
-import { COMPLETE_BEAST_ROSTER } from "../../../data/beastRoster";
+import { COMPLETE_BEAST_ROSTER } from "@beast-kin/shared/data/complete_beast_roster";
 import type { BeastPresetKind } from "../../../lib/stores/useBeastPreset";
-import { getDesignForFighterId } from "../../../data/characterDesigns";
 
 function fract(x: number): number {
   return x - Math.floor(x);
@@ -189,9 +187,6 @@ function makeClothWeaveTexture(seed: number, size = 128): THREE.CanvasTexture | 
   return tex;
 }
 
-/** LOD by layer: 0=close (all on), 1=mid (aura off), 2=far (fur shell off), 3=very far (base + emissive only) */
-export type CharacterLODLevel = 0 | 1 | 2 | 3;
-
 export interface AnatomicalBeastModelProps {
   fighter: Fighter;
   bodyRef: RefObject<THREE.Group>;
@@ -211,13 +206,6 @@ export interface AnatomicalBeastModelProps {
    * Use `undefined`/`null` to let roster drive it (“auto”).
    */
   presetOverride?: Exclude<BeastPresetKind, "auto"> | null;
-  /** LOD level: 0=close, 1=mid, 2=far, 3=very far. Gates layers per character_renderer_spec. */
-  lodLevel?: CharacterLODLevel;
-  attackType?: 'punch' | 'kick' | 'special' | 'ultimate' | null;
-  velocityX?: number;
-  velocityY?: number;
-  isGrounded?: boolean;
-  isJumping?: boolean;
 }
 
 /**
@@ -240,24 +228,8 @@ export default function AnatomicalBeastModel({
   isInvulnerable,
   isMoving = false,
   presetOverride = null,
-  lodLevel = 0,
-  attackType = null,
-  velocityX = 0,
-  velocityY = 0,
-  isGrounded = true,
-  isJumping = false,
 }: AnatomicalBeastModelProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const landSquash = useRef<number>(0);
-  const wasGrounded = useRef<boolean>(true);
-
-  /** Layer visibility per character_renderer_spec: aura off at mid+, fur/veins/tail off at very far */
-  const _showAuraLayer = lodLevel === 0;
-  const showFurShellLayer = lodLevel < 3;
-  const showVeinLayer = lodLevel < 3;
-  const _showElementalTailLayer = lodLevel < 3;
-  void _showAuraLayer;
-  void _showElementalTailLayer;
   const nebulaRef = useRef<THREE.Mesh>(null);
   const coreRef = useRef<THREE.Mesh>(null);
   const coreLightRef = useRef<THREE.PointLight>(null);
@@ -276,14 +248,11 @@ export default function AnatomicalBeastModel({
     [fighter.id]
   );
 
-  const design = useMemo(() => getDesignForFighterId(fighter.id), [fighter.id]);
-
-  const primary = design?.primaryColor ?? beast?.visual.primaryColor ?? fighter.color ?? "#1a1a1a";
-  const accent = design?.accentColor ?? beast?.visual.accentColor ?? fighter.accentColor ?? "#00f2ff";
-  const features = beast?.visual.features ?? [];
-  const hybrid = beast?.beastHybrid ?? "";
+  const primary = beast?.visual.primaryColor || fighter.color || "#1a1a1a";
+  const accent = beast?.visual.accentColor || fighter.accentColor || "#00f2ff";
+  const features = beast?.visual.features || [];
+  const hybrid = beast?.beastHybrid || "";
   const featureKey = features.join("|");
-  const webbingColor = design?.webbingColor ?? null;
 
   const has = (k: string) => features.some((f) => f === k || f.includes(k));
   const hasWord = (re: RegExp) => features.some((f) => re.test(f));
@@ -334,19 +303,18 @@ export default function AnatomicalBeastModel({
   const hasSageEyes = has("sage_mode_eyes");
 
   const quillCount = has("seven_electric_quills") ? 7 : hasSpines ? 6 : 0;
-  const eyeColor = design?.eyeColors?.[0] ?? (hasSageEyes ? "#FFD700" : has("feral_amber_eyes") ? "#FFB000" : accent);
+  const eyeColor = hasSageEyes ? "#FFD700" : has("feral_amber_eyes") ? "#FFB000" : accent;
 
-  const furColor = design?.features?.includes("charcoal_fur") || has("charcoal_fur") ? "#1a1a1a" : primary;
+  const furColor = has("charcoal_fur") ? "#1a1a1a" : primary;
   const clothColor = hasTacticalJacket ? "#0b1020" : primary;
+  const isHeroTrio = fighter.id === "jaxon" || fighter.id === "kaison" || fighter.id === "kai-jax";
   // Keep “hero jacket/armor” ONLY for heroes / explicit jacket DNA.
   // Applying it to all wolves/foxes makes everyone read like blocky robot armor.
-  const hasCinematicJacket =
-    !(design?.features?.includes("no_clothes")) &&
-    (hasTacticalJacket || fighter.id === "jaxon" || fighter.id === "kaison");
+  const hasCinematicJacket = hasTacticalJacket || fighter.id === "jaxon" || fighter.id === "kaison";
 
-  // Chest “fusion core” glow can read too bright / toy-like in this procedural pass.
-  // Keeping it off for now to reduce “glowy robot” feel.
-  const hasFusionCore = false;
+  // “Fusion core” like the reference art: bright chest energy.
+  const hasFusionCore =
+    fighter.id === "kai-jax" || hasInternalNebulae || hasElectricAura || hasThreeMemoryTails;
 
   // Big aura ribbons/wings like the fused image.
   const hasAuraWings = fighter.id === "kai-jax" || hasThreeMemoryTails || hasInternalNebulae;
@@ -362,19 +330,17 @@ export default function AnatomicalBeastModel({
     const lerp = THREE.MathUtils.lerp;
 
     // Base (biped beast), then kind tweaks.
-    // Aim: slimmer torso, less “square barrel”, more V/triangular silhouette.
-    let torsoW = lerp(0.98, 1.16, bulk) * lerp(1.04, 0.90, agile);
-    let torsoH = lerp(1.02, 1.16, bulk) * lerp(1.01, 1.10, agile);
-    let torsoD = lerp(0.86, 1.04, bulk);
+    let torsoW = lerp(1.05, 1.26, bulk) * lerp(1.06, 0.98, agile);
+    let torsoH = lerp(1.08, 1.20, bulk) * lerp(1.02, 1.10, agile);
+    let torsoD = lerp(1.02, 1.22, bulk);
 
-    let hipW = lerp(0.86, 1.02, bulk) * lerp(1.02, 0.88, agile);
-    let hipH = lerp(0.94, 1.06, bulk) * lerp(1.00, 1.04, agile);
-    let hipD = lerp(0.88, 1.06, bulk);
+    let hipW = lerp(1.02, 1.18, bulk) * lerp(1.04, 0.96, agile);
+    let hipH = lerp(1.00, 1.10, bulk) * lerp(1.00, 1.05, agile);
+    let hipD = lerp(1.06, 1.24, bulk);
 
     let head = lerp(0.96, 1.10, bulk) * lerp(1.05, 0.95, agile);
-    // Longer limbs helps kill the “rolly-polly robot” read.
-    let limbLen = (lerp(0.98, 1.10, bulk) * lerp(1.08, 1.26, agile)) * 1.12;
-    let limbRad = lerp(0.86, 1.18, bulk) * lerp(1.00, 0.86, agile);
+    let limbLen = lerp(0.96, 1.06, bulk) * lerp(1.02, 1.20, agile);
+    let limbRad = lerp(0.92, 1.22, bulk) * lerp(1.00, 0.88, agile);
     let paw = lerp(0.94, 1.16, bulk);
 
     let tailLen = lerp(0.95, 1.05, bulk) * lerp(1.05, 1.15, agile);
@@ -651,13 +617,13 @@ export default function AnatomicalBeastModel({
   }, [seed]);
 
   const limbUpperGeo = useMemo(() => {
-    const base = new THREE.CapsuleGeometry(0.07 * silhouette.limbRad, 0.28 * silhouette.limbLen, 8, 14);
+    const base = new THREE.CapsuleGeometry(0.07 * silhouette.limbRad, 0.22 * silhouette.limbLen, 8, 14);
     base.scale(1.0, preset.kind === "bird" ? 0.85 : 1.0, preset.kind === "spider" ? 0.85 : 1.0);
     return displaceGeometry(base, seed + 701, { amp: 0.03, freq: 3.6, normalPush: 0.85, clamp: 0.07 });
   }, [preset.kind, seed, silhouette.limbLen, silhouette.limbRad]);
 
   const limbLowerGeo = useMemo(() => {
-    const base = new THREE.CapsuleGeometry(0.055 * silhouette.limbRad, 0.26 * (silhouette.limbLen * 1.04), 8, 14);
+    const base = new THREE.CapsuleGeometry(0.055 * silhouette.limbRad, 0.20 * (silhouette.limbLen * 1.04), 8, 14);
     base.scale(1.0, preset.kind === "bird" ? 0.85 : 1.0, preset.kind === "spider" ? 0.85 : 1.0);
     return displaceGeometry(base, seed + 719, { amp: 0.028, freq: 3.9, normalPush: 0.85, clamp: 0.06 });
   }, [preset.kind, seed, silhouette.limbLen, silhouette.limbRad]);
@@ -851,8 +817,6 @@ export default function AnatomicalBeastModel({
         uniform float uHueOffset;
         uniform float uAlpha;
         uniform float uIntensity;
-        uniform vec3 uWebbingRGB;
-        uniform float uUseWebbing;
 
         float hash(vec2 p) {
           return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -903,7 +867,7 @@ export default function AnatomicalBeastModel({
       `,
     });
     return mat;
-  }, [webbingColor]);
+  }, []);
 
   const lightningRibbonMaterials = useMemo(() => {
     if (!hasAuraWings) return [] as THREE.ShaderMaterial[];
@@ -922,144 +886,24 @@ export default function AnatomicalBeastModel({
   useFrame((state, delta) => {
     if (!groupRef.current) return;
     const t = animTime || state.clock.elapsedTime;
-    const lerp = THREE.MathUtils.lerp;
 
-    const absVX = Math.abs(velocityX);
-    const moving = isMoving || absVX > 0.5;
-    const speed = THREE.MathUtils.clamp(absVX / 6, 0, 1);
-    const walkRate = 8 + speed * 8;
-    const walkPhase = Math.sin(t * walkRate);
+    // Idle breathing / weight shift
+    groupRef.current.position.y = Math.sin(t * 2.0) * 0.02;
+    groupRef.current.rotation.y = Math.sin(t * 0.6) * 0.18;
+    if (hitAnim > 0) groupRef.current.rotation.z = Math.sin(t * 22) * 0.06 * hitAnim;
 
-    if (!isGrounded && wasGrounded.current) {
-      wasGrounded.current = false;
-    }
-    if (isGrounded && !wasGrounded.current) {
-      landSquash.current = 1.0;
-      wasGrounded.current = true;
-    }
-    landSquash.current = lerp(landSquash.current, 0, 1 - Math.pow(0.05, delta));
+    // Walk + attack motion
+    const walk = isMoving ? Math.sin(t * 10) : 0;
+    const atk = isAttacking ? Math.max(0, Math.sin(t * 16)) : 0;
 
-    const squashY = 1 - landSquash.current * 0.25;
-    const squashXZ = 1 + landSquash.current * 0.15;
-
-    if (isInvulnerable) {
-      groupRef.current.visible = Math.sin(t * 30) > 0;
-    } else {
-      groupRef.current.visible = true;
-    }
-
-    let bodyPosY = Math.sin(t * 2.0) * 0.02;
-    let bodyRotX = 0;
-    let bodyRotY = Math.sin(t * 0.6) * 0.08;
-    let bodyRotZ = 0;
-
-    let leftArmX = 0;
-    let leftArmZ = 0;
-    let rightArmX = 0;
-    let rightArmZ = 0;
-    let leftLegX = 0;
-    let rightLegX = 0;
-
-    let headRotX = 0.06 + emotionIntensity * 0.06;
-    let headRotY = Math.sin(t * 1.5) * 0.06;
-    let headRotZ = 0;
-
-    if (moving && isGrounded && !isAttacking) {
-      leftArmX = -0.45 * walkPhase * (0.5 + speed * 0.5);
-      rightArmX = 0.45 * walkPhase * (0.5 + speed * 0.5);
-      leftLegX = 0.55 * walkPhase * (0.5 + speed * 0.5);
-      rightLegX = -0.55 * walkPhase * (0.5 + speed * 0.5);
-      bodyRotX = lerp(0, velocityX > 0 ? -0.06 : 0.06, speed);
-      bodyPosY += Math.abs(Math.sin(t * walkRate * 2)) * 0.01 * speed;
-      headRotY += Math.sin(t * walkRate) * 0.03 * speed;
-    }
-
-    if (!isGrounded) {
-      const vyNorm = THREE.MathUtils.clamp(velocityY / 8, -1, 1);
-      if (isJumping) {
-        leftArmX = lerp(leftArmX, -1.2 - vyNorm * 0.3, 0.7);
-        rightArmX = lerp(rightArmX, -1.2 - vyNorm * 0.3, 0.7);
-        leftLegX = lerp(leftLegX, 0.4, 0.7);
-        rightLegX = lerp(rightLegX, 0.4, 0.7);
-        bodyPosY += 0.03;
-        bodyRotX = lerp(bodyRotX, -0.08, 0.5);
-      } else {
-        leftArmX = lerp(leftArmX, -0.6 + vyNorm * 0.2, 0.5);
-        rightArmX = lerp(rightArmX, -0.6 + vyNorm * 0.2, 0.5);
-        leftArmZ = lerp(leftArmZ, -0.4, 0.5);
-        rightArmZ = lerp(rightArmZ, 0.4, 0.5);
-        leftLegX = lerp(leftLegX, -0.3, 0.5);
-        rightLegX = lerp(rightLegX, -0.3, 0.5);
-        bodyRotX = lerp(bodyRotX, 0.06 - vyNorm * 0.04, 0.5);
-      }
-    }
-
-    if (isAttacking && attackType) {
-      const atkT = (Math.sin(t * 16) * 0.5 + 0.5);
-      if (attackType === 'punch') {
-        rightArmX = lerp(rightArmX, -1.4 * atkT, 0.85);
-        leftArmX = lerp(leftArmX, -0.3, 0.6);
-        leftArmZ = lerp(leftArmZ, -0.2, 0.5);
-        bodyRotX = lerp(bodyRotX, -0.12 * atkT, 0.7);
-        headRotX = lerp(headRotX, 0.15, 0.6);
-      } else if (attackType === 'kick') {
-        rightLegX = lerp(rightLegX, -1.2 * atkT, 0.85);
-        bodyRotX = lerp(bodyRotX, 0.15 * atkT, 0.7);
-        leftArmX = lerp(leftArmX, -0.3, 0.5);
-        rightArmX = lerp(rightArmX, -0.3, 0.5);
-        leftArmZ = lerp(leftArmZ, -0.15, 0.4);
-        rightArmZ = lerp(rightArmZ, 0.15, 0.4);
-      } else if (attackType === 'special') {
-        rightArmX = lerp(rightArmX, -1.3 * atkT, 0.9);
-        leftArmX = lerp(leftArmX, -1.3 * atkT, 0.9);
-        bodyRotX = lerp(bodyRotX, -0.2 * atkT, 0.8);
-        headRotX = lerp(headRotX, 0.2, 0.7);
-      } else if (attackType === 'ultimate') {
-        const phase = (t * 4) % (Math.PI * 2);
-        const spread = Math.sin(phase) * 0.5 + 0.5;
-        const slam = Math.cos(phase) * 0.5 + 0.5;
-        leftArmX = lerp(leftArmX, lerp(-0.8, -1.5, slam), 0.9);
-        rightArmX = lerp(rightArmX, lerp(-0.8, -1.5, slam), 0.9);
-        leftArmZ = lerp(leftArmZ, lerp(-0.8 * spread, 0, slam), 0.8);
-        rightArmZ = lerp(rightArmZ, lerp(0.8 * spread, 0, slam), 0.8);
-        bodyRotX = lerp(bodyRotX, lerp(0.1, -0.3, slam), 0.85);
-        headRotX = lerp(headRotX, lerp(-0.3, 0.3, slam), 0.8);
-      }
-    }
-
-    if (hitAnim > 0) {
-      bodyRotX = lerp(bodyRotX, 0.2 * hitAnim, 0.7);
-      bodyRotZ = Math.sin(t * 22) * 0.06 * hitAnim;
-      headRotX = lerp(headRotX, -0.2 * hitAnim, 0.6);
-      leftArmX = lerp(leftArmX, 0.3 * hitAnim, 0.5);
-      rightArmX = lerp(rightArmX, 0.3 * hitAnim, 0.5);
-    }
-
-    groupRef.current.position.y = bodyPosY;
-    groupRef.current.rotation.x = bodyRotX;
-    groupRef.current.rotation.y = bodyRotY;
-    groupRef.current.rotation.z = bodyRotZ;
-    groupRef.current.scale.set(squashXZ, squashY, squashXZ);
-
-    if (leftArmRef.current) {
-      leftArmRef.current.rotation.x = leftArmX;
-      leftArmRef.current.rotation.z = leftArmZ;
-    }
-    if (rightArmRef.current) {
-      rightArmRef.current.rotation.x = rightArmX;
-      rightArmRef.current.rotation.z = rightArmZ;
-    }
-    if (leftLegRef.current) {
-      leftLegRef.current.rotation.x = leftLegX;
-    }
-    if (rightLegRef.current) {
-      rightLegRef.current.rotation.x = rightLegX;
-    }
+    leftArmRef.current && (leftArmRef.current.rotation.x = -0.35 * walk + -0.65 * atk);
+    rightArmRef.current && (rightArmRef.current.rotation.x = 0.35 * walk + -0.65 * atk);
+    leftLegRef.current && (leftLegRef.current.rotation.x = 0.45 * walk);
+    rightLegRef.current && (rightLegRef.current.rotation.x = -0.45 * walk);
 
     if (headRef.current) {
-      headRef.current.rotation.x = headRotX;
-      headRef.current.rotation.y = headRotY;
-      headRef.current.rotation.z = headRotZ;
+      headRef.current.rotation.x = 0.06 + (isAttacking ? 0.12 : 0) + emotionIntensity * 0.06;
+      headRef.current.rotation.y = Math.sin(t * 1.5) * 0.06;
     }
 
     if (nebulaRef.current && hasInternalNebulae) {
@@ -1075,6 +919,7 @@ export default function AnatomicalBeastModel({
     }
 
     if (coreLightRef.current && hasFusionCore) {
+      // drives bloom + “energy lights the body” feeling
       coreLightRef.current.intensity = 1.6 + (Math.sin(t * 3.2) * 0.5 + 0.5) * 2.2;
     }
 
@@ -1086,11 +931,13 @@ export default function AnatomicalBeastModel({
       auraRibbonRef.current.rotation.y = Math.sin(t * 0.55) * 0.22;
       auraRibbonRef.current.rotation.z = Math.sin(t * 0.35) * 0.10;
       auraRibbonRef.current.position.y = Math.sin(t * 0.8) * 0.03;
+      // update shader uniforms
       for (let i = 0; i < lightningRibbonMaterials.length; i++) {
         const m = lightningRibbonMaterials[i];
         if (!m) continue;
         const u = m.uniforms as any;
         u.uTime.value = t;
+        // punchier during attacks
         u.uIntensity.value = isAttacking ? 1.35 : 1.0;
         u.uAlpha.value = 0.14 + (Math.sin(t * 2.2 + i) * 0.5 + 0.5) * 0.10;
       }
@@ -1098,12 +945,11 @@ export default function AnatomicalBeastModel({
   });
 
   const modelScale = useMemo(() => {
-    // Slightly smaller overall so the camera framing + arena read better.
-    if (fighter.id === "kai-jax") return 2.55;
-    if (isDragon) return 2.35;
-    if (isBird) return 2.25;
-    if (isTurtle) return 2.15;
-    return 2.2;
+    if (fighter.id === "kai-jax") return 2.85;
+    if (isDragon) return 2.65;
+    if (isBird) return 2.55;
+    if (isTurtle) return 2.45;
+    return 2.5;
   }, [fighter.id, isBird, isDragon, isTurtle]);
 
   return (
@@ -1158,7 +1004,7 @@ export default function AnatomicalBeastModel({
             <primitive attach="material" object={furPhysical} />
           )}
         </mesh>
-        {showFurShellLayer && !useScales && !useChitin && (
+        {!useScales && !useChitin && (
           <mesh position={[0, -0.12, -0.02]} rotation={[0.08, 0, 0]} geometry={hipGeo} scale={1.03}>
             <primitive attach="material" object={rimGlowMat} />
           </mesh>
@@ -1474,8 +1320,8 @@ export default function AnatomicalBeastModel({
             </>
           )}
 
-          {/* Neck mane/ruff — fur shell layer (off at very far LOD) */}
-          {showFurShellLayer && (kind === "wolf" || kind === "fox" || kind === "cat" || fighter.id === "kai-jax") && (
+          {/* Neck mane/ruff (reference-style fur silhouette) */}
+          {(kind === "wolf" || kind === "fox" || kind === "cat" || fighter.id === "kai-jax") && (
             <group position={[0, -0.08, 0.02]}>
               {Array.from({ length: 14 }).map((_, i) => (
                 <mesh
@@ -1508,7 +1354,7 @@ export default function AnatomicalBeastModel({
               <meshStandardMaterial color={furColor} roughness={0.85} metalness={0.08} />
             )}
           </mesh>
-          <mesh position={[0, -0.28, 0]} castShadow geometry={limbLowerGeo}>
+          <mesh position={[0, -0.22, 0]} castShadow geometry={limbLowerGeo}>
             {useScales ? (
               <meshPhysicalMaterial color={furColor} metalness={scaleMat.metalness} roughness={scaleMat.roughness} clearcoat={scaleMat.clearcoat} clearcoatRoughness={scaleMat.clearcoatRoughness} />
             ) : useChitin ? (
@@ -1517,13 +1363,13 @@ export default function AnatomicalBeastModel({
               <meshStandardMaterial color={furColor} roughness={0.85} metalness={0.08} />
             )}
           </mesh>
-          <mesh position={[0, -0.50, 0.06]} castShadow geometry={pawGeo}>
+          <mesh position={[0, -0.38, 0.06]} castShadow geometry={pawGeo}>
             <meshStandardMaterial color={"#0b1020"} roughness={0.78} metalness={0.18} />
           </mesh>
           {[-0.04, 0, 0.04].map((x) => (
-            <mesh key={x} position={[x, -0.50, 0.14]} rotation={[0.25, 0, 0]} castShadow>
-              <coneGeometry args={[0.014, 0.07, 6]} />
-              <meshStandardMaterial color="#e8e8ee" roughness={0.2} metalness={0.6} emissive="#8888aa" emissiveIntensity={0.08} />
+            <mesh key={x} position={[x, -0.38, 0.12]} rotation={[0.25, 0, 0]} castShadow>
+              <coneGeometry args={[0.012, 0.05, 5]} />
+              <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.15} />
             </mesh>
           ))}
         </group>
@@ -1538,7 +1384,7 @@ export default function AnatomicalBeastModel({
               <meshStandardMaterial color={furColor} roughness={0.85} metalness={0.08} />
             )}
           </mesh>
-          <mesh position={[0, -0.28, 0]} castShadow geometry={limbLowerGeo}>
+          <mesh position={[0, -0.22, 0]} castShadow geometry={limbLowerGeo}>
             {useScales ? (
               <meshPhysicalMaterial color={furColor} metalness={scaleMat.metalness} roughness={scaleMat.roughness} clearcoat={scaleMat.clearcoat} clearcoatRoughness={scaleMat.clearcoatRoughness} />
             ) : useChitin ? (
@@ -1547,13 +1393,13 @@ export default function AnatomicalBeastModel({
               <meshStandardMaterial color={furColor} roughness={0.85} metalness={0.08} />
             )}
           </mesh>
-          <mesh position={[0, -0.50, 0.06]} castShadow geometry={pawGeo}>
+          <mesh position={[0, -0.38, 0.06]} castShadow geometry={pawGeo}>
             <meshStandardMaterial color={"#0b1020"} roughness={0.78} metalness={0.18} />
           </mesh>
           {[-0.04, 0, 0.04].map((x) => (
-            <mesh key={x} position={[x, -0.50, 0.14]} rotation={[0.25, 0, 0]} castShadow>
-              <coneGeometry args={[0.014, 0.07, 6]} />
-              <meshStandardMaterial color="#e8e8ee" roughness={0.2} metalness={0.6} emissive="#8888aa" emissiveIntensity={0.08} />
+            <mesh key={x} position={[x, -0.38, 0.12]} rotation={[0.25, 0, 0]} castShadow>
+              <coneGeometry args={[0.012, 0.05, 5]} />
+              <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.15} />
             </mesh>
           ))}
         </group>
@@ -1569,7 +1415,7 @@ export default function AnatomicalBeastModel({
               <meshStandardMaterial color={furColor} roughness={0.9} metalness={0.05} />
             )}
           </mesh>
-          <mesh position={[0.02, -0.38, 0.12]} rotation={[0.55, 0, 0]} castShadow geometry={limbLowerGeo}>
+          <mesh position={[0.02, -0.30, 0.12]} rotation={[0.55, 0, 0]} castShadow geometry={limbLowerGeo}>
             {useScales ? (
               <meshPhysicalMaterial color={furColor} metalness={scaleMat.metalness} roughness={scaleMat.roughness} clearcoat={scaleMat.clearcoat} clearcoatRoughness={scaleMat.clearcoatRoughness} />
             ) : useChitin ? (
@@ -1578,18 +1424,12 @@ export default function AnatomicalBeastModel({
               <meshStandardMaterial color={furColor} roughness={0.9} metalness={0.05} />
             )}
           </mesh>
-          <mesh position={[0.05, -0.62, 0.30]} rotation={[0.10, 0, 0]} castShadow geometry={footGeo}>
+          <mesh position={[0.05, -0.48, 0.28]} rotation={[0.10, 0, 0]} castShadow geometry={footGeo}>
             <meshStandardMaterial color={"#0b1020"} roughness={0.78} metalness={0.18} />
           </mesh>
-          {[-0.05, 0, 0.05].map((x) => (
-            <mesh key={`lf-claw-${x}`} position={[0.05 + x, -0.64, 0.42]} rotation={[0.35, 0, 0]} castShadow>
-              <coneGeometry args={[0.012, 0.07, 6]} />
-              <meshStandardMaterial color={"#e8e8ee"} roughness={0.45} metalness={0.35} />
-            </mesh>
-          ))}
           {/* Boot/greave (more “hero” silhouette) */}
           {hasCinematicJacket && !isTurtle && (
-            <mesh position={[0.06, -0.64, 0.32]} rotation={[0.08, 0, 0]} castShadow geometry={bootGeo}>
+            <mesh position={[0.06, -0.50, 0.30]} rotation={[0.08, 0, 0]} castShadow geometry={bootGeo}>
               <meshStandardMaterial color={"#050508"} roughness={0.55} metalness={0.28} emissive={jacketTrim} emissiveIntensity={0.06} />
             </mesh>
           )}
@@ -1605,7 +1445,7 @@ export default function AnatomicalBeastModel({
               <meshStandardMaterial color={furColor} roughness={0.9} metalness={0.05} />
             )}
           </mesh>
-          <mesh position={[-0.02, -0.38, 0.12]} rotation={[0.55, 0, 0]} castShadow geometry={limbLowerGeo}>
+          <mesh position={[-0.02, -0.30, 0.12]} rotation={[0.55, 0, 0]} castShadow geometry={limbLowerGeo}>
             {useScales ? (
               <meshPhysicalMaterial color={furColor} metalness={scaleMat.metalness} roughness={scaleMat.roughness} clearcoat={scaleMat.clearcoat} clearcoatRoughness={scaleMat.clearcoatRoughness} />
             ) : useChitin ? (
@@ -1614,17 +1454,11 @@ export default function AnatomicalBeastModel({
               <meshStandardMaterial color={furColor} roughness={0.9} metalness={0.05} />
             )}
           </mesh>
-          <mesh position={[-0.05, -0.62, 0.30]} rotation={[0.10, 0, 0]} castShadow geometry={footGeo}>
+          <mesh position={[-0.05, -0.48, 0.28]} rotation={[0.10, 0, 0]} castShadow geometry={footGeo}>
             <meshStandardMaterial color={"#0b1020"} roughness={0.78} metalness={0.18} />
           </mesh>
-          {[-0.05, 0, 0.05].map((x) => (
-            <mesh key={`rf-claw-${x}`} position={[-0.05 + x, -0.64, 0.42]} rotation={[0.35, 0, 0]} castShadow>
-              <coneGeometry args={[0.012, 0.07, 6]} />
-              <meshStandardMaterial color={"#e8e8ee"} roughness={0.45} metalness={0.35} />
-            </mesh>
-          ))}
           {hasCinematicJacket && !isTurtle && (
-            <mesh position={[-0.06, -0.64, 0.32]} rotation={[0.08, 0, 0]} castShadow geometry={bootGeo}>
+            <mesh position={[-0.06, -0.50, 0.30]} rotation={[0.08, 0, 0]} castShadow geometry={bootGeo}>
               <meshStandardMaterial color={"#050508"} roughness={0.55} metalness={0.28} emissive={jacketTrim} emissiveIntensity={0.06} />
             </mesh>
           )}
@@ -1784,8 +1618,8 @@ export default function AnatomicalBeastModel({
         </group>
       )}
 
-      {/* Vein/web layer (emissive ribbons — must survive LOD until very far) */}
-      {hasAuraWings && showVeinLayer && auraRibbonGeometries.length > 0 && (
+      {/* Swirling ribbons (closer to your artwork arcs) */}
+      {hasAuraWings && auraRibbonGeometries.length > 0 && (
         <group ref={auraRibbonRef} position={[0, 0.0, 0]}>
           {auraRibbonGeometries.map((geo, i) => (
             <mesh

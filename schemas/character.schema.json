@@ -1,317 +1,202 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/schemas/character.schema.json",
-  "title": "Character Specification Schema",
-  "description": "JSON Schema for validating character specifications in Legends of Kai-Jax",
+  "$id": "https://legends-of-kai-jax.com/schemas/character.schema.json",
+  "title": "Legends Character Schema",
+  "description": "JSON Schema for character definitions in Legends of Kai-Jax. Enforces canon requirements including evolution constraints.",
   "type": "object",
-  "required": ["$schema", "title", "version", "metadata", "characters", "designPrinciples", "validation"],
+  "required": [
+    "character_id",
+    "display_name",
+    "version",
+    "anatomy",
+    "evolution"
+  ],
   "properties": {
-    "$schema": {
+    "character_id": {
       "type": "string",
-      "description": "JSON Schema version"
+      "description": "Unique identifier for the character",
+      "pattern": "^[a-z_]+$"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Human-readable character name"
     },
     "title": {
       "type": "string",
-      "description": "Title of the specification"
-    },
-    "description": {
-      "type": "string"
+      "description": "Character's title or epithet"
     },
     "version": {
       "type": "string",
-      "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Semantic version of the specification"
+      "description": "Semantic version of character definition",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
     },
-    "lastUpdated": {
-      "type": "string",
-      "format": "date",
-      "description": "Last update date (ISO 8601)"
-    },
-    "metadata": {
+    "authoritative_reference": {
       "type": "object",
-      "required": ["projectName", "canonStatus", "constraints"],
-      "properties": {
-        "projectName": {
-          "type": "string"
-        },
-        "canonStatus": {
-          "type": "string",
-          "enum": ["LOCKED", "DRAFT", "REVIEW"]
-        },
-        "constraints": {
-          "type": "object",
-          "required": ["unifiedCore", "pcFirst", "noLogicDivergence", "mustValidate"],
-          "properties": {
-            "unifiedCore": {
-              "type": "boolean"
-            },
-            "pcFirst": {
-              "type": "boolean"
-            },
-            "noLogicDivergence": {
-              "type": "boolean"
-            },
-            "mustValidate": {
-              "type": "boolean"
-            }
-          }
-        }
-      }
+      "description": "Reference to source of truth for visual design"
     },
-    "characters": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "$ref": "#/definitions/character"
-      }
-    },
-    "designPrinciples": {
+    "anatomy": {
       "type": "object",
-      "required": ["silhouetteFirst", "layeredRendering", "lodStrategy", "pcFirst", "deterministicBehavior", "noPlaceholderLogic"],
+      "required": ["tail_count"],
       "properties": {
-        "silhouetteFirst": {
-          "type": "string"
-        },
-        "layeredRendering": {
-          "type": "string"
-        },
-        "lodStrategy": {
-          "type": "string"
-        },
-        "pcFirst": {
-          "type": "string"
-        },
-        "deterministicBehavior": {
-          "type": "string"
-        },
-        "noPlaceholderLogic": {
-          "type": "string"
-        }
-      }
-    },
-    "validation": {
-      "type": "object",
-      "required": ["requiredFields", "colorFormat", "statRanges"],
-      "properties": {
-        "requiredFields": {
+        "species_composite": {
           "type": "array",
           "items": {
             "type": "string"
           }
         },
-        "colorFormat": {
+        "body_type": {
           "type": "string"
         },
-        "statRanges": {
-          "type": "object"
+        "height_multiplier": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 3.0
+        },
+        "build": {
+          "type": "string"
+        },
+        "legs": {
+          "type": "string"
+        },
+        "hands": {
+          "type": "string"
+        },
+        "head": {
+          "type": "string"
+        },
+        "spine": {
+          "type": "string"
+        },
+        "tail_count": {
+          "type": "integer",
+          "description": "Current number of tails (must match evolution rules)",
+          "minimum": 1,
+          "maximum": 9
         }
       }
+    },
+    "evolution": {
+      "type": "object",
+      "description": "Evolution system configuration (IMMUTABLE RULES)",
+      "required": [
+        "starting_tail_count",
+        "final_tail_count",
+        "unlock_rule",
+        "skip_unlocks_disallowed",
+        "tails_are_permanent"
+      ],
+      "properties": {
+        "starting_tail_count": {
+          "type": "integer",
+          "const": 3,
+          "description": "All characters start with exactly 3 tails (IMMUTABLE)"
+        },
+        "final_tail_count": {
+          "type": "integer",
+          "const": 9,
+          "description": "Maximum tail count is exactly 9 (IMMUTABLE)"
+        },
+        "unlock_rule": {
+          "type": "string",
+          "enum": ["sequential_only"],
+          "description": "Tails must unlock in sequential order: 3→4→5→6→7→8→9 (IMMUTABLE)"
+        },
+        "skip_unlocks_disallowed": {
+          "type": "boolean",
+          "const": true,
+          "description": "Players cannot skip tail unlocks (IMMUTABLE)"
+        },
+        "tails_are_permanent": {
+          "type": "boolean",
+          "const": true,
+          "description": "Tails cannot be removed or reset after unlock (IMMUTABLE)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "silhouette_rules": {
+      "type": "object"
+    },
+    "modeling": {
+      "type": "object"
+    },
+    "materials": {
+      "type": "object"
+    },
+    "rigging": {
+      "type": "object",
+      "properties": {
+        "extra_bones": {
+          "type": "object",
+          "properties": {
+            "tails": {
+              "type": "object",
+              "required": ["count"],
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "description": "Number of tails to rig (must match anatomy.tail_count)",
+                  "minimum": 1,
+                  "maximum": 9
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "animation": {
+      "type": "object"
+    },
+    "combat_identity": {
+      "type": "object"
+    },
+    "tail_roles": {
+      "type": "array",
+      "description": "Functional role of each tail",
+      "items": {
+        "type": "object",
+        "required": ["index", "name", "function"],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9
+          },
+          "name": {
+            "type": "string"
+          },
+          "function": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "engine_integration": {
+      "type": "object"
+    },
+    "mobile_profile": {
+      "type": "object",
+      "properties": {
+        "allowed_cuts": {
+          "type": "array",
+          "description": "Elements that may be optimized or removed on mobile",
+          "items": {
+            "type": "string"
+          }
+        },
+        "never_cut": {
+          "type": "array",
+          "description": "Elements that must never be removed on mobile (should include tail_count)",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "acceptance_criteria": {
+      "type": "object"
     }
   },
-  "definitions": {
-    "character": {
-      "type": "object",
-      "required": ["id", "name", "displayName", "appearance", "combat", "rendering"],
-      "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Unique character identifier (kebab-case)"
-        },
-        "name": {
-          "type": "string",
-          "description": "Character name (UPPERCASE)"
-        },
-        "displayName": {
-          "type": "string",
-          "description": "Display name for UI"
-        },
-        "title": {
-          "type": "string",
-          "description": "Character title/role"
-        },
-        "species": {
-          "type": "string",
-          "description": "Character species"
-        },
-        "description": {
-          "type": "string",
-          "description": "Character description"
-        },
-        "appearance": {
-          "$ref": "#/definitions/appearance"
-        },
-        "combat": {
-          "$ref": "#/definitions/combat"
-        },
-        "rendering": {
-          "$ref": "#/definitions/rendering"
-        },
-        "portraitPath": {
-          "type": "string",
-          "description": "Path to character portrait"
-        },
-        "canonicalSources": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "List of canonical source files"
-        }
-      }
-    },
-    "appearance": {
-      "type": "object",
-      "required": ["primaryColor", "accentColor", "features"],
-      "properties": {
-        "primaryColor": {
-          "type": "string",
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "description": "Primary color (hex format)"
-        },
-        "accentColor": {
-          "type": "string",
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "description": "Accent color (hex format)"
-        },
-        "secondaryColor": {
-          "type": "string",
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "description": "Secondary color (hex format)"
-        },
-        "webbingColor": {
-          "type": "string",
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|^$",
-          "description": "Webbing/vein color (hex format or empty)"
-        },
-        "eyeColors": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
-          },
-          "description": "Array of eye colors (hex format)"
-        },
-        "features": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1,
-          "description": "List of character features"
-        }
-      }
-    },
-    "combat": {
-      "type": "object",
-      "required": ["baseStats"],
-      "properties": {
-        "baseStats": {
-          "type": "object",
-          "required": ["power", "speed", "defense", "gravity"],
-          "properties": {
-            "power": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 100,
-              "description": "Power stat (0-100)"
-            },
-            "speed": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 100,
-              "description": "Speed stat (0-100)"
-            },
-            "defense": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 100,
-              "description": "Defense stat (0-100)"
-            },
-            "gravity": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 20,
-              "description": "Gravity value (0-20)"
-            }
-          }
-        },
-        "tailCount": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 9,
-          "description": "Number of tails (1-9)"
-        },
-        "abilities": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "List of character abilities"
-        }
-      }
-    },
-    "rendering": {
-      "type": "object",
-      "required": ["lodLevels", "materials", "silhouetteFirst"],
-      "properties": {
-        "lodLevels": {
-          "type": "object",
-          "required": ["close", "mid", "far", "veryFar"],
-          "properties": {
-            "close": {
-              "$ref": "#/definitions/lodLevel"
-            },
-            "mid": {
-              "$ref": "#/definitions/lodLevel"
-            },
-            "far": {
-              "$ref": "#/definitions/lodLevel"
-            },
-            "veryFar": {
-              "$ref": "#/definitions/lodLevel"
-            }
-          }
-        },
-        "materials": {
-          "type": "object",
-          "properties": {
-            "furShell": {
-              "type": "object"
-            },
-            "veinEmissive": {
-              "type": "object"
-            },
-            "clawSpec": {
-              "type": "object"
-            }
-          }
-        },
-        "silhouetteFirst": {
-          "type": "boolean",
-          "description": "Whether silhouette preservation is prioritized"
-        }
-      }
-    },
-    "lodLevel": {
-      "type": "object",
-      "required": ["distance", "layers"],
-      "properties": {
-        "distance": {
-          "type": "number",
-          "minimum": 0,
-          "description": "Distance threshold for this LOD level"
-        },
-        "layers": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["base", "fur_shell", "vein_emissive", "aura", "particles", "tail"]
-          },
-          "minItems": 1,
-          "description": "Active rendering layers at this LOD"
-        }
-      }
-    }
-  }
+  "additionalProperties": true
 }

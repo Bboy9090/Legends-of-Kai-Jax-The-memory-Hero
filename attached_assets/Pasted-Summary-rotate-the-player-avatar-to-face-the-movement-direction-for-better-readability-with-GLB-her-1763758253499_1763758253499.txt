@@ -1,0 +1,209 @@
+Summary
+rotate the player avatar to face the movement direction for better readability with GLB heroes
+document the controller now aligning hero facing while keeping camera-relative input and jump/gravity notes
+Testing
+not run (not requested)
+Codex Task
+
+Summary by CodeRabbit
+Release Notes
+New Features
+
+Story Mode scene manager with act-based progression and objective tracking
+Interactive 3D environments with keyboard-driven player movement and camera controls
+Hero avatar system with customizable appearance
+Dialogue and narrative overlay that advances automatically upon objective completion
+Documentation
+
+Story Mode architecture and implementation guide
+Game features and overview documentation
+✏️ Tip: You can customize this high-level summary in your review settings.
+
+Mention @copilot in a comment to make changes to this pull request.
+@Bboy9090
+Align hero facing with movement
+3fdea98
+ Copilot AI review requested due to automatic review settings 3 hours ago
+@Bboy9090 Bboy9090 added the codex label 3 hours ago — with  ChatGPT Codex Connector
+@coderabbitai
+coderabbitai bot
+commented
+3 hours ago
+• 
+Walkthrough
+Introduces a Story Mode scene manager component with global state management, player controller, level management, and narrative UI overlays for a browser-based 3D action game using React Three Fiber and Zustand. Includes supporting architecture and marketing documentation.
+
+Changes
+Cohort / File(s)	Summary
+Story Mode Implementation
+client/src/story-mode/StoryModeLogic.tsx	New self-contained component with Zustand store (useStoryStore) for act/objective tracking, PlayerController with WASD/arrow key movement and gravity, LevelManager per-act scene composition, HeroAvatar rendering (GLB or fallback), and HUD overlay. Exports ObjectiveStatus type, HeroConfig interface, story store, and StoryModeLogic component.
+Architecture Documentation
+docs/story-mode-fragmented-path.md	New guide documenting Story Mode architecture covering acts/sectors, kinematic movement, rendering optimizations (bubble rule, instancing, atlas), component integration, GLB hero swapping, and next steps (physics, streamed assets).
+Marketing Documentation
+docs/ai-prompt-smash-heroes.md	New prompt template for cinematic, hype-driven store-page description of Smash Heroes: World Collision™ with sections for features, mechanics, character highlights, and collector's edition details.
+Sequence Diagram
+
+Estimated code review effort
+🎯 3 (Moderate) | ⏱️ ~20 minutes
+
+StoryModeLogic.tsx requires careful review of:
+State management logic (story progression, objective flow)
+PlayerController implementation (movement physics, camera tracking, gravity handling)
+LevelManager scene composition and proximity detection logic
+Component lifecycle and React Three Fiber integration patterns
+GLB model loading and fallback rendering behavior
+Documentation files are lower-effort (informational, no code logic)
+Poem
+🐰✨ A tale of heroes, acts, and digital quests!
+Story Mode springs forth with its canvas-drawn zest,
+WASD keys dance as objectives align,
+Zustand whispers secrets, dialogues shine,
+From ACT I through III, our rabbit grins wide—
+The narrative flows, with no logic to hide! 🎮🌟
+
+Pre-merge checks and finishing touches
+✅ Passed checks (3 passed)
+✨ Finishing touches
+Thanks for using CodeRabbit! It's free for OSS, and your support helps us grow. If you like it, consider giving us a shout-out.
+
+❤️ Share
+Comment @coderabbitai help to get the list of available commands and usage tips.
+
+Copilot started reviewing on behalf of Bboy9090 3 hours ago
+Copilot finished reviewing on behalf of Bboy9090 3 hours ago
+Copilot AI reviewed 3 hours ago
+Copilot AI
+left a comment
+Pull request overview
+This PR implements hero facing direction rotation during movement to improve visual readability when using GLB hero models in the Story Mode. The rotation aligns the hero avatar with the direction of movement while maintaining camera-relative input controls.
+
+Key changes:
+
+Added rotation logic that rotates the hero to face the movement direction based on horizontal velocity
+Created comprehensive documentation for the Story Mode system architecture and GLB hero swapping
+Added AI prompt documentation for game marketing materials
+Reviewed changes
+Copilot reviewed 3 out of 3 changed files in this pull request and generated 2 comments.
+
+File	Description
+client/src/story-mode/StoryModeLogic.tsx	New file implementing Story Mode with player controller that rotates hero to face movement direction (lines 178-181)
+docs/story-mode-fragmented-path.md	New documentation describing Story Mode architecture, movement logic, and GLB avatar swapping
+docs/ai-prompt-smash-heroes.md	New documentation with AI prompt template for game marketing content
+💡 Add Copilot custom instructions for smarter, more guided reviews. Learn how to get started.
+
+client/src/story-mode/StoryModeLogic.tsx
+      setMovement((m) => ({ ...m, jump: false }));
+    }
+
+    velocity.current.y += gravity * delta;
+Copilot AI
+3 hours ago
+Gravity is being applied twice per frame. Line 157 already multiplies gravity by delta (const gravity = -25 * delta), and then line 189 multiplies by delta again (velocity.current.y += gravity * delta). This results in gravity being proportional to delta^2, causing frame-rate dependent physics. Remove the delta multiplication on line 189 or on line 157.
+
+Copilot uses AI. Check for mistakes.
+@Bboy9090	Reply...
+client/src/story-mode/StoryModeLogic.tsx
+      setMovement((m) => ({ ...m, jump: false }));
+    }
+
+    velocity.current.y += gravity * delta;
+Copilot AI
+3 hours ago
+The variable delta is being used after already being multiplied into gravity on line 157. This creates unnecessary computational overhead. Either remove * delta from line 157 or from line 189 to avoid redundant multiplication.
+
+Suggested change
+    velocity.current.y += gravity * delta;
+    velocity.current.y += gravity;
+Copilot uses AI. Check for mistakes.
+@Bboy9090	Reply...
+coderabbitai[bot]
+coderabbitai bot reviewed 3 hours ago
+coderabbitai bot
+left a comment
+Actionable comments posted: 1
+
+🧹 Nitpick comments (3)
+📜 Review details
+client/src/story-mode/StoryModeLogic.tsx
+Comment on lines +156 to +191
+    const speed = 12 * delta;
+    const gravity = -25 * delta;
+
+    const frontVector = new THREE.Vector3(
+      0,
+      0,
+      Number(movement.backward) - Number(movement.forward)
+    );
+    const sideVector = new THREE.Vector3(
+      Number(movement.left) - Number(movement.right),
+      0,
+      0
+    );
+    const direction = new THREE.Vector3();
+    direction
+      .subVectors(frontVector, sideVector)
+      .normalize()
+      .multiplyScalar(speed)
+      .applyEuler(new THREE.Euler(0, camera.rotation.y, 0));
+
+    playerRef.current.position.add(direction);
+
+    const horizontal = new THREE.Vector3(direction.x, 0, direction.z);
+    if (horizontal.lengthSq() > 0.0001) {
+      playerRef.current.rotation.y = Math.atan2(horizontal.x, horizontal.z);
+    }
+
+    if (movement.jump && isGrounded.current) {
+      velocity.current.y = 0.35;
+      isGrounded.current = false;
+      setMovement((m) => ({ ...m, jump: false }));
+    }
+
+    velocity.current.y += gravity * delta;
+    playerRef.current.position.y += velocity.current.y;
+
+@coderabbitai
+coderabbitai bot
+3 hours ago
+⚠️ Potential issue | 🟠 Major
+
+Gravity/jump integration uses delta inconsistently; consider standardizing for frame-rate independence
+
+Right now gravity and vertical motion are integrated as:
+
+const gravity = -25 * delta;
+velocity.current.y += gravity * delta; // effectively -25 * delta²
+playerRef.current.position.y += velocity.current.y; // no delta
+Horizontal movement already scales via a single delta factor (speed = 12 * delta then applied once), but vertical motion ends up depending on delta² for acceleration and not at all for position, which can make jump feel change with frame rate and diverge from expectations.
+
+A more typical pattern is:
+
+Keep gravity independent of delta.
+Apply delta once when updating velocity.
+Apply delta once when updating position.
+For example:
+
+-    const speed = 12 * delta;
+-    const gravity = -25 * delta;
++    const speed = 12 * delta;
++    const gravity = -25; // units per second squared
+
+...
+-    velocity.current.y += gravity * delta;
+-    playerRef.current.position.y += velocity.current.y;
++    velocity.current.y += gravity * delta;
++    playerRef.current.position.y += velocity.current.y * delta;
+You can then re-tune the jump impulse (velocity.current.y = 0.35) to taste, knowing it will behave consistently across frame rates.
+
+📝 Committable suggestion
+🤖 Prompt for AI Agents
+@Bboy9090	Reply...
+Merge info
+All checks have passed
+1 successful check
+
+
+No conflicts with base branch
+Merging can be performed automatically.
+
+You can also merge this with the command line. 
