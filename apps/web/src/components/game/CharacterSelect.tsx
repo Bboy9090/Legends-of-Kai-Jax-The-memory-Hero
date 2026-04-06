@@ -7,6 +7,7 @@ import CharacterPreview3D from "./CharacterPreview3D";
 
 export default function CharacterSelect() {
   const start = useGame((s) => s.start);
+  const resetPhase = useGame((s) => s.reset);
   const setGameState = useRunner((s) => s.setGameState);
   const setCharacter = useRunner((s) => s.setCharacter);
   const selectedCharacter = useRunner((s) => s.selectedCharacter);
@@ -20,6 +21,7 @@ export default function CharacterSelect() {
   );
 
   const pick = (fighterId: string) => {
+    resetPhase();
     setCharacter(fighterId);
     setPlayerFighter(fighterId);
     const others = FIGHTERS.map((f) => f.id).filter((id) => id !== fighterId);

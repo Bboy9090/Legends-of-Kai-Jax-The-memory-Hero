@@ -109,6 +109,7 @@ function FighterCard({
 
 export default function VersusCharacterSelect() {
   const start = useGame((s) => s.start);
+  const resetPhase = useGame((s) => s.reset);
   const setGameState = useRunner((s) => s.setGameState);
   const setCharacter = useRunner((s) => s.setCharacter);
   const setPlayerFighter = useBattle((s) => s.setPlayerFighter);
@@ -119,6 +120,7 @@ export default function VersusCharacterSelect() {
 
   const handleFight = () => {
     if (!selected) return;
+    resetPhase();
     setCharacter(selectedId);
     setPlayerFighter(selectedId);
     const others = FIGHTERS.map((f) => f.id).filter((id) => id !== selectedId);

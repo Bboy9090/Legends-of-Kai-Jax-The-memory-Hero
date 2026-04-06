@@ -69,7 +69,8 @@ export default function BattleScene() {
     console.log("[BattleScene] Initializing battle");
     const timer = setTimeout(() => {
       const phase = useBattle.getState().battlePhase;
-      if (phase === "preRound") {
+      // After a prior match, phase can be paused/results/etc.; always transition into fighting.
+      if (phase !== "fighting" && phase !== "transforming") {
         startBattle();
       }
     }, 1000);

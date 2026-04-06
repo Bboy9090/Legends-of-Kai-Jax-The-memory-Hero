@@ -72,6 +72,21 @@ const controls = [
 function App() {
   const { phase } = useGame();
   const { gameState, selectedCharacter, activeStoryMissionId } = useRunner();
+
+  // If we left battle with phase "ended" but navigated to a menu screen, recover so UI mounts.
+  useEffect(() => {
+    const menuLike =
+      gameState === "menu" ||
+      gameState === "versus-select" ||
+      gameState === "campaign-map" ||
+      gameState === "district-select" ||
+      gameState === "beast-preview" ||
+      gameState === "customization" ||
+      gameState === "character-select";
+    if (phase === "ended" && menuLike) {
+      useGame.getState().reset();
+    }
+  }, [phase, gameState]);
   const { setPlayerFighter, setOpponentFighter, screenShake } = useBattle();
   const { 
     setBackgroundMusic, 
