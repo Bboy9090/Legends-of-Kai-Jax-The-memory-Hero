@@ -5,15 +5,15 @@ import { CombatState } from "../../../lib/combatSystems";
 import * as THREE from "three";
 import { detRand11, type AdventureCameraMode } from "../../../lib/cameraModes";
 import { useAccessibility } from "../../../lib/stores/useAccessibility";
+import { CAMERA_TUNING } from "../../../game/tuning/cameraTuning";
 
-const CAM_HEIGHT = 4.5;
-const CAM_DIST = 6;
-const CAM_LERP = 5;
-const SHAKE_SEED_BASE = 23011;
-/** Smoothes look-at target when combat/lock-on framing shifts (reduces snap). */
-const LOOK_SMOOTH = 5;
-/** Smoothes distance/height when mode or threat level changes. */
-const MODE_BLEND = 4;
+const adv = CAMERA_TUNING.adventure;
+const CAM_HEIGHT = adv.camHeight;
+const CAM_DIST = adv.camDist;
+const CAM_LERP = adv.camLerp;
+const SHAKE_SEED_BASE = adv.shakeSeedBase;
+const LOOK_SMOOTH = adv.lookSmooth;
+const MODE_BLEND = adv.modeBlend;
 
 function resolveAdventureCameraMode(p: {
   isCombat: boolean;
@@ -83,23 +83,23 @@ export default function AdventureCamera() {
     const nearbyCount = aliveEnemies.filter((e) => {
       const dx = player.posX - e.posX;
       const dz = player.posZ - e.posZ;
-      return Math.sqrt(dx * dx + dz * dz) < 12;
+      return Math.sqrt(dx * dx + dz * dz) < adv.nearbyEnemyRadius;
     }).length;
 
-    if (nearbyCount >= 3) {
-      dynamicDist = CAM_DIST + 2;
-      dynamicHeight = CAM_HEIGHT + 1;
+    if (nearbyCount >= adv.nearbyCrowdMin) {
+      dynamicDist = CAM_DIST + adv.crowdDistBonus;
+      dynamicHeight = CAM_HEIGHT + adv.crowdHeightBonus;
     }
 
     if (mode === "combat" || mode === "lockOn") {
-      dynamicDist += 0.75;
-      dynamicHeight += 0.35;
+      dynamicDist += adv.combatDistBonus;
+      dynamicHeight += adv.combatHeightBonus;
     }
 
     const hpPct = player.health / player.maxHealth;
-    if (hpPct < 0.3) {
-      dynamicDist += 0.5;
-      dynamicHeight += 0.3;
+    if (hpPct < adv.lowHpThreshold) {
+      dynamicDist += adv.lowHpDistBonus;
+      dynamicHeight += adv.lowHpHeightBonus;
     }
 
     const modeK = 1 - Math.exp(-MODE_BLEND * delta);
@@ -118,7 +118,7 @@ export default function AdventureCamera() {
 
     let shakeScale = 1;
     if (mode === "combat" || mode === "lockOn") shakeScale = 0.65;
-    if (reduceMotion) shakeScale *= 0.2;
+    if (reduceMotion) shakeScale *= adv.reduceMotionShakeMult;
 
     let shakeX = 0;
     let shakeY = 0;

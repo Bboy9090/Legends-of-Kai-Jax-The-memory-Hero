@@ -1,0 +1,32 @@
+{
+  "battle": {
+    "baseHeight": 4.2,
+    "baseDist": 9.5,
+    "camLerp": 6,
+    "shakeSeedBase": 10007,
+    "separationMax": 16,
+    "separationDistScale": 0.35,
+    "separationHeightScale": 0.12,
+    "shakeScaleCombat": 0.72,
+    "shakeScaleLockOn": 0.55,
+    "reduceMotionShakeMult": 0.2
+  },
+  "adventure": {
+    "camHeight": 4.5,
+    "camDist": 6,
+    "camLerp": 5,
+    "shakeSeedBase": 23011,
+    "lookSmooth": 5,
+    "modeBlend": 4,
+    "nearbyEnemyRadius": 12,
+    "nearbyCrowdMin": 3,
+    "crowdDistBonus": 2,
+    "crowdHeightBonus": 1,
+    "combatDistBonus": 0.75,
+    "combatHeightBonus": 0.35,
+    "lowHpThreshold": 0.3,
+    "lowHpDistBonus": 0.5,
+    "lowHpHeightBonus": 0.3,
+    "reduceMotionShakeMult": 0.2
+  }
+}

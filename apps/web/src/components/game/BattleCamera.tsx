@@ -5,11 +5,13 @@ import { useBattle } from "../../lib/stores/useBattle";
 import { BattleCombatState } from "../../lib/combatSystems";
 import { detRand11, type BattleCameraMode } from "../../lib/cameraModes";
 import { useAccessibility } from "../../lib/stores/useAccessibility";
+import { CAMERA_TUNING } from "../../game/tuning/cameraTuning";
 
-const BASE_HEIGHT = 4.2;
-const BASE_DIST = 9.5;
-const CAM_LERP = 6;
-const SHAKE_SEED_BASE = 10007;
+const bt = CAMERA_TUNING.battle;
+const BASE_HEIGHT = bt.baseHeight;
+const BASE_DIST = bt.baseDist;
+const CAM_LERP = bt.camLerp;
+const SHAKE_SEED_BASE = bt.shakeSeedBase;
 
 function resolveBattleCameraMode(s: {
   playerAttacking: boolean;
@@ -50,7 +52,7 @@ export default function BattleCamera() {
 
     const midX = (playerX + opponentX) * 0.5;
     const midY = (playerY + opponentY) * 0.5;
-    const separation = Math.min(16, Math.abs(playerX - opponentX));
+    const separation = Math.min(bt.separationMax, Math.abs(playerX - opponentX));
 
     let distMul = 1;
     let heightMul = 1;
@@ -73,8 +75,8 @@ export default function BattleCamera() {
       sideBias = (playerX - opponentX) * 0.18;
     }
 
-    const dynamicDist = (BASE_DIST + separation * 0.35) * distMul;
-    const dynamicHeight = (BASE_HEIGHT + separation * 0.12) * heightMul;
+    const dynamicDist = (BASE_DIST + separation * bt.separationDistScale) * distMul;
+    const dynamicHeight = (BASE_HEIGHT + separation * bt.separationHeightScale) * heightMul;
 
     targetRef.current.set(midX + sideBias, midY + targetYOffset, 0);
 
@@ -83,9 +85,9 @@ export default function BattleCamera() {
     posRef.current.lerp(idealPos, lerpRate * delta);
 
     let shakeScale = 1;
-    if (mode === "combat") shakeScale = 0.72;
-    if (mode === "lockOn") shakeScale = 0.55;
-    if (reduceMotion) shakeScale *= 0.2;
+    if (mode === "combat") shakeScale = bt.shakeScaleCombat;
+    if (mode === "lockOn") shakeScale = bt.shakeScaleLockOn;
+    if (reduceMotion) shakeScale *= bt.reduceMotionShakeMult;
 
     let shakeX = 0;
     let shakeY = 0;
