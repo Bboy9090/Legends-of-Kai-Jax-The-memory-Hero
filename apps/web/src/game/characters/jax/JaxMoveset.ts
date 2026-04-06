@@ -1,5 +1,5 @@
 /**
- * Jax line — ice / tactical (jaxon roster id).
+ * Jax line — ice / tactical. Same tuning for roster ids `jax` and `jaxon`.
  */
 import type { CharacterMoveTuning } from "../shared/CharacterMoveset";
 

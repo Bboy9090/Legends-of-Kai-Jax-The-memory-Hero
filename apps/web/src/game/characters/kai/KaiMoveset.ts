@@ -1,5 +1,5 @@
 /**
- * Kai line — ember / panther (kaison roster id).
+ * Kai line — ember / panther. Same tuning for roster ids `kai` and `kaison`.
  */
 import type { CharacterMoveTuning } from "../shared/CharacterMoveset";
 
