@@ -1,3 +1,4 @@
+export { CombatState, BattleCombatState } from "./stateEnums";
 export {
   type AttackType,
   type MoveData,

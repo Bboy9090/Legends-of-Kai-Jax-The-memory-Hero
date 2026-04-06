@@ -2,7 +2,7 @@
  * Pure battle duel posture FSM (player combat state — not round `battlePhase`).
  * Extracted from useBattle.tickBattleCombatFsm for canonical reuse and tests.
  */
-import { BattleCombatState } from "../../lib/combatSystems";
+import { BattleCombatState } from "./stateEnums";
 
 export type BattleCombatFsmInput = {
   playerDodgeTimer: number;
