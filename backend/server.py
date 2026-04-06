@@ -1688,6 +1688,23 @@ async def get_generated_images(character_type: str):
     ).sort("created_at", -1).to_list(10)
     return images
 
+@api_router.get("/ai-gallery")
+async def get_ai_gallery():
+    """Get the latest AI-generated image for each character"""
+    characters = ["kai", "jax", "kaijax", "boryn", "borax"]
+    gallery = []
+    
+    for char in characters:
+        latest = await db.generated_images.find_one(
+            {"character_type": char},
+            {"_id": 0},
+            sort=[("created_at", -1)]
+        )
+        if latest:
+            gallery.append(latest)
+    
+    return gallery
+
 # Include the router in the main app
 app.include_router(api_router)
 
