@@ -2,6 +2,7 @@
  * Canonical gameplay package surface (incremental migration).
  */
 export * from "./camera";
+export * from "./combat";
 export * from "./encounters/districtTypes";
 export { ASHBLOCK_DISTRICT_META, ASHBLOCK_ENCOUNTERS } from "./world/zones/AshblockHeights/AshblockHeightsEncounters";
 export {
