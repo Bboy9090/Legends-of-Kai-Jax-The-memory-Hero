@@ -8,6 +8,7 @@ const __dirname = dirname(__filename);
 import { type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
+import rateLimit from "express-rate-limit";
 
 const viteLogger = createLogger();
 
@@ -43,8 +44,13 @@ export async function setupVite(app: Express, server: Server) {
     appType: "custom",
   });
 
+  const viteIndexLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs for index.html
+  });
+
   app.use(vite.middlewares);
-  app.use("*", async (req, res, next) => {
+  app.use("*", viteIndexLimiter, async (req, res, next) => {
     const url = req.originalUrl;
 
     try {
