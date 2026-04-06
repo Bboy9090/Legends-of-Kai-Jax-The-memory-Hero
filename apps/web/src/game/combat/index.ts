@@ -4,9 +4,6 @@ export {
   type DodgeData,
   FRAME_TIME,
   MOVES,
-  DODGE,
-  STAMINA_CONFIG,
-  COMBO_CONFIG,
   ATTACK_TYPE_TO_MOVE,
 } from "./moveData";
 export { attackBreaksGuard, getClashPriority } from "./guardAndClash";
@@ -18,3 +15,5 @@ export {
   resolveClash,
   staminaCostForAttack,
 } from "./AttackResolver";
+export { isInActiveWindow, getMoveFrameTime } from "./frameTiming";
+export { getAutoTarget } from "./targeting";

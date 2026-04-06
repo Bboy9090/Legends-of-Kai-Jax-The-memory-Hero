@@ -13,3 +13,10 @@ export * from "./tails/TailAbilityRegistry";
 export { COMBAT_TUNING } from "./tuning/combatTuning";
 export { MOVEMENT_TUNING } from "./tuning/movementTuning";
 export { ENEMY_TIERS, ENEMY_TUNING } from "./tuning/enemyTuning";
+export {
+  ADVENTURE_TUNING,
+  STAMINA_CONFIG,
+  COMBO_CONFIG,
+  DODGE,
+  AUTO_TARGET_CONFIG,
+} from "./tuning/adventureTuning";

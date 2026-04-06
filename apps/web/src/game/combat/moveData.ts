@@ -1,6 +1,6 @@
 /**
- * Canonical duel move tables + frame timing (battle + adventure shared).
- * Pure data — gameplay rules stay in `lib/combatSystems.ts` helpers.
+ * Canonical duel move tables (battle + adventure attack resolution).
+ * Adventure stamina/combo/dodge tuning: `game/tuning/adventure.json`.
  */
 
 export type AttackType = "punch" | "kick" | "special" | "ultimate";
@@ -17,6 +17,7 @@ export interface MoveData {
   superArmor?: boolean;
 }
 
+/** Adventure dodge roll (values in `game/tuning/adventure.json`). */
 export interface DodgeData {
   iFrames: number;
   staminaCost: number;
@@ -78,26 +79,6 @@ export const MOVES: Record<string, MoveData> = {
     knockback: 5,
     hitStopFrames: 6,
   },
-};
-
-export const DODGE: DodgeData = {
-  iFrames: 16,
-  staminaCost: 18,
-  distance: 5,
-  duration: 0.35,
-};
-
-export const STAMINA_CONFIG = {
-  max: 100,
-  regenRate: 14,
-  exhaustedThreshold: 15,
-  regenDelay: 0.5,
-};
-
-export const COMBO_CONFIG = {
-  maxChain: 3,
-  chainWindow: 20,
-  resetTime: 1.0,
 };
 
 export const ATTACK_TYPE_TO_MOVE: Record<AttackType, string> = {
