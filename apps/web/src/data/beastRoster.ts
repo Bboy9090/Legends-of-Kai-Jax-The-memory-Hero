@@ -3,6 +3,8 @@
  * Canonical design: specs/primary, data/characterDesigns (design overrides when present).
  */
 
+import type { CanonicalLineageId } from "../game/characters/shared/LineageRoster";
+
 export interface BeastVisual {
   primaryColor?: string;
   accentColor?: string;
@@ -15,9 +17,10 @@ export interface BeastRosterEntry {
   beastHybrid: string;
 }
 
+/** Fusion-line entries (subset of full roster); ids align with `CanonicalLineageId`. */
 export const COMPLETE_BEAST_ROSTER: BeastRosterEntry[] = [
   {
-    id: "kai-jax",
+    id: "kai-jax" satisfies CanonicalLineageId,
     visual: {
       primaryColor: "#1a1a1a",
       accentColor: "#7fff00",
@@ -26,7 +29,7 @@ export const COMPLETE_BEAST_ROSTER: BeastRosterEntry[] = [
     beastHybrid: "sabertooth lion wolf panther",
   },
   {
-    id: "jaxon",
+    id: "jaxon" satisfies CanonicalLineageId,
     visual: {
       primaryColor: "#0b1020",
       accentColor: "#5dd9ff",
@@ -35,7 +38,7 @@ export const COMPLETE_BEAST_ROSTER: BeastRosterEntry[] = [
     beastHybrid: "sabertooth wolf",
   },
   {
-    id: "kaison",
+    id: "kaison" satisfies CanonicalLineageId,
     visual: {
       primaryColor: "#1a0a0a",
       accentColor: "#ffc233",

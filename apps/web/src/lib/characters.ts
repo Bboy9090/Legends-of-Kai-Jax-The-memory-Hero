@@ -1,12 +1,6 @@
-export interface Fighter {
-  id: string;
-  name: string;
-  displayName: string;
-  color: string;
-  accentColor: string;
-  baseStats?: { power: number; speed: number; defense: number; gravity: number };
-  role?: "hero" | "rival" | "boss" | "enemy";
-}
+import type { Fighter } from "../game/characters/shared/CharacterStats";
+
+export type { Fighter };
 
 export const FIGHTERS: Fighter[] = [
   {
