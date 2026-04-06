@@ -9,6 +9,7 @@ export default function CharacterSelect() {
   const start = useGame((s) => s.start);
   const resetPhase = useGame((s) => s.reset);
   const setGameState = useRunner((s) => s.setGameState);
+  const setTrainingSession = useRunner((s) => s.setTrainingSession);
   const setCharacter = useRunner((s) => s.setCharacter);
   const selectedCharacter = useRunner((s) => s.selectedCharacter);
   const setPlayerFighter = useBattle((s) => s.setPlayerFighter);
@@ -22,6 +23,7 @@ export default function CharacterSelect() {
 
   const pick = (fighterId: string) => {
     resetPhase();
+    setTrainingSession(false);
     setCharacter(fighterId);
     setPlayerFighter(fighterId);
     const others = FIGHTERS.map((f) => f.id).filter((id) => id !== fighterId);

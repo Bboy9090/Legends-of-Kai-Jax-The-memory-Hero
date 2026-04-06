@@ -22,6 +22,7 @@ import ControllerTestScene from "./components/game/ControllerTestScene";
 import AdventureArena from "./components/game/adventure/AdventureArena";
 import AdventureHUD from "./components/game/adventure/AdventureHUD";
 import StoryAdventure from "./components/game/StoryAdventure";
+import DevFrameHud from "./components/game/DevFrameHud";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
@@ -72,6 +73,8 @@ const controls = [
 function App() {
   const { phase } = useGame();
   const { gameState, selectedCharacter, activeStoryMissionId } = useRunner();
+  const battleCanvasActive =
+    (phase === "playing" || phase === "ended") && gameState === "playing";
 
   // If we left battle with phase "ended" but navigated to a menu screen, recover so UI mounts.
   useEffect(() => {
@@ -298,7 +301,7 @@ function App() {
         })()}
 
         {/* ⚡ BATTLE CANVAS - THE MAIN EVENT! */}
-        {(phase === 'playing' || phase === 'ended') && gameState === 'playing' && (
+        {battleCanvasActive && (
           <>
             <div className="relative w-full h-screen">
               <Canvas
@@ -337,6 +340,7 @@ function App() {
             <ScreenEffects />
             <DialogueDisplay />
             <MobileControls />
+            <DevFrameHud active={battleCanvasActive} />
           </>
         )}
       </KeyboardControls>

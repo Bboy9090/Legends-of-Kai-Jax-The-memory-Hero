@@ -743,7 +743,14 @@ export default function BattleUI() {
   } = useBattle();
   
   const { reset } = useGame();
-  const { setGameState, addScore, campaignCurrentNode, setCampaignCompleted, setCampaignCurrentNode } = useRunner();
+  const {
+    setGameState,
+    addScore,
+    campaignCurrentNode,
+    setCampaignCompleted,
+    setCampaignCurrentNode,
+    trainingSession,
+  } = useRunner();
   const playerFighter = getFighterById(playerFighterId);
   const opponentFighter = getFighterById(opponentFighterId);
   
@@ -762,7 +769,7 @@ export default function BattleUI() {
   const activeMission = useMissions((s) => s.active);
   
   const handleReturnToMenu = () => {
-    addScore(battleScore);
+    if (!trainingSession) addScore(battleScore);
     returnToMenu();
     useMissions.getState().abandonMission();
     reset();
@@ -771,7 +778,7 @@ export default function BattleUI() {
 
   const handleCampaignContinue = () => {
     if (!campaignCurrentNode) return;
-    addScore(battleScore);
+    if (!trainingSession) addScore(battleScore);
     returnToMenu();
     useMissions.getState().abandonMission();
     setCampaignCompleted(campaignCurrentNode);
@@ -793,6 +800,13 @@ export default function BattleUI() {
       {/* Top HUD */}
       <div className="absolute top-0 left-0 right-0 p-2 sm:p-4">
         <div className="max-w-6xl mx-auto">
+          {trainingSession && (
+            <div className="text-center mb-1 pointer-events-none">
+              <span className="inline-block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-full border border-emerald-500/40 bg-emerald-950/50 text-emerald-200/95">
+                Training — score not saved to profile
+              </span>
+            </div>
+          )}
           <div className="flex items-start justify-between gap-2 sm:gap-4">
             {/* Player Health */}
             <LegendaryHealthBar
