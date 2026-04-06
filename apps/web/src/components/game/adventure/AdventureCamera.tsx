@@ -3,13 +3,17 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { CombatState } from "../../../lib/combatSystems";
 import * as THREE from "three";
-import { detRand11 } from "../../../lib/cameraModes";
+import { detRand11, type AdventureCameraMode } from "../../../lib/cameraModes";
 import { useAccessibility } from "../../../lib/stores/useAccessibility";
 
 const CAM_HEIGHT = 4.5;
 const CAM_DIST = 6;
 const CAM_LERP = 5;
 const SHAKE_SEED_BASE = 23011;
+/** Smoothes look-at target when combat/lock-on framing shifts (reduces snap). */
+const LOOK_SMOOTH = 5;
+/** Smoothes distance/height when mode or threat level changes. */
+const MODE_BLEND = 4;
 
 function resolveAdventureCameraMode(p: {
   isCombat: boolean;
@@ -25,6 +29,9 @@ export default function AdventureCamera() {
   const { camera } = useThree();
   const reduceMotion = useAccessibility((s) => s.reduceMotion);
   const targetRef = useRef(new THREE.Vector3());
+  const idealLookRef = useRef(new THREE.Vector3());
+  const smoothDistRef = useRef(CAM_DIST);
+  const smoothHeightRef = useRef(CAM_HEIGHT);
   const posRef = useRef(new THREE.Vector3(0, CAM_HEIGHT, CAM_DIST));
   const frameRef = useRef(0);
 
@@ -67,7 +74,9 @@ export default function AdventureCamera() {
     }
 
     const lookY = player.posY + (mode === "exploration" ? 1.35 : mode === "combat" ? 1.15 : 1.25);
-    targetRef.current.set(lookX, lookY, lookZ);
+    idealLookRef.current.set(lookX, lookY, lookZ);
+    const lookK = 1 - Math.exp(-LOOK_SMOOTH * delta);
+    targetRef.current.lerp(idealLookRef.current, lookK);
 
     let dynamicDist = CAM_DIST;
     let dynamicHeight = CAM_HEIGHT;
@@ -93,11 +102,15 @@ export default function AdventureCamera() {
       dynamicHeight += 0.3;
     }
 
+    const modeK = 1 - Math.exp(-MODE_BLEND * delta);
+    smoothDistRef.current = THREE.MathUtils.lerp(smoothDistRef.current, dynamicDist, modeK);
+    smoothHeightRef.current = THREE.MathUtils.lerp(smoothHeightRef.current, dynamicHeight, modeK);
+
     const side = mode === "lockOn" ? 0.55 : mode === "combat" ? 0.42 : 0.4;
     const idealPos = new THREE.Vector3(
-      player.posX - Math.sin(player.rotY) * dynamicDist * side,
-      player.posY + dynamicHeight,
-      player.posZ + dynamicDist
+      player.posX - Math.sin(player.rotY) * smoothDistRef.current * side,
+      player.posY + smoothHeightRef.current,
+      player.posZ + smoothDistRef.current
     );
 
     const lerp = mode === "exploration" ? CAM_LERP : CAM_LERP * 1.12;
