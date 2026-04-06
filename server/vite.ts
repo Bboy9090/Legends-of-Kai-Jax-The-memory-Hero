@@ -9,6 +9,7 @@ import { type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
 import rateLimit from "express-rate-limit";
+import rateLimit from "express-rate-limit";
 
 const viteLogger = createLogger();
 
@@ -81,8 +82,13 @@ export function serveStatic(app: Express) {
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
+  const indexRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 1000, // limit each IP to 1000 index.html fallthrough requests per windowMs
+  });
+
       `Could not find the build directory: ${distPath}, make sure to build the client first`,
-    );
+  app.use("*", indexRateLimiter, (_req, res) => {
   }
 
   app.use(express.static(distPath));
