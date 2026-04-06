@@ -132,6 +132,28 @@ const ADVENTURE_CHARACTERS = [
   { id: 'earth_turtle', name: 'EARTH TURTLE', subtitle: 'Ancient Guardian', color: '#84CC16' },
   { id: 'voidonus_beast', name: 'VOIDONUS', subtitle: 'The Final Darkness', color: '#991B1B' },
 ];
+  // After a match, useGame.phase can be "ended" (legacy end() path). Menu / Versus require phase "ready" to mount UI.
+  useEffect(() => {
+    const menuLike =
+      gameState === "menu" ||
+      gameState === "versus-select" ||
+      gameState === "campaign-map" ||
+      gameState === "district-select" ||
+      gameState === "beast-preview" ||
+      gameState === "customization" ||
+      gameState === "character-select" ||
+      gameState === "mission-select" ||
+      gameState === "story-mode-select" ||
+      gameState === "lore-hub";
+    if (menuLike && useGame.getState().phase === "ended") {
+      useGame.getState().reset();
+    }
+  }, [gameState]);
+
+  // Handle intro completion
+  const handleIntroComplete = () => {
+    setShowIntro(false);
+  };
 
 function ParticleBackground() {
   const particles = useMemo(() =>
