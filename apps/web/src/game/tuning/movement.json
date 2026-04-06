@@ -1,0 +1,22 @@
+{
+  "battle": {
+    "gravity": -15,
+    "groundY": 0.8,
+    "jumpVelocity": 4,
+    "walkMaxSpeed": 6,
+    "sprintMaxSpeed": 9.5,
+    "accel": 38,
+    "decel": 44,
+    "airControlMult": 0.55,
+    "arenaXMin": -10,
+    "arenaXMax": 10,
+    "blockMoveSpeedMult": 0.35
+  },
+  "adventure": {
+    "walkSpeed": 5,
+    "runSpeed": 10,
+    "turnSpeed": 8,
+    "moveAccel": 42,
+    "moveDecel": 50
+  }
+}

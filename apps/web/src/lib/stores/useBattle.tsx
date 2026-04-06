@@ -10,10 +10,20 @@ import {
   getMoveFrameTime,
   isInActiveWindow,
   BattleCombatState,
-  BATTLE_STAMINA,
   attackBreaksGuard,
   type AttackType,
 } from "../combatSystems";
+import {
+  BATTLE_STAMINA,
+  DEFAULT_MAX_COMBO_TIMER_SEC,
+  FUSION_HEAL_ON_FUSION,
+  FUSION_SYNERGY_THRESHOLD,
+  FUSION_TRANSFORM_INTRO_MS,
+  PLAYER_DODGE,
+  ULTIMATE_SUPER_ARMOR_SEC,
+  UPGRADED_MAX_COMBO_TIMER_SEC,
+} from "../../game/tuning/combatTuning";
+import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
 import { resolveBattleCombatState } from "../../game/combat/CombatStateMachine";
 import {
   clashPriorityForAttack,
@@ -23,13 +33,13 @@ import {
   staminaCostForAttack,
 } from "../../game/combat/AttackResolver";
 
-const DEFAULT_MAX_COMBO_TIMER = 2.3;
-const UPGRADED_MAX_COMBO_TIMER = 2.5;
+const ARENA_X_MIN = MOVEMENT_TUNING.battle.arenaXMin;
+const ARENA_X_MAX = MOVEMENT_TUNING.battle.arenaXMax;
 
 function getEffectiveMaxComboTimer(): number {
   return useRunner.getState().unlockedUpgrades.includes("comboWindow")
-    ? UPGRADED_MAX_COMBO_TIMER
-    : DEFAULT_MAX_COMBO_TIMER;
+    ? UPGRADED_MAX_COMBO_TIMER_SEC
+    : DEFAULT_MAX_COMBO_TIMER_SEC;
 }
 
 export interface BattleState {
@@ -279,7 +289,7 @@ export const useBattle = create<BattleState>((set, get) => ({
   comboCount: 0,
   comboDamage: 0,
   comboTimer: 0,
-  maxComboTimer: DEFAULT_MAX_COMBO_TIMER, // base; upgraded to 2.5s if comboWindow unlocked
+  maxComboTimer: DEFAULT_MAX_COMBO_TIMER_SEC,
   maxCombo: 0,
   
   roundTime: 99,
@@ -464,13 +474,11 @@ export const useBattle = create<BattleState>((set, get) => ({
 
     const dodgeT = get().playerDodgeTimer;
     if (dodgeT > 0) {
-      const BATTLE_DODGE_DIST = 2.35;
-      const BATTLE_DODGE_DURATION = 0.22;
-      const speed = BATTLE_DODGE_DIST / BATTLE_DODGE_DURATION;
+      const speed = PLAYER_DODGE.travelDistance / PLAYER_DODGE.durationSec;
       const snap = get();
       const dir = snap.playerDodgeDirection;
       const step = speed * delta * dir;
-      const newX = Math.max(-10, Math.min(10, snap.playerX + step));
+      const newX = Math.max(ARENA_X_MIN, Math.min(ARENA_X_MAX, snap.playerX + step));
       const newT = dodgeT - delta;
       const faceRight = snap.opponentX > newX;
       if (newT <= 0) {
@@ -522,7 +530,7 @@ export const useBattle = create<BattleState>((set, get) => ({
   
   movePlayer: (x, y) => {
     const currentX = get().playerX;
-    const newX = Math.max(-10, Math.min(10, currentX + x));
+    const newX = Math.max(ARENA_X_MIN, Math.min(ARENA_X_MAX, currentX + x));
     set({ 
       playerX: newX, 
       playerY: y,
@@ -537,14 +545,14 @@ export const useBattle = create<BattleState>((set, get) => ({
     if (guardBreakTimer > 0 || playerHitStunTimer > 0) return false;
     if (!playerGrounded || Math.abs(playerVelocityY) >= 0.1) return false;
     if (playerAttacking) return false;
-    const dodgeCost = 18;
+    const dodgeCost = PLAYER_DODGE.staminaCost;
     if (playerStamina < dodgeCost) return false;
     set({
-      playerDodgeTimer: 0.22,
+      playerDodgeTimer: PLAYER_DODGE.durationSec,
       playerDodgeDirection: direction,
       playerVelocityX: 0,
       playerStamina: Math.max(0, playerStamina - dodgeCost),
-      battleStaminaRegenDelay: Math.max(get().battleStaminaRegenDelay, 0.2),
+      battleStaminaRegenDelay: Math.max(get().battleStaminaRegenDelay, PLAYER_DODGE.regenDelaySec),
     });
     useAudio.getState().playDodge();
     return true;
@@ -579,7 +587,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     if (type === 'ultimate') {
       set({
         playerOverdrive: 0,
-        ultimateSuperArmorRemaining: 0.5,
+        ultimateSuperArmorRemaining: ULTIMATE_SUPER_ARMOR_SEC,
       });
     }
 
@@ -764,7 +772,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     const newHealth = Math.max(0, playerHealth - scaledDamage);
     const knockbackMult = atk === "special" ? 0.08 : 0.06;
     const knockback = Math.min(1.2, damage * knockbackMult);
-    const newX = Math.max(-10, Math.min(10, playerX - knockback));
+    const newX = Math.max(ARENA_X_MIN, Math.min(ARENA_X_MAX, playerX - knockback));
     set({
       playerHealth: newHealth,
       playerInvulnerable: true,
@@ -799,7 +807,7 @@ export const useBattle = create<BattleState>((set, get) => ({
   
   moveOpponent: (x, y) => {
     const currentX = get().opponentX;
-    const newX = Math.max(-10, Math.min(10, currentX + x));
+    const newX = Math.max(ARENA_X_MIN, Math.min(ARENA_X_MAX, currentX + x));
     set({ 
       opponentX: newX, 
       opponentY: y,
@@ -905,7 +913,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     const newHealth = Math.max(0, opponentHealth - damage);
     const knockbackMult = attackType === 'ultimate' ? 0.1 : attackType === 'special' ? 0.08 : 0.06;
     const knockback = Math.min(1.2, damage * knockbackMult);
-    const newX = Math.max(-10, Math.min(10, opponentX + knockback));
+    const newX = Math.max(ARENA_X_MIN, Math.min(ARENA_X_MAX, opponentX + knockback));
     const atk = attackType ?? "punch";
     set({ 
       opponentHealth: newHealth,
@@ -936,7 +944,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     set({ playerSynergy: newSynergy });
     
     // Flash when ready to transform (50% for Jaxon/Kaison fusion)!
-    const fusionThreshold = 50;
+    const fusionThreshold = FUSION_SYNERGY_THRESHOLD;
     if ((playerFighterId === 'jaxon' || playerFighterId === 'kaison')) {
       if (newSynergy >= fusionThreshold && playerSynergy < fusionThreshold) {
         get().triggerScreenFlash('#FFD700');
@@ -948,9 +956,10 @@ export const useBattle = create<BattleState>((set, get) => ({
   
   triggerTransformation: () => {
     const { playerSynergy, playerTransformed, playerFighterId } = get();
-    
+    // Fusion metadata: `game/tails/TailAbilityRegistry` (FUSION_KAI_JAX_TAIL)
+
     // Jaxon/Kaison -> Kai-Jax fusion requires 50% Resonance
-    const fusionThreshold = 50;
+    const fusionThreshold = FUSION_SYNERGY_THRESHOLD;
     if (playerTransformed || playerFighterId === 'kai-jax') return;
     if ((playerFighterId === 'jaxon' || playerFighterId === 'kaison') && playerSynergy < fusionThreshold) return;
     
@@ -975,11 +984,11 @@ export const useBattle = create<BattleState>((set, get) => ({
         battlePhase: 'fighting',
         timeScale: 1.0,
         // Heal on fusion (Bovarr's Anchor stabilizes)
-        playerHealth: Math.min(get().maxHealth, get().playerHealth + 25),
+        playerHealth: Math.min(get().maxHealth, get().playerHealth + FUSION_HEAL_ON_FUSION),
       });
       
       get().triggerScreenFlash('#FFBF00'); // Amber - Father's Strand ignites
-    }, 2000);
+    }, FUSION_TRANSFORM_INTRO_MS);
   },
   
   updateTransformation: (delta) => {

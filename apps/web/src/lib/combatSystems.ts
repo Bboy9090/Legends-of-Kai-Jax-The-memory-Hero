@@ -18,20 +18,8 @@ export enum BattleCombatState {
   GUARD_BROKEN = "GUARD_BROKEN",
 }
 
-/** Battle mode stamina (block / specials / parry). */
-export const BATTLE_STAMINA = {
-  max: 100,
-  regenPerSec: 18,
-  regenDelayAfterBlock: 0.35,
-  blockDrainPerSec: 32,
-  /** First frames after holding block — parry if hit connects */
-  parryWindowSec: 0.1,
-  chipDamageMult: 0.18,
-  chipStaminaCost: 10,
-  parryOpponentStaggerSec: 0.65,
-  guardBreakDurationSec: 0.55,
-  guardBreakOnEmptyHit: true,
-} as const;
+/** Battle mode stamina (block / specials / parry) — canonical values in `game/tuning/combat.json`. */
+export { BATTLE_STAMINA } from "../game/tuning/combatTuning";
 
 export type AttackType = "punch" | "kick" | "special" | "ultimate";
 

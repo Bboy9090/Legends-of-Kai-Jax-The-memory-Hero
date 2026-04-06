@@ -8,12 +8,14 @@ import {
   getAutoTarget, getMoveFrameTime,
 } from "../../../lib/combatSystems";
 import * as THREE from "three";
+import { MOVEMENT_TUNING } from "../../../game/tuning/movementTuning";
 
-const WALK_SPEED = 5;
-const RUN_SPEED = 10;
-const TURN_SPEED = 8;
-const MOVE_ACCEL = 42;
-const MOVE_DECEL = 50;
+const adv = MOVEMENT_TUNING.adventure;
+const WALK_SPEED = adv.walkSpeed;
+const RUN_SPEED = adv.runSpeed;
+const TURN_SPEED = adv.turnSpeed;
+const MOVE_ACCEL = adv.moveAccel;
+const MOVE_DECEL = adv.moveDecel;
 
 const _camDir = new THREE.Vector3();
 const _camRight = new THREE.Vector3();
