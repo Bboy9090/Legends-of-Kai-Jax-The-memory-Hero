@@ -34,99 +34,15 @@ export {
 import type { AttackType, MoveData } from "../game/combat/moveData";
 import { FRAME_TIME } from "../game/combat/moveData";
 
-export function attackBreaksGuard(type: AttackType): number {
-  switch (type) {
-    case "ultimate":
-      return 55;
-    case "special":
-      return 40;
-    case "kick":
-      return 22;
-    case "punch":
-      return 12;
-    default:
-      return 0;
-  }
-}
+export { attackBreaksGuard, getClashPriority } from "../game/combat/guardAndClash";
+
+export type { EnemyTierConfig, EnemyTierId } from "../game/tuning/enemyTuning";
+export { ENEMY_TIERS, ENEMY_TUNING } from "../game/tuning/enemyTuning";
 
 export function isInActiveWindow(move: MoveData, elapsedSeconds: number): boolean {
   const timing = getMoveFrameTime(move);
   return elapsedSeconds >= timing.startupTime && elapsedSeconds <= timing.startupTime + timing.activeTime;
 }
-
-export function getClashPriority(type: AttackType | null | undefined): number {
-  switch (type) {
-    case "ultimate":
-      return 4;
-    case "special":
-      return 3;
-    case "kick":
-      return 2;
-    case "punch":
-      return 1;
-    default:
-      return 0;
-  }
-}
-
-export interface EnemyTierConfig {
-  tier: "minion1" | "minion2" | "boss1" | "boss2";
-  health: number;
-  damage: number;
-  speed: number;
-  aggroRange: number;
-  attackRange: number;
-  attackInterval: number;
-  telegraphDuration: number;
-  retreatThreshold: number;
-}
-
-export const ENEMY_TIERS: Record<string, EnemyTierConfig> = {
-  minion1: {
-    tier: "minion1",
-    health: 40,
-    damage: 5,
-    speed: 3,
-    aggroRange: 14,
-    attackRange: 2.5,
-    attackInterval: 2.0,
-    telegraphDuration: 0.6,
-    retreatThreshold: 0.2,
-  },
-  minion2: {
-    tier: "minion2",
-    health: 60,
-    damage: 8,
-    speed: 4,
-    aggroRange: 16,
-    attackRange: 3.0,
-    attackInterval: 1.8,
-    telegraphDuration: 0.5,
-    retreatThreshold: 0.15,
-  },
-  boss1: {
-    tier: "boss1",
-    health: 200,
-    damage: 15,
-    speed: 2.5,
-    aggroRange: 20,
-    attackRange: 3.5,
-    attackInterval: 2.5,
-    telegraphDuration: 0.8,
-    retreatThreshold: 0.1,
-  },
-  boss2: {
-    tier: "boss2",
-    health: 400,
-    damage: 22,
-    speed: 2,
-    aggroRange: 25,
-    attackRange: 4.0,
-    attackInterval: 3.0,
-    telegraphDuration: 1.0,
-    retreatThreshold: 0.05,
-  },
-};
 
 export function getAutoTarget(
   playerX: number,

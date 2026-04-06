@@ -5,7 +5,7 @@
 
 import type { AdventureEnemy } from "./stores/useAdventure";
 import type { CampaignNodeId } from "./stores/useRunner";
-import { ENEMY_TIERS } from "./combatSystems";
+import { ENEMY_TIERS } from "../game/tuning/enemyTuning";
 import { ASHBLOCK_DISTRICT_META } from "../game/world/zones/AshblockHeights/AshblockHeightsEncounters";
 import type { DistrictRoamMeta, EncounterSpec } from "../game/encounters/districtTypes";
 

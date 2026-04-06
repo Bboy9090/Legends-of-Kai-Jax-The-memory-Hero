@@ -6,9 +6,9 @@ import {
   ATTACK_TYPE_TO_MOVE,
   FRAME_TIME,
   MOVES,
-  getClashPriority,
   type AttackType,
-} from "../../lib/combatSystems";
+} from "./moveData";
+import { getClashPriority } from "./guardAndClash";
 
 export type ClashOutcome = "tie" | "initiator_wins" | "other_wins";
 
@@ -45,5 +45,3 @@ export function staminaCostForAttack(type: AttackType): number {
 export function hitStopSecondsForMove(move: (typeof MOVES)[keyof typeof MOVES]): number {
   return move.hitStopFrames * FRAME_TIME;
 }
-
-export { getClashPriority };

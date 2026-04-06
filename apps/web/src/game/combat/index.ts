@@ -9,6 +9,7 @@ export {
   COMBO_CONFIG,
   ATTACK_TYPE_TO_MOVE,
 } from "./moveData";
+export { attackBreaksGuard, getClashPriority } from "./guardAndClash";
 export { resolveBattleCombatState } from "./CombatStateMachine";
 export {
   clashPriorityForAttack,
@@ -16,5 +17,4 @@ export {
   hitStopSecondsForMove,
   resolveClash,
   staminaCostForAttack,
-  getClashPriority,
 } from "./AttackResolver";
