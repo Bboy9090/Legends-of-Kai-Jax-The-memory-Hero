@@ -742,7 +742,7 @@ export default function BattleUI() {
     returnToMenu
   } = useBattle();
   
-  const { end, reset } = useGame();
+  const { reset: resetGamePhase } = useGame();
   const { setGameState, addScore, campaignCurrentNode, setCampaignCompleted, setCampaignCurrentNode } = useRunner();
   const playerFighter = getFighterById(playerFighterId);
   const opponentFighter = getFighterById(opponentFighterId);
@@ -765,7 +765,7 @@ export default function BattleUI() {
     addScore(battleScore);
     returnToMenu();
     useMissions.getState().abandonMission();
-    end();
+    resetGamePhase();
     setGameState('menu');
   };
 
@@ -776,8 +776,7 @@ export default function BattleUI() {
     useMissions.getState().abandonMission();
     setCampaignCompleted(campaignCurrentNode);
     setCampaignCurrentNode(null);
-    end();
-    reset();
+    resetGamePhase();
     setGameState('campaign-map');
   };
   

@@ -126,6 +126,24 @@ function App() {
     }
   }, [selectedCharacter, phase, setPlayerFighter, setOpponentFighter]);
 
+  // After a match, useGame.phase can be "ended" (legacy end() path). Menu / Versus require phase "ready" to mount UI.
+  useEffect(() => {
+    const menuLike =
+      gameState === "menu" ||
+      gameState === "versus-select" ||
+      gameState === "campaign-map" ||
+      gameState === "district-select" ||
+      gameState === "beast-preview" ||
+      gameState === "customization" ||
+      gameState === "character-select" ||
+      gameState === "mission-select" ||
+      gameState === "story-mode-select" ||
+      gameState === "lore-hub";
+    if (menuLike && useGame.getState().phase === "ended") {
+      useGame.getState().reset();
+    }
+  }, [gameState]);
+
   // Handle intro completion
   const handleIntroComplete = () => {
     setShowIntro(false);

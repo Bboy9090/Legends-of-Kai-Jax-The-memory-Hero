@@ -109,6 +109,7 @@ function FighterCard({
 
 export default function VersusCharacterSelect() {
   const start = useGame((s) => s.start);
+  const resetPhase = useGame((s) => s.reset);
   const setGameState = useRunner((s) => s.setGameState);
   const setCharacter = useRunner((s) => s.setCharacter);
   const setPlayerFighter = useBattle((s) => s.setPlayerFighter);
@@ -124,6 +125,8 @@ export default function VersusCharacterSelect() {
     const others = FIGHTERS.map((f) => f.id).filter((id) => id !== selectedId);
     const opponentId = others[Math.floor(Math.random() * others.length)] ?? selectedId;
     setOpponentFighter(opponentId);
+    // After a prior match, phase can be "ended"; App only mounts battle when phase is playing/ended.
+    resetPhase();
     start();
     setGameState("playing");
   };
