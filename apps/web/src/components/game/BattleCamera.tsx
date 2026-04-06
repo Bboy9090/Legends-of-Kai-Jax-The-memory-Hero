@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
-import { BattleCombatState } from "../../lib/combatSystems";
+import { BattleCombatState } from "../../game/combat/stateEnums";
 import { detRand11, type BattleCameraMode } from "../../lib/cameraModes";
 import { useAccessibility } from "../../lib/stores/useAccessibility";
 import { CAMERA_TUNING } from "../../game/tuning/cameraTuning";

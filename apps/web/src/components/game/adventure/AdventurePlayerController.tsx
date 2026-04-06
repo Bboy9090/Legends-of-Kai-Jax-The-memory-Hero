@@ -3,10 +3,11 @@ import { useFrame } from "@react-three/fiber";
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
 import { useTouchInput } from "../../../lib/stores/useTouchInput";
-import {
-  CombatState, MOVES, DODGE, STAMINA_CONFIG, COMBO_CONFIG,
-  getAutoTarget, getMoveFrameTime,
-} from "../../../lib/combatSystems";
+import { CombatState } from "../../../game/combat/stateEnums";
+import { MOVES } from "../../../game/combat/moveData";
+import { getMoveFrameTime } from "../../../game/combat/frameTiming";
+import { DODGE, STAMINA_CONFIG, COMBO_CONFIG } from "../../../game/tuning/adventureTuning";
+import { getAutoTarget } from "../../../game/combat/targeting";
 import * as THREE from "three";
 import { MOVEMENT_TUNING } from "../../../game/tuning/movementTuning";
 

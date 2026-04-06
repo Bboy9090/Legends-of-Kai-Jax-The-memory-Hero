@@ -1,6 +1,7 @@
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useRunner } from "../../../lib/stores/useRunner";
-import { CombatState, STAMINA_CONFIG } from "../../../lib/combatSystems";
+import { CombatState } from "../../../game/combat/stateEnums";
+import { STAMINA_CONFIG } from "../../../game/tuning/adventureTuning";
 import { getDistrictMeta } from "../../../lib/encounters";
 import { useMissions } from "../../../lib/stores/useMissions";
 import { ASHBLOCK_OBJECTIVE_BLURBS } from "../../../game/world/zones/AshblockHeights/AshblockHeightsNarrative";

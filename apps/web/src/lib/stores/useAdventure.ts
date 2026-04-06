@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { CombatState, STAMINA_CONFIG } from "../combatSystems";
+import { CombatState } from "../../game/combat/stateEnums";
+import { STAMINA_CONFIG } from "../../game/tuning/adventureTuning";
 import type { CampaignNodeId } from "./useRunner";
 
 export interface AdventurePlayerState {

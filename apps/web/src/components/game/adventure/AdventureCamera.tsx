@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useAdventure } from "../../../lib/stores/useAdventure";
-import { CombatState } from "../../../lib/combatSystems";
+import { CombatState } from "../../../game/combat/stateEnums";
 import * as THREE from "three";
 import { detRand11, type AdventureCameraMode } from "../../../lib/cameraModes";
 import { useAccessibility } from "../../../lib/stores/useAccessibility";

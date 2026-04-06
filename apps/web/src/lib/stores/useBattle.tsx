@@ -4,12 +4,12 @@ import { useMissions } from "./useMissions";
 import { useDifficulty, getDamageTakenMultiplier } from "./useDifficulty";
 import { useRunner } from "./useRunner";
 import { getCharacterMoves } from "../characterMoves";
+import { BattleCombatState } from "../../game/combat/stateEnums";
 import {
   MOVES,
   ATTACK_TYPE_TO_MOVE,
   getMoveFrameTime,
   isInActiveWindow,
-  BattleCombatState,
   attackBreaksGuard,
   type AttackType,
 } from "../combatSystems";
