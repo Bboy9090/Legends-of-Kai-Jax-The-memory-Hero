@@ -21,7 +21,6 @@ import { useAccessibility } from "../../lib/stores/useAccessibility";
 /* eslint-disable react/no-unknown-property */
 export default function BattleScene() {
   const {
-    startBattle,
     updateRoundTimer,
     battlePhase,
     playerFighterId,
@@ -65,17 +64,19 @@ export default function BattleScene() {
   const punch =
     Math.min(1, rawPunch * Math.max(0.45, 1 - chaos * 0.85) * (reduceMotion ? 0.38 : 1)) || 0;
   
+  // Begin the round once when the battle canvas mounts. Do not depend on startBattle from the
+  // hook — if that reference changes every render, the effect cleanup clears the timeout and the
+  // match can stay stuck on preRound ("GET READY") forever.
   useEffect(() => {
-    console.log("[BattleScene] Initializing battle");
+    const delayMs = 400;
     const timer = setTimeout(() => {
-      const phase = useBattle.getState().battlePhase;
-      // After a prior match, phase can be paused/results/etc.; always transition into fighting.
-      if (phase !== "fighting" && phase !== "transforming") {
-        startBattle();
+      const s = useBattle.getState();
+      if (s.battlePhase !== "fighting" && s.battlePhase !== "transforming") {
+        s.startBattle();
       }
-    }, 1000);
+    }, delayMs);
     return () => clearTimeout(timer);
-  }, [startBattle]);
+  }, []);
   
   // Update round timer and adaptive music intensity
   useFrame((_state, delta) => {
