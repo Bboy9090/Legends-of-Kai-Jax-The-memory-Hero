@@ -328,7 +328,7 @@ const ProjectOmegaSimulator: React.FC = () => {
                 activeChar === id ? 'border-amber-500 text-amber-500 bg-amber-500/10 shadow-[0_0_15px_rgba(251,191,36,0.2)]' : 'border-white/10 text-neutral-500 hover:border-white/30'
               } ${id === 'kai-jax' ? 'relative' : ''}`}
             >
-              {id.toUpperCase().replace('-', '-')}
+              {id.toUpperCase()}
               {id === 'kai-jax' && (
                 <span className="absolute -top-1 -right-1 text-[8px] text-amber-500">⚡</span>
               )}
