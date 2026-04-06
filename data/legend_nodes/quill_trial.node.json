@@ -1,0 +1,39 @@
+{
+  "$schema": "../../schemas/legend_node.schema.json",
+  "node_id": "legend_node_quill",
+  "tail_unlocked": 4,
+  "name": "Trial of the Quill",
+  "location": "Resonance Sanctum",
+  "unlock_conditions": {
+    "starting_tail_count_required": 3,
+    "no_skip_allowed": true
+  },
+  "trial_rules": {
+    "healing_disabled": true,
+    "revives_disabled": true,
+    "environmental_kills_allowed": false,
+    "difficulty_scaling": "fixed"
+  },
+  "victory_conditions": {
+    "perfect_dodges_required": 5,
+    "posture_breaks_required": 3,
+    "damage_taken_threshold": 0.35,
+    "enemies_defeated_required": 1
+  },
+  "failure_conditions": {
+    "health_depleted": true,
+    "excessive_damage_taken": true
+  },
+  "reward": {
+    "tail": "quill",
+    "visual_change": "Quill shadows ripple along spine, solidifying into the fourth tail. Bone-white spikes emerge, catching light with predatory intent.",
+    "combat_unlocks": [
+      "retaliation_spikes",
+      "posture_shred_on_dodge"
+    ]
+  },
+  "memory_unsealed": {
+    "memory_id": "memory_pain_remembered",
+    "tail_number": 4
+  }
+}

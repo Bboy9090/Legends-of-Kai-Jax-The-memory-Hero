@@ -1,0 +1,56 @@
+{
+  "version": "1.0.0",
+  "game_world": {
+    "name": "The Roaring City",
+    "setting": "A sprawling metropolis where myth and memory collide. Districts pulse with ancient power while corruption seeps from the cracks."
+  },
+  "districts": [
+    {
+      "id": "awakening_district",
+      "name": "The Awakening District",
+      "description": "Starting district where Kai-Jax begins his journey. A mix of urban decay and lingering memories of past glory. Rooftops and alleyways provide training ground for movement mastery.",
+      "unlock_requirement": {
+        "type": "story_progress",
+        "value": "start"
+      },
+      "traversal_features": {
+        "verticality_enabled": true,
+        "rooftop_access": true,
+        "interior_transitions": true,
+        "movement_style": "agile"
+      },
+      "zones": [
+        {
+          "id": "awakening_plaza",
+          "name": "Awakening Plaza",
+          "zone_type": "safe",
+          "enemy_spawn_enabled": false,
+          "npc_interactions": ["elder_kaito", "merchant_shen"]
+        },
+        {
+          "id": "forgotten_rooftops",
+          "name": "Forgotten Rooftops",
+          "zone_type": "exploration",
+          "enemy_spawn_enabled": true,
+          "npc_interactions": ["scout_jin"]
+        },
+        {
+          "id": "memory_alley",
+          "name": "Memory Alley",
+          "zone_type": "combat",
+          "enemy_spawn_enabled": true,
+          "npc_interactions": []
+        },
+        {
+          "id": "corruption_den",
+          "name": "Corruption Den",
+          "zone_type": "boss_arena",
+          "enemy_spawn_enabled": true,
+          "npc_interactions": []
+        }
+      ],
+      "main_quests": ["first_awakening", "memory_trial"],
+      "side_quests": ["rooftop_training", "merchant_favor"]
+    }
+  ]
+}

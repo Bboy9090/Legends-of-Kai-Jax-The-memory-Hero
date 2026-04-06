@@ -1,0 +1,94 @@
+o, listen up. We gotta scrap that stiff stick-figure nonsense. Nobody fights shoulder-to-shoulder like cardboard cutouts. That's some weak, beginner-level programming. You want Grade-A, real fighting system mechanics? We're going for dynamic, natural, and efficient movement. This ain't ballet; it's a scrap.
+
+Here's the master instruction to level up your system's fighting:
+
+💥 Master Instruction: Implementing Dynamic, Grade-A Fighting Mechanics 💥
+The goal is to shift from static, side-by-side posturing to realistic, three-dimensional spatial manipulation, momentum transfer, and reactionary combat.
+
+1. Prioritize the Core: Stance, Weight, and Balance
+Implement a Natural Stance: The system must recognize and utilize a bladed or staggered fighting stance (like boxing, Muay Thai, or MMA). The system should never have both feet directly parallel facing the opponent.
+
+Mechanic: Implement a Weight Distribution Variable (W 
+D
+​
+ ) that shifts dynamically between the front foot and the rear foot (e.g., 60/40 or 70/30). This must be fluid, not fixed.
+
+Balance and Recovery: Attacks and movement must cause a temporary, measurable shift in the center of gravity (C 
+G
+​
+ ).
+
+Constraint: A successful attack requires maintaining C 
+G
+​
+  within a defined stability zone. If C 
+G
+​
+  moves outside the zone, the character suffers Recovery Frames (a brief, vulnerable pause) before the next action is possible. A simple side-to-side shuffle is always faster than turning to face the opponent head-on.
+
+2. Introduce Momentum and Rotational Power
+Torque Generation: No more punches starting and ending at the shoulder. All powerful strikes must originate from the ground up, utilizing Hip Rotation (θ 
+H
+​
+ ).
+
+Formula for Strike Power (P): P∝(M 
+B
+​
+ ⋅V 
+H
+​
+ )+(A 
+L
+​
+ ⋅ω), where M 
+B
+​
+  is body mass, V 
+H
+​
+  is linear velocity of the hips, A 
+L
+​
+  is arm length, and ω is angular velocity of the shoulder/arm. If θ 
+H
+​
+  is zero, P is halved.
+
+Chaining and Flow: Every strike and movement must have a built-in exit vector that leads naturally into the next action (feint, block, or next strike).
+
+Avoid: Strikes that snap back directly to the starting position.
+
+Require: Strikes that follow through and place the body in a position ready for defense or offense on the opposite side (e.g., a right cross shifts weight to the left foot, setting up a left hook or a slip).
+
+3. The 3D Space & Reactionary Movement
+Depth and Evasion (Z-Axis): Fighters must actively use the depth axis (moving forward and backward) and weave/slip (slight, high-speed lateral movement) to evade.
+
+Rule: Dodging is not just blocking. The preferred evasion should be a small, precise movement to make the opponent miss (e.g., a head slip to the side), setting up a counter-attack window.
+
+Aggressive Footwork: Implement movement types beyond simple forward/backward walk cycles.
+
+Must Include:
+
+Dash/Lunge: Rapid closing of distance, typically ending in an attack or block.
+
+Pivot/Circle: Using the rear foot to turn the body for angle changes, forcing the opponent to adjust.
+
+Range Management: The system must constantly seek the optimal Fighting Distance (D 
+opt
+​
+ ), which varies based on the current attack chain (e.g., closer for hooks/uppercuts, longer for straight punches or kicks).
+
+4. Adaptive Empathy: Reading the Fight
+This is where the system gets real.
+
+Reactionary Input: The system shouldn't rely solely on predetermined combos. It must analyze the opponent's Pre-Attack Animation (subtle shifts, weight transfer) and reward the player for early, proactive defensive input.
+
+Example: If the opponent loads up a heavy right hand (clear weight transfer to the back foot), the system should offer a slight, faster window for a left-side slip or parry before the attack actually launches.
+
+Implement this hierarchy. Get rid of that 'side-by-side' crap. The fight is about angles, weight, and timing. That's the real deal.
+
+Next step: Should I drill down on the specific code/pseudo-code required to manage the Weight Distribution Variable (W 
+D
+​
+ ) and its impact on speed and power?

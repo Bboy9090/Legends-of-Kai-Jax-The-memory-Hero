@@ -1,0 +1,108 @@
+{
+  "enemy_id": "corruption_guardian",
+  "enemy_type": "Corruption Guardian",
+  "tier": "boss",
+  "base_stats": {
+    "health": 500,
+    "damage": 25,
+    "speed": 3.0,
+    "defense": 10
+  },
+  "ai_behavior": {
+    "base_behavior": {
+      "engagement_style": "tactical",
+      "aggression_level": 0.6,
+      "engagement_range": 8.0,
+      "retreat_threshold": 0.3,
+      "group_coordination": false
+    },
+    "tail_tier_adaptations": {
+      "3": {
+        "confidence_modifier": 1.2,
+        "engagement_distance_modifier": 0.0,
+        "flee_on_sight": false,
+        "spawn_disabled": false
+      },
+      "4": {
+        "confidence_modifier": 1.0,
+        "engagement_distance_modifier": 0.0,
+        "flee_on_sight": false,
+        "spawn_disabled": false
+      },
+      "5": {
+        "confidence_modifier": 0.9,
+        "engagement_distance_modifier": 1.0,
+        "flee_on_sight": false,
+        "spawn_disabled": false,
+        "tactics_override": "berserker"
+      },
+      "6": {
+        "confidence_modifier": 0.7,
+        "engagement_distance_modifier": 2.0,
+        "flee_on_sight": false,
+        "spawn_disabled": false,
+        "tactics_override": "berserker"
+      },
+      "7": {
+        "confidence_modifier": 0.5,
+        "engagement_distance_modifier": 0.0,
+        "flee_on_sight": false,
+        "spawn_disabled": false,
+        "tactics_override": "desperate"
+      },
+      "8": {
+        "confidence_modifier": 0.3,
+        "engagement_distance_modifier": 0.0,
+        "flee_on_sight": false,
+        "spawn_disabled": false,
+        "tactics_override": "desperate"
+      },
+      "9": {
+        "confidence_modifier": 0.1,
+        "engagement_distance_modifier": 0.0,
+        "flee_on_sight": false,
+        "spawn_disabled": false,
+        "tactics_override": "desperate"
+      }
+    }
+  },
+  "combat_capabilities": {
+    "attack_types": [
+      {
+        "attack_id": "corruption_slam",
+        "attack_name": "Corruption Slam",
+        "damage_multiplier": 1.5,
+        "cooldown": 3.0,
+        "range": 3.0,
+        "windup_time": 0.8,
+        "can_be_interrupted": true
+      },
+      {
+        "attack_id": "shadow_wave",
+        "attack_name": "Shadow Wave",
+        "damage_multiplier": 1.0,
+        "cooldown": 5.0,
+        "range": 10.0,
+        "windup_time": 1.2,
+        "can_be_interrupted": false
+      },
+      {
+        "attack_id": "desperate_frenzy",
+        "attack_name": "Desperate Frenzy",
+        "damage_multiplier": 2.0,
+        "cooldown": 8.0,
+        "range": 5.0,
+        "windup_time": 0.5,
+        "can_be_interrupted": false
+      }
+    ],
+    "can_block": true,
+    "can_dodge": true,
+    "can_counter": true
+  },
+  "spawn_rules": {
+    "group_size_min": 1,
+    "group_size_max": 1,
+    "requires_tail_tier": 3
+  }
+}

@@ -1,31 +1,248 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Zap, Sparkles, Swords, Crown, Star } from "lucide-react";
+import { BRAND } from "../../lib/brand";
 
-export function GameIntro({ onComplete }: { onComplete: () => void }) {
-  const [skip, setSkip] = useState(false);
+interface LoadingScreenProps {
+  onComplete: () => void;
+  duration?: number;
+}
 
-  if (skip) {
-    onComplete();
-    return null;
-  }
-
+// ⚡ LEGENDARY LOADING SCREEN
+export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingScreenProps) {
+  const [progress, setProgress] = useState(0);
+  const [currentTip, setCurrentTip] = useState(0);
+  const [fadeOut, setFadeOut] = useState(false);
+  
+  const tips = [
+    { icon: Zap, text: "Build SYNERGY by landing combos—then unleash the Memory King." },
+    { icon: Swords, text: "Chain attacks together for devastating combos!" },
+    { icon: Crown, text: "Kai‑Jax (Memory King) hits harder—control space and end rounds fast." },
+    { icon: Star, text: "Perfect timing on attacks increases synergy gain!" },
+    { icon: Sparkles, text: "Fusion lasts 30 seconds—make every hit count." },
+  ];
+  
+  useEffect(() => {
+    const startTime = Date.now();
+    
+    const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const newProgress = Math.min(100, (elapsed / duration) * 100);
+      setProgress(newProgress);
+      
+      if (newProgress >= 100) {
+        clearInterval(progressInterval);
+        setFadeOut(true);
+        setTimeout(onComplete, 500);
+      }
+    }, 16);
+    
+    const tipInterval = setInterval(() => {
+      setCurrentTip(prev => (prev + 1) % tips.length);
+    }, 2000);
+    
+    return () => {
+      clearInterval(progressInterval);
+      clearInterval(tipInterval);
+    };
+  }, [duration, onComplete, tips.length]);
+  
+  const currentTipData = tips[currentTip] ?? tips[0]!;
+  const CurrentTipIcon = currentTipData.icon;
+  
   return (
-    <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center text-white p-8 cursor-pointer select-none"
-      style={{ background: "linear-gradient(160deg, #0a0a1a 0%, #1a0a2e 40%, #0d0d1a 100%)" }}
-      onClick={() => setSkip(true)}
-      onKeyDown={(e) => e.key === "Enter" && setSkip(true)}
-      role="button"
-      tabIndex={0}
-      aria-label="Click or press Enter to start"
+    <div 
+      className={`
+        fixed inset-0 z-[200] flex flex-col items-center justify-center
+        transition-opacity duration-500
+        ${fadeOut ? 'opacity-0' : 'opacity-100'}
+      `}
+      style={{
+        background: 'linear-gradient(to bottom, #0a0a1a, #1a0a2e)',
+      }}
     >
-      <div className="text-center max-w-lg">
-        <h1 className="text-4xl sm:text-5xl font-black uppercase tracking-tighter drop-shadow-[0_0_30px_rgba(34,211,238,0.3)]">
-          Legends of Kai-Jax
-        </h1>
-        <p className="mt-2 text-cyan-300/90 text-lg font-medium">The Memory King</p>
-        <p className="mt-4 text-slate-500 text-sm">Fight through the city. Face the Big Bad.</p>
+      <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 220px rgba(0,0,0,0.85)' }} />
+      
+      {/* Background Images - Two sides based on assets */}
+      <div className="absolute inset-0 flex overflow-hidden opacity-40">
+        <div className="w-1/2 h-full bg-cover bg-center" style={{ backgroundImage: "url('https://replit.com/api/v1/projects/self/assets/attached_assets/IMG_2571_1769690060866.png')" }}>
+           <div className="absolute inset-0 bg-gradient-to-r from-[#FF4500]/20 to-transparent" />
+        </div>
+        <div className="w-1/2 h-full bg-cover bg-center" style={{ backgroundImage: "url('https://replit.com/api/v1/projects/self/assets/attached_assets/IMG_2571_1769690060866.png')", backgroundPosition: 'right' }}>
+           <div className="absolute inset-0 bg-gradient-to-l from-[#00CED1]/20 to-transparent" />
+        </div>
       </div>
-      <p className="mt-10 text-cyan-400/90 text-sm font-medium animate-pulse">Click or press Enter to start</p>
+
+      {/* Animated Particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(30)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full animate-pulse"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              width: Math.random() * 4 + 2,
+              height: Math.random() * 4 + 2,
+              backgroundColor: ['#FFD700', '#00FFFF', '#A855F7', '#FF6B6B'][Math.floor(Math.random() * 4)],
+              opacity: Math.random() * 0.5 + 0.2,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${Math.random() * 3 + 2}s`,
+            }}
+          />
+        ))}
+      </div>
+      
+      {/* Loading Bar Center - Ouroboros Progress Style */}
+      <div className="relative z-10 w-full max-w-2xl px-12 mt-auto mb-20">
+        <div className="flex justify-between items-end mb-2">
+           <span className="text-cyan-400 font-black tracking-tighter text-sm uppercase">Ouroboros Progress</span>
+           <span className="text-yellow-400 font-black text-xl">{Math.round(progress)}%</span>
+        </div>
+        <div className="h-4 bg-black/60 rounded-full overflow-hidden border border-white/10 p-0.5 backdrop-blur-md">
+          <div 
+            className="h-full bg-gradient-to-r from-orange-600 via-purple-500 to-cyan-400 rounded-full transition-all duration-100 relative"
+            style={{ 
+              width: `${progress}%`,
+              boxShadow: '0 0 20px rgba(0, 255, 255, 0.4)',
+            }}
+          >
+            <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.2)_75%,transparent_75%,transparent)] bg-[length:20px_20px] animate-[shimmer_2s_linear_infinite]" />
+          </div>
+        </div>
+      </div>
+      
+      {/* Logo/Titles */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+        <div className="flex gap-12 items-center justify-center mb-8">
+           <div className="text-orange-500 font-black text-4xl tracking-tighter opacity-80 uppercase">The Shield's Warmth</div>
+           <div className="text-cyan-400 font-black text-4xl tracking-tighter opacity-80 uppercase">The Mentor's Vigil</div>
+        </div>
+      </div>
+
+      
+      {/* Tip Display */}
+      <div className="relative z-10 max-w-md text-center">
+        <div 
+          className="flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10"
+          key={currentTip}
+          style={{ animation: 'fadeIn 0.5s ease-out' }}
+        >
+          <CurrentTipIcon className="w-6 h-6 text-yellow-400 flex-shrink-0" />
+          <p className="text-gray-300 text-sm sm:text-base">{currentTipData.text}</p>
+        </div>
+      </div>
+      
+      {/* Character Silhouettes */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-end gap-8 opacity-30">
+        <div className="text-6xl transform -scale-x-100">🐺</div>
+        <div className="text-8xl">👑</div>
+        <div className="text-6xl">🦊</div>
+      </div>
+      
+      <style>{`
+        @keyframes gradient-shift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ⚡ GAME INTRO SEQUENCE
+export function GameIntro({ onComplete }: { onComplete: () => void }) {
+  const [phase, setPhase] = useState<'logo' | 'tagline' | 'ready' | 'done'>('logo');
+  
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setPhase('tagline'), 1500),
+      setTimeout(() => setPhase('ready'), 3000),
+      setTimeout(() => {
+        setPhase('done');
+        onComplete();
+      }, 4000),
+    ];
+    
+    return () => timers.forEach(clearTimeout);
+  }, [onComplete]);
+  
+  if (phase === 'done') return null;
+  
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black">
+      {/* Logo Phase */}
+      {phase === 'logo' && (
+        <div className="text-center animate-[zoomIn_0.5s_ease-out]">
+          <h1 
+            className="text-7xl sm:text-8xl md:text-9xl font-black"
+            style={{
+              background: 'linear-gradient(135deg, #FFD700, #FF6B6B)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              filter: 'drop-shadow(0 0 50px rgba(255,215,0,0.8))',
+            }}
+          >
+            LEGENDS
+          </h1>
+          <h1 
+            className="text-5xl sm:text-6xl md:text-7xl font-black -mt-4"
+            style={{
+              background: 'linear-gradient(135deg, #00FFFF, #A855F7)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              filter: 'drop-shadow(0 0 40px rgba(0,255,255,0.6))',
+            }}
+          >
+            OF KAI-JAX
+          </h1>
+        </div>
+      )}
+      
+      {/* Tagline Phase */}
+      {phase === 'tagline' && (
+        <div className="text-center animate-[fadeIn_0.5s_ease-out]">
+          <p className="text-2xl sm:text-3xl text-white font-medium mb-4">
+            "When two become one..."
+          </p>
+          <p 
+            className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text"
+            style={{
+              background: 'linear-gradient(90deg, #FFD700, #A855F7, #00FFFF)',
+              WebkitBackgroundClip: 'text',
+            }}
+          >
+            THE MEMORY KING RISES
+          </p>
+        </div>
+      )}
+      
+      {/* Ready Phase */}
+      {phase === 'ready' && (
+        <div className="text-center animate-[zoomIn_0.3s_ease-out]">
+          <h1 
+            className="text-8xl sm:text-9xl font-black text-white animate-pulse"
+            style={{ textShadow: '0 0 60px rgba(255,255,255,0.8)' }}
+          >
+            READY?
+          </h1>
+        </div>
+      )}
+      
+      <style>{`
+        @keyframes zoomIn {
+          from { transform: scale(0.5); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

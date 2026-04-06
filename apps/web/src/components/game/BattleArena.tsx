@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getArenaById } from "../../lib/arenas";
 
@@ -17,7 +18,19 @@ export default function BattleArena() {
   
   return (
     <group>
-      {/* NOTE: Geometry-only arena. Lighting/background are owned by BattleScene. */}
+      {/* Sky/Background */}
+      <color attach="background" args={[arena.skyColor]} />
+      
+      {/* Lighting */}
+      <ambientLight intensity={0.6} />
+      <directionalLight 
+        position={[10, 20, 10]} 
+        intensity={1.2} 
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+      />
+      <pointLight position={[0, 10, 5]} intensity={0.8} color={arena.accentColor} />
       
       {/* Main Ground Platform */}
       <mesh 
@@ -88,7 +101,7 @@ export default function BattleArena() {
               <meshStandardMaterial 
                 color={arena.accentColor}
                 emissive={arena.accentColor}
-                emissiveIntensity={0.12}
+                emissiveIntensity={0.5}
               />
             </mesh>
           ))}
@@ -99,17 +112,17 @@ export default function BattleArena() {
       <mesh position={[0, 0.01, -5]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[24, 1]} />
         <meshBasicMaterial 
-          color="#d6d6e0"
+          color="#FFFFFF"
           transparent
-          opacity={0.12}
+          opacity={0.3}
         />
       </mesh>
       <mesh position={[0, 0.01, 5]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[24, 1]} />
         <meshBasicMaterial 
-          color="#d6d6e0"
+          color="#FFFFFF"
           transparent
-          opacity={0.12}
+          opacity={0.3}
         />
       </mesh>
     </group>

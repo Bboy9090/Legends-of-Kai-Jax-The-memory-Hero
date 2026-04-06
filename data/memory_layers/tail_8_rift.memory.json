@@ -1,0 +1,32 @@
+{
+  "$schema": "../../schemas/memory_layer.schema.json",
+  "memory_id": "memory_cost_power",
+  "tail_number": 8,
+  "memory_type": "cost_of_power",
+  "name": "The Cost of Power",
+  "description": "Memory of moments when strength broke things permanently. The Father's sacrifice beginning to surface.",
+  "read": "Power remembers what it destroys.",
+  "gameplay_effects": {
+    "perception_shifts": [
+      "overuse_feels_wrong_before_numbers",
+      "collateral_visible_clearly",
+      "sacrifice_implications_apparent"
+    ],
+    "behavior_modifications": [
+      "player_hesitates_correctly",
+      "restraint_feels_meaningful",
+      "executions_feel_necessary_not_rewarding"
+    ],
+    "enemy_reactions": [
+      "fear_of_full_power_increases",
+      "surrender_becomes_option",
+      "mercy_becomes_possible"
+    ],
+    "world_interactions": [
+      "world_shows_damage_from_past_uses",
+      "npcs_fear_and_respect_equally"
+    ]
+  },
+  "stacking_rule": "cumulative",
+  "persistence": "irreversible"
+}

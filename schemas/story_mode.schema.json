@@ -55,8 +55,6 @@
         },
         "unlock_requirement": {
           "type": "object",
-          "required": ["type", "value"],
-          "additionalProperties": false,
           "properties": {
             "type": {
               "type": "string",
@@ -121,7 +119,7 @@
     },
     "zone": {
       "type": "object",
-      "required": ["id", "name", "zone_type"],
+      "required": ["id", "name", "zone_type", "enemy_spawn_enabled"],
       "properties": {
         "id": {
           "type": "string",

@@ -1,0 +1,49 @@
+Game Design Document: Hyper Sonic Heroes: Kindness Quest
+1. Game Overview
+Title: Hyper Sonic Jaxon and Super Sonic Kaison: Kindness Quest
+Concept: A fast-paced, 3D superhero endless runner for mobile that integrates social-emotional learning (SEL). Players dash through vibrant cityscapes, battling grumpy robots, while also pausing to solve small, everyday problems for citizens, proving that true heroism is about both power and kindness.
+Target Audience: Preschool - 2nd Grade (Ages 4-8)
+2. Story & Premise
+In the bright and bustling metropolis of Aurelia City, two twin brothers, Jaxon and Kaison, are gifted with incredible super-speed. They are the city's protectors, Hyper Sonic Jaxon and Super Sonic Kaison!
+The city's resident grumpy genius, Professor Gloom, doesn't like happiness or helpfulness. He believes efficiency is everything and that feelings just get in the way. He has unleashed his army of Grumble-Bots across the city. These robots aren't truly evil; they're designed to cause minor inconveniences that make people sad and frustrated—they scribble on murals, knock over ice cream cones, and hide library books.
+Jaxon and Kaison's mission is twofold: stop the Grumble-Bots and, more importantly, help the citizens affected by their mischief. They'll prove to Professor Gloom that kindness is the most powerful force of all.
+3. Characters
+A. Playable Heroes
+• Hyper Sonic Jaxon: The slightly more impulsive and energetic twin. His costume is a vibrant electric blue with yellow lightning bolt accents. He's all about action and quick thinking.
+• Super Sonic Kaison: The more thoughtful and strategic twin. His costume is a fiery solar red with white-hot energy patterns. He likes to plan his moves.
+B. The Villain
+• Professor Gloom: A comical, perpetually unimpressed inventor who operates from his blimp high above the city. He's not evil, just misguided and grumpy. He believes emotions are messy and wants to make the world run on pure, logical (and gloomy) efficiency.
+• The Grumble-Bots: Professor Gloom's robotic minions. They come in various shapes and sizes (small scuttling bots, bigger stomping bots) and are designed to cause annoying problems rather than real destruction.
+4. Core Gameplay Loop
+The game seamlessly blends Action Mode and Choice Mode.
+A. Action Mode (The Runner)
+• Objective: Run as far as possible through the levels, dodging obstacles, sliding under barriers, and smashing through Grumble-Bots.
+• Collectibles:
+• Charge Coins: The primary currency, used for cosmetic upgrades.
+• Help Signal Tokens: Collecting three of these triggers "Choice Mode."
+• Power-up Orbs: Grant temporary in-run abilities.
+• Levels: The game will launch with three distinct environments in Aurelia City:
+1. Downtown Dash: A classic cityscape with cars, street signs, and construction zones.
+2. Park Pursuit: A run through the city park with benches, fountains, and playgrounds as obstacles.
+3. Library Leap: A fast-paced dash through the grand city library, jumping over stacks of books and sliding under tables.
+B. Choice Mode (The Heroic Choice)
+• Triggered after collecting three "Help Signal" tokens.
+• The action pauses to present a scenario with a citizen in need, caused by a Grumble-Bot's recent mischief.
+• Uses the full accessibility suite: "Read to Me" audio, clear Heart/Star icons, and a "Feeling Helper" tool.
+• Making a choice rewards the player with a Point Bonus and a powerful Power-up for their next run, directly linking kindness to in-game strength.
+5. Costumes & Customization (The Hall of Heroes)
+Players can use their collected Charge Coins to unlock new costumes and customize their heroes. This is the primary long-term reward system outside of the Kindness Ranks.
+• Standard Sets: Fun, themed costumes like "Dinosaur Heroes," "Astronaut Heroes," or "Chef Heroes."
+• Kindness-Unlocked Sets: These special costumes can only be earned through gameplay.
+• Guardian Angel Set: Unlocked piece by piece for consistently making empathetic Heart Choices. Features glowing, gentle elements.
+• Community Champion Set: Unlocked piece by piece for making brave and responsible Star Choices. Features bold, heroic emblems and powerful-looking gear.
+6. Villains & Obstacles
+• Static Obstacles: Parked cars, construction barriers, low-hanging signs, puddles.
+• Grumble-Bots (Enemies):
+• Scuttle-Bot: A small, fast-moving bot that runs in a straight line. Can be smashed.
+• Stomper-Bot: A larger bot that periodically slams the ground, creating a shockwave the player must jump over. Requires a special power-up to smash.
+• Goo-Bot: A bot that leaves a trail of slippery, slowing goo on the ground.
+7. Progression & Living World
+• Hero Ranks: Players earn "Kindness Points" to increase their rank from "Helpful Rookie" to "Super Friend of the City!"
+• Friendship Album: A sticker book that fills up as the player helps different citizens.
+• Environmental Feedback: The game world changes to reflect the player's good deeds. After helping someone in the park, that area of the park level will become brighter and more cheerful on subsequent runs, with the happy citizen waving from the background. This creates a tangible sense that the player is making the city a better place.

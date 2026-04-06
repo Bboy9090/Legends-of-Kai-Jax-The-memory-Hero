@@ -13,14 +13,12 @@ import { getDeviceType, getQualitySettings } from "../../../lib/threejs/Performa
 
 export default function CinematicPostFX({
   enabled = true,
-  profile = "preview",
   grade = "neutral",
   accent = "#00f2ff",
   punch = 0,
   center = [0.5, 0.45],
 }: {
   enabled?: boolean;
-  profile?: "preview" | "battle";
   grade?: "neutral" | "ice" | "ember" | "cosmic";
   accent?: string;
   punch?: number; // 0..1 impact spike
@@ -36,7 +34,7 @@ export default function CinematicPostFX({
   const filmRef = useRef<FilmPass | null>(null);
   const raysRef = useRef<ShaderPass | null>(null);
   const sharpenRef = useRef<ShaderPass | null>(null);
-  const baseBloomRef = useRef({ strength: 1.1, radius: 0.92, threshold: 0.18 });
+  const baseBloomRef = useRef({ strength: 0.5, radius: 0.92, threshold: 0.18 });
   const prevPunchRef = useRef(0);
   const impactRef = useRef(0);
   const initRef = useRef(false);
@@ -281,15 +279,11 @@ export default function CinematicPostFX({
       }
 
       // Bloom (the “poster glow”)
-      // Battle profile runs lower bloom to keep arenas readable.
-      const initialBloomStrength = profile === "battle" ? 0.35 : 0.4;
-      const initialBloomRadius = profile === "battle" ? 0.4 : 0.45;
-      const initialBloomThreshold = profile === "battle" ? 0.45 : 0.4;
       const bloom = new UnrealBloomPass(
         new THREE.Vector2(size.width, size.height),
-        initialBloomStrength,
-        initialBloomRadius,
-        initialBloomThreshold
+        0.5, // strength
+        0.92, // radius
+        0.18 // threshold
       );
       bloomRef.current = bloom;
       composer.addPass(bloom);
@@ -299,8 +293,10 @@ export default function CinematicPostFX({
       gradePassRef.current = gradePass;
       composer.addPass(gradePass);
 
-      // Core rays disabled — too much flare
-      raysRef.current = null;
+      // Core rays (light shafts around core/aura)
+      const rays = new ShaderPass(coreRaysShader as any);
+      raysRef.current = rays;
+      composer.addPass(rays);
 
       // Subtle chromatic shift (cinematic lens)
       const rgb = new ShaderPass(RGBShiftShader);
@@ -315,8 +311,13 @@ export default function CinematicPostFX({
       vignetteRef.current = vignette;
       composer.addPass(vignette);
 
-      // Film grain (very subtle) — FilmPass(noiseIntensity, scanlinesIntensity, scanlinesCount?, grayscale?)
-      const film = new (FilmPass as any)(0.22, 0.04, 720, false);
+      // Film grain (very subtle)
+      const film = new FilmPass(
+        0.22, // noise intensity
+        0.04, // scanline intensity
+        720, // scanline count
+        false
+      );
       filmRef.current = film;
       composer.addPass(film);
 
@@ -359,7 +360,7 @@ export default function CinematicPostFX({
       sharpenRef.current = null;
       composer?.dispose();
     };
-  }, [camera, coreRaysShader, enabled, gl, gradeShader, profile, scene, sharpenShader, size.height, size.width]);
+  }, [camera, coreRaysShader, enabled, gl, gradeShader, scene, sharpenShader, size.height, size.width]);
 
   useEffect(() => {
     const pass = gradePassRef.current;
@@ -369,39 +370,37 @@ export default function CinematicPostFX({
     pass.uniforms.uTint.value = acc;
 
     // default (lift blacks a touch so arenas don’t crush to black)
-    // battle profile is intentionally less “poster” so the arena stays readable.
-    const isBattle = profile === "battle";
     pass.uniforms.uLift.value.set(0.015, 0.015, 0.015);
     pass.uniforms.uGamma.value.set(1.0, 1.0, 1.0);
     pass.uniforms.uGain.value.set(1.0, 1.0, 1.0);
-    pass.uniforms.uSaturation.value = isBattle ? 1.04 : 1.12;
-    pass.uniforms.uContrast.value = isBattle ? 1.04 : 1.08;
-    pass.uniforms.uIntensity.value = isBattle ? 0.62 : 0.78;
+    pass.uniforms.uSaturation.value = 1.12;
+    pass.uniforms.uContrast.value = 1.08;
+    pass.uniforms.uIntensity.value = 0.78;
     pass.uniforms.uCosmic.value = 0.0;
 
     if (grade === "ice") {
       pass.uniforms.uLift.value.set(0.03, 0.045, 0.06);
       pass.uniforms.uGamma.value.set(1.01, 1.02, 0.99);
       pass.uniforms.uGain.value.set(0.98, 1.02, 1.08);
-      pass.uniforms.uSaturation.value = isBattle ? 1.08 : 1.18;
-      pass.uniforms.uContrast.value = isBattle ? 1.06 : 1.10;
-      pass.uniforms.uIntensity.value = isBattle ? 0.68 : 0.82;
+      pass.uniforms.uSaturation.value = 1.18;
+      pass.uniforms.uContrast.value = 1.10;
+      pass.uniforms.uIntensity.value = 0.82;
     } else if (grade === "ember") {
       pass.uniforms.uLift.value.set(0.055, 0.032, 0.018);
       pass.uniforms.uGamma.value.set(0.99, 1.01, 1.06);
       pass.uniforms.uGain.value.set(1.10, 1.03, 0.94);
-      pass.uniforms.uSaturation.value = isBattle ? 1.08 : 1.18;
-      pass.uniforms.uContrast.value = isBattle ? 1.06 : 1.10;
-      pass.uniforms.uIntensity.value = isBattle ? 0.68 : 0.82;
+      pass.uniforms.uSaturation.value = 1.18;
+      pass.uniforms.uContrast.value = 1.10;
+      pass.uniforms.uIntensity.value = 0.82;
     } else if (grade === "cosmic") {
       pass.uniforms.uLift.value.set(0.02, 0.02, 0.03);
       pass.uniforms.uGain.value.set(1.03, 1.03, 1.03);
-      pass.uniforms.uSaturation.value = isBattle ? 1.12 : 1.22;
-      pass.uniforms.uContrast.value = isBattle ? 1.06 : 1.10;
-      pass.uniforms.uIntensity.value = isBattle ? 0.72 : 0.84;
+      pass.uniforms.uSaturation.value = 1.22;
+      pass.uniforms.uContrast.value = 1.10;
+      pass.uniforms.uIntensity.value = 0.84;
       pass.uniforms.uCosmic.value = 1.0;
     }
-  }, [accent, grade, profile]);
+  }, [accent, grade]);
 
   useEffect(() => {
     const bloom = bloomRef.current;
@@ -409,20 +408,19 @@ export default function CinematicPostFX({
 
     // Grade-driven bloom tuning (more “poster”)
     if (grade === "cosmic") {
-      baseBloomRef.current = { strength: 0.4, radius: 0.45, threshold: 0.4 };
+      baseBloomRef.current = { strength: 0.5, radius: 0.95, threshold: 0.18 };
     } else if (grade === "ice") {
-      baseBloomRef.current = { strength: 0.35, radius: 0.4, threshold: 0.45 };
+      baseBloomRef.current = { strength: 0.45, radius: 0.88, threshold: 0.20 };
     } else if (grade === "ember") {
-      baseBloomRef.current = { strength: 0.38, radius: 0.42, threshold: 0.42 };
+      baseBloomRef.current = { strength: 0.45, radius: 0.90, threshold: 0.20 };
     } else {
-      baseBloomRef.current = { strength: 0.3, radius: 0.35, threshold: 0.45 };
+      baseBloomRef.current = { strength: 0.4, radius: 0.75, threshold: 0.22 };
     }
 
-    const isBattle = profile === "battle";
-    bloom.strength = baseBloomRef.current.strength * (isBattle ? 0.70 : 1.0);
-    bloom.radius = baseBloomRef.current.radius * (isBattle ? 0.78 : 1.0);
-    bloom.threshold = THREE.MathUtils.clamp(baseBloomRef.current.threshold + (isBattle ? 0.06 : 0.0), 0, 1);
-  }, [grade, profile]);
+    bloom.strength = baseBloomRef.current.strength;
+    bloom.radius = baseBloomRef.current.radius;
+    bloom.threshold = baseBloomRef.current.threshold;
+  }, [grade]);
 
   useEffect(() => {
     const rays = raysRef.current;
@@ -467,9 +465,8 @@ export default function CinematicPostFX({
 
       // Real exposure “camera flash” (this is what makes hits feel like trailer footage)
       const baseExposure = baseExposureRef.current ?? (gl as any).toneMappingExposure ?? 1.0;
-      const isBattle = profile === "battle";
-      const flashExposure = 1.0 + impact * 0.02 + spike * 0.005;
-      (gl as any).toneMappingExposure = baseExposure * Math.min(1.04, flashExposure);
+      const flashExposure = 1.0 + impact * 0.10 + spike * 0.02;
+      (gl as any).toneMappingExposure = baseExposure * Math.min(1.18, flashExposure);
 
       // Ghost trail strength (0..1): only rises on impact deltas so steady “punch” doesn’t smear previews
       const after = afterimageRef.current as any;
@@ -502,11 +499,7 @@ export default function CinematicPostFX({
       if (rays?.uniforms) {
         if (rays.uniforms.uTime) rays.uniforms.uTime.value += delta;
         if (rays.uniforms.uPunch) rays.uniforms.uPunch.value = spike;
-        if (rays.uniforms.uStrength) {
-          const base =
-            grade === "cosmic" ? 0.52 : grade === "ice" ? 0.38 : grade === "ember" ? 0.44 : 0.32;
-          rays.uniforms.uStrength.value = base * (profile === "battle" ? 0.62 : 1.0);
-        }
+        if (rays.uniforms.uStrength) rays.uniforms.uStrength.value = grade === "cosmic" ? 0.52 : grade === "ice" ? 0.38 : grade === "ember" ? 0.44 : 0.32;
       }
 
       // Final sharpen amount: small baseline + extra on impacts to make motion read “crisp”

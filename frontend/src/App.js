@@ -1,7 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
+import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
 import "@/App.css";
 import axios from "axios";
 import { Zap, Flame, Wind, Shield, Droplet, Leaf, Sun, Star, Skull, Menu, X, ChevronRight, Loader2, Gamepad2 } from "lucide-react";
+
+// Lazy load the Game component
+const GamePage = lazy(() => import("./game/GamePage"));
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -29,7 +33,7 @@ const ParticleBackground = () => {
 // Navigation Component
 const Navigation = ({ activeSection, setActiveSection }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const sections = ['home', 'characters', 'tails', 'story', 'gods', 'regions', 'bible', 'ui'];
+  const sections = ['home', 'play', 'testlab', 'characters', 'tails', 'story', 'gods', 'regions', 'bible', 'ui'];
 
   return (
     <nav className="glass-nav" data-testid="main-navigation">
@@ -120,13 +124,21 @@ const HeroSection = ({ onNavigate }) => {
           </p>
           
           <div className="flex flex-wrap gap-4">
-            <a 
-              href="/game"
-              className="btn-cyber flex items-center gap-2 bg-gradient-to-r from-primary/20 to-fire/20 border-primary hover:border-primary hover:shadow-[0_0_30px_rgba(46,46,254,0.4)] text-lg px-8 py-4 font-heading uppercase tracking-wider"
+            {/* PLAY GAME - Primary CTA */}
+            <Link 
+              to="/game"
+              className="btn-cyber flex items-center gap-2 bg-primary/20 border-primary hover:bg-primary/40 text-lg px-8 py-4"
               data-testid="cta-play-game"
             >
-              <Gamepad2 className="w-5 h-5 text-primary" /> Play Game
-            </a>
+              <Gamepad2 className="w-5 h-5 text-primary" /> PLAY GAME
+            </Link>
+            <button 
+              onClick={() => onNavigate('play')} 
+              className="btn-cyber flex items-center gap-2 bg-primary/20 border-primary hover:bg-primary/30 animate-pulse"
+              data-testid="cta-play"
+            >
+              <Gamepad2 className="w-5 h-5" /> PLAY NOW
+            </button>
             <button 
               onClick={() => onNavigate('characters')} 
               className="btn-cyber flex items-center gap-2"
@@ -165,6 +177,7 @@ const HeroSection = ({ onNavigate }) => {
 // Character Card Component
 const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
   const [generatedImage, setGeneratedImage] = useState(null);
+  const [isLocalGenerating, setIsLocalGenerating] = useState(false);
 
   // Reference images from user's art - LOCKED IMAGE CANON
   const referenceImages = {
@@ -184,13 +197,16 @@ const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
       borax: "TOWERING armored lion warrior beast, bipedal MASSIVE frame, ancient battle-worn heavy armor with spikes, cold piercing eyes, watching from cyberpunk city rooftop at night, neon signs in background, absolute authority presence, the apex predator, mentor figure, dark intimidating silhouette, game boss character art, hyper detailed, dramatic noir lighting, 4K"
     };
 
+    setIsLocalGenerating(true);
     const result = await onGenerateImage(character.id, prompts[character.id] || prompts.kaijax);
     if (result) {
       setGeneratedImage(result);
     }
+    setIsLocalGenerating(false);
   };
 
   const displayImage = generatedImage || referenceImages[character.id];
+  const showGenerating = isLocalGenerating;
 
   const borderColors = {
     kai: 'border-fire/30 hover:border-fire',
@@ -205,23 +221,47 @@ const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
       className={`card-beam p-6 ${borderColors[character.id] || ''}`}
       data-testid={`character-card-${character.id}`}
     >
-      <div className="aspect-square mb-4 rounded-lg overflow-hidden bg-black/60 relative">
+      <div className="aspect-square mb-4 rounded-lg overflow-hidden bg-black/60 relative group">
         {displayImage ? (
-          <img 
-            src={generatedImage ? `data:image/png;base64,${generatedImage}` : displayImage} 
-            alt={character.name}
-            className="w-full h-full object-cover"
-          />
+          <>
+            <img 
+              src={generatedImage ? `data:image/png;base64,${generatedImage}` : displayImage} 
+              alt={character.name}
+              className="w-full h-full object-cover transition-opacity duration-300"
+              style={{ opacity: showGenerating ? 0.3 : 1 }}
+            />
+            {/* Generate/Regenerate overlay */}
+            <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${showGenerating ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} bg-black/60`}>
+              <button
+                onClick={handleGenerate}
+                disabled={showGenerating}
+                className="btn-cyber text-xs px-4 py-2 flex items-center gap-2"
+                data-testid={`generate-${character.id}`}
+              >
+                {showGenerating ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+                ) : (
+                  <><Zap className="w-4 h-4" /> {generatedImage ? 'Regenerate' : 'Generate AI Art'}</>
+                )}
+              </button>
+            </div>
+            {/* AI Generated badge */}
+            {generatedImage && !showGenerating && (
+              <div className="absolute top-2 right-2 px-2 py-1 bg-primary/80 rounded text-xs font-bold text-black">
+                AI GENERATED
+              </div>
+            )}
+          </>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-white/30">
             <Star className="w-16 h-16 mb-4 opacity-50" />
             <button
               onClick={handleGenerate}
-              disabled={isGenerating}
+              disabled={showGenerating}
               className="btn-cyber text-xs px-4 py-2"
               data-testid={`generate-${character.id}`}
             >
-              {isGenerating ? (
+              {showGenerating ? (
                 <><Loader2 className="w-4 h-4 animate-spin inline mr-2" /> Generating...</>
               ) : (
                 'Generate AI Art'
@@ -247,6 +287,7 @@ const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
 // Characters Section
 const CharactersSection = ({ onGenerateImage, isGenerating }) => {
   const [characters, setCharacters] = useState([]);
+  const [aiGallery, setAiGallery] = useState([]);
 
   useEffect(() => {
     const fetchCharacters = async () => {
@@ -259,6 +300,27 @@ const CharactersSection = ({ onGenerateImage, isGenerating }) => {
     };
     fetchCharacters();
   }, []);
+
+  // Fetch AI Gallery images
+  useEffect(() => {
+    const fetchAiGallery = async () => {
+      try {
+        const response = await axios.get(`${API}/ai-gallery`);
+        setAiGallery(response.data);
+      } catch (e) {
+        console.error('Failed to fetch AI gallery:', e);
+      }
+    };
+    fetchAiGallery();
+  }, []);
+
+  const characterNames = {
+    kai: 'KAI - Prime Hero',
+    jax: 'JAX - Prime Striker',
+    kaijax: 'KAI-JAX - The Memory King',
+    boryn: 'BORYN - The Shield Father',
+    borax: 'BORAX - The Sabertooth Law'
+  };
 
   // All reference art gallery - LOCKED IMAGE CANON
   const galleryImages = [
@@ -359,6 +421,48 @@ const CharactersSection = ({ onGenerateImage, isGenerating }) => {
             ))}
           </div>
         </div>
+
+        {/* AI Generated Gallery Section */}
+        {aiGallery.length > 0 && (
+          <div className="mt-20">
+            <div className="text-center mb-12">
+              <p className="font-lore text-electric text-sm tracking-[0.3em] mb-4">AI GENERATED</p>
+              <h3 className="font-heading text-3xl md:text-4xl font-black mb-4">
+                <span className="text-electric">AI</span> CHARACTER GALLERY
+              </h3>
+              <p className="text-white/60">Unique character art generated by OpenAI GPT Image 1</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {aiGallery.map((img, index) => (
+                <div 
+                  key={`ai-${img.character_type}-${index}`}
+                  className="card-beam overflow-hidden group border-electric/30 hover:border-electric"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                  data-testid={`ai-gallery-${img.character_type}`}
+                >
+                  <div className="aspect-square relative overflow-hidden">
+                    <img 
+                      src={`data:image/png;base64,${img.image_base64}`}
+                      alt={characterNames[img.character_type] || img.character_type}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-60" />
+                    <div className="absolute top-2 right-2 px-2 py-1 bg-electric/80 rounded text-xs font-bold text-black">
+                      AI GENERATED
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h4 className="font-heading text-lg text-electric mb-1">
+                      {characterNames[img.character_type] || img.character_type.toUpperCase()}
+                    </h4>
+                    <p className="text-white/40 text-xs line-clamp-2">{img.prompt?.slice(0, 100)}...</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -1460,6 +1564,10 @@ function App() {
 
   const renderSection = () => {
     switch (activeSection) {
+      case 'play':
+        return <CombatArena onExit={() => setActiveSection('home')} />;
+      case 'testlab':
+        return <TestArena />;
       case 'characters':
         return <CharactersSection onGenerateImage={handleGenerateImage} isGenerating={isGenerating} />;
       case 'tails':
@@ -1479,18 +1587,50 @@ function App() {
     }
   };
 
+  // Full screen mode for game
+  const isGameMode = activeSection === 'play' || activeSection === 'testlab';
+
   return (
     <div className="min-h-screen bg-background">
-      <ParticleBackground />
-      <Navigation activeSection={activeSection} setActiveSection={setActiveSection} />
+      {!isGameMode && <ParticleBackground />}
+      {!isGameMode && <Navigation activeSection={activeSection} setActiveSection={setActiveSection} />}
       
       <main>
         {renderSection()}
       </main>
 
-      <Footer />
+      {!isGameMode && <Footer />}
     </div>
   );
 }
 
-export default App;
+// Loading fallback for game
+const GameLoadingFallback = () => (
+  <div className="w-full h-screen bg-black flex items-center justify-center">
+    <div className="text-center">
+      <Gamepad2 className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse" />
+      <p className="text-white/60">Loading game...</p>
+    </div>
+  </div>
+);
+
+// Main App with Router
+function AppWrapper() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route 
+          path="/game" 
+          element={
+            <Suspense fallback={<GameLoadingFallback />}>
+              <GamePage />
+            </Suspense>
+          } 
+        />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default AppWrapper;
