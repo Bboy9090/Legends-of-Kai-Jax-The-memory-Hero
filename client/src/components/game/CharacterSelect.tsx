@@ -1,17 +1,44 @@
 import { useRunner } from "../../lib/stores/useRunner";
 import { useGame } from "../../lib/stores/useGame";
-import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { ArrowLeft, Lock, Zap, Crown, Flame, Shield, BookOpen } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Lock, Zap, Crown, Flame, Star } from "lucide-react";
+import { useState, useMemo } from "react";
 import { FIGHTERS, Fighter, getFighterById } from "../../lib/characters";
-import { getBioForHero, getRandomBattleQuote, getVillainMatchupData, VILLAIN_MATCHUP_CHART } from "../../lib/characterBios";
+import { getBioForHero } from "../../lib/characterBios";
 import CharacterPreview3D from "./CharacterPreview3D";
+
+const particlePositions = Array.from({ length: 30 }, (_, i) => ({
+  left: (i * 37 + 13) % 100,
+  top: (i * 23 + 7) % 100,
+  opacity: 0.3 + ((i * 17) % 40) / 100,
+  delay: (i * 11) % 30 / 10,
+  duration: 2 + ((i * 13) % 20) / 10
+}));
+
+function ParticleField() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particlePositions.map((p, i) => (
+        <div
+          key={i}
+          className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-pulse"
+          style={{
+            left: `${p.left}%`,
+            top: `${p.top}%`,
+            opacity: p.opacity,
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.duration}s`
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function CharacterSelect() {
   const { selectedCharacter, setCharacter, setGameState, stats } = useRunner();
   const { start } = useGame();
   const [hoveredFighter, setHoveredFighter] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   
   const startGame = () => {
     console.log("Starting battle with fighter:", selectedCharacter);
@@ -24,13 +51,9 @@ export default function CharacterSelect() {
   };
   
   const handleFighterSelect = (fighter: Fighter) => {
-    // Check if fighter is unlocked
     if (!fighter.unlocked && fighter.unlockRequirement && stats.score < fighter.unlockRequirement) {
-      console.log("Fighter locked:", fighter.id);
       return;
     }
-    
-    console.log("Fighter selected:", fighter.id);
     setCharacter(fighter.id as any);
   };
   
@@ -39,309 +62,277 @@ export default function CharacterSelect() {
   };
   
   const categories = [
-    { name: 'Heroes', id: 'heroes' as const, color: 'from-blue-500 to-cyan-500' },
-    { name: 'Speedsters', id: 'speedsters' as const, color: 'from-yellow-500 to-orange-500' },
-    { name: 'Warriors', id: 'warriors' as const, color: 'from-green-500 to-emerald-500' },
-    { name: 'Legends', id: 'legends' as const, color: 'from-purple-500 to-pink-500' }
+    { name: 'ALL', id: 'all', color: '#ffffff' },
+    { name: 'HEROES', id: 'heroes', color: '#00bfff' },
+    { name: 'SPEEDSTERS', id: 'speedsters', color: '#ff6600' },
+    { name: 'WARRIORS', id: 'warriors', color: '#00ff88' },
+    { name: 'LEGENDS', id: 'legends', color: '#ff00ff' }
   ];
   
-  // Determine which fighter to preview
+  const filteredFighters = useMemo(() => {
+    if (selectedCategory === 'all') return FIGHTERS;
+    return FIGHTERS.filter(f => f.category === selectedCategory);
+  }, [selectedCategory]);
+  
   const previewFighter = hoveredFighter 
     ? getFighterById(hoveredFighter) 
     : selectedCharacter 
       ? getFighterById(selectedCharacter)
-      : FIGHTERS.find(f => f.unlocked); // Default to first unlocked fighter
+      : FIGHTERS.find(f => f.unlocked);
+
+  const previewBio = previewFighter ? getBioForHero(previewFighter.id) : null;
   
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 p-2 sm:p-4">
-      <div className="w-full max-w-7xl mx-auto pb-8 sm:pb-24">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Main character selection panel */}
-          <div className="lg:col-span-2">
-            <Card className="bg-black/40 backdrop-blur-lg border-2 sm:border-4 border-yellow-400">
-          <CardHeader className="text-center relative border-b-2 sm:border-b-4 border-yellow-400/30 p-3 sm:p-6">
-            <Button 
-              variant="outline" 
-              onClick={goBack}
-              className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-red-500 hover:bg-red-600 text-white border-none text-sm sm:text-base p-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline ml-2">Back</span>
-            </Button>
-            
-            <CardTitle className="text-2xl sm:text-3xl md:text-5xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] px-12 sm:px-0">
-              Choose Fighter!
-            </CardTitle>
-            <p className="text-yellow-300 text-sm sm:text-xl mt-1 sm:mt-2 font-bold">
-              {FIGHTERS.filter(f => !isLocked(f)).length} / {FIGHTERS.length} Unlocked
-            </p>
-          </CardHeader>
+    <div 
+      className="min-h-screen w-full relative overflow-hidden"
+      style={{
+        background: `
+          linear-gradient(135deg, rgba(20,10,30,0.95) 0%, rgba(10,20,40,0.95) 100%),
+          url(/kai-jax-fusion.png)
+        `,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/80" />
+      
+      <ParticleField />
+      
+      <div className="relative z-10 min-h-screen flex flex-col">
+        <header className="p-4 flex items-center justify-between border-b border-cyan-500/20">
+          <button 
+            onClick={goBack}
+            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm font-bold tracking-wider">BACK</span>
+          </button>
           
-          <CardContent className="p-2 sm:p-4 md:p-6">
-            {/* Fighter Categories */}
-            {categories.map(category => {
-              const categoryFighters = FIGHTERS.filter(f => f.category === category.id);
-              
-              return (
-                <div key={category.id} className="mb-4 sm:mb-8">
-                  <h2 className={`text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4 bg-gradient-to-r ${category.color} bg-clip-text text-transparent`}>
-                    {category.name}
-                  </h2>
-                  
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
-                    {categoryFighters.map(fighter => {
-                      const locked = isLocked(fighter);
-                      const selected = selectedCharacter === fighter.id;
-                      
-                      return (
-                        <div
-                          key={fighter.id}
-                          className={`relative cursor-pointer transition-all duration-200 ${
-                            locked ? 'opacity-50' : 'active:scale-95'
-                          }`}
-                          onClick={() => !locked && handleFighterSelect(fighter)}
-                          onMouseEnter={() => !locked && setHoveredFighter(fighter.id)}
-                          onMouseLeave={() => setHoveredFighter(null)}
-                        >
-                          <Card className={`
-                            ${selected ? 'ring-2 sm:ring-4 ring-yellow-400 bg-yellow-400/20' : 'bg-gray-800/50'}
-                            ${locked ? 'grayscale' : ''}
-                            border-2 overflow-hidden
-                          `} style={{ borderColor: fighter.accentColor }}>
-                            <CardContent className="p-2 sm:p-4 text-center">
-                              {/* Fighter Avatar */}
-                              <div 
-                                className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full mx-auto mb-2 sm:mb-3 flex items-center justify-center shadow-lg relative"
-                                style={{ 
-                                  backgroundColor: fighter.color,
-                                  boxShadow: `0 0 20px ${fighter.accentColor}`
-                                }}
-                              >
-                                <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
-                                  {fighter.name.charAt(0).toUpperCase()}
-                                </span>
-                                
-                                {locked && (
-                                  <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center">
-                                    <Lock className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-yellow-400" />
-                                  </div>
-                                )}
-                                
-                                {selected && !locked && (
-                                  <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-yellow-400 rounded-full w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
-                                    <span className="text-black font-bold text-sm sm:text-base">✓</span>
-                                  </div>
-                                )}
-                              </div>
-                              
-                              {/* Fighter Name */}
-                              <h3 className="text-sm sm:text-base md:text-lg font-bold text-white mb-1 line-clamp-1">
-                                {fighter.displayName}
-                              </h3>
-                              
-                              {/* Description or Lock Info */}
-                              {locked ? (
-                                <p className="text-xs text-yellow-400 font-semibold">
-                                  🔒 {fighter.unlockRequirement}
-                                </p>
-                              ) : (
-                                <p className="text-xs text-gray-300 line-clamp-2 hidden sm:block">
-                                  {fighter.description}
-                                </p>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </div>
-                      );
-                    })}
+          <div className="text-center">
+            <h1 
+              className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-white to-cyan-500"
+              style={{ fontFamily: "'Arial Black', 'Impact', sans-serif" }}
+            >
+              SELECT YOUR FIGHTER
+            </h1>
+            <p className="text-gray-500 text-xs tracking-widest mt-1">
+              SECTOR-7 • RAGING CITY ARENA
+            </p>
+          </div>
+          
+          <div className="text-right">
+            <p className="text-cyan-400 font-bold text-sm">
+              {FIGHTERS.filter(f => !isLocked(f)).length}/{FIGHTERS.length}
+            </p>
+            <p className="text-gray-500 text-xs">UNLOCKED</p>
+          </div>
+        </header>
+        
+        <div className="flex-1 flex flex-col lg:flex-row gap-4 p-4">
+          <div className="lg:w-2/3 flex flex-col">
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+              {categories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-4 py-2 rounded-sm text-xs font-bold tracking-wider whitespace-nowrap transition-all ${
+                    selectedCategory === cat.id 
+                      ? 'text-black' 
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  style={{
+                    background: selectedCategory === cat.id 
+                      ? `linear-gradient(135deg, ${cat.color} 0%, ${cat.color}88 100%)`
+                      : 'rgba(30,30,30,0.8)',
+                    border: `1px solid ${selectedCategory === cat.id ? cat.color : 'rgba(255,255,255,0.1)'}`
+                  }}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+            
+            <div 
+              className="flex-1 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 overflow-y-auto max-h-[400px] lg:max-h-[500px] p-2 rounded-lg"
+              style={{
+                background: 'rgba(0,0,0,0.4)',
+                border: '1px solid rgba(0,191,255,0.2)'
+              }}
+            >
+              {filteredFighters.map(fighter => {
+                const locked = isLocked(fighter);
+                const selected = selectedCharacter === fighter.id;
+                const hovered = hoveredFighter === fighter.id;
+                
+                return (
+                  <button
+                    key={fighter.id}
+                    onClick={() => !locked && handleFighterSelect(fighter)}
+                    onMouseEnter={() => !locked && setHoveredFighter(fighter.id)}
+                    onMouseLeave={() => setHoveredFighter(null)}
+                    disabled={!!locked}
+                    className={`relative aspect-square rounded-sm overflow-hidden transition-all duration-200 ${
+                      locked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:scale-105'
+                    } ${selected ? 'ring-2 ring-cyan-400' : ''}`}
+                    style={{
+                      background: hovered || selected
+                        ? `linear-gradient(135deg, ${fighter.color}44 0%, rgba(0,0,0,0.9) 100%)`
+                        : 'linear-gradient(135deg, rgba(40,40,40,0.8) 0%, rgba(20,20,20,0.9) 100%)',
+                      border: selected 
+                        ? `2px solid ${fighter.accentColor}` 
+                        : '1px solid rgba(255,255,255,0.1)',
+                      boxShadow: selected ? `0 0 20px ${fighter.accentColor}44` : 'none'
+                    }}
+                  >
+                    <div 
+                      className="absolute inset-2 rounded-full flex items-center justify-center"
+                      style={{
+                        background: `radial-gradient(circle, ${fighter.color}88 0%, ${fighter.color}22 100%)`
+                      }}
+                    >
+                      <span className="text-2xl sm:text-3xl font-black text-white drop-shadow-lg">
+                        {fighter.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    
+                    {locked && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                        <Lock className="w-6 h-6 text-gray-500" />
+                      </div>
+                    )}
+                    
+                    {selected && (
+                      <div className="absolute top-1 right-1 w-4 h-4 bg-cyan-400 rounded-full flex items-center justify-center">
+                        <span className="text-black text-xs font-bold">✓</span>
+                      </div>
+                    )}
+                    
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-1">
+                      <p className="text-white text-[10px] font-bold truncate text-center">
+                        {fighter.displayName.split(' ')[0]}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            
+            <div className="mt-4">
+              <button
+                onClick={startGame}
+                disabled={!selectedCharacter}
+                className={`w-full py-4 rounded-sm text-lg font-black tracking-wider transition-all ${
+                  selectedCharacter 
+                    ? 'hover:scale-[1.02] active:scale-[0.98]' 
+                    : 'opacity-50 cursor-not-allowed'
+                }`}
+                style={{
+                  background: selectedCharacter 
+                    ? 'linear-gradient(90deg, #ff6600 0%, #00bfff 100%)'
+                    : 'linear-gradient(90deg, #333 0%, #222 100%)',
+                  border: '2px solid rgba(255,255,255,0.2)',
+                  boxShadow: selectedCharacter ? '0 0 30px rgba(255,100,0,0.3), 0 0 60px rgba(0,191,255,0.2)' : 'none',
+                  fontFamily: "'Arial Black', 'Impact', sans-serif"
+                }}
+              >
+                <Star className="inline w-5 h-5 mr-2" />
+                ENTER THE ARENA
+                <Star className="inline w-5 h-5 ml-2" />
+              </button>
+            </div>
+          </div>
+          
+          <div className="lg:w-1/3 flex flex-col gap-4">
+            <div 
+              className="rounded-lg overflow-hidden h-64 lg:h-80"
+              style={{
+                background: 'linear-gradient(135deg, rgba(20,20,40,0.9) 0%, rgba(10,10,20,0.95) 100%)',
+                border: '1px solid rgba(0,191,255,0.3)',
+                boxShadow: '0 0 30px rgba(0,191,255,0.1)'
+              }}
+            >
+              {previewFighter ? (
+                <CharacterPreview3D fighter={previewFighter} />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-500">
+                  Select a fighter
+                </div>
+              )}
+            </div>
+            
+            {previewFighter && (
+              <div 
+                className="flex-1 p-4 rounded-lg overflow-y-auto max-h-[300px]"
+                style={{
+                  background: 'rgba(0,0,0,0.6)',
+                  border: '1px solid rgba(255,255,255,0.1)'
+                }}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div 
+                    className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{
+                      background: `radial-gradient(circle, ${previewFighter.color} 0%, ${previewFighter.color}88 100%)`,
+                      boxShadow: `0 0 15px ${previewFighter.accentColor}88`
+                    }}
+                  >
+                    <span className="text-xl font-black text-white">
+                      {previewFighter.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-white">
+                      {previewFighter.displayName}
+                    </h3>
+                    <p className="text-xs text-gray-400 uppercase tracking-wider">
+                      {previewFighter.category}
+                    </p>
                   </div>
                 </div>
-              );
-            })}
-            
-            {/* Selected Fighter Preview - EXPANDED RPG STYLE */}
-            <div className="mt-4 sm:mt-8 mb-4 sm:mb-6">
-              <Card className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 border-2 sm:border-4 border-cyan-400">
-                <CardContent className="p-3 sm:p-6">
-                  {selectedCharacter && (() => {
-                    const fighter = getFighterById(selectedCharacter);
-                    const bio = getBioForHero(selectedCharacter);
-                    if (!fighter) return null;
+                
+                {previewBio && (
+                  <div className="space-y-3 text-xs">
+                    <p className="text-cyan-300 italic">"{previewBio.title}"</p>
+                    <p className="text-gray-300 leading-relaxed">{previewBio.shortBio}</p>
                     
-                    return (
-                      <div>
-                        {/* Hero Header */}
-                        <div className="flex items-center gap-3 sm:gap-6 mb-4">
-                          <div 
-                            className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center shadow-2xl flex-shrink-0"
-                            style={{ 
-                              backgroundColor: fighter.color,
-                              boxShadow: `0 0 30px ${fighter.accentColor}`
-                            }}
-                          >
-                            <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">
-                              {fighter.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1">
-                              {fighter.displayName}
-                            </h3>
-                            {bio && (
-                              <p className="text-cyan-300 text-xs sm:text-sm md:text-base font-bold italic">
-                                {bio.title}
-                              </p>
-                            )}
-                            <div className="mt-1 sm:mt-2">
-                              <span className="inline-block px-2 sm:px-3 py-1 bg-yellow-400 text-black rounded-full text-xs sm:text-sm font-bold">
-                                {fighter.category.toUpperCase()}
-                              </span>
-                            </div>
-                          </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-blue-900/30 p-2 rounded">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Zap className="w-3 h-3 text-cyan-400" />
+                          <span className="text-cyan-400 font-bold">SPECIALTY</span>
                         </div>
-
-                        {/* Extended Bio */}
-                        {bio && (
-                          <div className="space-y-3">
-                            <div className="bg-black/50 p-3 rounded-lg">
-                              <p className="text-white text-sm leading-relaxed">
-                                {bio.shortBio}
-                              </p>
-                            </div>
-
-                            {/* Specialty & Ultimate */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <div className="bg-blue-900/50 p-3 rounded-lg">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Zap className="w-4 h-4 text-cyan-400" />
-                                  <p className="text-cyan-400 text-xs font-bold">SPECIALTY</p>
-                                </div>
-                                <p className="text-white text-xs">{bio.specialty}</p>
-                              </div>
-
-                              <div className="bg-purple-900/50 p-3 rounded-lg">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Crown className="w-4 h-4 text-yellow-400" />
-                                  <p className="text-yellow-400 text-xs font-bold">ULTIMATE</p>
-                                </div>
-                                <p className="text-white text-xs">{bio.ultimateAttack}</p>
-                              </div>
-                            </div>
-
-                            {/* Battle Quote */}
-                            <div className="bg-gradient-to-r from-orange-900/50 to-red-900/50 p-3 rounded-lg">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Flame className="w-4 h-4 text-orange-400" />
-                                <p className="text-orange-400 text-xs font-bold">BATTLE QUOTE</p>
-                              </div>
-                              <p className="text-white italic text-xs">"{bio.battleQuotes[Math.floor(Math.random() * bio.battleQuotes.length)]}"</p>
-                            </div>
-
-                            {/* Transformation Tree with Sequences */}
-                            <div className="bg-gradient-to-r from-red-900/50 to-blue-900/50 p-3 rounded-lg">
-                              <p className="text-yellow-400 text-xs font-bold mb-2">⚡ TRANSFORMATION PATH</p>
-                              <div className="space-y-2">
-                                {bio.transformations.map((transform) => (
-                                  <div key={transform.level} className="border-l-2 border-yellow-400/50 pl-2">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                                        transform.level === 0 ? 'bg-gray-600 text-white' :
-                                        transform.level === 1 ? 'bg-yellow-500 text-black' :
-                                        'bg-purple-600 text-white'
-                                      }`}>
-                                        {transform.level}
-                                      </div>
-                                      <div className="flex-1">
-                                        <p className="text-white text-xs font-bold">{transform.name}</p>
-                                        <p className="text-gray-300 text-xs">{transform.powerMultiplier}x Power</p>
-                                      </div>
-                                    </div>
-                                    {transform.transformationSequence && (
-                                      <p className="text-gray-400 text-xs italic ml-7 mb-1">{transform.transformationSequence}</p>
-                                    )}
-                                    <p className="text-yellow-300/70 text-xs ml-7">Requirement: {transform.requirements}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Villain Matchups */}
-                            {bio.villainMatchups && bio.villainMatchups.length > 0 && (
-                              <div className="bg-gradient-to-r from-purple-900/50 to-red-900/50 p-3 rounded-lg">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Shield className="w-4 h-4 text-purple-400" />
-                                  <p className="text-purple-400 text-xs font-bold">VILLAIN MATCHUPS</p>
-                                </div>
-                                <div className="space-y-1">
-                                  {bio.villainMatchups.map((matchup, idx) => (
-                                    <div key={idx} className="flex items-center gap-2">
-                                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                                        matchup.matchupType === 'advantage' ? 'bg-green-600 text-white' :
-                                        matchup.matchupType === 'disadvantage' ? 'bg-red-600 text-white' :
-                                        'bg-yellow-600 text-black'
-                                      }`}>
-                                        {matchup.matchupType === 'advantage' ? '✓' : matchup.matchupType === 'disadvantage' ? '✗' : '~'}
-                                      </span>
-                                      <span className="text-white text-xs"><strong>{matchup.villainName}:</strong> {matchup.reason}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Origin Story */}
-                            <div className="bg-gradient-to-r from-blue-900/50 to-indigo-900/50 p-3 rounded-lg">
-                              <div className="flex items-center gap-2 mb-2">
-                                <BookOpen className="w-4 h-4 text-blue-400" />
-                                <p className="text-blue-400 text-xs font-bold">ORIGIN STORY</p>
-                              </div>
-                              <p className="text-gray-200 text-xs leading-relaxed">{bio.originStory}</p>
-                            </div>
-                          </div>
-                        )}
+                        <p className="text-white">{previewBio.specialty}</p>
                       </div>
-                    );
-                  })()}
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* Start Battle Button */}
-            <div className="text-center">
-              <Button 
-                onClick={startGame}
-                className="w-full max-w-md text-lg sm:text-xl md:text-2xl py-4 sm:py-6 md:py-8 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 hover:from-green-600 hover:via-yellow-600 hover:to-red-600 text-white font-bold border-2 sm:border-4 border-yellow-400 shadow-[0_0_30px_rgba(255,255,0,0.5)]"
-              >
-                🥊 START BATTLE! 🥊
-              </Button>
-            </div>
-            
-            {/* Game Info */}
-            <div className="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-gray-300 bg-black/30 p-3 sm:p-4 rounded-lg">
-              <p className="font-bold text-yellow-300 mb-1 sm:mb-2">🎮 Controls:</p>
-              <p className="hidden sm:block">Arrow Keys = Move • Space = Jump • J = Punch • K = Kick • L = Special</p>
-              <p className="sm:hidden">Touch controls on screen</p>
-              <p className="mt-1 sm:mt-2 text-xs text-gray-400">Win battles to unlock more fighters!</p>
-            </div>
-          </CardContent>
-        </Card>
-        </div>
-        
-        {/* 3D Character Preview Panel - Mortal Kombat Style! */}
-          <div className="lg:col-span-1">
-            <Card className="bg-black/50 backdrop-blur-lg border-2 sm:border-4 border-cyan-400 h-full min-h-[400px] lg:min-h-[600px] sticky top-4">
-              <CardHeader className="text-center border-b-2 border-cyan-400/30 p-3">
-                <CardTitle className="text-xl sm:text-2xl font-bold text-cyan-300">
-                  {previewFighter ? previewFighter.displayName : 'Select Fighter'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 h-[350px] lg:h-[500px]">
-                {previewFighter && <CharacterPreview3D fighter={previewFighter} />}
-              </CardContent>
-            </Card>
+                      <div className="bg-purple-900/30 p-2 rounded">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Crown className="w-3 h-3 text-yellow-400" />
+                          <span className="text-yellow-400 font-bold">ULTIMATE</span>
+                        </div>
+                        <p className="text-white">{previewBio.ultimateAttack}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-orange-900/30 p-2 rounded">
+                      <div className="flex items-center gap-1 mb-1">
+                        <Flame className="w-3 h-3 text-orange-400" />
+                        <span className="text-orange-400 font-bold">BATTLE CRY</span>
+                      </div>
+                      <p className="text-white italic">
+                        "{previewBio.battleQuotes[0]}"
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
+        
+        <footer className="p-4 border-t border-cyan-500/20 text-center">
+          <p className="text-gray-600 text-xs tracking-wider">
+            WASD MOVE • SPACE JUMP • J PUNCH • K KICK • L SPECIAL
+          </p>
+        </footer>
       </div>
     </div>
   );

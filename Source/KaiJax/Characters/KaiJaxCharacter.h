@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "KaiJaxCharacterData.h"
 #include "KaiJaxCharacter.generated.h"
 
 UENUM(BlueprintType)
@@ -80,9 +81,15 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Tails")
     void UpdateTailVisuals();
+    
+    UFUNCTION(BlueprintCallable, Category = "Tails")
+    void ApplyTailTierReaction(int32 CurrentTailCount);
 
     UFUNCTION(BlueprintPure, Category = "Tails")
     int32 GetActiveTailCount() const { return ActiveTailCount; }
+    
+    UFUNCTION(BlueprintPure, Category = "Tails")
+    FTailTierReaction GetCurrentTailTierReaction() const;
 
     // Memory management
     UFUNCTION(BlueprintCallable, Category = "Memory")

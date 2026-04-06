@@ -14,9 +14,11 @@ public class KaiJax : ModuleRules
             "InputCore",
             "EnhancedInput",
             "GameplayTasks",
-            "Niagara",
-            "GameplayAbilities",
-            "GameplayTags"
+            "Json",
+            "JsonUtilities"
+            "ControlRig",
+            "RigVM",
+            "AnimGraphRuntime"
         });
 
         PrivateDependencyModuleNames.AddRange(new string[] 

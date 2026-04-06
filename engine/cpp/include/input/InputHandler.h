@@ -11,6 +11,13 @@ enum class Platform {
     CONSOLE,      // Console (gamepad)
     TABLET,       // Tablet (gamepad or touch)
     MOBILE        // Mobile (touch)
+ * PlatformType - Platform-specific input device detection
+ * Used to determine which input mapping to apply
+ */
+enum class PlatformType {
+    PC,        // Keyboard + Mouse
+    GAMEPAD,   // Console/Tablet gamepad
+    TOUCH      // Mobile touch controls
 };
 
 /**
@@ -95,6 +102,24 @@ public:
 
 private:
     Platform currentPlatform;
+     * Set the platform type for input mapping
+     * 
+     * Configures which input device mapping to use. This should be called
+     * during initialization based on the target platform.
+     * 
+     * @param platform The platform type to use for input mapping
+     */
+    void SetPlatform(PlatformType platform) { currentPlatform = platform; }
+
+    /**
+     * Get the current platform type
+     * 
+     * @return The current platform type being used for input mapping
+     */
+    PlatformType GetPlatform() const { return currentPlatform; }
+
+private:
+    PlatformType currentPlatform = PlatformType::PC;
 
     // Platform-specific input reading methods
     InputState ReadKeyboardInput();

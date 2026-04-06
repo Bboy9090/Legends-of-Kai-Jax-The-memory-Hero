@@ -76,10 +76,10 @@ export default function BattleScene() {
       />
       
       {/* Enhanced Lighting System for better character definition */}
-      <RimLight intensity={1.0} />
+      <RimLight intensity={0.3} />
       {/* Lift ambient so arena + shadows don’t crush to black */}
-      <ambientLight intensity={0.22} />
-      <hemisphereLight intensity={0.28} color={"#ffffff"} groundColor={"#1a1530"} />
+      <ambientLight intensity={0.12} />
+      <hemisphereLight intensity={0.15} color={"#ffffff"} groundColor={"#1a1530"} />
       <LegendaryLightingRig />
       <Environment preset="city" />
       <CinematicPostFX grade={grade} accent={accent} punch={punch} center={[0.5, 0.44]} />

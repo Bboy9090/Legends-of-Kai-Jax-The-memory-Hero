@@ -327,7 +327,7 @@ export default function MainMenu() {
           radial-gradient(ellipse at top, rgba(26,10,46,0.85) 0%, rgba(0,0,0,0) 55%),
           radial-gradient(ellipse at bottom, rgba(10,10,15,0.92) 0%, rgba(0,0,0,0) 55%),
           linear-gradient(180deg, rgba(10,10,15,0.92) 0%, rgba(26,10,46,0.82) 50%, rgba(10,10,15,0.92) 100%),
-          url('/brand/kai-and-jax-before-merge.png')
+          url('https://replit.com/api/v1/projects/self/assets/attached_assets/4B5AB7C2-309C-432D-A2F0-309C8F307EA2_1769690060866.png')
         `,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -336,100 +336,71 @@ export default function MainMenu() {
       {/* Cinematic vignette */}
       <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 260px rgba(0,0,0,0.85)' }} />
 
-      {/* Animated Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Gradient Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-        
-        {/* Grid Pattern */}
-        <div 
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px',
-          }}
-        />
-      </div>
-
-      {/* Particles */}
-      <LegendaryParticles />
-
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center max-w-4xl w-full">
+      <div className="relative z-10 flex flex-col items-center max-w-4xl w-full h-full justify-between py-12">
         
-        {/* Logo */}
-        <LegendaryLogo />
+        {/* Title Group - Replicating Logo Asset */}
+        <div className="text-center">
+          <h1 className="text-7xl md:text-9xl font-black tracking-tighter text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] leading-none italic">
+            LEGENDS OF
+          </h1>
+          <h2 className="text-8xl md:text-[10rem] font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-cyan-400 leading-none -mt-4 italic">
+            KAI-JAX
+          </h2>
+          <div className="h-1 w-full bg-white/20 my-4 flex items-center justify-center">
+             <span className="bg-[#0a0a1a] px-6 text-2xl font-bold tracking-[0.4em] text-white uppercase italic">The Memory King</span>
+          </div>
+          <p className="text-yellow-400 font-bold tracking-widest text-sm uppercase">Forged in the Raging City - Crowned by memory</p>
+        </div>
 
-        {/* Character Previews */}
-        <CharacterPreviews />
-
-        {/* Stats */}
-        <StatsTicker />
-
-        {/* Main Menu Buttons */}
-        <div className="flex flex-col gap-4 w-full max-w-md mb-8">
-          {/* Story Mode - Primary CTA */}
-          <LegendaryButton 
+        {/* Main Menu Buttons - Replicating Button Asset Style */}
+        <div className="flex flex-col gap-6 w-full max-w-xl">
+          <button 
             onClick={() => setGameState("story-mode-select")}
-            icon={BookOpen}
-            variant="gold"
+            className="group relative h-20 w-full overflow-hidden border border-white/20 bg-gradient-to-r from-orange-900/80 to-orange-600/80 text-3xl font-black italic tracking-widest text-white shadow-[0_0_30px_rgba(234,88,12,0.3)] transition-all hover:scale-105"
           >
-            STORY MODE
-          </LegendaryButton>
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            OPEN WORLD DEMO
+          </button>
 
-          {/* Adventure Mode - Open World */}
-          <LegendaryButton 
-            onClick={() => setGameState("adventure-select")}
-            icon={Map}
-            variant="primary"
-          >
-            ADVENTURE MODE
-          </LegendaryButton>
-
-          {/* Versus Mode */}
-          <LegendaryButton 
+          <button 
             onClick={() => setGameState("versus-select")}
-            icon={Swords}
-            variant="primary"
+            className="group relative h-20 w-full overflow-hidden border border-white/20 bg-gradient-to-r from-blue-900/80 to-blue-600/80 text-3xl font-black italic tracking-widest text-white shadow-[0_0_30px_rgba(37,99,235,0.3)] transition-all hover:scale-105"
           >
-            VERSUS BATTLE
-          </LegendaryButton>
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            VERSUS MODE
+          </button>
 
-          {/* Quick Battle */}
-          <LegendaryButton 
+          <button 
             onClick={() => setGameState("character-select")}
-            icon={Zap}
-            variant="primary"
+            className="group relative h-16 w-full overflow-hidden border border-white/10 bg-black/40 text-2xl font-black italic tracking-widest text-white/80 transition-all hover:bg-black/60"
           >
             QUICK BATTLE
-          </LegendaryButton>
+          </button>
 
-          {/* Secondary Buttons Row */}
-          <div className="flex gap-3 mt-2">
-            <LegendaryButton 
-              onClick={() => setGameState("customization")}
-              icon={Crown}
-              variant="secondary"
-              size="medium"
-            >
-              FIGHTERS
-            </LegendaryButton>
-
-            <LegendaryButton 
-              onClick={() => setGameState("nexus-haven")}
-              icon={Sparkles}
-              variant="secondary"
-              size="medium"
-            >
-              HUB WORLD
-            </LegendaryButton>
+          {/* Left Side Small Buttons Row */}
+          <div className="flex flex-col gap-2 absolute left-12 bottom-32">
+             <button onClick={() => setGameState("customization")} className="flex items-center gap-4 group">
+                <div className="w-12 h-12 bg-orange-600/20 border border-orange-500/40 flex items-center justify-center rotate-45 group-hover:bg-orange-600/40 transition-all">
+                   <Users className="-rotate-45 w-6 h-6 text-orange-400" />
+                </div>
+                <span className="text-xl font-black italic text-white/60 group-hover:text-white uppercase tracking-widest">Fighters</span>
+             </button>
+             <button className="flex items-center gap-4 group">
+                <div className="w-12 h-12 bg-blue-600/20 border border-blue-500/40 flex items-center justify-center rotate-45 group-hover:bg-blue-600/40 transition-all">
+                   <Settings className="-rotate-45 w-6 h-6 text-blue-400" />
+                </div>
+                <span className="text-xl font-black italic text-white/60 group-hover:text-white uppercase tracking-widest">Settings</span>
+             </button>
+             <button className="flex items-center gap-4 group">
+                <div className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center rotate-45 group-hover:bg-white/10 transition-all">
+                   <BookOpen className="-rotate-45 w-6 h-6 text-white/40" />
+                </div>
+                <span className="text-xl font-black italic text-white/60 group-hover:text-white uppercase tracking-widest text-xs">Everything Else</span>
+             </button>
           </div>
         </div>
+
 
         {/* Bottom Controls */}
         <div className="flex items-center gap-4">

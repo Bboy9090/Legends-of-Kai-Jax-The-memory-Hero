@@ -3,7 +3,28 @@ import "@fontsource/inter";
 import "@fontsource/bebas-neue";
 import AdventureArena from "./components/game/AdventureArena";
 
-type AppSection = 'home' | 'characters' | 'tails' | 'story' | 'gallery' | 'adventure-select' | 'adventure';
+import BattleScene from "./components/game/BattleScene";
+import OpenWorldCombat from "./components/game/OpenWorldCombat";
+import RagingCityWorld from "./components/game/RagingCityWorld";
+import ExplorationUI from "./components/game/ExplorationUI";
+import MobileControls from "./components/game/MobileControls";
+import BattleUI from "./components/game/BattleUI";
+import DialogueDisplay from "./components/game/DialogueDisplay";
+import MainMenu from "./components/game/MainMenu";
+import CharacterSelect from "./components/game/CharacterSelect";
+import TransformationOverlay from "./components/game/TransformationOverlay";
+import ScreenEffects from "./components/game/ScreenEffects";
+import { GameIntro } from "./components/game/LoadingScreen";
+import CustomizationMenu from "./components/game/CustomizationMenu";
+import { useGame } from "./lib/stores/useGame";
+import { useRunner } from "./lib/stores/useRunner";
+import { useBattle } from "./lib/stores/useBattle";
+import { useAudio } from "./lib/stores/useAudio";
+import { FIGHTERS } from "./lib/characters";
+import { BRAND } from "./lib/brand";
+import { useEffect } from "react";
+import * as THREE from "three";
+import { getQualitySettings } from "./lib/threejs/PerformanceOptimizer";
 
 const HERO_IMAGE = "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/htuxfqte_9660FF22-E010-4DF5-A321-DDFE60ADB8CB.png";
 
@@ -46,13 +67,29 @@ const GALLERY_IMAGES = [
   }
 ];
 
-const CHARACTERS = [
-  { id: 'kai', name: 'KAI', title: 'The Fire Twin', element: 'Fire', color: '#FF3B30', description: 'Anthropomorphic hedgehog-fox beast warrior. Fiery orange fur, spiky wild hair, athletic build. Web-slinger with street-smart instincts.' },
-  { id: 'jax', name: 'JAX', title: 'The Ice Twin', element: 'Ice', color: '#64D2FF', description: 'Silver-blue fox beast warrior. Sleek elegant fur with frost patterns, cool calculating cyan eyes. Strategic mind, lightning reflexes.' },
-  { id: 'kaijax', name: 'KAI-JAX', title: 'The Memory King', element: 'Memory', color: '#BF5AF2', description: 'The legendary fusion. Dark shadowy beast with glowing yellow eyes, nine elemental tails. Reality warps around him.' },
-  { id: 'boryn', name: 'BORYN', title: 'The Hunter General', element: 'Earth', color: '#FFD60A', description: 'Massive tiger beast father figure. Battle scars tell stories of wars won. Warm amber eyes hide a warrior\'s fury.' },
-  { id: 'borax', name: 'BORAX', title: 'The Tank King', element: 'Steel', color: '#78716C', description: 'Towering armored lion warrior. Ancient battle-worn heavy armor with spikes. The apex predator. Absolute authority.' },
-];
+function App() {
+  const { phase } = useGame();
+  const { gameState, selectedCharacter, setGameState } = useRunner();
+  const { setPlayerFighter, setOpponentFighter, screenShake } = useBattle();
+  const { 
+    setBackgroundMusic, 
+    setBattleMusic, 
+    setHitSound, 
+    setSuccessSound,
+    backgroundMusic,
+    isMuted
+  } = useAudio();
+  
+  // ⚡ LEGENDARY INTRO SYSTEM
+  const [showIntro, setShowIntro] = useState(true);
+  
+  // Open-world exploration state
+  const [currentDistrict, setCurrentDistrict] = useState("Ashblock Heights");
+  const [encounterAlert, setEncounterAlert] = useState<{
+    type: 'battle' | 'boss' | 'story' | 'loot';
+    district: string;
+    level: number;
+  } | null>(null);
 
 const TAILS = [
   { id: 1, name: 'TAIL OF FLAME', element: 'Fire', color: '#FF3B30', use: 'Offense', signature: 'Inferno Barrage', description: 'Raw destructive power. Burns through anything. The first tail Kai-Jax mastered.' },
@@ -107,73 +144,107 @@ function ParticleBackground() {
   );
 
   return (
-    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
-      {particles.map((p, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            left: p.left,
-            bottom: '-10px',
-            width: '3px',
-            height: '3px',
-            borderRadius: '50%',
-            backgroundColor: p.color,
-            opacity: 0.4,
-            animation: `floatUp ${p.duration} ${p.delay} infinite linear`,
-          }}
-        />
-      ))}
-      <style>{`
-        @keyframes floatUp {
-          0% { transform: translateY(0); opacity: 0; }
-          10% { opacity: 0.4; }
-          90% { opacity: 0.4; }
-          100% { transform: translateY(-100vh); opacity: 0; }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-function Navigation({ activeSection, onNavigate }: { activeSection: AppSection; onNavigate: (s: AppSection) => void }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const sections: { id: AppSection; label: string }[] = [
-    { id: 'home', label: 'HOME' },
-    { id: 'characters', label: 'HEROES' },
-    { id: 'tails', label: '9 TAILS' },
-    { id: 'story', label: 'SAGA' },
-    { id: 'gallery', label: 'GALLERY' },
-  ];
-
-  return (
-    <nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-      background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(16px)',
-      borderBottom: '1px solid rgba(255,255,255,0.05)',
-    }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }} onClick={() => onNavigate('home')}>
-          <div style={{
-            width: '40px', height: '40px', borderRadius: '50%',
-            background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.5)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1.2rem', color: '#BF5AF2',
-          }}>K</div>
-          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.1rem', color: 'white', letterSpacing: '0.05em' }}>KAI-JAX</span>
-        </div>
-
-        <div style={{ display: 'flex', gap: '2rem' }} className="nav-desktop">
-          {sections.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => onNavigate(s.id)}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: activeSection === s.id ? '#BF5AF2' : 'rgba(255,255,255,0.6)',
-                fontFamily: "'Inter', sans-serif", fontSize: '0.75rem',
-                letterSpacing: '0.2em', textTransform: 'uppercase',
-                transition: 'color 0.2s',
+    <div 
+      style={{ 
+        width: '100vw', 
+        minHeight: '100vh', 
+        position: 'relative', 
+        overflow: 'auto',
+        background: 'linear-gradient(to bottom, #0a0a1a, #1a0a2e)',
+        transform: shakeTransform,
+      }}
+    >
+      {/* ⚡ LEGENDARY INTRO SEQUENCE */}
+      {showIntro && <GameIntro onComplete={handleIntroComplete} />}
+      
+      <KeyboardControls map={controls}>
+        {/* Main Menu */}
+        {phase === 'ready' && gameState === 'menu' && !showIntro && <MainMenu />}
+        
+        {/* OPEN WORLD EXPLORATION - Pokemon-style walk around Raging City */}
+        {phase === 'ready' && gameState === 'story-mode-select' && (
+          <>
+            <Canvas
+              shadows
+              camera={{
+                position: [0, 12, 18],
+                fov: 60,
+                near: 0.1,
+                far: 500
+              }}
+              onCreated={({ gl }) => {
+                gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                gl.outputColorSpace = THREE.SRGBColorSpace;
+                gl.toneMapping = THREE.ACESFilmicToneMapping;
+                gl.toneMappingExposure = 0.8;
+                gl.shadowMap.enabled = true;
+              }}
+              gl={{ antialias: true, powerPreference: "high-performance" }}
+            >
+              <Suspense fallback={null}>
+                <RagingCityWorld 
+                  onEncounter={(enc) => {
+                    console.log("Encounter triggered:", enc);
+                    setEncounterAlert({
+                      type: enc.type,
+                      district: enc.district,
+                      level: enc.enemyLevel
+                    });
+                  }}
+                  onDistrictChange={(district) => {
+                    console.log("District changed:", district);
+                    setCurrentDistrict(district);
+                  }}
+                />
+              </Suspense>
+            </Canvas>
+            <ExplorationUI 
+              currentDistrict={currentDistrict}
+              encounterAlert={encounterAlert}
+              onDismissAlert={() => {
+                if (encounterAlert?.type === 'battle' || encounterAlert?.type === 'boss') {
+                  setGameState('versus-select');
+                }
+                setEncounterAlert(null);
+              }}
+            />
+          </>
+        )}
+        
+        {/* Versus Mode - Show character select for arcade-style fighting */}
+        {phase === 'ready' && gameState === 'versus-select' && (
+          <CharacterSelect />
+        )}
+        
+        {/* Character Selection */}
+        {phase === 'ready' && gameState === 'character-select' && <CharacterSelect />}
+        
+        {/* Customization Menu */}
+        {phase === 'ready' && gameState === 'customization' && <CustomizationMenu />}
+        
+        {/* ⚡ BATTLE CANVAS - THE MAIN EVENT! */}
+        {(phase === 'playing' || phase === 'ended') && (
+          <>
+            <Canvas
+              shadows
+              camera={{
+                position: [0, 5, 10],
+                fov: 60,
+                near: 0.1,
+                far: 1000
+              }}
+              onCreated={({ gl }) => {
+                const q = getQualitySettings();
+                gl.setPixelRatio(q.pixelRatio);
+                gl.outputColorSpace = THREE.SRGBColorSpace;
+                gl.toneMapping = THREE.ACESFilmicToneMapping;
+                gl.toneMappingExposure = 1.5;
+                gl.shadowMap.enabled = true;
+                gl.shadowMap.type = q.shadowMap.type;
+              }}
+              gl={{
+                antialias: getQualitySettings().antialias,
+                powerPreference: "high-performance"
               }}
             >
               {s.label}
