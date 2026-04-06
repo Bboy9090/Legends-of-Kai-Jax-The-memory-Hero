@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This document certifies that the Smash Heroes codebase has been audited and enhanced to meet the **"Evolutionary Superiority"** standards mandated by the Omega Protocol. All game mechanics, character designs, and technical implementations have been evaluated and upgraded to **"Legendary Level"** where necessary.
+This document certifies that the Legends of Kai-Jax codebase has been audited and enhanced to meet the **"Evolutionary Superiority"** standards mandated by the Omega Protocol. All game mechanics, character designs, and technical implementations have been evaluated and upgraded to **"Legendary Level"** where necessary.
 
 ## THE OMEGA PROTOCOL MANDATE
 
@@ -539,7 +539,7 @@ function render() {
 
 ### OMEGA PROTOCOL COMPLIANCE: LEGENDARY LEVEL
 
-The Smash Heroes codebase has been successfully audited and enhanced to meet the **"Evolutionary Superiority"** standard. All core systems have been evaluated, and necessary upgrades have been implemented to ensure the game feels **LEGENDARY** in every aspect.
+The Legends of Kai-Jax codebase has been successfully audited and enhanced to meet the **"Evolutionary Superiority"** standard. All core systems have been evaluated, and necessary upgrades have been implemented to ensure the game feels **LEGENDARY** in every aspect.
 
 ### Key Achievements:
 - ✅ Combat feels DEVASTATING (weight-scaled impacts)
