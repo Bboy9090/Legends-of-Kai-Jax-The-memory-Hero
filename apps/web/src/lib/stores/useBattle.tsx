@@ -5,17 +5,23 @@ import { useDifficulty, getDamageTakenMultiplier } from "./useDifficulty";
 import { useRunner } from "./useRunner";
 import { getCharacterMoves } from "../characterMoves";
 import {
-  getClashPriority,
   MOVES,
   ATTACK_TYPE_TO_MOVE,
   getMoveFrameTime,
   isInActiveWindow,
-  FRAME_TIME,
   BattleCombatState,
   BATTLE_STAMINA,
   attackBreaksGuard,
   type AttackType,
 } from "../combatSystems";
+import { resolveBattleCombatState } from "../../game/combat/CombatStateMachine";
+import {
+  clashPriorityForAttack,
+  getMoveKeyForPlayerAttack,
+  hitStopSecondsForMove,
+  resolveClash,
+  staminaCostForAttack,
+} from "../../game/combat/AttackResolver";
 
 const DEFAULT_MAX_COMBO_TIMER = 2.3;
 const UPGRADED_MAX_COMBO_TIMER = 2.5;
@@ -567,9 +573,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     const canUltimate = playerOverdrive >= maxOverdrive && (playerTransformed || hasNativeUltimate);
     if (type === 'ultimate' && !canUltimate) return;
 
-    const moveKeyForCost = ATTACK_TYPE_TO_MOVE[type];
-    const moveForCost = moveKeyForCost ? MOVES[moveKeyForCost] : null;
-    const staminaCost = type === "ultimate" ? (MOVES.heavy?.staminaCost ?? 25) : moveForCost?.staminaCost ?? 0;
+    const staminaCost = staminaCostForAttack(type);
     if (playerStamina < staminaCost) return;
 
     if (type === 'ultimate') {
@@ -587,15 +591,17 @@ export const useBattle = create<BattleState>((set, get) => ({
 
     if (distance < range && !opponentInvulnerable) {
       if (opponentAttacking && opponentAttackType) {
-        const myPriority = getClashPriority(type);
-        const theirPriority = getClashPriority(opponentAttackType);
-        if (myPriority === theirPriority) {
+        const clash = resolveClash(
+          clashPriorityForAttack(type),
+          clashPriorityForAttack(opponentAttackType)
+        );
+        if (clash === "tie") {
           get().triggerScreenFlash('#FFFFFF');
           get().triggerHitStop(0.2);
           get().triggerScreenShake(4);
           return;
         }
-        if (theirPriority > myPriority) return;
+        if (clash === "other_wins") return;
       }
     }
 
@@ -641,8 +647,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     const { playerAttacking, playerAttackType, playerAttackElapsed, playerAttackHasHit, playerComboStep } = get();
     if (!playerAttacking || !playerAttackType) return;
 
-    const baseMoveKey = ATTACK_TYPE_TO_MOVE[playerAttackType];
-    const moveKey = (playerAttackType === 'punch' ? (`light${Math.min(playerComboStep + 1, 3)}` as keyof typeof MOVES) : baseMoveKey);
+    const moveKey = getMoveKeyForPlayerAttack(playerAttackType, playerComboStep);
     const move = moveKey ? MOVES[moveKey] : null;
     if (!move) {
       set({ playerAttacking: false, playerAttackType: null, playerAttackElapsed: 0, playerAttackHasHit: false, playerComboStep: 0 });
@@ -667,8 +672,7 @@ export const useBattle = create<BattleState>((set, get) => ({
         get().addSynergy(playerAttackType === 'special' ? 15 : playerAttackType === 'kick' ? 10 : 5);
         get().addOverdrive(damage * 0.4);
         useMissions.getState().recordHit(playerAttackType);
-        const stopSec = (move.hitStopFrames * FRAME_TIME);
-        get().triggerHitStop(stopSec);
+        get().triggerHitStop(hitStopSecondsForMove(move));
         get().triggerScreenShake(Math.max(0.5, damage / 8));
         if (playerAttackType === 'ultimate') {
           get().triggerScreenFlash('#FFD700');
@@ -827,10 +831,11 @@ export const useBattle = create<BattleState>((set, get) => ({
 
     if (distance < range && !playerInvulnerable && playerDodgeTimer <= 0) {
       if (playerAttacking && playerAttackType) {
-        const myPriority = getClashPriority(type);
-        const theirPriority = getClashPriority(playerAttackType);
-        if (myPriority === theirPriority) return;
-        if (theirPriority > myPriority) return;
+        const clash = resolveClash(
+          clashPriorityForAttack(type),
+          clashPriorityForAttack(playerAttackType)
+        );
+        if (clash === "tie" || clash === "other_wins") return;
       }
     }
 
@@ -1298,18 +1303,14 @@ export const useBattle = create<BattleState>((set, get) => ({
       nextGuardPressure = Math.max(0, nextGuardPressure - delta * 28);
     }
 
-    let nextState: BattleCombatState = BattleCombatState.FREE;
-    if (playerDodgeTimer > 0) {
-      nextState = BattleCombatState.DODGING;
-    } else if (playerAttacking) {
-      nextState = BattleCombatState.ATTACKING;
-    } else if (guardBreakTimer > 0) {
-      nextState = BattleCombatState.GUARD_BROKEN;
-    } else if (playerHitStunTimer > 0) {
-      nextState = BattleCombatState.HITSTUN;
-    } else if (blocking) {
-      nextState = playerBlockParryWindow > 0 ? BattleCombatState.PARRY_WINDOW : BattleCombatState.BLOCKING;
-    }
+    const nextState = resolveBattleCombatState({
+      playerDodgeTimer,
+      playerAttacking,
+      guardBreakTimer,
+      playerHitStunTimer,
+      blocking,
+      playerBlockParryWindow,
+    });
 
     set({
       opponentStaggerTimer,
