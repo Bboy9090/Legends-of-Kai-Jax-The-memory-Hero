@@ -1,0 +1,22 @@
+/**
+ * Canonical gameplay package surface (incremental migration).
+ */
+export * from "./camera";
+export * from "./combat";
+export * from "./encounters/districtTypes";
+export { ASHBLOCK_DISTRICT_META, ASHBLOCK_ENCOUNTERS } from "./world/zones/AshblockHeights/AshblockHeightsEncounters";
+export {
+  ASHBLOCK_TAGLINE,
+  ASHBLOCK_OBJECTIVE_BLURBS,
+} from "./world/zones/AshblockHeights/AshblockHeightsNarrative";
+export * from "./tails/TailAbilityRegistry";
+export { COMBAT_TUNING } from "./tuning/combatTuning";
+export { MOVEMENT_TUNING } from "./tuning/movementTuning";
+export { ENEMY_TIERS, ENEMY_TUNING } from "./tuning/enemyTuning";
+export {
+  ADVENTURE_TUNING,
+  STAMINA_CONFIG,
+  COMBO_CONFIG,
+  DODGE,
+  AUTO_TARGET_CONFIG,
+} from "./tuning/adventureTuning";

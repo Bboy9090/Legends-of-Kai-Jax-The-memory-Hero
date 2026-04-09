@@ -5,7 +5,7 @@ import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
 import { CHARACTER_MODELS } from "../models/GLBCharacterModel";
 import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
-import { ENEMY_TIERS } from "../../../lib/combatSystems";
+import { ENEMY_TIERS } from "../../../game/tuning/enemyTuning";
 import {
   findLimbs, captureBaseRotations, hasAnyLimb, createAnimState,
   animateIdle, animateAggroWalk, animateEnemyAttack, animateHitReaction,

@@ -1,0 +1,30 @@
+{
+  "battleStamina": {
+    "max": 100,
+    "regenPerSec": 18,
+    "regenDelayAfterBlock": 0.35,
+    "blockDrainPerSec": 32,
+    "parryWindowSec": 0.1,
+    "chipDamageMult": 0.18,
+    "chipStaminaCost": 10,
+    "parryOpponentStaggerSec": 0.65,
+    "guardBreakDurationSec": 0.55,
+    "guardBreakOnEmptyHit": true
+  },
+  "comboTimer": {
+    "defaultSec": 2.3,
+    "upgradedSec": 2.5
+  },
+  "playerDodge": {
+    "durationSec": 0.22,
+    "staminaCost": 18,
+    "travelDistance": 2.35,
+    "regenDelaySec": 0.2
+  },
+  "fusion": {
+    "synergyThresholdPercent": 50,
+    "transformIntroMs": 2000,
+    "healOnFusion": 25,
+    "ultimateSuperArmorSec": 0.5
+  }
+}

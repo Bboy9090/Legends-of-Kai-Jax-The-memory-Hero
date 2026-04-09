@@ -4,7 +4,7 @@ import { useGLTF } from "@react-three/drei";
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { CHARACTER_MODELS } from "../models/GLBCharacterModel";
-import { CombatState } from "../../../lib/combatSystems";
+import { CombatState } from "../../../game/combat/stateEnums";
 import {
   findLimbs, captureBaseRotations, hasAnyLimb, createAnimState,
   animateIdle, animateWalk, animatePunch, animateKick, animateSpecial,

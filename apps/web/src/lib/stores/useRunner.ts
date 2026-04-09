@@ -31,8 +31,11 @@ interface RunnerState {
   gameState: GameState;
   selectedCharacter: string | null;
   activeStoryMissionId: string | null;
+  /** Versus training room: same duel flow, score not added to profile on exit */
+  trainingSession: boolean;
   setGameState: (s: GameState) => void;
   setCharacter: (id: string | null) => void;
+  setTrainingSession: (v: boolean) => void;
   setActiveStoryMission: (id: string | null) => void;
   addScore: (points: number) => void;
   totalScore: number;
@@ -69,10 +72,16 @@ export const useRunner = create<RunnerState>((set, get) => ({
   gameState: "lore-hub",
   selectedCharacter: "jaxon",
   activeStoryMissionId: null,
+  trainingSession: false,
   totalScore: 0,
   campaignCompletedNodes: [],
   campaignCurrentNode: null,
-  setGameState: (gameState) => set({ gameState }),
+  setGameState: (gameState) =>
+    set({
+      gameState,
+      ...(gameState !== "playing" ? { trainingSession: false } : {}),
+    }),
+  setTrainingSession: (trainingSession) => set({ trainingSession }),
   setCharacter: (selectedCharacter) => set({ selectedCharacter }),
   setActiveStoryMission: (activeStoryMissionId) => set({ activeStoryMissionId }),
   addScore: (points) => set({ totalScore: get().totalScore + points }),

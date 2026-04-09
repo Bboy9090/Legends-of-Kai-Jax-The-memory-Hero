@@ -14,8 +14,11 @@
     "paths": {
       "@/*": ["./src/*"],
       "@beast-kin/engine": ["../../packages/engine/src"],
+      "@beast-kin/engine/*": ["../../packages/engine/src/*"],
       "@beast-kin/characters": ["../../packages/characters/src"],
+      "@beast-kin/characters/*": ["../../packages/characters/src/*"],
       "@beast-kin/shared": ["../../packages/shared/src"],
+      "@beast-kin/shared/*": ["../../packages/shared/src/*"],
       "@beast-kin/ui": ["../../packages/ui/src"]
     }
   },

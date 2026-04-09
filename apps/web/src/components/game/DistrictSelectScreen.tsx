@@ -1,6 +1,7 @@
 import { useRunner, type CampaignNodeId, isCampaignNodeUnlocked } from "../../lib/stores/useRunner";
 import { DISTRICTS, type DistrictRoamMeta } from "../../lib/encounters";
 import { useAdventure } from "../../lib/stores/useAdventure";
+import { ASHBLOCK_TAGLINE } from "../../game/world/zones/AshblockHeights/AshblockHeightsNarrative";
 import { ArrowLeft, MapPin } from "../ui/icons";
 
 const ORDER: CampaignNodeId[] = [
@@ -69,7 +70,9 @@ export default function DistrictSelectScreen() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="font-bold text-white">{meta.name}</div>
-                  <div className="text-xs text-slate-400 line-clamp-2">{meta.theme}</div>
+                  <div className="text-xs text-slate-400 line-clamp-2">
+                    {id === "district-1" ? `${meta.theme} — ${ASHBLOCK_TAGLINE}` : meta.theme}
+                  </div>
                   <div className="text-[10px] text-slate-500 mt-1">
                     {meta.encounters.length} encounters · first clear +{meta.rewards.xp} XP +{meta.rewards.currency} score
                     {!unlocked && " — complete the previous district in Story campaign map first"}

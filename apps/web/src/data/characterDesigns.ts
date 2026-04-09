@@ -3,6 +3,8 @@
  * Canonical source: specs/primary/character_art_spec.json
  */
 
+import type { CanonicalLineageId } from "../game/characters/shared/LineageRoster";
+
 export interface CharacterDesign {
   id: string;
   name: string;
@@ -18,7 +20,7 @@ export interface CharacterDesign {
 
 const DESIGN_BY_ID: Record<string, CharacterDesign> = {
   "kai-jax": {
-    id: "kai-jax",
+    id: "kai-jax" satisfies CanonicalLineageId,
     name: "KAIJAX",
     title: "Memory Hybrid",
     primaryColor: "#1a1a1a",
@@ -30,7 +32,7 @@ const DESIGN_BY_ID: Record<string, CharacterDesign> = {
     portraitPath: "",
   },
   jaxon: {
-    id: "jaxon",
+    id: "jaxon" satisfies CanonicalLineageId,
     name: "JAXON",
     primaryColor: "#0b1020",
     accentColor: "#5dd9ff",
@@ -39,7 +41,7 @@ const DESIGN_BY_ID: Record<string, CharacterDesign> = {
     portraitPath: "",
   },
   kaison: {
-    id: "kaison",
+    id: "kaison" satisfies CanonicalLineageId,
     name: "KAISON",
     primaryColor: "#1a0a0a",
     accentColor: "#ffc233",

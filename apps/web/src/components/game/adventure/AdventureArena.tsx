@@ -1,7 +1,7 @@
 import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
-import { ENEMY_TIERS } from "../../../lib/combatSystems";
+import { ENEMY_TIERS } from "../../../game/tuning/enemyTuning";
 import { buildEncounterEnemies, getDistrictMeta } from "../../../lib/encounters";
 import { useMissions } from "../../../lib/stores/useMissions";
 import AdventureCharacter from "./AdventureCharacter";

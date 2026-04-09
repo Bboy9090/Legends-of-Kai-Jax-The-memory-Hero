@@ -5,27 +5,11 @@
 
 import type { AdventureEnemy } from "./stores/useAdventure";
 import type { CampaignNodeId } from "./stores/useRunner";
-import { ENEMY_TIERS } from "./combatSystems";
+import { ENEMY_TIERS } from "../game/tuning/enemyTuning";
+import { ASHBLOCK_DISTRICT_META } from "../game/world/zones/AshblockHeights/AshblockHeightsEncounters";
+import type { DistrictRoamMeta, EncounterSpec } from "../game/encounters/districtTypes";
 
-export interface EncounterSpec {
-  id: string;
-  label: string;
-  /** Number of minion slots (boss appended when includeBoss) */
-  minionCount: number;
-  includeBoss: boolean;
-  /** Tier scaling added per encounter index within district */
-  tierScale: number;
-}
-
-export interface DistrictRoamMeta {
-  id: CampaignNodeId;
-  name: string;
-  theme: string;
-  /** Scripted encounters in order (replaces pure wave-loop for this district) */
-  encounters: EncounterSpec[];
-  /** One-time patrol clear reward (granted via missions store; score = xp + currency) */
-  rewards: { xp: number; currency: number };
-}
+export type { EncounterSpec, DistrictRoamMeta };
 
 const MINION_POOL = ["hyena-scout", "rift-drone", "blazing-fox", "sparky", "velocity"] as const;
 
@@ -41,17 +25,7 @@ function pickMinionId(encounterIdx: number, i: number): string {
 }
 
 export const DISTRICTS: Record<Exclude<CampaignNodeId, "start" | "mid-boss" | "final-boss">, DistrictRoamMeta> = {
-  "district-1": {
-    id: "district-1",
-    name: "Ashblock Heights",
-    theme: "Industrial outskirts — scout packs and rooftop strays.",
-    rewards: { xp: 120, currency: 35 },
-    encounters: [
-      { id: "d1-e1", label: "Street sweep", minionCount: 2, includeBoss: false, tierScale: 0 },
-      { id: "d1-e2", label: "Alley ambush", minionCount: 3, includeBoss: false, tierScale: 1 },
-      { id: "d1-e3", label: "Block captain", minionCount: 2, includeBoss: true, tierScale: 2 },
-    ],
-  },
+  "district-1": ASHBLOCK_DISTRICT_META,
   "district-2": {
     id: "district-2",
     name: "Fangforge Wastes",

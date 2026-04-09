@@ -18,7 +18,7 @@ function pickRandomOpponent(excludeId: string): string {
 }
 
 export default function MissionSelectHub() {
-  const { setGameState, selectedCharacter, setCharacter } = useRunner();
+  const { setGameState, selectedCharacter, setCharacter, setTrainingSession } = useRunner();
   const { start } = useGame();
   const { setArena, setPlayerFighter, setOpponentFighter } = useBattle();
   const { completedKeys, startMission } = useMissions();
@@ -64,6 +64,7 @@ export default function MissionSelectHub() {
     setPlayerFighter(playerId);
     setOpponentFighter(pickRandomOpponent(playerId));
 
+    setTrainingSession(false);
     start();
     setGameState("playing");
   };

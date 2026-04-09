@@ -1,8 +1,10 @@
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useRunner } from "../../../lib/stores/useRunner";
-import { CombatState, STAMINA_CONFIG } from "../../../lib/combatSystems";
+import { CombatState } from "../../../game/combat/stateEnums";
+import { STAMINA_CONFIG } from "../../../game/tuning/adventureTuning";
 import { getDistrictMeta } from "../../../lib/encounters";
 import { useMissions } from "../../../lib/stores/useMissions";
+import { ASHBLOCK_OBJECTIVE_BLURBS } from "../../../game/world/zones/AshblockHeights/AshblockHeightsNarrative";
 
 function HealthBar({
   current,
@@ -236,6 +238,11 @@ export default function AdventureHUD() {
         <div className="absolute top-20 left-4 max-w-xs bg-black/55 backdrop-blur-sm rounded-lg px-3 py-2 border border-cyan-500/25 pointer-events-none">
           <div className="text-[10px] text-cyan-300/90 font-bold uppercase tracking-wider">{districtMeta.name}</div>
           <div className="text-[11px] text-slate-400 mt-0.5 line-clamp-2">{districtMeta.theme}</div>
+          {roamDistrictId === "district-1" && !districtCompleted && districtMeta.encounters[encounterIndex] && (
+            <div className="text-[11px] text-slate-300/95 mt-1.5 italic border-t border-white/10 pt-1.5">
+              {ASHBLOCK_OBJECTIVE_BLURBS[Math.min(encounterIndex, ASHBLOCK_OBJECTIVE_BLURBS.length - 1)]}
+            </div>
+          )}
           {districtCompleted && (
             <div className="text-xs text-emerald-400 font-bold mt-1 space-y-1">
               <div>District cleared — exit via pause menu.</div>

@@ -1,0 +1,23 @@
+{
+  "stamina": {
+    "max": 100,
+    "regenRate": 14,
+    "exhaustedThreshold": 15,
+    "regenDelay": 0.5
+  },
+  "combo": {
+    "maxChain": 3,
+    "chainWindow": 20,
+    "resetTime": 1.0
+  },
+  "dodge": {
+    "iFrames": 16,
+    "staminaCost": 18,
+    "distance": 5,
+    "duration": 0.35
+  },
+  "autoTarget": {
+    "maxRange": 18,
+    "angleWeight": 5
+  }
+}

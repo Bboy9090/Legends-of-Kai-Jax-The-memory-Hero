@@ -252,6 +252,11 @@ function GLBModelInner({
   const basesRef = useRef<LimbBaseRotations | null>(null);
   const animStateRef = useRef<AnimState>(createAnimState());
   const wasAttacking = useRef(false);
+  /**
+   * When the GLB has embedded clips, the mixer drives locomotion/idle.
+   * Procedural limbs still run during attacks so punches/kicks read clearly (clips do not cover combat).
+   */
+  const clipDrivenRef = useRef(false);
 
   useFrame((state, delta) => {
     if (!innerRef.current || !cloneRef.current) return;
@@ -259,6 +264,7 @@ function GLBModelInner({
 
     if (cloneRef.current && animations.length > 0 && !mixerInitialized.current) {
       mixerInitialized.current = true;
+      clipDrivenRef.current = true;
       const mixer = new THREE.AnimationMixer(cloneRef.current);
       mixerRef.current = mixer;
       const action = mixer.clipAction(animations[0]);
@@ -316,6 +322,7 @@ function GLBModelInner({
     const bases = basesRef.current;
     const anim = animStateRef.current;
 
+    const useProceduralLocomotion = !clipDrivenRef.current;
     if (isAttacking) {
       if (!wasAttacking.current) {
         anim.attackPhase = 0;
@@ -333,12 +340,15 @@ function GLBModelInner({
       } else {
         animatePunch(innerRef.current, limbs, bases, anim, delta, t);
       }
-    } else if (isMoving) {
+    } else if (useProceduralLocomotion) {
       wasAttacking.current = false;
-      animateWalk(innerRef.current, limbs, bases, anim, delta, false);
+      if (isMoving) {
+        animateWalk(innerRef.current, limbs, bases, anim, delta, false);
+      } else {
+        animateIdle(innerRef.current, limbs, bases, t, delta);
+      }
     } else {
       wasAttacking.current = false;
-      animateIdle(innerRef.current, limbs, bases, t, delta);
     }
 
     if (!isGrounded) {

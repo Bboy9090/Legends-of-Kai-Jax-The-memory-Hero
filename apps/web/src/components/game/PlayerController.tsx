@@ -3,16 +3,18 @@ import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useAudio } from "../../lib/stores/useAudio";
 import { useTouchInput } from "../../lib/stores/useTouchInput";
+import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
 
-const GRAVITY = -15;
-const GROUND_Y = 0.8;
-const JUMP_VELOCITY = 4;
+const b = MOVEMENT_TUNING.battle;
+const GRAVITY = b.gravity;
+const GROUND_Y = b.groundY;
+const JUMP_VELOCITY = b.jumpVelocity;
 
-const WALK_MAX_SPEED = 6;
-const SPRINT_MAX_SPEED = 9.5;
-const ACCEL = 38;
-const DECEL = 44;
-const AIR_CONTROL_MULT = 0.55;
+const WALK_MAX_SPEED = b.walkMaxSpeed;
+const SPRINT_MAX_SPEED = b.sprintMaxSpeed;
+const ACCEL = b.accel;
+const DECEL = b.decel;
+const AIR_CONTROL_MULT = b.airControlMult;
 
 function clamp01(x: number): number {
   return Math.max(0, Math.min(1, x));
@@ -102,7 +104,7 @@ export default function PlayerController() {
     let targetVx = inputX * maxSpeed;
     if (Math.abs(inputX) < 0.08) targetVx = 0;
     if (blockMove) {
-      targetVx *= 0.35;
+      targetVx *= b.blockMoveSpeedMult;
     }
 
     let vx = state.playerVelocityX;
@@ -114,7 +116,7 @@ export default function PlayerController() {
     }
 
     const dx = vx * delta;
-    const newX = Math.max(-10, Math.min(10, state.playerX + dx));
+    const newX = Math.max(b.arenaXMin, Math.min(b.arenaXMax, state.playerX + dx));
 
     let velY = state.playerVelocityY;
     const wantJump =

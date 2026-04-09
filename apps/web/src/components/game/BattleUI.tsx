@@ -1,9 +1,11 @@
 import { useBattle } from "../../lib/stores/useBattle";
 import { useGame } from "../../lib/stores/useGame";
 import { useRunner } from "../../lib/stores/useRunner";
+import { useMissions } from "../../lib/stores/useMissions";
 import { getFighterById } from "../../lib/characters";
+import { getPortraitPath } from "../../data/characterDesigns";
 import { useState, useEffect, useRef } from "react";
-import { Zap, Shield, Flame, Crown, RotateCcw, Home, Star, Sparkles, Swords } from "lucide-react";
+import { Zap, RotateCcw, Home, Star, Sparkles, CheckCircle2, XCircle, Target, ChevronRight } from "../ui/icons";
 
 // ⚡ LEGENDARY SYNERGY METER
 function SynergyMeter({ 
@@ -72,13 +74,14 @@ function SynergyMeter({
 // 🔥 LEGENDARY COMBO COUNTER
 function ComboCounter({ 
   combo, 
-  maxCombo,
+  maxCombo: _maxCombo,
   damage 
 }: { 
   combo: number; 
   maxCombo: number;
   damage: number;
 }) {
+  void _maxCombo;
   const [displayCombo, setDisplayCombo] = useState(combo);
   const [isPopping, setIsPopping] = useState(false);
   const prevComboRef = useRef(combo);
@@ -121,10 +124,8 @@ function ComboCounter({
       <div 
         className={`text-6xl font-black ${isPopping ? 'animate-bounce' : ''}`}
         style={{
-          background: `linear-gradient(180deg, ${glowColor}, #FFFFFF)`,
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          textShadow: `0 0 30px ${glowColor}`,
+          color: glowColor,
+          textShadow: `0 0 20px ${glowColor}, 0 0 40px ${glowColor}99, 0 2px 4px rgba(0,0,0,0.8)`,
         }}
       >
         {displayCombo}
@@ -155,7 +156,7 @@ function LegendaryHealthBar({
 }: {
   health: number;
   maxHealth: number;
-  fighter: { name: string; displayName: string; color: string; accentColor: string };
+  fighter: { id?: string; name: string; displayName: string; color: string; accentColor: string };
   side: 'left' | 'right';
   wins: number;
   synergy?: number;
@@ -164,17 +165,19 @@ function LegendaryHealthBar({
   const percentage = (health / maxHealth) * 100;
   const isLow = percentage < 30;
   const isCritical = percentage < 15;
-  
+  const portraitPath = fighter.id ? getPortraitPath(fighter.id) : null;
+
   return (
     <div 
       className={`flex-1 min-w-0 animate-[${side === 'left' ? 'slideInLeft' : 'slideInRight'}_0.5s_ease-out]`}
     >
       <div 
         className={`
-          relative bg-gradient-to-b from-gray-900/90 to-black/90 backdrop-blur-md 
+          relative bg-gradient-to-b from-gray-900/95 to-black/95 backdrop-blur-md 
           rounded-xl p-2 sm:p-3 
-          border-2 sm:border-3 
+          border-2 
           transition-all duration-300
+          shadow-[0_4px_24px_rgba(0,0,0,0.5)]
           ${isCritical 
             ? 'border-red-500 shadow-[0_0_40px_rgba(239,68,68,0.8)] animate-pulse' 
             : isLow 
@@ -187,27 +190,31 @@ function LegendaryHealthBar({
           borderColor: !isLow && !isCritical && !isTransformed ? fighter.accentColor : undefined,
           boxShadow:
             !isLow && !isCritical && !isTransformed
-              ? `0 0 25px ${fighter.accentColor}60`
+              ? `0 4px 24px rgba(0,0,0,0.5), 0 0 20px ${fighter.accentColor}40`
               : undefined,
         }}
       >
         {/* Fighter Info Row */}
         <div className={`flex items-center gap-2 mb-2 ${side === 'right' ? 'flex-row-reverse' : ''}`}>
-          {/* Fighter Avatar */}
+          {/* Fighter Avatar — design-driven portrait when available */}
           <div 
             className={`
               relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 
-              rounded-full flex items-center justify-center 
+              rounded-full flex items-center justify-center overflow-hidden
               font-black text-lg sm:text-xl md:text-2xl text-white
               flex-shrink-0 border-2 border-white/30
               ${isCritical ? 'animate-pulse' : ''}
             `}
             style={{ 
-              background: `linear-gradient(135deg, ${fighter.color}, ${fighter.accentColor})`,
-              boxShadow: `0 0 20px ${fighter.color}80, inset 0 0 15px rgba(255,255,255,0.3)`,
+              background: portraitPath ? "transparent" : `linear-gradient(135deg, ${fighter.color}, ${fighter.accentColor})`,
+              boxShadow: portraitPath ? undefined : `0 0 20px ${fighter.color}80, inset 0 0 15px rgba(255,255,255,0.3)`,
             }}
           >
-            {fighter.name.charAt(0)}
+            {portraitPath ? (
+              <img src={portraitPath} alt="" className="w-full h-full object-cover" />
+            ) : (
+              fighter.name.charAt(0)
+            )}
             
             {/* Transform Indicator */}
             {isTransformed && (
@@ -243,9 +250,8 @@ function LegendaryHealthBar({
         <div 
           className={`
             relative h-5 sm:h-6 md:h-8 
-            bg-gradient-to-b from-gray-700 to-gray-900 
-            rounded-full overflow-hidden 
-            border-2 border-white/20
+            bg-gray-800/90 rounded-full overflow-hidden 
+            border border-white/25 shadow-[inset_0_2px_6px_rgba(0,0,0,0.5)]
             ${isCritical ? 'shadow-[0_0_20px_rgba(239,68,68,0.9)_inset]' : ''}
           `}
         >
@@ -258,7 +264,7 @@ function LegendaryHealthBar({
                 ? 'bg-gradient-to-r from-red-600 via-red-500 to-red-400' 
                 : isLow 
                   ? 'bg-gradient-to-r from-orange-600 via-orange-500 to-yellow-500' 
-                  : 'bg-gradient-to-r from-green-600 via-lime-500 to-yellow-400'
+                  : 'bg-gradient-to-r from-green-600 via-emerald-500 to-cyan-400'
               }
             `}
             style={{ width: `${percentage}%` }}
@@ -266,16 +272,15 @@ function LegendaryHealthBar({
           
           {/* Shimmer Effect */}
           {health > 0 && (
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-[shimmer_2s_infinite]" />
           )}
-          
-          {/* Damage Flash */}
-          <div className="absolute inset-0 bg-white/50 opacity-0 transition-opacity" />
           
           {/* Health Text */}
           <div 
             className="absolute inset-0 flex items-center justify-center text-white font-black text-sm sm:text-base md:text-lg"
-            style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(0,0,0,0.5)' }}
+            style={{ 
+              textShadow: '0 1px 2px rgba(0,0,0,1), 0 0 8px rgba(0,0,0,0.8), 0 0 2px rgba(255,255,255,0.3)' 
+            }}
           >
             {Math.ceil(health)}
           </div>
@@ -353,7 +358,7 @@ function RoundAnnouncer({
   playerName: string;
   opponentName: string;
 }) {
-  const [showText, setShowText] = useState(true);
+  const [_showText, setShowText] = useState(true);
   
   useEffect(() => {
     if (phase === 'preRound' || phase === 'ko') {
@@ -456,16 +461,78 @@ function RoundAnnouncer({
   return null;
 }
 
+function formatObjectiveProgress(progress: number, target: number) {
+  const p = Math.min(target, progress);
+  // survival objectives store fractional seconds; clamp display to integers.
+  if (target > 5) return `${Math.floor(p)} / ${Math.floor(target)}`;
+  return `${Math.round(p)} / ${Math.round(target)}`;
+}
+
+function MissionHUD() {
+  const { active, objectives, result } = useMissions();
+  if (!active) return null;
+
+  const banner =
+    result === "success" ? (
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-green-900/60 border border-green-400/60 mb-2">
+        <CheckCircle2 className="w-4 h-4 text-green-300" />
+        <span className="mk-hud text-sm text-green-200">MISSION COMPLETE</span>
+      </div>
+    ) : result === "fail" ? (
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-900/60 border border-red-400/60 mb-2">
+        <XCircle className="w-4 h-4 text-red-300" />
+        <span className="mk-hud text-sm text-red-200">MISSION FAILED</span>
+      </div>
+    ) : null;
+
+  return (
+    <div className="absolute top-24 left-3 sm:left-6 pointer-events-none w-[280px] sm:w-[340px] z-40">
+      {banner}
+      <div className="bg-black/55 backdrop-blur-md rounded-xl border border-cyan-400/30 shadow-[0_0_30px_rgba(34,211,238,0.10)] p-3">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="min-w-0">
+            <div className="mk-hud text-xs text-cyan-300/90 flex items-center gap-2">
+              <Target className="w-3.5 h-3.5" />
+              ACTIVE MISSION
+            </div>
+            <div className="text-white font-bold truncate">{active.title}</div>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          {objectives.map((o) => (
+            <div key={o.id} className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div
+                  className={`w-2 h-2 rounded-full ${o.completed ? "bg-green-400" : "bg-cyan-300/70"}`}
+                  style={{ boxShadow: o.completed ? "0 0 10px rgba(34,197,94,0.6)" : "0 0 8px rgba(34,211,238,0.35)" }}
+                />
+                <div className={`text-sm truncate ${o.completed ? "text-green-200" : "text-white/90"}`}>
+                  {o.label}
+                </div>
+              </div>
+              <div className={`text-xs font-bold tabular-nums ${o.completed ? "text-green-300" : "text-cyan-200"}`}>
+                {o.completed ? "✓" : formatObjectiveProgress(o.progress, o.target)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // 🏆 RESULTS SCREEN
 function ResultsScreen({
   winner,
-  playerFighter,
+  playerFighter: _playerFighter,
   opponentFighter,
   playerWins,
   opponentWins,
   score,
   onRematch,
   onMenu,
+  onCampaignContinue,
 }: {
   winner: string | null;
   playerFighter: { displayName: string; color: string; accentColor: string };
@@ -475,7 +542,9 @@ function ResultsScreen({
   score: number;
   onRematch: () => void;
   onMenu: () => void;
+  onCampaignContinue?: () => void;
 }) {
+  const { active: activeMission, result: missionResult, lastReward } = useMissions();
   const isPlayerWin = winner === 'player';
   
   return (
@@ -514,6 +583,38 @@ function ResultsScreen({
             : '0 0 60px rgba(239,68,68,0.5), inset 0 0 30px rgba(239,68,68,0.1)',
         }}
       >
+        {/* Mission Banner */}
+        {activeMission && missionResult && (
+          <div
+            className={`mb-5 rounded-xl border px-4 py-3 ${
+              missionResult === "success"
+                ? "bg-green-900/40 border-green-400/60"
+                : "bg-red-900/40 border-red-400/60"
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2 font-black">
+              {missionResult === "success" ? (
+                <>
+                  <CheckCircle2 className="w-5 h-5 text-green-300" />
+                  <span className="text-green-200">MISSION COMPLETE</span>
+                </>
+              ) : (
+                <>
+                  <XCircle className="w-5 h-5 text-red-300" />
+                  <span className="text-red-200">MISSION FAILED</span>
+                </>
+              )}
+            </div>
+            <div className="text-sm text-white/85 mt-1">{activeMission.title}</div>
+            {missionResult === "success" && lastReward && (
+              <div className="text-xs text-white/75 mt-2">
+                Rewards: +{lastReward.xp} XP, +{lastReward.currency} currency
+                {lastReward.granted ? " (granted)" : " (already claimed)"}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Result Header */}
         <div className="mb-6">
           {isPlayerWin ? (
@@ -559,8 +660,29 @@ function ResultsScreen({
           </div>
         </div>
         
+        <p className="text-sm text-white/60 mb-4">Choose an option below to continue.</p>
+
         {/* Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
+          {isPlayerWin && onCampaignContinue && (
+            <button
+              onClick={onCampaignContinue}
+              className="
+                flex items-center justify-center gap-2 
+                px-8 py-4 rounded-xl 
+                font-bold text-lg text-white
+                bg-gradient-to-r from-cyan-500 to-blue-600
+                hover:from-cyan-400 hover:to-blue-500
+                focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/40
+                transform hover:scale-105 active:scale-[0.98] transition-all duration-200
+                border-2 border-white/30
+                shadow-lg hover:shadow-xl
+              "
+            >
+              <ChevronRight className="w-5 h-5" />
+              CONTINUE CAMPAIGN
+            </button>
+          )}
           <button
             onClick={onRematch}
             className="
@@ -569,7 +691,8 @@ function ResultsScreen({
               font-bold text-lg text-white
               bg-gradient-to-r from-green-500 to-emerald-600
               hover:from-green-400 hover:to-emerald-500
-              transform hover:scale-105 transition-all duration-300
+              focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/40
+              transform hover:scale-105 active:scale-[0.98] transition-all duration-200
               border-2 border-white/30
               shadow-lg hover:shadow-xl
             "
@@ -586,7 +709,8 @@ function ResultsScreen({
               font-bold text-lg text-white
               bg-gradient-to-r from-purple-500 to-pink-600
               hover:from-purple-400 hover:to-pink-500
-              transform hover:scale-105 transition-all duration-300
+              focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/40
+              transform hover:scale-105 active:scale-[0.98] transition-all duration-200
               border-2 border-white/30
               shadow-lg hover:shadow-xl
             "
@@ -618,10 +742,15 @@ export default function BattleUI() {
     returnToMenu
   } = useBattle();
   
-  const { end } = useGame();
-  const { setGameState, addScore } = useRunner();
-  const { reset: resetGamePhase } = useGame();
-  const { setGameState, addScore, campaignCurrentNode, setCampaignCompleted, setCampaignCurrentNode } = useRunner();
+  const { reset } = useGame();
+  const {
+    setGameState,
+    addScore,
+    campaignCurrentNode,
+    setCampaignCompleted,
+    setCampaignCurrentNode,
+    trainingSession,
+  } = useRunner();
   const playerFighter = getFighterById(playerFighterId);
   const opponentFighter = getFighterById(opponentFighterId);
   
@@ -631,32 +760,36 @@ export default function BattleUI() {
     playerTransformed, 
     comboCount, 
     comboDamage,
-    maxSynergy 
+    playerStamina,
+    maxPlayerStamina,
+    playerCombatState,
+    playerGuardPressure,
   } = useBattle();
+
+  const activeMission = useMissions((s) => s.active);
   
   const handleReturnToMenu = () => {
-    addScore(battleScore);
+    if (!trainingSession) addScore(battleScore);
     returnToMenu();
-    end();
-    setGameState('menu');
-  };
     useMissions.getState().abandonMission();
-    resetGamePhase();
+    reset();
     setGameState('menu');
   };
 
   const handleCampaignContinue = () => {
     if (!campaignCurrentNode) return;
-    addScore(battleScore);
+    if (!trainingSession) addScore(battleScore);
     returnToMenu();
     useMissions.getState().abandonMission();
     setCampaignCompleted(campaignCurrentNode);
     setCampaignCurrentNode(null);
-    resetGamePhase();
+    reset();
     setGameState('campaign-map');
   };
   
   const handleRematch = () => {
+    const m = useMissions.getState().active;
+    if (m) useMissions.getState().startMission(m.source, m.id);
     resetRound();
   };
   
@@ -667,6 +800,13 @@ export default function BattleUI() {
       {/* Top HUD */}
       <div className="absolute top-0 left-0 right-0 p-2 sm:p-4">
         <div className="max-w-6xl mx-auto">
+          {trainingSession && (
+            <div className="text-center mb-1 pointer-events-none">
+              <span className="inline-block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-full border border-emerald-500/40 bg-emerald-950/50 text-emerald-200/95">
+                Training — score not saved to profile
+              </span>
+            </div>
+          )}
           <div className="flex items-start justify-between gap-2 sm:gap-4">
             {/* Player Health */}
             <LegendaryHealthBar
@@ -697,39 +837,83 @@ export default function BattleUI() {
       
       {/* Combo Counter */}
       <ComboCounter combo={comboCount} maxCombo={50} damage={comboDamage} />
+
+      {/* Stamina + combat state (Phase 3) */}
+      {battlePhase === "fighting" && (
+        <div className="absolute left-4 bottom-24 sm:bottom-28 pointer-events-none max-w-[min(90vw,280px)]">
+          <div className="bg-black/70 backdrop-blur-md rounded-lg px-3 py-2 border border-white/15">
+            <div className="flex justify-between items-center gap-2 mb-1">
+              <span className="mk-hud text-[10px] sm:text-xs text-slate-400 uppercase tracking-wider">Stamina</span>
+              <span className="text-[10px] sm:text-xs text-cyan-200/90 font-mono">
+                {Math.round(playerStamina)} / {maxPlayerStamina}
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-gray-800/90 overflow-hidden border border-white/10">
+              <div
+                className="h-full rounded-full transition-[width] duration-100"
+                style={{
+                  width: `${Math.max(0, Math.min(100, (playerStamina / Math.max(1, maxPlayerStamina)) * 100))}%`,
+                  background:
+                    playerStamina < 18
+                      ? "linear-gradient(90deg, #ef4444, #f97316)"
+                      : "linear-gradient(90deg, #22d3ee, #3b82f6)",
+                }}
+              />
+            </div>
+            {playerGuardPressure > 8 && (
+              <div className="mt-1.5 h-1 rounded-full bg-gray-800/80 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-amber-500 to-red-500"
+                  style={{ width: `${Math.min(100, playerGuardPressure)}%` }}
+                />
+              </div>
+            )}
+            <div className="mt-1.5 text-[10px] sm:text-xs text-slate-400 font-mono truncate">
+              {playerCombatState.replace(/_/g, " ")}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mission HUD */}
+      {activeMission && <MissionHUD />}
       
-      {/* Controls Guide (Desktop) */}
+      {/* Controls Guide */}
       {battlePhase === 'fighting' && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 hidden md:flex gap-3">
-          <div className="bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2 border border-cyan-400/50">
-            <div className="flex gap-4 text-white text-sm">
-              <div className="flex items-center gap-1">
-                <kbd className="bg-white/20 px-2 py-0.5 rounded text-xs font-bold">←→</kbd>
-                <span className="text-gray-300">Move</span>
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex justify-center px-2 w-full max-w-2xl">
+          <div className="bg-black/75 backdrop-blur-md rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 border border-cyan-400/40 shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+            <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 text-white text-xs sm:text-sm">
+              <div className="flex items-center gap-1.5">
+                <kbd className="bg-white/25 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">←→</kbd>
+                <span className="text-slate-300">Move</span>
               </div>
-              <div className="flex items-center gap-1">
-                <kbd className="bg-white/20 px-2 py-0.5 rounded text-xs font-bold">SPACE</kbd>
-                <span className="text-gray-300">Jump</span>
+              <div className="flex items-center gap-1.5">
+                <kbd className="bg-emerald-500/40 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">ALT</kbd>
+                <span className="text-emerald-200/90">Block</span>
               </div>
-              <div className="flex items-center gap-1">
-                <kbd className="bg-cyan-500/40 px-2 py-0.5 rounded text-xs font-bold">J</kbd>
-                <span className="text-cyan-300">Punch</span>
+              <div className="flex items-center gap-1.5">
+                <kbd className="bg-white/25 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">SPACE</kbd>
+                <span className="text-slate-300">Jump</span>
               </div>
-              <div className="flex items-center gap-1">
-                <kbd className="bg-orange-500/40 px-2 py-0.5 rounded text-xs font-bold">K</kbd>
-                <span className="text-orange-300">Kick</span>
+              <div className="flex items-center gap-1.5">
+                <kbd className="bg-cyan-500/50 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">J</kbd>
+                <span className="text-cyan-200">Punch</span>
               </div>
-              <div className="flex items-center gap-1">
-                <kbd className="bg-purple-500/40 px-2 py-0.5 rounded text-xs font-bold">L</kbd>
-                <span className="text-purple-300">Special</span>
+              <div className="flex items-center gap-1.5">
+                <kbd className="bg-orange-500/50 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">K</kbd>
+                <span className="text-orange-200">Kick</span>
               </div>
-              <div className="flex items-center gap-1">
-                <kbd className="bg-yellow-500/40 px-2 py-0.5 rounded text-xs font-bold">T</kbd>
-                <span className="text-yellow-300">Transform</span>
+              <div className="flex items-center gap-1.5">
+                <kbd className="bg-purple-500/50 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">L</kbd>
+                <span className="text-purple-200">Special</span>
               </div>
-              <div className="flex items-center gap-2">
-                <kbd className="bg-white/20 px-2 py-1 rounded">Y</kbd>
-                <span>Taunt</span>
+              <div className="flex items-center gap-1.5">
+                <kbd className="bg-amber-500/50 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">T</kbd>
+                <span className="text-amber-200">Transform</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <kbd className="bg-white/25 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">Y</kbd>
+                <span className="text-slate-400">Taunt</span>
               </div>
             </div>
           </div>
@@ -755,6 +939,7 @@ export default function BattleUI() {
           score={battleScore}
           onRematch={handleRematch}
           onMenu={handleReturnToMenu}
+          onCampaignContinue={campaignCurrentNode && winner === 'player' ? handleCampaignContinue : undefined}
         />
       )}
       

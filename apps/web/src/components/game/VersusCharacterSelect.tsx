@@ -111,6 +111,7 @@ export default function VersusCharacterSelect() {
   const start = useGame((s) => s.start);
   const resetPhase = useGame((s) => s.reset);
   const setGameState = useRunner((s) => s.setGameState);
+  const setTrainingSession = useRunner((s) => s.setTrainingSession);
   const setCharacter = useRunner((s) => s.setCharacter);
   const setPlayerFighter = useBattle((s) => s.setPlayerFighter);
   const setOpponentFighter = useBattle((s) => s.setOpponentFighter);
@@ -118,8 +119,10 @@ export default function VersusCharacterSelect() {
   const [selectedId, setSelectedId] = useState<string>(FIGHTERS[0]?.id ?? "kai-jax");
   const selected = getFighterById(selectedId);
 
-  const handleFight = () => {
+  const beginMatch = (training: boolean) => {
     if (!selected) return;
+    resetPhase();
+    setTrainingSession(training);
     setCharacter(selectedId);
     setPlayerFighter(selectedId);
     const others = FIGHTERS.map((f) => f.id).filter((id) => id !== selectedId);
@@ -238,9 +241,10 @@ export default function VersusCharacterSelect() {
         </div>
       </div>
 
-      <div className="flex justify-center pb-6 pt-2">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pb-6 pt-2 px-4">
         <button
-          onClick={handleFight}
+          type="button"
+          onClick={() => beginMatch(false)}
           className="relative px-12 py-4 rounded-xl font-black text-xl tracking-widest text-white uppercase transition-all duration-200 hover:scale-105 active:scale-95"
           style={{
             background: `linear-gradient(135deg, ${selected?.accentColor ?? "#7fff00"}cc, ${selected?.color ?? "#1a1a1a"})`,
@@ -249,6 +253,13 @@ export default function VersusCharacterSelect() {
           }}
         >
           FIGHT
+        </button>
+        <button
+          type="button"
+          onClick={() => beginMatch(true)}
+          className="px-8 py-3 rounded-xl font-bold text-sm tracking-widest text-slate-200 uppercase border border-emerald-500/50 bg-emerald-950/40 hover:bg-emerald-900/50 hover:border-emerald-400/70 transition-all duration-200"
+        >
+          Training (no rank score)
         </button>
       </div>
     </div>
