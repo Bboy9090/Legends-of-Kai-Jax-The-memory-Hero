@@ -22,7 +22,7 @@ export default function CameraEffects() {
   const prevOpponentAttackRef = useRef(false);
   const originalPosRef = useRef({ x: 0, y: 0, z: 0 });
   const koSlowMoTriggeredRef = useRef(false);
-  const slowMoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const slowMoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Store original camera position
   useEffect(() => {

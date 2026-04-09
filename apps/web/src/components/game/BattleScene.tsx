@@ -98,7 +98,7 @@ export default function BattleScene() {
       <LegendaryLightingRig />
       {/* "city" can read very bright; night keeps the arena readable */}
       <Environment preset="night" environmentIntensity={0.45} />
-      <CinematicPostFX profile="battle" grade={grade} accent={accent} punch={punch} center={[0.5, 0.44]} />
+      <CinematicPostFX grade={grade} accent={accent} punch={punch} center={[0.5, 0.44]} />
 
       {/* Scene background/fog grade (pushes full-frame “poster” mood) */}
       <color attach="background" args={[bgColor]} />

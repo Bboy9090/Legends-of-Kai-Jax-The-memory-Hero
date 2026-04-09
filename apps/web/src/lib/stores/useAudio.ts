@@ -119,6 +119,9 @@ interface AudioState {
   playStoneHit: () => void;
   /** Short movement whoosh (procedural; battle dodge / roll) */
   playDodge: () => void;
+  /** 0..1 adaptive battle music intensity (combo + low HP); no-op if unsupported */
+  battleIntensity: number;
+  setBattleIntensity: (n: number) => void;
 }
 
 function tryPlay(a: HTMLAudioElement | null) {
@@ -133,6 +136,9 @@ export const useAudio = create<AudioState>((set, get) => ({
   hitSound: null,
   successSound: null,
   isMuted: false,
+  battleIntensity: 0,
+  setBattleIntensity: (battleIntensity) =>
+    set({ battleIntensity: Math.max(0, Math.min(1, battleIntensity)) }),
   setBackgroundMusic: (backgroundMusic) => set({ backgroundMusic }),
   setBattleMusic: (battleMusic) => set({ battleMusic }),
   setHitSound: (hitSound) => set({ hitSound }),
