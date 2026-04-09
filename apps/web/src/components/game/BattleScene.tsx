@@ -64,10 +64,26 @@ export default function BattleScene() {
   const punch =
     Math.min(1, rawPunch * Math.max(0.45, 1 - chaos * 0.85) * (reduceMotion ? 0.38 : 1)) || 0;
   
+<<<<<<< Updated upstream
   // Begin the round once when the battle canvas mounts. Do not depend on startBattle from the
   // hook — if that reference changes every render, the effect cleanup clears the timeout and the
   // match can stay stuck on preRound ("GET READY") forever.
   useEffect(() => {
+=======
+<<<<<<< Current (Your changes)
+  // Start battle on mount
+  useEffect(() => {
+    console.log("[BattleScene] Initializing battle");
+    setTimeout(() => {
+      startBattle();
+    }, 1000);
+  }, [startBattle]);
+=======
+  // Begin the round once when the battle canvas mounts. Do not depend on startBattle from the
+  // hook — if that reference changes every render, the effect cleanup clears the timeout and the
+  // match can stay stuck on preRound ("GET READY") forever.
+  useEffect(() => {
+>>>>>>> Stashed changes
     const delayMs = 400;
     const timer = setTimeout(() => {
       const s = useBattle.getState();
@@ -77,6 +93,10 @@ export default function BattleScene() {
     }, delayMs);
     return () => clearTimeout(timer);
   }, []);
+<<<<<<< Updated upstream
+=======
+>>>>>>> Incoming (Background Agent changes)
+>>>>>>> Stashed changes
   
   // Update round timer and adaptive music intensity
   useFrame((_state, delta) => {
