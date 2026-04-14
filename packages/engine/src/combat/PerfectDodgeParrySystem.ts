@@ -9,7 +9,7 @@
  * - Meter generation
  */
 
-import { LEGENDARY_COMBAT_CONSTANTS } from '@legends-of-kai-jax/shared';
+import { LEGENDARY_COMBAT_CONSTANTS } from '@beast-kin/shared';
 
 export interface PerfectDodgeState {
   isActive: boolean;

@@ -1,4 +1,4 @@
-// Match Screen - Main Gameplay
+// Match Screen - Main Gameplay with LEGENDARY COMBAT SYSTEMS
 // Path: apps/web/src/pages/Match.tsx
 
 import React, { useEffect, useState, useContext, useRef } from 'react';
@@ -17,6 +17,10 @@ import { VFXCoordinator } from '@game/systems/VFXCoordinator';
 import { MatchStateManager } from '@game/managers/MatchStateManager';
 import { PerformanceProfiler, getProfiler } from '@game/debug/PerformanceProfiler';
 import { MatchOverlay } from '@web/components/MatchOverlay';
+// 🔥 LEGENDARY COMBAT SYSTEMS
+import { LegendaryComboSystem } from '@engine/combat/LegendaryComboSystem';
+import { PerfectDodgeParrySystem } from '@engine/combat/PerfectDodgeParrySystem';
+import { LegendaryVisualEffects } from '@engine/effects/LegendaryVisualEffects';
 import '@web/styles/bronx_grit.css';
 
 const Match: React.FC = () => {
@@ -24,10 +28,15 @@ const Match: React.FC = () => {
   const { state, setState } = useContext(GameStateContext);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [matchTime, setMatchTime] = useState(180); // 3 minutes
+  
+  // 🔥 ENHANCED GAME STATE with Legendary Combat Data
   const [gameState, setGameState] = useState({
-    p1: { hp: 100, resonance: 0 },
-    p2: { hp: 100, resonance: 0 },
+    p1: { hp: 100, resonance: 0, ultimate: 0, reflex: 0 },
+    p2: { hp: 100, resonance: 0, ultimate: 0, reflex: 0 },
     winner: null as string | null,
+    combo: { hits: 0, multiplier: 1.0, tier: null as string | null },
+    slowMotion: { active: false, scale: 1.0 },
+    screenShake: { active: false, intensity: 0 },
   });
 
   // Initialize game
@@ -150,6 +159,14 @@ const Match: React.FC = () => {
       eventBus
     );
     const profiler = getProfiler();
+    
+    // 🔥 LEGENDARY COMBAT SYSTEMS INITIALIZATION
+    const legendaryCombo = new LegendaryComboSystem();
+    const perfectDodgeParry = new PerfectDodgeParrySystem();
+    const legendaryVFX = new LegendaryVisualEffects();
+    let timeScale = 1.0; // For slow-motion effects
+    
+    console.log('🔥 LEGENDARY COMBAT SYSTEMS ACTIVATED!');
 
     // Register character stats with combat system
     const characterStats: Record<string, { weight: number; power: number; defense: number }> = {
@@ -187,25 +204,75 @@ const Match: React.FC = () => {
 
     // Subscribe to critical game events
     const handleCharacterHit = (data: Record<string, any>) => {
+      // 🔥 RECORD HIT IN LEGENDARY COMBO SYSTEM
+      const hitType = data.heavy ? 'heavy' : 'light';
+      const isPerfectTiming = data.perfectTiming || false;
+      const isAerial = data.aerial || false;
+      
+      legendaryCombo.recordHit(
+        data.attackerId,
+        { damage: data.damage, critical: data.critical || false },
+        hitType as any,
+        isPerfectTiming,
+        isAerial,
+        false // team combo
+      );
+      
+      // Get combo state for UI update
+      const comboState = legendaryCombo.getComboState(data.attackerId);
+      
       // Apply damage from hit
       const iface = matchState as Record<string, any>;
       if (iface.applyDamage) {
-        iface.applyDamage(data.defenderId, data.damage);
+        // Apply damage with combo multiplier!
+        const damageWithMultiplier = data.damage * (comboState?.multiplier || 1.0);
+        iface.applyDamage(data.defenderId, damageWithMultiplier);
       }
       
-      // Update game state immediately
+      // 🔥 LEGENDARY VISUAL EFFECTS
+      legendaryVFX.triggerScreenShake(0.5, undefined, data.damage);
+      legendaryVFX.triggerHitEffect(
+        data.hitPosition,
+        comboState && comboState.hits >= 10 ? 'crit' : 'hit'
+      );
+      
+      if (comboState && comboState.tier) {
+        legendaryVFX.triggerComboVisualization(
+          comboState.hits,
+          comboState.tier,
+          new THREE.Vector2(0.5, 0.3) // Screen position
+        );
+      }
+      
+      // Update game state immediately with combo data
       const matchStats = matchState.getMatchStats();
-      setGameState({
-        p1: { hp: Math.max(0, matchStats.p1HP), resonance: Math.max(0, matchStats.p1Resonance) },
-        p2: { hp: Math.max(0, matchStats.p2HP), resonance: Math.max(0, matchStats.p2Resonance) },
+      setGameState(prev => ({
+        ...prev,
+        p1: { 
+          hp: Math.max(0, matchStats.p1HP), 
+          resonance: Math.max(0, matchStats.p1Resonance),
+          ultimate: prev.p1.ultimate,
+          reflex: prev.p1.reflex
+        },
+        p2: { 
+          hp: Math.max(0, matchStats.p2HP), 
+          resonance: Math.max(0, matchStats.p2Resonance),
+          ultimate: prev.p2.ultimate,
+          reflex: prev.p2.reflex
+        },
         winner: matchStats.winner,
-      });
+        combo: {
+          hits: comboState?.hits || 0,
+          multiplier: comboState?.multiplier || 1.0,
+          tier: comboState?.tier || null
+        }
+      }));
       
       // Trigger VFX and audio on hit
       vfx.createImpactEffect(data.hitPosition);
       audio.playHitEffect(data.heavy ? 'heavy' : 'light');
       
-      console.log(`[Combat] ${data.attackerId} HIT ${data.defenderId} for ${data.damage} damage`);
+      console.log(`🔥 [LEGENDARY HIT] ${data.attackerId} → ${data.defenderId}: ${damageWithMultiplier.toFixed(1)} DMG (${comboState?.hits || 0} hit combo, ${(comboState?.multiplier || 1.0).toFixed(2)}x multiplier)`);
     };
 
     const handleAttackTriggered = (data: Record<string, any>) => {
@@ -246,6 +313,58 @@ const Match: React.FC = () => {
         if (p1Controller.getPhysics) {
           const p1Physics = p1Controller.getPhysics();
           p1Physics.attackTriggered = true;
+        }
+      }
+      
+      // 🔥 P1 DODGE (Shift key) - PERFECT DODGE SYSTEM
+      if ((e.key === 'Shift') && gameRunning) {
+        const result = perfectDodgeParry.attemptPerfectDodge(
+          state.selectedCharacter || 'kai-jax',
+          performance.now() + 200 // Simulate incoming attack timing
+        );
+        
+        if (result.success && result.state) {
+          console.log('🔥 PERFECT DODGE! Slow-motion activated!');
+          timeScale = result.timeScale || 0.25;
+          audio.playDodgeEffect?.();
+          legendaryVFX.triggerPerfectDodgeEffect(p1Character.position);
+          
+          // Update UI
+          setGameState(prev => ({
+            ...prev,
+            slowMotion: { active: true, scale: timeScale },
+            p1: { ...prev.p1, reflex: Math.min(100, prev.p1.reflex + result.state!.reflexMeterGain) }
+          }));
+          
+          // Reset after slow-motion duration
+          setTimeout(() => {
+            timeScale = 1.0;
+            setGameState(prev => ({
+              ...prev,
+              slowMotion: { active: false, scale: 1.0 }
+            }));
+          }, 3000);
+        }
+      }
+      
+      // 🔥 P1 PARRY (Q key) - PERFECT PARRY SYSTEM
+      if ((e.key === 'q' || e.key === 'Q') && gameRunning) {
+        const result = perfectDodgeParry.attemptPerfectParry(
+          state.selectedCharacter || 'kai-jax',
+          performance.now() + 150 // Simulate incoming attack timing
+        );
+        
+        if (result.success && result.state) {
+          console.log('🔥 PERFECT PARRY! Enemy stunned!');
+          audio.playParryEffect?.();
+          legendaryVFX.triggerPerfectParryEffect(p1Character.position);
+          legendaryVFX.triggerScreenFlash('#FFD700', 0.8, 100);
+          
+          // Update UI
+          setGameState(prev => ({
+            ...prev,
+            p1: { ...prev.p1, resonance: Math.min(100, prev.p1.resonance + result.state!.resonanceMeterGain) }
+          }));
         }
       }
 
@@ -300,7 +419,9 @@ const Match: React.FC = () => {
 
       if (!gameRunning) return;
 
-      const deltaTime = Math.min(clock.getDelta(), 0.016); // Cap at 60fps
+      const baseDeltaTime = Math.min(clock.getDelta(), 0.016); // Cap at 60fps
+      // 🔥 Apply time scale for slow-motion effects
+      const deltaTime = baseDeltaTime * timeScale;
 
       // Handle movement input each frame
       handleMovementInput();
@@ -324,6 +445,13 @@ const Match: React.FC = () => {
       p2Anims.updatePhysicsState(p2Controller.getPhysics());
       p2Anims.update(deltaTime);
       profiler.endMark('animation_update');
+      
+      // 🔥 UPDATE LEGENDARY SYSTEMS
+      profiler.startMark('legendary_systems_update');
+      legendaryCombo.update(deltaTime);
+      perfectDodgeParry.update(deltaTime);
+      legendaryVFX.update(deltaTime);
+      profiler.endMark('legendary_systems_update');
 
       profiler.startMark('combat_update');
       // Update combat
@@ -342,6 +470,19 @@ const Match: React.FC = () => {
       vfx.update(deltaTime);
       vfx.setCameraBasePosition(cameraBasePosition);
       profiler.endMark('vfx_update');
+      
+      // 🔥 APPLY SCREEN SHAKE from Legendary VFX
+      const shake = legendaryVFX.getCurrentScreenShake();
+      if (shake) {
+        const shakeOffset = new THREE.Vector3(
+          Math.sin(performance.now() * shake.frequency) * shake.intensity,
+          Math.cos(performance.now() * shake.frequency * 1.3) * shake.intensity,
+          0
+        );
+        camera.position.copy(cameraBasePosition).add(shakeOffset);
+      } else {
+        camera.position.copy(cameraBasePosition);
+      }
 
       // Handle attack input for P1 (J key)
       p1AttackCooldown = Math.max(0, p1AttackCooldown - deltaTime);
@@ -464,7 +605,7 @@ const Match: React.FC = () => {
         style={{ display: 'block' }}
       />
 
-      {/* HUD Overlay */}
+      {/* 🔥 LEGENDARY MATCH OVERLAY with Combat Data */}
       <MatchOverlay
         p1Hp={gameState.p1.hp}
         p2Hp={gameState.p2.hp}
@@ -474,12 +615,18 @@ const Match: React.FC = () => {
         winner={gameState.winner}
         p1Name={state.selectedCharacter || 'KAI-JAX'}
         p2Name={state.opponent || 'LUNARA SOLIS'}
+        comboCount={gameState.combo.hits}
+        comboMultiplier={gameState.combo.multiplier}
+        comboTier={gameState.combo.tier}
+        p1Ultimate={gameState.p1.ultimate}
+        p2Ultimate={gameState.p2.ultimate}
+        p1Reflex={gameState.p1.reflex}
+        p2Reflex={gameState.p2.reflex}
+        slowMotionActive={gameState.slowMotion.active}
+        screenShakeActive={gameState.screenShake.active}
       />
 
-      {/* Controls hint */}
-      <div className="absolute bottom-4 left-4 text-mono-small text-amber-400 text-xs z-20">
-        <p>A/D - MOVE | SPACE - JUMP | J - ATTACK | ESC - EXIT</p>
-      </div>
+      {/* Controls hint - Now integrated in MatchOverlay */}
     </div>
   );
 };

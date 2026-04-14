@@ -11,7 +11,7 @@
  */
 
 import * as THREE from 'three';
-import { LEGENDARY_COMBAT_CONSTANTS } from '@legends-of-kai-jax/shared';
+import { LEGENDARY_COMBAT_CONSTANTS } from '@beast-kin/shared';
 
 export interface ScreenShake {
   intensity: number;

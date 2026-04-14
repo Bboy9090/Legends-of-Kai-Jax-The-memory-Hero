@@ -35,6 +35,15 @@ interface MatchOverlayProps {
   comboCount?: number;
   dreadLevel?: number;
   voiceLine?: string;
+  // 🔥 LEGENDARY COMBAT DATA
+  comboMultiplier?: number;
+  comboTier?: string | null;
+  p1Ultimate?: number;
+  p2Ultimate?: number;
+  p1Reflex?: number;
+  p2Reflex?: number;
+  slowMotionActive?: boolean;
+  screenShakeActive?: boolean;
 }
 
 // Transformation tier names and colors
@@ -61,6 +70,15 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({
   comboCount = 0,
   dreadLevel = 0,
   voiceLine,
+  // 🔥 LEGENDARY COMBAT DATA
+  comboMultiplier = 1.0,
+  comboTier = null,
+  p1Ultimate = 0,
+  p2Ultimate = 0,
+  p1Reflex = 0,
+  p2Reflex = 0,
+  slowMotionActive = false,
+  screenShakeActive = false,
 }) => {
   const [showVoiceLine, setShowVoiceLine] = useState(false);
   const [currentVoiceLine, setCurrentVoiceLine] = useState('');
@@ -439,40 +457,70 @@ export const MatchOverlay: React.FC<MatchOverlayProps> = ({
         </div>
       </div>
 
-      {/* BOTTOM RIGHT: Combo Counter */}
+      {/* BOTTOM RIGHT: LEGENDARY COMBO COUNTER 🔥 */}
       {comboCount > 0 && (
         <div className="absolute bottom-6 right-6">
           <div 
-            className="bg-neutral-900/90 backdrop-blur-lg border-2 border-legendary-cyan rounded-lg px-6 py-4"
+            className={`bg-neutral-900/90 backdrop-blur-lg border-2 rounded-lg px-6 py-4 ${
+              comboTier === 'infinite' ? 'border-white animate-pulse' :
+              comboTier === 'legendary' ? 'border-legendary-cyan' :
+              comboTier === 'amazing' ? 'border-legendary-gold' :
+              comboTier === 'great' ? 'border-purple-500' :
+              'border-cyan-400'
+            }`}
             style={{
-              boxShadow: comboCount >= 10 
+              boxShadow: comboCount >= 50 
+                ? '0 0 40px rgba(255, 255, 255, 0.8)' 
+                : comboCount >= 20
                 ? '0 0 30px rgba(0, 217, 255, 0.6)' 
+                : comboCount >= 10
+                ? '0 0 20px rgba(251, 191, 36, 0.5)'
                 : '0 0 15px rgba(0, 217, 255, 0.3)',
             }}
           >
             <div className="text-center">
               <span className={`font-black drop-shadow-lg ${
-                comboCount >= 20 ? 'text-7xl text-legendary-gold animate-pulse' :
+                comboTier === 'infinite' ? 'text-7xl text-god-tier animate-pulse' :
+                comboTier === 'legendary' ? 'text-7xl text-legendary-cyan' :
+                comboTier === 'amazing' ? 'text-6xl text-legendary-gold' :
                 comboCount >= 10 ? 'text-6xl text-legendary-cyan' :
                 'text-5xl text-white'
               }`}>
                 {comboCount}
               </span>
               <p className="text-xs text-neutral-400 uppercase tracking-widest mt-1 font-bold">
-                {comboCount >= 20 ? 'LEGENDARY COMBO!' :
-                 comboCount >= 10 ? 'MEGA COMBO!' :
-                 comboCount >= 5 ? 'GREAT COMBO!' : 'COMBO'}
+                {comboTier === 'infinite' ? 'INFINITE COMBO!' :
+                 comboTier === 'legendary' ? 'LEGENDARY COMBO!' :
+                 comboTier === 'amazing' ? 'AMAZING COMBO!' :
+                 comboTier === 'great' ? 'GREAT COMBO!' :
+                 comboCount >= 5 ? 'GOOD COMBO!' : 'COMBO'}
               </p>
+              {comboMultiplier > 1.0 && (
+                <p className="text-sm font-bold text-legendary-gold mt-1">
+                  {comboMultiplier.toFixed(1)}x DAMAGE
+                </p>
+              )}
             </div>
           </div>
         </div>
       )}
+      
+      {/* 🔥 SLOW MOTION INDICATOR */}
+      {slowMotionActive && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+          <div className="bg-cyan-500/20 backdrop-blur-md border-2 border-cyan-400 rounded-lg px-8 py-4 animate-pulse">
+            <p className="text-4xl font-bold text-cyan-400 tracking-widest" style={{ textShadow: '0 0 20px rgba(6, 182, 212, 0.8)' }}>
+              SLOW MOTION
+            </p>
+          </div>
+        </div>
+      )}
 
-      {/* BOTTOM CENTER: Controls Hint */}
+      {/* BOTTOM CENTER: Controls Hint with LEGENDARY COMBAT 🔥 */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
         <div className="bg-neutral-900/70 backdrop-blur-sm rounded-full px-6 py-2 border border-white/10">
           <p className="text-mono-small text-amber-400/80 text-xs uppercase tracking-wider">
-            A/D - Move | SPACE - Jump | J - Attack | T - Transform | ESC - Exit
+            A/D - Move | SPACE - Jump | J - Attack | 🔥 SHIFT - Dodge | Q - Parry | ESC - Exit
           </p>
         </div>
       </div>

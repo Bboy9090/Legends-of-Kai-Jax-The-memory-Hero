@@ -10,8 +10,8 @@
  * - Visual feedback tiers
  */
 
-import { ComboState, HitResult } from '@legends-of-kai-jax/shared';
-import { LEGENDARY_COMBAT_CONSTANTS } from '@legends-of-kai-jax/shared';
+import { ComboState, HitResult } from '@beast-kin/shared';
+import { LEGENDARY_COMBAT_CONSTANTS } from '@beast-kin/shared';
 
 export interface LegendaryComboState extends ComboState {
   // Extended combo data
