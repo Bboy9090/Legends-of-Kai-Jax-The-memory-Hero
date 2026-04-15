@@ -15,6 +15,7 @@ import { AnimationStateMachine } from '@game/systems/AnimationStateMachine';
 import { AudioSystem } from '@game/systems/AudioSystem';
 import { VFXCoordinator } from '@game/systems/VFXCoordinator';
 import { MatchStateManager } from '@game/managers/MatchStateManager';
+import { StoryProgressManager } from '@game/managers/StoryProgressManager';
 import { PerformanceProfiler, getProfiler } from '@game/debug/PerformanceProfiler';
 import { MatchOverlay } from '@web/components/MatchOverlay';
 // 🔥 LEGENDARY COMBAT SYSTEMS
@@ -29,7 +30,7 @@ const Match: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [matchTime, setMatchTime] = useState(180); // 3 minutes
   
-  // 🔥 ENHANCED GAME STATE with Legendary Combat Data
+  // 🔥 ENHANCED GAME STATE with Legendary Combat Data + Story Mode
   const [gameState, setGameState] = useState({
     p1: { hp: 100, resonance: 0, ultimate: 0, reflex: 0 },
     p2: { hp: 100, resonance: 0, ultimate: 0, reflex: 0 },
@@ -38,6 +39,37 @@ const Match: React.FC = () => {
     slowMotion: { active: false, scale: 1.0 },
     screenShake: { active: false, intensity: 0 },
   });
+  
+  // 📖 STORY MODE STATE
+  const [showStoryDialogue, setShowStoryDialogue] = useState(false);
+  const [storyDialogue, setStoryDialogue] = useState<string[]>([]);
+  const [currentDialogueLine, setCurrentDialogueLine] = useState(0);
+  const isStoryMode = state.storyMode || false;
+
+  // 📖 STORY MODE: Show pre-fight dialogue
+  useEffect(() => {
+    if (isStoryMode && state.storyDialogue && state.storyDialogue.length > 0) {
+      setStoryDialogue(state.storyDialogue);
+      setShowStoryDialogue(true);
+      setCurrentDialogueLine(0);
+      
+      console.log('📖 [Story] Pre-fight dialogue:', state.storyDialogue);
+      
+      // Auto-advance dialogue
+      let lineIndex = 0;
+      const dialogueInterval = setInterval(() => {
+        lineIndex++;
+        if (lineIndex < state.storyDialogue.length) {
+          setCurrentDialogueLine(lineIndex);
+        } else {
+          clearInterval(dialogueInterval);
+          setTimeout(() => setShowStoryDialogue(false), 2000);
+        }
+      }, 3000);
+      
+      return () => clearInterval(dialogueInterval);
+    }
+  }, [isStoryMode, state.storyDialogue]);
 
   // Initialize game
   useEffect(() => {
@@ -285,6 +317,51 @@ const Match: React.FC = () => {
       // Match ended, show victory state
       gameRunning = false;
       console.log(`[Match] Match ended! Winner: ${data.winner}`);
+      
+      // 📖 STORY MODE: Save chapter completion
+      if (isStoryMode && data.winner === 'p1' && state.currentBook && state.currentChapterNumber) {
+        const storyManager = StoryProgressManager.getInstance();
+        const matchStats = matchState.getMatchStats();
+        
+        // Get legendary combat stats
+        const perfectDodgeParryState = perfectDodgeParry.getState('p1');
+        const comboState = legendaryCombo.getComboState(state.selectedCharacter || 'kai-jax');
+        
+        // Complete chapter with performance metrics
+        storyManager.completeChapter(
+          state.currentBook,
+          state.currentChapterNumber,
+          {
+            completionTime: 180000 - (matchStats.timeRemaining * 1000),
+            perfectDodges: perfectDodgeParryState?.dodgeCount || 0,
+            perfectParries: perfectDodgeParryState?.parryCount || 0,
+            maxCombo: comboState?.hits || 0,
+            finalHP: matchStats.p1HP,
+            bossDefeated: state.opponent?.includes('malakor') || state.opponent?.includes('void-king'),
+          }
+        );
+        
+        console.log('📖 [Story] Chapter completed! Progress saved.');
+        
+        // Show story victory dialogue after delay
+        setTimeout(() => {
+          const victoryDialogue = [
+            `Chapter ${state.currentChapterNumber} Complete!`,
+            `The memory of ${state.opponent} has been absorbed.`,
+            'Continue your journey...',
+          ];
+          
+          setStoryDialogue(victoryDialogue);
+          setShowStoryDialogue(true);
+          setCurrentDialogueLine(0);
+          
+          // Return to saga mode after dialogue
+          setTimeout(() => {
+            setShowStoryDialogue(false);
+            navigate('/saga-mode');
+          }, 9000);
+        }, 4000);
+      }
     };
 
     // Subscribe to events
@@ -627,6 +704,41 @@ const Match: React.FC = () => {
       />
 
       {/* Controls hint - Now integrated in MatchOverlay */}
+      
+      {/* 📖 STORY DIALOGUE OVERLAY */}
+      {showStoryDialogue && storyDialogue.length > 0 && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50">
+          <div className="max-w-3xl w-full mx-8">
+            <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border-2 border-amber-400 rounded-lg p-8 shadow-2xl">
+              <div className="text-mono-small text-amber-400 text-xs mb-4 tracking-widest">
+                CHAPTER {state.currentChapterNumber || 1} - BOOK {state.currentBook || 1}
+              </div>
+              <p className="text-legendary text-2xl text-white leading-relaxed min-h-[120px]">
+                {storyDialogue[currentDialogueLine]}
+              </p>
+              <div className="flex items-center justify-between mt-6">
+                <div className="flex gap-2">
+                  {storyDialogue.map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`h-2 w-2 rounded-full ${
+                        idx === currentDialogueLine 
+                          ? 'bg-amber-400' 
+                          : idx < currentDialogueLine 
+                          ? 'bg-amber-400/50' 
+                          : 'bg-neutral-600'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="text-mono-small text-neutral-500 text-xs">
+                  {currentDialogueLine + 1} / {storyDialogue.length}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
