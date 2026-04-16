@@ -1,0 +1,25 @@
+{
+  "id": "kai_light_jab",
+  "startup": 3,
+  "active": 2,
+  "recovery": 8,
+  "shield_damage": 2,
+  "di_resist": 0.1,
+  "hitstopOnHit": 4,
+  "hitstopOnBlock": 2,
+  "hits": [
+    {
+      "startF": 3,
+      "endF": 5,
+      "offX": 0.6,
+      "offY": 1.2,
+      "halfW": 0.3,
+      "halfH": 0.25,
+      "kbX": 1.5,
+      "kbY": 0.5,
+      "dmg": 4,
+      "usedOnce": false,
+      "isGrab": false
+    }
+  ]
+}
