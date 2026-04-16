@@ -105,6 +105,13 @@ export class PlayerController {
   }
 
   /**
+   * Set base move speed (for character-specific tuning)
+   */
+  setMoveSpeed(speed: number): void {
+    this.moveSpeed = speed;
+  }
+
+  /**
    * Set arena boundaries
    */
   setBoundaries(minX: number, maxX: number, minZ: number, maxZ: number): void {

@@ -5,7 +5,14 @@
 
 import { MissionTracker } from './MissionTracker';
 
-export type EnemyType = 'fang_grunt' | 'covenant_scout' | 'covenant_enforcer';
+export type EnemyType =
+  | 'fang_grunt'
+  | 'covenant_scout'
+  | 'covenant_enforcer'
+  | 'fang_rusher'
+  | 'null_defender'
+  | 'covenant_sniper'
+  | 'fang_warlord';
 
 export interface Enemy {
   type: EnemyType;
@@ -16,6 +23,16 @@ export interface Enemy {
   isBoss: boolean;
   id: string;
 }
+
+const ENEMY_STATS: Record<EnemyType, { hp: number; isBoss: boolean }> = {
+  fang_grunt:       { hp: 30,  isBoss: false },
+  covenant_scout:   { hp: 35,  isBoss: false },
+  covenant_enforcer:{ hp: 100, isBoss: true },
+  fang_rusher:      { hp: 22,  isBoss: false },
+  null_defender:    { hp: 55,  isBoss: false },
+  covenant_sniper:  { hp: 28,  isBoss: false },
+  fang_warlord:     { hp: 140, isBoss: true },
+};
 
 export class WaveDirector {
   private scene: any; // THREE.Scene type, kept generic per spec
@@ -32,8 +49,8 @@ export class WaveDirector {
    * Spawn enemy at position
    */
   spawnEnemy(type: EnemyType, x: number, y: number): Enemy {
-    const isBoss = type === 'covenant_enforcer';
-    const hp = isBoss ? 100 : 30;
+    const stats = ENEMY_STATS[type] ?? { hp: 30, isBoss: false };
+    const { hp, isBoss } = stats;
 
     const enemy: Enemy = {
       type,

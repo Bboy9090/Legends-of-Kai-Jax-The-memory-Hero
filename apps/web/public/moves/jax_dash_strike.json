@@ -1,0 +1,25 @@
+{
+  "id": "jax_dash_strike",
+  "startup": 4,
+  "active": 3,
+  "recovery": 10,
+  "shield_damage": 4,
+  "di_resist": 0.25,
+  "hitstopOnHit": 6,
+  "hitstopOnBlock": 3,
+  "hits": [
+    {
+      "startF": 4,
+      "endF": 7,
+      "offX": 1.1,
+      "offY": 1.2,
+      "halfW": 0.45,
+      "halfH": 0.3,
+      "kbX": 2.8,
+      "kbY": 1.0,
+      "dmg": 8,
+      "usedOnce": false,
+      "isGrab": false
+    }
+  ]
+}

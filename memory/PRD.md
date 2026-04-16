@@ -1,8 +1,8 @@
 # LEGENDS OF KAI-JAX
 ## Combat Runtime PRD
 
-**Status:** Sprint 1 — COMPLETE (verified Feb 16, 2026)
-**Version:** Combat Kernel v1.1
+**Status:** Sprint 2 — COMPLETE (verified Feb 16, 2026)
+**Version:** Combat Kernel v1.2
 **Last Updated:** February 16, 2026
 
 ---
@@ -15,92 +15,105 @@ Build a scalable combat runtime for Legends of Kai-Jax with multiple orchestrati
 ## Architecture
 
 ```
-/app/apps/web/
-├── public/moves/*.json    # Data-driven MoveSpecs (6 moves)
-├── src/combat/            # MovePlayer, Hurtbox (kernel)
-├── src/mission/           # MissionTracker, WaveDirector, MissionOrchestrator, MissionSchema
-├── src/ai/                # SimpleAI (grunt), BossAI (multi-phase)
-├── src/player/            # PlayerController (WASD)
-├── src/entities/          # FighterEntity, EnemyEntity, BossEntity
-├── src/scenes/            # CombatDemoScene, MissionScene
-├── combat-demo.html       # Isolated combat test harness
-└── mission-demo.html      # Full vertical slice (waves + boss)
+/app/apps/web/ (Vite + Three.js game runtime)
+├── public/moves/*.json       # 10 MoveSpecs (6 Kai + 4 Jax)
+├── src/combat/               # MovePlayer, Hurtbox
+├── src/mission/              # Tracker, WaveDirector, Orchestrator, Schema (2 missions)
+├── src/ai/                   # SimpleAI (grunt/rusher/defender/sniper), BossAI (3-phase)
+├── src/player/               # PlayerController (WASD + character-specific speed)
+├── src/characters/           # CharacterSpec (Kai + Jax playable)
+├── src/entities/             # FighterEntity, EnemyEntity, BossEntity
+├── src/scenes/               # CombatDemoScene, MissionScene (URL-param selectable)
+└── {combat,mission}-demo.html
+
+/app/frontend/ (CRA web hub)
+└── public/game/              # Vite production build (mirrored here post-build)
+    └── ... (mission-demo.html, moves/*.json, assets/*)
 ```
 
-Secondary: `/app/frontend/` (React CRA) — Legend Arena Duel web hub (separate marketing/story site, runs on port 3000).
+**Stitch:** The Vite build is copied to `/app/frontend/public/game/`, so the CRA preview URL serves the demos at `/game/mission-demo.html`. Hero section has a "COMBAT DEMO" button (`data-testid="cta-play-combat-demo"`) that deep-links to it.
 
 ---
 
-## Sprint 1 — Core Gameplay ✅ COMPLETE (Feb 16, 2026)
-- ✅ Player WASD movement (`PlayerController.ts`) with arena boundaries, acceleration, friction
-- ✅ Expanded move library: light jab, heavy punch, uppercut, sweep, grab, 3-hit combo chain
-- ✅ Shield system: hold SHIFT to block, shield HP 100, regen after 2s delay, shield break → punish
-- ✅ Grab system: grabs bypass shield (`isGrab` flag in HitSpec)
-- ✅ Multi-hit combo chain: `kai_combo_chain.json` with 3 sequential hits (frames 3-5, 8-10, 13-15)
-- ✅ BossAI with 3 phases (phase1/2/3 at 100%/66%/33% HP), increased aggression & speed, special attacks
-- ✅ BossEntity wrapper with larger mesh/hurtbox, phase-based damage tint
-- ✅ MissionScene routes `covenant_enforcer` spawns → BossEntity (separate from grunts)
-- ✅ Fixed critical syntax bug in `MovePlayer.applyHit()` (methods were spliced mid-function)
-- ✅ Damage/knockback now driven by MoveSpec hit data (not hardcoded)
+## Sprint 1 — Core Gameplay ✅ (Feb 16, 2026)
+- Player WASD (`PlayerController.ts`) with arena bounds + friction
+- 6 Kai moves: light jab / heavy punch / uppercut / sweep / grab / 3-hit combo chain
+- Shield system (hold SHIFT), shield HP 100 + regen, shield-break punish
+- Grab system bypasses shield (`isGrab` flag)
+- BossAI with 3 phases (100/66/33% HP thresholds), scaled cooldowns, special attack chance
+- BossEntity wrapper (larger mesh, phase-based color tint)
+- Fixed critical `MovePlayer.applyHit()` syntax bug (methods spliced mid-function)
+- Damage/knockback driven by MoveSpec data (not hardcoded)
+
+---
+
+## Sprint 2 — Content Expansion ✅ (Feb 16, 2026)
+- **3 enemy behaviors** in `SimpleAI` via behavior table: `grunt` / `rusher` / `defender` / `sniper`
+  - Rusher: 3.6 speed, 0.4s cooldown, no retreat
+  - Defender: 1.4 speed, random block (45% on hit), 0.8s guard
+  - Sniper: 4.5 attack range, keeps distance (preferred 4.5), retreats 55% on hit
+- **2nd mission:** `NULL_FORGE_02` — Null Forge: Specialist Assault (rusher + defender + sniper waves, `fang_warlord` boss)
+- **2nd playable character:** Jax (HP 85, move speed 5.2) with 4 unique moves: `jax_quick_jab`, `jax_dash_strike`, `jax_spin_kick`, `jax_flash_grab`
+- **Character + Mission selection** via URL params (`?character=jax&mission=null_forge_02`)
+- **In-HUD selectors** (mission-demo sidebar: KAI/JAX toggles + 2 mission links)
+- **Stitch complete:** CRA hub `/game/mission-demo.html` route works; hero section has "COMBAT DEMO" CTA
 
 ### Controls (mission-demo)
-| Key | Action |
-|-----|--------|
-| SPACE | Start mission |
-| WASD | Move |
-| J / K / L | Light jab / Heavy punch / Uppercut |
-| I / U / O | Sweep / Grab / 3-hit combo |
+| Key | Kai | Jax |
+|-----|-----|-----|
+| J | Light Jab (4) | Quick Jab (3, faster) |
+| K | Heavy Punch (12) | Dash Strike (8) |
+| L | Uppercut (10, launches) | Uppercut (10, shared) |
+| I | Sweep (6, low) | Spin Kick (2×4, both sides) |
+| U | Grab (8) | Flash Grab (6) |
+| O | 3-hit Combo Chain | 3-hit Combo (shared) |
+| WASD | Move | Move (faster) |
 | SHIFT | Hold to shield |
+| SPACE | Start mission |
 | ESC | Exit |
+
+---
+
+## Verification (Feb 16, 2026)
+Local Playwright against `http://localhost:3000` (CRA hub with stitched game):
+- ✅ CRA hub loads; `cta-play-combat-demo` button present
+- ✅ Kai + Mission 1: playerHP 100, 5 enemies, grunt behavior
+- ✅ Jax + Mission 1: playerHP 85, `jax_quick_jab` fires frame 2 startup as specced
+- ✅ Kai + Mission 2: `[SimpleAI:rusher]` enemies confirmed, 5 enemies spawned
+- ✅ All move JSONs load from `/game/moves/*` (BASE_URL rewrite working)
+- ✅ Zero page errors across 4 test runs
 
 ---
 
 ## Roadmap
 
-### P0 — Sprint 2: Content Expansion (NEXT)
-- 3 enemy behaviors: Rusher, Defender, Sniper (extend SimpleAI into specialized AI classes)
-- 2nd mission schema (new district, unique composition + boss)
-- 2nd playable character (Jax — different moveset, faster but lower damage)
+### P0 — Sprint 3: Feel & Feedback (NEXT)
+- VFX: hit sparks, attack trails, knockback dust particles
+- Audio: attack whoosh, impacts, grunts, boss roars, UI sfx
 
-### P1 — Sprint 3: Feel & Feedback
-- VFX: hit sparks, attack trails, knockback dust
-- Audio: attack whoosh, impacts, grunts, boss roars
-
-### P2 — Sprint 4: Transformation & Camera
+### P1 — Sprint 4: Transformation & Camera
 - Transformation system (Kai ↔ Jax ↔ KaiJax) mid-combat
-- Camera: shake on hit, dynamic zoom on KO
+- Camera shake on hit, dynamic zoom on KO, cinematic boss entrance
 
-### P3 — Sprint 5: Asset Integration (BLOCKED — awaiting external `kai_jax.glb`)
-- GLB character integration
-- MovePlayer synced to visual animation (not just frame counter)
-- Tail empties validation (`tail_01` → `tail_09`)
+### P2 — Sprint 5: Asset Integration (BLOCKED — awaiting `kai_jax.glb`)
+- GLB character integration, animation-synced MovePlayer, tail empties validation
 
-### P4 — Sprint 6: Polish
-- Health regen / power-ups
-- Score / ranking system
-- In-world 3D HUD
+### P3 — Sprint 6: Polish
+- Health regen / power-up pickups
+- Score + ranking system
+- In-world 3D HUD (not DOM overlay)
 
-### P5 — Sprint 7: Multiplayer
+### P4 — Sprint 7: Multiplayer
 - Local 2-player foundation
-
----
-
-## Verification (Feb 16, 2026)
-- Playwright harness: `mission-demo.html` loads cleanly, no page errors
-- All 6 moves execute (light jab, heavy punch, uppercut, sweep, grab, combo chain)
-- SimpleAI responds and counterattacks
-- 3D scene renders player (cyan), 5 enemies (red), HUD visible
-- Console logs show correct frame-accurate hitbox spawning
-- Mission status: `{frameCount: 214, playerHP: 100, enemyCount: 5, missionStarted: true}`
-
-### Known Non-Blockers
-- `src/pages/SagaModeLauncher.tsx` has pre-existing TS syntax errors (unrelated to combat runtime, not imported by demos)
-- `/app/frontend` CRA hub separately running; warnings but serves 200 OK
 
 ---
 
 ## Tech Stack
 - **Game Runtime:** Vite 5 + TypeScript + Three.js 0.160
-- **Web Hub:** React 19 + Tailwind + Lucide (at `/app/frontend`, CRA)
+- **Web Hub:** React 19 + Tailwind + Lucide (CRA)
 - **Backend:** FastAPI + MongoDB
-- **Tools:** Playwright (local headless testing)
+- **Build:** `yarn build` in `/app/apps/web` → copy `dist/` + `public/moves/` to `/app/frontend/public/game/`
+
+### Known Non-Blockers
+- Pre-existing syntax errors in `src/pages/SagaModeLauncher.tsx` (not imported by demos, not in build input)
+- Vite build outputs 500+KB chunks — can be split later with `manualChunks`

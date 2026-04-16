@@ -1,0 +1,25 @@
+{
+  "id": "jax_flash_grab",
+  "startup": 3,
+  "active": 2,
+  "recovery": 18,
+  "shield_damage": 0,
+  "di_resist": 1.0,
+  "hitstopOnHit": 12,
+  "hitstopOnBlock": 0,
+  "hits": [
+    {
+      "startF": 3,
+      "endF": 5,
+      "offX": 0.55,
+      "offY": 1.2,
+      "halfW": 0.3,
+      "halfH": 0.3,
+      "kbX": 0.0,
+      "kbY": 0.0,
+      "dmg": 6,
+      "usedOnce": true,
+      "isGrab": true
+    }
+  ]
+}

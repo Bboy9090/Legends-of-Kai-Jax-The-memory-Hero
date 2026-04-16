@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legends of Kai-Jax — Combat Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0f0f1e;
+      color: #00d9ff;
+      overflow: hidden;
+    }
+
+    #combat-canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #hud {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border: 2px solid #00d9ff;
+      border-radius: 4px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    #hud h1 {
+      margin-bottom: 15px;
+      color: #ffd700;
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    #hud .section {
+      margin-bottom: 12px;
+    }
+
+    #hud .label {
+      color: #888;
+      margin-right: 8px;
+    }
+
+    #hud .value {
+      color: #00ff88;
+      font-weight: bold;
+    }
+
+    #hud .controls {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #00d9ff;
+    }
+
+    #hud .key {
+      display: inline-block;
+      background: #00d9ff;
+      color: #0f0f1e;
+      padding: 2px 8px;
+      border-radius: 3px;
+      margin-right: 8px;
+      font-weight: bold;
+    }
+  </style>
+  <script type="module" crossorigin src="/game/assets/combat-Box7h0np.js"></script>
+  <link rel="modulepreload" crossorigin href="/game/assets/three.module-Zu4YPqiZ.js">
+  <link rel="modulepreload" crossorigin href="/game/assets/MovePlayer-CJgGhtOR.js">
+</head>
+<body>
+  <canvas id="combat-canvas"></canvas>
+  
+  <div id="hud">
+    <h1>⚔️ Combat Kernel Demo</h1>
+    
+    <div class="section">
+      <span class="label">Status:</span>
+      <span class="value">READY</span>
+    </div>
+    
+    <div class="section">
+      <span class="label">Fighter:</span>
+      <span class="value">Kai (Attacker)</span>
+    </div>
+    
+    <div class="section">
+      <span class="label">Target:</span>
+      <span class="value">Training Dummy (100 HP)</span>
+    </div>
+    
+    <div class="controls">
+      <div><span class="key">J</span> Execute kai_light_jab</div>
+      <div><span class="key">S</span> Toggle shield</div>
+      <div><span class="key">ESC</span> Stop demo</div>
+    </div>
+    
+    <div class="section" style="margin-top: 15px; font-size: 11px; color: #666;">
+      Open browser console for detailed frame data
+    </div>
+  </div>
+
+</body>
+</html>

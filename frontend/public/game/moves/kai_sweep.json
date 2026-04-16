@@ -1,0 +1,25 @@
+{
+  "id": "kai_sweep",
+  "startup": 5,
+  "active": 4,
+  "recovery": 10,
+  "shield_damage": 3,
+  "di_resist": 0.2,
+  "hitstopOnHit": 6,
+  "hitstopOnBlock": 2,
+  "hits": [
+    {
+      "startF": 5,
+      "endF": 9,
+      "offX": 0.7,
+      "offY": 0.4,
+      "halfW": 0.5,
+      "halfH": 0.2,
+      "kbX": 2.0,
+      "kbY": -0.5,
+      "dmg": 6,
+      "usedOnce": false,
+      "isGrab": false
+    }
+  ]
+}

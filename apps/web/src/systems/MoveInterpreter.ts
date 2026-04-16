@@ -16,7 +16,7 @@ export class MoveInterpreter {
    * Load move specification from JSON
    */
   public async loadMove(moveId: string): Promise<MoveSpec> {
-    const response = await fetch(`/moves/${moveId}.json`);
+    const response = await fetch(`${import.meta.env.BASE_URL}moves/${moveId}.json`);
     if (!response.ok) {
       throw new Error(`Failed to load move: ${moveId}`);
     }

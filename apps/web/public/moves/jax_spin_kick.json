@@ -1,0 +1,38 @@
+{
+  "id": "jax_spin_kick",
+  "startup": 6,
+  "active": 6,
+  "recovery": 12,
+  "shield_damage": 4,
+  "di_resist": 0.3,
+  "hitstopOnHit": 5,
+  "hitstopOnBlock": 3,
+  "hits": [
+    {
+      "startF": 6,
+      "endF": 8,
+      "offX": 0.7,
+      "offY": 1.0,
+      "halfW": 0.55,
+      "halfH": 0.3,
+      "kbX": 1.8,
+      "kbY": 0.4,
+      "dmg": 4,
+      "usedOnce": true,
+      "isGrab": false
+    },
+    {
+      "startF": 9,
+      "endF": 12,
+      "offX": -0.7,
+      "offY": 1.0,
+      "halfW": 0.55,
+      "halfH": 0.3,
+      "kbX": -1.8,
+      "kbY": 0.4,
+      "dmg": 4,
+      "usedOnce": true,
+      "isGrab": false
+    }
+  ]
+}

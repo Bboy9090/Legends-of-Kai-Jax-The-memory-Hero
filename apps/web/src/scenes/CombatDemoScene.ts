@@ -87,7 +87,7 @@ export class CombatDemoScene {
 
   private async loadMoves(): Promise<void> {
     try {
-      const response = await fetch('/moves/kai_light_jab.json');
+      const response = await fetch(`${import.meta.env.BASE_URL}moves/kai_light_jab.json`);
       const move: MoveSpec = await response.json();
       this.kaiMoves.push(move);
       console.log(`[CombatDemo] Loaded move: ${move.id}`);

@@ -132,6 +132,13 @@ const HeroSection = ({ onNavigate }) => {
             >
               <Gamepad2 className="w-5 h-5 text-primary" /> PLAY GAME
             </Link>
+            <a 
+              href="/game/mission-demo.html"
+              className="btn-cyber flex items-center gap-2 bg-fire/20 border-fire hover:bg-fire/40 text-lg px-8 py-4"
+              data-testid="cta-play-combat-demo"
+            >
+              <Flame className="w-5 h-5 text-fire" /> COMBAT DEMO
+            </a>
             <button 
               onClick={() => onNavigate('play')} 
               className="btn-cyber flex items-center gap-2 bg-primary/20 border-primary hover:bg-primary/30 animate-pulse"

@@ -1,0 +1,25 @@
+{
+  "id": "jax_quick_jab",
+  "startup": 2,
+  "active": 2,
+  "recovery": 6,
+  "shield_damage": 1,
+  "di_resist": 0.1,
+  "hitstopOnHit": 3,
+  "hitstopOnBlock": 2,
+  "hits": [
+    {
+      "startF": 2,
+      "endF": 4,
+      "offX": 0.55,
+      "offY": 1.2,
+      "halfW": 0.25,
+      "halfH": 0.22,
+      "kbX": 1.0,
+      "kbY": 0.3,
+      "dmg": 3,
+      "usedOnce": false,
+      "isGrab": false
+    }
+  ]
+}

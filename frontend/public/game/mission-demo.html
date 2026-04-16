@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legends of Kai-Jax — Mission Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0f0f1e;
+      color: #00d9ff;
+      overflow: hidden;
+    }
+
+    #mission-canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #hud {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.9);
+      padding: 20px;
+      border: 2px solid #ffd700;
+      border-radius: 4px;
+      font-size: 14px;
+      line-height: 1.8;
+      min-width: 300px;
+    }
+
+    #hud h1 {
+      margin-bottom: 15px;
+      color: #ffd700;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      border-bottom: 2px solid #ffd700;
+      padding-bottom: 8px;
+    }
+
+    #hud .mission-title {
+      color: #00ff88;
+      font-size: 16px;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    #hud .section {
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #hud .label {
+      color: #888;
+    }
+
+    #hud .value {
+      color: #00ff88;
+      font-weight: bold;
+    }
+
+    #hud .hp-bar {
+      width: 100%;
+      height: 20px;
+      background: #333;
+      border: 1px solid #00d9ff;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+
+    #hud .hp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00ff88, #00d9ff);
+      transition: width 0.3s;
+    }
+
+    #hud .controls {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #ffd700;
+    }
+
+    #hud .key {
+      display: inline-block;
+      background: #ffd700;
+      color: #0f0f1e;
+      padding: 2px 8px;
+      border-radius: 3px;
+      margin-right: 8px;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    #hud .status-ready {
+      color: #00ff88;
+      font-weight: bold;
+      animation: pulse 2s infinite;
+    }
+
+    #hud .status-active {
+      color: #ffd700;
+      font-weight: bold;
+    }
+
+    #hud .status-complete {
+      color: #ff00ff;
+      font-weight: bold;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    #objective {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.9);
+      padding: 15px 20px;
+      border: 2px solid #ff5555;
+      border-radius: 4px;
+      max-width: 300px;
+    }
+
+    #objective h2 {
+      color: #ff5555;
+      font-size: 14px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    #objective .objective-text {
+      color: #fff;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+  </style>
+  <script type="module" crossorigin src="/game/assets/mission-CumoEsGm.js"></script>
+  <link rel="modulepreload" crossorigin href="/game/assets/three.module-Zu4YPqiZ.js">
+  <link rel="modulepreload" crossorigin href="/game/assets/MovePlayer-CJgGhtOR.js">
+</head>
+<body>
+  <canvas id="mission-canvas"></canvas>
+  
+  <div id="hud">
+    <h1>⚔️ MISSION MODE</h1>
+    
+    <div class="mission-title">IRONVEIN WARD: FIRST BLOOD</div>
+    
+    <div class="section">
+      <span class="label">Status:</span>
+      <span class="value status-ready">READY</span>
+    </div>
+    
+    <div class="section">
+      <span class="label">Wave:</span>
+      <span class="value">0 / 2</span>
+    </div>
+    
+    <div class="section">
+      <span class="label">Kills:</span>
+      <span class="value">0</span>
+    </div>
+    
+    <div>
+      <span class="label">Player HP:</span>
+      <div class="hp-bar">
+        <div class="hp-fill" style="width: 100%"></div>
+      </div>
+    </div>
+    
+    <div class="controls">
+      <div style="margin-bottom: 6px;"><span class="key">SPACE</span> Start mission</div>
+      <div style="margin-bottom: 6px;"><span class="key">WASD</span> Move</div>
+      <div style="margin-bottom: 6px;"><span class="key">J</span> Light jab &nbsp; <span class="key">K</span> Heavy punch</div>
+      <div style="margin-bottom: 6px;"><span class="key">L</span> Uppercut &nbsp; <span class="key">I</span> Sweep</div>
+      <div style="margin-bottom: 6px;"><span class="key">U</span> Grab &nbsp; <span class="key">O</span> 3-hit combo</div>
+      <div style="margin-bottom: 6px;"><span class="key">SHIFT</span> Hold to shield</div>
+      <div><span class="key">ESC</span> Exit</div>
+    </div>
+    
+    <div class="section" style="margin-top: 15px; font-size: 11px; color: #666;">
+      Check console for detailed combat logs
+    </div>
+  </div>
+
+  <div id="objective">
+    <h2>🎯 OBJECTIVE</h2>
+    <div class="objective-text">
+      <p>Defend Ironvein Ward from the Covenant assault.</p>
+      <p style="margin-top: 8px;">• Clear Wave 1 (5 grunts)</p>
+      <p>• Clear Wave 2 (6 grunts + 2 scouts)</p>
+      <p>• Defeat the Enforcer boss</p>
+    </div>
+
+    <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #ff5555;">
+      <h2 style="color:#ffd700; font-size:12px;">🗡️ Character</h2>
+      <div style="display:flex; gap:6px; margin-top:6px;">
+        <a href="?character=kai" data-testid="select-kai" style="flex:1; text-align:center; color:#00d9ff; border:1px solid #00d9ff; padding:4px; text-decoration:none; font-size:11px;">KAI</a>
+        <a href="?character=jax" data-testid="select-jax" style="flex:1; text-align:center; color:#ffd700; border:1px solid #ffd700; padding:4px; text-decoration:none; font-size:11px;">JAX</a>
+      </div>
+
+      <h2 style="color:#ffd700; font-size:12px; margin-top:10px;">🗺️ Mission</h2>
+      <div style="display:flex; flex-direction:column; gap:4px; margin-top:6px;">
+        <a href="?mission=ironvein_ward_01" data-testid="select-mission-1" style="color:#00ff88; border:1px solid #00ff88; padding:4px; text-decoration:none; font-size:11px;">1. Ironvein Ward</a>
+        <a href="?mission=null_forge_02" data-testid="select-mission-2" style="color:#ff5555; border:1px solid #ff5555; padding:4px; text-decoration:none; font-size:11px;">2. Null Forge (Specialists)</a>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

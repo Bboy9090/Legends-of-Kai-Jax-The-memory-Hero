@@ -67,3 +67,47 @@ export const IRONVEIN_WARD_01: MissionSchema = {
     type: 'playerDead',
   },
 };
+
+/**
+ * Mission 02: Null Forge — Specialist Assault
+ * Introduces Rusher, Defender, and Sniper enemy archetypes + warlord boss.
+ */
+export const NULL_FORGE_02: MissionSchema = {
+  id: 'null_forge_02',
+  name: 'Null Forge: Specialist Assault',
+  spawn: {
+    playerStart: [0, 0],
+  },
+  waves: [
+    {
+      delay: 0,
+      enemies: [
+        { type: 'fang_rusher', count: 3 },
+        { type: 'null_defender', count: 2 },
+      ],
+    },
+    {
+      delay: 4,
+      enemies: [
+        { type: 'covenant_sniper', count: 2 },
+        { type: 'null_defender', count: 2 },
+        { type: 'fang_rusher', count: 2 },
+      ],
+    },
+  ],
+  boss: {
+    delayAfterWaves: 3,
+    type: 'fang_warlord',
+  },
+  win: {
+    type: 'defeatBoss',
+  },
+  fail: {
+    type: 'playerDead',
+  },
+};
+
+export const MISSION_LIBRARY: Record<string, MissionSchema> = {
+  ironvein_ward_01: IRONVEIN_WARD_01,
+  null_forge_02: NULL_FORGE_02,
+};

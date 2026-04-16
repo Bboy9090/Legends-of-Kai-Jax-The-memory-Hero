@@ -53,7 +53,7 @@ export class BossEntity {
 
   async loadMove(moveId: string): Promise<void> {
     try {
-      const response = await fetch(`/moves/${moveId}.json`);
+      const response = await fetch(`${import.meta.env.BASE_URL}moves/${moveId}.json`);
       const move: MoveSpec = await response.json();
       this.ai.loadMove(move);
       console.log(`[BossEntity ${this.id}] Loaded move: ${moveId}`);

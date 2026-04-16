@@ -10,9 +10,25 @@ import { EnemyEntity } from '../entities/EnemyEntity';
 import { BossEntity } from '../entities/BossEntity';
 import { MissionOrchestrator } from '../mission/MissionOrchestrator';
 import { PlayerController } from '../player/PlayerController';
-import { IRONVEIN_WARD_01 } from '../mission/MissionSchema';
+import { IRONVEIN_WARD_01, MISSION_LIBRARY } from '../mission/MissionSchema';
+import { CHARACTERS, type CharacterId } from '../characters/CharacterSpec';
 import type { MoveSpec } from '../types/MoveSpec';
-import type { AITarget } from '../ai/SimpleAI';
+import type { AITarget, AIBehavior } from '../ai/SimpleAI';
+import type { EnemyType } from '../mission/WaveDirector';
+import type { MissionSchema } from '../mission/MissionSchema';
+
+/**
+ * Map enemy types → AI behavior flavor and visual color.
+ */
+const ENEMY_PROFILE: Record<EnemyType, { behavior: AIBehavior; color: number }> = {
+  fang_grunt:       { behavior: 'grunt',    color: 0xff5555 },
+  covenant_scout:   { behavior: 'rusher',   color: 0xff9944 },
+  covenant_enforcer:{ behavior: 'grunt',    color: 0xff0000 }, // boss path handled separately
+  fang_rusher:      { behavior: 'rusher',   color: 0xff3377 },
+  null_defender:    { behavior: 'defender', color: 0x6699ff },
+  covenant_sniper:  { behavior: 'sniper',   color: 0xcc44ff },
+  fang_warlord:     { behavior: 'grunt',    color: 0xaa0000 }, // boss path handled separately
+};
 
 export class MissionScene {
   private scene: THREE.Scene;
@@ -31,13 +47,21 @@ export class MissionScene {
   // Enemies
   private enemies: Map<string, EnemyEntity> = new Map();
   private boss: BossEntity | null = null;
+
+  // Selection
+  private characterId: CharacterId = 'kai';
+  private missionSchema: MissionSchema;
   
   // State
   private animationId: number | null = null;
   private frameCount: number = 0;
   private missionStarted: boolean = false;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, options: { character?: CharacterId; missionId?: string } = {}) {
+    this.characterId = options.character ?? this.readCharacterFromURL();
+    const missionId = options.missionId ?? this.readMissionFromURL();
+    this.missionSchema = MISSION_LIBRARY[missionId] ?? IRONVEIN_WARD_01;
+
     // Scene setup
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x1a1a2e);
@@ -74,7 +98,7 @@ export class MissionScene {
     this.setupPlayer();
 
     // Mission orchestrator
-    this.mission = new MissionOrchestrator(this.scene, IRONVEIN_WARD_01);
+    this.mission = new MissionOrchestrator(this.scene, this.missionSchema);
 
     // Input
     this.setupInput();
@@ -82,19 +106,32 @@ export class MissionScene {
     // Load moves
     this.loadMoves();
 
+    const spec = CHARACTERS[this.characterId];
     console.log('=== MISSION SCENE INITIALIZED ===');
-    console.log('Mission:', IRONVEIN_WARD_01.name);
+    console.log(`Character: ${spec.name}`);
+    console.log(`Mission: ${this.missionSchema.name}`);
     console.log('\nControls:');
     console.log('  WASD - Move player');
-    console.log('  J - Light jab (4 dmg)');
-    console.log('  K - Heavy punch (12 dmg)');
-    console.log('  L - Uppercut (10 dmg, launches)');
-    console.log('  I - Sweep (6 dmg, low)');
-    console.log('  U - Grab (8 dmg, breaks shield)');
-    console.log('  O - Combo chain (3-hit: 3+4+6 dmg)');
+    spec.moveLabels.forEach((label, idx) => {
+      const key = ['J', 'K', 'L', 'I', 'U', 'O'][idx] ?? '?';
+      console.log(`  ${key} - ${label}`);
+    });
     console.log('  SHIFT - Hold to shield');
     console.log('  SPACE - Start mission');
     console.log('  ESC - Exit');
+  }
+
+  private readCharacterFromURL(): CharacterId {
+    if (typeof window === 'undefined') return 'kai';
+    const params = new URLSearchParams(window.location.search);
+    const c = params.get('character');
+    return c === 'jax' ? 'jax' : 'kai';
+  }
+
+  private readMissionFromURL(): string {
+    if (typeof window === 'undefined') return 'ironvein_ward_01';
+    const params = new URLSearchParams(window.location.search);
+    return params.get('mission') || 'ironvein_ward_01';
   }
 
   private createArenaWalls(): void {
@@ -126,9 +163,10 @@ export class MissionScene {
   }
 
   private setupPlayer(): void {
+    const spec = CHARACTERS[this.characterId];
     // Visual mesh
     const playerGeo = new THREE.BoxGeometry(0.8, 1.8, 0.5);
-    const playerMat = new THREE.MeshStandardMaterial({ color: 0x00d9ff });
+    const playerMat = new THREE.MeshStandardMaterial({ color: spec.color });
     this.playerMesh = new THREE.Mesh(playerGeo, playerMat);
     this.playerMesh.position.set(0, 0.9, 0);
     this.scene.add(this.playerMesh);
@@ -136,7 +174,9 @@ export class MissionScene {
     // Hurtbox
     this.playerHurtbox = new Hurtbox(this.scene, 0.8, 1.6);
     this.playerHurtbox.setPosition(0, 0.8, 0);
-    this.playerHurtbox.health = 100;
+    this.playerHurtbox.health = spec.hp;
+    this.playerHurtbox.maxHealth = spec.hp;
+    this.playerHP = spec.hp;
 
     // MovePlayer
     this.playerMovePlayer = new MovePlayer(
@@ -145,28 +185,21 @@ export class MissionScene {
       this.playerMesh.position
     );
 
-    // PlayerController for movement
+    // PlayerController for movement (character-specific speed)
     this.playerController = new PlayerController(this.playerMesh.position);
     this.playerController.setBoundaries(-14, 14, -9, 9);
+    this.playerController.setMoveSpeed(spec.moveSpeed);
   }
 
   private async loadMoves(): Promise<void> {
     try {
-      // Load all player moves
-      const moveIds = [
-        'kai_light_jab', 
-        'kai_heavy_punch', 
-        'kai_uppercut', 
-        'kai_sweep', 
-        'kai_grab',
-        'kai_combo_chain'
-      ];
-      
-      for (const moveId of moveIds) {
-        const response = await fetch(`/moves/${moveId}.json`);
+      const spec = CHARACTERS[this.characterId];
+      const base = import.meta.env.BASE_URL;
+      for (const moveId of spec.moveIds) {
+        const response = await fetch(`${base}moves/${moveId}.json`);
         const move: MoveSpec = await response.json();
         this.playerMoves.push(move);
-        console.log(`[Mission] Loaded player move: ${moveId}`);
+        console.log(`[Mission] Loaded ${spec.id} move: ${moveId}`);
       }
     } catch (error) {
       console.error('[Mission] Failed to load moves:', error);
@@ -290,17 +323,19 @@ export class MissionScene {
 
       if (this.enemies.has(enemyData.id)) continue;
 
+      const profile = ENEMY_PROFILE[enemyData.type as EnemyType] ?? { behavior: 'grunt', color: 0xff5555 };
       const enemy = new EnemyEntity(
         this.scene,
         enemyData.id,
         enemyData.x,
         0.8,
         enemyData.hp,
-        0xff5555
+        profile.color,
+        profile.behavior
       );
 
-      // Load AI move
-      await enemy.loadMove('kai_light_jab'); // Reuse player move for now
+      // Load AI move (sniper gets dash strike as ranged proxy)
+      await enemy.loadMove(profile.behavior === 'sniper' ? 'jax_dash_strike' : 'kai_light_jab');
 
       // Set player as target
       enemy.setTarget({

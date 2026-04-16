@@ -1,0 +1,25 @@
+{
+  "id": "kai_heavy_punch",
+  "startup": 8,
+  "active": 4,
+  "recovery": 12,
+  "shield_damage": 8,
+  "di_resist": 0.3,
+  "hitstopOnHit": 8,
+  "hitstopOnBlock": 4,
+  "hits": [
+    {
+      "startF": 8,
+      "endF": 12,
+      "offX": 0.8,
+      "offY": 1.3,
+      "halfW": 0.4,
+      "halfH": 0.3,
+      "kbX": 3.0,
+      "kbY": 1.5,
+      "dmg": 12,
+      "usedOnce": false,
+      "isGrab": false
+    }
+  ]
+}

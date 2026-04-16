@@ -8,7 +8,7 @@ import { Hurtbox } from '../combat/Hurtbox';
 import { MovePlayer } from '../combat/MovePlayer';
 import { SimpleAI } from '../ai/SimpleAI';
 import type { MoveSpec } from '../types/MoveSpec';
-import type { AITarget } from '../ai/SimpleAI';
+import type { AITarget, AIBehavior } from '../ai/SimpleAI';
 
 export class EnemyEntity {
   public id: string;
@@ -27,7 +27,8 @@ export class EnemyEntity {
     x: number,
     y: number,
     hp: number,
-    color: number = 0xff5555
+    color: number = 0xff5555,
+    behavior: AIBehavior = 'grunt'
   ) {
     this.scene = scene;
     this.id = id;
@@ -50,10 +51,10 @@ export class EnemyEntity {
     // Create combat system
     this.movePlayer = new MovePlayer(scene, this.hurtbox, this.mesh.position);
 
-    // Create AI
-    this.ai = new SimpleAI(this.movePlayer, this.mesh.position);
+    // Create AI with behavior flavor
+    this.ai = new SimpleAI(this.movePlayer, this.mesh.position, behavior);
 
-    console.log(`[EnemyEntity] Created ${id} at (${x}, ${y}) with ${hp} HP`);
+    console.log(`[EnemyEntity] Created ${id} (${behavior}) at (${x}, ${y}) with ${hp} HP`);
   }
 
   /**
@@ -61,7 +62,7 @@ export class EnemyEntity {
    */
   async loadMove(moveId: string): Promise<void> {
     try {
-      const response = await fetch(`/moves/${moveId}.json`);
+      const response = await fetch(`${import.meta.env.BASE_URL}moves/${moveId}.json`);
       const move: MoveSpec = await response.json();
       this.ai.loadMove(move);
       console.log(`[EnemyEntity ${this.id}] Loaded move: ${moveId}`);
