@@ -8,6 +8,7 @@ import { Hurtbox } from '../combat/Hurtbox';
 import { MovePlayer } from '../combat/MovePlayer';
 import { EnemyEntity } from '../entities/EnemyEntity';
 import { MissionOrchestrator } from '../mission/MissionOrchestrator';
+import { PlayerController } from '../player/PlayerController';
 import { IRONVEIN_WARD_01 } from '../mission/MissionSchema';
 import type { MoveSpec } from '../types/MoveSpec';
 import type { AITarget } from '../ai/SimpleAI';
@@ -22,6 +23,7 @@ export class MissionScene {
   private playerMesh: THREE.Mesh;
   private playerHurtbox: Hurtbox;
   private playerMovePlayer: MovePlayer;
+  private playerController: PlayerController;
   private playerHP: number = 100;
   private playerMoves: MoveSpec[] = [];
   
@@ -81,8 +83,13 @@ export class MissionScene {
     console.log('=== MISSION SCENE INITIALIZED ===');
     console.log('Mission:', IRONVEIN_WARD_01.name);
     console.log('\nControls:');
-    console.log('  J - Attack');
-    console.log('  WASD - Move (not implemented yet)');
+    console.log('  WASD - Move player');
+    console.log('  J - Light jab (4 dmg)');
+    console.log('  K - Heavy punch (12 dmg)');
+    console.log('  L - Uppercut (10 dmg, launches)');
+    console.log('  I - Sweep (6 dmg, low)');
+    console.log('  U - Grab (8 dmg, breaks shield)');
+    console.log('  O - Combo chain (3-hit: 3+4+6 dmg)');
     console.log('  SPACE - Start mission');
     console.log('  ESC - Exit');
   }
@@ -134,15 +141,30 @@ export class MissionScene {
       this.playerHurtbox,
       this.playerMesh.position
     );
+
+    // PlayerController for movement
+    this.playerController = new PlayerController(this.playerMesh.position);
+    this.playerController.setBoundaries(-14, 14, -9, 9);
   }
 
   private async loadMoves(): Promise<void> {
     try {
-      // Load player move
-      const response = await fetch('/moves/kai_light_jab.json');
-      const move: MoveSpec = await response.json();
-      this.playerMoves.push(move);
-      console.log('[Mission] Loaded player move: kai_light_jab');
+      // Load all player moves
+      const moveIds = [
+        'kai_light_jab', 
+        'kai_heavy_punch', 
+        'kai_uppercut', 
+        'kai_sweep', 
+        'kai_grab',
+        'kai_combo_chain'
+      ];
+      
+      for (const moveId of moveIds) {
+        const response = await fetch(`/moves/${moveId}.json`);
+        const move: MoveSpec = await response.json();
+        this.playerMoves.push(move);
+        console.log(`[Mission] Loaded player move: ${moveId}`);
+      }
     } catch (error) {
       console.error('[Mission] Failed to load moves:', error);
     }
@@ -152,9 +174,50 @@ export class MissionScene {
     window.addEventListener('keydown', (e) => {
       switch (e.key.toLowerCase()) {
         case 'j':
+          // Light jab (index 0)
           if (!this.playerMovePlayer.isBusy() && this.playerMoves.length > 0) {
             this.playerMovePlayer.startMove(this.playerMoves[0]);
-            console.log('[Player] Attacking!');
+            console.log('[Player] Light jab!');
+          }
+          break;
+
+        case 'k':
+          // Heavy punch (index 1)
+          if (!this.playerMovePlayer.isBusy() && this.playerMoves.length > 1) {
+            this.playerMovePlayer.startMove(this.playerMoves[1]);
+            console.log('[Player] Heavy punch!');
+          }
+          break;
+
+        case 'l':
+          // Uppercut (index 2)
+          if (!this.playerMovePlayer.isBusy() && this.playerMoves.length > 2) {
+            this.playerMovePlayer.startMove(this.playerMoves[2]);
+            console.log('[Player] Uppercut!');
+          }
+          break;
+
+        case 'i':
+          // Sweep (index 3)
+          if (!this.playerMovePlayer.isBusy() && this.playerMoves.length > 3) {
+            this.playerMovePlayer.startMove(this.playerMoves[3]);
+            console.log('[Player] Sweep!');
+          }
+          break;
+
+        case 'u':
+          // Grab (index 4)
+          if (!this.playerMovePlayer.isBusy() && this.playerMoves.length > 4) {
+            this.playerMovePlayer.startMove(this.playerMoves[4]);
+            console.log('[Player] Grab attempt!');
+          }
+          break;
+
+        case 'o':
+          // Combo chain (index 5)
+          if (!this.playerMovePlayer.isBusy() && this.playerMoves.length > 5) {
+            this.playerMovePlayer.startMove(this.playerMoves[5]);
+            console.log('[Player] 3-hit combo chain!');
           }
           break;
 
@@ -231,6 +294,22 @@ export class MissionScene {
     this.frameCount++;
 
     const deltaTime = 1 / 60;
+
+    // Update player movement
+    this.playerController.update(deltaTime);
+
+    // Sync player mesh and hurtbox with controller position
+    const playerPos = this.playerController.getPosition();
+    this.playerMesh.position.copy(playerPos);
+    this.playerHurtbox.setPosition(playerPos.x, playerPos.y - 0.1, playerPos.z);
+
+    // Update player facing direction based on movement
+    if (this.playerController.isMoving()) {
+      const moveDir = this.playerController.getMovementDirection();
+      if (Math.abs(moveDir.x) > 0.1) {
+        this.playerMovePlayer.setFacing(moveDir.x > 0);
+      }
+    }
 
     // Update player combat
     this.playerMovePlayer.update();

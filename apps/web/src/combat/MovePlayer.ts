@@ -17,6 +17,11 @@ export class MovePlayer {
   fighterPosition: THREE.Vector3;
   facingRight: boolean = true;
   shieldActive: boolean = false;
+  shieldHP: number = 100;
+  maxShieldHP: number = 100;
+  shieldRegenRate: number = 10; // HP per second
+  shieldRegenDelay: number = 2.0; // Seconds before regen starts
+  timeSinceShieldHit: number = 0;
 
   constructor(scene: THREE.Scene, hurtbox: Hurtbox, fighterPosition: THREE.Vector3) {
     this.scene = scene;
@@ -36,8 +41,20 @@ export class MovePlayer {
     console.log(`[MovePlayer] Startup: ${move.startup}f | Active: ${move.active}f | Recovery: ${move.recovery}f`);
   }
 
+  /**
+   * Update move player each frame
+   */
   update(): void {
-    if (!this.currentMove) return;
+    if (!this.currentMove) {
+      // Shield regeneration when not in move
+      if (!this.shieldActive && this.shieldHP < this.maxShieldHP) {
+        this.timeSinceShieldHit += 1 / 60; // Assume 60fps
+        if (this.timeSinceShieldHit >= this.shieldRegenDelay) {
+          this.shieldHP = Math.min(this.maxShieldHP, this.shieldHP + (this.shieldRegenRate / 60));
+        }
+      }
+      return;
+    }
 
     // Hitstop freeze
     if (this.hitstopFrames > 0) {
@@ -106,26 +123,66 @@ export class MovePlayer {
     if (hitBB.intersectsBox(hurtBB)) {
       console.log(`[MovePlayer] COLLISION DETECTED at frame ${this.frame}!`);
 
+      // Grab check - grabs beat shields
+      if (hit.isGrab) {
+        console.log('[MovePlayer] GRAB landed! Bypassing shield.');
+        this.applyHit(hit);
+        return;
+      }
+
       // Shield check
       if (this.shieldActive) {
-        console.log('[MovePlayer] Hit blocked by shield!');
+        // Check shield HP
+        if (this.shieldHP <= 0) {
+          console.log('[MovePlayer] Shield broken!');
+          this.shieldActive = false;
+          this.applyHit(hit);
+          return;
+        }
+
+        // Apply shield damage
+        const shieldDmg = this.currentMove?.shield_damage ?? hit.dmg * 0.5;
+        this.shieldHP = Math.max(0, this.shieldHP - shieldDmg);
+        this.timeSinceShieldHit = 0;
+
+        console.log(`[MovePlayer] Hit blocked by shield! Shield HP: ${this.shieldHP.toFixed(1)}/${this.maxShieldHP}`);
         this.hitstopFrames = this.currentMove?.hitstopOnBlock ?? 0;
         return;
       }
 
-      // Apply damage
-      this.hurtbox.takeDamage(hit.dmg);
-
-      // Apply hitstop
-      this.hitstopFrames = this.currentMove?.hitstopOnHit ?? 0;
-
-      // Apply knockback
-      const direction = this.facingRight ? 1 : -1;
-      hb.position.x += hit.kbX * direction;
-      hb.position.y += hit.kbY;
-
-      console.log(`[MovePlayer] Damage: ${hit.dmg} | Knockback: (${hit.kbX}, ${hit.kbY}) | Hitstop: ${this.hitstopFrames}f`);
+      this.applyHit(hit);
     }
+  }
+
+  private applyHit(hit: HitSpec): void {
+    // Apply damage
+    this.hurtbox.takeDamage(hit.dmg);
+
+
+  /**
+   * Get shield status
+   */
+  getShieldHP(): number {
+    return this.shieldHP;
+  }
+
+  /**
+   * Check if shield is active
+   */
+  isShielding(): boolean {
+    return this.shieldActive && this.shieldHP > 0;
+  }
+
+    // Apply hitstop
+    this.hitstopFrames = this.currentMove?.hitstopOnHit ?? 0;
+
+    // Apply knockback (unless grab with 0 knockback for throw animation)
+    const direction = this.facingRight ? 1 : -1;
+    hb.position.x += hit.kbX * direction;
+    hb.position.y += hit.kbY;
+
+    const hitType = hit.isGrab ? 'GRAB' : 'HIT';
+    console.log(`[MovePlayer] ${hitType}! Damage: ${hit.dmg} | Knockback: (${hit.kbX}, ${hit.kbY}) | Hitstop: ${this.hitstopFrames}f`);
   }
 
   private clearHitboxes(): void {

@@ -1,0 +1,25 @@
+{
+  "id": "kai_uppercut",
+  "startup": 6,
+  "active": 3,
+  "recovery": 15,
+  "shield_damage": 5,
+  "di_resist": 0.4,
+  "hitstopOnHit": 10,
+  "hitstopOnBlock": 3,
+  "hits": [
+    {
+      "startF": 6,
+      "endF": 9,
+      "offX": 0.5,
+      "offY": 1.5,
+      "halfW": 0.35,
+      "halfH": 0.4,
+      "kbX": 0.5,
+      "kbY": 4.0,
+      "dmg": 10,
+      "usedOnce": false,
+      "isGrab": false
+    }
+  ]
+}

@@ -1,17 +1,146 @@
-Project context (merged from prior agent notes; conflict markers removed).
+<analysis>**original_problem_statement**: 
+The user provided a strict, authoritative prototype continuation prompt for a 3D fighting/action game named **Legends of Kai-Jax**. The project is a scalable combat runtime with multiple orchestration modes (arena duels, adventure missions, bosses). The immediate goal was to build and wire the runtime combat interpreter around one real move (), achieve a true combat exchange (attack → hit → knockback → recovery), implement a mission orchestration slice, and then execute the top 20 best next moves (starting with Sprint 1: Player WASD movement, expanding the move library, grab system, shield system, multi-hit combos, and Boss AI).
 
-Original direction included: core combat (hitboxes, MoveData, cancels), HUD meters, boss/arena content, gamepad, VFX, tests, and world/tail lore for Legends of Kai-Jax.
+**User's preferred language**: English
+*(INSTRUCTION for next agent: You MUST respond in English only)*
 
-The repository evolved into a React + Three.js + Vite web client (apps/web) with canon-first data, validation scripts, optional FastAPI hub backend, and district/adventure flows. A separate engine-agnostic design spec was also discussed for Unreal/Unity; the active shipping path is the web client unless the user pivots.
+**what currently exists?** 
+A Three.js-based combat runtime prototype with React. It features a working silhouette harness, GLB hot-swapping, form transformation architecture (Kai/Jax/KaiJax), and data-driven JSON movesets. The combat kernel is now functional with a frame-accurate  interpreter, /Hitbox AABB collision resolution,  wrappers,  behavior loops, and a  (with  and ). Playable vertical slices exist at  and .
 
-What exists (high level)
-- Game hub and lore content appear in various frontend paths; primary playable client: apps/web.
-- Backend (optional): FastAPI + Mongo for hub features per AGENTS.md.
+**Last working item**:
+- **Last item agent was working**: Executing Sprint 1: Core Gameplay Complete from the top 20 roadmap. The agent scaffolded  for WASD movement, expanded the move library (, , , , ), wired grab/shield mechanics into , and created .
+- **Status**: IN PROGRESS (Files created and injected, but integration/testing of Sprint 1 mechanics needs verification).
+- **Agent Testing Done**: N
+- **Which testing method agent to use?**: Frontend testing agent / Screenshot tool (since it's a Three.js canvas app, visual validation of  and  is required).
+- **User Testing Done**: N
 
-Pending / recurring themes from notes
-- AI image flow was partially wired in some forks; may need UI completion if that feature returns.
-- Monolithic files and content-in-JSX were noted as refactor candidates where still true.
+**All Pending/In progress Issue list**:
+- **Issue 1**: External Blocker - Missing Production 
+  - **Attempted fixes**: NA (External dependency).
+  - **Next debug checklist**: Await delivery of  from Blender with correct tail empties ( → ). Drop into  and validate tail toggle in harness.
+  - **Why fix this issue and what will be achieved with the fix?**: Real rig validation cannot finish, locomotion authenticity, and combat attachment accuracy cannot be proven on production geometry without it.
+  - **Status**: BLOCKED (External)
+  - **Is recurring issue?**: N
+  - **Should Test frontend/backend/both after fix?**: Frontend (Canvas visual check).
 
-Credentials: N/A in these notes.
+**In progress Task List**:
+- **Task 1**: Validate Sprint 1 Implementation
+  - **Where to resume**: Review the newly created , , and the modified . Test  to ensure WASD, heavy punches, sweeps, uppercuts, grabs, shields, and combos operate as intended.
+  - **What will be achieved with this?**: Proves the combat framework is feature-complete and feels like a real action game rather than a prototype.
+  - **Status**: TESTING PENDING
+  - **Should Test frontend/backend/both after fix?**: Frontend (Game loop execution).
+  - **Blocked on something**: None.
 
-This file intentionally contains no Git conflict marker lines so merges and tooling stay clean.
+**Upcoming and Future Tasks**:
+- **P0 - Sprint 2: Content Expansion**: 
+  1. Enemy variety (3 distinct behaviors: Rusher, Defender, Sniper)
+  2. Second mission schema (New district, unique composition/boss)
+  3. Second playable character (Jax - different moveset, speed/power trade-off)
+- **P1 - Sprint 3: Feel & Feedback**:
+  1. VFX System (Hit sparks, attack trails, knockback dust)
+  2. Audio System Integration (Attack whoosh, impacts, grunts, roars)
+- **P2 - Sprint 4: Transformation & Camera**:
+  1. Transformation system mechanics (Kai ↔ Jax ↔ KaiJax) during combat.
+  2. Camera System (Shake on hit, dynamic zoom on KO).
+- **P3 - Sprint 5: Asset Integration (When Unblocked)**:
+  1.  integration.
+  2. Animation hookup (MovePlayer synced to visual animation rather than frame counter).
+  3. Tail validation.
+- **P4 - Sprint 6: Polish**:
+  1. Health Regeneration/Power-ups.
+  2. Score/Ranking System.
+  3. UI/HUD Polish (In-game 3D space, not DOM overlay).
+- **P5 - Sprint 7: Multiplayer**: Local 2-player network foundation.
+
+**Completed work in this session**:
+- Implemented Legendary Combat Systems (Combo multiplier, perfect dodge, parry) [Prior to Authoritative Reset]
+- Implemented Story Mode Integration (Saga Engine, Dialogue, Progress) [Prior to Authoritative Reset]
+- , , ,  created for frame-based combat kernel.
+- Built JSON move specs ( and 5 others).
+- Created , ,  for playable wave slices.
+- Created  and  for bidirectional combat exchanges.
+- Delivered  and .
+
+**Earlier issues found/mentioned but not fixed**:
+- None explicitly failing. (Note: Pre-existing TS compilation warnings regarding Three.js  types were observed earlier but did not block runtime execution).
+
+**Known issue recurrence from previous fork**:
+- Recurrence count: 0
+- Status: NOT STARTED
+
+**Code Architecture**:
+
+
+**Key Technical Concepts**:
+Frontend: React, Three.js (@react-three/fiber, @react-three/drei).
+Architecture: Data-driven combat kernel, Frame-based execution, Physics-light AABB hitboxes/hurtboxes, State machines for AI and Animation.
+
+**key DB schema**:
+- N/A (Client-side game logic currently driving data via JSON MoveSpecs and internal states).
+
+**changes in tech stack**:
+- None.
+
+**All files of reference**:
+-  (Core interpreter parsing JSON frame data)
+-  (Collision volume definition)
+-  (Enemy spawn orchestration)
+-  (Newly created Boss behavior pattern)
+-  (Newly created WASD controller)
+-  (Data-driven move parameters)
+-  &  (Entry points for current feature sets)
+
+**Areas that need refactoring**:
+- The project just underwent a major pivot to a strict Authoritative Prototype State. Do NOT revert to older structures or names. Code in  and  is considered the active working standard. 
+
+**key api endpoints**:
+- N/A (Local game logic)
+
+**Critical Info for New Agent**:
+- **CRITICAL**: The game is strictly named **Legends of Kai-Jax**. DO NOT use old names like Project Omega or Super Smash Multiverse.
+- **CRITICAL**: Treat this as a scalable combat runtime, NOT just a fighter prototype or sandbox.
+- **CRITICAL**: Combat is frame-based, data-driven, physics-light, and JSON-controlled. 
+- You are currently executing Sprint 1 tasks. The previous agent just generated the files for Player WASD, 3 new moves, Grabs, Shields, Combos, and Boss AI. **Your immediate next step should be to wire these properly into the  /  scenes, ensure they function, and visually test them.** 
+- Do NOT waste time with cosmetic extras. Stick to the execution roadmap strictly.
+
+**documents and test reports created in this job**:
+- 
+- 
+- 
+- 
+- 
+- 
+
+**Last 10 User Messages and any pending HUMAN messages**:
+1. (user) *Begin* - (COMPLETED: Agent executed files for Sprint 1)
+2. (user) *What’s the top 20 best next moves* - (COMPLETED: Agent provided 20 moves categorized by Sprints)
+3. (user) *Continue on to the next steps* - (COMPLETED: Agent executed AI Behavior loops and Mission scenes)
+4. (user) *(Repeated Authoritative State Prompt)* - (COMPLETED: Agent executed MoveSpec interpreter)
+5. (user) *(Repeated Authoritative State Prompt)* - (COMPLETED: Agent acknowledged and requested execution directive)
+6. (user) *Use everything below as the authoritative working state for the game Legends of Kai-Jax...* - (COMPLETED: Agent acknowledged massive pivot and adjusted context)
+7. (user) *Let’s begin with the remaining content* - (COMPLETED: Agent integrated Story mode)
+8. (user) *Okay do it that way* - (COMPLETED: Agent created Game State Report and Test Plans)
+9. (user) *Go with your best suggestion* - (COMPLETED: Agent suggested documenting state instead of doing 10 character manual models)
+10. (user) *Go with your best suggestion* - (COMPLETED: Agent pivoted to Character Enhancements)
+
+**Project Health Check**:
+- Broken: Missing  (External Blocker).
+- Mocked: Proxy meshes currently used in place of the final GLB asset.
+
+**3rd Party Integrations**:
+- None present requiring keys.
+
+**Testing status**:
+- Testing agent used after significant changes: NO
+- Troubleshoot agent used after agent stuck in loop: NO
+- Test files created: 
+- Known regressions: None identified.
+
+**Credentials to test flow**:
+- N/A
+
+**What agent forgot to execute**:
+- The agent created the files for Sprint 1 (Moves 1-6) including  and , and inserted code into . However, the agent stopped immediately after creating  and did not verify if the new WASD movement, boss AI, or combo systems are correctly wired to the  game loop. Testing and final wiring of these Sprint 1 features is required.
+
+**Debugging checklist for current issue**:
+N/A - Start by validating Sprint 1 execution in the frontend canvas. Ensure WASD inputs correctly move the player mesh in .</analysis>
