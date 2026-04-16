@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { Hurtbox } from '../combat/Hurtbox';
 import { MovePlayer } from '../combat/MovePlayer';
 import { EnemyEntity } from '../entities/EnemyEntity';
+import { BossEntity } from '../entities/BossEntity';
 import { MissionOrchestrator } from '../mission/MissionOrchestrator';
 import { PlayerController } from '../player/PlayerController';
 import { IRONVEIN_WARD_01 } from '../mission/MissionSchema';
@@ -29,6 +30,7 @@ export class MissionScene {
   
   // Enemies
   private enemies: Map<string, EnemyEntity> = new Map();
+  private boss: BossEntity | null = null;
   
   // State
   private animationId: number | null = null;
@@ -90,6 +92,7 @@ export class MissionScene {
     console.log('  I - Sweep (6 dmg, low)');
     console.log('  U - Grab (8 dmg, breaks shield)');
     console.log('  O - Combo chain (3-hit: 3+4+6 dmg)');
+    console.log('  SHIFT - Hold to shield');
     console.log('  SPACE - Start mission');
     console.log('  ESC - Exit');
   }
@@ -221,6 +224,11 @@ export class MissionScene {
           }
           break;
 
+        case 'shift':
+          // Hold Shift to shield
+          this.playerMovePlayer.setShield(true);
+          break;
+
         case ' ':
           if (!this.missionStarted) {
             this.startMission();
@@ -230,6 +238,13 @@ export class MissionScene {
         case 'escape':
           this.stop();
           break;
+      }
+    });
+
+    // Release shield on keyup
+    window.addEventListener('keyup', (e) => {
+      if (e.key.toLowerCase() === 'shift') {
+        this.playerMovePlayer.setShield(false);
       }
     });
   }
@@ -250,6 +265,29 @@ export class MissionScene {
     const enemies = waveDirector.getActiveEnemies();
 
     for (const enemyData of enemies) {
+      // Boss routing
+      if (enemyData.isBoss) {
+        if (this.boss) continue; // already spawned
+        const boss = new BossEntity(
+          this.scene,
+          enemyData.id,
+          enemyData.x,
+          0.8,
+          enemyData.hp
+        );
+        // Load multiple moves for the boss (light, heavy, combo as special)
+        await boss.loadMove('kai_light_jab');
+        await boss.loadMove('kai_heavy_punch');
+        await boss.loadMove('kai_combo_chain');
+        boss.setTarget({
+          position: this.playerMesh.position,
+          isAlive: () => this.playerHP > 0,
+        });
+        this.boss = boss;
+        console.log(`[Mission] BossEntity spawned: ${enemyData.id}`);
+        continue;
+      }
+
       if (this.enemies.has(enemyData.id)) continue;
 
       const enemy = new EnemyEntity(
@@ -258,7 +296,7 @@ export class MissionScene {
         enemyData.x,
         0.8,
         enemyData.hp,
-        enemyData.isBoss ? 0xff0000 : 0xff5555
+        0xff5555
       );
 
       // Load AI move
@@ -317,6 +355,11 @@ export class MissionScene {
     // Update enemies
     this.enemies.forEach(enemy => enemy.update(deltaTime));
 
+    // Update boss
+    if (this.boss) {
+      this.boss.update(deltaTime);
+    }
+
     // Check player attacks vs enemies
     this.checkPlayerAttacks();
 
@@ -355,6 +398,12 @@ export class MissionScene {
     const playerHitboxes = this.playerMovePlayer['hitboxes'];
     if (playerHitboxes.length === 0) return;
 
+    // Derive damage from current move's first hit (if any)
+    const currentMove = this.playerMovePlayer.currentMove;
+    const hitSpec = currentMove?.hits?.[0];
+    const damage = hitSpec?.dmg ?? 4;
+    const kb = new THREE.Vector2(hitSpec?.kbX ?? 1.5, hitSpec?.kbY ?? 0.5);
+
     this.enemies.forEach((enemy) => {
       if (enemy.isDefeated()) return;
 
@@ -363,8 +412,8 @@ export class MissionScene {
         const hurtBB = new THREE.Box3().setFromObject(enemy.hurtbox.mesh);
 
         if (hitBB.intersectsBox(hurtBB)) {
-          // Apply damage
-          enemy.takeDamage(4, new THREE.Vector2(1.5, 0.5));
+          // Apply damage using move data
+          enemy.takeDamage(damage, kb);
 
           // Notify wave director if killed
           if (enemy.getHP() <= 0) {
@@ -373,6 +422,20 @@ export class MissionScene {
         }
       }
     });
+
+    // Boss collision
+    if (this.boss && !this.boss.isDefeated()) {
+      for (const hitbox of playerHitboxes) {
+        const hitBB = new THREE.Box3().setFromObject(hitbox);
+        const hurtBB = new THREE.Box3().setFromObject(this.boss.hurtbox.mesh);
+        if (hitBB.intersectsBox(hurtBB)) {
+          this.boss.takeDamage(damage, kb);
+          if (this.boss.getHP() <= 0) {
+            this.mission.getWaveDirector().damageEnemy(this.boss.id, 9999);
+          }
+        }
+      }
+    }
   }
 
   private checkEnemyAttacks(): void {
@@ -389,6 +452,18 @@ export class MissionScene {
         }
       }
     });
+
+    // Boss attacks (deal more damage)
+    if (this.boss && !this.boss.isDefeated()) {
+      if (this.boss.checkAttackHit(this.playerHurtbox)) {
+        this.playerHP = Math.max(0, this.playerHP - 10);
+        console.log(`[Player] Boss hit! HP: ${this.playerHP}/100 (Phase ${this.boss.getPhase()})`);
+        if (this.playerHP <= 0) {
+          console.log('[Player] DEFEATED by Boss');
+          this.mission.getTracker().registerPlayerDead();
+        }
+      }
+    }
   }
 
   private cleanupDeadEnemies(): void {

@@ -158,9 +158,21 @@ export class MovePlayer {
     // Apply damage
     this.hurtbox.takeDamage(hit.dmg);
 
+    // Apply hitstop
+    this.hitstopFrames = this.currentMove?.hitstopOnHit ?? 0;
+
+    // Apply knockback (unless grab with 0 knockback for throw animation)
+    const hb = this.hurtbox.mesh;
+    const direction = this.facingRight ? 1 : -1;
+    hb.position.x += hit.kbX * direction;
+    hb.position.y += hit.kbY;
+
+    const hitType = hit.isGrab ? 'GRAB' : 'HIT';
+    console.log(`[MovePlayer] ${hitType}! Damage: ${hit.dmg} | Knockback: (${hit.kbX}, ${hit.kbY}) | Hitstop: ${this.hitstopFrames}f`);
+  }
 
   /**
-   * Get shield status
+   * Get shield HP
    */
   getShieldHP(): number {
     return this.shieldHP;
@@ -171,18 +183,6 @@ export class MovePlayer {
    */
   isShielding(): boolean {
     return this.shieldActive && this.shieldHP > 0;
-  }
-
-    // Apply hitstop
-    this.hitstopFrames = this.currentMove?.hitstopOnHit ?? 0;
-
-    // Apply knockback (unless grab with 0 knockback for throw animation)
-    const direction = this.facingRight ? 1 : -1;
-    hb.position.x += hit.kbX * direction;
-    hb.position.y += hit.kbY;
-
-    const hitType = hit.isGrab ? 'GRAB' : 'HIT';
-    console.log(`[MovePlayer] ${hitType}! Damage: ${hit.dmg} | Knockback: (${hit.kbX}, ${hit.kbY}) | Hitstop: ${this.hitstopFrames}f`);
   }
 
   private clearHitboxes(): void {

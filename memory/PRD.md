@@ -1,127 +1,106 @@
-# LEGENDS OF KAI-JAX: THE MEMORY KING
-## Master PRD - Final Consolidated Version
+# LEGENDS OF KAI-JAX
+## Combat Runtime PRD
 
-**Status:** PRODUCTION CANON LOCKED
-**Version:** Final Delivery
-**Date:** February 2026
-**Last Updated:** February 1, 2026
+**Status:** Sprint 1 — COMPLETE (verified Feb 16, 2026)
+**Version:** Combat Kernel v1.1
+**Last Updated:** February 16, 2026
 
 ---
 
 ## Original Problem Statement
-Transform the GitHub repo "Legends-of-Kai-Jax-The-memory-Hero" into a 10x more legendary, fun, and user-friendly experience with complete game documentation, character art, and studio-ready assets. **PIVOT:** Transition from web prototype to professional game engine (Unreal/Unity) with comprehensive production bible.
+Build a scalable combat runtime for Legends of Kai-Jax with multiple orchestration modes (arena duels, adventure missions, bosses). Data-driven combat kernel, frame-based move interpreter, JSON MoveSpecs, AABB hurtbox/hitbox resolution, wave orchestration, boss AI, player WASD control.
 
 ---
 
-## Core Truth
-> "Survival is not strength. Survival is memory that refuses erasure."
+## Architecture
+
+```
+/app/apps/web/
+├── public/moves/*.json    # Data-driven MoveSpecs (6 moves)
+├── src/combat/            # MovePlayer, Hurtbox (kernel)
+├── src/mission/           # MissionTracker, WaveDirector, MissionOrchestrator, MissionSchema
+├── src/ai/                # SimpleAI (grunt), BossAI (multi-phase)
+├── src/player/            # PlayerController (WASD)
+├── src/entities/          # FighterEntity, EnemyEntity, BossEntity
+├── src/scenes/            # CombatDemoScene, MissionScene
+├── combat-demo.html       # Isolated combat test harness
+└── mission-demo.html      # Full vertical slice (waves + boss)
+```
+
+Secondary: `/app/frontend/` (React CRA) — Legend Arena Duel web hub (separate marketing/story site, runs on port 3000).
 
 ---
 
-## What's Been Delivered ✅
+## Sprint 1 — Core Gameplay ✅ COMPLETE (Feb 16, 2026)
+- ✅ Player WASD movement (`PlayerController.ts`) with arena boundaries, acceleration, friction
+- ✅ Expanded move library: light jab, heavy punch, uppercut, sweep, grab, 3-hit combo chain
+- ✅ Shield system: hold SHIFT to block, shield HP 100, regen after 2s delay, shield break → punish
+- ✅ Grab system: grabs bypass shield (`isGrab` flag in HitSpec)
+- ✅ Multi-hit combo chain: `kai_combo_chain.json` with 3 sequential hits (frames 3-5, 8-10, 13-15)
+- ✅ BossAI with 3 phases (phase1/2/3 at 100%/66%/33% HP), increased aggression & speed, special attacks
+- ✅ BossEntity wrapper with larger mesh/hurtbox, phase-based damage tint
+- ✅ MissionScene routes `covenant_enforcer` spawns → BossEntity (separate from grunts)
+- ✅ Fixed critical syntax bug in `MovePlayer.applyHit()` (methods were spliced mid-function)
+- ✅ Damage/knockback now driven by MoveSpec hit data (not hardcoded)
 
-### 1. GAME HUB (8 Sections) — Web Frontend
-- **HOME** - Epic hero page with Kai-Jax artwork backdrop
-- **CHARACTERS** - 5 core characters with locked image canon + **WORKING AI generation**
-- **TAILS** - 9-tail system with elements, abilities, signature moves
-- **STORY** - 5 Acts narrative with expandable details
-- **GODS** - Four Sabertooth Gods mythology
-- **REGIONS** - 5 world regions with danger levels
-- **BIBLE** - Complete Master Blueprint (6 tabs)
-- **UI** - Character Select, Matchup Art, Codex System
-
-### 2. AI IMAGE GENERATION ✅ (FULLY WORKING)
-- **Generate AI Art button** appears on hover over character cards
-- **Per-card loading state** - only the clicked card shows "Generating..."
-- **AI GENERATED badge** appears after successful generation
-- **Regenerate button** allows creating new variations
-- **Backend integration** with OpenAI GPT Image 1 via Emergent LLM Key
-- **AI Character Gallery** - Dedicated section displaying all AI-generated character art
-- **All 5 characters generated**: KAI, JAX, KAI-JAX, BORYN, BORAX
-
-### 2. FINAL MASTER BIBLE (8 Layers)
-- **Layer I** - The Absolute Core (non-negotiables)
-- **Layer II** - The Cosmology (Sabertooth Gods)
-- **Layer III** - Characters (Kai, Jax, Kai-Jax, Boryn, Borax, Aurelion, Selene)
-- **Layer IV** - Factions (Fang Syndicate, Null Covenant, Behemoth Legion)
-- **Layer V** - The 9-Tail System (game's heart)
-- **Layer VI** - Game Modes (Story, Survival, Versus)
-- **Layer VII** - Full Campaign Flow (8 areas)
-- **Layer VIII** - Why This Works
-
-### 10. LOCKED IMAGE CANON
-- **KAI** - Prime Hero (coal black + burnt orange, green eyes)
-- **JAX** - Prime Striker (pitch black + electric blue, gold eyes)
-- **KAI-JAX** - Memory King (3→9 tails, heterochromia)
-- **BORYN** - The Shield Father (bone white tiger, sacrifices)
-- **BORAX** - The Sabertooth Law (rust red lion, mentors)
+### Controls (mission-demo)
+| Key | Action |
+|-----|--------|
+| SPACE | Start mission |
+| WASD | Move |
+| J / K / L | Light jab / Heavy punch / Uppercut |
+| I / U / O | Sweep / Grab / 3-hit combo |
+| SHIFT | Hold to shield |
+| ESC | Exit |
 
 ---
 
-## Canon Lines (LOCKED)
-> "The First Sabertooths did not rule the world. They taught it how to survive without them."
+## Roadmap
 
-> "You are not a weapon. You are a memory that learned how to fight back."
+### P0 — Sprint 2: Content Expansion (NEXT)
+- 3 enemy behaviors: Rusher, Defender, Sniper (extend SimpleAI into specialized AI classes)
+- 2nd mission schema (new district, unique composition + boss)
+- 2nd playable character (Jax — different moveset, faster but lower damage)
+
+### P1 — Sprint 3: Feel & Feedback
+- VFX: hit sparks, attack trails, knockback dust
+- Audio: attack whoosh, impacts, grunts, boss roars
+
+### P2 — Sprint 4: Transformation & Camera
+- Transformation system (Kai ↔ Jax ↔ KaiJax) mid-combat
+- Camera: shake on hit, dynamic zoom on KO
+
+### P3 — Sprint 5: Asset Integration (BLOCKED — awaiting external `kai_jax.glb`)
+- GLB character integration
+- MovePlayer synced to visual animation (not just frame counter)
+- Tail empties validation (`tail_01` → `tail_09`)
+
+### P4 — Sprint 6: Polish
+- Health regen / power-ups
+- Score / ranking system
+- In-world 3D HUD
+
+### P5 — Sprint 7: Multiplayer
+- Local 2-player foundation
 
 ---
 
-## Production Bible Documents
+## Verification (Feb 16, 2026)
+- Playwright harness: `mission-demo.html` loads cleanly, no page errors
+- All 6 moves execute (light jab, heavy punch, uppercut, sweep, grab, combo chain)
+- SimpleAI responds and counterattacks
+- 3D scene renders player (cyan), 5 enemies (red), HUD visible
+- Console logs show correct frame-accurate hitbox spawning
+- Mission status: `{frameCount: 214, playerHP: 100, enemyCount: 5, missionStarted: true}`
 
-| Document | Path | Purpose |
-|----------|------|---------|
-| Engine Design Spec | `/app/memory/ENGINE_DESIGN_SPECIFICATION.md` | Master technical blueprint |
-| Quick Reference | `/app/memory/QUICK_REFERENCE_CARD.md` | Combat data quick lookup |
-| Character Build Sheets | `/app/memory/CHARACTER_BUILD_SHEETS.md` | 3D artist guide |
-| Animation State Machine | `/app/memory/ANIMATION_STATE_MACHINE.md` | Animator guide |
-| Tail Ability System | `/app/memory/TAIL_ABILITY_SYSTEM.md` | Systems designer guide |
-| Enemy AI Behavior Spec | `/app/memory/ENEMY_AI_BEHAVIOR_SPEC.md` | AI programmer guide |
-| Asset Master List | `/app/memory/ASSET_MASTER_LIST.md` | Production tracking |
-
----
-
-## Status Check
-| Component | Status |
-|-----------|--------|
-| Story | ✅ Locked |
-| World | ✅ Coherent |
-| Systems | ✅ Fully Specified |
-| Scale | ✅ Expandable |
-| Identity | ✅ Clear |
-| Character Design | ✅ Production Ready |
-| Animation Spec | ✅ Production Ready |
-| Ability System | ✅ Production Ready |
-| Enemy AI | ✅ Production Ready |
-| Asset List | ✅ Production Ready |
+### Known Non-Blockers
+- `src/pages/SagaModeLauncher.tsx` has pre-existing TS syntax errors (unrelated to combat runtime, not imported by demos)
+- `/app/frontend` CRA hub separately running; warnings but serves 200 OK
 
 ---
 
 ## Tech Stack
-
-### Web Prototype (Reference)
-- **Frontend:** React 19, Tailwind CSS, Lucide Icons
-- **Backend:** FastAPI, Python, Motor (MongoDB)
-- **AI Integration:** OpenAI GPT Image 1 via Emergent LLM Key
-- **Database:** MongoDB
-
-### Target Game Engine
-- **Primary:** Unreal Engine 5
-- **Alternative:** Unity 2022+ (HDRP/URP)
-- **Platforms:** PC, Console (PS5/XSX), Mobile
-
----
-
-## Next Logical Steps
-1. **PDF Export of Master Bible** - Add button to export entire Blueprint as downloadable PDF
-2. Opening cinematic shot list
-3. DLC / sequel timeline
-4. Studio pitch deck
-5. Playable prototype roadmap
-
----
-
-## Final Statement
-> "This is not derivative. It is ancestral."
-
-**You've crossed the point of "idea." This is a myth you can ship.**
-
-**Opening Unreal or Unity is now mechanical, not creative chaos.**
+- **Game Runtime:** Vite 5 + TypeScript + Three.js 0.160
+- **Web Hub:** React 19 + Tailwind + Lucide (at `/app/frontend`, CRA)
+- **Backend:** FastAPI + MongoDB
+- **Tools:** Playwright (local headless testing)
