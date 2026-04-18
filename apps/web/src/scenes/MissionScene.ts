@@ -12,6 +12,9 @@ import { MissionOrchestrator } from '../mission/MissionOrchestrator';
 import { PlayerController } from '../player/PlayerController';
 import { IRONVEIN_WARD_01, MISSION_LIBRARY } from '../mission/MissionSchema';
 import { CHARACTERS, type CharacterId } from '../characters/CharacterSpec';
+import { VFXSystem } from '../systems/VFXSystem';
+import { audioSystem } from '../systems/AudioSystem';
+import { CameraShake } from '../systems/CameraShake';
 import type { MoveSpec } from '../types/MoveSpec';
 import type { AITarget, AIBehavior } from '../ai/SimpleAI';
 import type { EnemyType } from '../mission/WaveDirector';
@@ -47,6 +50,11 @@ export class MissionScene {
   // Enemies
   private enemies: Map<string, EnemyEntity> = new Map();
   private boss: BossEntity | null = null;
+  private lastBossPhase: string = 'phase1';
+
+  // Feel systems
+  private vfx!: VFXSystem;
+  private cameraShake: CameraShake = new CameraShake();
 
   // Selection
   private characterId: CharacterId = 'kai';
@@ -96,6 +104,13 @@ export class MissionScene {
 
     // Player setup
     this.setupPlayer();
+
+    // Init feel systems (VFX + camera shake)
+    this.vfx = new VFXSystem(this.scene);
+    this.cameraShake.setBasePosition(this.camera.position);
+
+    // Wire player combat feedback (VFX + audio)
+    this.wirePlayerFeedback();
 
     // Mission orchestrator
     this.mission = new MissionOrchestrator(this.scene, this.missionSchema);
@@ -204,6 +219,63 @@ export class MissionScene {
     } catch (error) {
       console.error('[Mission] Failed to load moves:', error);
     }
+  }
+
+  /**
+   * Register VFX + audio hooks for player's combat events.
+   */
+  private wirePlayerFeedback(): void {
+    this.playerMovePlayer.setCallbacks({
+      onMoveStart: (move) => {
+        // Grab has its own sound; everything else gets a whoosh
+        audioSystem.play(move.id.includes('grab') ? 'grab' : 'whoosh');
+      },
+      onActiveFrame: (_hit, pos) => {
+        // Short trail at active hitbox position
+        this.vfx.spawnTrail(pos.x, pos.y, pos.z, 0xff44aa);
+      },
+      onHit: (hit, pos) => {
+        if (hit.isGrab) {
+          this.vfx.spawnHitSpark(pos.x, pos.y, pos.z, 0xff66ff, 16);
+          audioSystem.play('grab');
+        } else {
+          const heavy = hit.dmg >= 8;
+          this.vfx.spawnHitSpark(pos.x, pos.y, pos.z, heavy ? 0xff8844 : 0xffee55, heavy ? 18 : 10);
+          audioSystem.play(heavy ? 'hit_heavy' : 'hit_light');
+          this.vfx.spawnKnockbackDust(pos.x, pos.z, heavy ? 8 : 4);
+        }
+        this.cameraShake.add(hit.dmg >= 8 ? 0.6 : 0.3);
+      },
+      onBlock: (_hit, pos) => {
+        this.vfx.spawnBlockRing(pos.x, pos.y, pos.z);
+        audioSystem.play('block');
+        this.cameraShake.add(0.15);
+      },
+      onShieldBreak: (pos) => {
+        this.vfx.spawnHitSpark(pos.x, pos.y, pos.z, 0x00ddff, 20);
+        audioSystem.play('shield_break');
+        this.cameraShake.add(0.5);
+      },
+    });
+  }
+
+  /**
+   * Wire feedback for an enemy's MovePlayer (hit sparks when hitting the player).
+   */
+  private wireEnemyFeedback(mp: MovePlayer, enemyColor: number = 0xff5555): void {
+    mp.setCallbacks({
+      onMoveStart: () => audioSystem.play('whoosh'),
+      onHit: (hit, pos) => {
+        this.vfx.spawnHitSpark(pos.x, pos.y, pos.z, enemyColor, hit.dmg >= 8 ? 16 : 10);
+        audioSystem.play(hit.dmg >= 8 ? 'hit_heavy' : 'hit_light');
+        this.vfx.spawnKnockbackDust(pos.x, pos.z, 4);
+        this.cameraShake.add(hit.dmg >= 8 ? 0.5 : 0.25);
+      },
+      onBlock: (_h, pos) => {
+        this.vfx.spawnBlockRing(pos.x, pos.y, pos.z);
+        audioSystem.play('block');
+      },
+    });
   }
 
   private setupInput(): void {
@@ -317,6 +389,13 @@ export class MissionScene {
           isAlive: () => this.playerHP > 0,
         });
         this.boss = boss;
+        this.lastBossPhase = 'phase1';
+        // Boss entrance roar + phase flash
+        audioSystem.play('boss_roar');
+        this.vfx.spawnPhaseFlash(this.camera, 0xff0000);
+        this.cameraShake.add(0.8);
+        // Wire boss attack feedback
+        this.wireEnemyFeedback(boss.getMovePlayer(), 0xff3333);
         console.log(`[Mission] BossEntity spawned: ${enemyData.id}`);
         continue;
       }
@@ -344,6 +423,8 @@ export class MissionScene {
       });
 
       this.enemies.set(enemyData.id, enemy);
+      // Wire enemy-side feedback (hit sparks when they connect)
+      this.wireEnemyFeedback(enemy.getMovePlayer(), profile.color);
     }
   }
 

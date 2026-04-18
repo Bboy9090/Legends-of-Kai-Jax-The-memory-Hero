@@ -79,6 +79,13 @@ export class EnemyEntity {
   }
 
   /**
+   * Access the underlying MovePlayer for feedback callback wiring.
+   */
+  getMovePlayer(): MovePlayer {
+    return this.movePlayer;
+  }
+
+  /**
    * Update enemy each frame
    */
   update(deltaTime: number): void {

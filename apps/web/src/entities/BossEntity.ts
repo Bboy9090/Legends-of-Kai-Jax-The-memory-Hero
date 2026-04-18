@@ -66,6 +66,13 @@ export class BossEntity {
     this.ai.setTarget(target);
   }
 
+  /**
+   * Access the underlying MovePlayer for feedback callback wiring.
+   */
+  getMovePlayer(): MovePlayer {
+    return this.movePlayer;
+  }
+
   update(deltaTime: number): void {
     if (this.isDead) return;
 

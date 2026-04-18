@@ -7,6 +7,14 @@ import * as THREE from 'three';
 import type { MoveSpec, HitSpec } from '../types/MoveSpec';
 import { Hurtbox } from './Hurtbox';
 
+export interface MovePlayerCallbacks {
+  onMoveStart?: (move: MoveSpec) => void;
+  onHit?: (hit: HitSpec, hitboxPosition: THREE.Vector3) => void;
+  onBlock?: (hit: HitSpec, hitboxPosition: THREE.Vector3) => void;
+  onShieldBreak?: (hitboxPosition: THREE.Vector3) => void;
+  onActiveFrame?: (hit: HitSpec, hitboxPosition: THREE.Vector3) => void;
+}
+
 export class MovePlayer {
   currentMove: MoveSpec | null = null;
   frame: number = 0;
@@ -22,11 +30,19 @@ export class MovePlayer {
   shieldRegenRate: number = 10; // HP per second
   shieldRegenDelay: number = 2.0; // Seconds before regen starts
   timeSinceShieldHit: number = 0;
+  callbacks: MovePlayerCallbacks = {};
 
   constructor(scene: THREE.Scene, hurtbox: Hurtbox, fighterPosition: THREE.Vector3) {
     this.scene = scene;
     this.hurtbox = hurtbox;
     this.fighterPosition = fighterPosition;
+  }
+
+  /**
+   * Register feedback callbacks (VFX/audio hooks).
+   */
+  setCallbacks(cb: MovePlayerCallbacks): void {
+    this.callbacks = { ...this.callbacks, ...cb };
   }
 
   startMove(move: MoveSpec): void {
@@ -39,6 +55,7 @@ export class MovePlayer {
     this.frame = 0;
     console.log(`[MovePlayer] Starting move: ${move.id}`);
     console.log(`[MovePlayer] Startup: ${move.startup}f | Active: ${move.active}f | Recovery: ${move.recovery}f`);
+    this.callbacks.onMoveStart?.(move);
   }
 
   /**
@@ -109,6 +126,9 @@ export class MovePlayer {
 
     console.log(`[MovePlayer] Hitbox spawned at frame ${this.frame}: pos=(${mesh.position.x.toFixed(2)}, ${mesh.position.y.toFixed(2)})`);
 
+    // Emit active-frame callback (for attack trails)
+    this.callbacks.onActiveFrame?.(hit, mesh.position.clone());
+
     // Check collision immediately
     this.checkCollision(mesh, hit);
   }
@@ -126,7 +146,7 @@ export class MovePlayer {
       // Grab check - grabs beat shields
       if (hit.isGrab) {
         console.log('[MovePlayer] GRAB landed! Bypassing shield.');
-        this.applyHit(hit);
+        this.applyHit(hit, hitbox.position.clone());
         return;
       }
 
@@ -136,7 +156,8 @@ export class MovePlayer {
         if (this.shieldHP <= 0) {
           console.log('[MovePlayer] Shield broken!');
           this.shieldActive = false;
-          this.applyHit(hit);
+          this.callbacks.onShieldBreak?.(hitbox.position.clone());
+          this.applyHit(hit, hitbox.position.clone());
           return;
         }
 
@@ -147,14 +168,15 @@ export class MovePlayer {
 
         console.log(`[MovePlayer] Hit blocked by shield! Shield HP: ${this.shieldHP.toFixed(1)}/${this.maxShieldHP}`);
         this.hitstopFrames = this.currentMove?.hitstopOnBlock ?? 0;
+        this.callbacks.onBlock?.(hit, hitbox.position.clone());
         return;
       }
 
-      this.applyHit(hit);
+      this.applyHit(hit, hitbox.position.clone());
     }
   }
 
-  private applyHit(hit: HitSpec): void {
+  private applyHit(hit: HitSpec, hitPos?: THREE.Vector3): void {
     // Apply damage
     this.hurtbox.takeDamage(hit.dmg);
 
@@ -169,6 +191,10 @@ export class MovePlayer {
 
     const hitType = hit.isGrab ? 'GRAB' : 'HIT';
     console.log(`[MovePlayer] ${hitType}! Damage: ${hit.dmg} | Knockback: (${hit.kbX}, ${hit.kbY}) | Hitstop: ${this.hitstopFrames}f`);
+
+    // Emit hit feedback callback with hitbox position (fallback to hurtbox pos)
+    const fxPos = hitPos ?? hb.position.clone();
+    this.callbacks.onHit?.(hit, fxPos);
   }
 
   /**
