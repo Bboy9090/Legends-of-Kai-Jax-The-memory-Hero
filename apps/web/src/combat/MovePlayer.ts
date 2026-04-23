@@ -113,11 +113,15 @@ export class MovePlayer {
     });
     const mesh = new THREE.Mesh(geo, mat);
 
-    // Position hitbox relative to fighter
+    // Position hitbox relative to fighter.
+    // offY is authored as "height above feet", but fighterPosition.y is the
+    // mesh-CENTER (meshes are 1.8 tall, centered at y=0.9). Subtract the
+    // half-height so offY behaves like ground-relative chest/head anchor.
     const direction = this.facingRight ? 1 : -1;
+    const FOOT_OFFSET = 0.9;
     mesh.position.set(
       this.fighterPosition.x + (hit.offX * direction),
-      this.fighterPosition.y + hit.offY,
+      this.fighterPosition.y + hit.offY - FOOT_OFFSET,
       this.fighterPosition.z
     );
 

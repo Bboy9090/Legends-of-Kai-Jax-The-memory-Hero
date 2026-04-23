@@ -474,6 +474,17 @@ export class MissionScene {
     // Update boss
     if (this.boss) {
       this.boss.update(deltaTime);
+
+      // Phase transition detection — play zing + tint flash
+      const currentPhase = this.boss.getPhase();
+      if (currentPhase !== this.lastBossPhase) {
+        const phaseColor = currentPhase === 'phase3' ? 0xffff00 : 0xff8800;
+        this.vfx.spawnPhaseFlash(this.camera, phaseColor);
+        audioSystem.play('phase_transition');
+        this.cameraShake.add(0.6);
+        console.log(`[Mission] Boss entered ${currentPhase}`);
+        this.lastBossPhase = currentPhase;
+      }
     }
 
     // Check player attacks vs enemies
@@ -488,6 +499,10 @@ export class MissionScene {
       this.cleanupDeadEnemies();
     }
 
+    // Update feel systems (VFX particles + camera shake)
+    this.vfx.update(deltaTime);
+    this.cameraShake.update(deltaTime, this.camera);
+
     // Status logging
     if (this.frameCount % 120 === 0 && this.missionStarted) {
       const status = this.mission.getStatus();
@@ -497,11 +512,13 @@ export class MissionScene {
       console.log(`  Kills: ${status.kills}`);
       console.log(`  Active enemies: ${status.enemiesActive}`);
       console.log(`  Player HP: ${this.playerHP}/100`);
+      console.log(`  VFX particles: ${this.vfx.getCount()}`);
     }
 
     // Check mission complete
     if (this.mission.getTracker().isComplete()) {
       console.log('\n🎉 MISSION COMPLETE!');
+      audioSystem.play('ko');
       this.stop();
       return;
     }
