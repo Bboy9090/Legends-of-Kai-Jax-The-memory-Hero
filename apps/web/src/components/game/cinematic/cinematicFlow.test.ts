@@ -25,11 +25,16 @@ describe("cinematicFlow", () => {
     expect(s.beatIndex).toBe(2);
   });
 
-  it("advanceFlow reaches escalation (beat 3) and flips phase to combat", () => {
+  it("advanceFlow walks 0 → 1 → 2 → 3 (escalation shown) → combat", () => {
     let s = INITIAL_FLOW;
-    for (let i = 0; i < 3; i++) s = advanceFlow(s, ASHBLOCK_SCRIPTS);
+    s = advanceFlow(s, ASHBLOCK_SCRIPTS); // beat 1
+    s = advanceFlow(s, ASHBLOCK_SCRIPTS); // beat 2
+    s = advanceFlow(s, ASHBLOCK_SCRIPTS); // beat 3 (escalation displayed, still playing_beat)
     expect(s.beatIndex).toBe(3);
+    expect(s.phase).toBe("playing_beat");
+    s = advanceFlow(s, ASHBLOCK_SCRIPTS); // commit to combat
     expect(s.phase).toBe("combat");
+    expect(s.beatIndex).toBe(3);
   });
 
   it("onCombatComplete moves combat → payoff (beat 4)", () => {

@@ -74,6 +74,7 @@ export class AshblockSliceScene {
   private animationId: number | null = null;
   private frameCount = 0;
   private currentEncounterId: string | null = null;
+  private encounterSpawning = false;
   private encounterClearedFired = new Set<string>();
   private playerDiedFired = false;
   private callbacks: AshblockSliceCallbacks;
@@ -319,9 +320,14 @@ export class AshblockSliceScene {
     }
     this.currentEncounterId = encounterId;
     this.encounterClearedFired.delete(encounterId);
+    this.encounterSpawning = true;
     console.log(`[AshblockSlice] Begin encounter ${encounterId} — ${spec.label}`);
     this.callbacks.onEncounterStarted?.(encounterId);
-    await this.spawnForEncounter(spec);
+    try {
+      await this.spawnForEncounter(spec);
+    } finally {
+      this.encounterSpawning = false;
+    }
   }
 
   private async spawnForEncounter(spec: EncounterSpec): Promise<void> {
@@ -499,6 +505,9 @@ export class AshblockSliceScene {
   }
 
   private cleanupAndSettleEncounter(): void {
+    // Guard against firing "cleared" while enemies are still being spawned (async move loads).
+    if (this.encounterSpawning) return;
+
     const dead: string[] = [];
     this.enemies.forEach((e, id) => {
       if (e.isDefeated()) dead.push(id);
@@ -543,5 +552,14 @@ export class AshblockSliceScene {
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h);
+  }
+
+  /**
+   * Test/dev helper — forces all current enemies + boss to defeated state.
+   * Useful for E2E verification of payoff beat firing without slow combat.
+   */
+  public __testForceClear(): void {
+    this.enemies.forEach((e) => e.takeDamage(99999, new THREE.Vector2(0, 0)));
+    if (this.boss) this.boss.takeDamage(99999, new THREE.Vector2(0, 0));
   }
 }

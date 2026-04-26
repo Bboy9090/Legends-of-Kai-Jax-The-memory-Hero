@@ -36,6 +36,8 @@ function AshblockSliceApp() {
       },
     });
     sceneRef.current = scene;
+    // Dev/testing convenience: surface scene + overlay handle on window for E2E hooks.
+    (window as unknown as { __ashblockScene?: AshblockSliceScene }).__ashblockScene = scene;
     scene.start();
 
     const onResize = () => {

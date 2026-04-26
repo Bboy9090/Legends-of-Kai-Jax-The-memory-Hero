@@ -43,10 +43,11 @@ export function advanceFlow(
 
   if (state.phase === "playing_beat") {
     const nextBeat = state.beatIndex + 1;
-    // beats 0..2 are pre-escalation; beat 3 is escalation; beat 4 is payoff.
-    if (nextBeat >= 3) {
-      // We reached escalation — caller should hand off to combat.
-      return { ...state, beatIndex: 3, phase: "combat" };
+    // Beats 0..3: scene_entry → objective → conflict → escalation (still shown!).
+    // The escalation beat ("GO") IS displayed for one click, then transitions to combat.
+    if (state.beatIndex >= 3) {
+      // Currently on escalation — next click hands off to combat.
+      return { ...state, phase: "combat" };
     }
     return { ...state, beatIndex: nextBeat };
   }
