@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   base: "/game/",
   resolve: {
+    extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],
     alias: {
       "@": path.resolve(__dirname, "./src"),
       "@beast-kin/engine": path.resolve(__dirname, "../../packages/engine/src"),
@@ -26,6 +27,7 @@ export default defineConfig({
         index: path.resolve(__dirname, "index.html"),
         combat: path.resolve(__dirname, "combat-demo.html"),
         mission: path.resolve(__dirname, "mission-demo.html"),
+        ashblock: path.resolve(__dirname, "ashblock-slice.html"),
       },
     },
   },
