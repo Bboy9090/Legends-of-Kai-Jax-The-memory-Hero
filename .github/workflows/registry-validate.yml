@@ -1,0 +1,56 @@
+name: Registry Validation
+
+on:
+  pull_request:
+    paths:
+      - "apps/web/src/assets/modelRegistry.ts"
+      - "apps/web/public/models/**"
+      - "apps/web/scripts/validate-registry.mjs"
+      - ".github/workflows/registry-validate.yml"
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "apps/web/src/assets/modelRegistry.ts"
+      - "apps/web/public/models/**"
+      - "apps/web/scripts/validate-registry.mjs"
+      - ".github/workflows/registry-validate.yml"
+  workflow_dispatch:
+
+jobs:
+  validate-registry:
+    name: Validate MODEL_REGISTRY
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Pull LFS-tracked GLB files if any are stored via LFS
+          lfs: true
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run registry validator
+        working-directory: apps/web
+        run: node scripts/validate-registry.mjs
+
+      - name: Re-run with JSON-only output (artifact)
+        if: always()
+        working-directory: apps/web
+        run: |
+          set +e
+          node scripts/validate-registry.mjs > registry-report.txt 2>&1
+          echo "exit=$?" >> registry-report.txt
+          set -e
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: registry-report
+          path: apps/web/registry-report.txt
+          if-no-files-found: ignore

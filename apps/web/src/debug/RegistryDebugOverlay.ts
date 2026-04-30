@@ -206,6 +206,9 @@ function render(el: HTMLDivElement, reports: EntryReport[]) {
 }
 
 let bootedOnce = false;
+/** Cached snapshot of the most recent validation pass — used by report() */
+let lastReports: EntryReport[] = [];
+
 async function boot(force: boolean = false) {
   const el = ensureContainer();
   if (bootedOnce && !force) {
@@ -223,14 +226,72 @@ async function boot(force: boolean = false) {
     loaded: null,
     anchors: null,
   }));
+  lastReports = reports;
   render(el, reports);
   el.style.display = 'block';
 
   // Validate sequentially to avoid hammering the network with 26 GLB downloads
   for (let i = 0; i < ids.length; i++) {
     reports[i] = await validateEntry(ids[i], MODEL_REGISTRY[ids[i]].path);
+    lastReports = reports;
     render(el, reports);
   }
+}
+
+/**
+ * Build a lightweight, JSON-safe report from the latest validation pass.
+ * Triggers a fresh validation if none has been run yet.
+ *
+ * Shape:
+ *   {
+ *     registered: number,
+ *     reachable: number,
+ *     parsed: number,
+ *     fullAnchors: number,
+ *     missingAnchors: Array<{ id: string, missing: string[] }>
+ *   }
+ */
+async function buildReport(): Promise<{
+  registered: number;
+  reachable: number;
+  parsed: number;
+  fullAnchors: number;
+  missingAnchors: Array<{ id: string; missing: string[] }>;
+}> {
+  if (lastReports.length === 0) {
+    // No pass yet — run one now so the caller gets real data
+    await boot(true);
+  }
+  const required = ['root', 'spine', 'head'];
+  const tailIds: string[] = [];
+  for (let i = 1; i <= 9; i++) tailIds.push(`tail_${i.toString().padStart(2, '0')}`);
+
+  const missingAnchors: Array<{ id: string; missing: string[] }> = [];
+  let fullAnchors = 0;
+  for (const r of lastReports) {
+    const missing: string[] = [];
+    if (!r.loaded || !r.anchors) {
+      missing.push('parse-failed');
+    } else {
+      if (!r.anchors.root) missing.push('root');
+      if (!r.anchors.spine) missing.push('spine');
+      if (!r.anchors.head) missing.push('head');
+      const present = r.anchors.tails;
+      if (present < 9) {
+        for (let i = present + 1; i <= 9; i++) missing.push(`tail_${i.toString().padStart(2, '0')}`);
+      }
+    }
+    if (missing.length === 0) fullAnchors++;
+    else missingAnchors.push({ id: r.id, missing });
+  }
+
+  return {
+    registered: lastReports.length,
+    reachable: lastReports.filter((r) => r.reachable).length,
+    parsed: lastReports.filter((r) => r.loaded).length,
+    fullAnchors,
+    missingAnchors,
+  };
 }
 
 export function installRegistryDebugOverlay(): void {
@@ -253,7 +314,13 @@ export function installRegistryDebugOverlay(): void {
 
   if (openOnLoad) boot();
 
-  // Expose for console use
-  (window as any).registryDebug = { open: () => boot(), close: () => setOpen(false), refresh: () => boot(true) };
+  // Expose for console + automation use
+  (window as any).registryDebug = {
+    open: () => boot(),
+    close: () => setOpen(false),
+    refresh: () => boot(true),
+    report: () => buildReport(),
+  };
   console.log('[RegistryDebug] Press ~ (tilde/backtick) to toggle the registry health overlay.');
+  console.log('[RegistryDebug] window.registryDebug.report() returns a JSON snapshot.');
 }
