@@ -12,6 +12,7 @@ import { MissionOrchestrator } from '../mission/MissionOrchestrator';
 import { PlayerController } from '../player/PlayerController';
 import { IRONVEIN_WARD_01, MISSION_LIBRARY } from '../mission/MissionSchema';
 import { CHARACTERS, type CharacterId } from '../characters/CharacterSpec';
+import { loadCharacterRig, CHARACTER_GLB, type CharacterRig } from '../characters/GLBCharacterLoader';
 import { VFXSystem } from '../systems/VFXSystem';
 import { audioSystem } from '../systems/AudioSystem';
 import { CameraShake } from '../systems/CameraShake';
@@ -179,12 +180,15 @@ export class MissionScene {
 
   private setupPlayer(): void {
     const spec = CHARACTERS[this.characterId];
-    // Visual mesh
+    // Visual mesh — placeholder box, will be replaced by GLB rig if available
     const playerGeo = new THREE.BoxGeometry(0.8, 1.8, 0.5);
     const playerMat = new THREE.MeshStandardMaterial({ color: spec.color });
     this.playerMesh = new THREE.Mesh(playerGeo, playerMat);
     this.playerMesh.position.set(0, 0.9, 0);
     this.scene.add(this.playerMesh);
+
+    // Async load real GLB and swap visual on success
+    this.loadPlayerGLB(spec.color);
 
     // Hurtbox
     this.playerHurtbox = new Hurtbox(this.scene, 0.8, 1.6);
@@ -204,6 +208,28 @@ export class MissionScene {
     this.playerController = new PlayerController(this.playerMesh.position);
     this.playerController.setBoundaries(-14, 14, -9, 9);
     this.playerController.setMoveSpeed(spec.moveSpeed);
+  }
+
+  private async loadPlayerGLB(fallbackColor: number): Promise<void> {
+    const base = import.meta.env.BASE_URL;
+    const path = CHARACTER_GLB[this.characterId];
+    if (!path) return;
+    const rig = await loadCharacterRig(`${base}${path}`, {
+      color: fallbackColor,
+      targetHeight: 1.8,
+      debug: true,
+    });
+    if (!rig.loaded) {
+      console.warn('[MissionScene] GLB load failed, keeping box placeholder');
+      return;
+    }
+    // Hide box, attach rig group at player position
+    this.playerMesh.visible = false;
+    rig.group.position.copy(this.playerMesh.position);
+    rig.group.position.y = 0; // feet on ground
+    this.scene.add(rig.group);
+    this.playerRig = rig;
+    console.log(`[MissionScene] Real GLB visual swapped in for ${this.characterId}`);
   }
 
   private async loadMoves(): Promise<void> {
@@ -456,6 +482,17 @@ export class MissionScene {
     const playerPos = this.playerController.getPosition();
     this.playerMesh.position.copy(playerPos);
     this.playerHurtbox.setPosition(playerPos.x, playerPos.y - 0.1, playerPos.z);
+
+    // Sync GLB rig (if loaded) — feet at ground, face along movement direction
+    if (this.playerRig?.loaded) {
+      this.playerRig.group.position.set(playerPos.x, 0, playerPos.z);
+      if (this.playerController.isMoving()) {
+        const md = this.playerController.getMovementDirection();
+        if (Math.abs(md.x) > 0.1) {
+          this.playerRig.group.rotation.y = md.x > 0 ? Math.PI / 2 : -Math.PI / 2;
+        }
+      }
+    }
 
     // Update player facing direction based on movement
     if (this.playerController.isMoving()) {

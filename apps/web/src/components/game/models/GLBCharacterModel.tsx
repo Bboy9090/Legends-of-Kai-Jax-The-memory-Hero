@@ -17,172 +17,16 @@ import {
   type LimbBaseRotations,
   type AnimState,
 } from "../../../lib/animationUtils";
+import {
+  MODEL_REGISTRY,
+  getModelConfig,
+  PRELOAD_MODEL_IDS,
+  type GLBModelConfig,
+} from "../../../assets/modelRegistry";
 
-export interface GLBModelConfig {
-  path: string;
-  scale: number;
-  position: [number, number, number];
-  rotation?: [number, number, number];
-}
-
-export const CHARACTER_MODELS: Record<string, GLBModelConfig> = {
-  "kai-jax": {
-    path: "/models/Meshy_AI_Character_output9TAILSKAIJAX.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  jax: {
-    path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONIC JAX.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  kai: {
-    path: "/models/Meshy_AI_Meshy_Merged_Animations4KAI.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  jaxon: {
-    path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  kaison: {
-    path: "/models/Meshy_AI_Character_outputSPiDERKAIJAX9TIALS.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  kaxon: {
-    path: "/models/Meshy_AI_Character_outputLIONBORAX.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  "voltage-fang": {
-    path: "/models/Meshy_AI_Meshy_Merged_AnimationsMeshy_AI_bipedBORYNaptFatherTIGER.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  steelwolf: {
-    path: "/models/Meshy_AI_Steelwolf_Exosuit_0219223344_texture.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  "ashen-tiger": {
-    path: "/models/Meshy_AI_Meshy_Merged_AnimationsMeshy_AI_bipedBORYNaptFatherTIGER.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  "blazing-fox": {
-    path: "/models/blazing-fox-vanguard.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  velocity: {
-    path: "/models/velocity_hero.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  sparky: {
-    path: "/models/sparky_hero.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  sentinel: {
-    path: "/models/sentinel_hero.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  lunara: {
-    path: "/models/lunara_hero.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  solaro: {
-    path: "/models/solaro_hero.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  blaze: {
-    path: "/models/blaze_hero.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  abyss: {
-    path: "/models/abyss_hero.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  "marble-gladiator": {
-    path: "/models/marble_gladiator.glb",
-    scale: 4.2,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  "granite-colossus": {
-    path: "/models/granite_colossus.glb",
-    scale: 4.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  "sandstone-sentinel": {
-    path: "/models/sandstone_sentinel.glb",
-    scale: 3.9,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  apex: {
-    path: "/models/apex_hero.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  silver: {
-    path: "/models/silver_hero.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  "hyena-scout": {
-    path: "/models/hyenaratvbill.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  "rift-drone": {
-    path: "/models/drone.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  malakor: {
-    path: "/models/boss.glb",
-    scale: 4.0,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-  behemoth: {
-    path: "/models/bosssss.glb",
-    scale: 5.0,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-  },
-};
+// Re-export for any legacy callers that still import from this module
+export type { GLBModelConfig };
+export { MODEL_REGISTRY as CHARACTER_MODELS };
 
 interface GLBCharacterModelProps {
   fighterId: string;
@@ -404,7 +248,7 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
     hitAnim = 0,
   } = props;
 
-  const config = CHARACTER_MODELS[fighterId];
+  const config = getModelConfig(fighterId);
   if (!config) return null;
 
   return (
@@ -428,10 +272,11 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
   );
 }
 
-const PRELOAD_IDS = ["kai-jax", "jax", "kai"];
-PRELOAD_IDS.forEach((id) => {
-  const cfg = CHARACTER_MODELS[id];
+PRELOAD_MODEL_IDS.forEach((id) => {
+  const cfg = MODEL_REGISTRY[id];
   if (cfg) {
-    try { useGLTF.preload(cfg.path); } catch (_e) {}
+    try {
+      useGLTF.preload(cfg.path);
+    } catch (_e) {}
   }
 });

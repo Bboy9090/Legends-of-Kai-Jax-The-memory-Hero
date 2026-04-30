@@ -39,6 +39,9 @@ VFXSystem (hit sparks, knockback dust, block ring, phase flash, attack trails), 
 - Wired live mission HUD: `Status / Wave / Kills / HP` now subscribe to `MissionScene.getStatus()` + `MissionOrchestrator.getStatus()` every 200ms
 - Added `data-testid` markers (`hud-status`, `hud-wave`, `hud-kills`, `hud-hp-fill`)
 - Added "Mission: First Blood" + "Combat Kernel" navigation buttons on the LoreHub landing page
+- **GLB integration:** `MissionScene` and `BossEntity` now async-load real committed GLBs (Meshy Kai/Jax/9-tails KaiJax) via `characters/GLBCharacterLoader.ts`; box mesh is hidden once rig loads, falls back to box on any load/transform failure
+- **Unified model registry (Jan 2026):** Created `apps/web/src/assets/modelRegistry.ts` as the SOLE source of truth for runtime GLB paths. Refactored `GLBCharacterModel.tsx`, `AdventureCharacter.tsx`, `AdventureEnemyAI.tsx` to consume `getModelConfig()` from the registry. `GLBCharacterLoader.ts` for the mission/combat scenes now sources its `CHARACTER_GLB` paths from the same registry via getter aliases. Legacy `CHARACTER_MODELS` re-exported from `GLBCharacterModel.tsx` as an alias to `MODEL_REGISTRY` so any external legacy callers keep working. Added `apps/web/public/models/README.md` documenting the rule.
+- **Anchor validator:** `loadCharacterRig` traverses the loaded GLB scene and reports presence of `root / spine / head / tail_01..tail_09`. Verified Kai + Jax both have root/spine/head present; tail_01..09 anchors are NOT present in current Meshy assets (logged as warning, hitbox attachment falls back to root + facing direction).
 
 ## How to Test
 1. Land on `/` — Lore Hub. Click **Mission: First Blood** (red) or **Combat Kernel** (cyan) button.

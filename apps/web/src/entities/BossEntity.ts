@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { Hurtbox } from '../combat/Hurtbox';
 import { MovePlayer } from '../combat/MovePlayer';
 import { BossAI } from '../ai/BossAI';
+import { loadCharacterRig, CHARACTER_GLB, type CharacterRig } from '../characters/GLBCharacterLoader';
 import type { MoveSpec } from '../types/MoveSpec';
 import type { AITarget } from '../ai/SimpleAI';
 
@@ -19,6 +20,7 @@ export class BossEntity {
   private scene: THREE.Scene;
   private maxHP: number;
   private isDead: boolean = false;
+  private rig: CharacterRig | null = null;
 
   constructor(
     scene: THREE.Scene,
@@ -82,6 +84,9 @@ export class BossEntity {
     const aiPos = this.ai.getPosition();
     this.mesh.position.copy(aiPos);
     this.hurtbox.setPosition(aiPos.x, aiPos.y, aiPos.z);
+    if (this.rig?.loaded) {
+      this.rig.group.position.set(aiPos.x, 0, aiPos.z);
+    }
 
     if (this.hurtbox.getHealth() <= 0 && !this.isDead) {
       this.die();
@@ -157,3 +162,4 @@ export class BossEntity {
     return this.mesh.position.clone();
   }
 }
+

@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
-import { CHARACTER_MODELS } from "../models/GLBCharacterModel";
+import { getModelConfig } from "../../../assets/modelRegistry";
 import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
 import { ENEMY_TIERS } from "../../../game/tuning/enemyTuning";
 import {
@@ -45,7 +45,7 @@ const ENEMY_TARGET_HEIGHTS: Record<string, number> = {
 };
 
 function EnemyMesh({ enemy }: EnemyMeshProps) {
-  const config = CHARACTER_MODELS[enemy.fighterId];
+  const config = getModelConfig(enemy.fighterId);
   const modelPath = config?.path || "/models/stylized-beast.glb";
 
   const { scene, animations } = useGLTF(modelPath);

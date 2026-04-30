@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useAdventure } from "../../../lib/stores/useAdventure";
-import { CHARACTER_MODELS } from "../models/GLBCharacterModel";
+import { getModelConfig } from "../../../assets/modelRegistry";
 import { CombatState } from "../../../game/combat/stateEnums";
 import {
   findLimbs, captureBaseRotations, hasAnyLimb, createAnimState,
@@ -242,7 +242,7 @@ function ClipAnimatedCharacter({ fighterId, accentColor }: Props) {
 }
 
 function ProceduralCharacter({ fighterId, accentColor }: Props) {
-  const config = CHARACTER_MODELS[fighterId];
+  const config = getModelConfig(fighterId);
   const groupRef = useRef<THREE.Group>(null);
   const innerRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
