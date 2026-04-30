@@ -1,119 +1,66 @@
-# LEGENDS OF KAI-JAX
-## Combat Runtime PRD
-
-**Status:** Sprint 2 — COMPLETE (verified Feb 16, 2026)
-**Version:** Combat Kernel v1.2
-**Last Updated:** February 16, 2026
-
----
+# Legends of Kai-Jax — PRD
 
 ## Original Problem Statement
-Build a scalable combat runtime for Legends of Kai-Jax with multiple orchestration modes (arena duels, adventure missions, bosses). Data-driven combat kernel, frame-based move interpreter, JSON MoveSpecs, AABB hurtbox/hitbox resolution, wave orchestration, boss AI, player WASD control.
-
----
+Continue implementation of Legends of Kai-Jax as a modular, data-driven combat game built on a universal combat kernel. Verify, complete, and integrate the existing P1–P4 implementations already in the repo (do NOT rebuild from scratch). Preserve current architecture, prioritize real gameplay proof, dark moody arena aesthetic.
 
 ## Architecture
+- Vite + React 18 + TypeScript + Three.js (`/app/apps/web`)
+- Combat runtime is shared across player vs AI, missions, bosses (one runtime, multiple orchestration layers)
+- Data-driven: moves authored in JSON (`public/moves/*.json`), missions in `MissionSchema.ts`
+- Shared kernel: `combat/MovePlayer.ts`, `combat/Hurtbox.ts`, `types/MoveSpec.ts`, `entities/{EnemyEntity,BossEntity}.ts`, `ai/{SimpleAI,BossAI}.ts`, `mission/{MissionOrchestrator,WaveDirector,MissionTracker,MissionSchema}.ts`
+- Frontend supervisor `yarn start` in `/app/frontend` proxies to `vite` in `/app/apps/web` on port 3000
+- Frontend-only architecture (FastAPI backend untouched, runs on 8001 but unused by game)
 
-```
-/app/apps/web/ (Vite + Three.js game runtime)
-├── public/moves/*.json       # 10 MoveSpecs (6 Kai + 4 Jax)
-├── src/combat/               # MovePlayer, Hurtbox
-├── src/mission/              # Tracker, WaveDirector, Orchestrator, Schema (2 missions)
-├── src/ai/                   # SimpleAI (grunt/rusher/defender/sniper), BossAI (3-phase)
-├── src/player/               # PlayerController (WASD + character-specific speed)
-├── src/characters/           # CharacterSpec (Kai + Jax playable)
-├── src/entities/             # FighterEntity, EnemyEntity, BossEntity
-├── src/scenes/               # CombatDemoScene, MissionScene (URL-param selectable)
-└── {combat,mission}-demo.html
+## Core Roster
+- **Kai** — precision/control (cyan, 100 HP, balanced)
+- **Jax** — speed/unpredictability (yellow)
+- **KaiJax** — power/reach (fusion)
 
-/app/frontend/ (CRA web hub)
-└── public/game/              # Vite production build (mirrored here post-build)
-    └── ... (mission-demo.html, moves/*.json, assets/*)
-```
+## What's Been Implemented (verified Jan 2026)
 
-**Stitch:** The Vite build is copied to `/app/frontend/public/game/`, so the CRA preview URL serves the demos at `/game/mission-demo.html`. Hero section has a "COMBAT DEMO" button (`data-testid="cta-play-combat-demo"`) that deep-links to it.
+### P1 — Real Combat Exchange (PROVEN)
+`kai_light_jab` and 5 additional moves (heavy_punch, uppercut, sweep, grab, combo_chain) loaded from JSON, frame-data driven through MovePlayer. Input → startup → active hitbox spawn → AABB collision → damage → knockback → hitstop → recovery → cleanup. Shield + grab + shield-break logic implemented.
 
----
+### P2 — World-Space Hitbox Attachment (PROVEN)
+`MovePlayer.spawnHitbox` reads fighter root position + facing direction; hitbox `offX` mirrors with `direction = facingRight ? 1 : -1`. `offY` corrected for mesh-center-vs-feet (FOOT_OFFSET = 0.9).
 
-## Sprint 1 — Core Gameplay ✅ (Feb 16, 2026)
-- Player WASD (`PlayerController.ts`) with arena bounds + friction
-- 6 Kai moves: light jab / heavy punch / uppercut / sweep / grab / 3-hit combo chain
-- Shield system (hold SHIFT), shield HP 100 + regen, shield-break punish
-- Grab system bypasses shield (`isGrab` flag)
-- BossAI with 3 phases (100/66/33% HP thresholds), scaled cooldowns, special attack chance
-- BossEntity wrapper (larger mesh, phase-based color tint)
-- Fixed critical `MovePlayer.applyHit()` syntax bug (methods spliced mid-function)
-- Damage/knockback driven by MoveSpec data (not hardcoded)
+### P3 — Enemy Entity Wrapper (PROVEN)
+`EnemyEntity` + `BossEntity` use the SAME `MovePlayer` + `Hurtbox` runtime (no special enemy damage system). 4 AI behaviors: grunt, rusher, defender, sniper. Boss has 3 phases via `BossAI`. Death handling, knockback application via AI takeDamage.
 
----
+### P4 — First Playable Mission Slice (PROVEN)
+`MissionScene` orchestrates Ironvein Ward + Null Forge missions. Wave 1 (5 grunts) → Wave 2 (6 grunts + 2 scouts) → Boss (covenant_enforcer). Win = defeat boss. Lose = player HP ≤ 0. Available as standalone playable proof at `/mission-demo.html`.
 
-## Sprint 2 — Content Expansion ✅ (Feb 16, 2026)
-- **3 enemy behaviors** in `SimpleAI` via behavior table: `grunt` / `rusher` / `defender` / `sniper`
-  - Rusher: 3.6 speed, 0.4s cooldown, no retreat
-  - Defender: 1.4 speed, random block (45% on hit), 0.8s guard
-  - Sniper: 4.5 attack range, keeps distance (preferred 4.5), retreats 55% on hit
-- **2nd mission:** `NULL_FORGE_02` — Null Forge: Specialist Assault (rusher + defender + sniper waves, `fang_warlord` boss)
-- **2nd playable character:** Jax (HP 85, move speed 5.2) with 4 unique moves: `jax_quick_jab`, `jax_dash_strike`, `jax_spin_kick`, `jax_flash_grab`
-- **Character + Mission selection** via URL params (`?character=jax&mission=null_forge_02`)
-- **In-HUD selectors** (mission-demo sidebar: KAI/JAX toggles + 2 mission links)
-- **Stitch complete:** CRA hub `/game/mission-demo.html` route works; hero section has "COMBAT DEMO" CTA
+### Polish (already in place, preserved)
+VFXSystem (hit sparks, knockback dust, block ring, phase flash, attack trails), AudioSystem (whoosh/hit/grab/block/shield_break/boss_roar/phase_transition/ko), CameraShake, character-specific PlayerController, multi-mission selector, character selector (Kai/Jax via URL param).
 
-### Controls (mission-demo)
-| Key | Kai | Jax |
-|-----|-----|-----|
-| J | Light Jab (4) | Quick Jab (3, faster) |
-| K | Heavy Punch (12) | Dash Strike (8) |
-| L | Uppercut (10, launches) | Uppercut (10, shared) |
-| I | Sweep (6, low) | Spin Kick (2×4, both sides) |
-| U | Grab (8) | Flash Grab (6) |
-| O | 3-hit Combo Chain | 3-hit Combo (shared) |
-| WASD | Move | Move (faster) |
-| SHIFT | Hold to shield |
-| SPACE | Start mission |
-| ESC | Exit |
+### This Session's Hardening
+- Wired `/app/frontend` supervisor to launch vite from `/app/apps/web` on port 3000 (HMR enabled, allowed-hosts open)
+- Changed vite `base` from `/game/` → `/` so all routes resolve at preview URL root
+- Wired live mission HUD: `Status / Wave / Kills / HP` now subscribe to `MissionScene.getStatus()` + `MissionOrchestrator.getStatus()` every 200ms
+- Added `data-testid` markers (`hud-status`, `hud-wave`, `hud-kills`, `hud-hp-fill`)
+- Added "Mission: First Blood" + "Combat Kernel" navigation buttons on the LoreHub landing page
 
----
+## How to Test
+1. Land on `/` — Lore Hub. Click **Mission: First Blood** (red) or **Combat Kernel** (cyan) button.
+2. `/mission-demo.html` — Press SPACE to start; WASD to move; J/K/L/I/U/O for moves; SHIFT to shield; ESC to exit.
+3. `/combat-demo.html` — Press J for `kai_light_jab` against a stationary 100 HP dummy.
+4. Switch character: `?character=kai` or `?character=jax`. Switch mission: `?mission=ironvein_ward_01` or `?mission=null_forge_02`.
 
-## Verification (Feb 16, 2026)
-Local Playwright against `http://localhost:3000` (CRA hub with stitched game):
-- ✅ CRA hub loads; `cta-play-combat-demo` button present
-- ✅ Kai + Mission 1: playerHP 100, 5 enemies, grunt behavior
-- ✅ Jax + Mission 1: playerHP 85, `jax_quick_jab` fires frame 2 startup as specced
-- ✅ Kai + Mission 2: `[SimpleAI:rusher]` enemies confirmed, 5 enemies spawned
-- ✅ All move JSONs load from `/game/moves/*` (BASE_URL rewrite working)
-- ✅ Zero page errors across 4 test runs
+## Hard Blocker (per problem statement)
+Production `kai_jax.glb` with the canonical hierarchy `root / spine / head / tail_01 → tail_09` is NOT yet finalized. All gameplay currently uses placeholder box meshes. Numerous test/variant GLBs exist in `apps/web/public/models/` but none are the verified production rig.
 
----
+## Backlog (P0 → P2)
+- **P0** Real `kai_jax.glb` rig validation against tail attachment + hurtbox proportions
+- **P0** Replace box player/enemy meshes with rigged GLB characters wired to anchor sockets
+- **P0** Animation state machine driven by MovePlayer phase (startup/active/recovery)
+- **P1** Bone-socket hitbox attachment (currently root + facing only)
+- **P1** Win/Lose end-screen overlays + Retry button (mission orchestrator state already exposes `complete` / `failed`)
+- **P1** Boss phase HUD indicator + dedicated boss HP bar
+- **P2** DI (directional influence) on knockback, advanced reactions, juggle states
+- **P2** Versus/duel orchestration layer reusing the same combat runtime
+- **P2** Tag/partner system
 
-## Roadmap
-
-### P0 — Sprint 3: Feel & Feedback (NEXT)
-- VFX: hit sparks, attack trails, knockback dust particles
-- Audio: attack whoosh, impacts, grunts, boss roars, UI sfx
-
-### P1 — Sprint 4: Transformation & Camera
-- Transformation system (Kai ↔ Jax ↔ KaiJax) mid-combat
-- Camera shake on hit, dynamic zoom on KO, cinematic boss entrance
-
-### P2 — Sprint 5: Asset Integration (BLOCKED — awaiting `kai_jax.glb`)
-- GLB character integration, animation-synced MovePlayer, tail empties validation
-
-### P3 — Sprint 6: Polish
-- Health regen / power-up pickups
-- Score + ranking system
-- In-world 3D HUD (not DOM overlay)
-
-### P4 — Sprint 7: Multiplayer
-- Local 2-player foundation
-
----
-
-## Tech Stack
-- **Game Runtime:** Vite 5 + TypeScript + Three.js 0.160
-- **Web Hub:** React 19 + Tailwind + Lucide (CRA)
-- **Backend:** FastAPI + MongoDB
-- **Build:** `yarn build` in `/app/apps/web` → copy `dist/` + `public/moves/` to `/app/frontend/public/game/`
-
-### Known Non-Blockers
-- Pre-existing syntax errors in `src/pages/SagaModeLauncher.tsx` (not imported by demos, not in build input)
-- Vite build outputs 500+KB chunks — can be split later with `manualChunks`
+## Next Tasks
+1. Drop in the production `kai_jax.glb` and validate node hierarchy
+2. Wire animation clips per MoveSpec phase
+3. Add end-state overlay UI to `/mission-demo.html`

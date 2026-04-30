@@ -4,7 +4,7 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
-  base: "/game/",
+  base: "/",
   resolve: {
     extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],
     alias: {
@@ -15,9 +15,14 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5000,
+    port: 3000,
     host: "0.0.0.0",
     allowedHosts: true,
+    strictPort: true,
+    hmr: {
+      clientPort: 443,
+      protocol: "wss",
+    },
   },
   build: {
     outDir: "dist",

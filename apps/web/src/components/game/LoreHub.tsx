@@ -336,9 +336,34 @@ function HeroSection({ onNavigate, onPlayGame }: { onNavigate: (s: Section) => v
                 border: "2px solid rgba(46,46,254,0.8)",
                 boxShadow: "0 0 25px rgba(46,46,254,0.3)",
               }}
+              data-testid="lorehub-play-game-btn"
             >
               <Gamepad2Icon className="w-5 h-5" /> Play Game
             </button>
+            <a
+              href="/mission-demo.html"
+              className="flex items-center gap-2 px-5 py-3 rounded-lg font-black text-sm uppercase tracking-wider text-white transition-all hover:scale-[1.02]"
+              style={{
+                background: "linear-gradient(135deg, rgba(255,59,48,0.35), rgba(255,214,10,0.15))",
+                border: "2px solid rgba(255,59,48,0.7)",
+                boxShadow: "0 0 18px rgba(255,59,48,0.25)",
+              }}
+              data-testid="lorehub-mission-demo-btn"
+            >
+              <FlameIcon className="w-4 h-4" /> Mission: First Blood
+            </a>
+            <a
+              href="/combat-demo.html"
+              className="flex items-center gap-2 px-5 py-3 rounded-lg font-black text-sm uppercase tracking-wider text-white transition-all hover:scale-[1.02]"
+              style={{
+                background: "linear-gradient(135deg, rgba(0,217,255,0.25), rgba(46,46,254,0.15))",
+                border: "2px solid rgba(0,217,255,0.7)",
+                boxShadow: "0 0 18px rgba(0,217,255,0.25)",
+              }}
+              data-testid="lorehub-combat-demo-btn"
+            >
+              <Gamepad2Icon className="w-4 h-4" /> Combat Kernel
+            </a>
             <button
               onClick={() => onNavigate("characters")}
               className="flex items-center gap-2 px-5 py-3 rounded-lg font-bold text-sm text-white/80 transition-all hover:text-white hover:scale-[1.02]"
