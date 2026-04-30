@@ -3,6 +3,8 @@
  */
 
 import { MissionScene } from './scenes/MissionScene';
+import { installRegistryDebugOverlay } from './debug/RegistryDebugOverlay';
+import { installMissionEndStateWatcher } from './debug/MissionEndStateOverlay';
 
 document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('mission-canvas') as HTMLCanvasElement;
@@ -17,6 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const mission = new MissionScene(canvas);
   mission.start();
+
+  // Debug + UX overlays
+  installRegistryDebugOverlay();
+  installMissionEndStateWatcher(mission);
 
   window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
@@ -37,8 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const orchStatus = orch?.getStatus?.();
     if (statusEl) {
       if (!s.missionStarted) statusEl.textContent = 'READY';
-      else if (orchStatus?.state === 'complete') statusEl.textContent = 'VICTORY';
-      else if (orchStatus?.state === 'failed') statusEl.textContent = 'DEFEATED';
+      else if (orchStatus?.state === 'won') statusEl.textContent = 'VICTORY';
+      else if (orchStatus?.state === 'lost') statusEl.textContent = 'DEFEATED';
       else statusEl.textContent = (orchStatus?.state || 'ACTIVE').toString().toUpperCase();
     }
     if (waveEl && orchStatus) waveEl.textContent = `${orchStatus.wave} / ${orchStatus.totalWaves}`;

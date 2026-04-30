@@ -4,6 +4,7 @@
  */
 
 import { CombatDemoScene } from './scenes/CombatDemoScene';
+import { installRegistryDebugOverlay } from './debug/RegistryDebugOverlay';
 
 // Wait for DOM
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Create and start demo
   const demo = new CombatDemoScene(canvas);
   demo.start();
+
+  // Registry debug overlay (toggle with ~)
+  installRegistryDebugOverlay();
 
   // Handle window resize
   window.addEventListener('resize', () => {
