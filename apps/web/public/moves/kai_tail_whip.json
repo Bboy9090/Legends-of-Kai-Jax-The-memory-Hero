@@ -1,0 +1,54 @@
+{
+  "id": "kai_tail_whip",
+  "startup": 8,
+  "active": 6,
+  "recovery": 14,
+  "shield_damage": 4,
+  "di_resist": 0.15,
+  "hitstopOnHit": 6,
+  "hitstopOnBlock": 3,
+  "hits": [
+    {
+      "startF": 8,
+      "endF": 10,
+      "offX": 0.4,
+      "offY": 0.0,
+      "halfW": 0.35,
+      "halfH": 0.25,
+      "kbX": 2.0,
+      "kbY": 0.4,
+      "dmg": 5,
+      "usedOnce": false,
+      "isGrab": false,
+      "socket": "tail_03"
+    },
+    {
+      "startF": 11,
+      "endF": 13,
+      "offX": 0.5,
+      "offY": 0.1,
+      "halfW": 0.4,
+      "halfH": 0.3,
+      "kbX": 2.5,
+      "kbY": 0.6,
+      "dmg": 7,
+      "usedOnce": false,
+      "isGrab": false,
+      "socket": "tail_06"
+    },
+    {
+      "startF": 13,
+      "endF": 14,
+      "offX": 0.6,
+      "offY": 0.15,
+      "halfW": 0.5,
+      "halfH": 0.4,
+      "kbX": 3.0,
+      "kbY": 0.8,
+      "dmg": 9,
+      "usedOnce": true,
+      "isGrab": false,
+      "socket": "tail_09"
+    }
+  ]
+}

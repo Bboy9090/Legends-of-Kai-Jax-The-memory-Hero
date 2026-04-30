@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import type { MoveSpec, HitSpec } from '../types/MoveSpec';
 import { Hurtbox } from './Hurtbox';
+import type { CharacterRig } from '../characters/GLBCharacterLoader';
 
 export interface MovePlayerCallbacks {
   onMoveStart?: (move: MoveSpec) => void;
@@ -31,6 +32,12 @@ export class MovePlayer {
   shieldRegenDelay: number = 2.0; // Seconds before regen starts
   timeSinceShieldHit: number = 0;
   callbacks: MovePlayerCallbacks = {};
+  /** Optional rig (real GLB) for bone-socket hitbox attachment.
+   *  When null OR a requested socket is missing, MovePlayer falls back
+   *  to fighter root + facing math. */
+  private rig: CharacterRig | null = null;
+  /** Reusable scratch vector for socket world-position lookups */
+  private _socketWorldPos: THREE.Vector3 = new THREE.Vector3();
 
   constructor(scene: THREE.Scene, hurtbox: Hurtbox, fighterPosition: THREE.Vector3) {
     this.scene = scene;
@@ -43,6 +50,43 @@ export class MovePlayer {
    */
   setCallbacks(cb: MovePlayerCallbacks): void {
     this.callbacks = { ...this.callbacks, ...cb };
+  }
+
+  /**
+   * Attach (or detach) a CharacterRig for bone-socket hitbox math.
+   * Pass null to revert to root+facing fallback. Idempotent.
+   */
+  setRig(rig: CharacterRig | null): void {
+    this.rig = rig;
+    if (rig?.loaded) {
+      const tails = rig.tails.filter((t) => t).length;
+      console.log(`[MovePlayer] Rig attached. Anchors: root=${!!rig.root} spine=${!!rig.spine} head=${!!rig.head} tails=${tails}/9`);
+    }
+  }
+
+  /**
+   * Resolve a HitSpec.socket name to a Three.Object3D from the active rig.
+   * Returns null if the rig is missing or the socket isn't present —
+   * caller is expected to fall back to root+facing math.
+   */
+  private resolveSocket(name: string): THREE.Object3D | null {
+    if (!this.rig || !this.rig.loaded) return null;
+    switch (name) {
+      case 'root':
+        return this.rig.root;
+      case 'spine':
+        return this.rig.spine;
+      case 'head':
+        return this.rig.head;
+      default: {
+        const m = name.match(/^tail_(\d{2})$/);
+        if (m) {
+          const idx = parseInt(m[1], 10) - 1;
+          if (idx >= 0 && idx < 9) return this.rig.tails[idx] ?? null;
+        }
+        return null;
+      }
+    }
   }
 
   startMove(move: MoveSpec): void {
@@ -113,22 +157,49 @@ export class MovePlayer {
     });
     const mesh = new THREE.Mesh(geo, mat);
 
-    // Position hitbox relative to fighter.
-    // offY is authored as "height above feet", but fighterPosition.y is the
-    // mesh-CENTER (meshes are 1.8 tall, centered at y=0.9). Subtract the
-    // half-height so offY behaves like ground-relative chest/head anchor.
     const direction = this.facingRight ? 1 : -1;
-    const FOOT_OFFSET = 0.9;
-    mesh.position.set(
-      this.fighterPosition.x + (hit.offX * direction),
-      this.fighterPosition.y + hit.offY - FOOT_OFFSET,
-      this.fighterPosition.z
-    );
+
+    // ── Socket-aware attachment with graceful degradation ───────────
+    // If the move authored a socket name AND the active rig exposes that
+    // anchor, position relative to the socket's world transform.
+    // Otherwise, fall back to root + facing math (legacy behavior).
+    let attachedToSocket = false;
+    if (hit.socket) {
+      const socket = this.resolveSocket(hit.socket);
+      if (socket) {
+        socket.updateMatrixWorld();
+        socket.getWorldPosition(this._socketWorldPos);
+        mesh.position.set(
+          this._socketWorldPos.x + hit.offX * direction,
+          this._socketWorldPos.y + hit.offY,
+          this._socketWorldPos.z
+        );
+        attachedToSocket = true;
+      }
+    }
+
+    if (!attachedToSocket) {
+      // Position hitbox relative to fighter root.
+      // offY is authored as "height above feet", but fighterPosition.y is
+      // the mesh-CENTER (meshes are 1.8 tall, centered at y=0.9). Subtract
+      // half-height so offY behaves like ground-relative chest/head anchor.
+      const FOOT_OFFSET = 0.9;
+      mesh.position.set(
+        this.fighterPosition.x + hit.offX * direction,
+        this.fighterPosition.y + hit.offY - FOOT_OFFSET,
+        this.fighterPosition.z
+      );
+    }
 
     this.scene.add(mesh);
     this.hitboxes.push(mesh);
 
-    console.log(`[MovePlayer] Hitbox spawned at frame ${this.frame}: pos=(${mesh.position.x.toFixed(2)}, ${mesh.position.y.toFixed(2)})`);
+    const attachLog = attachedToSocket
+      ? `socket='${hit.socket}'`
+      : hit.socket
+      ? `fallback(root+facing) [socket='${hit.socket}' missing on rig]`
+      : 'root+facing';
+    console.log(`[MovePlayer] Hitbox @ frame ${this.frame} pos=(${mesh.position.x.toFixed(2)}, ${mesh.position.y.toFixed(2)}) attach=${attachLog}`);
 
     // Emit active-frame callback (for attack trails)
     this.callbacks.onActiveFrame?.(hit, mesh.position.clone());

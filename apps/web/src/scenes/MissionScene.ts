@@ -229,6 +229,8 @@ export class MissionScene {
     rig.group.position.y = 0; // feet on ground
     this.scene.add(rig.group);
     this.playerRig = rig;
+    // Hand the rig to MovePlayer so socket-targeted hits attach to bones.
+    this.playerMovePlayer.setRig(rig);
     console.log(`[MissionScene] Real GLB visual swapped in for ${this.characterId}`);
   }
 

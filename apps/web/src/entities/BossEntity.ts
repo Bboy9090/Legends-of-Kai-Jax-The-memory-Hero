@@ -51,6 +51,29 @@ export class BossEntity {
     this.ai = new BossAI(this.movePlayer, this.mesh.position, hp);
 
     console.log(`[BossEntity] Spawned ${id} at (${x}, ${y}) with ${hp} HP`);
+
+    // Async GLB swap (boss = KaiJax fusion form)
+    this.loadBossGLB();
+  }
+
+  private async loadBossGLB(): Promise<void> {
+    const base = import.meta.env.BASE_URL;
+    const path = CHARACTER_GLB.kaijax;
+    if (!path) return;
+    const rig = await loadCharacterRig(`${base}${path}`, {
+      color: 0xff0000,
+      targetHeight: 2.4,
+      debug: true,
+    });
+    if (!rig.loaded) return;
+    this.mesh.visible = false;
+    rig.group.position.copy(this.mesh.position);
+    rig.group.position.y = 0;
+    this.scene.add(rig.group);
+    this.rig = rig;
+    // Hand rig to the boss's MovePlayer so socket-authored hits work
+    this.movePlayer.setRig(rig);
+    console.log(`[BossEntity ${this.id}] Real GLB visual loaded`);
   }
 
   async loadMove(moveId: string): Promise<void> {
@@ -84,6 +107,9 @@ export class BossEntity {
     const aiPos = this.ai.getPosition();
     this.mesh.position.copy(aiPos);
     this.hurtbox.setPosition(aiPos.x, aiPos.y, aiPos.z);
+    if (this.rig?.loaded) {
+      this.rig.group.position.set(aiPos.x, 0, aiPos.z);
+    }
     if (this.rig?.loaded) {
       this.rig.group.position.set(aiPos.x, 0, aiPos.z);
     }

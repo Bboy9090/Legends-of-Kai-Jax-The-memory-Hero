@@ -8,9 +8,9 @@ export interface HitSpec {
   startF: number;
   /** Frame when hitbox deactivates */
   endF: number;
-  /** Hitbox X offset from fighter center */
+  /** Hitbox X offset from attachment anchor (mirrored by facing) */
   offX: number;
-  /** Hitbox Y offset from fighter center */
+  /** Hitbox Y offset from attachment anchor */
   offY: number;
   /** Hitbox half-width */
   halfW: number;
@@ -26,6 +26,15 @@ export interface HitSpec {
   usedOnce: boolean;
   /** This hitbox is a grab command throw */
   isGrab: boolean;
+  /**
+   * Optional socket name for bone-socket attachment.
+   * Accepted values: 'root' | 'spine' | 'head' | 'tail_01' .. 'tail_09'.
+   * When present AND the active rig exposes that anchor, the hitbox is
+   * positioned relative to the socket's world transform.
+   * When absent OR the rig lacks the named anchor, the hitbox falls back
+   * to fighter root + facing direction (legacy behavior).
+   */
+  socket?: string;
 }
 
 export interface MoveSpec {
