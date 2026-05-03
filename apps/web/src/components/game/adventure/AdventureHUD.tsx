@@ -5,6 +5,8 @@ import { STAMINA_CONFIG } from "../../../game/tuning/adventureTuning";
 import { getDistrictMeta } from "../../../lib/encounters";
 import { useMissions } from "../../../lib/stores/useMissions";
 import { ASHBLOCK_OBJECTIVE_BLURBS } from "../../../game/world/zones/AshblockHeights/AshblockHeightsNarrative";
+import MoveListOverlay from "../MoveListOverlay";
+import { useState, useEffect } from "react";
 
 function HealthBar({
   current,
@@ -155,8 +157,21 @@ export default function AdventureHUD() {
   const roamDistrictId = useAdventure((s) => s.roamDistrictId);
   const encounterIndex = useAdventure((s) => s.encounterIndex);
   const districtCompleted = useAdventure((s) => s.districtCompleted);
-  const isPaused = useAdventure((s) => s.isPaused);
   const setGameState = useRunner((s) => s.setGameState);
+  const trainingSession = useRunner((s) => s.trainingSession);
+  const isPaused = useAdventure((s) => s.isPaused);
+  const [showMoves, setShowMoves] = useState(trainingSession);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Tab") {
+        e.preventDefault();
+        setShowMoves((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const districtMeta = roamDistrictId ? getDistrictMeta(roamDistrictId) : null;
   const lastReward = useMissions((s) => s.lastReward);
@@ -195,6 +210,23 @@ export default function AdventureHUD() {
   return (
     <div className="absolute inset-0 pointer-events-none z-40">
       <ImpactFlash color={player.impactFlash} />
+
+      {trainingSession && (
+        <div className="absolute top-24 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+          <div className="bg-amber-500/80 text-white px-4 py-1 rounded-full font-black text-xs tracking-[0.2em] border border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+            TRAINING MODE - IMMORTAL
+          </div>
+          <div className="text-[10px] text-amber-200/60 font-bold uppercase tracking-widest animate-pulse">
+            Press [TAB] to toggle move list
+          </div>
+        </div>
+      )}
+
+      {showMoves && (
+        <div className="absolute top-1/2 left-8 -translate-y-1/2 pointer-events-auto">
+          <MoveListOverlay />
+        </div>
+      )}
 
       <div className="absolute top-4 left-4 right-4 pointer-events-auto">
         <div className="flex items-start justify-between gap-4">

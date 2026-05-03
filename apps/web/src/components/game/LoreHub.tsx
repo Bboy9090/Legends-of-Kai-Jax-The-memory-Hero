@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useRunner } from "../../lib/stores/useRunner";
-import { Star, Zap, Swords, BookOpen, Skull, ChevronRight } from "../ui/icons";
+import { Star, Zap, Swords, BookOpen, Skull, ChevronRight, ScrollText } from "../ui/icons";
+import MoveListOverlay from "./MoveListOverlay";
 
 const HERO_IMAGE = "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/htuxfqte_9660FF22-E010-4DF5-A321-DDFE60ADB8CB.png";
 
@@ -214,7 +215,7 @@ const ELEMENT_ICONS: Record<string, React.ComponentType<{className?: string; siz
   "Memory/Reality": Star,
 };
 
-type Section = "home" | "characters" | "tails" | "story";
+type Section = "home" | "characters" | "tails" | "story" | "combat" | "shards";
 
 const particles = Array.from({ length: 20 }, (_, i) => ({
   left: `${(i * 17 + 13) % 100}%`,
@@ -251,7 +252,7 @@ export default function LoreHub() {
           </div>
 
           <div className="hidden md:flex gap-6">
-            {(["home", "characters", "tails", "story"] as Section[]).map((s) => (
+            {(["home", "characters", "tails", "story", "combat", "shards"] as Section[]).map((s) => (
               <button
                 key={s}
                 onClick={() => setSection(s)}
@@ -296,6 +297,8 @@ export default function LoreHub() {
         {section === "characters" && <CharactersSection />}
         {section === "tails" && <TailsSection />}
         {section === "story" && <StorySection />}
+        {section === "combat" && <CombatSection />}
+        {section === "shards" && <ShardsSection />}
       </main>
 
       <footer className="py-10 text-center" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
@@ -392,6 +395,13 @@ function HeroSection({ onNavigate, onPlayGame }: { onNavigate: (s: Section) => v
               style={{ border: "1px solid rgba(255,214,10,0.3)", background: "rgba(255,214,10,0.05)" }}
             >
               <Zap className="w-4 h-4 text-yellow-400" /> 9 Tails
+            </button>
+            <button
+              onClick={() => onNavigate("combat")}
+              className="flex items-center gap-2 px-5 py-3 rounded-lg font-bold text-sm text-white/80 transition-all hover:text-white hover:scale-[1.02]"
+              style={{ border: "1px solid rgba(0,242,255,0.3)", background: "rgba(0,242,255,0.05)" }}
+            >
+              <Swords className="w-4 h-4 text-cyan-400" /> Combat
             </button>
           </div>
         </div>
@@ -594,6 +604,134 @@ function StorySection() {
           >
             <p className="text-blue-400 italic">"The ninth tail doesn't fight — it settles."</p>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CombatSection() {
+  return (
+    <section className="min-h-screen py-24 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-16">
+          <p className="text-cyan-400 text-xs tracking-[0.3em] mb-3 uppercase">Mastery</p>
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-3">
+            COMBAT <span className="text-cyan-400">DATA</span>
+          </h2>
+          <p className="text-white/50 max-w-xl mx-auto text-sm">
+            Analysis of the Memory King's combat forms and tactical protocols.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 items-start">
+          <div className="space-y-6">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-yellow-400" /> Core Mechanics
+              </h3>
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center shrink-0">
+                    <Swords className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-200">Cancelling</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      All light attacks can be cancelled into a Dodge or Heavy strike, allowing for dynamic adaptation to enemy patterns.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center shrink-0">
+                    <Zap className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-200">Resonance</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Successful hits generate Resonance. At 100%, Kai-Jax enters a "Flow State" where stamina costs are halved.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+              <h3 className="text-xl font-bold text-white mb-4">Tactical Tips</h3>
+              <ul className="space-y-3">
+                <li className="flex gap-2 text-sm text-slate-400">
+                  <span className="text-cyan-400 font-bold">•</span>
+                  Use Dodge early to utilize i-frames during enemy heavy attacks.
+                </li>
+                <li className="flex gap-2 text-sm text-slate-400">
+                  <span className="text-cyan-400 font-bold">•</span>
+                  Heavy strikes break "Stone Armor" on elite enemies.
+                </li>
+                <li className="flex gap-2 text-sm text-slate-400">
+                  <span className="text-cyan-400 font-bold">•</span>
+                  Combine Light attacks with Dash for optimal crowd control.
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center">
+             <p className="text-[10px] text-cyan-300 font-bold uppercase tracking-[0.3em] mb-4">Live Command Reference</p>
+             <MoveListOverlay />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ShardsSection() {
+  const shards = [
+    { id: "s1", title: "The Fall of Sector-7", unlocked: true, content: "The day the Raging City began its final decline. Kai and Jax were children then, hiding in the steam tunnels of the Ash District." },
+    { id: "s2", title: "The First Fusion", unlocked: true, content: "Occurred during the fight with the Void Stalker. It wasn't a choice; it was a survival reflex triggered by synchronized desperation." },
+    { id: "s3", title: "Boryn's Secret", unlocked: false, content: "Locked. Complete Act II to reveal the truth about the General's origin." },
+    { id: "s4", title: "The Ninth Tail Protocol", unlocked: false, content: "Locked. Reaching 100% completion reveals the final reality-warping protocol." },
+  ];
+
+  return (
+    <section className="min-h-screen py-24 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-16">
+          <p className="text-purple-400 text-xs tracking-[0.3em] mb-3 uppercase">Archive</p>
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-3">
+            MEMORY <span className="text-purple-400">SHARDS</span>
+          </h2>
+          <p className="text-white/50 max-w-xl mx-auto text-sm">
+            Fragments of truth recovered from the Rift. Some memories are still fragmented.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          {shards.map((shard) => (
+            <div
+              key={shard.id}
+              className={`p-6 rounded-2xl border-2 transition-all ${
+                shard.unlocked
+                  ? "bg-white/5 border-purple-500/30"
+                  : "bg-black/40 border-slate-800 grayscale opacity-60"
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${shard.unlocked ? "bg-purple-500/20" : "bg-slate-800"}`}>
+                  <ScrollText className={`w-4 h-4 ${shard.unlocked ? "text-purple-400" : "text-slate-600"}`} />
+                </div>
+                <h3 className={`font-bold ${shard.unlocked ? "text-white" : "text-slate-500"}`}>{shard.title}</h3>
+              </div>
+              <p className="text-sm text-slate-400 leading-relaxed italic">
+                {shard.unlocked ? `"${shard.content}"` : "Memory integrity compromised. Complete mission objectives to reconstruct."}
+              </p>
+              {!shard.unlocked && (
+                <div className="mt-4 flex items-center gap-2 text-[10px] text-slate-600 uppercase font-black tracking-widest">
+                  <Skull className="w-3 h-3" /> Encrypted
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </section>

@@ -50,6 +50,8 @@ const LegendaryMainMenu: React.FC = () => {
   const profiles = useRunner((s) => s.profiles);
   const activeProfileIndex = useRunner((s) => s.activeProfileIndex);
   const switchProfile = useRunner((s) => s.switchProfile);
+  const setGameState = useRunner((s) => s.setGameState);
+  const setTrainingSession = useRunner((s) => s.setTrainingSession);
 
   // Safety guard for hydration
   if (!profiles || !profiles.length) {
@@ -57,50 +59,41 @@ const LegendaryMainMenu: React.FC = () => {
   }
 
 
-  // Menu items with legendary styling
+  // Simplified, functional menu items
   const menuItems: MenuItem[] = [
     {
-      id: 'continue',
-      label: 'CONTINUE SAGA',
-      sublabel: 'Select a memory profile',
-      action: () => setShowProfileSelect(true),
-    },
-    {
-      id: 'new-game',
-      label: 'NEW GAME',
-      sublabel: 'Begin the legend',
-      action: () => navigate('/character-select'),
+      id: 'saga',
+      label: 'START SAGA',
+      sublabel: 'Reclaim the stolen memories',
+      action: () => setGameState('campaign-map'),
       legendary: true
     },
     {
-      id: 'saga-mode',
-      label: 'SAGA MODE',
-      sublabel: '9 Books of the Memory King',
-      action: () => navigate('/saga-mode')
-    },
-    {
-      id: 'versus-mode',
+      id: 'versus',
       label: 'VERSUS MODE',
-      sublabel: 'Battle your rivals',
-      action: () => navigate('/versus-mode')
+      sublabel: '1v1 Combat vs Rivals',
+      action: () => setGameState('versus-select')
     },
     {
       id: 'training',
-      label: 'TRAINING',
-      sublabel: 'Master your forms',
-      action: () => navigate('/training')
+      label: 'TRAINING ARENA',
+      sublabel: 'Practice moves & combos',
+      action: () => {
+        setTrainingSession(true);
+        setGameState('adventure');
+      }
     },
     {
       id: 'codex',
-      label: 'CODEX',
-      sublabel: 'The Archive awaits',
-      action: () => navigate('/codex')
+      label: 'THE CODEX',
+      sublabel: 'Lore, Moves & Archives',
+      action: () => setGameState('lore-hub')
     },
     {
       id: 'settings',
       label: 'SETTINGS',
-      sublabel: 'Configure your experience',
-      action: () => navigate('/settings')
+      sublabel: 'Audio & Performance',
+      action: () => setGameState('settings')
     },
   ];
 
@@ -444,6 +437,18 @@ const LegendaryMainMenu: React.FC = () => {
             </div>
             <div className="h-0.5 w-12 lg:w-24 bg-gradient-to-r from-transparent via-legendary-gold to-transparent" />
           </div>
+
+          {/* Profile Quick Switcher */}
+          <div className="mt-4 flex items-center gap-4 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-sm">
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Profile:</span>
+            <button 
+              onClick={() => setShowProfileSelect(true)}
+              className="text-[10px] font-bold text-cyan-400 hover:text-white transition-colors flex items-center gap-2"
+            >
+              SLOT 0{activeProfileIndex + 1} • {profiles[activeProfileIndex].totalScore > 0 ? `LVL ${Math.floor(profiles[activeProfileIndex].totalScore / 1000) + 1}` : 'EMPTY'}
+              <span className="text-slate-600">[CHANGE]</span>
+            </button>
+          </div>
         </div>
 
         {/* Menu Items - Center Vertical */}
@@ -539,7 +544,21 @@ const LegendaryMainMenu: React.FC = () => {
           <p className="text-mono-small text-neutral-600 uppercase tracking-[0.2em] text-xs">
             FORGED IN THE BRONX • MASTERED IN THE SILENCE
           </p>
-          <p className="text-neutral-700 text-xs mt-2">
+          <div className="flex items-center justify-center gap-6 mt-4">
+            <button 
+              onClick={() => window.open('https://legendsofkaijax.com/privacy', '_blank')}
+              className="text-neutral-500 hover:text-white transition-colors text-[10px] uppercase tracking-widest"
+            >
+              Privacy Policy
+            </button>
+            <button 
+              onClick={() => window.open('https://legendsofkaijax.com/terms', '_blank')}
+              className="text-neutral-500 hover:text-white transition-colors text-[10px] uppercase tracking-widest"
+            >
+              Terms of Service
+            </button>
+          </div>
+          <p className="text-neutral-700 text-[10px] mt-4 uppercase tracking-widest">
             v2.0.0 — THE ULTIMATE FORM
           </p>
         </div>

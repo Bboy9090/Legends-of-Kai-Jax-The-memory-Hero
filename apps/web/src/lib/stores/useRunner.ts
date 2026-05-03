@@ -33,6 +33,8 @@ export type CampaignNodeId =
 interface ProfileData {
   totalScore: number;
   campaignCompletedNodes: CampaignNodeId[];
+  completedStoryMissionIds: string[];
+  completedRoamDistrictIds: string[];
   unlockedUpgrades: string[];
   lastPlayedTitle: string | null;
 }
@@ -62,13 +64,19 @@ interface RunnerState {
   // Progress (Maps to active profile)
   totalScore: number;
   campaignCompletedNodes: CampaignNodeId[];
+  completedStoryMissionIds: string[];
+  completedRoamDistrictIds: string[];
   unlockedUpgrades: string[];
   setCampaignCompleted: (nodeId: CampaignNodeId) => void;
+  setMissionCompleted: (missionKey: string) => void;
+  setRoamDistrictCompleted: (districtKey: string) => void;
 }
 
 const DEFAULT_PROFILE: ProfileData = {
   totalScore: 0,
   campaignCompletedNodes: [],
+  completedStoryMissionIds: [],
+  completedRoamDistrictIds: [],
   unlockedUpgrades: [],
   lastPlayedTitle: null,
 };
@@ -116,6 +124,8 @@ export const useRunner = create<RunnerState>()(
       // Progress Initial (Mirrors profile[0])
       totalScore: 0,
       campaignCompletedNodes: [],
+      completedStoryMissionIds: [],
+      completedRoamDistrictIds: [],
       unlockedUpgrades: [],
 
       setGameState: (gameState) =>
@@ -149,6 +159,34 @@ export const useRunner = create<RunnerState>()(
         });
       },
 
+      setMissionCompleted: (missionKey) => {
+        const { completedStoryMissionIds, activeProfileIndex, profiles } = get();
+        if (completedStoryMissionIds.includes(missionKey)) return;
+        
+        const newKeys = [...completedStoryMissionIds, missionKey];
+        const newProfiles = [...profiles] as [ProfileData, ProfileData, ProfileData];
+        newProfiles[activeProfileIndex] = { ...newProfiles[activeProfileIndex], completedStoryMissionIds: newKeys };
+        
+        set({
+          completedStoryMissionIds: newKeys,
+          profiles: newProfiles,
+        });
+      },
+
+      setRoamDistrictCompleted: (districtKey) => {
+        const { completedRoamDistrictIds, activeProfileIndex, profiles } = get();
+        if (completedRoamDistrictIds.includes(districtKey)) return;
+        
+        const newKeys = [...completedRoamDistrictIds, districtKey];
+        const newProfiles = [...profiles] as [ProfileData, ProfileData, ProfileData];
+        newProfiles[activeProfileIndex] = { ...newProfiles[activeProfileIndex], completedRoamDistrictIds: newKeys };
+        
+        set({
+          completedRoamDistrictIds: newKeys,
+          profiles: newProfiles,
+        });
+      },
+
       switchProfile: (index) => {
         const { profiles } = get();
         const targetProfile = profiles[index];
@@ -156,6 +194,8 @@ export const useRunner = create<RunnerState>()(
           activeProfileIndex: index,
           totalScore: targetProfile.totalScore,
           campaignCompletedNodes: targetProfile.campaignCompletedNodes,
+          completedStoryMissionIds: targetProfile.completedStoryMissionIds || [],
+          completedRoamDistrictIds: targetProfile.completedRoamDistrictIds || [],
           unlockedUpgrades: targetProfile.unlockedUpgrades,
         });
       },
@@ -169,6 +209,8 @@ export const useRunner = create<RunnerState>()(
             profiles: newProfiles,
             totalScore: DEFAULT_PROFILE.totalScore,
             campaignCompletedNodes: DEFAULT_PROFILE.campaignCompletedNodes,
+            completedStoryMissionIds: DEFAULT_PROFILE.completedStoryMissionIds,
+            completedRoamDistrictIds: DEFAULT_PROFILE.completedRoamDistrictIds,
             unlockedUpgrades: DEFAULT_PROFILE.unlockedUpgrades,
           });
         } else {
@@ -181,3 +223,8 @@ export const useRunner = create<RunnerState>()(
     }
   )
 );
+
+// Expose for cross-store access without circular imports
+if (typeof window !== 'undefined') {
+  (window as any).runnerStore = useRunner;
+}

@@ -729,7 +729,7 @@ export const useBattle = create<BattleState>((set, get) => ({
       const { playerX, opponentX, opponentInvulnerable, playerFighterId, playerTransformed } = get();
       const moves = getCharacterMoves(playerFighterId);
       const transformBonus = playerTransformed ? 1.5 : 1;
-      const range = (playerAttackType === 'ultimate' ? moves.ultimateRange : playerAttackType === 'special' ? moves.specialRange : playerAttackType === 'kick' ? 2 : 1.5) * transformBonus;
+      const range = (playerAttackType === 'ultimate' ? moves.ultimateRange : playerAttackType === 'special' ? moves.specialRange : playerAttackType === 'kick' ? 2.8 : 2.2) * transformBonus;
       const distance = Math.abs(playerX - opponentX);
 
       if (distance < range && !opponentInvulnerable) {

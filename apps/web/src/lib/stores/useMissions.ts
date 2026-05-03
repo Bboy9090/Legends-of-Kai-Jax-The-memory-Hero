@@ -14,7 +14,9 @@ export type MissionObjectiveKind =
   | { kind: "landHits"; count: number; attackType?: BattleAttackType }
   | { kind: "reachCombo"; count: number }
   | { kind: "useMove"; count: number; move: "special" | "ultimate" }
-  | { kind: "surviveSeconds"; seconds: number };
+  | { kind: "surviveSeconds"; seconds: number }
+  | { kind: "noDamage" }
+  | { kind: "timeLimit"; seconds: number };
 
 export interface MissionObjectiveRuntime {
   id: string;
@@ -235,25 +237,28 @@ function getStoryObjectives(storyId: string): MissionObjectiveRuntime[] {
 
   // Act-Specific Scaling Themes
   if (act === 1) {
-    // Act I: Learning the basics
+    // Act I: Learning & Precision
     return [
       objective("win", "Win the match", { kind: "winMatch" }, 1),
       objective("hits", `Land ${baseHits} hits`, { kind: "landHits", count: baseHits }, baseHits),
+      num % 5 === 0 ? objective("timer", "Finish in 90s", { kind: "timeLimit", seconds: 90 }, 90) : null,
       num % 3 === 0 ? objective("special", "Use Special", { kind: "useMove", count: 1, move: "special" }, 1) : null
     ].filter(Boolean) as MissionObjectiveRuntime[];
   } else if (act === 2) {
-    // Act II: Survival & Tactics
+    // Act II: Survival & Mastery
     return [
       objective("win", "Win the match", { kind: "winMatch" }, 1),
-      objective("survival", `Survive ${baseSurvival}s`, { kind: "surviveSeconds", seconds: baseSurvival }, baseSurvival),
-      objective("combo", `Reach ${baseCombo} combo`, { kind: "reachCombo", count: baseCombo }, baseCombo)
-    ];
+      objective("combo", `Reach ${baseCombo} combo`, { kind: "reachCombo", count: baseCombo }, baseCombo),
+      num % 4 === 0 ? objective("no_damage", "Flawless Segment (30s)", { kind: "surviveSeconds", seconds: 30 }, 30) : null,
+      num % 2 === 0 ? objective("survival", `Survive ${baseSurvival}s`, { kind: "surviveSeconds", seconds: baseSurvival }, baseSurvival) : null
+    ].filter(Boolean) as MissionObjectiveRuntime[];
   } else {
-    // Act III: Mastery & Fusion
+    // Act III: Elite Combat & Fusion Power
     return [
       objective("win", "Liberate the arena", { kind: "winMatch" }, 1),
       objective("ultimate", "Use Ultimate", { kind: "useMove", count: 1, move: "ultimate" }, 1),
-      objective("hits_heavy", `Land ${baseHits + 10} hits`, { kind: "landHits", count: baseHits + 10 }, baseHits + 10)
+      objective("hits_heavy", `Land ${baseHits + 15} hits`, { kind: "landHits", count: baseHits + 15 }, baseHits + 15),
+      objective("perfect", "Maintain high intensity", { kind: "reachCombo", count: baseCombo + 10 }, baseCombo + 10)
     ];
   }
 }
@@ -267,14 +272,13 @@ function resolveMissionMeta(source: MissionSource, id: string): ActiveMissionMet
   }
   const m = getStoryMissionById(id);
   if (!m) return null;
-  const arenaRaw = m.arena ?? m.arenaId;
-  return { source, id: m.id, title: m.name, description: m.description, arenaId: toPlayableArenaId(arenaRaw) };
+  const arenaRaw = m.arena;
+  return { source, id: m.id, title: m.title, description: m.description, arenaId: toPlayableArenaId(arenaRaw) };
 }
 
 function resolveObjectives(source: MissionSource, id: string): MissionObjectiveRuntime[] {
   if (source === "uee") return getUEEObjectives(id);
-  // Act I typed, everything else falls back to win-match only for now.
-  return getActIStoryObjectives(id);
+  return getStoryObjectives(id);
 }
 
 function resolveRewards(source: MissionSource, id: string): { xp: number; currency: number; loot: string[] } | null {
@@ -289,10 +293,18 @@ function resolveRewards(source: MissionSource, id: string): { xp: number; curren
 }
 
 function recomputeCompletion(objs: MissionObjectiveRuntime[]): MissionObjectiveRuntime[] {
-  return objs.map((o) => ({
-    ...o,
-    completed: o.completed || o.progress >= o.target,
-  }));
+  return objs.map((o) => {
+    if (o.completed) return o;
+    if (o.kind.kind === "timeLimit") {
+      // timeLimit is failed if progress exceeds target. 
+      // But usually it's checked at the end of the match.
+      return o;
+    }
+    return {
+      ...o,
+      completed: o.progress >= o.target,
+    };
+  });
 }
 
 interface MissionsState {
@@ -316,6 +328,7 @@ interface MissionsState {
   recordMove: (move: "special" | "ultimate") => void;
   recordCombo: (comboCount: number) => void;
   tickSurvival: (deltaSeconds: number) => void;
+  recordTimeTaken: (seconds: number) => void;
   recordBattleEnd: (winner: "player" | "opponent") => void;
 }
 
@@ -324,8 +337,8 @@ export const useMissions = create<MissionsState>()(
     active: null,
     objectives: [],
     result: null,
-    completedKeys: typeof window !== "undefined" ? safeLoadCompleted() : [],
-    completedRoamDistrictKeys: typeof window !== "undefined" ? safeLoadRoamDistricts() : [],
+    completedKeys: useRunner.getState().completedStoryMissionIds,
+    completedRoamDistrictKeys: useRunner.getState().completedRoamDistrictIds,
     lastReward: null,
 
     startMission: (source, id) => {
@@ -364,8 +377,8 @@ export const useMissions = create<MissionsState>()(
       if (totalPoints > 0) {
         useRunner.getState().addScore(totalPoints);
       }
+      useRunner.getState().setRoamDistrictCompleted(k);
       const next = [...prev, k];
-      safeSaveRoamDistricts(next);
       set({
         completedRoamDistrictKeys: next,
         lastReward: {
@@ -394,8 +407,8 @@ export const useMissions = create<MissionsState>()(
           // Treat mission XP/currency as score rewards (no wallet system yet).
           useRunner.getState().addScore(totalPoints);
         }
+        useRunner.getState().setMissionCompleted(k);
         const next = [...prev, k];
-        safeSaveCompleted(next);
         set({
           completedKeys: next,
           result: "success",
@@ -465,6 +478,18 @@ export const useMissions = create<MissionsState>()(
       set({ objectives: recomputeCompletion(updated) });
     },
 
+    recordTimeTaken: (seconds) => {
+      const active = get().active;
+      if (!active) return;
+      const updated = get()
+        .objectives.map((o) => {
+          if (o.completed) return o;
+          if (o.kind.kind !== "timeLimit") return o;
+          return { ...o, progress: seconds };
+        });
+      set({ objectives: recomputeCompletion(updated) });
+    },
+
     recordBattleEnd: (winner) => {
       const active = get().active;
       if (!active) return;
@@ -479,7 +504,10 @@ export const useMissions = create<MissionsState>()(
       set({ objectives: updated });
 
       const required = updated.filter((o) => !o.optional);
-      const success = winner === "player" && required.every((o) => o.completed);
+      const success = winner === "player" && required.every((o) => {
+        if (o.kind.kind === "timeLimit") return o.progress <= o.target;
+        return o.completed;
+      });
       get().completeMission(success);
     },
   }))

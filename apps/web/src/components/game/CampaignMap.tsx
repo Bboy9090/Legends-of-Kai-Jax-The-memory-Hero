@@ -120,7 +120,7 @@ export default function CampaignMap() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-bold flex items-center gap-2">
-                    {m.name}
+                    {m.title}
                     {isBoss && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/30 text-amber-300 uppercase">Boss</span>}
                     {completed && <span className="text-green-400">✓</span>}
                   </div>

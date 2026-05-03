@@ -1,8 +1,0 @@
-{
-  "platform": "mobile",
-  "max_enemies": 6,
-  "tail_physics": "ribbon",
-  "ai_depth": "low",
-  "vfx_quality": "low",
-  "lod_bias": 2.0
-}

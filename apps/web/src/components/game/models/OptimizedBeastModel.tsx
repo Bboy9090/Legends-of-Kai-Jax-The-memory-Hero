@@ -4,9 +4,9 @@
  * Mobile/Tablet/PC optimized Three.js character model
  */
 
-import { useRef, useMemo, useEffect } from 'react';
+import { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations } from '@react-three/drei';
+import { useGLTF, useAnimations, Clone } from '@react-three/drei';
 import * as THREE from 'three';
 import { useBattle } from '../../../lib/stores/useBattle';
 
@@ -47,83 +47,73 @@ export default function OptimizedBeastModel({
   isMoving = false,
   scale = 2.5,
 }: OptimizedBeastModelProps) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<THREE.Group>(null!);
   const modelPath = getBeastModelPath(beast.id);
+  const [loadError, setLoadError] = useState(false);
   
   // Load GLB model
-  const { scene, animations } = useGLTF(modelPath);
+  const { scene, animations } = useGLTF(modelPath, undefined, undefined, (err) => {
+    console.warn(`Failed to load model: ${modelPath}`, err);
+    setLoadError(true);
+  });
+  
   const { actions, mixer } = useAnimations(animations, groupRef);
   
-  // Apply visual enhancements (shading/coloring)
-  const enhancedScene = useMemo(() => {
-    const cloned = scene.clone();
-    cloned.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        
-        if (child.material) {
-          const mat = child.material as THREE.MeshStandardMaterial;
-          mat.roughness = 0.15; // More metallic/glossy like cinematic references
-          mat.metalness = 0.8;  // High contrast metallic feel
-          mat.envMapIntensity = 2.0; // Stronger reflections
-          
-          // Add rim lighting effect via emissive if it matches beast colors
-          if (beast.accentColor || beast.visual?.accentColor) {
-            mat.emissive = new THREE.Color(beast.accentColor || beast.visual.accentColor);
-            mat.emissiveIntensity = 0.2;
-          }
-        }
-      }
-    });
-    return cloned;
-  }, [scene, beast]);
-
   // Handle animations
   useEffect(() => {
-    if (!actions) return;
-    const actionName = isAttacking ? 'attack' : isMoving ? 'run' : 'idle';
-    const action = actions[actionName] || actions['idle'] || Object.values(actions)[0];
+    if (!actions || Object.keys(actions).length === 0) return;
     
-    if (action) {
-      action.reset().fadeIn(0.2).play();
-      return () => { action.fadeOut(0.2); };
+    const actionName = isAttacking ? 'attack' : isMoving ? 'run' : 'idle';
+    const available = Object.keys(actions);
+    
+    // Flexible matching: case-insensitive and partial
+    const match = available.find(n => n.toLowerCase() === actionName) ||
+                  available.find(n => n.toLowerCase().includes(actionName)) ||
+                  available[0];
+    
+    if (match && actions[match]) {
+      // Stop all other actions first for a clean transition
+      Object.values(actions).forEach(a => a?.fadeOut(0.2));
+      actions[match].reset().fadeIn(0.2).play();
     }
   }, [actions, isAttacking, isMoving]);
 
-  // Apply scale
-  useEffect(() => {
-    if (groupRef.current) {
-      groupRef.current.scale.setScalar(scale);
-    }
-  }, [scale]);
-
   // Hit animation and effects
   useFrame((state, delta) => {
+    if (mixer) mixer.update(delta);
     if (!groupRef.current) return;
     
     if (hitAnim > 0) {
-      const shake = Math.sin(state.clock.elapsedTime * 20) * 0.05 * hitAnim;
-      groupRef.current.rotation.z = shake;
+      const shake = Math.sin(state.clock.elapsedTime * 25) * 0.08 * hitAnim;
+      groupRef.current.position.x = shake;
     }
     
     // Emotion intensity affects scale/pulse
     if (emotionIntensity > 0) {
-      const pulse = 1 + Math.sin(state.clock.elapsedTime * 3) * 0.02 * emotionIntensity;
+      const pulse = 1 + Math.sin(state.clock.elapsedTime * 4) * 0.03 * emotionIntensity;
       groupRef.current.scale.setScalar(scale * pulse);
-    }
-
-    if (mixer) {
-      mixer.update(delta);
     }
   });
 
+  if (loadError) {
+    return (
+      <group ref={groupRef as any}>
+        <mesh castShadow position={[0, 0.8, 0]}>
+          <boxGeometry args={[0.6, 1.6, 0.6]} />
+          <meshStandardMaterial color={beast.color || "#4488ff"} />
+        </mesh>
+      </group>
+    );
+  }
+
   return (
     <group ref={groupRef}>
-      <primitive 
-        ref={bodyRef as any}
-        object={enhancedScene} 
-        position={[0, 0, 0]}
+      <Clone 
+        object={scene} 
+        scale={scale} 
+        castShadow 
+        receiveShadow 
+        inject={<primitive object={new THREE.Group()} ref={bodyRef} />}
       />
     </group>
   );

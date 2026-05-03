@@ -1,130 +1,112 @@
-import { useMemo } from "react";
-import * as THREE from "three";
-import { useBattle } from "../../lib/stores/useBattle";
-import { getArenaById } from "../../lib/arenas";
+import { useRef, useMemo } from 'react';
+import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
+import { Sparkles, Float } from '@react-three/drei';
 
+/**
+ * LEGENDS OF KAI-JAX: LEGENDARY BATTLE ARENA
+ * High-fidelity, cinematic arena with dynamic lighting and grit.
+ */
 export default function BattleArena() {
-  const { selectedArenaId } = useBattle();
-  const arena = getArenaById(selectedArenaId);
-  
-  // Pre-calculate platform positions
-  const platforms = useMemo(() => [
-    { x: -6, y: 2, z: 0, width: 3, height: 0.3, depth: 3 },
-    { x: 6, y: 2, z: 0, width: 3, height: 0.3, depth: 3 },
-    { x: 0, y: 4, z: 0, width: 4, height: 0.3, depth: 3 }
-  ], []);
-  
-  if (!arena) return null;
-  
+  const floorRef = useRef<THREE.Mesh>(null!);
+  const ringRef = useRef<THREE.Group>(null!);
+
+  const gridTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d')!;
+    ctx.strokeStyle = 'rgba(0, 242, 255, 0.2)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, 512, 512);
+    ctx.strokeStyle = 'rgba(0, 242, 255, 0.05)';
+    for(let i = 0; i < 8; i++) {
+      ctx.moveTo(i * 64, 0);
+      ctx.lineTo(i * 64, 512);
+      ctx.moveTo(0, i * 64);
+      ctx.lineTo(512, i * 64);
+    }
+    ctx.stroke();
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(20, 20);
+    return tex;
+  }, []);
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    if (ringRef.current) {
+      ringRef.current.rotation.z = t * 0.05;
+    }
+  });
+
   return (
     <group>
-      {/* Sky/Background */}
-      <color attach="background" args={[arena.skyColor]} />
-      
-      {/* Lighting */}
-      <ambientLight intensity={0.6} />
-      <directionalLight 
-        position={[10, 20, 10]} 
-        intensity={1.2} 
-        castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-      />
-      <pointLight position={[0, 10, 5]} intensity={0.8} color={arena.accentColor} />
-      
-      {/* Main Ground Platform */}
-      <mesh 
-        position={[0, 0, 0]} 
-        receiveShadow
-        castShadow
-      >
-        <boxGeometry args={[25, 0.5, 10]} />
+      {/* Primary Battle Floor */}
+      <mesh ref={floorRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <planeGeometry args={[100, 100]} />
         <meshStandardMaterial 
-          color={arena.groundColor}
-          roughness={0.8}
+          color="#050510" 
+          roughness={0.8} 
           metalness={0.2}
+          map={gridTexture}
         />
       </mesh>
-      
-      {/* Side walls (invisible boundaries) */}
-      <mesh position={[-12.5, 2, 0]} visible={false}>
-        <boxGeometry args={[0.5, 4, 10]} />
-        <meshBasicMaterial transparent opacity={0} />
+
+      {/* Cinematic Fog Gradients */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
+        <circleGeometry args={[20, 64]} />
+        <meshBasicMaterial 
+          color="#0a0a20" 
+          transparent 
+          opacity={0.8}
+        />
       </mesh>
-      <mesh position={[12.5, 2, 0]} visible={false}>
-        <boxGeometry args={[0.5, 4, 10]} />
-        <meshBasicMaterial transparent opacity={0} />
-      </mesh>
-      
-      {/* Floating Platforms */}
-      {platforms.map((platform, index) => (
-        <mesh 
-          key={index}
-          position={[platform.x, platform.y, platform.z]}
-          castShadow
-          receiveShadow
-        >
-          <boxGeometry args={[platform.width, platform.height, platform.depth]} />
-          <meshStandardMaterial 
-            color={arena.platformColor}
-            roughness={0.7}
-            metalness={0.3}
-          />
+
+      {/* The Central "Memory Ring" */}
+      <group ref={ringRef} position={[0, 0.01, 0]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[11.8, 12, 128]} />
+          <meshBasicMaterial color="#00f2ff" transparent opacity={0.3} />
         </mesh>
-      ))}
-      
-      {/* Decorative elements based on arena */}
-      {arena.id === 'mushroom-plains' && (
-        <>
-          {/* Mushrooms */}
-          {[-8, -4, 4, 8].map(x => (
-            <group key={x} position={[x, 0.5, -3]}>
-              <mesh position={[0, 0.3, 0]} castShadow>
-                <cylinderGeometry args={[0.15, 0.2, 0.6, 8]} />
-                <meshStandardMaterial color="#F5DEB3" />
-              </mesh>
-              <mesh position={[0, 0.8, 0]} castShadow>
-                <sphereGeometry args={[0.4, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2]} />
-                <meshStandardMaterial color={arena.accentColor} />
-              </mesh>
-            </group>
-          ))}
-        </>
-      )}
-      
-      {arena.id === 'green-valley' && (
-        <>
-          {/* Rings */}
-          {[-6, 0, 6].map(x => (
-            <mesh key={x} position={[x, 3, -4]} rotation={[Math.PI / 2, 0, 0]}>
-              <torusGeometry args={[0.5, 0.1, 16, 32]} />
-              <meshStandardMaterial 
-                color={arena.accentColor}
-                emissive={arena.accentColor}
-                emissiveIntensity={0.5}
-              />
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[11.5, 11.6, 64]} />
+          <meshBasicMaterial color="#7f00ff" transparent opacity={0.2} />
+        </mesh>
+        
+        {/* Floating Memory Nodes around the ring */}
+        {[0, 1, 2, 3].map((i) => (
+          <Float key={i} speed={2} rotationIntensity={1} floatIntensity={1}>
+            <mesh position={[Math.cos(i * Math.PI / 2) * 12, 1, Math.sin(i * Math.PI / 2) * 12]}>
+              <octahedronGeometry args={[0.3, 0]} />
+              <meshBasicMaterial color={i % 2 === 0 ? "#00f2ff" : "#7f00ff"} />
             </mesh>
-          ))}
-        </>
-      )}
+          </Float>
+        ))}
+      </group>
+
+      {/* Environment Detail: Distant Monoliths */}
+      {[...Array(8)].map((_, i) => {
+        const angle = (i / 8) * Math.PI * 2;
+        const dist = 35;
+        return (
+          <mesh 
+            key={i} 
+            position={[Math.cos(angle) * dist, 10, Math.sin(angle) * dist]}
+            castShadow
+          >
+            <boxGeometry args={[2, 40, 2]} />
+            <meshStandardMaterial color="#0a0a15" metalness={0.8} roughness={0.1} />
+          </mesh>
+        );
+      })}
+
+      {/* Atmospheric Particles */}
+      <Sparkles count={200} scale={50} size={2} speed={0.4} color="#00f2ff" opacity={0.4} />
+      <Sparkles count={100} scale={30} size={4} speed={0.2} color="#7f00ff" opacity={0.2} />
       
-      {/* Arena boundary markers */}
-      <mesh position={[0, 0.01, -5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[24, 1]} />
-        <meshBasicMaterial 
-          color="#FFFFFF"
-          transparent
-          opacity={0.3}
-        />
-      </mesh>
-      <mesh position={[0, 0.01, 5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[24, 1]} />
-        <meshBasicMaterial 
-          color="#FFFFFF"
-          transparent
-          opacity={0.3}
-        />
-      </mesh>
+      {/* Ground Glow */}
+      <pointLight position={[0, 0.5, 0]} intensity={2} color="#00f2ff" distance={20} />
     </group>
   );
 }

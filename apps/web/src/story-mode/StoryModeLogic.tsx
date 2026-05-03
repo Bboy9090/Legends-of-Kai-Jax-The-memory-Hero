@@ -25,9 +25,9 @@ export interface HeroConfig {
 }
 
 const DEFAULT_HERO: HeroConfig = {
-  id: "radiant-jumper",
-  name: "Radiant Jumper",
-  color: "#fbbf24",
+  id: "kai-jax",
+  name: "Kai-Jax Zenith",
+  color: "#00f2ff",
 };
 
 interface StoryState {

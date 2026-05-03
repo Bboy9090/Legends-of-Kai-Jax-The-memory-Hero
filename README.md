@@ -114,10 +114,10 @@ Complete documentation is available in the `/docs` directory:
   - **Horizontal:** Grit-Punch (Attack)
 - **Long Press:** Charge Resonance
 
-### Boss: Malakor the Silencer
+### Boss: The Void-Gorgon
 - Build Resonance to 100% to make him vulnerable
-- Jump over Static Waves to avoid damage
-- Use 3rd Tail (Bovarr's Anchor) for invincibility
+- Jump over Void Spikes to avoid damage
+- Use Memory Synchronization for invincibility
 
 ---
 
@@ -159,13 +159,13 @@ When you want it publicly playable later, we’ll pick a host and turn this sect
 **Next Update:** Book 2 Content
 
 **Features Complete:**
-- [x] Core movement & combat
-- [x] Resonance system
-- [x] Touch controls
-- [x] PWA installation
-- [x] Offline mode
-- [x] Boss fight (Malakor Phase 1)
-- [x] Fail-state with Bovarr quotes
+- [x] Core movement & fluid combat
+- [x] Resonance/Memory system
+- [x] Touch controls for iPad/iPhone
+- [x] PWA installation with offline support
+- [x] Full 9-Act Saga Structure (Production Data)
+- [x] Boss Fights (Void-Gorgon & Void King)
+- [x] High-Fidelity Original Hero Roster (10+ Heroes)
 
 **Roadmap:**
 - [ ] Book 2: Resistance Teams

@@ -168,246 +168,127 @@ export interface SignatureKit {
 
 // Signature combat kits per character
 export const CHARACTER_KITS: Record<string, SignatureKit> = {
-  mario: {
-    specialName: 'Blazing Orb',
-    specialDescription: 'Throws a bouncing fire sphere',
-    specialType: 'projectile',
-    specialDamage: 65,
-    specialCooldown: 3,
-    ultimateName: 'Zenith Inferno',
-    ultimateDescription: 'Massive fire explosion engulfs the arena',
-    ultimateType: 'burst',
-    ultimateDamage: 180,
-    effectColor: '#FF6600'
-  },
-  luigi: {
-    specialName: 'Phantom Vacuum',
-    specialDescription: 'Drains enemy life force',
+  'kai-jax': {
+    specialName: 'Memory Strike',
+    specialDescription: 'A prismatic strike that ripples through reality',
     specialType: 'melee',
-    specialDamage: 55,
-    specialCooldown: 4,
-    ultimateName: 'Poltergust G-00 Surge',
-    ultimateDescription: 'Summons spectral energy from the Dark Moon',
-    ultimateType: 'summon',
-    ultimateDamage: 160,
-    effectColor: '#00FF66'
+    specialDamage: 75,
+    specialCooldown: 3,
+    ultimateName: 'Zenith Shatter',
+    ultimateDescription: 'Shatters the memory weave for massive AOE damage',
+    ultimateType: 'burst',
+    ultimateDamage: 220,
+    effectColor: '#00f2ff'
   },
-  sonic: {
-    specialName: 'Crimson Cyclone',
-    specialDescription: 'High-speed spinning attack',
+  'jaxon': {
+    specialName: 'Electric Dash',
+    specialDescription: 'High-speed lightning charge',
     specialType: 'dash',
     specialDamage: 70,
     specialCooldown: 2,
-    ultimateName: 'Chaos Flow',
-    ultimateDescription: 'Channel all Chaos Emerald power',
+    ultimateName: 'Lightning Flow',
+    ultimateDescription: 'Unleashes a torrent of electrical energy',
     ultimateType: 'transformation',
     ultimateDamage: 200,
-    effectColor: '#FF0000'
+    effectColor: '#a855f7'
   },
-  link: {
-    specialName: 'Forest Arrow',
-    specialDescription: 'Precision shot with ancient power',
+  'kaison': {
+    specialName: 'Sage Wind',
+    specialDescription: 'A tactical gust that pushes and damages',
     specialType: 'projectile',
     specialDamage: 60,
     specialCooldown: 3,
-    ultimateName: 'Triforce Slash',
-    ultimateDescription: 'Unleash the power of courage',
+    ultimateName: 'Aerial Mastery',
+    ultimateDescription: 'Incredible speed and wind-based strikes',
     ultimateType: 'cinematic',
-    ultimateDamage: 175,
-    effectColor: '#00AA00'
+    ultimateDamage: 180,
+    effectColor: '#22d3ee'
   },
-  kirby: {
-    specialName: 'Dream Inhale',
-    specialDescription: 'Absorb and copy enemy power',
-    specialType: 'melee',
-    specialDamage: 50,
+  'silver': {
+    specialName: 'Time Anchor',
+    specialDescription: 'Slows down enemies in a local area',
+    specialType: 'aoe',
+    specialDamage: 55,
     specialCooldown: 4,
-    ultimateName: 'Star Rod Burst',
-    ultimateDescription: 'Channel the power of the Fountain of Dreams',
-    ultimateType: 'burst',
-    ultimateDamage: 165,
-    effectColor: '#FF69B4'
-  },
-  pikachu: {
-    specialName: 'Volt Tackle',
-    specialDescription: 'Electric charge through enemies',
-    specialType: 'dash',
-    specialDamage: 65,
-    specialCooldown: 3,
-    ultimateName: '10 Million Volt Thunderbolt',
-    ultimateDescription: 'Massive lightning storm covers the arena',
+    ultimateName: 'Temporal Shift',
+    ultimateDescription: 'Rewrites the last 5 seconds of the battle',
     ultimateType: 'burst',
     ultimateDamage: 190,
-    effectColor: '#FFDD00'
+    effectColor: '#c0c0c0'
   },
-  samus: {
-    specialName: 'Charge Beam',
-    specialDescription: 'Powerful energy projectile',
-    specialType: 'projectile',
-    specialDamage: 75,
-    specialCooldown: 4,
-    ultimateName: 'Zero Laser',
-    ultimateDescription: 'Devastating beam of pure energy',
-    ultimateType: 'cinematic',
-    ultimateDamage: 200,
-    effectColor: '#00CCFF'
-  },
-  fox: {
-    specialName: 'Blaster Barrage',
-    specialDescription: 'Rapid-fire laser shots',
-    specialType: 'projectile',
-    specialDamage: 55,
-    specialCooldown: 2,
-    ultimateName: 'Landmaster',
-    ultimateDescription: 'Summon the legendary Arwing tank',
-    ultimateType: 'summon',
-    ultimateDamage: 175,
-    effectColor: '#FF8800'
-  },
-  donkeykong: {
-    specialName: 'Giant Punch',
-    specialDescription: 'Devastating charged fist attack',
+  'volter': {
+    specialName: 'Static Claw',
+    specialDescription: 'Electric swipes that chain to nearby enemies',
     specialType: 'melee',
+    specialDamage: 65,
+    specialCooldown: 3,
+    ultimateName: 'Overcharge',
+    ultimateDescription: 'Becomes a living lightning bolt',
+    ultimateType: 'burst',
+    ultimateDamage: 210,
+    effectColor: '#ffff00'
+  },
+  'korg': {
+    specialName: 'Earth Slam',
+    specialDescription: 'Heavy ground pound with shockwaves',
+    specialType: 'aoe',
     specialDamage: 85,
     specialCooldown: 5,
-    ultimateName: 'Konga Fury',
-    ultimateDescription: 'Rhythmic beating creates shockwaves',
-    ultimateType: 'burst',
-    ultimateDamage: 195,
+    ultimateName: 'Obsidian Heart',
+    ultimateDescription: 'Transforms into unbreakable volcanic stone',
+    ultimateType: 'transformation',
+    ultimateDamage: 230,
     effectColor: '#8B4513'
   },
-  bowser: {
-    specialName: 'Fire Breath',
-    specialDescription: 'Continuous stream of flames',
-    specialType: 'projectile',
-    specialDamage: 70,
-    specialCooldown: 4,
-    ultimateName: 'Giga Bowser',
-    ultimateDescription: 'Transform into ultimate Koopa form',
-    ultimateType: 'transformation',
-    ultimateDamage: 210,
-    effectColor: '#FF4400'
-  },
-  peach: {
-    specialName: 'Royal Bloom',
-    specialDescription: 'Heal allies and damage enemies',
-    specialType: 'buff',
-    specialDamage: 45,
-    specialCooldown: 5,
-    ultimateName: 'Peach Blossom',
-    ultimateDescription: 'Put enemies to sleep with dream magic',
-    ultimateType: 'cinematic',
-    ultimateDamage: 140,
-    effectColor: '#FFB6C1'
-  },
-  zelda: {
-    specialName: "Nayru's Love",
-    specialDescription: 'Protective crystal shield',
-    specialType: 'buff',
+  'puff': {
+    specialName: 'Void Inhale',
+    specialDescription: 'Absorbs the essence of the target',
+    specialType: 'melee',
     specialDamage: 50,
     specialCooldown: 4,
-    ultimateName: 'Light Arrow',
-    ultimateDescription: 'Sacred arrow blessed by the gods',
-    ultimateType: 'cinematic',
-    ultimateDamage: 185,
-    effectColor: '#FFD700'
-  },
-  mewtwo: {
-    specialName: 'Shadow Ball',
-    specialDescription: 'Concentrated psychic energy',
-    specialType: 'projectile',
-    specialDamage: 80,
-    specialCooldown: 3,
-    ultimateName: 'Psystrike',
-    ultimateDescription: 'Ultimate psychic assault',
+    ultimateName: 'Mimic Nova',
+    ultimateDescription: 'Explosion of pure void energy',
     ultimateType: 'burst',
-    ultimateDamage: 205,
-    effectColor: '#9400D3'
-  },
-  snake: {
-    specialName: 'RPG-7',
-    specialDescription: 'Guided missile strike',
-    specialType: 'projectile',
-    specialDamage: 75,
-    specialCooldown: 5,
-    ultimateName: 'Covering Fire',
-    ultimateDescription: 'Call in helicopter support',
-    ultimateType: 'summon',
     ultimateDamage: 185,
-    effectColor: '#556B2F'
+    effectColor: '#d74894'
   },
-  ryu: {
-    specialName: 'Hadoken',
-    specialDescription: 'Surge fist energy blast',
-    specialType: 'projectile',
-    specialDamage: 60,
-    specialCooldown: 2,
-    ultimateName: 'Shin Shoryuken',
-    ultimateDescription: 'True rising dragon fist',
-    ultimateType: 'cinematic',
-    ultimateDamage: 190,
-    effectColor: '#FFFFFF'
-  },
-  cloud: {
-    specialName: 'Blade Beam',
-    specialDescription: 'Energy wave from Buster Sword',
-    specialType: 'projectile',
-    specialDamage: 65,
-    specialCooldown: 3,
-    ultimateName: 'Omnislash',
-    ultimateDescription: 'Legendary Soldier technique',
-    ultimateType: 'cinematic',
-    ultimateDamage: 215,
-    effectColor: '#4169E1'
-  },
-  bayonetta: {
-    specialName: 'Witch Time',
-    specialDescription: 'Slow time around enemies',
-    specialType: 'buff',
-    specialDamage: 55,
-    specialCooldown: 6,
-    ultimateName: 'Infernal Climax',
-    ultimateDescription: 'Summon Gomorrah from Inferno',
+  'borgos': {
+    specialName: 'Iron Fury',
+    specialDescription: 'Spiked shell charge with fire trails',
+    specialType: 'dash',
+    specialDamage: 80,
+    specialCooldown: 4,
+    ultimateName: 'Steel King Ascension',
+    ultimateDescription: 'Unleashes the full power of the Iron Citadel',
     ultimateType: 'summon',
-    ultimateDamage: 200,
-    effectColor: '#AA00FF'
+    ultimateDamage: 240,
+    effectColor: '#228b22'
   },
-  greninja: {
-    specialName: 'Water Shuriken',
-    specialDescription: 'Rapid water blade attacks',
-    specialType: 'projectile',
-    specialDamage: 55,
-    specialCooldown: 2,
-    ultimateName: 'Secret Ninja Attack',
-    ultimateDescription: 'Full-moon assassination strike',
-    ultimateType: 'cinematic',
-    ultimateDamage: 175,
-    effectColor: '#003366'
-  },
-  shadow: {
-    specialName: 'Chaos Spear',
-    specialDescription: 'Dark energy projectile',
+  'lunara': {
+    specialName: 'Lunar Light',
+    specialDescription: 'Beams of moonlight from the heavens',
     specialType: 'projectile',
     specialDamage: 70,
     specialCooldown: 3,
-    ultimateName: 'Chaos Blast',
-    ultimateDescription: 'Release all inhibitor limits',
-    ultimateType: 'burst',
-    ultimateDamage: 195,
-    effectColor: '#333333'
+    ultimateName: 'Eclipse Form',
+    ultimateDescription: 'Covers the arena in celestial darkness',
+    ultimateType: 'cinematic',
+    ultimateDamage: 220,
+    effectColor: '#191970'
   },
-  palutena: {
-    specialName: 'Autoreticle',
-    specialDescription: 'Homing light projectiles',
-    specialType: 'projectile',
+  default: {
+    specialName: 'Memory Pulse',
+    specialDescription: 'Standard energy pulse',
+    specialType: 'melee',
     specialDamage: 60,
     specialCooldown: 3,
-    ultimateName: 'Black Hole Laser',
-    ultimateDescription: 'Create void and pierce through',
+    ultimateName: 'Heroic Awakening',
+    ultimateDescription: 'Unleashes inner power',
     ultimateType: 'burst',
-    ultimateDamage: 180,
-    effectColor: '#00FF88'
-  },
+    ultimateDamage: 150,
+    effectColor: '#FFFFFF'
+  }
+};
   default: {
     specialName: 'Power Strike',
     specialDescription: 'Focused energy attack',
@@ -595,7 +476,7 @@ const ATTACK_RANGE = 4.0;  // Distance at which attacks connect
 
 export const useFluidCombat = create<FluidCombatState>((set, get) => ({
   // Character info - default to Vanguard
-  characterId: 'mario',
+  characterId: 'kai-jax',
   characterRole: 'Vanguard',
   
   // Initial state

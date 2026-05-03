@@ -216,7 +216,12 @@ export const useAdventure = create<AdventureState>((set, get) => ({
 
   damagePlayer: (amount) => {
     const p = get().player;
-    if (p.invulnTimer > 0) return;
+    // @ts-ignore - Avoid circular dependency if useRunner is not imported yet, 
+    // but we can check the trainingSession flag via the global runner store if needed 
+    // or just pass it in. For now, let's assume we can get it.
+    const { trainingSession } = (window as any).runnerStore?.getState() || { trainingSession: false };
+    
+    if (p.invulnTimer > 0 || trainingSession) return;
     if (p.superArmor) {
       set((s) => ({
         player: { ...s.player, health: Math.max(0, s.player.health - amount * 0.5) },
@@ -244,7 +249,12 @@ export const useAdventure = create<AdventureState>((set, get) => ({
     })),
 
   useStamina: (amount) => {
-    const cur = get().player.stamina;
+    const s = get();
+    const cur = s.player.stamina;
+    // @ts-ignore
+    const { trainingSession } = (window as any).runnerStore?.getState() || { trainingSession: false };
+    
+    if (trainingSession) return true; // Infinite stamina in training
     if (cur < amount) return false;
     set((s) => ({
       player: {

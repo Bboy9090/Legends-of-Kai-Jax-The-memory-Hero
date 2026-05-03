@@ -104,9 +104,23 @@ export default function SettingsMenu() {
 
         {/* Footer */}
         <div className="p-6 bg-black/40 border-t border-white/10 text-center">
-          <p className="text-[10px] text-white/20 uppercase tracking-[0.4em]">
-            Legend of Kai-Jax Engine v1.0.4
+          <p className="text-[10px] text-white/20 uppercase tracking-[0.4em] mb-4">
+            Legend of Kai-Jax Engine v2.0.0
           </p>
+          <div className="flex items-center justify-center gap-6">
+            <button 
+              onClick={() => window.open('https://legendsofkaijax.com/privacy', '_blank')}
+              className="text-[10px] text-white/40 hover:text-white transition-colors uppercase tracking-widest"
+            >
+              Privacy Policy
+            </button>
+            <button 
+              onClick={() => window.open('https://legendsofkaijax.com/terms', '_blank')}
+              className="text-[10px] text-white/40 hover:text-white transition-colors uppercase tracking-widest"
+            >
+              Terms of Service
+            </button>
+          </div>
         </div>
       </div>
     </div>

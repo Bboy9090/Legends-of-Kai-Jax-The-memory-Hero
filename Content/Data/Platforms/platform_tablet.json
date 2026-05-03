@@ -1,8 +1,0 @@
-{
-  "platform": "tablet",
-  "max_enemies": 12,
-  "tail_physics": "spline",
-  "ai_depth": "medium",
-  "vfx_quality": "medium",
-  "lod_bias": 1.0
-}
