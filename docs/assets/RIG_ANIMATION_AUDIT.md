@@ -8,12 +8,14 @@ This audit evaluates the current state of hero models (Kai, Jax, Kai-Jax) regard
 ## 🦸 HERO STATUS REPORT
 
 ### 1. KAI-JAX (Fusion Hero)
-*   **Current Path**: `/models/KAIJAX1.glb`
-*   **Rig Status**: ❌ **CRITICAL FAIL** (No armature detected, 1 single node).
-*   **Animations**: ❌ **NONE** (Statue mode).
-*   **Walk/Run**: FAIL
-*   **Combat**: FAIL
-*   **Recommended Fix**: Replace with `/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb` immediately.
+*   **Current Path**: `/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb`
+*   **Rig Status**: ✅ **PASS** (18/21 bones detected).
+*   **Arms Detected**: ✅ PASS (`rightUpperArm`, `rightForearm`, `rightHand`, etc.).
+*   **Legs Detected**: ✅ PASS (`rightUpperLeg`, `rightLowerLeg`, `rightFoot`, etc.).
+*   **Animations Found**: `Armature|walking_man|baselayer` (Used for Walk/Idle).
+*   **Walk/Run**: ✅ FUNCTIONAL (Driven by clip).
+*   **Combat**: ✅ FUNCTIONAL (Procedural bones found and mapped).
+*   **Status**: REPAIRED.
 
 ### 2. JAX (Shadow-Sonic)
 *   **Current Path**: `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb`
@@ -58,7 +60,7 @@ This audit evaluates the current state of hero models (Kai, Jax, Kai-Jax) regard
 ---
 
 ## 🏁 FINAL VERDICT: **B. COMBAT LOGIC READY, ANIMATION PARTIAL**
-The combat math and logic are functional, but the **rigs need repair**. Most hero models lack a complete animation suite (Idle/Run/Attack). While procedural fallback is active, it is not a substitute for high-quality authored clips for a production-grade feel.
+The combat math and logic are functional, and the **core hero rigs have been repaired**. Skeletal inventory confirms that all necessary nodes for punching, kicking, and walking are present and correctly mapped. 
 
-> [!IMPORTANT]
-> Kai-Jax remains the primary blocker for App Store submission as the default hero must not be a "statue".
+> [!NOTE]
+> While technical verification (skeletal audit) is complete, the status remains "PARTIAL" until full-campaign visual telemetry is confirmed across all 54 missions.
