@@ -27,20 +27,20 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   // ============================================================
 
   "kai-jax": {
-    // Primary protagonist: 9-Tail fusion hero, 74MB high-fidelity
-    path: "/models/KAIJAX1.glb",
+    // Primary protagonist: 9-Tail fusion hero (Animated version)
+    path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   kai_jax: {
-    path: "/models/KAIJAX1.glb",
+    path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   kaijax: {
-    path: "/models/KAIJAX1.glb",
+    path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
@@ -323,6 +323,35 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   "neon-wraith": {
     path: "/models/neon-wraiths.glb",
     scale: 3.5,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+
+  // ============================================================
+  // QUATERNIUS MONSTER PACK — Elemental Beasts
+  // ============================================================
+
+  "earth-turtle": {
+    path: "/models/earth_turtle.glb",
+    scale: 4.0,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+  "frost-wolf": {
+    path: "/models/frost_wolf.glb",
+    scale: 3.5,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+  "jade-serpent": {
+    path: "/models/jade_serpent.glb",
+    scale: 4.5,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+  "thunder-lion": {
+    path: "/models/thunder_lion.glb",
+    scale: 4.0,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
