@@ -386,13 +386,13 @@ export default function MainMenu() {
                 </div>
                 <span className="text-xl font-black italic text-white/60 group-hover:text-white uppercase tracking-widest">Fighters</span>
              </button>
-             <button className="flex items-center gap-4 group">
+             <button onClick={() => setGameState("settings")} className="flex items-center gap-4 group">
                 <div className="w-12 h-12 bg-blue-600/20 border border-blue-500/40 flex items-center justify-center rotate-45 group-hover:bg-blue-600/40 transition-all">
                    <Settings className="-rotate-45 w-6 h-6 text-blue-400" />
                 </div>
                 <span className="text-xl font-black italic text-white/60 group-hover:text-white uppercase tracking-widest">Settings</span>
              </button>
-             <button className="flex items-center gap-4 group">
+             <button onClick={() => setGameState("codex")} className="flex items-center gap-4 group">
                 <div className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center rotate-45 group-hover:bg-white/10 transition-all">
                    <BookOpen className="-rotate-45 w-6 h-6 text-white/40" />
                 </div>
@@ -416,13 +416,14 @@ export default function MainMenu() {
           </button>
           
           <button
-            onClick={() => setShowSettings(true)}
+            onClick={() => setGameState("settings")}
             className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110 border border-white/20"
           >
             <Settings className="w-6 h-6 text-gray-300 hover:text-white transition-colors" />
           </button>
 
           <button
+            onClick={() => setGameState("codex")}
             className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110 border border-white/20"
           >
             <Gamepad2 className="w-6 h-6 text-gray-300 hover:text-white transition-colors" />

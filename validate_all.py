@@ -98,7 +98,8 @@ def validate_story_schema():
                     {
                         "id": "test_zone",
                         "name": "Test Zone",
-                        "zone_type": "safe"
+                        "zone_type": "safe",
+                        "enemy_spawn_enabled": False
                     }
                 ]
             }

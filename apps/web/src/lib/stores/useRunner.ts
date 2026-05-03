@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export type GameState =
   | "lore-hub"
@@ -14,6 +15,8 @@ export type GameState =
   | "beast-preview"
   | "adventure"
   | "controller-test"
+  | "settings"
+  | "codex"
   | "playing";
 
 /** Campaign node id. Order: start → districts → final boss. */
@@ -27,23 +30,48 @@ export type CampaignNodeId =
   | "district-5"
   | "final-boss";
 
+interface ProfileData {
+  totalScore: number;
+  campaignCompletedNodes: CampaignNodeId[];
+  unlockedUpgrades: string[];
+  lastPlayedTitle: string | null;
+}
+
 interface RunnerState {
+  // Runtime State (Reset on app launch, not per-profile)
   gameState: GameState;
   selectedCharacter: string | null;
   activeStoryMissionId: string | null;
-  /** Versus training room: same duel flow, score not added to profile on exit */
   trainingSession: boolean;
+  
+  // Persistent Profile Management
+  activeProfileIndex: number;
+  profiles: [ProfileData, ProfileData, ProfileData];
+
+  // Actions
   setGameState: (s: GameState) => void;
   setCharacter: (id: string | null) => void;
   setTrainingSession: (v: boolean) => void;
   setActiveStoryMission: (id: string | null) => void;
   addScore: (points: number) => void;
+  
+  // Profile Actions
+  switchProfile: (index: number) => void;
+  resetProfile: (index: number) => void;
+  
+  // Progress (Maps to active profile)
   totalScore: number;
   campaignCompletedNodes: CampaignNodeId[];
-  campaignCurrentNode: CampaignNodeId | null;
+  unlockedUpgrades: string[];
   setCampaignCompleted: (nodeId: CampaignNodeId) => void;
-  setCampaignCurrentNode: (nodeId: CampaignNodeId | null) => void;
 }
+
+const DEFAULT_PROFILE: ProfileData = {
+  totalScore: 0,
+  campaignCompletedNodes: [],
+  unlockedUpgrades: [],
+  lastPlayedTitle: null,
+};
 
 const CAMPAIGN_ORDER: CampaignNodeId[] = [
   "start",
@@ -68,28 +96,88 @@ export function isCampaignNodeUnlocked(completed: CampaignNodeId[], nodeId: Camp
   return prev !== null && completed.includes(prev);
 }
 
-export const useRunner = create<RunnerState>((set, get) => ({
-  gameState: "lore-hub",
-  selectedCharacter: "jaxon",
-  activeStoryMissionId: null,
-  trainingSession: false,
-  totalScore: 0,
-  campaignCompletedNodes: [],
-  campaignCurrentNode: null,
-  setGameState: (gameState) =>
-    set({
-      gameState,
-      ...(gameState !== "playing" ? { trainingSession: false } : {}),
+export const useRunner = create<RunnerState>()(
+  persist(
+    (set, get) => ({
+      // Runtime Initial
+      gameState: "lore-hub",
+      selectedCharacter: "jaxon",
+      activeStoryMissionId: null,
+      trainingSession: false,
+      
+      // Profiles Initial
+      activeProfileIndex: 0,
+      profiles: [
+        { ...DEFAULT_PROFILE },
+        { ...DEFAULT_PROFILE },
+        { ...DEFAULT_PROFILE }
+      ],
+
+      // Progress Initial (Mirrors profile[0])
+      totalScore: 0,
+      campaignCompletedNodes: [],
+      unlockedUpgrades: [],
+
+      setGameState: (gameState) =>
+        set({
+          gameState,
+          ...(gameState !== "playing" ? { trainingSession: false } : {}),
+        }),
+      setTrainingSession: (trainingSession) => set({ trainingSession }),
+      setCharacter: (selectedCharacter) => set({ selectedCharacter }),
+      setActiveStoryMission: (activeStoryMissionId) => set({ activeStoryMissionId }),
+      
+      addScore: (points) => {
+        const { totalScore, activeProfileIndex, profiles } = get();
+        const newScore = totalScore + points;
+        const newProfiles = [...profiles] as [ProfileData, ProfileData, ProfileData];
+        newProfiles[activeProfileIndex] = { ...newProfiles[activeProfileIndex], totalScore: newScore };
+        set({ totalScore: newScore, profiles: newProfiles });
+      },
+
+      setCampaignCompleted: (nodeId) => {
+        const { campaignCompletedNodes, activeProfileIndex, profiles } = get();
+        if (campaignCompletedNodes.includes(nodeId)) return;
+        
+        const newNodes = [...campaignCompletedNodes, nodeId];
+        const newProfiles = [...profiles] as [ProfileData, ProfileData, ProfileData];
+        newProfiles[activeProfileIndex] = { ...newProfiles[activeProfileIndex], campaignCompletedNodes: newNodes };
+        
+        set({
+          campaignCompletedNodes: newNodes,
+          profiles: newProfiles,
+        });
+      },
+
+      switchProfile: (index) => {
+        const { profiles } = get();
+        const targetProfile = profiles[index];
+        set({
+          activeProfileIndex: index,
+          totalScore: targetProfile.totalScore,
+          campaignCompletedNodes: targetProfile.campaignCompletedNodes,
+          unlockedUpgrades: targetProfile.unlockedUpgrades,
+        });
+      },
+
+      resetProfile: (index) => {
+        const newProfiles = [...get().profiles] as [ProfileData, ProfileData, ProfileData];
+        newProfiles[index] = { ...DEFAULT_PROFILE };
+        
+        if (get().activeProfileIndex === index) {
+          set({
+            profiles: newProfiles,
+            totalScore: DEFAULT_PROFILE.totalScore,
+            campaignCompletedNodes: DEFAULT_PROFILE.campaignCompletedNodes,
+            unlockedUpgrades: DEFAULT_PROFILE.unlockedUpgrades,
+          });
+        } else {
+          set({ profiles: newProfiles });
+        }
+      }
     }),
-  setTrainingSession: (trainingSession) => set({ trainingSession }),
-  setCharacter: (selectedCharacter) => set({ selectedCharacter }),
-  setActiveStoryMission: (activeStoryMissionId) => set({ activeStoryMissionId }),
-  addScore: (points) => set({ totalScore: get().totalScore + points }),
-  setCampaignCompleted: (nodeId) =>
-    set((s) => ({
-      campaignCompletedNodes: s.campaignCompletedNodes.includes(nodeId)
-        ? s.campaignCompletedNodes
-        : [...s.campaignCompletedNodes, nodeId],
-    })),
-  setCampaignCurrentNode: (nodeId) => set({ campaignCurrentNode: nodeId }),
-}));
+    {
+      name: "kai-jax-save",
+    }
+  )
+);

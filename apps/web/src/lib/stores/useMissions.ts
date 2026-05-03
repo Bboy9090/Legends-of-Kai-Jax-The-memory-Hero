@@ -210,67 +210,51 @@ function getUEEObjectives(ueeId: string): MissionObjectiveRuntime[] {
   }
 }
 
-function getActIStoryObjectives(storyId: string): MissionObjectiveRuntime[] {
-  // Act I missions act1-1 .. act1-10 → typed objectives we track in battle
-  switch (storyId) {
-    case "act1-1":
-      return [
-        objective("win", "Win the match", { kind: "winMatch" }, 1),
-        objective("hits8", "Land 8 hits", { kind: "landHits", count: 8 }, 8),
-      ];
-    case "act1-2":
-      return [
-        objective("win", "Win the match", { kind: "winMatch" }, 1),
-        objective("special1", "Use 1 special", { kind: "useMove", count: 1, move: "special" }, 1),
-      ];
-    case "act1-3":
-      return [
-        objective("survive45", "Survive 45 seconds", { kind: "surviveSeconds", seconds: 45 }, 45),
-        objective("combo6", "Reach a 6-hit combo", { kind: "reachCombo", count: 6 }, 6),
-        objective("win", "Win the match", { kind: "winMatch" }, 1),
-      ];
-    case "act1-4":
-      return [
-        objective("combo5", "Reach a 5-hit combo", { kind: "reachCombo", count: 5 }, 5),
-        objective("special1", "Use 1 special", { kind: "useMove", count: 1, move: "special" }, 1),
-        objective("win", "Win the match", { kind: "winMatch" }, 1),
-      ];
-    case "act1-5":
-      return [
-        objective("survive60", "Survive 60 seconds", { kind: "surviveSeconds", seconds: 60 }, 60),
-        objective("hits12", "Land 12 hits", { kind: "landHits", count: 12 }, 12),
-        objective("win", "Win the match", { kind: "winMatch" }, 1),
-      ];
-    case "act1-6":
-      return [
-        objective("survive45", "Survive 45 seconds", { kind: "surviveSeconds", seconds: 45 }, 45),
-        objective("combo7", "Reach a 7-hit combo", { kind: "reachCombo", count: 7 }, 7),
-        objective("win", "Win the match", { kind: "winMatch" }, 1),
-      ];
-    case "act1-7":
-      return [
-        objective("special2", "Use 2 specials", { kind: "useMove", count: 2, move: "special" }, 2),
-        objective("win", "Win the match", { kind: "winMatch" }, 1),
-      ];
-    case "act1-8":
-      return [
-        objective("survive75", "Survive 75 seconds", { kind: "surviveSeconds", seconds: 75 }, 75),
-        objective("combo10", "Reach a 10-hit combo", { kind: "reachCombo", count: 10 }, 10),
-        objective("win", "Win the match", { kind: "winMatch" }, 1),
-      ];
-    case "act1-9":
-      return [
-        objective("survive60", "Survive 60 seconds", { kind: "surviveSeconds", seconds: 60 }, 60),
-        objective("special1", "Use 1 special", { kind: "useMove", count: 1, move: "special" }, 1),
-        objective("win", "Win the match", { kind: "winMatch" }, 1),
-      ];
-    case "act1-10":
-      return [
-        objective("ultimate1", "Use 1 ultimate", { kind: "useMove", count: 1, move: "ultimate" }, 1),
-        objective("win", "Win the match", { kind: "winMatch" }, 1),
-      ];
-    default:
-      return [objective("win", "Win the match", { kind: "winMatch" }, 1)];
+function getStoryObjectives(storyId: string): MissionObjectiveRuntime[] {
+  // Pattern: story_act[1-3]_m[1-18]
+  const match = storyId.match(/story_act(\d)_m(\d+)/);
+  if (!match) return [objective("win", "Win the match", { kind: "winMatch" }, 1)];
+  
+  const act = parseInt(match[1]);
+  const num = parseInt(match[2]);
+  const globalChapter = (act - 1) * 18 + num;
+
+  // 📈 LOGIC SCALING: Objectives get harder as the chapter count increases
+  const baseHits = 5 + Math.floor(globalChapter * 0.4);
+  const baseCombo = 3 + Math.floor(globalChapter / 6);
+  const baseSurvival = 30 + (act * 15);
+
+  // Specific Boss Chapters (End of Acts or Mid-Act Generals)
+  if (num === 18 || num === 10 || globalChapter >= 50) {
+    return [
+      objective("win", "Defeat the Boss", { kind: "winMatch" }, 1),
+      objective("ultimate", "Use Ultimate Finisher", { kind: "useMove", count: 1, move: "ultimate" }, 1),
+      objective("combo", `Reach ${baseCombo + 5} combo`, { kind: "reachCombo", count: baseCombo + 5 }, baseCombo + 5)
+    ];
+  }
+
+  // Act-Specific Scaling Themes
+  if (act === 1) {
+    // Act I: Learning the basics
+    return [
+      objective("win", "Win the match", { kind: "winMatch" }, 1),
+      objective("hits", `Land ${baseHits} hits`, { kind: "landHits", count: baseHits }, baseHits),
+      num % 3 === 0 ? objective("special", "Use Special", { kind: "useMove", count: 1, move: "special" }, 1) : null
+    ].filter(Boolean) as MissionObjectiveRuntime[];
+  } else if (act === 2) {
+    // Act II: Survival & Tactics
+    return [
+      objective("win", "Win the match", { kind: "winMatch" }, 1),
+      objective("survival", `Survive ${baseSurvival}s`, { kind: "surviveSeconds", seconds: baseSurvival }, baseSurvival),
+      objective("combo", `Reach ${baseCombo} combo`, { kind: "reachCombo", count: baseCombo }, baseCombo)
+    ];
+  } else {
+    // Act III: Mastery & Fusion
+    return [
+      objective("win", "Liberate the arena", { kind: "winMatch" }, 1),
+      objective("ultimate", "Use Ultimate", { kind: "useMove", count: 1, move: "ultimate" }, 1),
+      objective("hits_heavy", `Land ${baseHits + 10} hits`, { kind: "landHits", count: baseHits + 10 }, baseHits + 10)
+    ];
   }
 }
 

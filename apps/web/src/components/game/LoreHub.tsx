@@ -262,9 +262,17 @@ export default function LoreHub() {
             ))}
           </div>
 
-          <button className="md:hidden text-white" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
-          </button>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setGameState("menu")}
+              className="px-4 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 ttransition-all"
+            >
+              Exit to Menu
+            </button>
+            <button className="md:hidden text-white" onClick={() => setMobileOpen(!mobileOpen)}>
+              {mobileOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
+            </button>
+          </div>
         </div>
 
         {mobileOpen && (

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import '../../styles/bronx_grit.css';
 import '../../styles/legendary-effects.css';
 import { BRAND } from '../../lib/brand';
+import { useRunner } from '../../lib/stores/useRunner';
+
 
 /**
  * ⚡ LEGENDS OF KAI-JAX: THE MEMORY WARRIOR ⚡
@@ -43,17 +45,25 @@ const LegendaryMainMenu: React.FC = () => {
   }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [titleGlow, setTitleGlow] = useState(0);
+  const [showProfileSelect, setShowProfileSelect] = useState(false);
 
-  const hasSaveFile = localStorage.getItem(BRAND.saveSlotKey) !== null;
+  const profiles = useRunner((s) => s.profiles);
+  const activeProfileIndex = useRunner((s) => s.activeProfileIndex);
+  const switchProfile = useRunner((s) => s.switchProfile);
+
+  // Safety guard for hydration
+  if (!profiles || !profiles.length) {
+    return <div className="bg-[#050508] w-full h-screen flex items-center justify-center text-white/20 font-mono">HYDRATING ARCHIVE...</div>;
+  }
+
 
   // Menu items with legendary styling
   const menuItems: MenuItem[] = [
     {
       id: 'continue',
-      label: 'CONTINUE',
-      sublabel: hasSaveFile ? 'Resume your journey' : 'No save file found',
-      action: () => navigate('/game'),
-      disabled: !hasSaveFile
+      label: 'CONTINUE SAGA',
+      sublabel: 'Select a memory profile',
+      action: () => setShowProfileSelect(true),
     },
     {
       id: 'new-game',
@@ -327,8 +337,50 @@ const LegendaryMainMenu: React.FC = () => {
     );
   }
 
+  const renderProfileSelect = () => (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
+      <div className="max-w-4xl w-full p-8">
+        <h3 className="text-god-tier text-3xl mb-8 text-center">SELECT MEMORY PROFILE</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {profiles.map((profile, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                switchProfile(i);
+                navigate('/campaign-map');
+              }}
+              className={`group relative p-6 rounded-xl border-2 transition-all hover:scale-105 ${
+                i === activeProfileIndex ? 'border-legendary-gold bg-legendary-gold/10' : 'border-white/10 bg-white/5'
+              }`}
+            >
+              <div className="text-xs font-mono mb-2 opacity-50 uppercase">Slot 0{i + 1}</div>
+              <div className="text-2xl font-black mb-4 group-hover:text-legendary-cyan">
+                {profile.totalScore > 0 ? `LEVEL ${Math.floor(profile.totalScore / 1000) + 1}` : 'EMPTY ECHO'}
+              </div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                Nodes: {profile.campaignCompletedNodes.length} / 54
+              </div>
+              <div className="mt-4 pt-4 border-t border-white/10 text-xs text-legendary-gold opacity-0 group-hover:opacity-100 transition-opacity">
+                LOAD MEMORY →
+              </div>
+            </button>
+          ))}
+        </div>
+        <button 
+          onClick={() => setShowProfileSelect(false)}
+          className="mt-12 block mx-auto text-xs uppercase tracking-[0.4em] opacity-50 hover:opacity-100 transition-opacity"
+        >
+          [ ESCAPE TO MENU ]
+        </button>
+      </div>
+    </div>
+  );
+
+
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#050508]">
+      {showProfileSelect && renderProfileSelect()}
+      
       {/* Background Canvas - Split Cosmic Battlefield */}
       <canvas
         ref={canvasRef}

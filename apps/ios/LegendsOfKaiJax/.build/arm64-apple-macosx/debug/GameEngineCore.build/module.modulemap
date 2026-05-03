@@ -1,0 +1,4 @@
+module GameEngineCore {
+    umbrella "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/GameEngineCore/include"
+    export *
+}

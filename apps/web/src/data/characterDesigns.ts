@@ -40,14 +40,33 @@ const DESIGN_BY_ID: Record<string, CharacterDesign> = {
     features: ["tactical_jacket"],
     portraitPath: "",
   },
-  kaison: {
-    id: "kaison" satisfies CanonicalLineageId,
-    name: "KAISON",
-    primaryColor: "#1a0a0a",
-    accentColor: "#ffc233",
-    secondaryColor: "#ffc233",
-    features: ["tactical_jacket"],
-    portraitPath: "",
+  kaijax: {
+    id: "kaijax" as any,
+    name: "KAIJAX",
+    primaryColor: "#1a1a1a",
+    accentColor: "#7fff00",
+    features: ["three_memory_tails", "neon_webbing"],
+  },
+  borax: {
+    id: "borax" as any,
+    name: "BORAX",
+    primaryColor: "#d4af37",
+    accentColor: "#ffffff",
+    features: ["golden_armor", "lion_physique"],
+  },
+  boryn: {
+    id: "boryn" as any,
+    name: "BORYN",
+    primaryColor: "#1e3a8a",
+    accentColor: "#38bdf8",
+    features: ["blue_energy", "lupine_armor"],
+  },
+  voidonus: {
+    id: "voidonus" as any,
+    name: "VOIDONUS",
+    primaryColor: "#4c1d95",
+    accentColor: "#000000",
+    features: ["dark_energy", "void_cloak"],
   },
 };
 

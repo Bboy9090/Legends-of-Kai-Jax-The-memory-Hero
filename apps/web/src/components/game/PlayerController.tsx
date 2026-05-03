@@ -116,6 +116,8 @@ export default function PlayerController() {
     }
 
     const dx = vx * delta;
+    const isAtLeftWall = state.playerX <= b.arenaXMin + 0.1;
+    const isAtRightWall = state.playerX >= b.arenaXMax - 0.1;
     const newX = Math.max(b.arenaXMin, Math.min(b.arenaXMax, state.playerX + dx));
 
     let velY = state.playerVelocityY;
@@ -124,8 +126,24 @@ export default function PlayerController() {
       justPressed("ArrowUp") ||
       justPressed("KeyW") ||
       touchAttacks.includes("jump");
-    if (wantJump && state.playerGrounded && !blockMove) {
-      velY = JUMP_VELOCITY;
+
+    // 🦁 BEAST MECHANIC: WALL KICK
+    if (wantJump && !state.playerGrounded && (isAtLeftWall || isAtRightWall)) {
+      const kickDir = isAtLeftWall ? 1 : -1;
+      vx = kickDir * SPRINT_MAX_SPEED * 1.5; // Explosive push-off
+      velY = JUMP_VELOCITY * 0.9; // Horizontal focus
+      useAudio.getState().playJump();
+      useBattle.getState().addScreenShake(0.05); // Visual feedback
+    } 
+    // 🦁 BEAST MECHANIC: PREDATOR POUNCE
+    else if (wantJump && state.playerGrounded && !blockMove) {
+      const isSprinting = sprintHeld && Math.abs(vx) > WALK_MAX_SPEED;
+      if (isSprinting) {
+         vx *= 1.4; // Boost horizontal speed
+         velY = JUMP_VELOCITY * 0.85; // Low profile pounce
+      } else {
+         velY = JUMP_VELOCITY;
+      }
       useAudio.getState().playJump();
     }
 
@@ -134,19 +152,33 @@ export default function PlayerController() {
     let grounded = false;
 
     if (newY <= GROUND_Y) {
+      if (!state.playerGrounded && Math.abs(velY) > 15) {
+         // 🦁 BEAST MECHANIC: WEIGHTY LANDING
+         useBattle.getState().addScreenShake(0.08);
+      }
       newY = GROUND_Y;
       velY = 0;
       grounded = true;
     }
 
-    const faceTowardOpponent = state.opponentX > newX;
+    // 🎯 PLAYER INSTINCT: Snap-face opponent during attack startup or close proximity
+    const distToOpp = Math.abs(state.opponentX - newX);
+    const shouldSnapFace = state.playerAttacking || distToOpp < 2.5;
+    const faceTowardOpponent = shouldSnapFace ? state.opponentX > newX : state.playerFacingRight;
 
     const towardOpp = Math.sign(state.opponentX - state.playerX) || 1;
     const wantDodge =
       (justPressed("KeyQ") || justPressed("KeyE") || touchAttacks.includes("dodge")) && !blockMove;
+
+    // 🦁 BEAST MECHANIC: AIR CONTORTION (Air Dodge)
     if (wantDodge) {
       const dir = (keys["KeyE"] ? 1 : keys["KeyQ"] ? -1 : inputX !== 0 ? (Math.sign(inputX) as 1 | -1) : ((-towardOpp) as 1 | -1)) as 1 | -1;
+      
+      // Allow dodge if grounded OR if we haven't dodged in the air yet this jump
       if (state.startPlayerDodge(dir)) {
+        if (!state.playerGrounded) {
+           velY = JUMP_VELOCITY * 0.3; // Slight upward pop to 'defy' gravity
+        }
         prevKeysRef.current = { ...keys };
         return;
       }

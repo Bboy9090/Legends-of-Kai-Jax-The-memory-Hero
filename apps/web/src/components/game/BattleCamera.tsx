@@ -50,39 +50,58 @@ export default function BattleCamera() {
       playerCombatState,
     });
 
+    const playerVelX = b.playerVelocityX || 0;
+    const playerVelY = b.playerVelocityY || 0;
+    const combinedVel = Math.sqrt(playerVelX * playerVelX + playerVelY * playerVelY);
+
     const midX = (playerX + opponentX) * 0.5;
     const midY = (playerY + opponentY) * 0.5;
-    const separation = Math.min(bt.separationMax, Math.abs(playerX - opponentX));
+    const separation = Math.max(3, Math.min(bt.separationMax, Math.abs(playerX - opponentX)));
 
+    // 🎬 CINEMATIC LEADING: Look ahead of where the player is moving
+    const leadFactor = 0.8;
+    const leadX = playerVelX * leadFactor * (mode === "exploration" ? 1.2 : 0.6);
+    
     let distMul = 1;
     let heightMul = 1;
     let targetYOffset = 1.15;
     let sideBias = 0;
 
     if (mode === "exploration") {
-      distMul = 1.08;
-      heightMul = 1.06;
-      targetYOffset = 1.35;
+      distMul = 1.12;
+      heightMul = 1.05;
+      targetYOffset = 1.45;
     } else if (mode === "combat") {
-      distMul = 0.92;
-      heightMul = 0.96;
-      targetYOffset = 1.05;
-      sideBias = (playerX - opponentX) * 0.12;
+      distMul = 0.90; // Tighten for combat
+      heightMul = 0.95;
+      targetYOffset = 1.15;
+      sideBias = (playerX - opponentX) * 0.15;
     } else {
-      distMul = 0.88;
-      heightMul = 0.94;
+      distMul = 0.85;
+      heightMul = 0.90;
       targetYOffset = 1.0;
-      sideBias = (playerX - opponentX) * 0.18;
+      sideBias = (playerX - opponentX) * 0.22;
     }
 
     const dynamicDist = (BASE_DIST + separation * bt.separationDistScale) * distMul;
     const dynamicHeight = (BASE_HEIGHT + separation * bt.separationHeightScale) * heightMul;
 
-    targetRef.current.set(midX + sideBias, midY + targetYOffset, 0);
+    // 🎬 TARGETING: Lead the camera with character momentum
+    targetRef.current.lerp(
+      new THREE.Vector3(midX + sideBias + leadX, midY + targetYOffset, 0),
+      0.15 // High-lag look-at for weight
+    );
 
     const idealPos = new THREE.Vector3(midX + sideBias * 0.5, dynamicHeight, dynamicDist);
-    const lerpRate = mode === "combat" ? CAM_LERP * 1.15 : CAM_LERP;
+    const lerpRate = mode === "combat" ? CAM_LERP * 1.5 : CAM_LERP;
     posRef.current.lerp(idealPos, lerpRate * delta);
+
+    // 🎬 DYNAMIC FOV: Zoom in during impact/combat, zoom out during pounces
+    const fovBase = 45;
+    const fovImpact = (hitStop > 0 ? -5 : 0) + (combinedVel > 15 ? 8 : 0);
+    const targetFov = fovBase + fovImpact + (separation * 0.8);
+    camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 0.1);
+    camera.updateProjectionMatrix();
 
     let shakeScale = 1;
     if (mode === "combat") shakeScale = bt.shakeScaleCombat;

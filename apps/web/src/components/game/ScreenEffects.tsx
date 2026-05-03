@@ -5,30 +5,50 @@ import { useBattle } from "../../lib/stores/useBattle";
 // Handles screen shake, flashes, and visual juice for that AAA feel!
 
 export default function ScreenEffects() {
-  const { screenShake, screenFlash, hitStop, comboCount, playerHealth, maxHealth } = useBattle();
+  const { screenShake, screenFlash, hitStop, comboCount, playerHealth, maxHealth, playerDread } = useBattle();
   const [shakeOffset, setShakeOffset] = useState({ x: 0, y: 0 });
   const [flashOpacity, setFlashOpacity] = useState(0);
   const [showComboFlash, setShowComboFlash] = useState(false);
   const [lowHealthPulse, setLowHealthPulse] = useState(false);
+  const [twitchOffset, setTwitchOffset] = useState({ x: 0, y: 0 });
   const prevComboRef = useRef(0);
   
   // Screen shake effect
   useEffect(() => {
-    if (screenShake <= 0) {
+    if (screenShake <= 0 && playerDread < 80) {
       setShakeOffset({ x: 0, y: 0 });
       return;
     }
     
     const interval = setInterval(() => {
-      const intensity = screenShake;
+      const shakeIntensity = screenShake;
+      const dreadIntensity = playerDread > 80 ? (playerDread - 80) * 0.1 : 0;
+      const finalIntensity = shakeIntensity + dreadIntensity;
+
       setShakeOffset({
-        x: (Math.random() - 0.5) * intensity * 10,
-        y: (Math.random() - 0.5) * intensity * 10,
+        x: (Math.random() - 0.5) * finalIntensity * 10,
+        y: (Math.random() - 0.5) * finalIntensity * 10,
       });
     }, 16);
     
     return () => clearInterval(interval);
-  }, [screenShake]);
+  }, [screenShake, playerDread]);
+
+  // Dread Glitch Twitch (High frequency, low mag)
+  useEffect(() => {
+    if (playerDread < 50) {
+        setTwitchOffset({ x: 0, y: 0 });
+        return;
+    }
+    const interval = setInterval(() => {
+        const amt = (playerDread - 50) * 0.05;
+        setTwitchOffset({
+            x: (Math.random() - 0.5) * amt,
+            y: (Math.random() - 0.5) * amt,
+        });
+    }, 50);
+    return () => clearInterval(interval);
+  }, [playerDread]);
   
   // Screen flash effect
   useEffect(() => {
@@ -65,14 +85,27 @@ export default function ScreenEffects() {
       setLowHealthPulse(false);
     }
   }, [playerHealth, maxHealth]);
+
+  const glitchFilter = playerDread > 60 
+    ? `hue-rotate(${(playerDread - 60) * 2}deg) contrast(${100 + (playerDread - 60)}%)` 
+    : 'none';
   
   return (
     <>
+      {/* GLOBAL GLITCH FILTER WRAPPER */}
+      <div 
+        className="fixed inset-0 pointer-events-none z-[200]"
+        style={{
+          filter: glitchFilter,
+          backdropFilter: playerDread > 85 ? `blur(${ (playerDread - 85) * 0.5 }px)` : 'none',
+        }}
+      />
+
       {/* Screen Shake Container */}
       <div 
         className="fixed inset-0 pointer-events-none z-[100]"
         style={{
-          transform: `translate(${shakeOffset.x}px, ${shakeOffset.y}px)`,
+          transform: `translate(${shakeOffset.x + twitchOffset.x}px, ${shakeOffset.y + twitchOffset.y}px)`,
         }}
       />
       

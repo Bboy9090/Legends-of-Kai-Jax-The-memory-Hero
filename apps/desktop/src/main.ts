@@ -131,26 +131,29 @@ class Logger {
     return `[${timestamp}] [${level}] ${message}\n`;
   }
 
-  info(message: string) {
+  info(...args: any[]) {
+    const message = args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(' ');
     const formatted = this.formatMessage('INFO', message);
     console.log(formatted.trim());
     this.logStream?.write(formatted);
   }
 
-  error(message: string, error?: Error) {
-    const formatted = this.formatMessage('ERROR', `${message}${error ? `: ${error.stack}` : ''}`);
+  error(message: string, error?: any) {
+    const formatted = this.formatMessage('ERROR', `${message}${error ? `: ${error.stack || error}` : ''}`);
     console.error(formatted.trim());
     this.logStream?.write(formatted);
   }
 
-  warn(message: string) {
+  warn(...args: any[]) {
+    const message = args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(' ');
     const formatted = this.formatMessage('WARN', message);
     console.warn(formatted.trim());
     this.logStream?.write(formatted);
   }
 
-  debug(message: string) {
+  debug(...args: any[]) {
     if (process.env.NODE_ENV === 'development') {
+      const message = args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(' ');
       const formatted = this.formatMessage('DEBUG', message);
       console.debug(formatted.trim());
       this.logStream?.write(formatted);
@@ -358,7 +361,7 @@ function createMainWindow() {
     mainWindow?.show();
     mainWindow?.focus();
 
-    if (process.platform === 'darwin') {
+    if (process.platform === 'darwin' && app.dock) {
       app.dock.show();
     }
 
@@ -562,21 +565,21 @@ function createMenu() {
           label: 'Reload',
           accelerator: 'CmdOrCtrl+R',
           click: (item, focusedWindow) => {
-            if (focusedWindow) focusedWindow.reload();
+            if (focusedWindow instanceof BrowserWindow) focusedWindow.reload();
           },
         },
         {
           label: 'Force Reload',
           accelerator: 'CmdOrCtrl+Shift+R',
           click: (item, focusedWindow) => {
-            if (focusedWindow) focusedWindow.webContents.reloadIgnoringCache();
+            if (focusedWindow instanceof BrowserWindow) focusedWindow.webContents.reloadIgnoringCache();
           },
         },
         {
           label: 'Toggle Developer Tools',
           accelerator: process.platform === 'darwin' ? 'Alt+Cmd+I' : 'Ctrl+Shift+I',
           click: (item, focusedWindow) => {
-            if (focusedWindow) focusedWindow.webContents.toggleDevTools();
+            if (focusedWindow instanceof BrowserWindow) focusedWindow.webContents.toggleDevTools();
           },
         },
         { type: 'separator' },
@@ -584,14 +587,14 @@ function createMenu() {
           label: 'Actual Size',
           accelerator: 'CmdOrCtrl+0',
           click: (item, focusedWindow) => {
-            if (focusedWindow) focusedWindow.webContents.setZoomLevel(0);
+            if (focusedWindow instanceof BrowserWindow) focusedWindow.webContents.setZoomLevel(0);
           },
         },
         {
           label: 'Zoom In',
           accelerator: 'CmdOrCtrl+Plus',
           click: (item, focusedWindow) => {
-            if (focusedWindow) {
+            if (focusedWindow instanceof BrowserWindow) {
               const current = focusedWindow.webContents.getZoomLevel();
               focusedWindow.webContents.setZoomLevel(current + 0.5);
             }
@@ -601,7 +604,7 @@ function createMenu() {
           label: 'Zoom Out',
           accelerator: 'CmdOrCtrl+-',
           click: (item, focusedWindow) => {
-            if (focusedWindow) {
+            if (focusedWindow instanceof BrowserWindow) {
               const current = focusedWindow.webContents.getZoomLevel();
               focusedWindow.webContents.setZoomLevel(current - 0.5);
             }
@@ -612,7 +615,7 @@ function createMenu() {
           label: 'Toggle Fullscreen',
           accelerator: process.platform === 'darwin' ? 'Ctrl+Cmd+F' : 'F11',
           click: (item, focusedWindow) => {
-            if (focusedWindow) focusedWindow.setFullScreen(!focusedWindow.isFullScreen());
+            if (focusedWindow instanceof BrowserWindow) focusedWindow.setFullScreen(!focusedWindow.isFullScreen());
           },
         },
       ],

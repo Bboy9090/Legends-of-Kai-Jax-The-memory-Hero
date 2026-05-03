@@ -2,6 +2,10 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
+import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
+
+const ARENA_X_MIN = MOVEMENT_TUNING.battle.arenaXMin;
+const ARENA_X_MAX = MOVEMENT_TUNING.battle.arenaXMax;
 
 interface Particle {
   x: number;
@@ -47,6 +51,11 @@ export default function ParticleManager() {
   const prevOpponentAttackRef = useRef(false);
   const prevBattlePhaseRef = useRef('intro');
   const koParticlesFiredRef = useRef(false);
+
+  // 🦁 APEX TRACKING: Particle triggers
+  const prevGroundedRef = useRef(true);
+  const prevPouncingRef = useRef(false);
+  const prevWallContactRef = useRef(false);
 
   // ENHANCED emit - EXPLOSIVE particles!
   const emit = (x: number, y: number, z: number, count: number, color: [number, number, number], speed: number, sizeMultiplier = 1.0) => {
@@ -179,6 +188,34 @@ export default function ParticleManager() {
       }
     }
     prevOpponentAttackRef.current = opponentAttacking;
+    
+    // 🦁 BEAST MECHANIC: ENVIRONMENTAL PARTICLES
+    const snap = useBattle.getState();
+    const isPouncing = !snap.playerGrounded && Math.abs(snap.playerVelocityX) > 12;
+    const isAtWall = snap.playerX <= ARENA_X_MIN + 0.15 || snap.playerX >= ARENA_X_MAX - 0.15;
+
+    // Heavy Landing Ripple
+    if (snap.playerGrounded && !prevGroundedRef.current && Math.abs(snap.playerVelocityY) > 5) {
+      const intensity = Math.min(3, Math.abs(snap.playerVelocityY) / 10);
+      emit(snap.playerX, snap.playerY - 0.5, 0, 25 * intensity, [0.7, 0.7, 0.7], 4 * intensity, 1.2 * intensity);
+    }
+    
+    // Wall Kick Sparks
+    if (isAtWall && !prevWallContactRef.current && isPouncing) {
+       emit(snap.playerX, snap.playerY + 0.5, 0, 30, [1, 1, 0.5], 8, 1.5); // Friction sparks
+       emit(snap.playerX, snap.playerY + 0.5, 0, 15, [1, 1, 1], 10, 2.0);  // High energy flash
+    }
+
+    // Pounce Exhaust
+    if (isPouncing) {
+      if (state.clock.elapsedTime % 0.05 < 0.02) {
+        emit(snap.playerX - Math.sign(snap.playerVelocityX) * 0.8, snap.playerY + 0.5, 0, 3, [1, 1, 1], 1, 0.8);
+      }
+    }
+
+    prevGroundedRef.current = snap.playerGrounded;
+    prevPouncingRef.current = isPouncing;
+    prevWallContactRef.current = isAtWall;
 
     // Update particles
     let activeCount = 0;

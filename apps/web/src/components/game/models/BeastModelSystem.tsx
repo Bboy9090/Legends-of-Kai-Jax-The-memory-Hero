@@ -38,15 +38,10 @@ interface BeastModelProps {
  */
 function getBeastGLBPath(beastId: string): string | null {
   const modelMap: Record<string, string> = {
-    'kaison': '/models/characters/kaison/kaison.glb',
-    'jaxon': '/models/characters/jaxon/jaxon.glb',
-    'kai-jax': '/models/characters/kai-jax/kai-jax.glb',
-    'kaijax': '/models/characters/kai-jax/kai-jax.glb',
-    'kaixonjax': '/models/characters/kai-jax/kai-jax.glb',
-    'zephyr-drake': '/models/characters/zephyr-drake/zephyr-drake.glb',
-    'aero-serpent': '/models/characters/aero-serpent/aero-serpent.glb',
-    'phoenix-dragon': '/models/characters/phoenix-dragon/phoenix-dragon.glb',
-    // Add more as GLB files are created
+    'kaijax': '/models/KAIJAX1.glb',
+    'borax': '/models/Borax.glb',
+    'boryn': '/models/BORYN.glb',
+    'voidonus': '/models/voidonus_beast.glb',
   };
   
   return modelMap[beastId] || null;

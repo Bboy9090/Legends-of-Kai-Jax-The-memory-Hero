@@ -8,7 +8,8 @@ import BattleScene from "./components/game/BattleScene";
 import MobileControls from "./components/game/MobileControls";
 import BattleUI from "./components/game/BattleUI";
 import DialogueDisplay from "./components/game/DialogueDisplay";
-import MainMenu from "./components/game/MainMenu";
+import LegendaryMainMenu from "./components/game/LegendaryMainMenu";
+
 import VersusCharacterSelect from "./components/game/VersusCharacterSelect";
 import BeastPreview from "./components/game/BeastPreview";
 import CampaignMap from "./components/game/CampaignMap";
@@ -22,6 +23,7 @@ import ControllerTestScene from "./components/game/ControllerTestScene";
 import AdventureArena from "./components/game/adventure/AdventureArena";
 import AdventureHUD from "./components/game/adventure/AdventureHUD";
 import StoryAdventure from "./components/game/StoryAdventure";
+import SettingsMenu from "./components/game/SettingsMenu";
 import DevFrameHud from "./components/game/DevFrameHud";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
@@ -173,15 +175,19 @@ function App() {
         transform: shakeTransform,
       }}
     >
-      {/* Lore Hub - Landing Page */}
-      {gameState === "lore-hub" && <LoreHub />}
+      {/* Lore Hub - Landing Page & Codex */}
+      {(gameState === "lore-hub" || gameState === "codex") && <LoreHub />}
+
+      {/* Settings Menu */}
+      {gameState === "settings" && <SettingsMenu />}
 
       {/* ⚡ LEGENDARY INTRO SEQUENCE */}
       {showIntro && gameState !== "lore-hub" && <GameIntro onComplete={handleIntroComplete} />}
       
       <KeyboardControls map={controls}>
         {/* Main Menu */}
-        {phase === "ready" && gameState === "menu" && !showIntro && <MainMenu />}
+        {phase === "ready" && gameState === "menu" && !showIntro && <LegendaryMainMenu />}
+
 
         {/* Campaign: RPG adventure — map, waves, bosses, progression to big bad */}
         {phase === "ready" && gameState === "campaign-map" && <CampaignMap />}

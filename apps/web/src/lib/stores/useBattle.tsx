@@ -1,4 +1,32 @@
-import { create } from "zustand";
+import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
+
+const BANTER_POOL = {
+  taunt: [
+    "Predictable. Try something else.",
+    "Is that the best the Memory King can do?",
+    "Your speed is lacking. I expected more.",
+    "The Void consumes all. Even your memories.",
+    "You're fighting a losing war, little hero.",
+  ],
+  smirk: [
+    "Not today!",
+    "Gotcha!",
+    "Missed me by a mile.",
+    "You're wide open!",
+    "Feeling the pressure yet?",
+  ],
+  encourage: [
+    "Nice one, Jaxon!",
+    "Hold the line, we've got this!",
+    "Stay focused, Kaison!",
+    "Together, we're Kai-Jax!",
+    "One more hit—don't give up!",
+  ]
+};
+
+export type BattlePhase = 'intro' | 'fighting' | 'ko' | 'paused' | 'results';
+
 import { useAudio } from "./useAudio";
 import { useMissions } from "./useMissions";
 import { useDifficulty, getDamageTakenMultiplier } from "./useDifficulty";
@@ -133,7 +161,13 @@ export interface BattleState {
   opponentAttackHasHit: boolean;
   playerInvulnerable: boolean;
   opponentInvulnerable: boolean;
-  opponentPersonality: 'aggressive' | 'defensive';
+  opponentPersonality: 'aggressive' | 'defensive' | 'stalker' | 'titan' | 'caster';
+  
+  // Tactical Trinity Metrics
+  playerDread: number; // match tension/danger
+  playerResonance: number; // defensive/parry energy
+  
+  triggerBanter: (source: 'player' | 'opponent', type: 'taunt' | 'smirk' | 'encourage', situation?: string) => void;
 
   /** Formal duel combat FSM (player posture): FREE | ATTACKING | DODGING | BLOCKING | PARRY_WINDOW | HITSTUN | GUARD_BROKEN */
   playerCombatState: BattleCombatState;
@@ -248,14 +282,14 @@ function hapticKO(): void {
 function hitStunDurationForAttack(attackType: AttackType | undefined): number {
   switch (attackType) {
     case "ultimate":
-      return 0.42;
+      return 0.65; // Extended for ultimate payoff
     case "special":
-      return 0.32;
+      return 0.45; // Heavier special impact
     case "kick":
-      return 0.22;
+      return 0.28;
     case "punch":
     default:
-      return 0.16;
+      return 0.18;
   }
 }
 
@@ -341,8 +375,34 @@ export const useBattle = create<BattleState>((set, get) => ({
   playerInvulnerable: false,
   opponentInvulnerable: false,
   opponentPersonality: 'aggressive',
+  playerDread: 0,
+  playerResonance: 100,
 
-  playerCombatState: BattleCombatState.FREE,
+  playerCombatState: 'FREE',
+  opponentCombatState: 'FREE',
+  battleBanter: null,
+
+  playerCombo: 0,
+  playerComboTimer: 0,
+  opponentCombo: 0,
+  opponentComboTimer: 0,
+
+  triggerBanter: (source, type, situation) => {
+    const pool = BANTER_POOL[type] || BANTER_POOL.taunt;
+    // Search for relevant situation keywords in the lines
+    let situationLines = pool.filter(l => !situation || l.toLowerCase().includes(situation.toLowerCase()));
+    if (situationLines.length === 0) situationLines = pool;
+    
+    const text = situationLines[Math.floor(Math.random() * situationLines.length)];
+    set({ battleBanter: { source, type, text } });
+    
+    // Auto-clear after 2.5s
+    setTimeout(() => {
+      const current = get().battleBanter;
+      if (current?.text === text) set({ battleBanter: null });
+    }, 2500);
+  },
+
   playerStamina: BATTLE_STAMINA.max,
   maxPlayerStamina: BATTLE_STAMINA.max,
   battleStaminaRegenDelay: 0,
@@ -680,8 +740,9 @@ export const useBattle = create<BattleState>((set, get) => ({
         get().addSynergy(playerAttackType === 'special' ? 15 : playerAttackType === 'kick' ? 10 : 5);
         get().addOverdrive(damage * 0.4);
         useMissions.getState().recordHit(playerAttackType);
-        get().triggerHitStop(hitStopSecondsForMove(move));
-        get().triggerScreenShake(Math.max(0.5, damage / 8));
+        const crunchMult = playerAttackType === 'ultimate' ? 1.8 : playerAttackType === 'special' ? 1.4 : 1.1;
+        get().triggerHitStop(hitStopSecondsForMove(move) * crunchMult);
+        get().triggerScreenShake(Math.max(0.7, damage / 6) * crunchMult);
         if (playerAttackType === 'ultimate') {
           get().triggerScreenFlash('#FFD700');
         }
@@ -731,6 +792,12 @@ export const useBattle = create<BattleState>((set, get) => ({
         get().triggerHitStop(0.09);
         get().triggerScreenShake(2);
         useAudio.getState().playSpecial();
+        
+        // ⚡ TRINITY: Resonance increase and Smirk on parry
+        const newRes = Math.min(100, s.playerResonance + 20);
+        set({ playerResonance: newRes });
+        get().triggerBanter('player', 'smirk', 'Not today!');
+        
         return;
       }
 
@@ -790,11 +857,21 @@ export const useBattle = create<BattleState>((set, get) => ({
 
     get().addDamageNumber(playerX, playerY, scaledDamage, true);
     get().addOverdrive(scaledDamage * 0.35);
-    const shakeBonus = atk === "special" ? 1.5 : 1;
-    get().triggerScreenShake(Math.max(0.6, scaledDamage / 6) * shakeBonus);
-    get().triggerHitStop(Math.max(0.02, scaledDamage / 400) * (atk === "special" ? 1.3 : 1));
+    const shakeBonus = atk === "special" ? 2.0 : 1.5;
+    get().triggerScreenShake(Math.max(0.8, scaledDamage / 5) * shakeBonus);
+    get().triggerHitStop(Math.max(0.04, scaledDamage / 300) * (atk === "special" ? 1.5 : 1.2));
     useAudio.getState().playHit();
     get().resetCombo();
+
+    // 🕸️ TRINITY: Increase Dread on damage
+    const newDread = Math.min(100, s.playerDread + (scaledDamage / 2));
+    set({ playerDread: newDread });
+
+    if (newHealth < s.maxHealth * 0.3) {
+      get().triggerBanter('player', 'encourage', 'health');
+    } else if (Math.random() < 0.3) {
+      get().triggerBanter('opponent', 'taunt');
+    }
 
     setTimeout(() => {
       set({ playerInvulnerable: false });
@@ -924,6 +1001,11 @@ export const useBattle = create<BattleState>((set, get) => ({
     
     useAudio.getState().playHit();
     hapticHit();
+
+    // ⚔️ TRINITY: Smirk on heavy damage
+    if (damage > 15 || Math.random() < 0.2) {
+      get().triggerBanter('player', 'smirk');
+    }
 
     setTimeout(() => {
       set({ opponentInvulnerable: false });
@@ -1154,6 +1236,12 @@ export const useBattle = create<BattleState>((set, get) => ({
     });
     
     get().triggerScreenFlash(winner === 'player' ? (legendaryFinish ? '#FFE066' : '#FFD700') : '#FF0000');
+    
+    if (winner === 'player') {
+      get().triggerBanter('player', 'encourage', 'Victory!');
+    } else {
+      get().triggerBanter('opponent', 'taunt', 'Devoured.');
+    }
     get().triggerScreenShake(legendaryFinish && winner === 'player' ? 12 : 8);
 
     const { maxRoundTime, roundTime } = get();

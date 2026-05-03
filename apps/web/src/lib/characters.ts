@@ -1,10 +1,35 @@
 import type { Fighter } from "../game/characters/shared/CharacterStats";
+import { COMPLETE_BEAST_ROSTER } from "@beast-kin/shared";
 
+/**
+ * ⚡ LEGENDARY CHARACTER ROSTER ⚡
+ * Ultimate God-Tier Fighter Database for Legends of Kai-Jax
+ */
 export type { Fighter };
 
-export const FIGHTERS: Fighter[] = [
+// Helper to convert beast to fighter
+const beastToFighter = (beast: any): Fighter => ({
+  id: beast.id,
+  name: beast.name,
+  displayName: beast.name.toUpperCase(),
+  color: beast.visual?.primaryColor || "#1a1a1a",
+  accentColor: beast.visual?.accentColor || "#7fff00",
+  baseStats: { 
+    power: beast.stats?.power || 80, 
+    speed: beast.stats?.speed || 80, 
+    defense: beast.stats?.defense || 80, 
+    gravity: 9.8 
+  },
+  role: beast.role || "hero",
+});
+
+// FULL BEAST WARS ROSTER
+const BEAST_WARS_FIGHTERS: Fighter[] = (COMPLETE_BEAST_ROSTER || []).map(beastToFighter);
+
+// Add extra legends
+const EXTRA_LEGENDS: Fighter[] = [
   {
-    id: "kai-jax",
+    id: "kaijax",
     name: "KaiJax",
     displayName: "KAI-JAX",
     color: "#1a1a1a",
@@ -237,7 +262,45 @@ export const FIGHTERS: Fighter[] = [
     baseStats: { power: 98, speed: 60, defense: 96, gravity: 13.0 },
     role: "boss",
   },
+  {
+    id: "kaijax",
+    name: "KaiJax",
+    displayName: "KAI-JAX",
+    color: "#1a1a1a",
+    accentColor: "#7fff00",
+    baseStats: { power: 92, speed: 90, defense: 88, gravity: 9.8 },
+    role: "hero",
+  },
+  {
+    id: "borax",
+    name: "Borax",
+    displayName: "BORAX",
+    color: "#d4af37",
+    accentColor: "#ffffff",
+    baseStats: { power: 94, speed: 82, defense: 95, gravity: 10.5 },
+    role: "hero",
+  },
+  {
+    id: "boryn",
+    name: "Boryn",
+    displayName: "BORYN",
+    color: "#1e3a8a",
+    accentColor: "#38bdf8",
+    baseStats: { power: 88, speed: 94, defense: 80, gravity: 9.8 },
+    role: "hero",
+  },
+  {
+    id: "voidonus",
+    name: "Voidonus",
+    displayName: "VOIDONUS",
+    color: "#4c1d95",
+    accentColor: "#000000",
+    baseStats: { power: 96, speed: 85, defense: 92, gravity: 9.8 },
+    role: "boss",
+  },
 ];
+
+export const FIGHTERS: Fighter[] = [...BEAST_WARS_FIGHTERS, ...EXTRA_LEGENDS];
 
 export const HERO_FIGHTERS = FIGHTERS.filter((f) => f.role === "hero");
 export const ENEMY_FIGHTERS = FIGHTERS.filter((f) => f.role !== "hero");

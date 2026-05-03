@@ -1,0 +1,476 @@
+{
+  "builtTestProducts" : [
+
+  ],
+  "copyCommands" : {
+    "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax_LegendsOfKaiJax.bundle/Assets.xcassets" : {
+      "inputs" : [
+        {
+          "kind" : "directory",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/Resources/Assets.xcassets"
+        }
+      ],
+      "outputs" : [
+        {
+          "kind" : "directory",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax_LegendsOfKaiJax.bundle/Assets.xcassets"
+        }
+      ]
+    },
+    "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax_LegendsOfKaiJax.bundle/borax.glb" : {
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/Resources/borax.glb"
+        }
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax_LegendsOfKaiJax.bundle/borax.glb"
+        }
+      ]
+    },
+    "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax_LegendsOfKaiJax.bundle/boryn.glb" : {
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/Resources/boryn.glb"
+        }
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax_LegendsOfKaiJax.bundle/boryn.glb"
+        }
+      ]
+    },
+    "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax_LegendsOfKaiJax.bundle/kaijax.glb" : {
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/Resources/kaijax.glb"
+        }
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax_LegendsOfKaiJax.bundle/kaijax.glb"
+        }
+      ]
+    },
+    "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax_LegendsOfKaiJax.bundle/voidonus.glb" : {
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/Resources/voidonus.glb"
+        }
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax_LegendsOfKaiJax.bundle/voidonus.glb"
+        }
+      ]
+    }
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.LegendsOfKaiJax-arm64-apple-macosx-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/sources",
+      "importPath" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/LegendsOfKaiJaxApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/Logic/GameOrchestrator.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/UI/GameView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/DerivedSources/resource_bundle_accessor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<LegendsOfKaiJax-arm64-apple-macosx-debug.module-resources>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/AnimationComponent.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/Character.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/CharacterFactory.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/CharacterLoader.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/ai/EnemyAI.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/character/StateManager.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/combat/CombatSystem.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/input/InputHandler.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/story_mode/StoryModeManager.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "LegendsOfKaiJax",
+      "moduleOutputPath" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/Modules/LegendsOfKaiJax.swiftmodule",
+      "objects" : [
+        "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/LegendsOfKaiJaxApp.swift.o",
+        "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/GameOrchestrator.swift.o",
+        "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/GameView.swift.o",
+        "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/resource_bundle_accessor.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_AVAILABLE",
+        "-Xcc",
+        "-fmodule-map-file=/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/module.modulemap",
+        "-Xcc",
+        "-I",
+        "-Xcc",
+        "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/GameEngineCore/include",
+        "-module-cache-path",
+        "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "LegendsOfKaiJax_main",
+        "-swift-version",
+        "5",
+        "-cxx-interoperability-mode=default",
+        "-Xcc",
+        "-std=c++17",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "legendsofkaijax",
+        "-disable-sandbox"
+      ],
+      "outputFileMapPath" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/LegendsOfKaiJaxApp.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/GameOrchestrator.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/GameView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/resource_bundle_accessor.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/Modules/LegendsOfKaiJax.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/LegendsOfKaiJaxApp.swift",
+        "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/Logic/GameOrchestrator.swift",
+        "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/UI/GameView.swift",
+        "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/DerivedSources/resource_bundle_accessor.swift"
+      ],
+      "tempsPath" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "LegendsOfKaiJax" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "LegendsOfKaiJax",
+      "-package-name",
+      "legendsofkaijax",
+      "-c",
+      "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/LegendsOfKaiJaxApp.swift",
+      "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/Logic/GameOrchestrator.swift",
+      "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/UI/GameView.swift",
+      "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/DerivedSources/resource_bundle_accessor.swift",
+      "-I",
+      "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_AVAILABLE",
+      "-Xcc",
+      "-fmodule-map-file=/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/module.modulemap",
+      "-Xcc",
+      "-I",
+      "-Xcc",
+      "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/GameEngineCore/include",
+      "-module-cache-path",
+      "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "LegendsOfKaiJax_main",
+      "-swift-version",
+      "5",
+      "-cxx-interoperability-mode=default",
+      "-Xcc",
+      "-std=c++17",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "legendsofkaijax",
+      "-disable-sandbox",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "GameEngineCore" : [
+
+    ],
+    "LegendsOfKaiJax" : [
+      "GameEngineCore"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax-entitlement.plist" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<entitlement-plist>"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<com.apple.security.get-task-allow>"
+        }
+      ],
+      "outputFilePath" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax-entitlement.plist"
+    },
+    "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/LegendsOfKaiJaxApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/Logic/GameOrchestrator.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/Sources/UI/GameView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/DerivedSources/resource_bundle_accessor.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/sources"
+    },
+    "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/AnimationComponent.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/Character.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/CharacterFactory.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/CharacterLoader.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/ai/EnemyAI.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/character/StateManager.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/combat/CombatSystem.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/input/InputHandler.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/GameEngineCore.build/src/story_mode/StoryModeManager.cpp.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/GameOrchestrator.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/GameView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/LegendsOfKaiJaxApp.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.build/resource_bundle_accessor.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/LegendsOfKaiJax.product/Objects.LinkFileList"
+    },
+    "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/bj90-m1/Documents/Documents - MacBook Pro/GitHub/Legends-of-Kai-Jax-The-memory-Hero/apps/ios/LegendsOfKaiJax/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}

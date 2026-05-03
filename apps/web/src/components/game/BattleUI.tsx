@@ -153,6 +153,8 @@ function LegendaryHealthBar({
   wins,
   synergy = 0,
   isTransformed = false,
+  dread,
+  resonance,
 }: {
   health: number;
   maxHealth: number;
@@ -161,11 +163,18 @@ function LegendaryHealthBar({
   wins: number;
   synergy?: number;
   isTransformed?: boolean;
+  dread?: number;
+  resonance?: number;
 }) {
   const percentage = (health / maxHealth) * 100;
   const isLow = percentage < 30;
   const isCritical = percentage < 15;
   const portraitPath = fighter.id ? getPortraitPath(fighter.id) : null;
+  const dreadVal = dread ?? 0;
+  const resVal = resonance ?? 100;
+
+  // Glitch intensity based on dread
+  const portraitGlitch = dreadVal > 70 ? `hue-rotate(${dreadVal}deg) contrast(150%)` : 'none';
 
   return (
     <div 
@@ -208,6 +217,8 @@ function LegendaryHealthBar({
             style={{ 
               background: portraitPath ? "transparent" : `linear-gradient(135deg, ${fighter.color}, ${fighter.accentColor})`,
               boxShadow: portraitPath ? undefined : `0 0 20px ${fighter.color}80, inset 0 0 15px rgba(255,255,255,0.3)`,
+              filter: side === 'left' ? portraitGlitch : 'none',
+              transform: dreadVal > 85 && Math.random() > 0.8 ? `translate(${(Math.random()-0.5)*4}px, 0)` : 'none'
             }}
           >
             {portraitPath ? (
@@ -738,6 +749,9 @@ export default function BattleUI() {
     playerWins,
     opponentWins,
     battleScore,
+    playerDread,
+    playerResonance,
+    battleBanter,
     resetRound,
     returnToMenu
   } = useBattle();
@@ -809,31 +823,47 @@ export default function BattleUI() {
           )}
           <div className="flex items-start justify-between gap-2 sm:gap-4">
             {/* Player Health */}
-            <LegendaryHealthBar
-              health={playerHealth}
-              maxHealth={maxHealth}
-              fighter={playerFighter}
-              side="left"
-              wins={playerWins}
-              synergy={playerSynergy}
-              isTransformed={playerTransformed}
-            />
-            
-            {/* Timer */}
-            <LegendaryTimer time={roundTime} />
-            
-            {/* Opponent Health */}
-            <LegendaryHealthBar
-              health={opponentHealth}
-              maxHealth={maxHealth}
-              fighter={opponentFighter}
-              side="right"
-              wins={opponentWins}
-              synergy={0}
-            />
-          </div>
-        </div>
-      </div>
+             <LegendaryHealthBar
+               health={playerHealth}
+               maxHealth={maxHealth}
+               fighter={playerFighter}
+               side="left"
+               wins={playerWins}
+               synergy={playerSynergy}
+               isTransformed={playerTransformed}
+               dread={playerDread}
+               resonance={playerResonance}
+             />
+             
+             {/* Timer */}
+             <LegendaryTimer time={roundTime} />
+             
+             {/* Opponent Health */}
+             <LegendaryHealthBar
+               health={opponentHealth}
+               maxHealth={maxHealth}
+               fighter={opponentFighter}
+               side="right"
+               wins={opponentWins}
+               synergy={0}
+             />
+           </div>
+         </div>
+       </div>
+
+       {/* Banter Feed Sidebar */}
+       {battleBanter && (
+         <div className="absolute left-6 top-[40%] max-w-[240px] animate-in fade-in slide-in-from-left-4 duration-500">
+            <div className={`p-4 rounded-xl border-2 backdrop-blur-md shadow-2xl ${
+              battleBanter.source === 'player' ? 'border-cyan-400 bg-cyan-950/40 text-cyan-50' : 'border-red-500 bg-red-950/40 text-red-50'
+            }`}>
+              <div className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-70">
+                {battleBanter.source} :: {battleBanter.type}
+              </div>
+              <div className="text-sm font-black italic">"{battleBanter.text}"</div>
+            </div>
+         </div>
+       )}
       
       {/* Combo Counter */}
       <ComboCounter combo={comboCount} maxCombo={50} damage={comboDamage} />
