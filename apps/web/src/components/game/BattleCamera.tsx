@@ -58,6 +58,7 @@ export default function BattleCamera() {
     const midY = (playerY + opponentY) * 0.5;
     const separation = Math.max(3, Math.min(bt.separationMax, Math.abs(playerX - opponentX)));
 
+<<<<<<< Updated upstream
     // 🎬 SMOOTH MODE TRANSITIONS
     const targetParams = {
       distMul: 1.12,
@@ -76,6 +77,31 @@ export default function BattleCamera() {
       targetParams.heightMul = 0.90;
       targetParams.targetYOffset = 1.0;
       targetParams.sideBias = (playerX - opponentX) * 0.22;
+=======
+    // 🎬 CINEMATIC LEADING: Look ahead of where the player is moving
+    const leadFactor = 0.8;
+    const leadX = playerVelX * leadFactor * (mode === "exploration" ? 1.2 : 0.6);
+    
+    let distMul = 1;
+    let heightMul = 1;
+    let targetYOffset = 1.15;
+    let sideBias = 0;
+
+    if (mode === "exploration") {
+      distMul = 1.12;
+      heightMul = 1.05;
+      targetYOffset = 1.45;
+    } else if (mode === "combat") {
+      distMul = 0.90; // Tighten for combat
+      heightMul = 0.95;
+      targetYOffset = 1.15;
+      sideBias = (playerX - opponentX) * 0.15;
+    } else {
+      distMul = 0.85;
+      heightMul = 0.90;
+      targetYOffset = 1.0;
+      sideBias = (playerX - opponentX) * 0.22;
+>>>>>>> Stashed changes
     }
 
     // Keep track of current multipliers for smooth lerping
@@ -111,9 +137,14 @@ export default function BattleCamera() {
     const lerpRate = mode === "combat" ? CAM_LERP * 1.5 : CAM_LERP;
     posRef.current.lerp(idealPos, lerpRate * delta);
 
+<<<<<<< Updated upstream
     // 🎬 DYNAMIC FOV: Zoom in during impact/combat
     const fovBase = 45;
     const hitStop = b.hitStop || 0; // Fix ReferenceError
+=======
+    // 🎬 DYNAMIC FOV: Zoom in during impact/combat, zoom out during pounces
+    const fovBase = 45;
+>>>>>>> Stashed changes
     const fovImpact = (hitStop > 0 ? -5 : 0) + (combinedVel > 15 ? 8 : 0);
     const targetFov = fovBase + fovImpact + (separation * 0.8);
     camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 0.1);

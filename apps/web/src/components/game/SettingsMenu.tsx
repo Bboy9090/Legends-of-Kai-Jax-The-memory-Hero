@@ -104,6 +104,7 @@ export default function SettingsMenu() {
 
         {/* Footer */}
         <div className="p-6 bg-black/40 border-t border-white/10 text-center">
+<<<<<<< Updated upstream
           <p className="text-[10px] text-white/20 uppercase tracking-[0.4em] mb-4">
             Legend of Kai-Jax Engine v2.0.0
           </p>
@@ -121,6 +122,11 @@ export default function SettingsMenu() {
               Terms of Service
             </button>
           </div>
+=======
+          <p className="text-[10px] text-white/20 uppercase tracking-[0.4em]">
+            Legend of Kai-Jax Engine v1.0.4
+          </p>
+>>>>>>> Stashed changes
         </div>
       </div>
     </div>

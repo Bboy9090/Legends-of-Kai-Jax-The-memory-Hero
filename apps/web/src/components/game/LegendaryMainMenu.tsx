@@ -46,12 +46,25 @@ const LegendaryMainMenu: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [titleGlow, setTitleGlow] = useState(0);
   const [showProfileSelect, setShowProfileSelect] = useState(false);
+<<<<<<< Updated upstream
 
   const profiles = useRunner((s) => s.profiles);
   const activeProfileIndex = useRunner((s) => s.activeProfileIndex);
   const switchProfile = useRunner((s) => s.switchProfile);
   const setGameState = useRunner((s) => s.setGameState);
   const setTrainingSession = useRunner((s) => s.setTrainingSession);
+=======
+
+  const profiles = useRunner((s) => s.profiles);
+  const activeProfileIndex = useRunner((s) => s.activeProfileIndex);
+  const switchProfile = useRunner((s) => s.switchProfile);
+
+  // Safety guard for hydration
+  if (!profiles || !profiles.length) {
+    return <div className="bg-[#050508] w-full h-screen flex items-center justify-center text-white/20 font-mono">HYDRATING ARCHIVE...</div>;
+  }
+
+>>>>>>> Stashed changes
 
   // Safety guard for hydration
   if (!profiles || !profiles.length) {
@@ -62,10 +75,23 @@ const LegendaryMainMenu: React.FC = () => {
   // Simplified, functional menu items
   const menuItems: MenuItem[] = [
     {
+<<<<<<< Updated upstream
       id: 'saga',
       label: 'START SAGA',
       sublabel: 'Reclaim the stolen memories',
       action: () => setGameState('campaign-map'),
+=======
+      id: 'continue',
+      label: 'CONTINUE SAGA',
+      sublabel: 'Select a memory profile',
+      action: () => setShowProfileSelect(true),
+    },
+    {
+      id: 'new-game',
+      label: 'NEW GAME',
+      sublabel: 'Begin the legend',
+      action: () => navigate('/character-select'),
+>>>>>>> Stashed changes
       legendary: true
     },
     {

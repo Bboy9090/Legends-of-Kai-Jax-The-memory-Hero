@@ -2649,10 +2649,13 @@ packages:
   '@zeit/schemas@2.36.0':
     resolution: {integrity: sha512-7kjMwcChYEzMKjeex9ZFXkt1AyNov9R5HZtjBKVsmVpw7pa7ZtlCGvCBC2vnnXctaYN+aRI61HjIqeetZW5ROg==}
 
+<<<<<<< Updated upstream
   abbrev@4.0.0:
     resolution: {integrity: sha512-a1wflyaL0tHtJSmLSOVybYhy22vRih4eduhhrkcjgrWGnRfrZtovJ2FRjxuTtkkj47O/baf0R86QU5OuYpz8fA==}
     engines: {node: ^20.17.0 || >=22.9.0}
 
+=======
+>>>>>>> Stashed changes
   accepts@2.0.0:
     resolution: {integrity: sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==}
     engines: {node: '>= 0.6'}
@@ -3454,9 +3457,12 @@ packages:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
     engines: {node: '>=10'}
 
+<<<<<<< Updated upstream
   exponential-backoff@3.1.3:
     resolution: {integrity: sha512-ZgEeZXj30q+I0EN+CbSSpIyPaJ5HVQD18Z1m+u1FXbAeT94mr1zw50q4q6jiiC447Nl/YTcIYSAftiGqetwXCA==}
 
+=======
+>>>>>>> Stashed changes
   express-rate-limit@8.3.2:
     resolution: {integrity: sha512-77VmFeJkO0/rvimEDuUC5H30oqUC4EyOhyGccfqoLebB0oiEYfM7nwPrsDsBL1gsTpwfzX8SFy2MT3TDyRq+bg==}
     engines: {node: '>= 16'}
@@ -8166,8 +8172,11 @@ snapshots:
 
   '@zeit/schemas@2.36.0': {}
 
+<<<<<<< Updated upstream
   abbrev@4.0.0: {}
 
+=======
+>>>>>>> Stashed changes
   accepts@2.0.0:
     dependencies:
       mime-types: 3.0.2
@@ -9291,8 +9300,11 @@ snapshots:
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
 
+<<<<<<< Updated upstream
   exponential-backoff@3.1.3: {}
 
+=======
+>>>>>>> Stashed changes
   express-rate-limit@8.3.2(express@5.2.1):
     dependencies:
       express: 5.2.1
@@ -10210,10 +10222,13 @@ snapshots:
       minipass: 3.3.6
       yallist: 4.0.0
 
+<<<<<<< Updated upstream
   minizlib@3.1.0:
     dependencies:
       minipass: 7.1.2
 
+=======
+>>>>>>> Stashed changes
   mkdirp@1.0.4: {}
 
   ms@2.0.0: {}
