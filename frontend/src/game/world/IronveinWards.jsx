@@ -24,8 +24,11 @@ const Platform = ({ position, size, color = '#2a2a3a', isMoving = false, moveAxi
     }
   });
 
+  const halfArgs = [size[0] / 2, size[1] / 2, size[2] / 2];
+
   return (
-    <RigidBody type={isMoving ? 'kinematicPosition' : 'fixed'} position={position}>
+    <RigidBody type={isMoving ? 'kinematicPosition' : 'fixed'} position={position} colliders={false}>
+      <CuboidCollider args={halfArgs} />
       <mesh ref={meshRef} receiveShadow castShadow>
         <boxGeometry args={size} />
         <meshStandardMaterial 
@@ -310,8 +313,6 @@ export const IronveinWards = () => {
         </mesh>
       ))}
 
-      {/* Ambient fog/atmosphere */}
-      <fog attach="fog" args={['#0a0a1a', 20, 80]} />
     </group>
   );
 };
