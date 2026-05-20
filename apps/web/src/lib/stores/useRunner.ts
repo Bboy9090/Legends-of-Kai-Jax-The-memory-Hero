@@ -33,11 +33,8 @@ export type CampaignNodeId =
 interface ProfileData {
   totalScore: number;
   campaignCompletedNodes: CampaignNodeId[];
-<<<<<<< Updated upstream
   completedStoryMissionIds: string[];
   completedRoamDistrictIds: string[];
-=======
->>>>>>> Stashed changes
   unlockedUpgrades: string[];
   lastPlayedTitle: string | null;
 }
@@ -67,27 +64,19 @@ interface RunnerState {
   // Progress (Maps to active profile)
   totalScore: number;
   campaignCompletedNodes: CampaignNodeId[];
-<<<<<<< Updated upstream
   completedStoryMissionIds: string[];
   completedRoamDistrictIds: string[];
   unlockedUpgrades: string[];
   setCampaignCompleted: (nodeId: CampaignNodeId) => void;
   setMissionCompleted: (missionKey: string) => void;
   setRoamDistrictCompleted: (districtKey: string) => void;
-=======
-  unlockedUpgrades: string[];
-  setCampaignCompleted: (nodeId: CampaignNodeId) => void;
->>>>>>> Stashed changes
 }
 
 const DEFAULT_PROFILE: ProfileData = {
   totalScore: 0,
   campaignCompletedNodes: [],
-<<<<<<< Updated upstream
   completedStoryMissionIds: [],
   completedRoamDistrictIds: [],
-=======
->>>>>>> Stashed changes
   unlockedUpgrades: [],
   lastPlayedTitle: null,
 };
@@ -135,11 +124,8 @@ export const useRunner = create<RunnerState>()(
       // Progress Initial (Mirrors profile[0])
       totalScore: 0,
       campaignCompletedNodes: [],
-<<<<<<< Updated upstream
       completedStoryMissionIds: [],
       completedRoamDistrictIds: [],
-=======
->>>>>>> Stashed changes
       unlockedUpgrades: [],
 
       setGameState: (gameState) =>
@@ -173,7 +159,6 @@ export const useRunner = create<RunnerState>()(
         });
       },
 
-<<<<<<< Updated upstream
       setMissionCompleted: (missionKey) => {
         const { completedStoryMissionIds, activeProfileIndex, profiles } = get();
         if (completedStoryMissionIds.includes(missionKey)) return;
@@ -202,8 +187,6 @@ export const useRunner = create<RunnerState>()(
         });
       },
 
-=======
->>>>>>> Stashed changes
       switchProfile: (index) => {
         const { profiles } = get();
         const targetProfile = profiles[index];
@@ -211,11 +194,8 @@ export const useRunner = create<RunnerState>()(
           activeProfileIndex: index,
           totalScore: targetProfile.totalScore,
           campaignCompletedNodes: targetProfile.campaignCompletedNodes,
-<<<<<<< Updated upstream
           completedStoryMissionIds: targetProfile.completedStoryMissionIds || [],
           completedRoamDistrictIds: targetProfile.completedRoamDistrictIds || [],
-=======
->>>>>>> Stashed changes
           unlockedUpgrades: targetProfile.unlockedUpgrades,
         });
       },
@@ -229,11 +209,8 @@ export const useRunner = create<RunnerState>()(
             profiles: newProfiles,
             totalScore: DEFAULT_PROFILE.totalScore,
             campaignCompletedNodes: DEFAULT_PROFILE.campaignCompletedNodes,
-<<<<<<< Updated upstream
             completedStoryMissionIds: DEFAULT_PROFILE.completedStoryMissionIds,
             completedRoamDistrictIds: DEFAULT_PROFILE.completedRoamDistrictIds,
-=======
->>>>>>> Stashed changes
             unlockedUpgrades: DEFAULT_PROFILE.unlockedUpgrades,
           });
         } else {
@@ -246,11 +223,8 @@ export const useRunner = create<RunnerState>()(
     }
   )
 );
-<<<<<<< Updated upstream
 
 // Expose for cross-store access without circular imports
 if (typeof window !== 'undefined') {
   (window as any).runnerStore = useRunner;
 }
-=======
->>>>>>> Stashed changes
