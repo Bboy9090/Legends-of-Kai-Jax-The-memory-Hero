@@ -38,7 +38,7 @@ def validate_character_spec():
     
     # Load schema and spec
     schema = load_json('schemas/character.schema.json')
-    spec = load_json('kai_jax.character.json')
+    spec = load_json('data/kai_jax.character.json')
     
     if not schema or not spec:
         return False
@@ -146,7 +146,7 @@ def cross_check_implementations():
     print("3. CROSS-CHECKING IMPLEMENTATIONS")
     print("=" * 70)
     
-    spec = load_json('kai_jax.character.json')
+    spec = load_json('data/kai_jax.character.json')
     if not spec:
         return False
     
@@ -217,7 +217,7 @@ def check_constraints():
     print("4. VERIFYING CONSTRAINTS")
     print("=" * 70)
     
-    spec = load_json('kai_jax.character.json')
+    spec = load_json('data/kai_jax.character.json')
     if not spec:
         return False
     

@@ -24,9 +24,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: path.resolve(__dirname, "index.html"),
-        combat: path.resolve(__dirname, "combat-demo.html"),
-        mission: path.resolve(__dirname, "mission-demo.html"),
-        ashblock: path.resolve(__dirname, "ashblock-slice.html"),
       },
     },
   },
