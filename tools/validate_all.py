@@ -129,7 +129,12 @@ def _normalize_spec_characters(spec):
 
 def _char_id_variants(char_id):
     """Return common identifier variants for matching (snake_case and kebab-case)."""
-    return [char_id, char_id.replace('_', '-'), char_id.replace('-', '_')]
+    return [
+        char_id, 
+        char_id.replace('_', '-'), 
+        char_id.replace('-', '_'), 
+        char_id.replace('_', '').replace('-', '')
+    ]
 
 
 def _char_id_in_content(char_id, content):
