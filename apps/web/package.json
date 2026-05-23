@@ -51,7 +51,7 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
-    "@capacitor/cli": "^5.7.8",
+    "@capacitor/cli": "^8.3.4",
     "@tailwindcss/typography": "^0.5.19",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
