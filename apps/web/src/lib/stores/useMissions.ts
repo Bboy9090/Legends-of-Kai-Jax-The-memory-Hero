@@ -237,7 +237,6 @@ function getStoryObjectives(storyId: string): MissionObjectiveRuntime[] {
 
   // Act-Specific Scaling Themes
   if (act === 1) {
-<<<<<<< Updated upstream
     // Act I: Learning & Precision
     return [
       objective("win", "Win the match", { kind: "winMatch" }, 1),
@@ -260,27 +259,6 @@ function getStoryObjectives(storyId: string): MissionObjectiveRuntime[] {
       objective("ultimate", "Use Ultimate", { kind: "useMove", count: 1, move: "ultimate" }, 1),
       objective("hits_heavy", `Land ${baseHits + 15} hits`, { kind: "landHits", count: baseHits + 15 }, baseHits + 15),
       objective("perfect", "Maintain high intensity", { kind: "reachCombo", count: baseCombo + 10 }, baseCombo + 10)
-=======
-    // Act I: Learning the basics
-    return [
-      objective("win", "Win the match", { kind: "winMatch" }, 1),
-      objective("hits", `Land ${baseHits} hits`, { kind: "landHits", count: baseHits }, baseHits),
-      num % 3 === 0 ? objective("special", "Use Special", { kind: "useMove", count: 1, move: "special" }, 1) : null
-    ].filter(Boolean) as MissionObjectiveRuntime[];
-  } else if (act === 2) {
-    // Act II: Survival & Tactics
-    return [
-      objective("win", "Win the match", { kind: "winMatch" }, 1),
-      objective("survival", `Survive ${baseSurvival}s`, { kind: "surviveSeconds", seconds: baseSurvival }, baseSurvival),
-      objective("combo", `Reach ${baseCombo} combo`, { kind: "reachCombo", count: baseCombo }, baseCombo)
-    ];
-  } else {
-    // Act III: Mastery & Fusion
-    return [
-      objective("win", "Liberate the arena", { kind: "winMatch" }, 1),
-      objective("ultimate", "Use Ultimate", { kind: "useMove", count: 1, move: "ultimate" }, 1),
-      objective("hits_heavy", `Land ${baseHits + 10} hits`, { kind: "landHits", count: baseHits + 10 }, baseHits + 10)
->>>>>>> Stashed changes
     ];
   }
 }

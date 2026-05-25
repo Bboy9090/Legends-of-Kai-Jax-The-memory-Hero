@@ -1,0 +1,113 @@
+# Dependabot configuration for Legends-of-Kai-Jax-The-memory-Hero
+#
+# This file controls how Dependabot creates pull requests for dependency
+# updates. Key settings used here:
+#
+#   - `open-pull-requests-limit`: caps open PRs per ecosystem so Dependabot
+#     doesn't flood the queue and avoids the
+#     `pull_request_exists_for_latest_version` error caused by stale PRs.
+#
+#   - `schedule.interval: "weekly"`: batches updates once a week rather than
+#     creating a PR for every patch release, reducing noise.
+#
+#   - `target-branch: "main"`: all updates target the main branch.
+#
+# Maintenance note:
+#   If Dependabot starts failing with `pull_request_exists_for_latest_version`,
+#   check for open Dependabot PRs for that package and merge or close them
+#   before the next scheduled run.
+
+version: 2
+
+updates:
+  # Python backend dependencies
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    # Keep the open-PR queue short to avoid stale-PR conflicts.
+    open-pull-requests-limit: 5
+    target-branch: "main"
+    labels:
+      - "dependencies"
+      - "python"
+    # Group minor + patch updates into a single PR to reduce PR churn.
+    groups:
+      python-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Root-level npm/pnpm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+    labels:
+      - "dependencies"
+      - "javascript"
+    groups:
+      npm-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # 3D game client (apps/web)
+  - package-ecosystem: "npm"
+    directory: "/apps/web"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+    labels:
+      - "dependencies"
+      - "javascript"
+    groups:
+      apps-web-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Game Hub frontend
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+    labels:
+      - "dependencies"
+      - "javascript"
+    groups:
+      frontend-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+    labels:
+      - "dependencies"
+      - "github-actions"
