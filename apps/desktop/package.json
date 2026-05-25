@@ -81,7 +81,7 @@
     "cors": "^2.8.6",
     "electron-updater": "^6.1.7",
     "express": "^5.2.1",
-    "ws": "^8.19.0"
+    "ws": "^8.20.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
