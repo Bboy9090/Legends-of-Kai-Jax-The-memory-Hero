@@ -80,7 +80,7 @@
     "react-router-dom": "^7.10.1",
     "serve": "^14.2.5",
     "tailwind-merge": "^3.4.0",
-    "tailwindcss": "^4.1.18",
+    "tailwindcss": "^4.3.0",
     "three": "^0.182.0",
     "tsx": "^4.21.0",
     "usb": "^2.17.0",
