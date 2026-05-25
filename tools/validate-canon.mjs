@@ -17,7 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Load character data
-const characterPath = join(__dirname, 'kai_jax.character.json');
+const characterPath = join(__dirname, '..', 'data', 'kai_jax.character.json');
 
 console.log('🔒 Validating Kai-Jax character against canonical schema...\n');
 

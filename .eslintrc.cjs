@@ -25,6 +25,12 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'warn',
     'react/react-in-jsx-scope': 'off',
     'react/prop-types': 'off',
+    // @react-three/fiber introduces custom JSX props (args, position, intensity,
+    // attach, castShadow, etc.) that are valid Three.js element attributes but
+    // are not part of the standard HTML/SVG property set.  The
+    // react/no-unknown-property rule cannot be taught about this extended
+    // namespace without third-party rule overrides, so we disable it here.
+    'react/no-unknown-property': 'off',
   },
   settings: {
     react: {

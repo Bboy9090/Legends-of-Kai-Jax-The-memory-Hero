@@ -289,19 +289,7 @@ export const CHARACTER_KITS: Record<string, SignatureKit> = {
     effectColor: '#FFFFFF'
   }
 };
-  default: {
-    specialName: 'Power Strike',
-    specialDescription: 'Focused energy attack',
-    specialType: 'melee',
-    specialDamage: 60,
-    specialCooldown: 3,
-    ultimateName: 'Ultimate Fury',
-    ultimateDescription: 'Channel all power into one strike',
-    ultimateType: 'burst',
-    ultimateDamage: 150,
-    effectColor: '#FFFFFF'
-  }
-};
+
 
 // Get signature kit for a character
 export function getSignatureKit(characterId: string): SignatureKit {

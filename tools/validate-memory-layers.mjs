@@ -14,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Validate all memory layer files
-const memoryLayerPath = join(__dirname, 'data', 'memory_layers');
+const memoryLayerPath = join(__dirname, '..', 'data', 'memory_layers');
 let allValid = true;
 
 console.log('🧠 Validating Memory Layer files...\n');
