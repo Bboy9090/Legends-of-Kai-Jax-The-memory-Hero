@@ -50,7 +50,7 @@ jobs:
           ./gradlew assembleDebug
 
       - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Legends-of-Kai-Jax-APK
           path: apps/web/android/app/build/outputs/apk/debug/app-debug.apk
