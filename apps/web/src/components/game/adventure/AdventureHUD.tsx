@@ -150,6 +150,21 @@ function CombatStateLabel({ state }: { state: CombatState }) {
   );
 }
 
+function hardQuitAdventureSession() {
+  useAdventure.getState().reset();
+  useGame.getState().reset();
+  useRunner.getState().setActiveStoryMission(null);
+  useRunner.getState().setTrainingSession(false);
+  useRunner.getState().setGameState("lore-hub");
+
+  // Belt-and-suspenders: force the persisted runner state to the landing hub too.
+  useRunner.setState({
+    gameState: "lore-hub",
+    activeStoryMissionId: null,
+    trainingSession: false,
+  });
+}
+
 export default function AdventureHUD() {
   const player = useAdventure((s) => s.player);
   const enemies = useAdventure((s) => s.enemies);
@@ -158,9 +173,7 @@ export default function AdventureHUD() {
   const roamDistrictId = useAdventure((s) => s.roamDistrictId);
   const encounterIndex = useAdventure((s) => s.encounterIndex);
   const districtCompleted = useAdventure((s) => s.districtCompleted);
-  const setGameState = useRunner((s) => s.setGameState);
   const trainingSession = useRunner((s) => s.trainingSession);
-  const resetGamePhase = useGame((s) => s.reset);
   const isPaused = useAdventure((s) => s.isPaused);
   const [showMoves, setShowMoves] = useState(trainingSession);
 
@@ -182,7 +195,7 @@ export default function AdventureHUD() {
 
   if (isPaused) {
     return (
-      <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
+      <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50 pointer-events-auto">
         <div className="text-center space-y-6">
           <h2 className="text-4xl font-black text-white tracking-tight">
             PAUSED
@@ -195,14 +208,10 @@ export default function AdventureHUD() {
               Resume
             </button>
             <button
-              onClick={() => {
-                useAdventure.getState().reset();
-                resetGamePhase();
-                setGameState("menu");
-              }}
+              onClick={hardQuitAdventureSession}
               className="block w-48 mx-auto px-6 py-3 rounded-xl bg-slate-700/60 border-2 border-slate-500 text-slate-200 font-bold hover:bg-slate-600/60 transition-all"
             >
-              Quit to Menu
+              Quit to Hub
             </button>
           </div>
         </div>
