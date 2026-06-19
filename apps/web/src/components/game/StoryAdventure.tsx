@@ -11,6 +11,46 @@ interface StoryAdventureProps {
 
 type StoryPhase = "intro" | "playing" | "wave-transition" | "outro" | "results";
 
+type StoryWaveEnemySpec = {
+  fighterId: string;
+};
+
+const WAVE_TYPE_TO_FIGHTER_ID: Record<string, string> = {
+  grunt: "hyena-scout",
+  "void-grunt": "rift-drone",
+  "void-scout": "hyena-scout",
+  "void-elite": "neon-wraith",
+  "void-legion": "rift-drone",
+  "void-stalker-minion": "neon-wraith",
+  "void-stalker": "void-stalker",
+  "rift-general": "rift-general",
+};
+
+function normalizeWaveEnemies(mission: StoryMission, waveIndex: number): StoryWaveEnemySpec[] {
+  const wave = mission.enemyWaves[waveIndex] as any;
+  if (!wave) return [];
+
+  if (Array.isArray(wave.enemies)) {
+    return wave.enemies
+      .filter((enemy: any) => typeof enemy?.fighterId === "string")
+      .map((enemy: any) => ({ fighterId: enemy.fighterId }));
+  }
+
+  const count = Math.max(1, Number(wave.count ?? 1));
+  const isFinalBossWave = Boolean(mission.bossId) && waveIndex === mission.enemyWaves.length - 1;
+  const fighterId = isFinalBossWave
+    ? mission.bossId!
+    : WAVE_TYPE_TO_FIGHTER_ID[String(wave.type)] ?? "rift-drone";
+
+  return Array.from({ length: count }, () => ({ fighterId }));
+}
+
+function getWaveDelaySeconds(mission: StoryMission, waveIndex: number): number {
+  const wave = mission.enemyWaves[waveIndex] as any;
+  const delay = Number(wave?.spawnDelay ?? wave?.delay ?? 2);
+  return Number.isFinite(delay) && delay >= 0 ? delay : 2;
+}
+
 function DialogueOverlay({
   lines,
   onComplete,
@@ -255,7 +295,7 @@ function ResultsScreen({ mission, success, onContinue }: { mission: StoryMission
           {success ? "Mission Complete" : "Mission Failed"}
         </h1>
         <p className="text-slate-300 text-sm mb-6">
-          {success ? `You completed "${mission.name}" and earned your rewards.` : `You were defeated. Train harder and try again.`}
+          {success ? `You completed "${mission.title}" and earned your rewards.` : `You were defeated. Train harder and try again.`}
         </p>
         {success && (
           <div className="flex justify-center gap-3 mb-6">
@@ -294,11 +334,16 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
     if (spawnedWaves.current.has(waveIndex)) return;
     spawnedWaves.current.add(waveIndex);
 
-    const wave = mission.enemyWaves[waveIndex];
+    const waveEnemies = normalizeWaveEnemies(mission, waveIndex);
+    if (waveEnemies.length === 0) {
+      console.warn(`[StoryAdventure] Mission ${mission.id} wave ${waveIndex} has no enemies. Skipping wave.`);
+      return;
+    }
+
     const existingEnemies = useAdventure.getState().enemies;
 
-    const newEnemies = wave.enemies.map((e, i) => {
-      const angle = (i / wave.enemies.length) * Math.PI * 2;
+    const newEnemies = waveEnemies.map((e, i) => {
+      const angle = (i / waveEnemies.length) * Math.PI * 2;
       const radius = 8 + waveIndex * 3;
       const isBoss = mission.bossId === e.fighterId;
       return {
@@ -327,7 +372,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
 
   const startPlaying = useCallback(() => {
     if (!mission) return;
-    initAdventure(characterId, missionId, (mission as any).arena || mission.arenaId || "cross_point_arena");
+    initAdventure(characterId, missionId, mission.arena || "cross_point_arena");
     setCurrentWave(0);
     spawnedWaves.current.clear();
     spawnWave(0);
@@ -352,7 +397,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
         const nextWave = currentWave + 1;
         if (nextWave < mission.enemyWaves.length) {
           setCurrentWave(nextWave);
-          const delay = mission.enemyWaves[nextWave].spawnDelay || 2;
+          const delay = getWaveDelaySeconds(mission, nextWave);
           setPhase("wave-transition");
           setTimeout(() => {
             spawnWave(nextWave);
