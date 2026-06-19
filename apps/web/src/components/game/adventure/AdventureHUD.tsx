@@ -150,7 +150,33 @@ function CombatStateLabel({ state }: { state: CombatState }) {
   );
 }
 
+let hardQuitInProgress = false;
+
+function forcePersistedRunnerHubState() {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = window.localStorage.getItem("kai-jax-save");
+    if (!raw) return;
+    const saved = JSON.parse(raw) as { state?: Record<string, unknown>; version?: number };
+    const next = {
+      ...saved,
+      state: {
+        ...(saved.state ?? {}),
+        gameState: "lore-hub",
+        activeStoryMissionId: null,
+        trainingSession: false,
+      },
+    };
+    window.localStorage.setItem("kai-jax-save", JSON.stringify(next));
+  } catch (error) {
+    console.warn("[AdventureHUD] Failed to force persisted hub state", error);
+  }
+}
+
 function hardQuitAdventureSession() {
+  if (hardQuitInProgress) return;
+  hardQuitInProgress = true;
+
   useAdventure.getState().reset();
   useGame.getState().reset();
   useRunner.getState().setActiveStoryMission(null);
@@ -163,6 +189,12 @@ function hardQuitAdventureSession() {
     activeStoryMissionId: null,
     trainingSession: false,
   });
+  forcePersistedRunnerHubState();
+
+  // Final emergency exit for stuck overlays/canvases. The state above is saved first.
+  window.setTimeout(() => {
+    window.location.assign("/");
+  }, 75);
 }
 
 export default function AdventureHUD() {
@@ -188,6 +220,19 @@ export default function AdventureHUD() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  useEffect(() => {
+    if (!isPaused) return;
+    const handlePausedKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "KeyQ") {
+        e.preventDefault();
+        e.stopPropagation();
+        hardQuitAdventureSession();
+      }
+    };
+    window.addEventListener("keydown", handlePausedKeyDown, true);
+    return () => window.removeEventListener("keydown", handlePausedKeyDown, true);
+  }, [isPaused]);
+
   const districtMeta = roamDistrictId ? getDistrictMeta(roamDistrictId) : null;
   const lastReward = useMissions((s) => s.lastReward);
 
@@ -195,8 +240,8 @@ export default function AdventureHUD() {
 
   if (isPaused) {
     return (
-      <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50 pointer-events-auto">
-        <div className="text-center space-y-6">
+      <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[9999] pointer-events-auto">
+        <div className="text-center space-y-6 pointer-events-auto">
           <h2 className="text-4xl font-black text-white tracking-tight">
             PAUSED
           </h2>
@@ -208,11 +253,23 @@ export default function AdventureHUD() {
               Resume
             </button>
             <button
-              onClick={hardQuitAdventureSession}
-              className="block w-48 mx-auto px-6 py-3 rounded-xl bg-slate-700/60 border-2 border-slate-500 text-slate-200 font-bold hover:bg-slate-600/60 transition-all"
+              onPointerDown={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                hardQuitAdventureSession();
+              }}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                hardQuitAdventureSession();
+              }}
+              className="block w-56 mx-auto px-6 py-3 rounded-xl bg-red-700/70 border-2 border-red-400 text-red-50 font-black hover:bg-red-600/80 transition-all"
             >
-              Quit to Hub
+              Force Quit to Hub
             </button>
+            <p className="text-xs text-slate-400 max-w-xs mx-auto">
+              Press Q here if the button refuses to behave.
+            </p>
           </div>
         </div>
       </div>
