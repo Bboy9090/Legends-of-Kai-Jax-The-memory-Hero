@@ -9,20 +9,66 @@ interface Props {
   accentColor: string;
 }
 
+function PlayerVisibilityShell({ accentColor }: { accentColor: string }) {
+  const material = (
+    <meshBasicMaterial
+      color={accentColor}
+      transparent
+      opacity={0.42}
+      depthTest={false}
+      depthWrite={false}
+    />
+  );
+
+  return (
+    <group name="phase1a-player-visibility-shell" renderOrder={999}>
+      <mesh position={[0, 1.1, 0]} renderOrder={999}>
+        <capsuleGeometry args={[0.34, 1.05, 8, 16]} />
+        {material}
+      </mesh>
+
+      <mesh position={[0, 1.95, 0]} renderOrder={999}>
+        <sphereGeometry args={[0.28, 16, 16]} />
+        {material}
+      </mesh>
+
+      <mesh position={[-0.42, 1.18, 0]} rotation={[0, 0, -0.28]} renderOrder={999}>
+        <capsuleGeometry args={[0.1, 0.62, 6, 10]} />
+        {material}
+      </mesh>
+
+      <mesh position={[0.42, 1.18, 0]} rotation={[0, 0, 0.28]} renderOrder={999}>
+        <capsuleGeometry args={[0.1, 0.62, 6, 10]} />
+        {material}
+      </mesh>
+
+      <mesh position={[-0.18, 0.38, 0]} rotation={[0, 0, 0.08]} renderOrder={999}>
+        <capsuleGeometry args={[0.11, 0.68, 6, 10]} />
+        {material}
+      </mesh>
+
+      <mesh position={[0.18, 0.38, 0]} rotation={[0, 0, -0.08]} renderOrder={999}>
+        <capsuleGeometry args={[0.11, 0.68, 6, 10]} />
+        {material}
+      </mesh>
+
+      <mesh position={[0, 1.22, -0.5]} rotation={[Math.PI / 2, 0, 0]} renderOrder={999}>
+        <coneGeometry args={[0.18, 0.45, 16]} />
+        <meshBasicMaterial color="#ffffff" transparent opacity={0.78} depthTest={false} depthWrite={false} />
+      </mesh>
+    </group>
+  );
+}
+
 function PlayerPresenceMarker({ accentColor }: { accentColor: string }) {
   return (
     <group name="phase1a-player-presence-marker">
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]} renderOrder={998}>
         <ringGeometry args={[0.74, 0.9, 48]} />
-        <meshBasicMaterial color={accentColor} transparent opacity={0.7} depthWrite={false} />
+        <meshBasicMaterial color={accentColor} transparent opacity={0.85} depthTest={false} depthWrite={false} />
       </mesh>
 
-      <mesh position={[0, 0.18, -0.72]} rotation={[Math.PI / 2, 0, 0]}>
-        <coneGeometry args={[0.14, 0.36, 16]} />
-        <meshBasicMaterial color={accentColor} transparent opacity={0.85} depthWrite={false} />
-      </mesh>
-
-      <pointLight position={[0, 1.8, 0.5]} color={accentColor} intensity={0.45} distance={4} decay={2} />
+      <pointLight position={[0, 1.8, 0.5]} color={accentColor} intensity={0.65} distance={4} decay={2} />
     </group>
   );
 }
@@ -58,7 +104,8 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
 
   return (
     <group ref={groupRef}>
-      {/* Phase 1A.2: real GLB owns the body now; this only marks feet/facing. */}
+      {/* Phase 1A.2: guaranteed gameplay silhouette while GLB materials are being tuned. */}
+      <PlayerVisibilityShell accentColor={accentColor} />
       <PlayerPresenceMarker accentColor={accentColor} />
 
       <Suspense fallback={null}>
