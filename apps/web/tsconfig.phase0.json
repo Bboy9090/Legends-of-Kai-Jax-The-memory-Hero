@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "src/combat/MovePlayer.ts",
+    "src/combat/Hurtbox.ts",
+    "src/game/combat/CombatStateMachine.ts",
+    "src/game/combat/frameTiming.ts",
+    "src/game/combat/targeting.ts",
+    "src/game/world/zones/AshblockHeights/AshblockHeightsScript.ts",
+    "src/player/PlayerController.ts",
+    "src/components/game/cinematic/cinematicFlow.ts"
+  ],
+  "exclude": [
+    "src/components/ui/**",
+    "src/components/game/models/**",
+    "src/hooks/useUpgrades.ts",
+    "src/ashblock-slice-entry.tsx"
+  ]
+}
