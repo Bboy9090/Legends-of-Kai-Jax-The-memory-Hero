@@ -1,5 +1,6 @@
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useRunner } from "../../../lib/stores/useRunner";
+import { useGame } from "../../../lib/stores/useGame";
 import { CombatState } from "../../../game/combat/stateEnums";
 import { STAMINA_CONFIG } from "../../../game/tuning/adventureTuning";
 import { getDistrictMeta } from "../../../lib/encounters";
@@ -159,6 +160,7 @@ export default function AdventureHUD() {
   const districtCompleted = useAdventure((s) => s.districtCompleted);
   const setGameState = useRunner((s) => s.setGameState);
   const trainingSession = useRunner((s) => s.trainingSession);
+  const resetGamePhase = useGame((s) => s.reset);
   const isPaused = useAdventure((s) => s.isPaused);
   const [showMoves, setShowMoves] = useState(trainingSession);
 
@@ -195,6 +197,7 @@ export default function AdventureHUD() {
             <button
               onClick={() => {
                 useAdventure.getState().reset();
+                resetGamePhase();
                 setGameState("menu");
               }}
               className="block w-48 mx-auto px-6 py-3 rounded-xl bg-slate-700/60 border-2 border-slate-500 text-slate-200 font-bold hover:bg-slate-600/60 transition-all"
