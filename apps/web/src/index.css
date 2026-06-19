@@ -14,11 +14,10 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
 
   body {
-    @apply font-sans antialiased;
     background: #050508;
     color: #ffffff;
     margin: 0;
