@@ -8,6 +8,7 @@ import { useMissions } from "../../../lib/stores/useMissions";
 import { ASHBLOCK_OBJECTIVE_BLURBS } from "../../../game/world/zones/AshblockHeights/AshblockHeightsNarrative";
 import MoveListOverlay from "../MoveListOverlay";
 import { useState, useEffect } from "react";
+import { isTouchDevice } from "../../../lib/touchUtils";
 
 function HealthBar({
   current,
@@ -208,6 +209,7 @@ export default function AdventureHUD() {
   const trainingSession = useRunner((s) => s.trainingSession);
   const isPaused = useAdventure((s) => s.isPaused);
   const [showMoves, setShowMoves] = useState(trainingSession);
+  const [touchCapable] = useState(() => isTouchDevice());
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -361,21 +363,23 @@ export default function AdventureHUD() {
       <CombatStateLabel state={player.combatState} />
       <AutoTargetIndicator targetId={player.autoTargetId} enemies={enemies} />
 
-      <div className="absolute bottom-4 left-0 right-0 text-center">
-        <div className="inline-flex gap-3 bg-black/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-slate-700/50 text-slate-400 text-xs">
-          <span>WASD move</span>
-          <span className="text-slate-600">|</span>
-          <span>J attack</span>
-          <span className="text-slate-600">|</span>
-          <span>K heavy</span>
-          <span className="text-slate-600">|</span>
-          <span>L skill</span>
-          <span className="text-slate-600">|</span>
-          <span>Space dodge</span>
-          <span className="text-slate-600">|</span>
-          <span>Esc pause</span>
+      {!touchCapable && (
+        <div className="absolute bottom-4 left-0 right-0 text-center">
+          <div className="inline-flex gap-3 bg-black/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-slate-700/50 text-slate-400 text-xs">
+            <span>WASD move</span>
+            <span className="text-slate-600">|</span>
+            <span>J attack</span>
+            <span className="text-slate-600">|</span>
+            <span>K heavy</span>
+            <span className="text-slate-600">|</span>
+            <span>L skill</span>
+            <span className="text-slate-600">|</span>
+            <span>Space dodge</span>
+            <span className="text-slate-600">|</span>
+            <span>Esc pause</span>
+          </div>
         </div>
-      </div>
+      )}
 
       <style>{`
         @keyframes fadeOut {

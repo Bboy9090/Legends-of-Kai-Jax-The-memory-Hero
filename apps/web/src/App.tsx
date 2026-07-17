@@ -22,6 +22,7 @@ import LoreHub from "./components/game/LoreHub";
 import ControllerTestScene from "./components/game/ControllerTestScene";
 import AdventureArena from "./components/game/adventure/AdventureArena";
 import AdventureHUD from "./components/game/adventure/AdventureHUD";
+import AdventureTouchControls from "./components/game/adventure/AdventureTouchControls";
 import StoryAdventure from "./components/game/StoryAdventure";
 import SettingsMenu from "./components/game/SettingsMenu";
 import DevFrameHud from "./components/game/DevFrameHud";
@@ -245,7 +246,7 @@ function App() {
                 </Canvas>
                 <AdventureHUD />
               </div>
-              <MobileControls />
+              <AdventureTouchControls />
             </>
           );
         })()}
@@ -301,7 +302,7 @@ function App() {
                   onBack={() => useRunner.getState().setGameState("campaign-map")}
                 />
               </div>
-              <MobileControls />
+              <AdventureTouchControls />
             </>
           );
         })()}

@@ -1,3 +1,35 @@
+/**
+ * QUARANTINED - do not import.
+ *
+ * Verified unreachable: nothing in the codebase imports this file
+ * (confirmed by grepping the entire apps/web/src tree - only this file
+ * references itself).
+ *
+ * Verified incompatible: every store call below (movePlayer, jumpPlayer,
+ * slidePlayer, attackEnemy, dashPlayer, setWebButtonPressed,
+ * chargeWebKick, releaseWebKick, transformHero, fireEnergyBlast,
+ * player.webAttached, player.energyMeter, player.powerLevel,
+ * player.isAttacking, player.kickChargeTimer) targets properties that do
+ * not exist on the current `useRunner` store
+ * (apps/web/src/lib/stores/useRunner.ts). This was written for an
+ * earlier, different game concept (an endless runner with web-swinging
+ * and energy blasts) and predates the current Adventure Mode
+ * architecture. It would not compile against the current store if wired
+ * up as-is.
+ *
+ * Adventure Mode's real, working touch input lives in
+ * apps/web/src/components/game/adventure/AdventureTouchControls.tsx,
+ * which drives the current useTouchInput store already read by
+ * AdventurePlayerController.tsx. See
+ * docs/qa/PHASE1B_MOBILE_TOUCH_SMOKE_TEST_2026-07-17.md for the full
+ * audit trail of this component and the two other disconnected touch
+ * implementations found alongside it (MobileControls.tsx's Adventure
+ * Mode usage, useTouchInput.ts's previously-unused setters).
+ *
+ * Left in place rather than deleted per explicit instruction: do not
+ * remove code merely because it looks old.
+ */
+
 import { useEffect, useRef } from "react";
 import { useKeyboardControls } from "@react-three/drei";
 import { useRunner } from "../../lib/stores/useRunner";
