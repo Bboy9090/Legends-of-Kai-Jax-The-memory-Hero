@@ -453,5 +453,6 @@ Full consolidated tracker, including CI/build issues not listed below:
   - [`docs/qa/PHASE1B_ROUTE_AUDIT_2026-07-17.md`](docs/qa/PHASE1B_ROUTE_AUDIT_2026-07-17.md) — interactive control / dead-end audit
   - [`docs/qa/PHASE1B_EXTERNAL_ASSET_AUDIT_2026-07-17.md`](docs/qa/PHASE1B_EXTERNAL_ASSET_AUDIT_2026-07-17.md) — external asset dependency audit
   - [`docs/qa/PHASE1B_MOBILE_TOUCH_SMOKE_TEST_2026-07-17.md`](docs/qa/PHASE1B_MOBILE_TOUCH_SMOKE_TEST_2026-07-17.md) — mobile viewport/touch-control smoke test and the touch-controls implementation
+  - [`docs/qa/PHASE1B_RELEASE_SMOKE_TEST_2026-07-17.md`](docs/qa/PHASE1B_RELEASE_SMOKE_TEST_2026-07-17.md) — final release smoke-test gate: full MVP loop verified end to end on keyboard and touch
   - [`docs/qa/BRANCH_SALVAGE_AUDIT_2026-07.md`](docs/qa/BRANCH_SALVAGE_AUDIT_2026-07.md) — audit of legacy branches, confirming nothing was worth cherry-picking
   - Earlier phase proofs: [`docs/qa/PHASE0_LOCAL_PROOF_2026-06-19.md`](docs/qa/PHASE0_LOCAL_PROOF_2026-06-19.md), [`docs/qa/PHASE1A_PLAYTEST_2026-06-19.md`](docs/qa/PHASE1A_PLAYTEST_2026-06-19.md), [`docs/qa/BUILD_HEALTH_REPORT.md`](docs/qa/BUILD_HEALTH_REPORT.md)
