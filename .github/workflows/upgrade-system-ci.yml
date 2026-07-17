@@ -12,6 +12,10 @@ on:
       - 'packages/shared/src/utils/*Upgrade*.ts'
   pull_request:
     branches: [ main, develop ]
+    paths:
+      - 'packages/shared/src/types/upgrade.types.ts'
+      - 'packages/shared/src/data/**/*.ts'
+      - 'packages/shared/src/utils/*Upgrade*.ts'
 
 jobs:
   type-check:
@@ -19,8 +23,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: 8
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -33,22 +35,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: 8
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run test
+      - run: pnpm -C apps/web test
 
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: 8
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
