@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import '../../styles/bronx_grit.css';
 import '../../styles/legendary-effects.css';
 import { BRAND } from '../../lib/brand';
@@ -31,7 +30,6 @@ interface MenuItem {
 }
 
 const LegendaryMainMenu: React.FC = () => {
-  const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(1); // Start on New Game
   const [memoryShards, setMemoryShards] = useState<Array<{
@@ -340,7 +338,8 @@ const LegendaryMainMenu: React.FC = () => {
               key={i}
               onClick={() => {
                 switchProfile(i);
-                navigate('/campaign-map');
+                setShowProfileSelect(false);
+                setGameState('campaign-map');
               }}
               className={`group relative p-6 rounded-xl border-2 transition-all hover:scale-105 ${
                 i === activeProfileIndex ? 'border-legendary-gold bg-legendary-gold/10' : 'border-white/10 bg-white/5'

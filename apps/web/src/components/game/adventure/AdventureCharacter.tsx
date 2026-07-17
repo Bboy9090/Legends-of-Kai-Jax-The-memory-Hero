@@ -1,13 +1,112 @@
 import { useRef, Suspense } from "react";
+import { Html, Billboard } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useAdventure } from "../../../lib/stores/useAdventure";
-import { CombatState } from "../../../game/combat/stateEnums";
 import GLBCharacterModel from "../models/GLBCharacterModel";
 import * as THREE from "three";
 
 interface Props {
   fighterId: string;
   accentColor: string;
+}
+
+function PlayerVisibilityShell({ accentColor }: { accentColor: string }) {
+  return (
+    <group name="phase1a-player-visibility-shell" renderOrder={9999}>
+      {/* Always-facing gameplay silhouette. It does not depend on lighting, GLB material, or depth. */}
+      <Billboard position={[0, 1.25, 0]} follow lockX={false} lockY={false} lockZ={false}>
+        <mesh renderOrder={9999}>
+          <planeGeometry args={[1.15, 2.65]} />
+          <meshBasicMaterial
+            color={accentColor}
+            transparent
+            opacity={0.38}
+            depthTest={false}
+            depthWrite={false}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+        <mesh position={[0, 0.95, 0.01]} renderOrder={10000}>
+          <circleGeometry args={[0.32, 24]} />
+          <meshBasicMaterial
+            color="#ffffff"
+            transparent
+            opacity={0.68}
+            depthTest={false}
+            depthWrite={false}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      </Billboard>
+
+      <mesh position={[0, 1.1, 0]} renderOrder={10001}>
+        <capsuleGeometry args={[0.34, 1.05, 8, 16]} />
+        <meshBasicMaterial
+          color={accentColor}
+          transparent
+          opacity={0.58}
+          depthTest={false}
+          depthWrite={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+
+      <mesh position={[0, 1.95, 0]} renderOrder={10002}>
+        <sphereGeometry args={[0.28, 16, 16]} />
+        <meshBasicMaterial
+          color="#ffffff"
+          transparent
+          opacity={0.82}
+          depthTest={false}
+          depthWrite={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+
+      <mesh position={[0, 1.22, -0.5]} rotation={[Math.PI / 2, 0, 0]} renderOrder={10003}>
+        <coneGeometry args={[0.2, 0.5, 16]} />
+        <meshBasicMaterial color="#ffffff" transparent opacity={0.92} depthTest={false} depthWrite={false} />
+      </mesh>
+
+      <Html position={[0, 2.85, 0]} center zIndexRange={[10000, 0]}>
+        <div style={{
+          background: "rgba(0, 242, 255, 0.92)",
+          color: "#020617",
+          padding: "4px 8px",
+          borderRadius: "999px",
+          border: "2px solid white",
+          fontFamily: "monospace",
+          fontSize: "11px",
+          fontWeight: 900,
+          letterSpacing: "0.08em",
+          textShadow: "none",
+          pointerEvents: "none",
+          whiteSpace: "nowrap",
+          boxShadow: "0 0 18px rgba(0, 242, 255, 0.8)",
+        }}>
+          PLAYER
+        </div>
+      </Html>
+    </group>
+  );
+}
+
+function PlayerPresenceMarker({ accentColor }: { accentColor: string }) {
+  return (
+    <group name="phase1a-player-presence-marker">
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]} renderOrder={9998}>
+        <ringGeometry args={[0.74, 0.9, 48]} />
+        <meshBasicMaterial color={accentColor} transparent opacity={0.95} depthTest={false} depthWrite={false} />
+      </mesh>
+
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]} renderOrder={9997}>
+        <circleGeometry args={[0.22, 24]} />
+        <meshBasicMaterial color="#ffffff" transparent opacity={0.85} depthTest={false} depthWrite={false} />
+      </mesh>
+
+      <pointLight position={[0, 1.8, 0.5]} color={accentColor} intensity={1.2} distance={6} decay={2} />
+    </group>
+  );
 }
 
 /**
@@ -27,11 +126,13 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
     // Sync position and rotation from store
     groupRef.current.position.set(player.posX, player.posY + yOffset.current, player.posZ);
     groupRef.current.rotation.y = player.rotY;
+    groupRef.current.visible = true;
   });
 
   // Map CombatState to high-level animation props
   const isJumping = player.posY > 0.1;
   const isGrounded = !isJumping;
+  const verticalVelocity = (player as typeof player & { velocityY?: number }).velocityY ?? 0;
   
   // Determine attack type from state
   const attackType = player.attackType ? 
@@ -39,7 +140,11 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
     : null;
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} name="adventure-player-root">
+      {/* Phase 1A.2: unavoidable gameplay visibility marker. Remove only after final GLB art is reliable. */}
+      <PlayerVisibilityShell accentColor={accentColor} />
+      <PlayerPresenceMarker accentColor={accentColor} />
+
       <Suspense fallback={null}>
         <GLBCharacterModel
           fighterId={fighterId}
@@ -52,7 +157,7 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
           isJumping={isJumping}
           isInvulnerable={player.invulnTimer > 0}
           velocityX={player.velocityX}
-          velocityY={player.velocityY}
+          velocityY={verticalVelocity}
           hitAnim={player.hitStunTimer > 0 ? 1 : 0}
         />
       </Suspense>

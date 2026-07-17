@@ -1,143 +1,86 @@
-# Deploying Legends of Kai-Jax
+# Deploying Legends of Kai-Jax (apps/web)
 
-## Project Structure
+`apps/web` is a static Vite build — no server required to serve it. This
+document describes deployment **configuration** that exists in this
+repository. None of it means the game is currently live at any of these
+targets — see `README.md` §10 (Deployment) at the repo root for what's
+actually verified/configured today versus what's just documented here.
 
-```
-/                        ← project root
-├── apps/web/            ← THE GAME (static React + Three.js)
-│   ├── src/             ← game source code
-│   ├── dist/            ← build output (after npm run build)
-│   ├── vite.config.ts   ← build config
-│   └── wrangler.toml    ← Cloudflare Pages config
-├── backend/             ← API server (FastAPI + MongoDB)
-└── render.yaml          ← Render deployment config
-```
+## Currently configured in this repo's CI
 
-The game client (`apps/web/`) is a **static site** — no server needed.
-The backend (`backend/`) is optional and only needed for story progression tracking.
+GitHub Actions (`.github/workflows/deploy.yml` and `static.yml`, at the
+repo root) deploy `apps/web/dist` to **GitHub Pages** on every push to
+`main`. This is the only target with an active, repo-owned CI pipeline as
+of this writing.
 
----
+## Vercel (recommended)
 
-## Quick Start (Local / Cursor)
+`apps/web/vercel.json` is configured for this. In the Vercel dashboard,
+set the project's **Root Directory to `apps/web`**, then Vercel will use
+this repo's `vercel.json`:
 
-```bash
-# 1. Clone or open the project root in Cursor
-# 2. Install game dependencies
-cd apps/web
-npm install
-
-# 3. Run the game
-npm run dev
-# Game opens at http://localhost:5000
-
-# 4. (Optional) Run the backend
-cd backend
-cp .env.example .env       # fill in your MONGO_URL
-pip install -r requirements.txt
-uvicorn server:app --reload --port 8000
-```
-
----
-
-## Cloudflare Pages
-
-### Option A: Dashboard
-
-1. Go to https://dash.cloudflare.com → Pages → Create a project
-2. Connect your Git repo
-3. Set these build settings:
-   - **Root directory:** `apps/web`
-   - **Build command:** `npm run build`
-   - **Build output directory:** `dist`
-   - **Framework preset:** Vite
-4. Deploy
-
-### Option B: Wrangler CLI
-
-```bash
-cd apps/web
-npm install
-npm run build
-npx wrangler pages deploy dist --project-name legends-of-kai-jax
-```
-
-### SPA Routing
-
-Already included — `public/_redirects` handles this automatically:
-```
-/*  /index.html  200
-```
-
----
-
-## Render
-
-### Static Site (Game Only)
-
-1. Go to https://dashboard.render.com → New → Static Site
-2. Connect your Git repo
-3. Set these build settings:
-   - **Root directory:** `apps/web`
-   - **Build command:** `npm run build`
-   - **Publish directory:** `dist`
-4. Add a rewrite rule: `/*` → `/index.html` (for SPA routing)
-5. Deploy
-
-### Full Stack (Game + API)
-
-The `render.yaml` at project root deploys both:
-1. Go to Render Dashboard → Blueprints → New Blueprint Instance
-2. Connect your Git repo
-3. Render reads `render.yaml` and creates both services
-4. Set the `MONGO_URL` and `CORS_ORIGINS` env vars on the API service
-
----
-
-## Vercel (Alternative)
-
-```bash
-cd apps/web
-npx vercel
-# Framework: Vite
-# Root: ./
-# Build: npm run build
-# Output: dist
-```
-
-Or add `apps/web/vercel.json`:
 ```json
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install --frozen-lockfile",
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
 ```
 
----
+Or via the CLI, from `apps/web`:
 
-## Environment Variables
+```bash
+cd apps/web
+npx vercel
+```
 
-### Game Client (apps/web)
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `VITE_API_URL` | No | Backend API URL (only if using backend) |
+**This has not been deployed from this session** — no Vercel account or
+credentials are available in this environment. `vercel.json` is
+configuration, not proof of a live deployment.
 
-### Backend (backend/)
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `MONGO_URL` | Yes | MongoDB connection string |
-| `DB_NAME` | Yes | Database name (default: `kai_jax_db`) |
-| `CORS_ORIGINS` | No | Allowed origins, comma-separated |
-| `EMERGENT_LLM_KEY` | No | AI narrative features |
+## Netlify (backup)
 
-See `.env.example` files in each directory for full details.
+`apps/web/netlify.toml` is configured the same way — set the site's
+**Base directory to `apps/web`** in the Netlify dashboard:
 
----
+```toml
+[build]
+  command = "pnpm install --frozen-lockfile && pnpm build"
+  publish = "dist"
 
-## Notes
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
 
-- The game is purely client-side — all character data, stats, and rendering logic runs in the browser
-- The backend is only needed for story mode progression tracking (saves to MongoDB)
-- For a quick deploy of just the game, use Cloudflare Pages or Render static site — no backend needed
-- Build output is standard Vite (`dist/` folder with index.html + JS/CSS bundles)
+Also not deployed from this session.
+
+## SPA routing
+
+The app has no client-side router — navigation is entirely
+Zustand-state-driven, not URL-based (see `README.md` §9). The rewrite
+rules above, and `apps/web/public/_redirects` (`/*  /index.html  200`,
+for hosts that read that file directly), exist so that any non-root path
+still serves `index.html` instead of 404ing.
+
+## Android / iOS / Desktop
+
+Not covered by this document — see `README.md` §1 and §10, and
+`docs/known-debt.md`, for verified status on native targets. None of them
+are proven store-ready or signed as of this writing.
+
+## Environment variables
+
+This is a purely client-side static build — no environment variables are
+required to build or serve `apps/web` itself.
+
+## Other configuration present but unverified in this document
+
+- `apps/web/wrangler.toml` (Cloudflare Pages) and a root `render.yaml`
+  (Render) both exist in the repository from earlier deployment
+  experiments. Neither was exercised or confirmed working while writing
+  this document — treat them the same as Vercel/Netlify above:
+  configuration present, live status unverified.

@@ -1,87 +1,129 @@
-# Getting Started
+# Getting Started — Legends of Kai-Jax
 
 ## Prerequisites
 
-Before you begin, ensure you have the following installed:
+Install these first:
 
-- **Node.js**: Version 20 LTS or higher
-- **pnpm**: Version 8 or higher (install with `npm install -g pnpm`)
-- **Git**: For version control
+- Node.js 20 LTS or higher
+- pnpm 9.15.9 or compatible pnpm 9.x
+- Git
 
-## Installation
-
-1. **Clone the repository**
+Install pnpm if needed:
 
 ```bash
-git clone https://github.com/Bboy9090/Smash-Hereos.git
-cd Smash-Hereos
+npm install -g pnpm@9.15.9
 ```
 
-2. **Install dependencies**
+## Clone the Repository
+
+```bash
+git clone https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero.git
+cd Legends-of-Kai-Jax-The-memory-Hero
+```
+
+## Install Dependencies
+
+From the repo root:
 
 ```bash
 pnpm install
 ```
 
-This will install all dependencies for the monorepo and its packages.
+## Main Game Client
 
-3. **Build the packages**
+Primary app:
 
-```bash
-pnpm build
+```text
+apps/web
 ```
 
-This compiles all TypeScript packages.
+Stack:
 
-## Development
+```text
+React + Vite + TypeScript + Three.js / React Three Fiber
+```
 
-### Running in Development Mode
+Run the game client:
+
+```bash
+pnpm -C apps/web dev
+```
+
+Then open the URL printed by Vite. The configured dev server port is currently `3000`.
+
+Common local URL:
+
+```text
+http://localhost:3000
+```
+
+## Build Proof
+
+Run these before claiming a milestone is complete:
+
+```bash
+pnpm -C apps/web build
+pnpm -C apps/web test
+pnpm -C apps/web typecheck
+```
+
+If a command fails, paste the exact output into a QA report. Do not summarize errors. The exact error is the map. Summaries are where bugs go to hide and start families.
+
+## Root Scripts
+
+Useful root commands:
 
 ```bash
 pnpm dev
-```
-
-This starts all packages in watch mode. Changes will automatically recompile.
-
-### Building for Production
-
-```bash
 pnpm build
+pnpm test
 ```
 
-### Type Checking
+The main product proof still belongs to `apps/web` first.
+
+## Optional Desktop Shell
+
+The Electron desktop wrapper lives here:
+
+```text
+apps/desktop
+```
+
+Do not prioritize desktop packaging until `apps/web` is proven.
+
+Basic desktop TypeScript check:
 
 ```bash
-pnpm typecheck
+pnpm -C apps/desktop build:ts
 ```
 
-### Linting
+## Current Phase 0 Rule
 
-```bash
-pnpm lint
-```
+Do not rebuild clean-slate.
 
-### Formatting
-
-```bash
-# Format all files
-pnpm format
-
-# Check formatting
-pnpm format:check
-```
+The current repo already contains playable-system foundations. The correct next move is to stabilize, prove the build, clean stale docs, and focus the best existing systems into one playable vertical slice.
 
 ## Project Structure
 
-- `packages/shared` - Shared types, utilities, and constants
-- `packages/engine` - Core game engine (physics, combat, input, etc.)
-- `packages/characters` - Fighter system and character implementations
-- `packages/ui` - React UI components (TODO)
-- `apps/web` - Web game application (TODO)
-- `apps/mobile` - Capacitor mobile app (TODO)
+```text
+apps/web        Primary 3D game client
+apps/desktop    Optional Electron wrapper
+packages/shared Shared types and utilities
+packages/engine Engine package
+packages/characters Character package
+frontend         Legacy/lore hub frontend path
+backend          Optional/legacy FastAPI backend path
+memory           PRD and production notes
+docs             Documentation and QA reports
+```
 
-## Next Steps
+## Next Step
 
-- Read the [Architecture](ARCHITECTURE.md) documentation
-- Learn how to [create a character](CHARACTER_GUIDE.md)
-- Understand the [combat system](COMBAT_SYSTEM.md)
+Run the Phase 0 command proof:
+
+```bash
+pnpm install
+pnpm -C apps/web build
+pnpm -C apps/web test
+pnpm -C apps/web typecheck
+```

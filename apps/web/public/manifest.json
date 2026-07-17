@@ -10,15 +10,9 @@
   "scope": "/",
   "icons": [
     {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ],
@@ -51,9 +45,9 @@
       "url": "/saga-mode",
       "icons": [
         {
-          "src": "/icons/saga-mode-icon.png",
-          "sizes": "96x96",
-          "type": "image/png"
+          "src": "/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
         }
       ]
     },
@@ -64,9 +58,9 @@
       "url": "/versus-mode",
       "icons": [
         {
-          "src": "/icons/versus-icon.png",
-          "sizes": "96x96",
-          "type": "image/png"
+          "src": "/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
         }
       ]
     }

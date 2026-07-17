@@ -1,5 +1,6 @@
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useRunner } from "../../../lib/stores/useRunner";
+import { useGame } from "../../../lib/stores/useGame";
 import { CombatState } from "../../../game/combat/stateEnums";
 import { STAMINA_CONFIG } from "../../../game/tuning/adventureTuning";
 import { getDistrictMeta } from "../../../lib/encounters";
@@ -7,6 +8,7 @@ import { useMissions } from "../../../lib/stores/useMissions";
 import { ASHBLOCK_OBJECTIVE_BLURBS } from "../../../game/world/zones/AshblockHeights/AshblockHeightsNarrative";
 import MoveListOverlay from "../MoveListOverlay";
 import { useState, useEffect } from "react";
+import { isTouchDevice } from "../../../lib/touchUtils";
 
 function HealthBar({
   current,
@@ -149,6 +151,53 @@ function CombatStateLabel({ state }: { state: CombatState }) {
   );
 }
 
+let hardQuitInProgress = false;
+
+function forcePersistedRunnerHubState() {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = window.localStorage.getItem("kai-jax-save");
+    if (!raw) return;
+    const saved = JSON.parse(raw) as { state?: Record<string, unknown>; version?: number };
+    const next = {
+      ...saved,
+      state: {
+        ...(saved.state ?? {}),
+        gameState: "lore-hub",
+        activeStoryMissionId: null,
+        trainingSession: false,
+      },
+    };
+    window.localStorage.setItem("kai-jax-save", JSON.stringify(next));
+  } catch (error) {
+    console.warn("[AdventureHUD] Failed to force persisted hub state", error);
+  }
+}
+
+function hardQuitAdventureSession() {
+  if (hardQuitInProgress) return;
+  hardQuitInProgress = true;
+
+  useAdventure.getState().reset();
+  useGame.getState().reset();
+  useRunner.getState().setActiveStoryMission(null);
+  useRunner.getState().setTrainingSession(false);
+  useRunner.getState().setGameState("lore-hub");
+
+  // Belt-and-suspenders: force the persisted runner state to the landing hub too.
+  useRunner.setState({
+    gameState: "lore-hub",
+    activeStoryMissionId: null,
+    trainingSession: false,
+  });
+  forcePersistedRunnerHubState();
+
+  // Final emergency exit for stuck overlays/canvases. The state above is saved first.
+  window.setTimeout(() => {
+    window.location.assign("/");
+  }, 75);
+}
+
 export default function AdventureHUD() {
   const player = useAdventure((s) => s.player);
   const enemies = useAdventure((s) => s.enemies);
@@ -157,10 +206,10 @@ export default function AdventureHUD() {
   const roamDistrictId = useAdventure((s) => s.roamDistrictId);
   const encounterIndex = useAdventure((s) => s.encounterIndex);
   const districtCompleted = useAdventure((s) => s.districtCompleted);
-  const setGameState = useRunner((s) => s.setGameState);
   const trainingSession = useRunner((s) => s.trainingSession);
   const isPaused = useAdventure((s) => s.isPaused);
   const [showMoves, setShowMoves] = useState(trainingSession);
+  const [touchCapable] = useState(() => isTouchDevice());
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -173,6 +222,19 @@ export default function AdventureHUD() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  useEffect(() => {
+    if (!isPaused) return;
+    const handlePausedKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "KeyQ") {
+        e.preventDefault();
+        e.stopPropagation();
+        hardQuitAdventureSession();
+      }
+    };
+    window.addEventListener("keydown", handlePausedKeyDown, true);
+    return () => window.removeEventListener("keydown", handlePausedKeyDown, true);
+  }, [isPaused]);
+
   const districtMeta = roamDistrictId ? getDistrictMeta(roamDistrictId) : null;
   const lastReward = useMissions((s) => s.lastReward);
 
@@ -180,8 +242,8 @@ export default function AdventureHUD() {
 
   if (isPaused) {
     return (
-      <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
-        <div className="text-center space-y-6">
+      <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[9999] pointer-events-auto">
+        <div className="text-center space-y-6 pointer-events-auto">
           <h2 className="text-4xl font-black text-white tracking-tight">
             PAUSED
           </h2>
@@ -193,14 +255,23 @@ export default function AdventureHUD() {
               Resume
             </button>
             <button
-              onClick={() => {
-                useAdventure.getState().reset();
-                setGameState("menu");
+              onPointerDown={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                hardQuitAdventureSession();
               }}
-              className="block w-48 mx-auto px-6 py-3 rounded-xl bg-slate-700/60 border-2 border-slate-500 text-slate-200 font-bold hover:bg-slate-600/60 transition-all"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                hardQuitAdventureSession();
+              }}
+              className="block w-56 mx-auto px-6 py-3 rounded-xl bg-red-700/70 border-2 border-red-400 text-red-50 font-black hover:bg-red-600/80 transition-all"
             >
-              Quit to Menu
+              Force Quit to Hub
             </button>
+            <p className="text-xs text-slate-400 max-w-xs mx-auto">
+              Press Q here if the button refuses to behave.
+            </p>
           </div>
         </div>
       </div>
@@ -292,21 +363,23 @@ export default function AdventureHUD() {
       <CombatStateLabel state={player.combatState} />
       <AutoTargetIndicator targetId={player.autoTargetId} enemies={enemies} />
 
-      <div className="absolute bottom-4 left-0 right-0 text-center">
-        <div className="inline-flex gap-3 bg-black/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-slate-700/50 text-slate-400 text-xs">
-          <span>WASD move</span>
-          <span className="text-slate-600">|</span>
-          <span>J attack</span>
-          <span className="text-slate-600">|</span>
-          <span>K heavy</span>
-          <span className="text-slate-600">|</span>
-          <span>L skill</span>
-          <span className="text-slate-600">|</span>
-          <span>Space dodge</span>
-          <span className="text-slate-600">|</span>
-          <span>Esc pause</span>
+      {!touchCapable && (
+        <div className="absolute bottom-4 left-0 right-0 text-center">
+          <div className="inline-flex gap-3 bg-black/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-slate-700/50 text-slate-400 text-xs">
+            <span>WASD move</span>
+            <span className="text-slate-600">|</span>
+            <span>J attack</span>
+            <span className="text-slate-600">|</span>
+            <span>K heavy</span>
+            <span className="text-slate-600">|</span>
+            <span>L skill</span>
+            <span className="text-slate-600">|</span>
+            <span>Space dodge</span>
+            <span className="text-slate-600">|</span>
+            <span>Esc pause</span>
+          </div>
         </div>
-      </div>
+      )}
 
       <style>{`
         @keyframes fadeOut {

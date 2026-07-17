@@ -3,7 +3,18 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { Star, Zap, Swords, BookOpen, Skull, ChevronRight, ScrollText } from "../ui/icons";
 import MoveListOverlay from "./MoveListOverlay";
 
-const HERO_IMAGE = "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/htuxfqte_9660FF22-E010-4DF5-A321-DDFE60ADB8CB.png";
+const HERO_IMAGE = "/images/lore/hero-kaijax.png";
+
+// Shared placeholder for art that isn't sourced locally yet. Not final
+// character art — the existing branded app icon, used so a missing image
+// never breaks the page.
+const FALLBACK_IMAGE = "/icon.svg";
+
+function handleImageError(e: React.SyntheticEvent<HTMLImageElement>) {
+  const img = e.currentTarget;
+  img.onerror = null;
+  img.src = FALLBACK_IMAGE;
+}
 
 interface TailData {
   id: number;
@@ -44,7 +55,7 @@ const CHARACTERS: CharacterData[] = [
     title: "The Fire Brother",
     description: "Fierce, impulsive, and burning with uncontrollable passion. Kai's fire is both his greatest weapon and his deepest flaw.",
     color: "#FF3B30",
-    image: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/qfhn7od0_F5ACDADF-FD25-4E9D-ACF2-658700CB2C84.png",
+    image: FALLBACK_IMAGE,
     abilities: ["Fire Manipulation", "Berserker Rage", "Web Sling", "Flame Dash"],
   },
   {
@@ -53,7 +64,7 @@ const CHARACTERS: CharacterData[] = [
     title: "The Ice Strategist",
     description: "Calm, calculating, and precise. Jax is the mind where Kai is the heart. His ice reflects his perfect control.",
     color: "#64D2FF",
-    image: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/qfhn7od0_F5ACDADF-FD25-4E9D-ACF2-658700CB2C84.png",
+    image: FALLBACK_IMAGE,
     abilities: ["Ice Manipulation", "Strategic Mind", "Frost Shield", "Crystal Lock"],
   },
   {
@@ -71,7 +82,7 @@ const CHARACTERS: CharacterData[] = [
     title: "The Hunter General",
     description: "A massive protective tiger beast. Father figure to the brothers. His warmth hides a warrior's ferocity.",
     color: "#FFD60A",
-    image: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/qfhn7od0_F5ACDADF-FD25-4E9D-ACF2-658700CB2C84.png",
+    image: FALLBACK_IMAGE,
     abilities: ["Beast Strength", "Guardian Instinct", "Pack Command", "Iron Hide"],
   },
   {
@@ -80,7 +91,7 @@ const CHARACTERS: CharacterData[] = [
     title: "The Tank King",
     description: "Towering armored lion warrior. Ancient authority. The apex predator who watches from the shadows of Raging City.",
     color: "#BF5AF2",
-    image: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/qfhn7od0_F5ACDADF-FD25-4E9D-ACF2-658700CB2C84.png",
+    image: FALLBACK_IMAGE,
     abilities: ["Absolute Authority", "Armor Break", "Mentor's Eye", "Apex Strike"],
   },
 ];
@@ -89,22 +100,22 @@ const GALLERY_IMAGES = [
   {
     id: "full-cast",
     title: "Full Cast - Canon Locked",
-    url: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/qfhn7od0_F5ACDADF-FD25-4E9D-ACF2-658700CB2C84.png",
+    url: FALLBACK_IMAGE,
   },
   {
     id: "brothers-training",
     title: "The Brothers Training",
-    url: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/wqaylhx5_IMG_2571.png",
+    url: "/images/lore/brothers-training.png",
   },
   {
     id: "kaijax-shadow",
     title: "Kai-Jax: Shadow Form",
-    url: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/xtev4z4g_IMG_2562.png",
+    url: "/images/lore/kaijax-shadow.png",
   },
   {
     id: "kaijax-protector",
     title: "Kai-Jax: The Protector",
-    url: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/jedvy626_IMG_2623.png",
+    url: FALLBACK_IMAGE,
   },
   {
     id: "kaijax-king",
@@ -114,7 +125,7 @@ const GALLERY_IMAGES = [
   {
     id: "brothers-fusion",
     title: "Brothers & Fusion",
-    url: "https://customer-assets.emergentagent.com/job_348bda30-a69b-42b3-97e5-cdbb7108b93b/artifacts/qg2yruaf_D3D596A4-184F-4AE1-8009-15784FB7D51F.png",
+    url: "/images/lore/brothers-fusion.png",
   },
 ];
 
@@ -264,9 +275,9 @@ export default function LoreHub() {
           </div>
 
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => setGameState("menu")}
-              className="px-4 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 ttransition-all"
+              className="hidden md:inline-flex px-4 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 ttransition-all"
             >
               Exit to Menu
             </button>
@@ -288,6 +299,12 @@ export default function LoreHub() {
                 {s}
               </button>
             ))}
+            <button
+              onClick={() => { setMobileOpen(false); setGameState("menu"); }}
+              className="block w-full text-left px-6 py-3 uppercase tracking-widest text-xs text-blue-400"
+            >
+              Exit to Menu
+            </button>
           </div>
         )}
       </nav>
@@ -319,6 +336,7 @@ function HeroSection({ onNavigate, onPlayGame }: { onNavigate: (s: Section) => v
         <img
           src={HERO_IMAGE}
           alt="Kai-Jax"
+          onError={handleImageError}
           className="absolute right-0 top-1/2 -translate-y-1/2 h-[120%] w-auto object-contain opacity-25 md:opacity-40"
         />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #050510 0%, rgba(5,5,16,0.8) 50%, transparent 100%)" }} />
@@ -351,30 +369,6 @@ function HeroSection({ onNavigate, onPlayGame }: { onNavigate: (s: Section) => v
             >
               <Gamepad2Icon className="w-5 h-5" /> Play Game
             </button>
-            <a
-              href="/mission-demo.html"
-              className="flex items-center gap-2 px-5 py-3 rounded-lg font-black text-sm uppercase tracking-wider text-white transition-all hover:scale-[1.02]"
-              style={{
-                background: "linear-gradient(135deg, rgba(255,59,48,0.35), rgba(255,214,10,0.15))",
-                border: "2px solid rgba(255,59,48,0.7)",
-                boxShadow: "0 0 18px rgba(255,59,48,0.25)",
-              }}
-              data-testid="lorehub-mission-demo-btn"
-            >
-              <FlameIcon className="w-4 h-4" /> Mission: First Blood
-            </a>
-            <a
-              href="/combat-demo.html"
-              className="flex items-center gap-2 px-5 py-3 rounded-lg font-black text-sm uppercase tracking-wider text-white transition-all hover:scale-[1.02]"
-              style={{
-                background: "linear-gradient(135deg, rgba(0,217,255,0.25), rgba(46,46,254,0.15))",
-                border: "2px solid rgba(0,217,255,0.7)",
-                boxShadow: "0 0 18px rgba(0,217,255,0.25)",
-              }}
-              data-testid="lorehub-combat-demo-btn"
-            >
-              <Gamepad2Icon className="w-4 h-4" /> Combat Kernel
-            </a>
             <button
               onClick={() => onNavigate("characters")}
               className="flex items-center gap-2 px-5 py-3 rounded-lg font-bold text-sm text-white/80 transition-all hover:text-white hover:scale-[1.02]"
@@ -436,7 +430,7 @@ function CharactersSection() {
               style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${char.color}25` }}
             >
               <div className="aspect-square relative overflow-hidden" style={{ background: "rgba(0,0,0,0.4)" }}>
-                <img src={char.image} alt={char.name} className="w-full h-full object-cover" />
+                <img src={char.image} alt={char.name} onError={handleImageError} className="w-full h-full object-cover" />
               </div>
               <div className="p-5">
                 <h3 className="text-xl font-black text-white mb-1">{char.name}</h3>
@@ -465,7 +459,7 @@ function CharactersSection() {
                 style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
               >
                 <div className="aspect-video relative overflow-hidden">
-                  <img src={img.url} alt={img.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <img src={img.url} alt={img.title} onError={handleImageError} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" }} />
                 </div>
                 <div className="p-3">

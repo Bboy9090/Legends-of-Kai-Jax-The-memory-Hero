@@ -45,11 +45,94 @@ interface GLBCharacterModelProps {
   hitAnim?: number;
 }
 
+interface ModelDiagnostics {
+  meshCount: number;
+  materialCount: number;
+  sourceHeight: number;
+  targetHeight: number;
+  normalizedScale: number;
+  minY: number;
+  maxY: number;
+}
+
 function GLBModelFallback() {
-  return null;
+  return (
+    <group name="glb-loading-fallback">
+      <mesh position={[0, 1.2, 0]}>
+        <sphereGeometry args={[0.18, 12, 12]} />
+        <meshBasicMaterial color="#00f2ff" transparent opacity={0.45} />
+      </mesh>
+    </group>
+  );
+}
+
+function MissingModelFallback({ fighterId, accentColor }: { fighterId: string; accentColor: string }) {
+  return (
+    <group name={`missing-model-${fighterId}`}>
+      <mesh position={[0, 1.1, 0]}>
+        <boxGeometry args={[0.8, 1.8, 0.8]} />
+        <meshStandardMaterial color={accentColor} wireframe emissive={accentColor} emissiveIntensity={0.6} />
+      </mesh>
+      <Html position={[0, 2.4, 0]} center>
+        <div style={{
+          background: "rgba(0,0,0,0.85)",
+          color: "#ff6b6b",
+          padding: "6px 8px",
+          borderRadius: "6px",
+          fontFamily: "monospace",
+          fontSize: "10px",
+          border: "1px solid #ff6b6b",
+          pointerEvents: "none",
+          whiteSpace: "nowrap",
+        }}>
+          Missing model: {fighterId}
+        </div>
+      </Html>
+    </group>
+  );
 }
 
 const TARGET_HEIGHT = 3.5;
+const MIN_MODEL_SCALE = 0.08;
+const MAX_MODEL_SCALE = 8;
+
+function getTargetHeight(config: GLBModelConfig): number {
+  if (!Number.isFinite(config.scale) || config.scale <= 0) return TARGET_HEIGHT;
+  return THREE.MathUtils.clamp(config.scale, 0.75, 6);
+}
+
+function forceModelVisibility(root: THREE.Object3D): { meshCount: number; materialCount: number } {
+  let meshCount = 0;
+  let materialCount = 0;
+
+  root.traverse((obj) => {
+    obj.visible = true;
+
+    const mesh = obj as THREE.Mesh;
+    if (!mesh.isMesh) return;
+
+    meshCount += 1;
+    mesh.visible = true;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.frustumCulled = false;
+
+    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    materials.forEach((material) => {
+      if (!material) return;
+      materialCount += 1;
+      material.visible = true;
+      material.opacity = 1;
+      material.transparent = false;
+      material.depthWrite = true;
+      material.depthTest = true;
+      material.side = THREE.DoubleSide;
+      material.needsUpdate = true;
+    });
+  });
+
+  return { meshCount, materialCount };
+}
 
 function GLBModelInner({
   config,
@@ -58,7 +141,7 @@ function GLBModelInner({
   isMoving,
   isRunning = false,
   attackType,
-  velocityX = 0,
+  velocityX: _velocityX = 0,
   velocityY: _velocityY = 0,
   isGrounded = true,
   isJumping = false,
@@ -106,6 +189,7 @@ function GLBModelInner({
   const actionsRef = useRef<Record<string, THREE.AnimationAction>>({});
   const currentActionRef = useRef<THREE.AnimationAction | null>(null);
   const [showDebug, setShowDebug] = useState(false);
+  const [diagnostics, setDiagnostics] = useState<ModelDiagnostics | null>(null);
 
   // Keybind for debug toggle
   useEffect(() => {
@@ -160,16 +244,39 @@ function GLBModelInner({
           obj.rotation.set(0, 0, 0);
         }
       });
+
+      const visibilityStats = forceModelVisibility(cloneRef.current);
       cloneRef.current.updateMatrixWorld(true);
 
       const bbox = new THREE.Box3().setFromObject(cloneRef.current);
       const modelHeight = bbox.max.y - bbox.min.y;
+      const targetHeight = getTargetHeight(config);
+
       if (modelHeight > 0.01) {
-        normalizedScale.current = (TARGET_HEIGHT / modelHeight) * config.scale;
+        const rawScale = targetHeight / modelHeight;
+        normalizedScale.current = THREE.MathUtils.clamp(rawScale, MIN_MODEL_SCALE, MAX_MODEL_SCALE);
       }
+
       if (bbox.min.y < -0.05 && outerRef.current) {
-        outerRef.current.position.y = -bbox.min.y * (normalizedScale.current / config.scale);
+        outerRef.current.position.y = -bbox.min.y * normalizedScale.current;
       }
+
+      const nextDiagnostics = {
+        meshCount: visibilityStats.meshCount,
+        materialCount: visibilityStats.materialCount,
+        sourceHeight: Number.isFinite(modelHeight) ? modelHeight : 0,
+        targetHeight,
+        normalizedScale: normalizedScale.current,
+        minY: Number.isFinite(bbox.min.y) ? bbox.min.y : 0,
+        maxY: Number.isFinite(bbox.max.y) ? bbox.max.y : 0,
+      };
+      setDiagnostics(nextDiagnostics);
+
+      console.info("[GLBVisibility]", fighterId, {
+        path: config.path,
+        animations: animations.map((clip) => clip.name),
+        ...nextDiagnostics,
+      });
 
       const limbs = findLimbs(cloneRef.current);
       limbsRef.current = hasAnyLimb(limbs) ? limbs : null;
@@ -272,7 +379,7 @@ function GLBModelInner({
     if (!limbsRef.current) return "No limbs detected";
     const found = Object.entries(limbsRef.current).filter(([_, v]) => v !== null);
     return `${found.length}/21 bones found`;
-  }, [limbsRef.current]);
+  }, [limbsRef.current, diagnostics]);
 
   return (
     <group ref={outerRef}>
@@ -294,43 +401,56 @@ function GLBModelInner({
         />
         
         {showDebug && (
-          <Html position={[0, 4, 0]} center>
-            <div style={{
-              background: 'rgba(0,0,0,0.9)',
-              color: '#00f2ff',
-              padding: '12px',
-              borderRadius: '8px',
-              fontFamily: 'monospace',
-              fontSize: '11px',
-              width: '240px',
-              border: '2px solid #00f2ff',
-              pointerEvents: 'none',
-              boxShadow: '0 0 15px #00f2ff'
-            }}>
-              <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '5px' }}>ANIMATION DEBUG</div>
-              <div>ID: {fighterId}</div>
-              <div>GLB: {config.path.split('/').pop()}</div>
-              <div style={{ color: activeClipName !== 'none' ? '#00ff00' : '#ffaa00' }}>
-                CLIP: {activeClipName}
+          <>
+            <mesh position={[0, diagnostics ? diagnostics.targetHeight / 2 : TARGET_HEIGHT / 2, 0]}>
+              <boxGeometry args={[1.15, diagnostics?.targetHeight ?? TARGET_HEIGHT, 1.15]} />
+              <meshBasicMaterial color={accentColor} wireframe transparent opacity={0.35} depthWrite={false} />
+            </mesh>
+            <Html position={[0, (diagnostics?.targetHeight ?? TARGET_HEIGHT) + 0.8, 0]} center>
+              <div style={{
+                background: 'rgba(0,0,0,0.9)',
+                color: '#00f2ff',
+                padding: '12px',
+                borderRadius: '8px',
+                fontFamily: 'monospace',
+                fontSize: '11px',
+                width: '280px',
+                border: '2px solid #00f2ff',
+                pointerEvents: 'none',
+                boxShadow: '0 0 15px #00f2ff'
+              }}>
+                <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '5px' }}>MODEL DEBUG</div>
+                <div>ID: {fighterId}</div>
+                <div>GLB: {config.path.split('/').pop()}</div>
+                <div style={{ color: activeClipName !== 'none' ? '#00ff00' : '#ffaa00' }}>
+                  CLIP: {activeClipName}
+                </div>
+                <div style={{ color: limbsRef.current ? '#00ff00' : '#ff0000' }}>
+                  RIG: {debugLimbStatus}
+                </div>
+                <hr style={{ borderColor: '#333', margin: '8px 0' }}/>
+                <div>Meshes: {diagnostics?.meshCount ?? 0}</div>
+                <div>Materials: {diagnostics?.materialCount ?? 0}</div>
+                <div>Source Height: {(diagnostics?.sourceHeight ?? 0).toFixed(2)}</div>
+                <div>Target Height: {(diagnostics?.targetHeight ?? TARGET_HEIGHT).toFixed(2)}</div>
+                <div>Scale: {(diagnostics?.normalizedScale ?? normalizedScale.current).toFixed(3)}</div>
+                <div>Y Bounds: {(diagnostics?.minY ?? 0).toFixed(2)} / {(diagnostics?.maxY ?? 0).toFixed(2)}</div>
+                <hr style={{ borderColor: '#333', margin: '8px 0' }}/>
+                <div>Moving: {isMoving ? "YES" : "NO"}</div>
+                <div>Running: {isRunning ? "YES" : "NO"}</div>
+                <div>Attacking: {isAttacking ? "YES" : "NO"}</div>
+                <div>Type: {attackType || "none"}</div>
+                <hr style={{ borderColor: '#333', margin: '8px 0' }}/>
+                <div style={{ color: '#fff' }}>LIMBS FOUND:</div>
+                <div style={{ fontSize: '9px', opacity: 0.8 }}>
+                  {limbsRef.current ? Object.entries(limbsRef.current)
+                    .filter(([_, v]) => v !== null)
+                    .map(([k]) => k)
+                    .join(', ') : "NONE"}
+                </div>
               </div>
-              <div style={{ color: limbsRef.current ? '#00ff00' : '#ff0000' }}>
-                RIG: {debugLimbStatus}
-              </div>
-              <hr style={{ borderColor: '#333', margin: '8px 0' }}/>
-              <div>Moving: {isMoving ? "YES" : "NO"}</div>
-              <div>Running: {isRunning ? "YES" : "NO"}</div>
-              <div>Attacking: {isAttacking ? "YES" : "NO"}</div>
-              <div>Type: {attackType || "none"}</div>
-              <hr style={{ borderColor: '#333', margin: '8px 0' }}/>
-              <div style={{ color: '#fff' }}>LIMBS FOUND:</div>
-              <div style={{ fontSize: '9px', opacity: 0.8 }}>
-                {limbsRef.current ? Object.entries(limbsRef.current)
-                  .filter(([_, v]) => v !== null)
-                  .map(([k]) => k)
-                  .join(', ') : "NONE"}
-              </div>
-            </div>
-          </Html>
+            </Html>
+          </>
         )}
       </group>
     </group>
@@ -356,7 +476,7 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
   } = props;
 
   const config = getModelConfig(fighterId);
-  if (!config) return null;
+  if (!config) return <MissingModelFallback fighterId={fighterId} accentColor={accentColor} />;
 
   return (
     <Suspense fallback={<GLBModelFallback />}>

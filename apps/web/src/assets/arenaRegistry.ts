@@ -44,6 +44,24 @@ export const ARENA_REGISTRY: Record<string, ArenaConfig> = {
     iosPerformanceTier: 'high',
     musicMood: 'high-energy-electronic',
   },
+  'open-world': {
+    id: 'open-world',
+    displayName: 'Open World Training Grounds',
+    biome: 'tech',
+    lighting: {
+      intensity: 1.2,
+      color: '#ffffff',
+      ambientColor: '#404040',
+      fogColor: '#1a1a1a',
+      fogDensity: 0.01,
+    },
+    ground: {
+      color: '#2a2a2a',
+      gridColor: '#00ffff',
+    },
+    iosPerformanceTier: 'high',
+    musicMood: 'high-energy-electronic',
+  },
   bronx_streets: {
     id: 'bronx_streets',
     displayName: 'Ruined Bronx Streets',
