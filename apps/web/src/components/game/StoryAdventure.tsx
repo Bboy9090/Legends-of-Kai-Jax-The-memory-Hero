@@ -213,7 +213,7 @@ function WaveTransition({ waveNum, total, onContinue }: { waveNum: number; total
   );
 }
 
-function MissionBriefing({ mission, onStart }: { mission: StoryMission; onStart: () => void }) {
+function MissionBriefing({ mission, onStart, onBack }: { mission: StoryMission; onStart: () => void; onBack: () => void }) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 backdrop-blur-xl" style={{ background: "radial-gradient(circle at center, rgba(10,15,30,0.9), rgba(2,2,5,0.98))" }}>
       <div className="max-w-xl w-full animate-in zoom-in-95 duration-500">
@@ -225,6 +225,12 @@ function MissionBriefing({ mission, onStart }: { mission: StoryMission; onStart:
           </div>
 
           <div className="relative z-10">
+            <button
+              onClick={onBack}
+              className="mb-4 text-slate-500 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
+            >
+              ← Back to Campaign
+            </button>
             <div className="flex flex-col items-center text-center mb-8">
               <div className="px-4 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[10px] font-black uppercase tracking-[0.4em] mb-4">
                 Sector Protocol {mission.actNumber}-{mission.missionNumber}
@@ -428,7 +434,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
   return (
     <>
       {phase === "briefing" && (
-        <MissionBriefing mission={mission} onStart={() => setPhase("intro")} />
+        <MissionBriefing mission={mission} onStart={() => setPhase("intro")} onBack={onBack} />
       )}
 
       {phase === "intro" && (
