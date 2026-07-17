@@ -328,23 +328,21 @@ Pages** on every push to `main`. A `CNAME` file at the repo root
 `apps/web/` also exist, suggesting Cloudflare Pages was used or considered
 at some point — neither was exercised or confirmed live in this session.
 
-**Recommended path forward: Vercel.** Not yet configured in this
-repository (no `vercel.json` present) and **not yet deployed to
-production** — this is a recommendation, not a claim of an existing
-deployment:
+**Recommended path forward: Vercel.** `apps/web/vercel.json` now exists
+(pnpm-based build/install commands, `dist` output, SPA rewrite) — set the
+Vercel project's Root Directory to `apps/web` to use it. **Still not
+deployed to production** — no Vercel account/credentials are available in
+this environment, so this is verified configuration, not a claim of an
+existing deployment. Full detail: `apps/web/DEPLOY.md`.
 
 ```bash
 cd apps/web
 npx vercel
-# Framework preset: Vite
-# Build command: pnpm build (or vite build)
-# Output directory: dist
 ```
 
-**Backup option: Netlify.** Also not yet configured in this repository.
-Standard settings would be root directory `apps/web`, build command
-`pnpm build`, publish directory `dist`, with a redirect rule matching
-`public/_redirects` for SPA routing.
+**Backup option: Netlify.** `apps/web/netlify.toml` now exists the same
+way (Base directory `apps/web` in the Netlify dashboard). Also not
+deployed from this session.
 
 **Android:** `.github/workflows/android-build.yml` produces a debug APK
 via Capacitor + Gradle, but only on push to `main` or
