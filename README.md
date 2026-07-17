@@ -447,7 +447,10 @@ Full consolidated tracker, including CI/build issues not listed below:
 - **Current branch:** `phase1b-production-readiness`
 - **Pull request:** [#172 — Phase 1B: production readiness for Legends of Kai-Jax](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/172)
 - **`v0.1.0-mvp` has not been released.** Nothing in this document should
-  be read as a release announcement.
+  be read as a release announcement. Draft release notes (what will be in
+  it, what's still open before it can ship):
+  [`docs/releases/v0.1.0-mvp.md`](docs/releases/v0.1.0-mvp.md).
+- **Known debt tracker:** [`docs/known-debt.md`](docs/known-debt.md).
 - **QA documents for this phase** (repository-relative paths):
   - [`docs/qa/PHASE1B_ROUTE_AUDIT_2026-07-17.md`](docs/qa/PHASE1B_ROUTE_AUDIT_2026-07-17.md) — interactive control / dead-end audit
   - [`docs/qa/PHASE1B_EXTERNAL_ASSET_AUDIT_2026-07-17.md`](docs/qa/PHASE1B_EXTERNAL_ASSET_AUDIT_2026-07-17.md) — external asset dependency audit
