@@ -391,6 +391,9 @@ actually produced and verified.
 
 ## 12. Known Limitations
 
+Full consolidated tracker, including CI/build issues not listed below:
+[`docs/known-debt.md`](docs/known-debt.md).
+
 - **GLB tail-anchor coverage is incomplete.** Some character models are
   missing one or more of the 9 expected tail anchor bones. Handled
   gracefully (see above), not blocking, not fully resolved.
