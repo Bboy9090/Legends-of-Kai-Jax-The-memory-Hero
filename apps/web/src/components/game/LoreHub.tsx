@@ -275,9 +275,9 @@ export default function LoreHub() {
           </div>
 
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => setGameState("menu")}
-              className="px-4 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 ttransition-all"
+              className="hidden md:inline-flex px-4 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 ttransition-all"
             >
               Exit to Menu
             </button>
@@ -299,6 +299,12 @@ export default function LoreHub() {
                 {s}
               </button>
             ))}
+            <button
+              onClick={() => { setMobileOpen(false); setGameState("menu"); }}
+              className="block w-full text-left px-6 py-3 uppercase tracking-widest text-xs text-blue-400"
+            >
+              Exit to Menu
+            </button>
           </div>
         )}
       </nav>
