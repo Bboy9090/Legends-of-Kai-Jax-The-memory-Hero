@@ -5,8 +5,8 @@ release reviewers. This document describes what is verified to work in this
 repository today — not what's planned, aspirational, or referenced by a file
 that happens to exist.
 
-Current release branch: `phase1b-production-readiness` — [PR #172](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/172).
-`v0.1.0-mvp` has **not** shipped yet. See [Release Status](#13-release-status).
+Phase 1B production-readiness work ([PR #172](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/172)) is merged into `main`.
+`v0.1.0-mvp` is **not tagged and not deployed** yet. See [Release Status](#13-release-status).
 
 ## Contents
 
@@ -108,7 +108,7 @@ Platform-specific, verified from actual CI/build configuration:
 ```bash
 git clone https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero.git
 cd Legends-of-Kai-Jax-The-memory-Hero
-git checkout phase1b-production-readiness
+# main now includes the Phase 1B production-readiness work (PR #172)
 
 corepack enable
 corepack prepare pnpm@9.15.9 --activate
@@ -442,11 +442,13 @@ Full consolidated tracker, including CI/build issues not listed below:
 
 ## 13. Release Status
 
-- **Current branch:** `phase1b-production-readiness`
-- **Pull request:** [#172 — Phase 1B: production readiness for Legends of Kai-Jax](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/172)
-- **`v0.1.0-mvp` has not been released.** Nothing in this document should
-  be read as a release announcement. Draft release notes (what will be in
-  it, what's still open before it can ship):
+- **[PR #172 — Phase 1B: production readiness](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/172) is merged into `main`** at `2c44d733e4ff96724d40ccf9b31bfffffcff19f6`.
+- **`v0.1.0-mvp` is not tagged and not deployed anywhere.** Nothing in
+  this document should be read as a release announcement. The
+  `v0.1.0-mvp` git tag could not be created from this session (tag
+  pushes were rejected at the network level; no tag/release-creation
+  tool was available) — someone with full repo access needs to create it
+  on the commit above. Release notes:
   [`docs/releases/v0.1.0-mvp.md`](docs/releases/v0.1.0-mvp.md).
 - **Known debt tracker:** [`docs/known-debt.md`](docs/known-debt.md).
 - **QA documents for this phase** (repository-relative paths):
