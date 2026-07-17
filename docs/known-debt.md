@@ -14,30 +14,30 @@ context and evidence.
 
 ## CI / build process
 
-### CI's "Test" step never runs the real test suite
+### ~~CI's "Test" step never runs the real test suite~~ — FIXED
 
-`.github/workflows/ci.yml` runs `pnpm test` at the repo root. Root
+`.github/workflows/ci.yml` ran `pnpm test` at the repo root. Root
 `package.json`'s `test` script is a placeholder:
 `"echo 'Testing...' && node -e \"console.log('✅ Node.js ready')\""`. It
-always passes and exercises nothing. The real suite (`pnpm -C apps/web
-test`, Vitest, 76 tests as of this writing) has never been run by this CI
-workflow. **This means CI has been reporting a passing "Test" step with no
-actual test coverage since whenever this workflow was written.**
+always passed and exercised nothing. The real suite (`pnpm -C apps/web
+test`, Vitest, 76 tests as of this writing) had never been run by this CI
+workflow. **This meant CI had been reporting a passing "Test" step with no
+actual test coverage** for however long this workflow existed.
 
-Fix is a one-line change to `ci.yml` (`pnpm test` → `pnpm -C apps/web
-test`) but is a CI file change, out of scope for the doc/QA tasks that
-found it. Flagging as the highest-priority item in this document — it's a
-false-confidence signal, not a cosmetic gap.
+Fixed: `ci.yml`'s Test step now runs `pnpm -C apps/web test`.
 
-### CI's pnpm version doesn't match the repo's pinned version
+### ~~CI's pnpm version doesn't match the repo's pinned version~~ — FIXED
 
-`ci.yml` installs pnpm via `pnpm/action-setup@v2` with `version: 8`. The
+`ci.yml` installed pnpm via `pnpm/action-setup@v2` with `version: 8`. The
 repo's `package.json` pins `"packageManager": "pnpm@9.15.9"`, and that's
 the version this whole Phase 1B pass was verified against (see
 `docs/GETTING_STARTED.md`, this repo's `README.md`). `deploy.yml`
-separately and correctly uses `pnpm/action-setup@v4` with `version:
-9.15.9`. The two workflows are inconsistent with each other and with the
-repo's own pin.
+separately and correctly used `pnpm/action-setup@v4` with `version:
+9.15.9` — the two workflows were inconsistent with each other and with
+the repo's own pin.
+
+Fixed: `ci.yml` now installs `9.15.9`, matching `deploy.yml` and the
+repo's pin.
 
 ### `apps/web/vite.config.ts` doesn't alias `@beast-kin/ui`
 
@@ -241,14 +241,13 @@ rather than just flipping the comment.
 
 ## Summary / suggested priority
 
-1. **CI test gap** (`pnpm test` at root is a no-op) — highest priority,
-   it's a false-confidence signal about a config nobody's been told
-   about.
-2. **CI pnpm version mismatch** (`ci.yml` uses 8, repo pins 9.15.9) —
-   quick fix, prevents future drift confusion.
-3. **Tailwind spacing investigation** (3 related data points) — worth one
-   focused pass rather than three individual patches.
-4. Everything else in this document is lower urgency: dead code cleanup,
+1. ~~**CI test gap**~~ and ~~**CI pnpm version mismatch**~~ — **fixed.**
+   `ci.yml` now runs the real `apps/web` test suite and installs the
+   pinned pnpm version.
+2. **Tailwind spacing investigation** (3 related data points) — worth one
+   focused pass rather than three individual patches. Now the top
+   remaining item.
+3. Everything else in this document is lower urgency: dead code cleanup,
    unreachable-screen decisions, asset sourcing, and native-packaging
    verification are all real but don't block the current web MVP from
    being correct and playable.
