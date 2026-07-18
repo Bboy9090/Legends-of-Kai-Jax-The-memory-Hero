@@ -1,0 +1,506 @@
+{
+  "idle": {
+    "max_tail_stretch_ratio": 3.462,
+    "max_tail_compress_ratio": 0.121,
+    "pct_high_strain_tail_edges": 0.792,
+    "body_ratio_sanity_max_deviation": 0.0,
+    "clipping_flags": [
+      {
+        "pair": [
+          "tail_06",
+          "tail_07"
+        ],
+        "rest_min_dist": 0.0155,
+        "posed_min_dist": 0.0155
+      },
+      {
+        "pair": [
+          "tail_09",
+          "tail_01"
+        ],
+        "rest_min_dist": 0.0184,
+        "posed_min_dist": 0.0188
+      },
+      {
+        "pair": [
+          "tail_04",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0098,
+        "posed_min_dist": 0.0097
+      },
+      {
+        "pair": [
+          "tail_03",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0096,
+        "posed_min_dist": 0.0093
+      }
+    ]
+  },
+  "run": {
+    "max_tail_stretch_ratio": 20.186,
+    "max_tail_compress_ratio": 0.088,
+    "pct_high_strain_tail_edges": 3.489,
+    "body_ratio_sanity_max_deviation": 0.5116,
+    "clipping_flags": [
+      {
+        "pair": [
+          "tail_06",
+          "tail_07"
+        ],
+        "rest_min_dist": 0.0155,
+        "posed_min_dist": 0.0154
+      },
+      {
+        "pair": [
+          "tail_09",
+          "tail_01"
+        ],
+        "rest_min_dist": 0.0184,
+        "posed_min_dist": 0.0172
+      },
+      {
+        "pair": [
+          "tail_04",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0098,
+        "posed_min_dist": 0.0088
+      },
+      {
+        "pair": [
+          "tail_03",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0096,
+        "posed_min_dist": 0.0104
+      }
+    ]
+  },
+  "dodge": {
+    "max_tail_stretch_ratio": 45.863,
+    "max_tail_compress_ratio": 0.046,
+    "pct_high_strain_tail_edges": 7.853,
+    "body_ratio_sanity_max_deviation": 1.1611,
+    "clipping_flags": [
+      {
+        "pair": [
+          "tail_06",
+          "tail_04"
+        ],
+        "rest_min_dist": 0.2844,
+        "posed_min_dist": 0.0114
+      },
+      {
+        "pair": [
+          "tail_06",
+          "tail_07"
+        ],
+        "rest_min_dist": 0.0155,
+        "posed_min_dist": 0.0141
+      },
+      {
+        "pair": [
+          "tail_06",
+          "tail_03"
+        ],
+        "rest_min_dist": 0.4333,
+        "posed_min_dist": 0.0695
+      },
+      {
+        "pair": [
+          "tail_06",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0326,
+        "posed_min_dist": 0.018
+      },
+      {
+        "pair": [
+          "tail_09",
+          "tail_01"
+        ],
+        "rest_min_dist": 0.0184,
+        "posed_min_dist": 0.0144
+      },
+      {
+        "pair": [
+          "tail_09",
+          "tail_08"
+        ],
+        "rest_min_dist": 0.0378,
+        "posed_min_dist": 0.0245
+      },
+      {
+        "pair": [
+          "tail_04",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0098,
+        "posed_min_dist": 0.0068
+      },
+      {
+        "pair": [
+          "tail_03",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0096,
+        "posed_min_dist": 0.0102
+      }
+    ]
+  },
+  "heavy_attack": {
+    "max_tail_stretch_ratio": 39.248,
+    "max_tail_compress_ratio": 0.063,
+    "pct_high_strain_tail_edges": 5.813,
+    "body_ratio_sanity_max_deviation": 1.5875,
+    "clipping_flags": [
+      {
+        "pair": [
+          "tail_06",
+          "tail_04"
+        ],
+        "rest_min_dist": 0.2844,
+        "posed_min_dist": 0.0556
+      },
+      {
+        "pair": [
+          "tail_06",
+          "tail_07"
+        ],
+        "rest_min_dist": 0.0155,
+        "posed_min_dist": 0.0144
+      },
+      {
+        "pair": [
+          "tail_06",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0326,
+        "posed_min_dist": 0.0206
+      },
+      {
+        "pair": [
+          "tail_09",
+          "tail_01"
+        ],
+        "rest_min_dist": 0.0184,
+        "posed_min_dist": 0.0141
+      },
+      {
+        "pair": [
+          "tail_09",
+          "tail_08"
+        ],
+        "rest_min_dist": 0.0378,
+        "posed_min_dist": 0.0258
+      },
+      {
+        "pair": [
+          "tail_04",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0098,
+        "posed_min_dist": 0.0074
+      },
+      {
+        "pair": [
+          "tail_03",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0096,
+        "posed_min_dist": 0.01
+      }
+    ]
+  },
+  "hit_reaction": {
+    "max_tail_stretch_ratio": 33.201,
+    "max_tail_compress_ratio": 0.031,
+    "pct_high_strain_tail_edges": 11.883,
+    "body_ratio_sanity_max_deviation": 1.4151,
+    "clipping_flags": [
+      {
+        "pair": [
+          "tail_06",
+          "tail_07"
+        ],
+        "rest_min_dist": 0.0155,
+        "posed_min_dist": 0.0138
+      },
+      {
+        "pair": [
+          "tail_06",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0326,
+        "posed_min_dist": 0.0197
+      },
+      {
+        "pair": [
+          "tail_09",
+          "tail_01"
+        ],
+        "rest_min_dist": 0.0184,
+        "posed_min_dist": 0.0189
+      },
+      {
+        "pair": [
+          "tail_09",
+          "tail_08"
+        ],
+        "rest_min_dist": 0.0378,
+        "posed_min_dist": 0.0192
+      },
+      {
+        "pair": [
+          "tail_04",
+          "tail_03"
+        ],
+        "rest_min_dist": 0.0337,
+        "posed_min_dist": 0.0207
+      },
+      {
+        "pair": [
+          "tail_04",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0098,
+        "posed_min_dist": 0.0086
+      },
+      {
+        "pair": [
+          "tail_07",
+          "tail_08"
+        ],
+        "rest_min_dist": 0.0343,
+        "posed_min_dist": 0.0296
+      },
+      {
+        "pair": [
+          "tail_03",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0096,
+        "posed_min_dist": 0.0088
+      }
+    ]
+  },
+  "sharp_direction_change": {
+    "max_tail_stretch_ratio": 39.607,
+    "max_tail_compress_ratio": 0.072,
+    "pct_high_strain_tail_edges": 5.813,
+    "body_ratio_sanity_max_deviation": 0.5748,
+    "clipping_flags": [
+      {
+        "pair": [
+          "tail_06",
+          "tail_04"
+        ],
+        "rest_min_dist": 0.2844,
+        "posed_min_dist": 0.0548
+      },
+      {
+        "pair": [
+          "tail_06",
+          "tail_07"
+        ],
+        "rest_min_dist": 0.0155,
+        "posed_min_dist": 0.0144
+      },
+      {
+        "pair": [
+          "tail_06",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0326,
+        "posed_min_dist": 0.0206
+      },
+      {
+        "pair": [
+          "tail_09",
+          "tail_01"
+        ],
+        "rest_min_dist": 0.0184,
+        "posed_min_dist": 0.0142
+      },
+      {
+        "pair": [
+          "tail_09",
+          "tail_08"
+        ],
+        "rest_min_dist": 0.0378,
+        "posed_min_dist": 0.0259
+      },
+      {
+        "pair": [
+          "tail_04",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0098,
+        "posed_min_dist": 0.0073
+      },
+      {
+        "pair": [
+          "tail_03",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0096,
+        "posed_min_dist": 0.01
+      }
+    ]
+  },
+  "close_camera": {
+    "max_tail_stretch_ratio": 3.462,
+    "max_tail_compress_ratio": 0.121,
+    "pct_high_strain_tail_edges": 0.792,
+    "body_ratio_sanity_max_deviation": 0.0,
+    "clipping_flags": [
+      {
+        "pair": [
+          "tail_06",
+          "tail_07"
+        ],
+        "rest_min_dist": 0.0155,
+        "posed_min_dist": 0.0155
+      },
+      {
+        "pair": [
+          "tail_09",
+          "tail_01"
+        ],
+        "rest_min_dist": 0.0184,
+        "posed_min_dist": 0.0188
+      },
+      {
+        "pair": [
+          "tail_04",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0098,
+        "posed_min_dist": 0.0097
+      },
+      {
+        "pair": [
+          "tail_03",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0096,
+        "posed_min_dist": 0.0093
+      }
+    ]
+  },
+  "extreme_tail_spread": {
+    "max_tail_stretch_ratio": 40.184,
+    "max_tail_compress_ratio": 0.028,
+    "pct_high_strain_tail_edges": 11.977,
+    "body_ratio_sanity_max_deviation": 0.0,
+    "clipping_flags": [
+      {
+        "pair": [
+          "tail_06",
+          "tail_07"
+        ],
+        "rest_min_dist": 0.0155,
+        "posed_min_dist": 0.0148
+      },
+      {
+        "pair": [
+          "tail_06",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0326,
+        "posed_min_dist": 0.0129
+      },
+      {
+        "pair": [
+          "tail_09",
+          "tail_01"
+        ],
+        "rest_min_dist": 0.0184,
+        "posed_min_dist": 0.0105
+      },
+      {
+        "pair": [
+          "tail_09",
+          "tail_08"
+        ],
+        "rest_min_dist": 0.0378,
+        "posed_min_dist": 0.016
+      },
+      {
+        "pair": [
+          "tail_04",
+          "tail_03"
+        ],
+        "rest_min_dist": 0.0337,
+        "posed_min_dist": 0.0212
+      },
+      {
+        "pair": [
+          "tail_04",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0098,
+        "posed_min_dist": 0.0077
+      },
+      {
+        "pair": [
+          "tail_07",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0591,
+        "posed_min_dist": 0.0173
+      },
+      {
+        "pair": [
+          "tail_03",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0096,
+        "posed_min_dist": 0.0088
+      }
+    ]
+  },
+  "animation_blending": {
+    "max_tail_stretch_ratio": 21.134,
+    "max_tail_compress_ratio": 0.073,
+    "pct_high_strain_tail_edges": 3.794,
+    "body_ratio_sanity_max_deviation": 0.7144,
+    "clipping_flags": [
+      {
+        "pair": [
+          "tail_06",
+          "tail_07"
+        ],
+        "rest_min_dist": 0.0155,
+        "posed_min_dist": 0.0152
+      },
+      {
+        "pair": [
+          "tail_09",
+          "tail_01"
+        ],
+        "rest_min_dist": 0.0184,
+        "posed_min_dist": 0.0167
+      },
+      {
+        "pair": [
+          "tail_04",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0098,
+        "posed_min_dist": 0.0087
+      },
+      {
+        "pair": [
+          "tail_03",
+          "tail_05"
+        ],
+        "rest_min_dist": 0.0096,
+        "posed_min_dist": 0.0099
+      }
+    ]
+  }
+}
