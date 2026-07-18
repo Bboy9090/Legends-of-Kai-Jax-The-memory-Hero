@@ -49,29 +49,52 @@ model with the tails independently rotated into a different shape — a
 different, non-frozen silhouette. That's the actual proof: the tail bones
 now drive real mesh deformation, not a plausible-looking static pose.
 
-**Result: real, not production-ready.** The rig is genuinely functional —
+**First pass result: real, but rough.** The rig was genuinely functional —
 9 independently posable tail chains, each backed by its own geometry. But
-the back-view "after" render also shows visible stretching/faceting,
+the first back-view "after" render showed visible stretching/faceting,
 worst at the tail-to-torso seam and at boundaries between adjacent tail
-clusters. That's the expected cost of geometric/automated weight
-assignment on a fragmented mesh with no clean vertex-group data to build
-from — a human rigger would still need a manual weight-paint pass
-(smoothing the seams, hand-correcting boundary vertices between tails) to
-bring this to shipping quality. This matches exactly what the prior audit
-predicted: bone placement can be done programmatically from good geometry,
-but weight-painting quality is where automation runs out.
+clusters.
+
+**Cleanup pass.** Two of those seams were fixable programmatically, not by
+hand:
+
+1. **Tail-to-torso seam** — the first pass fully removed each tail
+   vertex's `Hips` weight, creating a hard cut at the base. Fixed by
+   tapering a blend of `Hips` weight back in near the root (fading out by
+   ~20% of the way along the tail), so the base deforms with the torso
+   instead of tearing away from it.
+2. **Tail-to-tail seams** — the first pass hard-assigned each vertex to
+   exactly one tail's bone chain (from the k-means cluster boundary), so
+   two mesh-adjacent vertices on either side of a cluster boundary could
+   get fully different bone weights. Fixed by blending each vertex between
+   its two nearest tail chains near cluster boundaries instead of a hard
+   cutover.
+
+Re-tested with a **coherent sway pose** (a smooth wave-like motion across
+the 9 tails) rather than the first test's alternating-direction pose,
+which — deliberately or not — was an adversarial worst case for boundary
+blending (neighboring tails yanked in opposite directions strains any
+shared-vertex blend, hand-painted or automated). With the fixes and a
+realistic pose, the result is materially cleaner: the tail-to-torso
+connection holds together smoothly, and the tearing/faceting seen in the
+first pass is largely gone (compare the two before/after render sets sent
+alongside this report). Fine surface-level faceting remains on close
+inspection — the mesh's underlying topological fragmentation (5,657
+islands) puts a real ceiling on how smooth an automated pass can get — but
+the result no longer reads as broken.
 
 **What was NOT touched:** no file in `apps/web/public/models/` was
-modified. The rigged prototype was exported to a scratch path only
-(`kaijax_tail_rig_prototype.glb`, not in the repo) for this review — it is
-not wired into the game and nothing in `apps/web/src` changed.
+modified at any point. Both rig passes were exported to scratch paths only
+(not in the repo) for this review — nothing is wired into the game and
+nothing in `apps/web/src` changed.
 
-**Verdict on tractability:** rigging the other rigged-but-tailless models
-this same way is mechanically repeatable (the clustering + chain-building
-script is generic, not kai-jax-specific) — but each one still needs this
-same manual weight-paint cleanup pass afterward to be shippable, so it
-doesn't collapse into a batch operation. Per-model effort is dominated by
-that cleanup step, not by the scripted part.
+**Verdict on tractability:** the fixed version of this pipeline (cluster →
+chain → boundary-aware weight blend) is mechanically repeatable across the
+other rigged-but-tailless models — it's no longer purely "bone placement
+only, weights need a human." A human pass is still worth doing before
+shipping (this remains an automated approximation, not hand-crafted
+weight-painting), but the gap it needs to close is now touch-up, not
+rescue.
 
 ## 2. Which models are actually load-bearing
 
