@@ -392,9 +392,20 @@ actually produced and verified.
 Full consolidated tracker, including CI/build issues not listed below:
 [`docs/known-debt.md`](docs/known-debt.md).
 
-- **GLB tail-anchor coverage is incomplete.** Some character models are
-  missing one or more of the 9 expected tail anchor bones. Handled
-  gracefully (see above), not blocking, not fully resolved.
+- **GLB tail-anchor coverage is incomplete.** None of the 40 live character
+  models have the game's 9-tail lore mechanic rigged — confirmed by a full
+  Blender-based audit of every registered model:
+  [`docs/qa/GLB_RIGGING_AUDIT_2026-07-17.md`](docs/qa/GLB_RIGGING_AUDIT_2026-07-17.md).
+  A prototype tail rig was since built and tested against nine deformation
+  scenarios (idle, run, dodge, heavy attack, hit reaction, and others) on
+  the `kai-jax` model — idle/walk/blend poses pass, but large combat poses
+  show real mesh clipping/strain that still needs a human weight-paint
+  pass. Full results:
+  [`docs/qa/GLB_TAIL_RIG_PROTOTYPE_2026-07-18.md`](docs/qa/GLB_TAIL_RIG_PROTOTYPE_2026-07-18.md).
+  This work lives entirely on an unmerged research branch
+  (`research/glb-rigging-pipeline`) — no production GLB has been modified,
+  and this is not applied to any shipped model. Handled gracefully at
+  runtime in the meantime (see above), not blocking.
 - **Two mobile CSS/spacing findings remain open** from the Task C mobile
   smoke test, neither of which caused a usability failure in verification
   (both are cosmetic): the "Play Game" CTA on LoreHub measured a
