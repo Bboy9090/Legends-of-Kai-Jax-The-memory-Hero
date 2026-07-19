@@ -10,11 +10,36 @@ export interface GLBModelConfig {
 }
 
 /**
+ * CANONICAL CONSTRAINTS — V0.1.0 MVP
+ *
+ * These story and identity locks are immutable for the MVP release:
+ *
+ * CHARACTER IDENTITY:
+ *   • Kai remains male and is Jax's older brother
+ *   • Jax remains male and is Kai's younger brother
+ *   • Both brothers are sapient anthropomorphic foxes with tails
+ *
+ * FUSION & TRANSFORMATION:
+ *   • Kai-Jax is the exclusive fusion of Kai + Jax (no other fusions)
+ *   • Kai-Jax is the only nine-tail form (the Memory King system)
+ *   • Neither Kai nor Jax fuses with any other character
+ *   • Each brother's beast-hybrid forms (if any) preserve their base identity
+ *
+ * CORE MECHANICS:
+ *   • The nine-tail system is Kai-Jax's exclusive signature power
+ *   • Memory King mechanics remain tied to Kai-Jax fusion only
+ *
+ * These constraints ensure narrative consistency and prevent story fragmentation
+ * during the MVP release window. Future expansions may add new fusions or forms
+ * only via explicit story design review.
+ */
+
+/**
  * ⚡ LEGENDS OF KAI-JAX: CANONICAL MODEL REGISTRY ⚡
- * 
+ *
  * SINGLE SOURCE OF TRUTH for all GLB character and boss models.
  * All models are Meshy.ai generated originals, owned by the project.
- * 
+ *
  * Scale notes:
  *   - Heroes: 3.5 (standard)
  *   - Bosses: 4.0–5.0 (imposing)

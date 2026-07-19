@@ -359,11 +359,12 @@ function HeroSection({ onNavigate, onPlayGame }: { onNavigate: (s: Section) => v
           <div className="flex flex-wrap gap-3">
             <button
               onClick={onPlayGame}
-              className="flex items-center gap-2 px-8 py-4 rounded-lg font-black text-base uppercase tracking-wider text-white transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]"
+              className="flex items-center justify-center gap-2 px-8 py-5 min-h-[44px] rounded-lg font-black text-base uppercase tracking-wider text-white transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]"
               style={{
                 background: "linear-gradient(135deg, rgba(46,46,254,0.3), rgba(255,59,48,0.2))",
                 border: "2px solid rgba(46,46,254,0.8)",
                 boxShadow: "0 0 25px rgba(46,46,254,0.3)",
+                minWidth: "44px",
               }}
               data-testid="lorehub-play-game-btn"
             >
