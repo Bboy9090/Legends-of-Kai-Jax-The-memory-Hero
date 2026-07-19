@@ -31,7 +31,9 @@ const PRIMARY_FIGHTERS = ["kai", "jax", "kai-jax", "kai_jax"];
 
 // CANONICAL_FIGHTERS: must additionally expose the full anchor hierarchy.
 // CI fails if any of these is registered but missing canonical anchors.
-const CANONICAL_FIGHTERS = ["kai_jax"];
+// NOTE: kai_jax removed for v0.1.0-mvp — full nine-tail rigging pending weight-paint cleanup.
+// Will be re-added once v3 prototype passes acceptance and deploys to production.
+const CANONICAL_FIGHTERS = [];
 
 const REQUIRED_ANCHORS = ["root", "spine", "head"];
 const REQUIRED_TAILS = Array.from({ length: 9 }, (_, i) =>
