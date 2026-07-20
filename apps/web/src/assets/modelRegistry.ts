@@ -20,18 +20,18 @@ export interface GLBModelConfig {
  *   • Both brothers are sapient anthropomorphic foxes with tails
  *
  * FUSION & TRANSFORMATION:
- *   • Kai-Jax is the exclusive fusion of Kai + Jax (no other fusions)
+ *   • Kai-Jax is permanently and exclusively the fusion of Kai + Jax
  *   • Kai-Jax is the only nine-tail form (the Memory King system)
- *   • Neither Kai nor Jax fuses with any other character
+ *   • Kai and Jax cannot fuse with any other character
+ *   • No future expansion may override this without an explicit canon rewrite approved by Bobby
  *   • Each brother's beast-hybrid forms (if any) preserve their base identity
  *
  * CORE MECHANICS:
  *   • The nine-tail system is Kai-Jax's exclusive signature power
  *   • Memory King mechanics remain tied to Kai-Jax fusion only
  *
- * These constraints ensure narrative consistency and prevent story fragmentation
- * during the MVP release window. Future expansions may add new fusions or forms
- * only via explicit story design review.
+ * These constraints are permanent canon locks, including beyond the MVP release.
+ * Changes require an explicit canon rewrite approved by Bobby.
  */
 
 /**
