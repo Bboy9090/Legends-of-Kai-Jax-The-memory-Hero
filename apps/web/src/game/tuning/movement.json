@@ -7,6 +7,7 @@
     "sprintMaxSpeed": 9.5,
     "accel": 38,
     "decel": 44,
+    "attackDecel": 72,
     "airControlMult": 0.55,
     "arenaXMin": -10,
     "arenaXMax": 10,
