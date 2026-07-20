@@ -30,10 +30,15 @@ const REGISTRY_PATH = join(APP_ROOT, "src", "assets", "modelRegistry.ts");
 const PRIMARY_FIGHTERS = ["kai", "jax", "kai-jax", "kai_jax"];
 
 // CANONICAL_FIGHTERS: must additionally expose the full anchor hierarchy.
-// CI fails if any of these is registered but missing canonical anchors.
-// NOTE: kai_jax removed for v0.1.0-mvp — full nine-tail rigging pending weight-paint cleanup.
-// Will be re-added once v3 prototype passes acceptance and deploys to production.
-const CANONICAL_FIGHTERS = [];
+// CI fails if any of these is missing, unparseable, or lacks canonical anchors,
+// unless that fighter has one narrowly documented anchor-only deferral below.
+const CANONICAL_FIGHTERS = ["kai_jax"];
+
+// Temporary MVP exception: kai_jax remains canonical and must still exist and parse.
+// Only its incomplete anchor hierarchy is deferred; the exception is reported by CI.
+const DEFERRED_CANONICAL_ANCHORS = new Map([
+  ["kai_jax", "v0.1.0-mvp: nine-tail rig pending weight-paint acceptance"],
+]);
 
 const REQUIRED_ANCHORS = ["root", "spine", "head"];
 const REQUIRED_TAILS = Array.from({ length: 9 }, (_, i) =>
@@ -224,6 +229,17 @@ function validate() {
 
   // Enforce policy
   const failures = [];
+  const deferrals = [];
+
+  // Deferrals must be explicit, non-empty, and limited to canonical fighters.
+  for (const [id, reason] of DEFERRED_CANONICAL_ANCHORS) {
+    if (!CANONICAL_FIGHTERS.includes(id)) {
+      failures.push(`INVALID-CANONICAL-DEFERRAL: ${id} is not in CANONICAL_FIGHTERS`);
+    }
+    if (typeof reason !== "string" || reason.trim().length === 0) {
+      failures.push(`INVALID-CANONICAL-DEFERRAL: ${id} has no documented reason`);
+    }
+  }
 
   // Rule 1: every path must be reachable
   for (const r of reports) {
@@ -254,23 +270,40 @@ function validate() {
     }
     const a = r.anchors;
     if (!a.root || !a.spine || !a.head || a.tails !== 9) {
-      failures.push(
-        `CANONICAL-FIGHTER-MISSING-ANCHORS: ${id} → root:${a.root}, spine:${a.spine}, head:${a.head}, tails:${a.tails}/9 (expected root+spine+head+tail_01..tail_09)`
-      );
+      const reason = DEFERRED_CANONICAL_ANCHORS.get(id);
+      if (reason) {
+        deferrals.push({
+          id,
+          reason,
+          missing: r.missing,
+          anchors: a,
+        });
+      } else {
+        failures.push(
+          `CANONICAL-FIGHTER-MISSING-ANCHORS: ${id} → root:${a.root}, spine:${a.spine}, head:${a.head}, tails:${a.tails}/9 (expected root+spine+head+tail_01..tail_09)`
+        );
+      }
     }
   }
 
   console.log("");
+  if (deferrals.length > 0) {
+    console.log("\x1b[33m=== EXPLICIT CANONICAL DEFERRALS ===\x1b[0m");
+    for (const d of deferrals) {
+      console.log(`  \x1b[33m• ${d.id}: ${d.reason}\x1b[0m`);
+    }
+    console.log("");
+  }
   if (failures.length > 0) {
     console.log("\x1b[31m=== POLICY FAILURES ===\x1b[0m");
     for (const f of failures) console.log("  \x1b[31m• " + f + "\x1b[0m");
     console.log("");
-    console.log(JSON.stringify({ ok: false, summary, failures }, null, 2));
+    console.log(JSON.stringify({ ok: false, summary, deferrals, failures }, null, 2));
     process.exit(1);
   } else {
     console.log("\x1b[32m=== ALL POLICY CHECKS PASSED ===\x1b[0m");
     console.log("");
-    console.log(JSON.stringify({ ok: true, summary }, null, 2));
+    console.log(JSON.stringify({ ok: true, summary, deferrals }, null, 2));
     process.exit(0);
   }
 }
