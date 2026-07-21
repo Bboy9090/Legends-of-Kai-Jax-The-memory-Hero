@@ -227,8 +227,8 @@ export default function VersusCharacterSelect() {
           )}
         </div>
 
-        <div className="w-72 flex flex-col gap-2 overflow-y-auto pr-1">
-          <div className="grid grid-cols-3 gap-2">
+        <div className="w-72 flex flex-col gap-3 overflow-y-auto pr-1">
+          <div className="grid grid-cols-3 gap-3 md:gap-2">
             {FIGHTERS.map((f) => (
               <FighterCard
                 key={f.id}

@@ -28,12 +28,10 @@
     "legacy:preview": "vite preview",
     "legacy:start": "NODE_ENV=production tsx server/index.ts",
     "db:push": "drizzle-kit push",
-    "validate:canon": "node validate-canon.mjs",
-    "validate:memory": "node validate-memory-layers.mjs",
     "validate:model": "python3 assets/models/characters/kai-jax/validate_model.py",
     "validate:registry": "node apps/web/scripts/validate-registry.mjs",
     "inspect:glb": "node apps/web/scripts/inspect-glb.mjs",
-    "test": "echo 'Testing...' && node -e \"console.log('✅ Node.js ready')\"",
+    "test": "pnpm -C apps/web test",
     "start": "serve -s apps/web/dist -l 5000"
   },
   "keywords": [

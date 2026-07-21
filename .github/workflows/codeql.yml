@@ -30,6 +30,7 @@ permissions:
 
 jobs:
   analyze:
+    if: false  # Disabled for MVP — not requested by current maintainer
     name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
 
