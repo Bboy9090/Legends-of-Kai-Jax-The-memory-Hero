@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
 import { useBattle } from "../../lib/stores/useBattle";
+import { useTouchInput } from "../../lib/stores/useTouchInput";
 
 type Orientation = 'portrait' | 'landscape';
 
 export default function MobileControls() {
   const [orientation, setOrientation] = useState<Orientation>('portrait');
   const [activeButtons, setActiveButtons] = useState<Set<string>>(new Set());
-  const { playerJump, playerAttack, movePlayer, battlePhase } = useBattle();
+  const battlePhase = useBattle((s) => s.battlePhase);
+  const setJoystick = useTouchInput((s) => s.setJoystick);
+  const releaseJoystick = useTouchInput((s) => s.releaseJoystick);
+  const queueAttack = useTouchInput((s) => s.queueAttack);
   
   // Detect orientation (MUST be before early return to follow Rules of Hooks)
   useEffect(() => {
@@ -38,24 +42,28 @@ export default function MobileControls() {
     
     switch(action) {
       case 'left':
-        // Move left with continuous velocity
-        movePlayer(-5, 0);
+        setJoystick(-1, 0, true);
         break;
       case 'right':
-        // Move right with continuous velocity
-        movePlayer(5, 0);
+        setJoystick(1, 0, true);
         break;
       case 'jump':
-        playerJump();
+        queueAttack('jump');
         break;
       case 'punch':
-        playerAttack('punch');
+        queueAttack('punch');
         break;
       case 'kick':
-        playerAttack('kick');
+        queueAttack('kick');
         break;
       case 'special':
-        playerAttack('special');
+        queueAttack('special');
+        break;
+      case 'dodge':
+        queueAttack('dodge');
+        break;
+      case 'ultimate':
+        queueAttack('ultimate');
         break;
     }
   };
@@ -68,7 +76,7 @@ export default function MobileControls() {
     });
     
     if (action === 'left' || action === 'right') {
-      movePlayer(0, 0);
+      releaseJoystick();
     }
   };
 
@@ -122,6 +130,24 @@ export default function MobileControls() {
 
         {/* Right side - Actions */}
         <div className="absolute right-4 bottom-4 flex flex-col gap-3 pointer-events-auto">
+          <div className="flex justify-end gap-3">
+            <button
+              onTouchStart={(e) => { e.preventDefault(); handleButtonPress('dodge'); }}
+              onTouchEnd={(e) => { e.preventDefault(); handleButtonRelease('dodge'); }}
+              className={buttonClass('dodge', 'bg-cyan-600 w-16 h-16')}
+              aria-label="Dodge"
+            >
+              <div className="text-center"><div className="text-xl">💨</div><div className="text-xs">DODGE</div></div>
+            </button>
+            <button
+              onTouchStart={(e) => { e.preventDefault(); handleButtonPress('ultimate'); }}
+              onTouchEnd={(e) => { e.preventDefault(); handleButtonRelease('ultimate'); }}
+              className={buttonClass('ultimate', 'bg-yellow-600 w-16 h-16')}
+              aria-label="Ultimate"
+            >
+              <div className="text-center"><div className="text-xl">✦</div><div className="text-xs">ULT</div></div>
+            </button>
+          </div>
           <button
             onTouchStart={(e) => { e.preventDefault(); handleButtonPress('special'); }}
             onTouchEnd={(e) => { e.preventDefault(); handleButtonRelease('special'); }}
@@ -204,6 +230,24 @@ export default function MobileControls() {
             <div className="text-lg">👊</div>
             <div className="text-xs">PUNCH</div>
           </div>
+        </button>
+
+        <button
+          onTouchStart={(e) => { e.preventDefault(); handleButtonPress('dodge'); }}
+          onTouchEnd={(e) => { e.preventDefault(); handleButtonRelease('dodge'); }}
+          className={buttonClass('dodge', 'bg-cyan-600 w-16 h-16')}
+          aria-label="Dodge"
+        >
+          <div className="text-center"><div className="text-lg">💨</div><div className="text-xs">DODGE</div></div>
+        </button>
+
+        <button
+          onTouchStart={(e) => { e.preventDefault(); handleButtonPress('ultimate'); }}
+          onTouchEnd={(e) => { e.preventDefault(); handleButtonRelease('ultimate'); }}
+          className={buttonClass('ultimate', 'bg-yellow-600 w-16 h-16')}
+          aria-label="Ultimate"
+        >
+          <div className="text-center"><div className="text-lg">✦</div><div className="text-xs">ULT</div></div>
         </button>
         
         <button

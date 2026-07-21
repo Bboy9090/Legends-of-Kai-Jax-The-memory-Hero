@@ -1,28 +1,9 @@
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useKeyboardControls } from "@react-three/drei";
 import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
 import OptimizedBeastModel from "./models/OptimizedBeastModel";
-import { useBeastPreset } from "../../lib/stores/useBeastPreset";
-
-// Use the same Controls enum as App.tsx
-enum Controls {
-  jump = 'jump',
-  left = 'left',
-  right = 'right',
-  punch = 'punch',
-  kick = 'kick',
-  special = 'special',
-  pause = 'pause',
-  slide = 'slide',
-  dash = 'dash',
-  webSwing = 'webSwing',
-  chargeKick = 'chargeKick',
-  transform = 'transform',
-  energyBlast = 'energyBlast'
-}
 
 export default function BattlePlayer() {
   const { 
@@ -34,14 +15,10 @@ export default function BattlePlayer() {
     playerAttackType,
     playerInvulnerable,
     playerHealth,
-    playerTransformed, // ⚡ For Kai-Jax transformation state
-    playerSynergy, // ⚡ For Resonance/Resonance tracking
     battlePhase,
     winner,
     timeScale,
-    movePlayer,
-    playerJump,
-    playerAttack
+    playerVelocityX,
   } = useBattle();
   
   const meshRef = useRef<THREE.Group>(null);
@@ -54,24 +31,18 @@ export default function BattlePlayer() {
   
   const animTimeRef = useRef(0);
   const isMovingRef = useRef(false);
-  const prevYRef = useRef(0.8);
   const hitAnimRef = useRef(0);
   const prevHealthRef = useRef(100);
-  const coyoteTimeRef = useRef(0); // ⚡ Kaison's 4-frame Coyote time window
   
   // LEGENDARY ANIMATION SYSTEM - Attack phases for smooth transitions!
   const attackPhaseRef = useRef<'windup' | 'active' | 'recovery' | null>(null);
   const attackPhaseTimeRef = useRef(0);
   const emotionIntensityRef = useRef(0); // For facial expressions!
   
-  const [, getKeys] = useKeyboardControls<Controls>();
-  const beastPreset = useBeastPreset((s) => s.preset);
-  
   const fighter = getFighterById(playerFighterId);
-  if (!fighter) return null;
   
-  // Handle player input and animations
-  useFrame((state, delta) => {
+  // PlayerController is the sole gameplay authority; this component renders its state.
+  useFrame((_state, delta) => {
     // Apply slow-motion time scale
     const scaledDelta = delta * timeScale;
     
@@ -93,114 +64,7 @@ export default function BattlePlayer() {
     }
     
     animTimeRef.current += scaledDelta;
-    const { left, right, jump, punch, kick, special, transform } = getKeys();
-    
-    // ⚡ CHARACTER-SPECIFIC PHYSICS (Bronx Grit Standard)
-    // Jaxon Solo: g=9.8 (Standard speed)
-    // Kaison Solo: g=9.8 (Standard speed with 4-frame Coyote time)
-    // Kai-Jax Fused: g=18.0 (Architect Tier - Heavy weight)
-    const getCharacterGravity = () => {
-      if (playerFighterId === 'kai-jax') {
-        return -18.0; // Architect Tier - Heavy weight for fused form
-      }
-      // Jaxon or Kaison solo (or any other character)
-      return -9.8; // Standard gravity
-    };
-    
-    const gravity = getCharacterGravity();
-    
-    // Character-specific move speed
-    const getCharacterMoveSpeed = () => {
-      if (playerFighterId === 'jaxon') {
-        return 0.25 * timeScale; // Jaxon: Fast (Velocity Fracture)
-      } else if (playerFighterId === 'kaison') {
-        return 0.22 * timeScale; // Kaison: Tactical speed
-      } else if (playerFighterId === 'kai-jax') {
-        return 0.18 * timeScale; // Kai-Jax: Slower but heavier (Architect Tier)
-      }
-      return 0.2 * timeScale; // Default
-    };
-    
-    const moveSpeed = getCharacterMoveSpeed();
-    
-    // Track movement
-    isMovingRef.current = (left || right) && !playerAttacking;
-    
-    // Horizontal movement (slowed by timeScale) - ALWAYS use LATEST Y from store!
-    if (left && !playerAttacking) {
-      movePlayer(-moveSpeed, useBattle.getState().playerY);
-    } else if (right && !playerAttacking) {
-      movePlayer(moveSpeed, useBattle.getState().playerY);
-    }
-    
-    // Re-fetch COMPLETE state for Coyote time check
-    const freshState = useBattle.getState();
-    
-    // Jump with Coyote Time for Kaison (4-frame window = 0.067s at 60fps)
-    if (jump) {
-      // Kaison gets 4-frame Coyote time for superior air control
-      if (playerFighterId === 'kaison' && !freshState.playerGrounded && coyoteTimeRef.current < 0.067) {
-        coyoteTimeRef.current += scaledDelta;
-        playerJump();
-      } else if (freshState.playerGrounded) {
-        // Normal jump when grounded
-        playerJump();
-        coyoteTimeRef.current = 0; // Reset Coyote time
-      }
-    } else if (freshState.playerGrounded) {
-      coyoteTimeRef.current = 0; // Reset Coyote time when grounded
-    }
-    
-    // Attacks - Character-specific movesets
-    if (punch && !playerAttacking) {
-      playerAttack('punch');
-    } else if (kick && !playerAttacking) {
-      playerAttack('kick');
-    } else if (special && !playerAttacking) {
-      // Jaxon: Flicker-Strike (3f), Kaison: Sky-Anchor (Bungee), Kai-Jax: Memory Strand
-      playerAttack('special');
-    }
-    
-    // Transformation Trigger (Jaxon/Kaison -> Kai-Jax fusion)
-    // Only available when playing as Jaxon or Kaison, Resonance >= 50%
-    if (transform && !playerAttacking) {
-      const { playerSynergy, playerTransformed } = useBattle.getState();
-      const fusionThreshold = 50;
-      
-      // Jaxon/Kaison -> Kai-Jax fusion
-      if ((playerFighterId === 'jaxon' || playerFighterId === 'kaison') && 
-          playerSynergy >= fusionThreshold && 
-          !playerTransformed) {
-        console.log("[Battle] 🔄 BLOODWARD PROTOCOL: Fusion triggered!");
-        useBattle.getState().triggerTransformation();
-        // playerFighterId will be set in triggerTransformation
-      }
-    }
-    
-    // Re-fetch COMPLETE state after all movements/actions (already fetched above)
-    let currentY = freshState.playerY;
-    let velocityY = freshState.playerVelocityY;
-    
-    if (!freshState.playerGrounded) {
-      // Apply velocity to position (using FRESH Y from store)
-      const newY = currentY + velocityY * scaledDelta;
-      
-      // Apply gravity to velocity
-      velocityY += gravity * scaledDelta;
-      
-      // Check if landed
-      if (newY <= 0.8) {
-        movePlayer(0, 0.8);
-        useBattle.setState({ playerVelocityY: 0, playerGrounded: true });
-      } else {
-        movePlayer(0, newY);
-        useBattle.setState({ playerVelocityY: velocityY });
-      }
-    } else if (currentY > 0.8) {
-      // Fallback for edge cases
-      movePlayer(0, 0.8);
-      useBattle.setState({ playerGrounded: true });
-    }
+    isMovingRef.current = Math.abs(playerVelocityX) > 0.08 && !playerAttacking;
     
     // Detect hit (health decreased) - INTENSE FACIAL REACTION!
     if (playerHealth < prevHealthRef.current) {
@@ -220,8 +84,6 @@ export default function BattlePlayer() {
       
       const windupDuration = 0.1;  // Quick wind-up
       const activeDuration = 0.25; // Extended strike
-      const recoveryDuration = 0.15; // Quick recovery
-      
       if (attackPhaseTimeRef.current < windupDuration) {
         attackPhaseRef.current = 'windup';
         emotionIntensityRef.current = 0.5; // Focus
@@ -374,8 +236,9 @@ export default function BattlePlayer() {
       }
     }
     
-    prevYRef.current = playerY;
   });
+
+  if (!fighter) return null;
   
   // CHARACTER MODEL: always render the optimized beast GLB
   const renderCharacterModel = () => (
