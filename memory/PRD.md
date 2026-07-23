@@ -1,4 +1,12 @@
-# Legends of Kai-Jax — PRD
+# LEGENDS OF KAI-JAX: THE MEMORY KING
+## Master PRD - Final Consolidated Version
+
+**Status:** PRODUCTION CANON LOCKED
+**Version:** Final Delivery
+**Date:** February 2026
+**Last Updated:** February 1, 2026
+
+---
 
 ## Original Problem Statement
 Continue implementation of Legends of Kai-Jax as a modular, data-driven combat game built on a universal combat kernel. Verify, complete, and integrate the existing P1–P4 implementations already in the repo (do NOT rebuild from scratch). Preserve current architecture, prioritize real gameplay proof, dark moody arena aesthetic.
@@ -21,11 +29,34 @@ Continue implementation of Legends of Kai-Jax as a modular, data-driven combat g
 ### P1 — Real Combat Exchange (PROVEN)
 `kai_light_jab` and 5 additional moves (heavy_punch, uppercut, sweep, grab, combo_chain) loaded from JSON, frame-data driven through MovePlayer. Input → startup → active hitbox spawn → AABB collision → damage → knockback → hitstop → recovery → cleanup. Shield + grab + shield-break logic implemented.
 
-### P2 — World-Space Hitbox Attachment (PROVEN)
-`MovePlayer.spawnHitbox` reads fighter root position + facing direction; hitbox `offX` mirrors with `direction = facingRight ? 1 : -1`. `offY` corrected for mesh-center-vs-feet (FOOT_OFFSET = 0.9).
+### 1. GAME HUB (8 Sections)
+- **HOME** - Epic hero page with Kai-Jax artwork backdrop
+- **CHARACTERS** - 5 core characters with locked image canon + **WORKING AI generation**
+- **TAILS** - 9-tail system with elements, abilities, signature moves
+- **STORY** - 5 Acts narrative with expandable details
+- **GODS** - Four Sabertooth Gods mythology
+- **REGIONS** - 5 world regions with danger levels
+- **BIBLE** - Complete Master Blueprint (6 tabs)
+- **UI** - Character Select, Matchup Art, Codex System
 
-### P3 — Enemy Entity Wrapper (PROVEN)
-`EnemyEntity` + `BossEntity` use the SAME `MovePlayer` + `Hurtbox` runtime (no special enemy damage system). 4 AI behaviors: grunt, rusher, defender, sniper. Boss has 3 phases via `BossAI`. Death handling, knockback application via AI takeDamage.
+### 2. AI IMAGE GENERATION ✅ (FULLY WORKING)
+- **Generate AI Art button** appears on hover over character cards
+- **Per-card loading state** - only the clicked card shows "Generating..."
+- **AI GENERATED badge** appears after successful generation
+- **Regenerate button** allows creating new variations
+- **Backend integration** with OpenAI GPT Image 1 via Emergent LLM Key
+- **AI Character Gallery** - Dedicated section displaying all AI-generated character art
+- **All 5 characters generated**: KAI, JAX, KAI-JAX, BORYN, BORAX
+
+### 2. FINAL MASTER BIBLE (8 Layers)
+- **Layer I** - The Absolute Core (non-negotiables)
+- **Layer II** - The Cosmology (Sabertooth Gods)
+- **Layer III** - Characters (Kai, Jax, Kai-Jax, Boryn, Borax, Aurelion, Selene)
+- **Layer IV** - Factions (Fang Syndicate, Null Covenant, Behemoth Legion)
+- **Layer V** - The 9-Tail System (game's heart)
+- **Layer VI** - Game Modes (Story, Survival, Versus)
+- **Layer VII** - Full Campaign Flow (8 areas)
+- **Layer VIII** - Why This Works
 
 ### P4 — First Playable Mission Slice (PROVEN)
 `MissionScene` orchestrates Ironvein Ward + Null Forge missions. Wave 1 (5 grunts) → Wave 2 (6 grunts + 2 scouts) → Boss (covenant_enforcer). Win = defeat boss. Lose = player HP ≤ 0. Available as standalone playable proof at `/mission-demo.html`.
@@ -65,7 +96,43 @@ Production `kai_jax.glb` with the canonical hierarchy `root / spine / head / tai
 - **P2** Versus/duel orchestration layer reusing the same combat runtime
 - **P2** Tag/partner system
 
-## Next Tasks
-1. Drop in the production `kai_jax.glb` and validate node hierarchy
-2. Wire animation clips per MoveSpec phase
-3. Add end-state overlay UI to `/mission-demo.html`
+## 9th Tail Coronation
+**Trigger:** All tails aligned, fusion stable, choice under pressure
+**Cinematic:** BOTH fathers' echoes (Boryn + Borax) appear and crown Kai-Jax together
+- Boryn: "You carried what I couldn't."
+- Borax: "Stand. Be remembered."
+
+---
+
+## Status Check
+| Component | Status |
+|-----------|--------|
+| Story | ✅ Locked |
+| World | ✅ Coherent |
+| Systems | ✅ Buildable |
+| Scale | ✅ Expandable |
+| Identity | ✅ Clear |
+
+---
+
+## Tech Stack
+- **Frontend:** React 19, Tailwind CSS, Lucide Icons
+- **Backend:** FastAPI, Python, Motor (MongoDB)
+- **AI Integration:** OpenAI GPT Image 1 via Emergent LLM Key
+- **Database:** MongoDB
+
+---
+
+## Next Logical Steps
+1. **PDF Export of Master Bible** - Add button to export entire Blueprint as downloadable PDF
+2. Opening cinematic shot list
+3. DLC / sequel timeline
+4. Studio pitch deck
+5. Playable prototype roadmap
+
+---
+
+## Final Statement
+> "This is not derivative. It is ancestral."
+
+**You've crossed the point of "idea." This is a myth you can ship.**

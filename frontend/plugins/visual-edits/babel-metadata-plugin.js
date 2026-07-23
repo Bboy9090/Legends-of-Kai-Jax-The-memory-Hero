@@ -763,11 +763,28 @@ const babelMetadataPlugin = ({ types: t }) => {
     return result;
   }
 
+  // Files/directories to skip entirely (e.g., react-three-fiber Canvas trees)
+  // R3F renders <mesh>, <group>, <primitive>, etc. as Three.js objects which
+  // cannot accept arbitrary HTML/JSX attributes (like x-line-number).
+  const SKIP_PATH_PATTERNS = [
+    /[\\/]src[\\/]game[\\/]/,
+  ];
+
+  const shouldSkipFile = (state) => {
+    const filename =
+      state.filename ||
+      state.file?.opts?.filename ||
+      state.file?.sourceFileName ||
+      "";
+    return SKIP_PATH_PATTERNS.some((re) => re.test(filename));
+  };
+
   return {
     name: "element-metadata-plugin",
     visitor: {
       // Add metadata attributes to React components (capitalized JSX)
       JSXElement(jsxPath, state) {
+        if (shouldSkipFile(state)) return;
         const openingElement = jsxPath.node.openingElement;
         if (!openingElement?.name) return;
         const elementName = getName(openingElement);
@@ -978,6 +995,7 @@ const babelMetadataPlugin = ({ types: t }) => {
 
       // Add metadata to native HTML elements (lowercase JSX)
       JSXOpeningElement(jsxPath, state) {
+        if (shouldSkipFile(state)) return;
         if (!jsxPath.node.name || !jsxPath.node.name.name) {
           return;
         }
