@@ -1,0 +1,137 @@
+{
+  "idle": {
+    "frozen_limbs_v4": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "fullbody_v5": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "difference_v5_minus_v4": {
+      "max_stretch_delta": 0.0,
+      "pct_high_strain_delta": 0.0,
+      "impact": "NEUTRAL"
+    }
+  },
+  "run": {
+    "frozen_limbs_v4": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "fullbody_v5": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "difference_v5_minus_v4": {
+      "max_stretch_delta": 0.0,
+      "pct_high_strain_delta": 0.0,
+      "impact": "NEUTRAL"
+    }
+  },
+  "dodge": {
+    "frozen_limbs_v4": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "fullbody_v5": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "difference_v5_minus_v4": {
+      "max_stretch_delta": 0.0,
+      "pct_high_strain_delta": 0.0,
+      "impact": "NEUTRAL"
+    }
+  },
+  "heavy_attack": {
+    "frozen_limbs_v4": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "fullbody_v5": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "difference_v5_minus_v4": {
+      "max_stretch_delta": 0.0,
+      "pct_high_strain_delta": 0.0,
+      "impact": "NEUTRAL"
+    }
+  },
+  "hit_reaction": {
+    "frozen_limbs_v4": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "fullbody_v5": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "difference_v5_minus_v4": {
+      "max_stretch_delta": 0.0,
+      "pct_high_strain_delta": 0.0,
+      "impact": "NEUTRAL"
+    }
+  },
+  "sharp_direction_change": {
+    "frozen_limbs_v4": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "fullbody_v5": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "difference_v5_minus_v4": {
+      "max_stretch_delta": 0.0,
+      "pct_high_strain_delta": 0.0,
+      "impact": "NEUTRAL"
+    }
+  },
+  "animation_blending": {
+    "frozen_limbs_v4": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "fullbody_v5": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "difference_v5_minus_v4": {
+      "max_stretch_delta": 0.0,
+      "pct_high_strain_delta": 0.0,
+      "impact": "NEUTRAL"
+    }
+  },
+  "close_camera": {
+    "frozen_limbs_v4": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "fullbody_v5": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "difference_v5_minus_v4": {
+      "max_stretch_delta": 0.0,
+      "pct_high_strain_delta": 0.0,
+      "impact": "NEUTRAL"
+    }
+  },
+  "extreme_tail_spread": {
+    "frozen_limbs_v4": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "fullbody_v5": {
+      "max_stretch": 1.0,
+      "pct_high_strain": 0.0
+    },
+    "difference_v5_minus_v4": {
+      "max_stretch_delta": 0.0,
+      "pct_high_strain_delta": 0.0,
+      "impact": "NEUTRAL"
+    }
+  }
+}
