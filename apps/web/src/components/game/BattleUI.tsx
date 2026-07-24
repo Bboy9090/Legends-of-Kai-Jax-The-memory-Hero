@@ -4,6 +4,8 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { useMissions } from "../../lib/stores/useMissions";
 import { getFighterById } from "../../lib/characters";
 import { getPortraitPath } from "../../data/characterDesigns";
+import MoveSetTooltip from "./MoveSetTooltip";
+import { getMoveSet } from "../../lib/combatAbilities";
 import { useState, useEffect, useRef } from "react";
 import { Zap, RotateCcw, Home, Star, Sparkles, CheckCircle2, XCircle, Target, ChevronRight } from "../ui/icons";
 
@@ -781,7 +783,9 @@ export default function BattleUI() {
   } = useBattle();
 
   const activeMission = useMissions((s) => s.active);
-  
+  const [showMoves, setShowMoves] = useState(false);
+  const playerMoveSet = getMoveSet(playerFighterId);
+
   const handleReturnToMenu = () => {
     if (!trainingSession) addScore(battleScore);
     returnToMenu();
@@ -867,6 +871,24 @@ export default function BattleUI() {
       
       {/* Combo Counter */}
       <ComboCounter combo={comboCount} maxCombo={50} damage={comboDamage} />
+
+      {/* Wave 2 move-set reference (expanded combos + ultimate) */}
+      {playerMoveSet && battlePhase === "fighting" && (
+        <button
+          type="button"
+          onClick={() => setShowMoves(true)}
+          className="absolute top-16 right-3 sm:top-20 sm:right-5 pointer-events-auto z-20 px-3 py-2 min-h-[44px] rounded-lg border border-cyan-500/50 bg-slate-900/70 text-cyan-300 text-xs font-bold uppercase tracking-wider hover:border-cyan-400 hover:bg-slate-800/80 transition-all"
+        >
+          Moves
+        </button>
+      )}
+      {playerMoveSet && (
+        <MoveSetTooltip
+          moveSet={playerMoveSet}
+          isOpen={showMoves}
+          onClose={() => setShowMoves(false)}
+        />
+      )}
 
       {/* Stamina + combat state (Phase 3) */}
       {battlePhase === "fighting" && (

@@ -407,6 +407,12 @@ export const useMissions = create<MissionsState>()(
           // Treat mission XP/currency as score rewards (no wallet system yet).
           useRunner.getState().addScore(totalPoints);
         }
+        // Wave 2: bridge mission XP into per-character level progression.
+        const xp = reward?.xp ?? 0;
+        const charId = useRunner.getState().selectedCharacter;
+        if (xp > 0 && charId && typeof window !== "undefined") {
+          (window as any).progressionStore?.getState?.().awardXP(charId, xp);
+        }
         useRunner.getState().setMissionCompleted(k);
         const next = [...prev, k];
         set({
