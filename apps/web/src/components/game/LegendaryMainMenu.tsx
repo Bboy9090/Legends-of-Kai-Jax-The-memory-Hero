@@ -503,20 +503,19 @@ const LegendaryMainMenu: React.FC = () => {
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <span 
-                      className={`text-base lg:text-lg font-bold uppercase tracking-wider ${
-                        item.legendary && isSelected ? 'text-legendary-gold' : 'text-white'
-                      }`}
+                    <span
+                      className="text-base lg:text-lg font-bold uppercase tracking-wider"
                       style={{
+                        color: item.legendary && isSelected ? '#ffd700' : '#ffffff',
                         textShadow: item.legendary && isSelected
                           ? '0 0 10px rgba(255, 215, 0, 0.5)'
-                          : 'none',
+                          : '0 1px 3px rgba(0, 0, 0, 0.9)',
                       }}
                     >
                       {item.label}
                     </span>
                     {item.sublabel && (
-                      <p className="text-xs text-neutral-500 mt-0.5 tracking-wide">
+                      <p className="text-xs mt-0.5 tracking-wide" style={{ color: '#cbd5e1', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
                         {item.sublabel}
                       </p>
                     )}
