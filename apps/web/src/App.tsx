@@ -270,7 +270,7 @@ function App() {
         {gameState === 'story-mode' && (() => {
           const charId = selectedCharacter || "kai-jax";
           const fighter = getFighterById(charId);
-          const storyMissionId = activeStoryMissionId || "act1-1";
+          const storyMissionId = activeStoryMissionId || "story_act1_m1";
           return (
             <>
               <div className="relative w-full h-screen">
