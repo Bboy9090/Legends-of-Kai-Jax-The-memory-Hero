@@ -150,7 +150,10 @@ export default function OptimizedBeastModel({
   }
 
   return (
-    <group ref={groupRef}>
+    // Models are authored facing +Z (toward the camera). Rotate them to face
+    // along +X so they face their opponent instead of crab-walking sideways.
+    // BattlePlayer/Opponent mirror this for left/right facing.
+    <group ref={groupRef} rotation={[0, Math.PI / 2, 0]}>
       <Clone
         ref={cloneRef}
         object={scene}

@@ -25,13 +25,15 @@ export function getQualitySettings() {
   const isTablet = deviceType === 'tablet';
 
   return {
-    // Render settings
-    pixelRatio: isMobile ? Math.min(window.devicePixelRatio, 1.5) : window.devicePixelRatio,
+    // Render settings — cap pixelRatio hard. The characters are heavy (100k+
+    // verts each), so rendering at a high-DPI 2x ratio quadruples pixel work
+    // and tanks framerate even on desktop. 1.5 max keeps it crisp but fast.
+    pixelRatio: Math.min(window.devicePixelRatio, isMobile ? 1.25 : 1.5),
     antialias: !isMobile, // Disable AA on mobile for performance
     shadowMap: {
       enabled: true,
       type: isMobile ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap,
-      size: isMobile ? 512 : isTablet ? 1024 : 2048,
+      size: isMobile ? 512 : isTablet ? 1024 : 1024,
     },
     
     // Post-processing
