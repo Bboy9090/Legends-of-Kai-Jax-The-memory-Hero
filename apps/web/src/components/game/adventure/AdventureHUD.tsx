@@ -94,23 +94,43 @@ function AutoTargetIndicator({ targetId, enemies }: { targetId: string | null; e
   const target = enemies.find((e: any) => e.id === targetId);
   if (!target || target.isDead) return null;
   const hpPct = Math.max(0, (target.health / target.maxHealth) * 100);
+  const isBoss = target.tier === "boss1" || target.tier === "boss2";
+  const isTelegraphing = target.aiState === "telegraph";
+  const label = isBoss ? "⚠ BOSS" : "TARGET";
+  const accent = isBoss ? "#f59e0b" : "#ef4444";
   return (
-    <div className="absolute bottom-28 left-1/2 -translate-x-1/2">
-      <div className="bg-black/60 backdrop-blur-sm rounded-lg px-4 py-1.5 border border-red-500/30 flex items-center gap-3 min-w-[180px]">
-        <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+    <div className="absolute bottom-28 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
+      {/* Attack telegraph warning — enemy is winding up */}
+      {isTelegraphing && (
+        <div className="text-[11px] font-black uppercase tracking-widest text-amber-300 animate-pulse">
+          ⚡ Incoming — dodge!
+        </div>
+      )}
+      <div
+        className="bg-black/60 backdrop-blur-sm rounded-lg px-4 py-1.5 flex items-center gap-3 min-w-[180px]"
+        style={{ border: `1px solid ${accent}55` }}
+      >
+        <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: accent }} />
         <div className="flex-1">
-          <div className="text-[10px] text-red-300 font-bold uppercase tracking-wider mb-0.5">TARGET</div>
-          <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div
+            className="text-[10px] font-bold uppercase tracking-wider mb-0.5"
+            style={{ color: accent }}
+          >
+            {label}
+          </div>
+          <div className={`h-1.5 bg-slate-800 rounded-full overflow-hidden ${isBoss ? "border border-amber-500/40" : ""}`}>
             <div
               className="h-full rounded-full transition-all duration-300"
               style={{
                 width: `${hpPct}%`,
-                background: "linear-gradient(90deg, #ef4444, #dc2626)",
+                background: isBoss
+                  ? "linear-gradient(90deg, #f59e0b, #dc2626)"
+                  : "linear-gradient(90deg, #ef4444, #dc2626)",
               }}
             />
           </div>
         </div>
-        <span className="text-[10px] font-mono text-red-300">{Math.ceil(target.health)}</span>
+        <span className="text-[10px] font-mono" style={{ color: accent }}>{Math.ceil(target.health)}</span>
       </div>
     </div>
   );
@@ -278,9 +298,20 @@ export default function AdventureHUD() {
     );
   }
 
+  const playerHpPct = player.maxHealth > 0 ? (player.health / player.maxHealth) * 100 : 100;
+  const isCritical = !trainingSession && playerHpPct > 0 && playerHpPct < 25;
+
   return (
     <div className="absolute inset-0 pointer-events-none z-40">
       <ImpactFlash color={player.impactFlash} />
+
+      {/* Critical low-health vignette (mirrors versus danger feedback) */}
+      {isCritical && (
+        <div
+          className="absolute inset-0 pointer-events-none z-10 animate-pulse"
+          style={{ boxShadow: "inset 0 0 120px 40px rgba(239,68,68,0.4)" }}
+        />
+      )}
 
       {trainingSession && (
         <div className="absolute top-24 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">

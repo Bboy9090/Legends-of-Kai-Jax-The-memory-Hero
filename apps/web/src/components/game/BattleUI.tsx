@@ -73,13 +73,81 @@ function SynergyMeter({
   );
 }
 
+// 🌌 OVERDRIVE / ULTIMATE METER — the super gauge that gates the ultimate
+function OverdriveMeter({
+  value,
+  maxValue = 100,
+  fighterColor,
+  canUse,
+}: {
+  value: number;
+  maxValue?: number;
+  fighterColor: string;
+  canUse: boolean;
+}) {
+  const pct = Math.max(0, Math.min(100, (value / maxValue) * 100));
+  const isFull = pct >= 100;
+  const ready = isFull && canUse;
+
+  return (
+    <div className="absolute bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 w-[min(88vw,420px)] pointer-events-none z-20">
+      <div className="flex items-center gap-2 mb-1 px-1">
+        <span
+          className="text-[10px] font-black uppercase tracking-[0.2em]"
+          style={{ color: ready ? "#FDE047" : fighterColor }}
+        >
+          Overdrive
+        </span>
+        <span className="flex-1" />
+        {ready ? (
+          <span className="text-[11px] font-black uppercase tracking-widest text-yellow-300 animate-pulse">
+            ▲ ULTIMATE READY — R ▲
+          </span>
+        ) : (
+          <span className="text-[10px] font-mono text-slate-400">{Math.round(pct)}%</span>
+        )}
+      </div>
+      <div
+        className="relative h-3 rounded-full overflow-hidden border"
+        style={{
+          background: "rgba(2,6,23,0.75)",
+          borderColor: ready ? "#FDE047" : `${fighterColor}66`,
+          boxShadow: ready ? "0 0 18px #FDE04766" : "none",
+        }}
+      >
+        <div
+          className="absolute inset-y-0 left-0 transition-all duration-200"
+          style={{
+            width: `${pct}%`,
+            background: ready
+              ? "linear-gradient(90deg,#FDE047,#F59E0B,#A855F7)"
+              : `linear-gradient(90deg,${fighterColor},#A855F7)`,
+            boxShadow: ready ? "inset 0 0 10px rgba(255,255,255,0.5)" : "none",
+          }}
+        />
+        {ready && (
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-[shimmer_1s_infinite]" />
+        )}
+        {/* segment ticks at 25/50/75% for readability */}
+        {[25, 50, 75].map((t) => (
+          <div
+            key={t}
+            className="absolute top-0 bottom-0 w-px bg-black/40"
+            style={{ left: `${t}%` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // 🔥 LEGENDARY COMBO COUNTER
-function ComboCounter({ 
-  combo, 
+function ComboCounter({
+  combo,
   maxCombo: _maxCombo,
-  damage 
-}: { 
-  combo: number; 
+  damage
+}: {
+  combo: number;
   maxCombo: number;
   damage: number;
 }) {
@@ -771,16 +839,41 @@ export default function BattleUI() {
   const opponentFighter = getFighterById(opponentFighterId);
   
   // Get actual synergy and combo from battle store
-  const { 
-    playerSynergy, 
-    playerTransformed, 
-    comboCount, 
+  const {
+    playerSynergy,
+    playerTransformed,
+    comboCount,
     comboDamage,
     playerStamina,
     maxPlayerStamina,
     playerCombatState,
     playerGuardPressure,
+    playerOverdrive,
+    maxOverdrive,
   } = useBattle();
+
+  // Ultimate is usable when the meter is full and the fighter can channel it
+  // (native ultimate roster or currently transformed) — mirrors useBattle gate.
+  const hasNativeUltimate = ["kai-jax", "kai", "jax", "boryn"].includes(playerFighterId);
+  const canUseUltimate = playerTransformed || hasNativeUltimate;
+
+  // Transient "ULTIMATE READY" banner on the moment the meter fills.
+  const [ultReadyFlash, setUltReadyFlash] = useState(false);
+  const wasUltReadyRef = useRef(false);
+  useEffect(() => {
+    const nowReady = playerOverdrive >= maxOverdrive && canUseUltimate;
+    if (nowReady && !wasUltReadyRef.current) {
+      setUltReadyFlash(true);
+      const t = setTimeout(() => setUltReadyFlash(false), 1400);
+      wasUltReadyRef.current = true;
+      return () => clearTimeout(t);
+    }
+    if (!nowReady) wasUltReadyRef.current = false;
+  }, [playerOverdrive, maxOverdrive, canUseUltimate]);
+
+  // Critical low-health state drives a pulsing red vignette.
+  const playerHealthPct = maxHealth > 0 ? (playerHealth / maxHealth) * 100 : 100;
+  const isCritical = battlePhase === "fighting" && playerHealthPct > 0 && playerHealthPct < 25;
 
   const activeMission = useMissions((s) => s.active);
   const [showMoves, setShowMoves] = useState(false);
@@ -815,6 +908,32 @@ export default function BattleUI() {
   
   return (
     <div className="fixed inset-0 pointer-events-none">
+      {/* Critical low-health vignette */}
+      {isCritical && (
+        <div
+          className="absolute inset-0 pointer-events-none z-10 animate-pulse"
+          style={{
+            boxShadow: "inset 0 0 120px 40px rgba(239,68,68,0.45)",
+          }}
+        />
+      )}
+
+      {/* Ultimate-ready banner (transient) */}
+      {ultReadyFlash && (
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 pointer-events-none z-30">
+          <div
+            className="px-6 py-2 rounded-full font-black uppercase tracking-[0.25em] text-yellow-200 animate-bounce"
+            style={{
+              background: "linear-gradient(135deg, rgba(253,224,71,0.25), rgba(168,85,247,0.25))",
+              border: "2px solid rgba(253,224,71,0.8)",
+              boxShadow: "0 0 30px rgba(253,224,71,0.5)",
+            }}
+          >
+            ⚡ Ultimate Ready — Press R
+          </div>
+        </div>
+      )}
+
       {/* Top HUD */}
       <div className="absolute top-0 left-0 right-0 p-2 sm:p-4">
         <div className="max-w-6xl mx-auto">
@@ -869,6 +988,16 @@ export default function BattleUI() {
          </div>
        )}
       
+      {/* Overdrive / Ultimate meter — visible super gauge */}
+      {battlePhase === "fighting" && (
+        <OverdriveMeter
+          value={playerOverdrive}
+          maxValue={maxOverdrive}
+          fighterColor={playerFighter.accentColor || "#22d3ee"}
+          canUse={canUseUltimate}
+        />
+      )}
+
       {/* Combo Counter */}
       <ComboCounter combo={comboCount} maxCombo={50} damage={comboDamage} />
 
