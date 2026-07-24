@@ -9,6 +9,10 @@ import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations, Clone } from '@react-three/drei';
 import * as THREE from 'three';
 import { useBattle } from '../../../lib/stores/useBattle';
+import { MODEL_REGISTRY } from '../../../assets/modelRegistry';
+
+// Guaranteed-to-exist fallback if a fighter has no registered model.
+const FALLBACK_MODEL_PATH = '/models/stylized-beast.glb';
 
 interface OptimizedBeastModelProps {
   beast: any;
@@ -27,9 +31,13 @@ interface OptimizedBeastModelProps {
  * Get GLB model path for beast
  */
 function getBeastModelPath(beastId: string): string {
-  // Check common naming patterns for the generated models
-  const cleanId = beastId.toLowerCase().replace(/[^a-z0-9]/g, '_');
-  return `/models/${cleanId}.glb`;
+  // Prefer the model registry — the single source of truth for which GLB maps
+  // to each fighter. The previous `/models/{id}.glb` guess matched no real file
+  // for any playable fighter, so the battle silently fell back to a silhouette
+  // and logged load errors. Fall back to a known-existing model if unregistered.
+  const registered = MODEL_REGISTRY[beastId]?.path;
+  if (registered) return registered;
+  return FALLBACK_MODEL_PATH;
 }
 
 /**
@@ -120,6 +128,7 @@ export default function OptimizedBeastModel({
 }
 
 // Preload common models
-useGLTF.preload('/models/kaison.glb');
-useGLTF.preload('/models/jaxon.glb');
-useGLTF.preload('/models/kai_jax.glb');
+// Preload the real registered models for the primary fighters (correct paths).
+useGLTF.preload(getBeastModelPath('kai-jax'));
+useGLTF.preload(getBeastModelPath('jaxon'));
+useGLTF.preload(getBeastModelPath('kaison'));
