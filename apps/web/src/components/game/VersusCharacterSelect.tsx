@@ -1,6 +1,7 @@
 import { useState, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Environment, OrbitControls } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
+import SceneEnvironment from "./graphics/SceneEnvironment";
 import * as THREE from "three";
 import { useGame } from "../../lib/stores/useGame";
 import { useRunner } from "../../lib/stores/useRunner";
@@ -191,7 +192,7 @@ export default function VersusCharacterSelect() {
               >
                 <color attach="background" args={["#0b0b12"]} />
                 <LegendaryLightingRig />
-                <Environment preset="sunset" />
+                <SceneEnvironment mode="sunset" />
                 <CinematicPostFX
                   grade={getGrade(selected.id)}
                   accent={selected.accentColor || "#00f2ff"}

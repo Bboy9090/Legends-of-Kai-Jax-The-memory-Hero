@@ -13,7 +13,7 @@ import ParticleManager from "./ParticleManager";
 import CameraEffects from "./CameraEffects";
 import AttackTrails from "./AttackTrails";
 import EffectManager from "./EffectManager";
-import { Environment } from "@react-three/drei";
+import SceneEnvironment from "./graphics/SceneEnvironment";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
 import CinematicPostFX from "./graphics/CinematicPostFX";
 import { useAccessibility } from "../../lib/stores/useAccessibility";
@@ -97,7 +97,7 @@ export default function BattleScene() {
       {/* Enhanced Lighting System for better character definition */}
       <LegendaryLightingRig />
       {/* "city" can read very bright; night keeps the arena readable */}
-      <Environment preset="night" environmentIntensity={0.45} />
+      <SceneEnvironment mode="night" environmentIntensity={0.45} />
       <CinematicPostFX grade={grade} accent={accent} punch={punch} center={[0.5, 0.44]} />
 
       {/* Scene background/fog grade (pushes full-frame “poster” mood) */}

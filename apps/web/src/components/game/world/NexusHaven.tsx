@@ -1,5 +1,6 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Sky, Environment } from "@react-three/drei";
+import { OrbitControls, Sky } from "@react-three/drei";
+import SceneEnvironment from "../graphics/SceneEnvironment";
 import { useWorldState } from "../../../lib/stores/useWorldState";
 import { useSquad } from "../../../lib/stores/useSquad";
 import { Button } from "../../ui/button";
@@ -28,7 +29,7 @@ export default function NexusHaven() {
           
           {/* Environment */}
           <Sky sunPosition={[100, 20, 100]} />
-          <Environment preset="night" />
+          <SceneEnvironment mode="night" />
           
           {/* Nexus Haven Central Structure */}
           <group position={[0, 0, 0]}>

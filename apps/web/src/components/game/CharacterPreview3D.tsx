@@ -1,5 +1,6 @@
 import { Canvas } from "@react-three/fiber";
-import { Environment, OrbitControls } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
+import SceneEnvironment from "./graphics/SceneEnvironment";
 import { Suspense, useRef } from "react";
 import { Fighter } from "../../lib/characters";
 import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
@@ -65,7 +66,7 @@ export default function CharacterPreview3D({ fighter, preset = "auto" }: Charact
         <color attach="background" args={["#0b0b12"]} />
 
         <LegendaryLightingRig />
-        <Environment preset="sunset" />
+        <SceneEnvironment mode="sunset" />
         <CinematicPostFX
           grade={fighter.id === "kai-jax" ? "cosmic" : fighter.id === "jaxon" ? "ice" : fighter.id === "kaison" ? "ember" : "neutral"}
           accent={fighter.accentColor || "#00f2ff"}

@@ -1,6 +1,7 @@
 import { useState, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Environment, OrbitControls } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
+import SceneEnvironment from "./graphics/SceneEnvironment";
 import * as THREE from "three";
 import { FIGHTERS, getFighterById } from "../../lib/characters";
 import GLBCharacterModel from "./models/GLBCharacterModel";
@@ -34,7 +35,7 @@ function BeastModelPanel({ fighterId }: { fighterId: string }) {
     >
       <color attach="background" args={["#0b0b12"]} />
       <LegendaryLightingRig />
-      <Environment preset="sunset" />
+      <SceneEnvironment mode="sunset" />
       <CinematicPostFX grade={grade} accent={fighter.accentColor} punch={punch} center={[0.5, 0.44]} />
       <Suspense fallback={null}>
         <group position={[0, -1, 0]}>
