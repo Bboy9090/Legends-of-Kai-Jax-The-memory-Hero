@@ -60,7 +60,7 @@
     "@types/three": "^0.185.1",
     "@vitejs/plugin-react": "^5.2.0",
     "autoprefixer": "^10.5.4",
-    "postcss": "^8.5.20",
+    "postcss": "^8.5.12",
     "tailwindcss": "^4.3.3",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.6.3",
