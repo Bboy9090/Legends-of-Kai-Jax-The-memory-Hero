@@ -32,6 +32,8 @@ import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
 import { useAudio } from "./lib/stores/useAudio";
 import { useMissions } from "./lib/stores/useMissions";
+import { useProgression } from "./lib/stores/useProgression";
+import { registerServiceWorker } from "./lib/offlineModeSystem";
 import { FIGHTERS, getFighterById } from "./lib/characters";
 import * as THREE from "three";
 import { getQualitySettings } from "./lib/threejs/PerformanceOptimizer";
@@ -106,6 +108,15 @@ function App() {
   
   // ⚡ LEGENDARY INTRO SYSTEM
   const [showIntro, setShowIntro] = useState(true);
+
+  // Wave 2: ensure progression store is initialized (registers window global
+  // used by the mission-XP bridge), and register the offline service worker.
+  useEffect(() => {
+    void useProgression.getState();
+    registerServiceWorker().catch(() => {
+      /* offline support is best-effort; non-fatal if unavailable */
+    });
+  }, []);
 
   // Initialize audio on mount (non-fatal if files missing)
   useEffect(() => {
