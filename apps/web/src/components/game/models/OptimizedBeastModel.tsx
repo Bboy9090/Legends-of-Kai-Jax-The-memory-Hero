@@ -56,8 +56,12 @@ export default function OptimizedBeastModel({
   scale = 2.5,
 }: OptimizedBeastModelProps) {
   const groupRef = useRef<THREE.Group>(null!);
+  const cloneRef = useRef<THREE.Group>(null!);
   const modelPath = getBeastModelPath(beast.id);
   const [loadError, setLoadError] = useState(false);
+
+  // Target on-screen character height in world units (matches the arena scale).
+  const TARGET_HEIGHT = 2.2;
   
   // Load GLB model
   const { scene, animations } = useGLTF(modelPath, undefined, undefined, (err) => {
@@ -66,7 +70,37 @@ export default function OptimizedBeastModel({
   });
   
   const { actions, mixer } = useAnimations(animations, groupRef);
-  
+
+  // Normalize the model to a consistent height and stand it on the ground.
+  // Meshy exports have wildly different native scales, so a fixed scale left
+  // characters oversized/off-camera. This mirrors GLBCharacterModel's sizing.
+  useEffect(() => {
+    const node = cloneRef.current;
+    if (!node) return;
+    node.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.visible = true;
+      mesh.frustumCulled = false;
+      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      mats.forEach((m) => {
+        if (!m) return;
+        m.visible = true;
+        (m as THREE.Material).opacity = 1;
+        (m as THREE.Material).transparent = false;
+        m.needsUpdate = true;
+      });
+    });
+    node.updateMatrixWorld(true);
+    const bbox = new THREE.Box3().setFromObject(node);
+    const height = bbox.max.y - bbox.min.y;
+    if (height > 0.001 && Number.isFinite(height)) {
+      const s = THREE.MathUtils.clamp(TARGET_HEIGHT / height, 0.01, 100);
+      node.scale.setScalar(s);
+      node.position.y = -bbox.min.y * s; // feet at y=0
+    }
+  }, [scene]);
+
   // Handle animations
   useEffect(() => {
     if (!actions || Object.keys(actions).length === 0) return;
@@ -96,10 +130,11 @@ export default function OptimizedBeastModel({
       groupRef.current.position.x = shake;
     }
     
-    // Emotion intensity affects scale/pulse
+    // Emotion intensity adds a subtle breathing pulse around 1.0 (the clone is
+    // already normalized to the right size — never re-multiply by `scale`).
     if (emotionIntensity > 0) {
       const pulse = 1 + Math.sin(state.clock.elapsedTime * 4) * 0.03 * emotionIntensity;
-      groupRef.current.scale.setScalar(scale * pulse);
+      groupRef.current.scale.setScalar(pulse);
     }
   });
 
@@ -116,11 +151,11 @@ export default function OptimizedBeastModel({
 
   return (
     <group ref={groupRef}>
-      <Clone 
-        object={scene} 
-        scale={scale} 
-        castShadow 
-        receiveShadow 
+      <Clone
+        ref={cloneRef}
+        object={scene}
+        castShadow
+        receiveShadow
         inject={<primitive object={new THREE.Group()} ref={bodyRef} />}
       />
     </group>

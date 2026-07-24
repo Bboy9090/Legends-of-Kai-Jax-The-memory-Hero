@@ -37,6 +37,15 @@ export default function BattleCamera() {
   const targetRef = useRef(new THREE.Vector3());
   const posRef = useRef(new THREE.Vector3(0, BASE_HEIGHT, BASE_DIST));
   const frameRef = useRef(0);
+  // Smoothed camera multipliers. MUST live at component scope — calling useRef
+  // inside the useFrame callback is an invalid hook call that breaks the frame
+  // loop (the whole battle scene renders black as a result).
+  const currentParams = useRef({
+    distMul: 1.12,
+    heightMul: 1.05,
+    targetYOffset: 1.45,
+    sideBias: 0,
+  });
 
   useFrame((state, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
@@ -77,14 +86,6 @@ export default function BattleCamera() {
       targetParams.targetYOffset = 1.0;
       targetParams.sideBias = (playerX - opponentX) * 0.22;
     }
-
-    // Keep track of current multipliers for smooth lerping
-    const currentParams = useRef({
-      distMul: 1.12,
-      heightMul: 1.05,
-      targetYOffset: 1.45,
-      sideBias: 0
-    });
 
     const lerpSpeed = mode === "exploration" ? 2.5 : 5.0;
     currentParams.current.distMul = THREE.MathUtils.lerp(currentParams.current.distMul, targetParams.distMul, lerpSpeed * delta);
