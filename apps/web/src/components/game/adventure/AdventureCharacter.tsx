@@ -141,10 +141,9 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
 
   return (
     <group ref={groupRef} name="adventure-player-root">
-      {/* Phase 1A.2: unavoidable gameplay visibility marker. Remove only after final GLB art is reliable. */}
-      <PlayerVisibilityShell accentColor={accentColor} />
-      <PlayerPresenceMarker accentColor={accentColor} />
-
+      {/* The GLB character now loads reliably, so the always-on placeholder
+          shell/marker (which drew a translucent capsule + sphere on top of the
+          real model — the "green round person") has been removed. */}
       <Suspense fallback={null}>
         <GLBCharacterModel
           fighterId={fighterId}
