@@ -1,6 +1,8 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
+import { useDifficulty, type Difficulty } from "../../lib/stores/useDifficulty";
+import { BEHAVIOR_PROFILES, type AIBehaviorDifficulty } from "../../lib/enemyAIv2";
 
 const AI_MOVE_SPEED = 3.5;
 const GRAVITY = -15;
@@ -9,11 +11,17 @@ const ATTACK_RANGE = 2.2;
 const PREFERRED_RANGE = 3;
 const JUMP_VELOCITY = 4;
 
+// Map the game's difficulty tiers onto the Wave 2 enemy-AI behavior tiers.
+function toAIDifficulty(d: Difficulty): AIBehaviorDifficulty {
+  return d === "story" ? "easy" : d;
+}
+
 export default function OpponentAI() {
   const attackCooldown = useRef(0);
   const decisionTimer = useRef(0);
   const currentAction = useRef<"chase" | "retreat" | "idle">("chase");
   const jumpCooldown = useRef(0);
+  const difficulty = useDifficulty((s) => s.difficulty);
 
   useFrame((_, rawDelta) => {
     const state = useBattle.getState();
@@ -27,6 +35,15 @@ export default function OpponentAI() {
     const isAtLeftWall = state.opponentX <= -9.8;
     const isAtRightWall = state.opponentX >= 9.8;
 
+    // 🧠 WAVE 2: pull difficulty-scaled cadence from the enemy-AI behavior tiers.
+    // Personality maps onto an enemy archetype; the profile drives how fast the
+    // opponent re-decides and how often it attacks.
+    const aiDiff = toAIDifficulty(difficulty);
+    const enemyType =
+      p === "stalker" ? "attacker" : p === "titan" ? "tank" : p === "caster" ? "elite" : "grunt";
+    const profile = BEHAVIOR_PROFILES[enemyType][aiDiff];
+    const decisionInterval = profile.decisionUpdateRate / 1000; // ms → s
+
     attackCooldown.current = Math.max(0, attackCooldown.current - delta);
     jumpCooldown.current = Math.max(0, jumpCooldown.current - delta);
     decisionTimer.current -= delta;
@@ -36,7 +53,7 @@ export default function OpponentAI() {
 
     // 🤖 ARCHETYPE DECISION MAPPING
     if (decisionTimer.current <= 0) {
-      decisionTimer.current = p === "stalker" ? 0.3 : p === "titan" ? 0.6 : 0.45;
+      decisionTimer.current = decisionInterval;
       const dist = Math.abs(state.playerX - state.opponentX);
       const isLowHealth = state.opponentHealth / state.maxHealth < 0.3;
 
@@ -68,6 +85,10 @@ export default function OpponentAI() {
         wantsJump = true; // Use jump as kick trigger
     }
 
+    // Horizontal pop away from a wall during a stalker mid-air vault.
+    // Accumulated here and applied to movement below (declaration order fix).
+    let wallKickPush = 0;
+
     if (wantsJump) {
       if (state.opponentGrounded) {
         velY = JUMP_VELOCITY * (p === "stalker" ? 1.4 : 1.0);
@@ -75,10 +96,9 @@ export default function OpponentAI() {
         // 🔥 AUDIT FIX: Decoupled mid-air vaulting
         velY = JUMP_VELOCITY * 1.2;
         jumpCooldown.current = 1.5;
-        // Small horizontal pop away from wall
-        dx += (isAtLeftWall ? 0.5 : -0.5);
+        wallKickPush += (isAtLeftWall ? 0.5 : -0.5);
       }
-    } 
+    }
 
     velY += GRAVITY * delta;
     let newY = state.opponentY + velY * delta;
@@ -102,6 +122,7 @@ export default function OpponentAI() {
     } else if (currentAction.current === "retreat") {
       dx = -dir * baseMoveSpeed * 0.8 * delta;
     }
+    dx += wallKickPush;
 
     const newX = Math.max(-10, Math.min(10, state.opponentX + dx));
 
@@ -130,7 +151,10 @@ export default function OpponentAI() {
       }
       
       state.opponentAttack(attackType);
-      attackCooldown.current = 0.5 + Math.random() * 1.0;
+      // Wave 2: base attack spacing comes from the difficulty-scaled profile
+      // (ms → s), with a small random jitter so the cadence isn't robotic.
+      const baseSpacing = profile.attackSpacing / 1000;
+      attackCooldown.current = baseSpacing + Math.random() * 0.5;
     }
   });
 
