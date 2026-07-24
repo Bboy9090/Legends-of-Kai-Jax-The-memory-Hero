@@ -26,6 +26,7 @@ import AdventureTouchControls from "./components/game/adventure/AdventureTouchCo
 import StoryAdventure from "./components/game/StoryAdventure";
 import SettingsMenu from "./components/game/SettingsMenu";
 import DevFrameHud from "./components/game/DevFrameHud";
+import GameOverlays from "./components/game/GameOverlays";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
@@ -176,6 +177,9 @@ function App() {
         transform: shakeTransform,
       }}
     >
+      {/* Global additive overlays: F3 perf HUD, F1 quest log */}
+      <GameOverlays />
+
       {/* Lore Hub - Landing Page & Codex */}
       {(gameState === "lore-hub" || gameState === "codex") && <LoreHub />}
 

@@ -10,6 +10,8 @@ import GLBCharacterModel from "./models/GLBCharacterModel";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
 import CinematicPostFX from "./graphics/CinematicPostFX";
 import { getQualitySettings } from "../../lib/threejs/PerformanceOptimizer";
+import VariantSelector from "./VariantSelector";
+import { getDefaultVariant } from "../../lib/characterVariants";
 
 function getGrade(fighterId: string): "cosmic" | "ice" | "ember" | "neutral" {
   if (fighterId === "kai-jax") return "cosmic";
@@ -116,8 +118,19 @@ export default function VersusCharacterSelect() {
   const setPlayerFighter = useBattle((s) => s.setPlayerFighter);
   const setOpponentFighter = useBattle((s) => s.setOpponentFighter);
 
+  const completedStoryMissionIds = useRunner((s) => s.completedStoryMissionIds);
+
   const [selectedId, setSelectedId] = useState<string>(FIGHTERS[0]?.id ?? "kai-jax");
+  const [variantByFighter, setVariantByFighter] = useState<Record<string, string>>({});
   const selected = getFighterById(selectedId);
+
+  const playerProgress = {
+    characterLevel: 1,
+    completedMissions: completedStoryMissionIds,
+    completedQuests: [] as string[],
+  };
+  const selectedVariantId =
+    variantByFighter[selectedId] ?? getDefaultVariant(selectedId)?.id ?? "";
 
   const beginMatch = (training: boolean) => {
     if (!selected) return;
@@ -222,6 +235,16 @@ export default function VersusCharacterSelect() {
                     <StatBar label="DEF" value={selected.baseStats.defense} color={selected.accentColor} />
                   </div>
                 )}
+                <div className="mt-3 max-w-xs">
+                  <VariantSelector
+                    fighterId={selectedId}
+                    selectedVariantId={selectedVariantId}
+                    onSelect={(variantId) =>
+                      setVariantByFighter((prev) => ({ ...prev, [selectedId]: variantId }))
+                    }
+                    playerProgress={playerProgress}
+                  />
+                </div>
               </div>
             </div>
           )}
