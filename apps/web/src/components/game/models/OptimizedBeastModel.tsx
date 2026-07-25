@@ -14,6 +14,34 @@ import { MODEL_REGISTRY } from '../../../assets/modelRegistry';
 // Guaranteed-to-exist fallback if a fighter has no registered model.
 const FALLBACK_MODEL_PATH = '/models/stylized-beast.glb';
 
+// PERFORMANCE: lightweight battle models (~1.8MB) that replace the very heavy
+// 12–25MB registry models during combat. The registry models are gorgeous but
+// too large to load/render smoothly, so battles get these lean equivalents.
+// Unmapped fighters keep their registry model.
+const LIGHT_BATTLE_MODELS: Record<string, string> = {
+  'kai-jax': '/models/kai_jax_beast.glb',
+  kaijax: '/models/kai_jax_beast.glb',
+  kai_jax: '/models/kai_jax_beast.glb',
+  kai: '/models/kai_jax_beast.glb',
+  silver: '/models/kai_jax_beast.glb',
+  jaxon: '/models/jaxon_beast.glb',
+  jax: '/models/jaxon_beast.glb',
+  velocity: '/models/jaxon_beast.glb',
+  kaison: '/models/kaison_beast.glb',
+  kaxon: '/models/kaison_beast.glb',
+  'voltage-fang': '/models/thunder_lion.glb',
+  steelwolf: '/models/frost_wolf.glb',
+  'ashen-tiger': '/models/emberwolf_warlord.glb',
+  'blazing-fox': '/models/phoenix_warrior.glb',
+  sentinel: '/models/sandstone_sentinel.glb',
+  apex: '/models/shadow_panther.glb',
+  'hyena-scout': '/models/shadow_panther.glb',
+  boryn: '/models/boryx_zenith_beast.glb',
+  borax: '/models/boryx_zenith_beast.glb',
+  malakor: '/models/granite_colossus.glb',
+  behemoth: '/models/earth_turtle.glb',
+};
+
 interface OptimizedBeastModelProps {
   beast: any;
   bodyRef?: React.RefObject<THREE.Group>;
@@ -31,10 +59,10 @@ interface OptimizedBeastModelProps {
  * Get GLB model path for beast
  */
 function getBeastModelPath(beastId: string): string {
-  // Prefer the model registry — the single source of truth for which GLB maps
-  // to each fighter. The previous `/models/{id}.glb` guess matched no real file
-  // for any playable fighter, so the battle silently fell back to a silhouette
-  // and logged load errors. Fall back to a known-existing model if unregistered.
+  // Prefer a lightweight battle model for smooth load + framerate, then the
+  // registry (single source of truth), then a guaranteed-existing fallback.
+  const light = LIGHT_BATTLE_MODELS[beastId];
+  if (light) return light;
   const registered = MODEL_REGISTRY[beastId]?.path;
   if (registered) return registered;
   return FALLBACK_MODEL_PATH;
