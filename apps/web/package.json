@@ -51,7 +51,7 @@
     "tailwind-merge": "^3.6.0",
     "three": "^0.185.1",
     "three-stdlib": "^2.36.1",
-    "zustand": "^4.5.2"
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@capacitor/cli": "^5.7.8",
