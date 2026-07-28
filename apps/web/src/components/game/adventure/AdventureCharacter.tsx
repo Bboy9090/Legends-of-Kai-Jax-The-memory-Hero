@@ -10,6 +10,44 @@ interface Props {
   accentColor: string;
 }
 
+/**
+ * Non-obscuring player locator: a pulsing ring on the ground plus a small
+ * floating pointer above the character. Lets you find your fighter in missions
+ * without covering the model (unlike the old full-body placeholder shell).
+ */
+function PlayerLocator({ accentColor }: { accentColor: string }) {
+  const ringRef = useRef<THREE.Mesh>(null);
+  const arrowRef = useRef<THREE.Mesh>(null);
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    if (ringRef.current) {
+      const s = 1 + Math.sin(t * 3) * 0.08;
+      ringRef.current.scale.set(s, s, s);
+    }
+    if (arrowRef.current) {
+      arrowRef.current.position.y = 2.7 + Math.sin(t * 2.5) * 0.12;
+    }
+  });
+
+  return (
+    <group name="player-locator">
+      {/* Fill light so the real character model reads in dim mission arenas */}
+      <pointLight position={[0, 2.2, 1.2]} intensity={1.4} distance={7} color="#ffffff" />
+      {/* Ground ring at the feet */}
+      <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
+        <ringGeometry args={[0.55, 0.72, 40]} />
+        <meshBasicMaterial color={accentColor} transparent opacity={0.75} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+      {/* Floating downward pointer above the head */}
+      <mesh ref={arrowRef} position={[0, 2.7, 0]} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[0.16, 0.34, 4]} />
+        <meshBasicMaterial color={accentColor} transparent opacity={0.85} depthWrite={false} />
+      </mesh>
+    </group>
+  );
+}
+
 function PlayerVisibilityShell({ accentColor }: { accentColor: string }) {
   return (
     <group name="phase1a-player-visibility-shell" renderOrder={9999}>
@@ -141,9 +179,12 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
 
   return (
     <group ref={groupRef} name="adventure-player-root">
-      {/* The GLB character now loads reliably, so the always-on placeholder
-          shell/marker (which drew a translucent capsule + sphere on top of the
-          real model — the "green round person") has been removed. */}
+      {/* Clean player locator: a ground ring + floating pointer so you can
+          always find your character in missions. Unlike the old full-body
+          shell, these sit at the feet / overhead and never obscure the model
+          that renders below. */}
+      <PlayerLocator accentColor={accentColor} />
+
       <Suspense fallback={null}>
         <GLBCharacterModel
           fighterId={fighterId}
