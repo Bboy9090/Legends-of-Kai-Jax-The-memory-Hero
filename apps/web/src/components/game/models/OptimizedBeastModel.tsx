@@ -6,8 +6,9 @@
 
 import { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations, Clone } from '@react-three/drei';
+import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
+import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { useBattle } from '../../../lib/stores/useBattle';
 import { MODEL_REGISTRY } from '../../../assets/modelRegistry';
 
@@ -87,26 +88,30 @@ export default function OptimizedBeastModel({
   scale = 2.5,
 }: OptimizedBeastModelProps) {
   const groupRef = useRef<THREE.Group>(null!);
-  const cloneRef = useRef<THREE.Group>(null!);
   const modelPath = getBeastModelPath(beast.id);
   const [loadError, setLoadError] = useState(false);
 
   // Target on-screen character height in world units (matches the arena scale).
   const TARGET_HEIGHT = 2.2;
-  
+
   // Load GLB model
   const { scene, animations } = useGLTF(modelPath, undefined, undefined, (err) => {
     console.warn(`Failed to load model: ${modelPath}`, err);
     setLoadError(true);
   });
-  
-  const { actions, mixer } = useAnimations(animations, groupRef);
+
+  // Clone with SkeletonUtils so the skinned mesh keeps its rig — a plain clone
+  // (or drei <Clone>) leaves the SkinnedMesh bound to the ORIGINAL bones, so
+  // the animation mixer moves bones that drive nothing and the model looks
+  // stiff/unrigged (no arm swing). Binding the mixer to this clone fixes it.
+  const cloned = useMemo(() => SkeletonUtils.clone(scene) as THREE.Group, [scene]);
+  const { actions, mixer } = useAnimations(animations, cloned);
 
   // Normalize the model to a consistent height and stand it on the ground.
   // Meshy exports have wildly different native scales, so a fixed scale left
   // characters oversized/off-camera. This mirrors GLBCharacterModel's sizing.
   useEffect(() => {
-    const node = cloneRef.current;
+    const node = cloned;
     if (!node) return;
     node.traverse((child) => {
       const mesh = child as THREE.Mesh;
@@ -185,13 +190,7 @@ export default function OptimizedBeastModel({
     // along +X so they face their opponent instead of crab-walking sideways.
     // BattlePlayer/Opponent mirror this for left/right facing.
     <group ref={groupRef} rotation={[0, Math.PI / 2, 0]}>
-      <Clone
-        ref={cloneRef}
-        object={scene}
-        castShadow
-        receiveShadow
-        inject={<primitive object={new THREE.Group()} ref={bodyRef} />}
-      />
+      <primitive object={cloned} />
     </group>
   );
 }
