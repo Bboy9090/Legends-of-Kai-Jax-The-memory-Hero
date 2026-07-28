@@ -1,8 +1,8 @@
 import { useRef, Suspense } from "react";
-import { Html, Billboard } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useAdventure } from "../../../lib/stores/useAdventure";
-import GLBCharacterModel from "../models/GLBCharacterModel";
+import OptimizedBeastModel from "../models/OptimizedBeastModel";
+import { getFighterById } from "../../../lib/characters";
 import * as THREE from "three";
 
 interface Props {
@@ -185,19 +185,15 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
           that renders below. */}
       <PlayerLocator accentColor={accentColor} />
 
+      {/* Use the battle renderer (OptimizedBeastModel) for the player — it
+          renders reliably on-device, unlike GLBCharacterModel which came up
+          invisible in the adventure scene (only the locator ring showed). */}
       <Suspense fallback={null}>
-        <GLBCharacterModel
-          fighterId={fighterId}
-          accentColor={accentColor}
-          isMoving={player.isMoving}
-          isRunning={player.isRunning}
+        <OptimizedBeastModel
+          beast={getFighterById(fighterId) ?? { id: fighterId, color: "#1a1a1a", accentColor }}
           isAttacking={player.isAttacking}
-          attackType={attackType}
-          isGrounded={isGrounded}
-          isJumping={isJumping}
+          isMoving={player.isMoving || player.isRunning}
           isInvulnerable={player.invulnTimer > 0}
-          velocityX={player.velocityX}
-          velocityY={verticalVelocity}
           hitAnim={player.hitStunTimer > 0 ? 1 : 0}
         />
       </Suspense>
