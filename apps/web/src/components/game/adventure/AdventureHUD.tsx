@@ -270,7 +270,7 @@ export default function AdventureHUD() {
           <div className="space-y-3">
             <button
               onClick={() => useAdventure.getState().togglePause()}
-              className="block w-48 mx-auto px-6 py-4 rounded-2xl bg-cyan-500 border-2 border-cyan-300 text-white font-bold hover:bg-cyan-600 active:bg-cyan-700 transition-all shadow-lg shadow-cyan-500/50 hover:shadow-cyan-500/75"
+              className="block w-48 mx-auto px-6 py-4 rounded-2xl bg-cyan-500 border-2 border-cyan-300 text-white font-bold hover:bg-cyan-600 active:bg-cyan-700 transition-all shadow-lg shadow-cyan-500/50 hover:shadow-cyan-500/75 min-h-12"
             >
               Resume
             </button>
@@ -285,7 +285,7 @@ export default function AdventureHUD() {
                 event.stopPropagation();
                 hardQuitAdventureSession();
               }}
-              className="block w-56 mx-auto px-6 py-4 rounded-2xl bg-red-600 border-2 border-red-400 text-white font-black hover:bg-red-700 active:bg-red-800 transition-all shadow-lg shadow-red-600/50 hover:shadow-red-600/75"
+              className="block w-56 mx-auto px-6 py-4 rounded-2xl bg-red-600 border-2 border-red-400 text-white font-black hover:bg-red-700 active:bg-red-800 transition-all shadow-lg shadow-red-600/50 hover:shadow-red-600/75 min-h-12"
             >
               Force Quit to Hub
             </button>
