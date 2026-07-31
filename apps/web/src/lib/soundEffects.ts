@@ -4,6 +4,8 @@
  * Enhanced sound effects for legendary experience
  */
 
+import { getAssetPath } from './assetPath';
+
 export interface SoundEffect {
   name: string;
   path: string;
@@ -181,7 +183,8 @@ class SoundManager {
 
   async loadSound(key: string, sound: SoundEffect): Promise<void> {
     try {
-      const audio = new Audio(sound.path);
+      const fullPath = getAssetPath(sound.path);
+      const audio = new Audio(fullPath);
       audio.volume = sound.volume;
       audio.preload = 'auto';
       this.sounds.set(key, audio);

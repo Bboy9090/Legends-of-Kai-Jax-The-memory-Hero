@@ -1,3 +1,5 @@
+import { getAssetPath } from '../lib/assetPath';
+
 export interface GLBModelConfig {
   path: string;
   scale: number;
@@ -383,11 +385,19 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
 };
 
 export function getModelConfig(fighterId: string): GLBModelConfig | null {
-  return MODEL_REGISTRY[fighterId] ?? null;
+  const config = MODEL_REGISTRY[fighterId] ?? null;
+  if (config) {
+    return {
+      ...config,
+      path: getAssetPath(config.path),
+    };
+  }
+  return null;
 }
 
 export function getModelPath(fighterId: string): string | null {
-  return MODEL_REGISTRY[fighterId]?.path ?? null;
+  const path = MODEL_REGISTRY[fighterId]?.path ?? null;
+  return path ? getAssetPath(path) : null;
 }
 
 export function hasModel(fighterId: string): boolean {
