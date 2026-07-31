@@ -35,6 +35,7 @@ import { useMissions } from "./lib/stores/useMissions";
 import { useProgression } from "./lib/stores/useProgression";
 import { registerServiceWorker } from "./lib/offlineModeSystem";
 import { FIGHTERS, getFighterById } from "./lib/characters";
+import { initializeVoiceSystem, preloadVoices } from "./lib/voiceActing";
 import * as THREE from "three";
 import { getQualitySettings } from "./lib/threejs/PerformanceOptimizer";
 
@@ -111,11 +112,14 @@ function App() {
 
   // Wave 2: ensure progression store is initialized (registers window global
   // used by the mission-XP bridge), and register the offline service worker.
+  // Also initialize voice acting system for character dialogue.
   useEffect(() => {
     void useProgression.getState();
     registerServiceWorker().catch(() => {
       /* offline support is best-effort; non-fatal if unavailable */
     });
+    initializeVoiceSystem();
+    preloadVoices();
   }, []);
 
   // Initialize audio on mount (non-fatal if files missing)

@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
 import { getPreFightTaunt, getPreFightResponse, getVictoryQuote, getDefeatQuote } from "../../lib/dialogue";
+import { playDialogueAudio, stopDialogueAudio } from "../../lib/voiceActing";
 
 export default function DialogueDisplay() {
   const { battlePhase, playerFighterId, opponentFighterId, winner } = useBattle();
@@ -45,17 +46,30 @@ export default function DialogueDisplay() {
     // PRE-FIGHT BANTER
     if (battlePhase === 'preRound') {
       setShowDialogue(true);
-      
+
       // Show taunts sequentially using helper
       queueTimer(() => {
-        setOpponentDialogue(getPreFightTaunt(opponentFighterId));
+        const opponentTaunt = getPreFightTaunt(opponentFighterId);
+        setOpponentDialogue(opponentTaunt);
+        playDialogueAudio({
+          characterId: opponentFighterId,
+          text: opponentTaunt,
+          emotion: 'confident',
+        });
       }, 500);
-      
+
       queueTimer(() => {
-        setPlayerDialogue(getPreFightResponse(playerFighterId));
+        const playerResponse = getPreFightResponse(playerFighterId);
+        setPlayerDialogue(playerResponse);
+        playDialogueAudio({
+          characterId: playerFighterId,
+          text: playerResponse,
+          emotion: 'determined',
+        });
       }, 2000);
-      
+
       queueTimer(() => {
+        stopDialogueAudio();
         setShowDialogue(false);
       }, 3500);
     }
@@ -63,16 +77,56 @@ export default function DialogueDisplay() {
     // POST-FIGHT DIALOGUE
     if (battlePhase === 'results') {
       setShowDialogue(true);
-      
+
+      let winnerDialogue = "";
+      let loserDialogue = "";
+
       if (winner === 'player') {
-        setPlayerDialogue(getVictoryQuote(playerFighterId));
-        setOpponentDialogue(getDefeatQuote(opponentFighterId));
+        winnerDialogue = getVictoryQuote(playerFighterId);
+        loserDialogue = getDefeatQuote(opponentFighterId);
+        setPlayerDialogue(winnerDialogue);
+        setOpponentDialogue(loserDialogue);
+
+        queueTimer(() => {
+          playDialogueAudio({
+            characterId: playerFighterId,
+            text: winnerDialogue,
+            emotion: 'confident',
+          });
+        }, 200);
+
+        queueTimer(() => {
+          playDialogueAudio({
+            characterId: opponentFighterId,
+            text: loserDialogue,
+            emotion: 'sad',
+          });
+        }, 1500);
       } else if (winner === 'opponent') {
-        setPlayerDialogue(getDefeatQuote(playerFighterId));
-        setOpponentDialogue(getVictoryQuote(opponentFighterId));
+        loserDialogue = getDefeatQuote(playerFighterId);
+        winnerDialogue = getVictoryQuote(opponentFighterId);
+        setPlayerDialogue(loserDialogue);
+        setOpponentDialogue(winnerDialogue);
+
+        queueTimer(() => {
+          playDialogueAudio({
+            characterId: opponentFighterId,
+            text: winnerDialogue,
+            emotion: 'confident',
+          });
+        }, 200);
+
+        queueTimer(() => {
+          playDialogueAudio({
+            characterId: playerFighterId,
+            text: loserDialogue,
+            emotion: 'sad',
+          });
+        }, 1500);
       }
-      
+
       queueTimer(() => {
+        stopDialogueAudio();
         setShowDialogue(false);
       }, 4000);
     }
@@ -80,6 +134,7 @@ export default function DialogueDisplay() {
     // FIXED: Cleanup function
     return () => {
       clearAllTimers();
+      stopDialogueAudio();
     };
   }, [battlePhase, playerFighterId, opponentFighterId, winner]);
 
