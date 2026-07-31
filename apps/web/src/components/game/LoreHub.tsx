@@ -356,15 +356,15 @@ function HeroSection({ onNavigate, onPlayGame }: { onNavigate: (s: Section) => v
             "Survival without memory is extinction with better design."
           </p>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-4">
             <button
               onClick={onPlayGame}
-              className="flex items-center justify-center gap-2 px-8 py-5 min-h-[44px] rounded-lg font-black text-base uppercase tracking-wider text-white transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]"
+              className="flex items-center justify-center gap-2 px-8 py-4 min-h-12 rounded-xl font-black text-base uppercase tracking-wider text-white transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] whitespace-nowrap"
               style={{
                 background: "linear-gradient(135deg, rgba(46,46,254,0.3), rgba(255,59,48,0.2))",
                 border: "2px solid rgba(46,46,254,0.8)",
                 boxShadow: "0 0 25px rgba(46,46,254,0.3)",
-                minWidth: "44px",
+                minHeight: "48px",
               }}
               data-testid="lorehub-play-game-btn"
             >
@@ -372,29 +372,29 @@ function HeroSection({ onNavigate, onPlayGame }: { onNavigate: (s: Section) => v
             </button>
             <button
               onClick={() => onNavigate("characters")}
-              className="flex items-center gap-2 px-5 py-3 rounded-lg font-bold text-sm text-white/80 transition-all hover:text-white hover:scale-[1.02]"
-              style={{ border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.05)" }}
+              className="flex items-center gap-2 px-6 py-3 min-h-11 rounded-lg font-bold text-sm text-white/80 transition-all hover:text-white hover:scale-[1.02] whitespace-nowrap"
+              style={{ border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.05)", minHeight: "44px" }}
             >
               <Star className="w-4 h-4" /> Meet the Heroes
             </button>
             <button
               onClick={() => onNavigate("story")}
-              className="flex items-center gap-2 px-5 py-3 rounded-lg font-bold text-sm text-white/80 transition-all hover:text-white hover:scale-[1.02]"
-              style={{ border: "1px solid rgba(255,59,48,0.3)", background: "rgba(255,59,48,0.05)" }}
+              className="flex items-center gap-2 px-6 py-3 min-h-11 rounded-lg font-bold text-sm text-white/80 transition-all hover:text-white hover:scale-[1.02] whitespace-nowrap"
+              style={{ border: "1px solid rgba(255,59,48,0.3)", background: "rgba(255,59,48,0.05)", minHeight: "44px" }}
             >
               <FlameIcon className="w-4 h-4 text-red-400" /> Read the Saga
             </button>
             <button
               onClick={() => onNavigate("tails")}
-              className="flex items-center gap-2 px-5 py-3 rounded-lg font-bold text-sm text-white/80 transition-all hover:text-white hover:scale-[1.02]"
-              style={{ border: "1px solid rgba(255,214,10,0.3)", background: "rgba(255,214,10,0.05)" }}
+              className="flex items-center gap-2 px-6 py-3 min-h-11 rounded-lg font-bold text-sm text-white/80 transition-all hover:text-white hover:scale-[1.02] whitespace-nowrap"
+              style={{ border: "1px solid rgba(255,214,10,0.3)", background: "rgba(255,214,10,0.05)", minHeight: "44px" }}
             >
               <Zap className="w-4 h-4 text-yellow-400" /> 9 Tails
             </button>
             <button
               onClick={() => onNavigate("combat")}
-              className="flex items-center gap-2 px-5 py-3 rounded-lg font-bold text-sm text-white/80 transition-all hover:text-white hover:scale-[1.02]"
-              style={{ border: "1px solid rgba(0,242,255,0.3)", background: "rgba(0,242,255,0.05)" }}
+              className="flex items-center gap-2 px-6 py-3 min-h-11 rounded-lg font-bold text-sm text-white/80 transition-all hover:text-white hover:scale-[1.02] whitespace-nowrap"
+              style={{ border: "1px solid rgba(0,242,255,0.3)", background: "rgba(0,242,255,0.05)", minHeight: "44px" }}
             >
               <Swords className="w-4 h-4 text-cyan-400" /> Combat
             </button>
