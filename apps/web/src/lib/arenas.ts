@@ -14,6 +14,53 @@ export interface Arena {
 }
 
 export const ARENAS: Arena[] = [
+  // STORY CAMPAIGN ARENAS
+  {
+    id: 'cross_point_arena',
+    name: 'Cross Point Arena',
+    displayName: 'Cross Point Arena',
+    description: 'Urban training facility where champions are forged. High-tech and industrial.',
+    groundColor: '#2A2A2A', // Dark gray
+    skyColor: '#1A1A2E', // Dark blue-black
+    platformColor: '#0F3460', // Steel blue
+    accentColor: '#00D4FF', // Cyan neon
+    unlocked: true
+  },
+  {
+    id: 'memory_vault',
+    name: 'Memory Vault',
+    displayName: 'Memory Vault',
+    description: 'Ancient underground chamber where lost memories are preserved. Mystical and ethereal.',
+    groundColor: '#3D2817', // Deep brown
+    skyColor: '#2D1B69', // Deep purple
+    platformColor: '#664E27', // Rich brown
+    accentColor: '#9D4EDD', // Mystical purple
+    unlocked: true
+  },
+  {
+    id: 'rift_frontier',
+    name: 'Rift Frontier',
+    displayName: 'Rift Frontier',
+    description: 'Chaotic dimensional boundary where reality tears. Volatile and dangerous.',
+    groundColor: '#1A0033', // Deep purple-black
+    skyColor: '#330066', // Cosmic purple
+    platformColor: '#4D0099', // Void purple
+    accentColor: '#FF00FF', // Magenta rift energy
+    unlocked: true
+  },
+  {
+    id: 'void_heart_citadel',
+    name: 'Void Heart Citadel',
+    displayName: 'Void Heart Citadel',
+    description: 'The epicenter of the Void. Dark, corrupted, and apocalyptic. The final battle awaits.',
+    groundColor: '#0D0D0D', // Nearly black
+    skyColor: '#1A0000', // Deep crimson
+    platformColor: '#330000', // Blood red
+    accentColor: '#FF3300', // Hellish orange-red
+    unlocked: true
+  },
+
+  // CLASSIC ARENAS (kept for variety)
   {
     id: 'mushroom-plains',
     name: 'Mushroom Plains',
