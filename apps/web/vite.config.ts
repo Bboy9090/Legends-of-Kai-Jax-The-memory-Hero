@@ -4,7 +4,7 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
-  base: "/Legends-of-Kai-Jax-The-memory-Hero/",
+  base: "/",
   resolve: {
     extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],
     alias: {
