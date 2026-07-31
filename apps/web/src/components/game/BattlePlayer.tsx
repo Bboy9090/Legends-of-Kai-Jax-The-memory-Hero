@@ -1,8 +1,9 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
+import { soundManager } from "../../lib/soundEffects";
 import OptimizedBeastModel from "./models/OptimizedBeastModel";
 
 export default function BattlePlayer() {
@@ -33,11 +34,12 @@ export default function BattlePlayer() {
   const isMovingRef = useRef(false);
   const hitAnimRef = useRef(0);
   const prevHealthRef = useRef(100);
-  
+
   // LEGENDARY ANIMATION SYSTEM - Attack phases for smooth transitions!
   const attackPhaseRef = useRef<'windup' | 'active' | 'recovery' | null>(null);
   const attackPhaseTimeRef = useRef(0);
   const emotionIntensityRef = useRef(0); // For facial expressions!
+  const attackSoundPlayedRef = useRef(false); // Track if we've played attack sound
   
   const fighter = getFighterById(playerFighterId);
   
@@ -70,6 +72,7 @@ export default function BattlePlayer() {
     if (playerHealth < prevHealthRef.current) {
       hitAnimRef.current = 0.3; // Hit reaction duration
       emotionIntensityRef.current = 1.0; // MAX emotion - pain/anger!
+      soundManager.play('hit'); // Play hit sound
     }
     prevHealthRef.current = playerHealth;
     
@@ -81,15 +84,26 @@ export default function BattlePlayer() {
     // ATTACK PHASE SYSTEM - Smooth wind-up, active, recovery!
     if (playerAttacking && playerAttackType) {
       attackPhaseTimeRef.current += scaledDelta;
-      
+
       const windupDuration = 0.1;  // Quick wind-up
       const activeDuration = 0.25; // Extended strike
       if (attackPhaseTimeRef.current < windupDuration) {
         attackPhaseRef.current = 'windup';
         emotionIntensityRef.current = 0.5; // Focus
+        attackSoundPlayedRef.current = false; // Reset for next attack
       } else if (attackPhaseTimeRef.current < windupDuration + activeDuration) {
         attackPhaseRef.current = 'active';
         emotionIntensityRef.current = 1.0; // MAX power!
+
+        // Play attack sound once when entering active phase
+        if (!attackSoundPlayedRef.current) {
+          if (playerAttackType === 'punch') {
+            soundManager.play('punch');
+          } else if (playerAttackType === 'kick') {
+            soundManager.play('kick');
+          }
+          attackSoundPlayedRef.current = true;
+        }
       } else {
         attackPhaseRef.current = 'recovery';
         emotionIntensityRef.current = 0.2; // Cooldown
@@ -97,6 +111,7 @@ export default function BattlePlayer() {
     } else {
       attackPhaseRef.current = null;
       attackPhaseTimeRef.current = 0;
+      attackSoundPlayedRef.current = false;
     }
     
     // Animate character

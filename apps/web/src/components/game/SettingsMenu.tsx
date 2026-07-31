@@ -1,15 +1,29 @@
 import { useRunner } from "../../lib/stores/useRunner";
 import { useAudio } from "../../lib/stores/useAudio";
-import { Settings, Volume2, VolumeX, Monitor, ArrowLeft, Zap, Shield, Sparkles } from "lucide-react";
+import { Settings, Volume2, VolumeX, Monitor, ArrowLeft, Zap, Shield, Sparkles, Mic2 } from "lucide-react";
 import { useState } from "react";
+import { getVoiceVolume, setVoiceVolume, isVoiceEnabled_, setVoiceEnabled } from "../../lib/voiceActing";
 
 export default function SettingsMenu() {
   const { setGameState } = useRunner();
   const { isMuted, toggleMute } = useAudio();
   const [quality, setQuality] = useState("high");
+  const [voiceVolume, setVoiceVolumeState] = useState(getVoiceVolume());
+  const [voiceEnabled, setVoiceEnabledState] = useState(isVoiceEnabled_());
 
   const handleBack = () => {
     setGameState("menu");
+  };
+
+  const handleVoiceVolumeChange = (value: number) => {
+    setVoiceVolumeState(value);
+    setVoiceVolume(value);
+  };
+
+  const handleVoiceToggle = () => {
+    const newState = !voiceEnabled;
+    setVoiceEnabledState(newState);
+    setVoiceEnabled(newState);
   };
 
   return (
@@ -48,24 +62,72 @@ export default function SettingsMenu() {
               <Volume2 className="w-5 h-5 text-gray-400" />
               <h2 className="text-lg font-bold uppercase tracking-widest text-white/80">Audio</h2>
             </div>
-            <div className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5">
-              <div>
-                <p className="text-white font-bold text-lg">Master Mute</p>
-                <p className="text-white/40 text-sm">Silence all game sounds and music</p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5">
+                <div>
+                  <p className="text-white font-bold text-lg">Master Mute</p>
+                  <p className="text-white/40 text-sm">Silence all game sounds and music</p>
+                </div>
+                <button
+                  onClick={toggleMute}
+                  className={`
+                    relative w-16 h-8 rounded-full transition-colors duration-300
+                    ${isMuted ? 'bg-gray-700' : 'bg-blue-600 shadow-[0_0_15px_rgba(37,99,235,0.5)]'}
+                  `}
+                >
+                  <div className={`
+                    absolute top-1 w-6 h-6 bg-white rounded-full transition-all duration-300
+                    ${isMuted ? 'left-1' : 'left-9'}
+                  `} />
+                  {isMuted ? <VolumeX className="w-3 h-3 text-gray-900 absolute left-2.5 top-2.5" /> : <Volume2 className="w-3 h-3 text-blue-600 absolute right-2.5 top-2.5" />}
+                </button>
               </div>
-              <button 
-                onClick={toggleMute}
-                className={`
-                  relative w-16 h-8 rounded-full transition-colors duration-300
-                  ${isMuted ? 'bg-gray-700' : 'bg-blue-600 shadow-[0_0_15px_rgba(37,99,235,0.5)]'}
-                `}
-              >
-                <div className={`
-                  absolute top-1 w-6 h-6 bg-white rounded-full transition-all duration-300
-                  ${isMuted ? 'left-1' : 'left-9'}
-                `} />
-                {isMuted ? <VolumeX className="w-3 h-3 text-gray-900 absolute left-2.5 top-2.5" /> : <Volume2 className="w-3 h-3 text-blue-600 absolute right-2.5 top-2.5" />}
-              </button>
+            </div>
+          </section>
+
+          {/* Voice Acting Section */}
+          <section>
+            <div className="flex items-center gap-3 mb-6">
+              <Mic2 className="w-5 h-5 text-gray-400" />
+              <h2 className="text-lg font-bold uppercase tracking-widest text-white/80">Voice Acting</h2>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5">
+                <div>
+                  <p className="text-white font-bold text-lg">Character Voices</p>
+                  <p className="text-white/40 text-sm">Enable dialogue voice acting with TTS</p>
+                </div>
+                <button
+                  onClick={handleVoiceToggle}
+                  className={`
+                    relative w-16 h-8 rounded-full transition-colors duration-300
+                    ${voiceEnabled ? 'bg-blue-600 shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'bg-gray-700'}
+                  `}
+                >
+                  <div className={`
+                    absolute top-1 w-6 h-6 bg-white rounded-full transition-all duration-300
+                    ${voiceEnabled ? 'left-9' : 'left-1'}
+                  `} />
+                </button>
+              </div>
+              {voiceEnabled && (
+                <div className="p-6 bg-white/5 rounded-2xl border border-white/5">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-white font-bold">Voice Volume</p>
+                    <span className="text-blue-400 font-bold">{Math.round(voiceVolume * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={voiceVolume}
+                    onChange={(e) => handleVoiceVolumeChange(parseFloat(e.target.value))}
+                    className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  />
+                  <p className="text-white/40 text-xs mt-3">Adjust volume for character dialogue and voice acting</p>
+                </div>
+              )}
             </div>
           </section>
 
