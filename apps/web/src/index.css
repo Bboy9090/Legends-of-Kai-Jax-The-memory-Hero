@@ -1,18 +1,17 @@
-/**
- * ⚡ LEGENDS OF KAI-JAX - MAIN STYLESHEET ⚡
- * Ultimate God-Tier Visual System
- */
-
-/* Tailwind v4 core — generates preflight + all utilities. Must precede the
-   custom design-system imports so they can override the base layer. The
-   @config keeps the existing v3-style tailwind.config.ts (custom colors). */
 @import 'tailwindcss';
 @config '../tailwind.config.ts';
-
-/* Import legendary design systems */
 @import './styles/design-system.css';
 @import './styles/bronx_grit.css';
 @import './styles/legendary-effects.css';
+
+/**
+ * ⚡ LEGENDS OF KAI-JAX - MAIN STYLESHEET ⚡
+ * Ultimate God-Tier Visual System
+ *
+ * Tailwind v4 core — generates preflight + all utilities. Must precede the
+ * custom design-system imports so they can override the base layer. The
+ * @config keeps the existing v3-style tailwind.config.ts (custom colors).
+ */
 
 @layer base {
   * {
