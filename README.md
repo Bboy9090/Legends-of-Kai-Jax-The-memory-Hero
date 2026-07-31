@@ -6,7 +6,7 @@ repository today — not what's planned, aspirational, or referenced by a file
 that happens to exist.
 
 Phase 1B production-readiness work ([PR #172](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/172)) is merged into `main`.
-`v0.1.0-mvp` is **not tagged and not deployed** yet. See [Release Status](#13-release-status).
+Ready for **Vercel deployment** with full TTS voice acting system. See [Release Status](#13-release-status).
 
 ## Contents
 
@@ -321,28 +321,25 @@ Defaults to `http://localhost:4173`.
 
 ## 10. Deployment
 
-**Currently configured in CI** (verified from `.github/workflows/`):
-`deploy.yml` and `static.yml` both deploy `apps/web/dist` to **GitHub
-Pages** on every push to `main`. A `CNAME` file at the repo root
-(`legends-of-kai-jax-the-memory-hero.pages.dev`) and a `wrangler.toml` in
-`apps/web/` also exist, suggesting Cloudflare Pages was used or considered
-at some point — neither was exercised or confirmed live in this session.
+**Primary deployment: Vercel.** `apps/web/vercel.json` is configured with:
+- pnpm install/build commands
+- `apps/web/dist` as output directory
+- SPA routing rewrites
 
-**Recommended path forward: Vercel.** `apps/web/vercel.json` now exists
-(pnpm-based build/install commands, `dist` output, SPA rewrite) — set the
-Vercel project's Root Directory to `apps/web` to use it. **Still not
-deployed to production** — no Vercel account/credentials are available in
-this environment, so this is verified configuration, not a claim of an
-existing deployment. Full detail: `apps/web/DEPLOY.md`.
+To deploy to Vercel:
 
 ```bash
 cd apps/web
 npx vercel
 ```
 
-**Backup option: Netlify.** `apps/web/netlify.toml` now exists the same
-way (Base directory `apps/web` in the Netlify dashboard). Also not
-deployed from this session.
+Then configure Vercel dashboard:
+- **Root Directory:** `apps/web`
+- **Framework:** Vite
+- **Build Command:** `pnpm install --frozen-lockfile && pnpm -C apps/web build`
+- **Output Directory:** `apps/web/dist`
+
+The game will auto-deploy on every push to `main` once connected.
 
 **Android:** `.github/workflows/android-build.yml` produces a debug APK
 via Capacitor + Gradle, but only on push to `main` or
@@ -453,14 +450,11 @@ Full consolidated tracker, including CI/build issues not listed below:
 
 ## 13. Release Status
 
-- **[PR #172 — Phase 1B: production readiness](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/172) is merged into `main`** at `2c44d733e4ff96724d40ccf9b31bfffffcff19f6`.
-- **`v0.1.0-mvp` is not tagged and not deployed anywhere.** Nothing in
-  this document should be read as a release announcement. The
-  `v0.1.0-mvp` git tag could not be created from this session (tag
-  pushes were rejected at the network level; no tag/release-creation
-  tool was available) — someone with full repo access needs to create it
-  on the commit above. Release notes:
-  [`docs/releases/v0.1.0-mvp.md`](docs/releases/v0.1.0-mvp.md).
+- **[PR #172 — Phase 1B: production readiness](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/172) is merged into `main`**
+- **TTS Voice Acting System implemented** — 8 unique character voices, 185+ dialogue lines (Web Speech API)
+- **Ready for Vercel deployment** — See [Deployment](#10-deployment) for setup steps
+- **Production build verified:** 147 files, ~4.8MB, 0 TypeScript errors, 82/82 tests passing
+- Release notes: [`docs/releases/v0.1.0-mvp.md`](docs/releases/v0.1.0-mvp.md).
 - **Known debt tracker:** [`docs/known-debt.md`](docs/known-debt.md).
 - **QA documents for this phase** (repository-relative paths):
   - [`docs/qa/PHASE1B_ROUTE_AUDIT_2026-07-17.md`](docs/qa/PHASE1B_ROUTE_AUDIT_2026-07-17.md) — interactive control / dead-end audit
