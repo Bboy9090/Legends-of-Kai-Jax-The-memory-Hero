@@ -6,7 +6,7 @@
 
 import { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations } from '@react-three/drei';
+import { useGLTF, useAnimations, Clone } from '@react-three/drei';
 import * as THREE from 'three';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { useBattle } from '../../../lib/stores/useBattle';
@@ -190,7 +190,7 @@ export default function OptimizedBeastModel({
     // along +X so they face their opponent instead of crab-walking sideways.
     // BattlePlayer/Opponent mirror this for left/right facing.
     <group ref={groupRef} rotation={[0, Math.PI / 2, 0]}>
-      <primitive object={cloned} />
+      <Clone object={cloned} />
     </group>
   );
 }
