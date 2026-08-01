@@ -145,17 +145,29 @@ export default function VersusCharacterSelect() {
 
   const beginMatch = (training: boolean) => {
     if (!selected) return;
+    console.log('[Blocker A Trace] beginMatch invoked', { training, selectedId: selected.id, selectedName: selected.displayName });
+
     resetPhase();
+    console.log('[Blocker A Trace] After resetPhase (1)');
+
     setTrainingSession(training);
     setCharacter(selectedId);
     setPlayerFighter(selectedId);
+    console.log('[Blocker A Trace] Fighter assignments complete');
+
     const others = FIGHTERS.map((f) => f.id).filter((id) => id !== selectedId);
     const opponentId = others[Math.floor(Math.random() * others.length)] ?? selectedId;
     setOpponentFighter(opponentId);
-    // After a prior match, phase can be "ended"; App only mounts battle when phase is playing/ended.
+    console.log('[Blocker A Trace] Opponent assigned:', { opponentId });
+
     resetPhase();
+    console.log('[Blocker A Trace] After resetPhase (2)');
+
     start();
+    console.log('[Blocker A Trace] After start()');
+
     setGameState("playing");
+    console.log('[Blocker A Trace] After setGameState("playing")');
   };
 
   return (

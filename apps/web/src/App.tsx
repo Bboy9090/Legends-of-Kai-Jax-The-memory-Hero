@@ -83,6 +83,10 @@ function App() {
   const battleCanvasActive =
     (phase === "playing" || phase === "ended") && gameState === "playing";
 
+  useEffect(() => {
+    console.log('[Blocker A Trace] App render', { phase, gameState, battleCanvasActive });
+  }, [phase, gameState, battleCanvasActive]);
+
   // If we left battle with phase "ended" but navigated to a menu screen, recover so UI mounts.
   useEffect(() => {
     const menuLike =
