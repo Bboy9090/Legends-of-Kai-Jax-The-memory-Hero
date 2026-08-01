@@ -87,8 +87,6 @@ export default function OptimizedBeastModel({
   isMoving = false,
   scale = 2.5,
 }: OptimizedBeastModelProps) {
-  const outerGroupRef = useRef<THREE.Group>(null!);
-  const innerGroupRef = useRef<THREE.Group>(null!);
   const groupRef = useRef<THREE.Group>(null!);
   const modelPath = getBeastModelPath(beast.id);
   const [loadError, setLoadError] = useState(false);
@@ -147,65 +145,14 @@ export default function OptimizedBeastModel({
     const node = cloned;
     if (!node) return;
 
-    let meshCount = 0;
-    const mats: THREE.Material[] = [];
-
-    node.traverse((child) => {
-      const mesh = child as THREE.Mesh;
-      if (!mesh.isMesh) return;
-
-      meshCount++;
-      mesh.visible = true;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.frustumCulled = false;
-
-      const matArray = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      matArray.forEach((m) => {
-        if (!m) return;
-        mats.push(m);
-        (m as THREE.Material).opacity = 1;
-        (m as THREE.Material).transparent = false;
-        (m as THREE.Material).depthWrite = true;
-        (m as THREE.Material).depthTest = true;
-        (m as THREE.Material).side = THREE.DoubleSide;
-        m.needsUpdate = true;
-      });
-    });
-
-    console.log('[OptimizedBeastModel] Mesh visibility update:', {
-      beastId: beast.id,
-      meshesFound: meshCount,
-      materialsUpdated: mats.length,
-    });
-
     node.updateMatrixWorld(true);
     const bbox = new THREE.Box3().setFromObject(node);
     const height = bbox.max.y - bbox.min.y;
-
-    console.log('[OptimizedBeastModel] Bounding box:', {
-      beastId: beast.id,
-      height,
-      min: bbox.min,
-      max: bbox.max,
-      isFinite: Number.isFinite(height),
-    });
 
     if (height > 0.001 && Number.isFinite(height)) {
       const s = THREE.MathUtils.clamp(TARGET_HEIGHT / height, 0.01, 100);
       node.scale.setScalar(s);
       node.position.y = -bbox.min.y * s; // feet at y=0
-
-      console.log('[OptimizedBeastModel] Scaling applied:', {
-        beastId: beast.id,
-        scale: s,
-        positionY: node.position.y,
-      });
-    } else {
-      console.warn('[OptimizedBeastModel] Invalid height, skipping scale:', {
-        beastId: beast.id,
-        height,
-      });
     }
   }, [scene, beast.id, cloned]);
 
@@ -241,65 +188,6 @@ export default function OptimizedBeastModel({
     }
   }, [actions, isAttacking, isMoving, beast.id]);
 
-  // A/B EXPERIMENT: Forensic logging for Clone vs primitive attachment
-  useEffect(() => {
-    if (!groupRef.current || !cloned) return;
-
-    const captureState = () => {
-      const group = groupRef.current!;
-      let skinnedMeshCount = 0;
-      let meshCount = 0;
-      let materialCount = 0;
-      let boneCount = 0;
-      const skeletonUUIDs: string[] = [];
-
-      cloned.traverse((obj) => {
-        const mesh = obj as THREE.Mesh;
-        if (mesh.isMesh) {
-          meshCount++;
-          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-          materialCount += mats.length;
-        }
-        const skinned = obj as THREE.SkinnedMesh;
-        if (skinned.isSkinnedMesh) {
-          skinnedMeshCount++;
-          if (skinned.skeleton && !skeletonUUIDs.includes(skinned.skeleton.uuid)) {
-            skeletonUUIDs.push(skinned.skeleton.uuid);
-            boneCount = Math.max(boneCount, skinned.skeleton.bones.length);
-          }
-        }
-      });
-
-      const bbox = new THREE.Box3().setFromObject(cloned);
-      const size = bbox.getSize(new THREE.Vector3());
-      const center = bbox.getCenter(new THREE.Vector3());
-
-      console.log('[OptimizedBeastModel] A/B EXPERIMENT - Forensic State:', {
-        beastId: beast.id,
-        attachment: 'Clone component',
-        groupRefExists: !!group,
-        groupParent: group.parent?.type || 'none',
-        clonedUUID: cloned.uuid,
-        clonedChildCount: cloned.children.length,
-        meshCount,
-        skinnedMeshCount,
-        materialCount,
-        skeletonCount: skeletonUUIDs.length,
-        skeletonUUIDs,
-        boneCount,
-        worldScale: { x: group.scale.x, y: group.scale.y, z: group.scale.z },
-        worldPosition: { x: group.position.x, y: group.position.y, z: group.position.z },
-        bbox: { min: bbox.min, max: bbox.max, size },
-        boxCenter: center,
-        fallbackActive: loadError,
-        visibleFlag: group.visible,
-      });
-    };
-
-    // Capture state after a small delay to ensure Three.js updates
-    const timer = setTimeout(captureState, 100);
-    return () => clearTimeout(timer);
-  }, [cloned, beast.id, loadError]);
 
   // Hit animation and effects
   useFrame((state, delta) => {
@@ -331,14 +219,9 @@ export default function OptimizedBeastModel({
   }
 
   return (
-    <group ref={outerGroupRef}>
-      {/* Inner group with scale and material setup. Models are authored facing +Z;
-          rotate to face +X so they face opponents. BattlePlayer/Opponent mirror for left/right. */}
-      <group ref={innerGroupRef} rotation={[0, Math.PI / 2, 0]}>
-        <group ref={groupRef}>
-          <Clone object={cloned} castShadow receiveShadow />
-        </group>
-      </group>
+    <group ref={groupRef} rotation={[0, Math.PI / 2, 0]}>
+      {/* Models are authored facing +Z; rotate to face +X so they face opponents. */}
+      <Clone object={cloned} />
     </group>
   );
 }
