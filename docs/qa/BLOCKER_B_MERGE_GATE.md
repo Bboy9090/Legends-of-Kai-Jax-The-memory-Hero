@@ -52,12 +52,15 @@ All items must be ✅ before `fix/model-rendering-clean` can merge to `phase1b-p
 ## Current Status
 
 ```
-✅ Code Quality:       PASS
-✅ Rendering Fix:      PASS (locally verified)
-✅ Visual Evidence:    PASS (Training + Versus screenshots)
-⏳ Animation Audit:    PENDING
-⏳ Mobile Performance: PENDING (Blocker C)
-⏳ Live Devices:       PENDING
+✅ Code Quality:         PASS
+✅ Rendering Fix:        PASS (locally verified)
+✅ Visual Evidence:      PASS (Training + Versus screenshots - static pose validation)
+🔴 Animation Audit:      INCONCLUSIVE (static evidence insufficient)
+   └─ Need: Video/frame capture showing animation playback over time
+   └─ Need: Walk, attack, dodge, reaction sequences
+   └─ Have: Pose validation (no T-pose, no skeleton separation)
+⏳ Mobile Performance:   PENDING (Blocker C)
+⏳ Live Devices:         PENDING
 ```
 
 ## Merge Decision
@@ -84,4 +87,5 @@ This branch enforces discipline: separate concerns, verify each layer, document 
 
 - `BLOCKER_B_MODEL_RENDERING_FIX.md` — Root cause, fix details, verified items
 - `BLOCKER_B_ANIMATION_QUALITY.md` — Animation audit checklist and test method
+- `BLOCKER_B_ANIMATION_AUDIT_RESULTS.md` — Phase B1 audit status and evidence gap
 - `e2e/blocker-b-model-rendering.spec.ts` — Regression test
