@@ -55,7 +55,7 @@ export default function CampaignMap() {
         <div className="text-center mb-8">
           <p className="text-amber-300/80 text-xs font-semibold tracking-[0.3em] uppercase mb-1">Story Mode</p>
           <h1 className="text-4xl font-black bg-gradient-to-r from-amber-300 via-cyan-300 to-purple-300 bg-clip-text text-transparent mb-2">
-            Beast Wars Campaign
+            Legends of Kai-Jax Campaign
           </h1>
           <p className="text-slate-400 text-sm">
             Follow Kai-Jax's journey to reclaim stolen memories through adventure combat missions.
