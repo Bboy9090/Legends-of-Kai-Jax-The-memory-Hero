@@ -476,7 +476,21 @@ export default function GLBCharacterModel(props: GLBCharacterModelProps) {
   } = props;
 
   const config = getModelConfig(fighterId);
-  if (!config) return <MissingModelFallback fighterId={fighterId} accentColor={accentColor} />;
+
+  // DIAGNOSTIC: log model config resolution
+  useEffect(() => {
+    console.log('[GLBCharacterModel] Model config trace:', {
+      fighterId,
+      configFound: !!config,
+      configPath: config?.path,
+      configScale: config?.scale,
+    });
+  }, [fighterId, config]);
+
+  if (!config) {
+    console.warn('[GLBCharacterModel] No config found, showing fallback:', { fighterId });
+    return <MissingModelFallback fighterId={fighterId} accentColor={accentColor} />;
+  }
 
   return (
     <Suspense fallback={<GLBModelFallback />}>

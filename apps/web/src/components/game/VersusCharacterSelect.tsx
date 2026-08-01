@@ -1,4 +1,4 @@
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import SceneEnvironment from "./graphics/SceneEnvironment";
@@ -124,6 +124,16 @@ export default function VersusCharacterSelect() {
   const [selectedId, setSelectedId] = useState<string>(FIGHTERS[0]?.id ?? "kai-jax");
   const [variantByFighter, setVariantByFighter] = useState<Record<string, string>>({});
   const selected = getFighterById(selectedId);
+
+  // DIAGNOSTIC: log fighter selection for Versus mode
+  useEffect(() => {
+    console.log('[VersusCharacterSelect] Fighter selection trace:', {
+      selectedId,
+      fighter: selected ? { id: selected.id, displayName: selected.displayName, color: selected.color } : null,
+      fightersTotal: FIGHTERS.length,
+      defaultFirst: FIGHTERS[0]?.id,
+    });
+  }, [selectedId, selected]);
 
   const playerProgress = {
     characterLevel: 1,
