@@ -5,8 +5,12 @@ release reviewers. This document describes what is verified to work in this
 repository today — not what's planned, aspirational, or referenced by a file
 that happens to exist.
 
-Phase 1B production-readiness work ([PR #172](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/172)) is merged into `main`.
-Ready for **Vercel deployment** with full TTS voice acting system. See [Release Status](#13-release-status).
+Phase 1B code integration ([PR #222](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/222)) lands three verified commits:
+- Dead-code reference audit + cleanup
+- LoreHub button accessibility (touch target sizing)
+- Adventure pause menu styling (contrast, accessibility)
+
+All three commits pass local build, test, and typecheck gates. **Live Vercel deployment verification is pending** (blocked by execution-environment network policy). See [Release Status](#13-release-status).
 
 ## Contents
 
@@ -41,9 +45,9 @@ through Training Arena and Story Mode, with a working pause/quit/save loop.
 
 | Target | Status |
 |---|---|
-| Web / PWA (`apps/web`) | **Working.** Builds, runs, and is what every other target wraps. PWA manifest is present; service-worker registration (offline support) is currently disabled — see [Known Limitations](#12-known-limitations). |
+| Web / PWA (`apps/web`) | **Working.** Builds, runs, and is what every other target wraps. PWA manifest is present; service-worker registration (offline support) is currently disabled — see [Known Limitations](#12-known-limitations). Local production build and preview verified this session. Live Vercel deployment verification pending. |
 | Desktop (`apps/desktop`, Electron) | **Build tooling present and complete** (dev/build/build:win/build:mac/build:linux scripts via electron-builder). Not exercised in this session — treat as unverified until someone runs a packaged build. |
-| Android (Capacitor) | **CI-configured**, not independently verified here. `.github/workflows/android-build.yml` builds `apps/web`, runs `npx cap sync android`, and assembles a debug APK — but only on push to `main` or `integration/clean-upgrade-stack-2026-05-20`, not on this branch/PR. The native `android/` project is generated at build time and is not committed to the repo. |
+| Android (Capacitor) | **CI-configured**, not independently verified here. `.github/workflows/android-build.yml` builds `apps/web`, runs `npx cap sync android`, and assembles a debug APK — but only on push to `main` or `integration/clean-upgrade-stack-2026-05-20`, not on this branch/PR. The native `android/` project is generated at build time and is not committed to the repo. No signed/release build configuration present. |
 | iOS (Capacitor) | **Build pipeline documented, signing/App Store status unverified.** A committed Capacitor iOS project lives at `apps/web/ios/App` (19 tracked files). `.xcodecloud/ci_post_clone.sh` and `docs/ios/APP_STORE_BUILD.md` describe the pipeline. No signed build or App Store submission is proven from this repository — do not treat this target as store-ready. |
 | iOS (native engine) | **Planned / experimental.** `apps/ios/LegendsOfKaiJax` is a separate native Swift Package (`GameEngineCore`) distinct from the Capacitor wrapper above. Its current integration status with the rest of the game is not established by this document. |
 
@@ -68,6 +72,7 @@ docs/               Documentation.
   docs/qa/          QA reports for this branch (route audit, asset audit,
                      mobile touch smoke test, this task's follow-ups).
   docs/ios/         iOS build/App Store notes.
+  docs/known-debt.md  Production known-debt tracker (classified by severity).
   docs/archive/     Superseded status reports and completion summaries from
                      earlier development phases. Historical only - do not
                      treat anything in here as current.
@@ -108,7 +113,6 @@ Platform-specific, verified from actual CI/build configuration:
 ```bash
 git clone https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero.git
 cd Legends-of-Kai-Jax-The-memory-Hero
-# main now includes the Phase 1B production-readiness work (PR #172)
 
 corepack enable
 corepack prepare pnpm@9.15.9 --activate
@@ -142,7 +146,7 @@ http://localhost:3000
 `--host` binds to your LAN IP too, so you can open the same URL on a phone
 or tablet on the same network for touch testing.
 
-**Production preview** (serves the built `dist/` output, not source):
+**Production build and preview** (serves the built `dist/` output, not source):
 
 ```bash
 pnpm -C apps/web build
@@ -150,6 +154,8 @@ pnpm -C apps/web preview --host
 ```
 
 Vite's preview server defaults to port **4173** (no override is configured).
+This is what you use to verify the production bundle locally before deploying
+to Vercel.
 
 **Verbose logging:** there is currently no dedicated verbose-logging toggle
 in the app (no `window.*.setVerbose()` or equivalent exists in the
@@ -177,15 +183,24 @@ pnpm -C apps/web test
 pnpm -C apps/web typecheck
 ```
 
-- `pnpm -C apps/web test` runs Vitest (`vitest run`). **This is the real
-  test suite** — the root-level `pnpm test` script is a placeholder
-  (`echo 'Testing...'`) and does not exercise any actual tests. Always use
-  the `apps/web`-scoped command.
-- `pnpm -C apps/web typecheck` runs `tsc -p tsconfig.phase0.json --noEmit`
-  — a deliberately narrow, curated scope (see `apps/web/tsconfig.phase0.json`),
-  not the whole codebase. `pnpm -C apps/web typecheck:full` runs the
-  unscoped `tsc --noEmit` and currently reports pre-existing errors across
-  the wider codebase — see [Known Limitations](#12-known-limitations).
+**Install:**
+- `pnpm install --frozen-lockfile` verifies exact dependency versions; rejects drifted lockfiles.
+
+**Build:**
+- `pnpm -C apps/web build` runs Vite (`vite build`).
+- Output: `apps/web/dist/` (production bundle).
+- Verified this session: **16.92 seconds**, 1,752 KB JavaScript + 191 KB CSS.
+- Two benign warnings about chunk size (>500 KB each for Three.js + game bundle); not a build failure.
+
+**Tests:**
+- `pnpm -C apps/web test` runs Vitest (`vitest run`).
+- **82 tests across 11 test files**, all passing this session (1.61 seconds).
+- Test files: `src/combat/`, `src/game/`, `src/lib/`, `src/components/cinematic/`.
+
+**Type checking:**
+- `pnpm -C apps/web typecheck` runs `tsc -p tsconfig.phase0.json --noEmit`.
+- Deliberately narrow, curated scope — Phase 0 profile (verified safe during Phase 1A).
+- Alternative: `pnpm -C apps/web typecheck:full` runs unscoped `tsc --noEmit` (currently reports pre-existing errors across wider codebase — see [Known Limitations](#12-known-limitations)).
 
 **Registry validation** (CI-enforced — `.github/workflows/registry-validate.yml`
 runs this on any PR touching the model registry or `public/models/`):
@@ -202,28 +217,18 @@ validate:canon` and `pnpm validate:memory` point at `validate-canon.mjs`
 and `validate-memory-layers.mjs` at the repo root, neither of which exists.
 Do not run these expecting them to work.
 
-**Playwright / mobile smoke testing:** there is currently **no committed
-Playwright dependency or npm script** in this repository. Mobile/touch
-verification for this branch was done with an ad-hoc external Playwright
-driver (not part of this repo's `package.json`) — see
-[`docs/qa/PHASE1B_MOBILE_TOUCH_SMOKE_TEST_2026-07-17.md`](docs/qa/PHASE1B_MOBILE_TOUCH_SMOKE_TEST_2026-07-17.md)
-for the method and results. If you need to re-run something similar, you'll
-need to bring your own Playwright install.
-
 ---
 
 ## 7. Current Playable MVP
 
-Verified this session by direct code reading and/or Playwright-driven
+Verified this session by direct code reading and/or local Playwright-driven
 testing, not assumed from file presence:
 
 - **Main Menu** (`LegendaryMainMenu.tsx`) — Start Saga, Versus Mode,
-  Training Arena, The Codex, Settings. Profile select works (fixed in the
-  Task A route audit — see `docs/qa/PHASE1B_ROUTE_AUDIT_2026-07-17.md`).
+  Training Arena, The Codex, Settings. Profile select works (fixed in Phase 1B route audit).
 - **LoreHub** (`LoreHub.tsx`) — the app's default landing screen. Character
   bios, the 9-Tail system, story acts, combat reference, memory shards.
-  Hero/character/gallery art is now fully self-hosted (see
-  [`docs/qa/PHASE1B_EXTERNAL_ASSET_AUDIT_2026-07-17.md`](docs/qa/PHASE1B_EXTERNAL_ASSET_AUDIT_2026-07-17.md)).
+  Hero/character/gallery art is now fully self-hosted (Phase 1B external asset audit).
 - **Mission selection** (`CampaignMap.tsx`) — Act 1/2/3 tabs, mission list
   with locked/unlocked/completed states, mission detail panel, launch into
   Story Mode.
@@ -232,30 +237,26 @@ testing, not assumed from file presence:
   attacks, dodge, combo chaining, auto-targeting.
 - **Input support:**
   - **Keyboard** — WASD/arrows movement, J/X light attack, K/Z heavy
-    attack, L/C skill, Space dodge, Esc/P pause. This is the original,
-    fully-supported input path (`AdventurePlayerController.tsx`).
-  - **Touch** — see [Mobile Controls](#8-mobile-controls) below. Implemented
-    this session; previously non-functional (three disconnected touch
-    systems existed — see the mobile smoke test doc).
+    attack, L/C skill, Space dodge, Esc/P pause. Fully supported.
+  - **Touch** — on-screen joystick (movement), ATK/HEAVY/SKILL/DODGE/Pause buttons.
+    Implemented this session via `AdventureTouchControls.tsx`. Previously
+    non-functional (three disconnected touch systems existed).
   - **Gamepad** — **not implemented.** There is no `navigator.getGamepads()`
     integration anywhere in the codebase. A "Gamepad2Icon" exists purely as
     a decorative SVG icon on menu buttons — its presence is not evidence of
-    gamepad support, and none exists today.
-- **Pause / resume / force quit** — Esc/P (keyboard) or the on-screen pause
-  button (touch) opens a pause overlay with Resume and "Force Quit to Hub."
-  Force-quit is hardened with a persisted-state override and a final
-  `window.location.assign("/")` fallback (from Phase 1A hardening,
-  `docs/qa/PHASE1A_PLAYTEST_2026-06-19.md`). An emergency `Q` key also works
-  while paused.
+    gamepad support.
+- **Pause / resume / force quit** — Esc/P (keyboard) or on-screen pause button
+  (touch) opens a pause overlay with Resume and "Force Quit to Hub." Pause menu
+  buttons hardened with 44px minimum touch targets (Phase 1B accessibility work).
 - **Player visibility fallback** — if a character's GLB model fails to load
   or render, `PlayerPhase1Fallback` renders a guaranteed-visible capsule +
   head marker + forward indicator so the player is never invisible.
 - **15-mission vertical slice** — verified present: `apps/web/src/lib/story_missions.ts`
   defines exactly 15 mission entries (`story_act1_m1`…`m5`,
-  `story_act2_m6`…`m10`, `story_act3_m11`…`m15`) across 3 acts. Playability
-  of every individual mission end-to-end was not re-verified in this
-  session; the Phase 0/1A proofs referenced above cover mission load, enemy
-  spawn, wave normalization, and pause/quit for the slice as a whole.
+  `story_act2_m6`…`m10`, `story_act3_m11`…`m15`) across 3 acts. Full end-to-end
+  playability of every individual mission was not re-verified this session;
+  refer to Phase 0/1A proofs for mission load, enemy spawn, wave normalization,
+  and pause/quit coverage.
 
 ---
 
@@ -284,10 +285,11 @@ Adventure Mode's actual input handling, so none was added.
   notched iPhones.
 - **Multi-touch:** each control tracks its own touch `identifier`, so
   holding the joystick and tapping an attack button at the same time both
-  register correctly (verified — see the mobile touch smoke test doc).
+  register correctly.
 - Controls release cleanly on `touchend`, `touchcancel`, component
-  unmount, tab backgrounding, and pause — no stuck-movement cases were
-  found in verification.
+  unmount, tab backgrounding, and pause.
+- **Button sizing:** buttons have 44px minimum height (WCAG touch target standard);
+  pause button enforced with `min-h-11` (44px); movement joystick radius is 48px.
 
 ---
 
@@ -306,22 +308,23 @@ pnpm -C apps/web build
   hosts that support Netlify/Cloudflare-style redirect files, so any deep
   path still serves `index.html` instead of 404ing.
 - **Static assets:** everything under `apps/web/public/` is copied as-is
-  into `dist/` (models, moves, sounds, textures, brand art, the new
-  `images/lore/` self-hosted LoreHub art, manifest, icon, `_redirects`).
+  into `dist/` (models, moves, sounds, textures, brand art, LoreHub art,
+  manifest, icon, `_redirects`).
 
-Preview the production build locally:
+Preview the production build locally (verified this session):
 
 ```bash
+pnpm -C apps/web build
 pnpm -C apps/web preview --host
 ```
 
-Defaults to `http://localhost:4173`.
+Defaults to `http://localhost:4173`. Main menu renders and is fully interactive.
 
 ---
 
 ## 10. Deployment
 
-**Primary deployment: Vercel.** `apps/web/vercel.json` is configured with:
+**Primary deployment target: Vercel.** `vercel.json` is configured with:
 - pnpm install/build commands
 - `apps/web/dist` as output directory
 - SPA routing rewrites
@@ -340,6 +343,8 @@ Then configure Vercel dashboard:
 - **Output Directory:** `apps/web/dist`
 
 The game will auto-deploy on every push to `main` once connected.
+
+**Live Vercel deployment status:** The three commits in [PR #222](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/222) are pushed and ready for deployment. However, **live Vercel verification is pending** because the current execution environment cannot reach external HTTPS hosts. You must manually verify the deployment before declaring it production-ready. See [Release Status](#13-release-status).
 
 **Android:** `.github/workflows/android-build.yml` produces a debug APK
 via Capacitor + Gradle, but only on push to `main` or
@@ -389,77 +394,49 @@ actually produced and verified.
 Full consolidated tracker, including CI/build issues not listed below:
 [`docs/known-debt.md`](docs/known-debt.md).
 
-- **GLB tail-anchor coverage is incomplete.** None of the 40 live character
-  models have the game's 9-tail lore mechanic rigged — confirmed by a full
-  Blender-based audit of every registered model:
-  [`docs/qa/GLB_RIGGING_AUDIT_2026-07-17.md`](docs/qa/GLB_RIGGING_AUDIT_2026-07-17.md).
-  A prototype tail rig was since built and tested against nine deformation
-  scenarios (idle, run, dodge, heavy attack, hit reaction, and others) on
-  the `kai-jax` model — idle/walk/blend poses pass, but large combat poses
-  show real mesh clipping/strain that still needs a human weight-paint
-  pass. Full results:
-  [`docs/qa/GLB_TAIL_RIG_PROTOTYPE_2026-07-18.md`](docs/qa/GLB_TAIL_RIG_PROTOTYPE_2026-07-18.md).
-  This work lives entirely on an unmerged research branch
-  (`research/glb-rigging-pipeline`) — no production GLB has been modified,
-  and this is not applied to any shipped model. Handled gracefully at
-  runtime in the meantime (see above), not blocking.
-- **Two mobile CSS/spacing findings remain open** from the Task C mobile
-  smoke test, neither of which caused a usability failure in verification
-  (both are cosmetic): the "Play Game" CTA on LoreHub measured a
-  103.8×28px tap target (below the ~44×44 accessibility minimum), and the
-  LoreHub hero button row shows no visible gap between buttons at mobile
-  width. Both may point to a wider Tailwind v4 spacing issue given this
-  repo's prior Tailwind migration fixes. Full detail:
-  [`docs/qa/PHASE1B_MOBILE_TOUCH_SMOKE_TEST_2026-07-17.md`](docs/qa/PHASE1B_MOBILE_TOUCH_SMOKE_TEST_2026-07-17.md).
-- **Full-codebase TypeScript debt.** `pnpm -C apps/web typecheck:full`
-  (the unscoped `tsc --noEmit`, as opposed to the Phase 0-scoped
-  `typecheck` gate) currently reports pre-existing errors, largely in
-  unreachable/legacy files (e.g. the quarantined `TouchControls.tsx`, dead
-  code confirmed in `docs/qa/PHASE1B_MOBILE_TOUCH_SMOKE_TEST_2026-07-17.md`)
-  and some live files (e.g. an icon `style` prop type mismatch in
-  `LoreHub.tsx`). Not part of the `typecheck` gate; not fixed here.
-- **Native packaging is not fully verified.** Android's CI-produced debug
-  APK, Electron desktop builds, and any iOS signed build are all either
-  unverified in this session or explicitly out of scope for this
-  document's gates — see [Project Overview](#1-project-overview) and
-  [Deployment](#10-deployment).
-- **PWA offline support is not currently active.** `apps/web/index.html`
-  has the service-worker registration block commented out
-  ("disabled for development... uncomment for production"). The manifest
-  is present and correct, but installing the app today will not give you
-  working offline support.
-- **PWA manifest references content that doesn't exist yet.**
-  `manifest.json` lists two screenshot files
-  (`/screenshots/gameplay-1.png`, `/screenshots/saga-mode.png`) that are
-  not present under `apps/web/public/`, and two app shortcuts
-  (`/saga-mode`, `/versus-mode`) that don't correspond to real routes —
-  the app has no URL-based router at all (see [Production Build and Preview](#9-production-build-and-preview)).
-  Neither breaks the app; both are inert.
-- **Root-level `pnpm validate:canon` and `pnpm validate:memory` are
-  broken** — see [Verification Commands](#6-verification-commands).
-- **Two of the root `package.json` scripts reference a workspace that
-  doesn't exist:** `mobile:dev` and `mobile:build` point at
-  `apps/mobile`, which is not present in this repository. Don't run them.
-- **Some remaining placeholder artwork.** Two of LoreHub's six character/
-  gallery images have no local source asset anywhere in this repository
-  and currently fall back to the app's branded icon (`/icon.svg`) as a
-  placeholder rather than real character art — not final, not invented
-  here. Detail: [`docs/qa/PHASE1B_EXTERNAL_ASSET_AUDIT_2026-07-17.md`](docs/qa/PHASE1B_EXTERNAL_ASSET_AUDIT_2026-07-17.md).
+Summarized here:
+
+- **GLB tail-anchor coverage is incomplete.** Canonical game models do not have the 9-tail lore mechanic rigged. A prototype tail rig exists for `kai-jax` but requires production-grade weight-painting before shipping.
+- **Placeholder artwork:** some UI backgrounds and lore-screen imagery remain as fallback placeholders pending artist final approval.
+- **TypeScript debt:** a `tsconfig.phase0.json` scope is used for production builds/CI; full `tsc --noEmit` has pre-existing errors outside that scope.
+- **Live Vercel deployment:** deployment to Vercel is configured but **deployment identity and live gameplay have not been verified** in this session (execution-environment network policy blocked external HTTPS). Manual verification is required before release.
+- **Deployed commit SHA:** the commit currently running on the live Vercel deployment has not been confirmed from this environment.
+- **Full mission/boss/roster verification:** end-to-end playability of all 15 missions, all boss encounters, and all 100+ playable characters has not been run as a matrix test.
+- **Performance metrics:** frame-time and input-latency validation has not been captured as recorded evidence.
+- **Mobile builds:** Android debug APK and iOS signed-build verification are pending.
+- **Desktop builds:** Electron packaging for Windows/macOS/Linux has not been independently verified.
+
+See [`docs/known-debt.md`](docs/known-debt.md) for the full, classified tracker.
 
 ---
 
 ## 13. Release Status
 
-- **[PR #172 — Phase 1B: production readiness](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/172) is merged into `main`**
-- **TTS Voice Acting System implemented** — 8 unique character voices, 185+ dialogue lines (Web Speech API)
-- **Ready for Vercel deployment** — See [Deployment](#10-deployment) for setup steps
-- **Production build verified:** 147 files, ~4.8MB, 0 TypeScript errors, 82/82 tests passing
-- Release notes: [`docs/releases/v0.1.0-mvp.md`](docs/releases/v0.1.0-mvp.md).
-- **Known debt tracker:** [`docs/known-debt.md`](docs/known-debt.md).
-- **QA documents for this phase** (repository-relative paths):
-  - [`docs/qa/PHASE1B_ROUTE_AUDIT_2026-07-17.md`](docs/qa/PHASE1B_ROUTE_AUDIT_2026-07-17.md) — interactive control / dead-end audit
-  - [`docs/qa/PHASE1B_EXTERNAL_ASSET_AUDIT_2026-07-17.md`](docs/qa/PHASE1B_EXTERNAL_ASSET_AUDIT_2026-07-17.md) — external asset dependency audit
-  - [`docs/qa/PHASE1B_MOBILE_TOUCH_SMOKE_TEST_2026-07-17.md`](docs/qa/PHASE1B_MOBILE_TOUCH_SMOKE_TEST_2026-07-17.md) — mobile viewport/touch-control smoke test and the touch-controls implementation
-  - [`docs/qa/PHASE1B_RELEASE_SMOKE_TEST_2026-07-17.md`](docs/qa/PHASE1B_RELEASE_SMOKE_TEST_2026-07-17.md) — final release smoke-test gate: full MVP loop verified end to end on keyboard and touch
-  - [`docs/qa/BRANCH_SALVAGE_AUDIT_2026-07.md`](docs/qa/BRANCH_SALVAGE_AUDIT_2026-07.md) — audit of legacy branches, confirming nothing was worth cherry-picking
-  - Earlier phase proofs: [`docs/qa/PHASE0_LOCAL_PROOF_2026-06-19.md`](docs/qa/PHASE0_LOCAL_PROOF_2026-06-19.md), [`docs/qa/PHASE1A_PLAYTEST_2026-06-19.md`](docs/qa/PHASE1A_PLAYTEST_2026-06-19.md), [`docs/qa/BUILD_HEALTH_REPORT.md`](docs/qa/BUILD_HEALTH_REPORT.md)
+**Code integration:** ✅ Ready
+- Three commits verified (dead-code cleanup, accessibility improvements).
+- All reference proofs passed (zero-reference audit, local build, tests, typecheck).
+
+**Local release gates:** ✅ Passing
+- `pnpm install --frozen-lockfile` ✅
+- `pnpm -C apps/web build` ✅ (16.92s)
+- `pnpm -C apps/web test` ✅ (82 tests)
+- `pnpm -C apps/web typecheck` ✅
+
+**Local verification:** ✅ Confirmed
+- Production build output: `apps/web/dist/`
+- Main menu renders and loads on `http://localhost:4173`
+
+**Live Vercel deployment:** ⏳ Pending
+- Deployed commits: pushed to `phase1b-production-readiness` branch
+- Live URL: `https://legends-of-kai-jax-the-memory-hero.vercel.app/`
+- Status: **Not verified in this environment** (network policy blocks external HTTPS from execution environment)
+- **Manual verification required** before declaring production-ready
+
+**Release candidate status:** ❌ Not yet declared
+
+The code integration is ready to land into production, but live deployment
+verification must be completed as a mandatory external gate. Deploy to Vercel,
+manually verify the deployment identity and gameplay flow, then declare the
+release officially ready.
+
+See [PR #222](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/222) and [`docs/known-debt.md`](docs/known-debt.md) for full detail.
