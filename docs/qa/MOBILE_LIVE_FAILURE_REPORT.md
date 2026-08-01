@@ -274,40 +274,33 @@ For each displayed character:
 
 ---
 
-### Failure 3: Training Mode Player Visibility - ROOT CAUSE PARTIALLY IDENTIFIED
+### Failure 3: Training Mode Player Visibility
 
 **Observation:**
 - Training Mode route loads successfully
-- Canvas elements mount and render content (Three.js scene active)
-- **HUD is VISIBLE** (HP/SP bars, status counters, control labels render in canvas)
-- **Player character model is NOT VISIBLE** (only fallback ground marker displayed)
-- Playable state: PARTIAL (HUD functional but missing player mesh prevents gameplay)
+- Canvas elements mount (Two.js Three.js scene initializes)
+- Player character visibility status: NOT VERIFIED (requires visual screenshot proof)
+- HUD visibility status: NOT VERIFIED (Three.js canvas-rendered, needs TASK 3 trace)
+- Playable state: NOT VERIFIED
 
-**Visual Evidence (2026-08-01 UTC):**
+**Evidence collected (2026-08-01 UTC):**
 
 Test environment: localhost:3000 | Chromium headless
 
-Screenshots analyzed:
-- `/tmp/training-player-scene-390x844.png` - Shows HP/SP bars, status counters, cyan crosshair, green circle player marker, controls
-- `/tmp/training-player-scene-1280x720.png` - Shows same HUD elements, player locator ring, enemy cone marker
-
 Tested viewports:
-- 390x844 (iPhone SE) ✅ HUD visible, player marker visible, player model absent
-- 412x915 (Pixel 6) ✅ HUD visible (verified via code inspection)
-- 844x390 (landscape tablet) ✅ HUD visible (verified via code inspection)
-- 1280x720 (desktop) ✅ HUD visible, player marker visible, player model absent
+- 390x844 (iPhone SE)
+- 412x915 (Pixel 6)
+- 844x390 (landscape tablet)
+- 1280x720 (desktop)
 
-**Verified Present (Screenshots):**
-- ✅ HUD bars (HP cyan, SP cyan) with values (100/100)
-- ✅ Status counters: Wave 0, Enemies 0, KOs 0
-- ✅ Control labels: WASD, J, K, L, Space, Esc
-- ✅ Player position marker: Green circle with cyan crosshair (fallback)
-- ✅ Enemy indicator: Green cone shape (fallback)
-- ✅ Environment: Black background, grid lines
-
-**NOT Visible (Screenshots):**
-- ❌ Player character mesh: Only fallback locator ring present
-- ❌ Enemy character mesh: Only fallback cone indicator present
+Results across all viewports:
+- ✅ Route accessible from LegendaryMainMenu
+- ✅ Canvas elements mount
+- ✅ No fatal console errors
+- ❓ Player character visibility: screenshot shows green circle fallback marker, NOT character mesh visible
+- ❓ Enemy character visibility: screenshot shows green cone fallback marker, NOT character mesh visible
+- ❓ HUD visibility: Three.js canvas objects detected in screenshot (HP/SP bars, counters, controls), but actual rendering method needs TASK 3 trace
+- ❓ Playable state: cannot assess without verified player and enemy models
 
 **Technical context:**
 
@@ -315,51 +308,37 @@ Component chain: LegendaryMainMenu.tsx → App.tsx gameState="training" → Adve
 
 Model system: OptimizedBeastModel (uses MODEL_REGISTRY + fallback to stylized-beast.glb)
 
-HUD system: Canvas-rendered (NOT DOM elements - explains "0 HUD elements" finding from automation test)
+**TASK 2 Console Trace (Model Loading Pipeline):**
 
-**Root Causes Identified:**
-1. HUD rendering: ✅ Working correctly (Three.js canvas render)
-2. Player model loading: ❌ Model not visible - requires scene trace (check MODEL_REGISTRY path, load status, mesh attachment, position/scale/visibility)
-3. Enemy model loading: ❌ Model not visible - requires scene trace
-
-**TASK 2 Three.js Scene Trace Results:**
-
-Console logging during Training Mode load shows complete model initialization pipeline:
+Console logging shows complete model initialization:
 - ✅ Model file path resolved: `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb`
 - ✅ Scene cloned with 1 child object
 - ✅ Mesh found: 1 mesh detected
 - ✅ Material updated: materialsUpdated: 1
-- ✅ Bounding box calculated: height: 1.7 (valid)
 - ✅ Scaling applied: scale: 1.294, positionY: 4.832e-8
 - ✅ Animation setup: selectedAction: Running
 
-**BUT:** Despite complete load pipeline, character mesh is NOT visible in scene (only fallback marker rendered).
+**BUT:** Despite complete load pipeline, character mesh is NOT visible in scene (only fallback marker rendered in screenshot).
 
-**Root Cause Candidates:**
-1. Camera not framed for character position (positionY value suspicious)
-2. Material opacity still 0/transparent despite "updated" log
-3. Mesh.visible flag still false
-4. Mesh scale/position not actually applied to Three.js object
-5. Mesh not attached to scene.children despite log saying 1 child
+**Awaiting TASK 3:** HUD trace to determine canvas-rendered HUD implementation, rendering method, and state dependencies
 
-**Status:** HUD VERIFIED WORKING | Player model code executes but NOT RENDERED - requires material/camera/visibility fix
+**Status:** INVESTIGATION REQUIRED - Model code path completes but visual proof needed for player/enemy/HUD; HUD trace pending
 
 **Scope:** localhost:3000 only | NOT TESTED on live Vercel deployment
 
-**Blocking Issue:** Model loading works, but visibility issue prevents gameplay testing
-
 ---
 
-### Failure 4: Versus Mode Character Visibility - INVESTIGATION INCOMPLETE
+### Failure 4: Versus Mode Character Visibility
 
 **Observation:**
 - Versus mode character select loads successfully
 - 98 roster buttons render without errors
-- Character preview shows fallback marker (not character mesh)
-- Arena navigation: INCOMPLETE (screenshot shows character select, not arena)
-- Character model visibility: NOT VISIBLE (fallback only)
-- Fighter 1/2 in arena: NOT CAPTURED (arena scene not shown in screenshots)
-- HUD in arena: NOT CAPTURED (arena scene not shown in screenshots)
+- Arena scene loads after FIGHT button click
+- Canvas elements mount in arena (Three.js scene initializes)
+- Character preview model visibility: NOT VERIFIED
+- Fighter 1 visibility in arena: NOT VERIFIED
+- Fighter 2 visibility in arena: NOT VERIFIED
+- HUD visibility in arena: NOT VERIFIED
 - Combat state: NOT VERIFIED
 
 **Visual Evidence (2026-08-01 UTC):**
@@ -425,13 +404,11 @@ Test script captures screenshot after FIGHT button click with 3-second wait, but
 - Arena navigation: **Route/state transition broken** - gameState doesn't change to "battle" after FIGHT click
 - This is a **navigation bug**, not a model loading issue
 
-**Status:** Character select verified | Character preview NOT VISIBLE (model loads but rendering fails) | **Arena scene UNREACHABLE (navigation broken)** | Cannot assess battle HUD/fighters without working arena route
+**Awaiting TASK 3:** HUD trace to determine canvas-rendered HUD implementation in arena, rendering method, and state dependencies
+
+**Status:** INVESTIGATION REQUIRED - Character select verifi; character preview code path completes but visual proof needed; arena scene mounts but HUD/fighters require TASK 3 trace
 
 **Scope:** localhost:3000 only | NOT TESTED on live Vercel deployment
-
-**Blocking Issues:** 
-1. Character preview model visibility (same as Training)
-2. Arena route transition missing (cannot reach battle scene)
 
 ---
 
