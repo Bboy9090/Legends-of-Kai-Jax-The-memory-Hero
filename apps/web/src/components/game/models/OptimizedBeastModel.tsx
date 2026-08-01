@@ -6,7 +6,7 @@
 
 import { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations } from '@react-three/drei';
+import { useGLTF, useAnimations, Clone } from '@react-three/drei';
 import * as THREE from 'three';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { useBattle } from '../../../lib/stores/useBattle';
@@ -87,6 +87,8 @@ export default function OptimizedBeastModel({
   isMoving = false,
   scale = 2.5,
 }: OptimizedBeastModelProps) {
+  const outerGroupRef = useRef<THREE.Group>(null!);
+  const innerGroupRef = useRef<THREE.Group>(null!);
   const groupRef = useRef<THREE.Group>(null!);
   const modelPath = getBeastModelPath(beast.id);
   const [loadError, setLoadError] = useState(false);
@@ -154,15 +156,19 @@ export default function OptimizedBeastModel({
 
       meshCount++;
       mesh.visible = true;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
       mesh.frustumCulled = false;
 
       const matArray = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
       matArray.forEach((m) => {
         if (!m) return;
         mats.push(m);
-        m.visible = true;
         (m as THREE.Material).opacity = 1;
         (m as THREE.Material).transparent = false;
+        (m as THREE.Material).depthWrite = true;
+        (m as THREE.Material).depthTest = true;
+        (m as THREE.Material).side = THREE.DoubleSide;
         m.needsUpdate = true;
       });
     });
@@ -235,6 +241,66 @@ export default function OptimizedBeastModel({
     }
   }, [actions, isAttacking, isMoving, beast.id]);
 
+  // A/B EXPERIMENT: Forensic logging for Clone vs primitive attachment
+  useEffect(() => {
+    if (!groupRef.current || !cloned) return;
+
+    const captureState = () => {
+      const group = groupRef.current!;
+      let skinnedMeshCount = 0;
+      let meshCount = 0;
+      let materialCount = 0;
+      let boneCount = 0;
+      const skeletonUUIDs: string[] = [];
+
+      cloned.traverse((obj) => {
+        const mesh = obj as THREE.Mesh;
+        if (mesh.isMesh) {
+          meshCount++;
+          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          materialCount += mats.length;
+        }
+        const skinned = obj as THREE.SkinnedMesh;
+        if (skinned.isSkinnedMesh) {
+          skinnedMeshCount++;
+          if (skinned.skeleton && !skeletonUUIDs.includes(skinned.skeleton.uuid)) {
+            skeletonUUIDs.push(skinned.skeleton.uuid);
+            boneCount = Math.max(boneCount, skinned.skeleton.bones.length);
+          }
+        }
+      });
+
+      const bbox = new THREE.Box3().setFromObject(cloned);
+      const size = bbox.getSize(new THREE.Vector3());
+      const center = bbox.getCenter(new THREE.Vector3());
+
+      console.log('[OptimizedBeastModel] A/B EXPERIMENT - Forensic State:', {
+        beastId: beast.id,
+        attachment: 'Clone component',
+        groupRefExists: !!group,
+        groupParent: group.parent?.type || 'none',
+        clonedUUID: cloned.uuid,
+        clonedChildCount: cloned.children.length,
+        meshCount,
+        skinnedMeshCount,
+        materialCount,
+        skeletonCount: skeletonUUIDs.length,
+        skeletonUUIDs,
+        boneCount,
+        worldScale: { x: group.scale.x, y: group.scale.y, z: group.scale.z },
+        worldPosition: { x: group.position.x, y: group.position.y, z: group.position.z },
+        bbox: { min: bbox.min, max: bbox.max, size },
+        boxCenter: center,
+        fallbackActive: loadError,
+        visibleFlag: group.visible,
+      });
+    };
+
+    // Capture state after a small delay to ensure Three.js updates
+    const timer = setTimeout(captureState, 100);
+    return () => clearTimeout(timer);
+  }, [cloned, beast.id, loadError]);
+
   // Hit animation and effects
   useFrame((state, delta) => {
     if (mixer) mixer.update(delta);
@@ -265,11 +331,14 @@ export default function OptimizedBeastModel({
   }
 
   return (
-    // Models are authored facing +Z (toward the camera). Rotate them to face
-    // along +X so they face their opponent instead of crab-walking sideways.
-    // BattlePlayer/Opponent mirror this for left/right facing.
-    <group ref={groupRef} rotation={[0, Math.PI / 2, 0]}>
-      <primitive object={cloned} />
+    <group ref={outerGroupRef}>
+      {/* Inner group with scale and material setup. Models are authored facing +Z;
+          rotate to face +X so they face opponents. BattlePlayer/Opponent mirror for left/right. */}
+      <group ref={innerGroupRef} rotation={[0, Math.PI / 2, 0]}>
+        <group ref={groupRef}>
+          <Clone object={cloned} castShadow receiveShadow />
+        </group>
+      </group>
     </group>
   );
 }
