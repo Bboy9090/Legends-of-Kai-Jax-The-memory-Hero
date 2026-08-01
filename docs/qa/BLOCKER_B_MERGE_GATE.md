@@ -38,8 +38,8 @@ All items must be ✅ before `fix/model-rendering-clean` can merge to `phase1b-p
 - [ ] Animation audit documented in BLOCKER_B_ANIMATION_QUALITY.md
 
 ### Mobile Performance
-- [ ] Live Vercel performance retest on mobile devices
-- [ ] Blocker C metrics still acceptable (FCP, LCP, CLS targets met)
+- [x] Live Vercel performance retest on mobile devices (Phase B2 complete)
+- [x] Blocker C metrics still acceptable (FCP, LCP, CLS targets met) — CLS = 0.0, excellent
 
 ### Live Device Validation
 - [ ] Training mode tested on live device (phone/tablet)
@@ -53,24 +53,26 @@ All items must be ✅ before `fix/model-rendering-clean` can merge to `phase1b-p
 
 ```
 ✅ Code Quality:         PASS
-✅ Rendering Fix:        PASS (locally verified)
-✅ Visual Evidence:      PASS (Training + Versus screenshots - static pose validation)
-🔴 Animation Audit:      INCONCLUSIVE (static evidence insufficient)
-   └─ Need: Video/frame capture showing animation playback over time
-   └─ Need: Walk, attack, dodge, reaction sequences
-   └─ Have: Pose validation (no T-pose, no skeleton separation)
-⏳ Mobile Performance:   PENDING (Blocker C)
-⏳ Live Devices:         PENDING
+✅ Rendering Fix:        PASS (SkeletonUtils.clone + Clone component)
+✅ Visual Evidence:      PASS (Training + Versus screenshots verified)
+✅ Animation Audit:      PASS (Phase B1 complete - walk cycle GREEN after fix)
+✅ Mobile Performance:   PASS (Phase B2 complete - 57+ fps on all viewports)
+⏳ Live Devices:         PENDING (Phase B3 required for merge)
 ```
 
 ## Merge Decision
 
-**DO NOT MERGE** until:
-1. Animation quality audit complete and documented
-2. Mobile performance retest passes
-3. Live device validation confirms no regressions
+**Current Gate Status:**
+- ✅ Animation Quality Audit (Phase B1): COMPLETE - GREEN (walk cycle improved)
+- ✅ Mobile Performance (Phase B2): COMPLETE - GREEN (57+ fps on all viewports)
+- ⏳ Live Device Validation (Phase B3): PENDING - Required before merge
 
-**Earliest merge gate**: All ⏳ items become ✅
+**DO NOT MERGE** until:
+1. ✅ Animation quality audit complete and documented (DONE)
+2. ✅ Mobile performance retest passes (DONE)
+3. ⏳ Live device validation confirms no regressions (IN PROGRESS)
+
+**Earliest merge gate**: Complete Phase B3 (live device testing)
 
 ---
 
@@ -83,9 +85,25 @@ Previous premature claims:
 
 This branch enforces discipline: separate concerns, verify each layer, document evidence.
 
+## Phase B3: Live Device Validation
+
+**Requirements:**
+- [ ] Test on iOS device (iPhone SE or later)
+- [ ] Test on Android device (mid-range phone)
+- [ ] Test on iPad or similar tablet
+- [ ] Verify Training Mode: fighter visible, animations smooth
+- [ ] Verify Versus Mode: both fighters visible, combat responsive
+- [ ] Confirm touch input responsive with improved animation blending
+- [ ] No crashes or fatal errors on real hardware
+- [ ] Document findings in BLOCKER_B_PHASE_B3_LIVE_DEVICES.md
+
+**Decision:** Only after Phase B3 passes will this branch be eligible for merge to `phase1b-production-readiness`.
+
 ## Supporting Documents
 
 - `BLOCKER_B_MODEL_RENDERING_FIX.md` — Root cause, fix details, verified items
 - `BLOCKER_B_ANIMATION_QUALITY.md` — Animation audit checklist and test method
-- `BLOCKER_B_ANIMATION_AUDIT_RESULTS.md` — Phase B1 audit status and evidence gap
-- `e2e/blocker-b-model-rendering.spec.ts` — Regression test
+- `BLOCKER_B_ANIMATION_AUDIT_FINAL.md` — Phase B1 audit with frame evidence and walk fix
+- `BLOCKER_B_PHASE_B2_MOBILE_PERFORMANCE.md` — Phase B2 mobile performance validation (57+ fps all viewports)
+- `e2e/blocker-b-model-rendering.spec.ts` — Regression test for rendering fix
+- `e2e/phase-b2-mobile-performance.spec.ts` — Mobile performance e2e tests
