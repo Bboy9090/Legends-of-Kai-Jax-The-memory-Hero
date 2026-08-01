@@ -196,6 +196,7 @@ export default function VersusCharacterSelect() {
               }}
             >
               <Canvas
+                style={{ pointerEvents: 'auto' }}
                 shadows
                 camera={{ position: [0, 1.65, 6.4], fov: 42 }}
                 onCreated={({ gl }) => {
@@ -287,7 +288,7 @@ export default function VersusCharacterSelect() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pb-6 pt-2 px-4">
+      <div className="relative z-20 flex flex-col sm:flex-row items-center justify-center gap-3 pb-6 pt-2 px-4">
         <button
           type="button"
           onClick={() => beginMatch(false)}
