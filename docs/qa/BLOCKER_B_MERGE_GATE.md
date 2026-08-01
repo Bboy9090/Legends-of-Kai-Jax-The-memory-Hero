@@ -38,8 +38,13 @@ All items must be ✅ before `fix/model-rendering-clean` can merge to `phase1b-p
 - [ ] Animation audit documented in BLOCKER_B_ANIMATION_QUALITY.md
 
 ### Mobile Performance
-- [x] Live Vercel performance retest on mobile devices (Phase B2 complete)
-- [x] Blocker C metrics still acceptable (FCP, LCP, CLS targets met) — CLS = 0.0, excellent
+- [x] Mobile Simulation (Phase B2): Viewport emulation passes (56–58 fps, consistent frame timing)
+- [ ] Physical Mobile Hardware (Phase B3): Real device validation REQUIRED before merge
+  - [ ] iOS device (iPhone SE or newer) — Safari testing
+  - [ ] Android device (mid-range) — Chrome testing
+  - [ ] Tablet validation
+  - [ ] Thermal/throttling monitoring
+  - [ ] Touch latency verification
 
 ### Live Device Validation
 - [ ] Training mode tested on live device (phone/tablet)
@@ -52,27 +57,42 @@ All items must be ✅ before `fix/model-rendering-clean` can merge to `phase1b-p
 ## Current Status
 
 ```
-✅ Code Quality:         PASS
-✅ Rendering Fix:        PASS (SkeletonUtils.clone + Clone component)
-✅ Visual Evidence:      PASS (Training + Versus screenshots verified)
-✅ Animation Audit:      PASS (Phase B1 complete - walk cycle GREEN after fix)
-✅ Mobile Performance:   PASS (Phase B2 complete - 57+ fps on all viewports)
-⏳ Live Devices:         PENDING (Phase B3 required for merge)
+✅ Code Quality:              PASS
+✅ Rendering Fix:             PASS (SkeletonUtils.clone + Clone component)
+✅ Visual Evidence:           PASS (Training + Versus screenshots verified)
+✅ Animation Audit:           PASS (Phase B1 complete - walk cycle GREEN)
+✅ Mobile Simulation:         PASS (Phase B2 - viewport emulation 56–58 fps)
+⏳ Physical Mobile Hardware:  PENDING (Phase B3 - CRITICAL for merge)
+   ├─ iOS real device:       ⏳ NOT TESTED
+   ├─ Android real device:   ⏳ NOT TESTED
+   ├─ Thermal behavior:      ⏳ NOT TESTED
+   ├─ Touch latency:         ⏳ NOT TESTED
+   └─ Safari/Chrome WebGL:   ⏳ NOT TESTED
 ```
 
 ## Merge Decision
 
-**Current Gate Status:**
-- ✅ Animation Quality Audit (Phase B1): COMPLETE - GREEN (walk cycle improved)
-- ✅ Mobile Performance (Phase B2): COMPLETE - GREEN (57+ fps on all viewports)
-- ⏳ Live Device Validation (Phase B3): PENDING - Required before merge
+**Critical Gate Distinction:**
+
+Phase B2 (Mobile Simulation) validates viewport emulation performance ONLY:
+- ✅ Chromium headless 56–58 fps
+- ✅ Consistent frame timing (17–22 ms)
+- ✅ Canvas rendering active
+- **Does NOT prove:** Physical iPhone GPU, Android GPU, thermal behavior, touch latency, Safari/Chrome WebGL quirks, battery throttling
+
+Phase B3 (Physical Hardware) is THE REQUIRED GATE before merge:
+- ⏳ Real iOS device (iPhone SE+) Safari performance
+- ⏳ Real Android device Chrome performance
+- ⏳ Thermal/throttling monitoring
+- ⏳ Touch input latency under load
+- ⏳ Animation smoothness on actual GPU
 
 **DO NOT MERGE** until:
-1. ✅ Animation quality audit complete and documented (DONE)
-2. ✅ Mobile performance retest passes (DONE)
-3. ⏳ Live device validation confirms no regressions (IN PROGRESS)
+1. ✅ Animation quality audit complete (DONE)
+2. ✅ Mobile simulation passes (DONE)
+3. ⏳ Physical device validation complete (CRITICAL - BLOCKING MERGE)
 
-**Earliest merge gate**: Complete Phase B3 (live device testing)
+**Earliest merge gate**: Complete Phase B3 on real iOS + Android devices
 
 ---
 
@@ -85,19 +105,53 @@ Previous premature claims:
 
 This branch enforces discipline: separate concerns, verify each layer, document evidence.
 
-## Phase B3: Live Device Validation
+## Phase B3: Live Device Validation (BLOCKING GATE)
 
-**Requirements:**
-- [ ] Test on iOS device (iPhone SE or later)
-- [ ] Test on Android device (mid-range phone)
-- [ ] Test on iPad or similar tablet
-- [ ] Verify Training Mode: fighter visible, animations smooth
-- [ ] Verify Versus Mode: both fighters visible, combat responsive
-- [ ] Confirm touch input responsive with improved animation blending
-- [ ] No crashes or fatal errors on real hardware
-- [ ] Document findings in BLOCKER_B_PHASE_B3_LIVE_DEVICES.md
+**Minimum Device Matrix:**
 
-**Decision:** Only after Phase B3 passes will this branch be eligible for merge to `phase1b-production-readiness`.
+iOS:
+- [ ] iPhone SE or newer
+- [ ] Safari browser (not just viewport emulation)
+- [ ] Monitor: thermal throttling, touch latency, FPS consistency
+
+Android:
+- [ ] Mid-range Android device (Snapdragon 800 series or equivalent)
+- [ ] Chrome browser
+- [ ] Monitor: thermal throttling, touch latency, FPS consistency
+
+Tablet (optional but recommended):
+- [ ] iPad or Android tablet
+- [ ] Landscape + portrait validation
+
+**Test Sequence (per device):**
+1. Launch app, measure load time
+2. Main Menu navigation (no animation hitches)
+3. Training Mode:
+   - Character visible (Kai-Jax rendered, not fallback)
+   - Idle animation plays without jitter
+   - Walk animation natural (arms swing, weight shift visible)
+   - Punch attack responsive, clean execution
+   - Kick attack responsive, clean execution
+   - Dodge/evade works correctly
+4. Versus Mode:
+   - Both fighters visible
+   - Combat responsive to touch input
+   - Animation transitions smooth (no freezing between states)
+   - Hit reactions visible and synchronized
+5. Extended play (5+ minutes):
+   - Monitor for thermal throttling (FPS drops)
+   - Confirm no crashes or fatal errors
+   - Record overall feel (smoothness, touch response, visual quality)
+
+**Evidence Required:**
+- Notes on FPS consistency (60 → throttled range)
+- Touch latency observations (input → visual response time)
+- Any animation glitches or jitter (record specific scenarios)
+- Thermal behavior (device getting hot, fan spinning)
+- WebGL or shader issues specific to device
+- Battery drain rate if measurable
+
+**Decision:** Only after Phase B3 passes on both iOS + Android will this branch be eligible for merge to `phase1b-production-readiness`.
 
 ## Supporting Documents
 

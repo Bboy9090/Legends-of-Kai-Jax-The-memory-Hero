@@ -148,39 +148,58 @@ Frame rates 56-58 fps across all three viewport sizes indicates:
 
 ---
 
-## Go/No-Go Decision Gate
+## Critical Clarification: Phase B2 is Simulation Only
 
 ```
-PHASE B2 MOBILE PERFORMANCE: ✅ GREEN (PASS)
+PHASE B2 MOBILE SIMULATION: ✅ PASS (viewport emulation in Chromium)
 
-Required Metrics:
-✅ Frame rate >30 fps          (Result: 57-58 fps)
-✅ Max frame time <50ms         (Result: 21-22 ms)
-✅ Canvas rendering verified    (Result: Confirmed on all devices)
-✅ Web Vitals acceptable        (Result: CLS = 0.0)
-✅ Animation smoothness proven  (Result: Consistent frame timing)
+What Phase B2 PROVES:
+✅ Chromium headless browser: 56–58 fps
+✅ Frame timing consistency: 17–22 ms (predictable)
+✅ Canvas rendering active
+✅ Animation state transitions smooth (in emulation)
+✅ Web Vitals acceptable (no layout shifts)
 
-DECISION: Proceed to Phase B3 - Live Device Validation
+What Phase B2 DOES NOT PROVE:
+❌ Physical iPhone GPU performance (Chromium ≠ Safari WebGL)
+❌ Physical Android GPU performance (varies by chipset)
+❌ Thermal throttling behavior (emulation has unlimited thermal)
+❌ Touch input latency (emulator has no real input stack)
+❌ Battery drain patterns
+❌ Actual device WebGL driver quirks (Safari, Chrome engine differences)
+
+DECISION: Phase B2 CLEARS simulation baseline only
+NEXT GATE: Phase B3 - Real Device Validation (REQUIRED FOR MERGE)
 ```
 
 ---
 
-## Next Steps: Phase B3
+## Next Steps: Phase B3 (BLOCKING GATE FOR MERGE)
 
 **Phase B3: Live Device Validation**
-- Test on actual mobile devices (iOS/Android phones and tablets)
-- Verify fighter visibility in Training and Versus modes
-- Confirm no crashes or performance regressions on real hardware
-- Validate touch input responsiveness with improved animation
+Phase B2 simulation passes only guarantee viewport emulation performance. Real device testing is REQUIRED:
+
+**iOS Testing:**
+- iPhone SE or newer, Safari browser
+- Full sequence: Launch → Training → Walk/Punch/Kick/Dodge → Versus
+- Monitor: thermal throttling, touch latency, FPS consistency
+- Record: any WebGL or animation glitches specific to Safari
+
+**Android Testing:**
+- Mid-range device (Snapdragon 800+), Chrome browser
+- Same sequence as iOS
+- Monitor: thermal throttling, GPU behavior, touch latency
+- Record: any WebGL or animation glitches specific to Android
 
 **Merge Gate Status:**
-- ✅ Phase B1 (Animation Audit): COMPLETE - GREEN
-- ✅ Phase B2 (Mobile Performance): COMPLETE - GREEN
-- ⏳ Phase B3 (Live Devices): PENDING
+- ✅ Phase B1 (Animation Audit): COMPLETE - GREEN (walk cycle improved)
+- ✅ Phase B2 (Mobile Simulation): COMPLETE - GREEN (viewport emulation baseline)
+- ⏳ Phase B3 (Live Devices): PENDING - **BLOCKING MERGE** until complete
 
 **Merge Criteria:**
-- Do not merge until Phase B3 passes
-- Do not deploy until live device testing confirms no regressions
+- ✅ Do not merge until Phase B3 passes on real iOS + Android devices
+- ✅ Do not deploy until live device testing confirms animation smoothness and no thermal regressions
+- Note: Phase B2 simulation alone is NOT sufficient — real GPU behavior differs from emulation
 
 ---
 
