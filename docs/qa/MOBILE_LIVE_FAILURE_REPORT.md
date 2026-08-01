@@ -322,9 +322,31 @@ HUD system: Canvas-rendered (NOT DOM elements - explains "0 HUD elements" findin
 2. Player model loading: ❌ Model not visible - requires scene trace (check MODEL_REGISTRY path, load status, mesh attachment, position/scale/visibility)
 3. Enemy model loading: ❌ Model not visible - requires scene trace
 
-**Status:** HUD VERIFIED WORKING | Player/Enemy models missing - awaiting TASK 2 Three.js scene trace
+**TASK 2 Three.js Scene Trace Results:**
+
+Console logging during Training Mode load shows complete model initialization pipeline:
+- ✅ Model file path resolved: `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb`
+- ✅ Scene cloned with 1 child object
+- ✅ Mesh found: 1 mesh detected
+- ✅ Material updated: materialsUpdated: 1
+- ✅ Bounding box calculated: height: 1.7 (valid)
+- ✅ Scaling applied: scale: 1.294, positionY: 4.832e-8
+- ✅ Animation setup: selectedAction: Running
+
+**BUT:** Despite complete load pipeline, character mesh is NOT visible in scene (only fallback marker rendered).
+
+**Root Cause Candidates:**
+1. Camera not framed for character position (positionY value suspicious)
+2. Material opacity still 0/transparent despite "updated" log
+3. Mesh.visible flag still false
+4. Mesh scale/position not actually applied to Three.js object
+5. Mesh not attached to scene.children despite log saying 1 child
+
+**Status:** HUD VERIFIED WORKING | Player model code executes but NOT RENDERED - requires material/camera/visibility fix
 
 **Scope:** localhost:3000 only | NOT TESTED on live Vercel deployment
+
+**Blocking Issue:** Model loading works, but visibility issue prevents gameplay testing
 
 ---
 
@@ -382,9 +404,34 @@ Test script captures screenshot after FIGHT button click with 3-second wait, but
 2. Screenshot captured before arena rendered
 3. FIGHT button navigation did not complete
 
-**Status:** Character select verified | Character preview NOT VISIBLE (fallback sphere only) | Arena scene NOT CAPTURED | Re-test required with explicit arena load verification before screenshot
+**TASK 2 Three.js Scene Trace Results:**
+
+**Character Select Screen:**
+- ✅ 93 fighters available in roster
+- ✅ Character preview model config loads: `configPath: /models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb`
+- ✅ Mesh found: 1 mesh detected, 1 material present
+- ✅ Animation data loaded: Array(1) animations
+- BUT: Preview mesh NOT visible (only cyan fallback sphere rendered)
+
+**Arena Navigation:**
+- ❌ **CRITICAL BLOCKER:** FIGHT button does NOT navigate to arena
+- After clicking FIGHT: Still on character select screen
+- No battle indicators present (no Wave count, no ATTACK text)
+- No fighter text found (no P1/P2/OPPONENT labels)
+- Console shows 0 arena-related logs (arena scene never initializes)
+
+**Root Cause Analysis:**
+- Character preview: Same issue as Training Mode - model loads but not visible
+- Arena navigation: **Route/state transition broken** - gameState doesn't change to "battle" after FIGHT click
+- This is a **navigation bug**, not a model loading issue
+
+**Status:** Character select verified | Character preview NOT VISIBLE (model loads but rendering fails) | **Arena scene UNREACHABLE (navigation broken)** | Cannot assess battle HUD/fighters without working arena route
 
 **Scope:** localhost:3000 only | NOT TESTED on live Vercel deployment
+
+**Blocking Issues:** 
+1. Character preview model visibility (same as Training)
+2. Arena route transition missing (cannot reach battle scene)
 
 ---
 
