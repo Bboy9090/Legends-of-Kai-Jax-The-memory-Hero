@@ -41,7 +41,10 @@ export default function CampaignMap() {
   return (
     <div
       className="h-screen w-full p-6 overflow-auto text-white"
-      style={{ background: "linear-gradient(160deg, #0a0a1a 0%, #1a0a2e 50%, #0d0d1a 100%)" }}
+      style={{
+        background: "linear-gradient(160deg, #0a0a1a 0%, #1a0a2e 50%, #0d0d1a 100%)",
+        paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))"
+      }}
     >
       <div className="max-w-3xl mx-auto">
         <button
@@ -140,7 +143,7 @@ export default function CampaignMap() {
         </div>
 
         {selected && (
-          <div className="bg-slate-900/80 border-2 border-purple-400/50 rounded-2xl p-6 shadow-[0_0_30px_rgba(168,85,247,0.15)]">
+          <div className="bg-slate-900/80 border-2 border-purple-400/50 rounded-2xl p-6 shadow-[0_0_30px_rgba(168,85,247,0.15)] mb-6">
             <div className="flex items-center gap-2 mb-1">
               <BookOpen className="w-5 h-5 text-purple-300" />
               <h2 className="text-xl font-bold text-purple-200">{selected.title}</h2>
@@ -188,7 +191,7 @@ export default function CampaignMap() {
 
             <button
               onClick={() => launchMission(selected.id)}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-lg transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+              className="w-full min-h-[44px] py-4 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-lg transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
             >
               <Swords className="w-5 h-5" />
               Begin Mission
