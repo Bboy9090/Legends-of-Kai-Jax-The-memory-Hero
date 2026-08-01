@@ -91,20 +91,51 @@ export default function OptimizedBeastModel({
   const modelPath = getBeastModelPath(beast.id);
   const [loadError, setLoadError] = useState(false);
 
+  // DIAGNOSTIC: log model path resolution
+  useEffect(() => {
+    console.log('[OptimizedBeastModel] Trace:', {
+      beastId: beast.id,
+      resolvedPath: modelPath,
+      beastData: { id: beast.id, color: beast.color },
+    });
+  }, [modelPath, beast.id, beast.color]);
+
   // Target on-screen character height in world units (matches the arena scale).
   const TARGET_HEIGHT = 2.2;
 
   // Load GLB model
   const { scene, animations } = useGLTF(modelPath, undefined, undefined, (err) => {
+    console.error('[OptimizedBeastModel] Load failed:', {
+      modelPath,
+      error: err?.message || String(err),
+    });
     console.warn(`Failed to load model: ${modelPath}`, err);
     setLoadError(true);
   });
+
+  // DIAGNOSTIC: log scene load success
+  useEffect(() => {
+    if (scene) {
+      console.log('[OptimizedBeastModel] Scene loaded:', {
+        beastId: beast.id,
+        childrenCount: scene.children.length,
+        animationCount: animations?.length || 0,
+      });
+    }
+  }, [scene, beast.id, animations]);
 
   // Clone with SkeletonUtils so the skinned mesh keeps its rig — a plain clone
   // (or drei <Clone>) leaves the SkinnedMesh bound to the ORIGINAL bones, so
   // the animation mixer moves bones that drive nothing and the model looks
   // stiff/unrigged (no arm swing). Binding the mixer to this clone fixes it.
-  const cloned = useMemo(() => SkeletonUtils.clone(scene) as THREE.Group, [scene]);
+  const cloned = useMemo(() => {
+    const c = SkeletonUtils.clone(scene) as THREE.Group;
+    console.log('[OptimizedBeastModel] Cloned scene:', {
+      beastId: beast.id,
+      childrenCount: c.children.length,
+    });
+    return c;
+  }, [scene, beast.id]);
   const { actions, mixer } = useAnimations(animations, cloned);
 
   // Normalize the model to a consistent height and stand it on the ground.
@@ -113,48 +144,96 @@ export default function OptimizedBeastModel({
   useEffect(() => {
     const node = cloned;
     if (!node) return;
+
+    let meshCount = 0;
+    const mats: THREE.Material[] = [];
+
     node.traverse((child) => {
       const mesh = child as THREE.Mesh;
       if (!mesh.isMesh) return;
+
+      meshCount++;
       mesh.visible = true;
       mesh.frustumCulled = false;
-      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      mats.forEach((m) => {
+
+      const matArray = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      matArray.forEach((m) => {
         if (!m) return;
+        mats.push(m);
         m.visible = true;
         (m as THREE.Material).opacity = 1;
         (m as THREE.Material).transparent = false;
         m.needsUpdate = true;
       });
     });
+
+    console.log('[OptimizedBeastModel] Mesh visibility update:', {
+      beastId: beast.id,
+      meshesFound: meshCount,
+      materialsUpdated: mats.length,
+    });
+
     node.updateMatrixWorld(true);
     const bbox = new THREE.Box3().setFromObject(node);
     const height = bbox.max.y - bbox.min.y;
+
+    console.log('[OptimizedBeastModel] Bounding box:', {
+      beastId: beast.id,
+      height,
+      min: bbox.min,
+      max: bbox.max,
+      isFinite: Number.isFinite(height),
+    });
+
     if (height > 0.001 && Number.isFinite(height)) {
       const s = THREE.MathUtils.clamp(TARGET_HEIGHT / height, 0.01, 100);
       node.scale.setScalar(s);
       node.position.y = -bbox.min.y * s; // feet at y=0
+
+      console.log('[OptimizedBeastModel] Scaling applied:', {
+        beastId: beast.id,
+        scale: s,
+        positionY: node.position.y,
+      });
+    } else {
+      console.warn('[OptimizedBeastModel] Invalid height, skipping scale:', {
+        beastId: beast.id,
+        height,
+      });
     }
-  }, [scene]);
+  }, [scene, beast.id, cloned]);
 
   // Handle animations
   useEffect(() => {
-    if (!actions || Object.keys(actions).length === 0) return;
-    
+    if (!actions || Object.keys(actions).length === 0) {
+      console.log('[OptimizedBeastModel] No animations available:', {
+        beastId: beast.id,
+        actionsCount: actions ? Object.keys(actions).length : 0,
+      });
+      return;
+    }
+
     const actionName = isAttacking ? 'attack' : isMoving ? 'run' : 'idle';
     const available = Object.keys(actions);
-    
+
     // Flexible matching: case-insensitive and partial
     const match = available.find(n => n.toLowerCase() === actionName) ||
                   available.find(n => n.toLowerCase().includes(actionName)) ||
                   available[0];
-    
+
+    console.log('[OptimizedBeastModel] Animation setup:', {
+      beastId: beast.id,
+      requestedAction: actionName,
+      availableActions: available,
+      selectedAction: match,
+    });
+
     if (match && actions[match]) {
       // Stop all other actions first for a clean transition
       Object.values(actions).forEach(a => a?.fadeOut(0.2));
       actions[match].reset().fadeIn(0.2).play();
     }
-  }, [actions, isAttacking, isMoving]);
+  }, [actions, isAttacking, isMoving, beast.id]);
 
   // Hit animation and effects
   useFrame((state, delta) => {

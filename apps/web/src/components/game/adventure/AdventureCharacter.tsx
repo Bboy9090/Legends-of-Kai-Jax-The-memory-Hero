@@ -154,17 +154,36 @@ function PlayerPresenceMarker({ accentColor }: { accentColor: string }) {
 export default function AdventureCharacter({ fighterId, accentColor }: Props) {
   const groupRef = useRef<THREE.Group>(null);
   const { player } = useAdventure();
-  
+  const fighter = getFighterById(fighterId);
+
+  // DIAGNOSTIC: trace character loading
+  useRef(() => {
+    const trace = {
+      fighterId,
+      fighter: fighter ? { id: fighter.id, color: fighter.color } : null,
+      accentColor,
+      timestamp: Date.now(),
+    };
+    console.log('[AdventureCharacter] Loading trace:', trace);
+  }).current?.();
+
   // Track vertical offset for grounding (some models have pivot at center instead of feet)
   const yOffset = useRef(0);
 
   useFrame(() => {
     if (!groupRef.current) return;
-    
+
     // Sync position and rotation from store
     groupRef.current.position.set(player.posX, player.posY + yOffset.current, player.posZ);
     groupRef.current.rotation.y = player.rotY;
     groupRef.current.visible = true;
+
+    // DIAGNOSTIC: check mesh visibility on first frame
+    if (!groupRef.current.userData.visibilityLogged) {
+      const meshCount = groupRef.current.children.length;
+      console.log('[AdventureCharacter] Frame update - meshes:', meshCount, 'visible:', groupRef.current.visible);
+      groupRef.current.userData.visibilityLogged = true;
+    }
   });
 
   // Map CombatState to high-level animation props
