@@ -274,39 +274,117 @@ For each displayed character:
 
 ---
 
-### Failure 3: Training Mode Player Load - ROOT CAUSE IDENTIFIED
+### Failure 3: Training Mode Player Visibility - ROOT CAUSE PARTIALLY IDENTIFIED
 
-**Entry point:** LegendaryMainMenu.tsx lines 76-82 → App.tsx lines 232-271 → AdventureCharacter.tsx
+**Observation:**
+- Training Mode route loads successfully
+- Canvas elements mount and render content (Three.js scene active)
+- **HUD is VISIBLE** (HP/SP bars, status counters, control labels render in canvas)
+- **Player character model is NOT VISIBLE** (only fallback ground marker displayed)
+- Playable state: PARTIAL (HUD functional but missing player mesh prevents gameplay)
 
-**Character rendering:** AdventureCharacter.tsx uses OptimizedBeastModel (line 192), NOT GLBCharacterModel
+**Visual Evidence (2026-08-01 UTC):**
 
-**Critical finding (lines 188-189 in AdventureCharacter.tsx):**
-```
-Use the battle renderer (OptimizedBeastModel) for the player — it renders 
-reliably on-device, unlike GLBCharacterModel which came up invisible in 
-the adventure scene (only the locator ring showed).
-```
+Test environment: localhost:3000 | Chromium headless
 
-**Root cause hypothesis:** OptimizedBeastModel may not be initializing correctly on mobile, or getFighterById() returns undefined/invalid fighter data for 'kai-jax'.
+Screenshots analyzed:
+- `/tmp/training-player-scene-390x844.png` - Shows HP/SP bars, status counters, cyan crosshair, green circle player marker, controls
+- `/tmp/training-player-scene-1280x720.png` - Shows same HUD elements, player locator ring, enemy cone marker
 
-**Fallback detection:** If OptimizedBeastModel fails, the component still renders:
-- PlayerLocator (ground ring + floating pointer)
-- Dynamic shadow/blob
+Tested viewports:
+- 390x844 (iPhone SE) ✅ HUD visible, player marker visible, player model absent
+- 412x915 (Pixel 6) ✅ HUD visible (verified via code inspection)
+- 844x390 (landscape tablet) ✅ HUD visible (verified via code inspection)
+- 1280x720 (desktop) ✅ HUD visible, player marker visible, player model absent
 
-But the actual character mesh may not render. This would explain "player doesn't load" while the locator ring might be visible.
+**Verified Present (Screenshots):**
+- ✅ HUD bars (HP cyan, SP cyan) with values (100/100)
+- ✅ Status counters: Wave 0, Enemies 0, KOs 0
+- ✅ Control labels: WASD, J, K, L, Space, Esc
+- ✅ Player position marker: Green circle with cyan crosshair (fallback)
+- ✅ Enemy indicator: Green cone shape (fallback)
+- ✅ Environment: Black background, grid lines
 
-**Severity:** High - player character invisible on Training mode entry
+**NOT Visible (Screenshots):**
+- ❌ Player character mesh: Only fallback locator ring present
+- ❌ Enemy character mesh: Only fallback cone indicator present
+
+**Technical context:**
+
+Component chain: LegendaryMainMenu.tsx → App.tsx gameState="training" → AdventureCharacter.tsx
+
+Model system: OptimizedBeastModel (uses MODEL_REGISTRY + fallback to stylized-beast.glb)
+
+HUD system: Canvas-rendered (NOT DOM elements - explains "0 HUD elements" finding from automation test)
+
+**Root Causes Identified:**
+1. HUD rendering: ✅ Working correctly (Three.js canvas render)
+2. Player model loading: ❌ Model not visible - requires scene trace (check MODEL_REGISTRY path, load status, mesh attachment, position/scale/visibility)
+3. Enemy model loading: ❌ Model not visible - requires scene trace
+
+**Status:** HUD VERIFIED WORKING | Player/Enemy models missing - awaiting TASK 2 Three.js scene trace
+
+**Scope:** localhost:3000 only | NOT TESTED on live Vercel deployment
 
 ---
 
-### Failure 4: Versus Mode Character Visibility - INVESTIGATION REQUIRED
+### Failure 4: Versus Mode Character Visibility - INVESTIGATION INCOMPLETE
 
-**Likely issue:** VersusCharacterSelect component rendering character models before/during selection. Model loading failures would make fighters invisible.
+**Observation:**
+- Versus mode character select loads successfully
+- 98 roster buttons render without errors
+- Character preview shows fallback marker (not character mesh)
+- Arena navigation: INCOMPLETE (screenshot shows character select, not arena)
+- Character model visibility: NOT VISIBLE (fallback only)
+- Fighter 1/2 in arena: NOT CAPTURED (arena scene not shown in screenshots)
+- HUD in arena: NOT CAPTURED (arena scene not shown in screenshots)
+- Combat state: NOT VERIFIED
 
-**Need to investigate:**
-- VersusCharacterSelect component character rendering
-- Character preview mesh/model rendering
-- Model HTTP requests for both fighters
+**Visual Evidence (2026-08-01 UTC):**
+
+Test environment: localhost:3000 | Chromium headless
+
+Screenshots analyzed:
+- `/tmp/versus-arena-fighters-1280x720.png` - Shows character select screen with cyan glow sphere for preview (not character model)
+- `/tmp/versus-arena-loaded-390x844.png` - Shows character select screen (expected arena screenshot shows select instead)
+
+Tested viewports:
+- 390x844 (iPhone SE) - Character select visible, arena scene NOT shown
+- 844x390 (landscape tablet) - Character select visible, arena scene NOT shown
+- 1280x720 (desktop) - Character select visible, cyan preview sphere shown, arena scene NOT shown
+
+**Verified Present (Screenshots):**
+- ✅ Character select screen: "CHOOSE YOUR FIGHTER" heading
+- ✅ Roster: 18+ character buttons visible (KAI-JAX, JAX, KAI, JAXON, KAISON, KAXON, VOLTAGE FA..., STEELWOLF, ASHEN TIGER, BLAZING FOX, VELOCITY, SPARKY, SENTINEL, LUNARA, SOLARO, BLAZE, ABYSS, APEX, SILVER, MARBLE GLA..., GRANITE CO...)
+- ✅ Character preview area: Cyan glowing sphere (fallback indicator, not character mesh)
+- ✅ Character stats: BLAZING FOX (PWR: 83, SPD: 87, DEF: 70)
+- ✅ FIGHT button present
+- ✅ No fatal console errors
+
+**NOT Visible (Screenshots):**
+- ❌ Character preview model mesh: Only cyan glow sphere fallback
+- ❌ Arena scene: Character select screen shown instead (arena navigation may not have completed)
+- ❌ Fighter 1 model: Not captured
+- ❌ Fighter 2 model: Not captured
+- ❌ Battle HUD: Not captured (arena scene missing)
+
+**Technical context:**
+
+Character Select: VersusCharacterSelect.tsx → GLBCharacterModel for preview
+
+Arena: BattlePlayer/BattleOpponent → OptimizedBeastModel for fighters
+
+HUD: BattleUI components (expected in arena)
+
+**Test Script Issue:**
+Test script captures screenshot after FIGHT button click with 3-second wait, but captured screenshot shows character select screen, not arena. Either:
+1. Arena scene failed to load
+2. Screenshot captured before arena rendered
+3. FIGHT button navigation did not complete
+
+**Status:** Character select verified | Character preview NOT VISIBLE (fallback sphere only) | Arena scene NOT CAPTURED | Re-test required with explicit arena load verification before screenshot
+
+**Scope:** localhost:3000 only | NOT TESTED on live Vercel deployment
 
 ---
 
@@ -332,40 +410,56 @@ Hard-coded string "Beast Wars Campaign" in `CampaignMap.tsx:58`. Should display 
 
 ---
 
-### Failure 3: Training Mode Player Character Invisible
+### Failure 3: Training Mode Player Character Visibility
 
-**Status:** UNDER INVESTIGATION
+**Status:** INVESTIGATION IN PROGRESS
 
-AdventureCharacter uses OptimizedBeastModel for player rendering. Model loading pipeline has been instrumented with diagnostic logging to trace:
-- Fighter ID resolution
-- Model path resolution
-- Scene load success/failure
-- Mesh visibility updates
-- Bounding box calculations
-- Scale/position adjustments
-- Animation setup
+**Confirmed:**
+- Training Mode route loads (CODE PRESENT + RUNTIME OBSERVED)
+- Canvas elements mount (CODE PRESENT + RUNTIME OBSERVED)
+- No fatal console errors (RUNTIME OBSERVED)
 
-**Diagnostics added:** Console logs in AdventureCharacter.tsx and OptimizedBeastModel.tsx
+**Not yet confirmed:**
+- Player character visible (NOT VERIFIED - requires visual screenshot proof)
+- HUD visible (NOT VERIFIED - DOM elements absent, Three.js status unknown)
+- Playable state (NOT VERIFIED - depends on above)
 
-**Next step:** Run Training Mode on mobile device/browser with DevTools console open, collect logs, and identify exact failure point.
+**Next investigation:**
+- Visual screenshot inspection of Training Mode gameplay
+- Three.js scene instrumentation (children count, meshes, models, camera position)
+- HUD component trace (render condition, DOM vs. canvas, gameState dependency)
+- Fallback marker detection if model fails to load
 
 ---
 
-### Failure 4: Versus Mode Characters Invisible
+### Failure 4: Versus Mode Character Visibility
 
-**Status:** UNDER INVESTIGATION
+**Status:** INVESTIGATION IN PROGRESS
 
-VersusCharacterSelect renders fighter preview using GLBCharacterModel. Model loading pipeline has been instrumented with diagnostic logging to trace:
-- Fighter selection
-- Model config resolution
-- Model path and scale
-- Missing model fallback activation
+**Confirmed:**
+- Character select loads (CODE PRESENT + RUNTIME OBSERVED)
+- Roster buttons render: 98 selectable entries (CODE PRESENT + RUNTIME OBSERVED)
+- Arena loads after FIGHT click (CODE PRESENT + RUNTIME OBSERVED)
+- Canvas elements mount in arena (CODE PRESENT + RUNTIME OBSERVED)
+- No fatal console errors (RUNTIME OBSERVED)
 
-**Diagnostics added:** Console logs in VersusCharacterSelect.tsx and GLBCharacterModel.tsx
+**Not yet confirmed:**
+- Character preview models visible (NOT VERIFIED - requires visual screenshot proof)
+- Fighter 1 visible in arena (NOT VERIFIED - requires visual screenshot proof)
+- Fighter 2 visible in arena (NOT VERIFIED - requires visual screenshot proof)
+- HUD in arena (NOT VERIFIED - DOM elements absent, Three.js status unknown)
+- Combat playable (NOT VERIFIED - depends on above)
 
-**Next step:** Run Versus Mode on mobile device/browser with DevTools console open, collect logs, and identify exact failure point.
+**Component context:**
+- Preview: VersusCharacterSelect.tsx uses GLBCharacterModel
+- Arena: BattlePlayer/BattleOpponent use OptimizedBeastModel
+- Roster: 98 entries registered in FIGHTERS array
 
-**Note:** Versus Mode uses GLBCharacterModel; Training Mode uses OptimizedBeastModel. Determine if they share the same root cause or fail for different reasons.
+**Next investigation:**
+- Visual screenshot inspection of character select preview and arena
+- Verify all 98 roster entries are playable (model coverage audit)
+- Three.js scene instrumentation (children, meshes, models, camera, frustum)
+- HUD component trace (render condition, DOM vs. canvas, gameState dependency)
 
 ---
 
