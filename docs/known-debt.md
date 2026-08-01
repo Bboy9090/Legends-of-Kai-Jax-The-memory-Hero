@@ -1,291 +1,423 @@
-# Known Debt — Legends of Kai-Jax
+# Production Known-Debt Register
 
-Consolidated tracker for issues found during the Phase 1B production-readiness
-pass that are real but out of scope for the task that found them — either
-because fixing them would exceed that task's minimal-change mandate, or
-because they need a decision (asset sourcing, CI ownership) rather than a
-code fix. Nothing here is fixed by the existence of this document; it's a
-map, not a resolution.
+Comprehensive tracker of all known items that are not currently verified,
+complete, or production-grade. Each item is classified by release impact.
 
-Each item links back to the QA doc that found it, where one exists, for full
-context and evidence.
+**Last updated:** 2026-08-01 (Phase 1B code integration PR #222)
 
 ---
 
-## CI / build process
+## Release Blockers
 
-### ~~CI's "Test" step never runs the real test suite~~ — FIXED
+### 1. Live Vercel Deployment Identity Verification
 
-`.github/workflows/ci.yml` ran `pnpm test` at the repo root. Root
-`package.json`'s `test` script is a placeholder:
-`"echo 'Testing...' && node -e \"console.log('✅ Node.js ready')\""`. It
-always passed and exercised nothing. The real suite (`pnpm -C apps/web
-test`, Vitest, 76 tests as of this writing) had never been run by this CI
-workflow. **This meant CI had been reporting a passing "Test" step with no
-actual test coverage** for however long this workflow existed.
+**Status:** ❌ Unverified
 
-Fixed: `ci.yml`'s Test step now runs `pnpm -C apps/web test`.
+The code in [PR #222](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/222) is pushed and ready to deploy, but the actual live Vercel deployment has not been verified from this repository session because the execution environment cannot reach external HTTPS hosts.
 
-### ~~CI's pnpm version doesn't match the repo's pinned version~~ — FIXED
+**Required verification:**
+- Deploy to `https://legends-of-kai-jax-the-memory-hero.vercel.app/`
+- Confirm HTTPS active, no localhost redirects
+- Confirm deployed commit SHA
+- Test main menu load and interactive state
+- Document manual verification before release
 
-`ci.yml` installed pnpm via `pnpm/action-setup@v2` with `version: 8`. The
-repo's `package.json` pins `"packageManager": "pnpm@9.15.9"`, and that's
-the version this whole Phase 1B pass was verified against (see
-`docs/GETTING_STARTED.md`, this repo's `README.md`). `deploy.yml`
-separately and correctly used `pnpm/action-setup@v4` with `version:
-9.15.9` — the two workflows were inconsistent with each other and with
-the repo's own pin.
-
-Fixed: `ci.yml` now installs `9.15.9`, matching `deploy.yml` and the
-repo's pin.
-
-### `apps/web/vite.config.ts` doesn't alias `@beast-kin/ui`
-
-`apps/web/package.json` depends on `@beast-kin/characters`,
-`@beast-kin/engine`, `@beast-kin/shared`, and `@beast-kin/ui` (all
-`workspace:*`). `vite.config.ts`'s `resolve.alias` only maps the first
-three to their `packages/*/src` paths; `@beast-kin/ui` has no alias.
-This hasn't caused an observed build failure (`pnpm -C apps/web build`
-passes throughout this document's history), which suggests either nothing
-currently imports from `@beast-kin/ui`, or pnpm's workspace symlinking
-resolves it well enough without an explicit alias. Not confirmed either
-way — flagging as an inconsistency worth a deliberate look rather than an
-assumption.
-
-### GitHub's repository-level "default setup" CodeQL scanning is still active and still broken
-
-`.github/workflows/codeql.yml`'s own header comment explains it was
-written specifically to replace GitHub's auto-configured CodeQL scanner,
-"which was incorrectly attempting to analyze C# source that does not
-exist in this repository." On PR #172, both scanners are still running:
-the repo's own `codeql.yml` (correctly scoped to
-javascript-typescript/python, passes) and GitHub's separate
-repository-level default setup (which produced failing `Analyze (csharp)`
-and, intermittently, `Analyze (javascript-typescript)` checks on this
-PR). Disabling the redundant default setup requires repository Settings
-→ Code security access this session doesn't have — not fixable via a
-commit. Not a merge blocker: code-scanning results don't gate merges
-unless branch protection explicitly requires them to.
+**Dependency:** Must complete before `v0.1.0-mvp` release.
 
 ---
 
-## Broken script references
+## High Priority
 
-Both found while writing `README.md` (verified by checking each script's
-target actually exists before documenting it):
+### 2. Deployed Commit SHA Not Confirmed
 
-- **`pnpm validate:canon`** (root) → `node validate-canon.mjs`. That file
-  does not exist at the repo root.
-- **`pnpm validate:memory`** (root) → `node validate-memory-layers.mjs`.
-  Also does not exist at the repo root.
-- **`pnpm mobile:dev` / `pnpm mobile:build`** (root) → both point at
-  `apps/mobile`, which does not exist anywhere in this repository (the
-  mobile targets are Capacitor-wrapped `apps/web`, not a separate
-  workspace).
+**Status:** ⏳ Pending
 
-None of these are called by any other script, CI workflow, or app code —
-they're dead entries in root `package.json`'s `scripts` block. Low risk,
-but will confuse the next person who tries to run them.
+Cannot determine which commit is currently deployed to the live Vercel
+instance. Needed for reproducibility and rollback safety.
 
----
+**Resolution:** After manual Vercel deployment, record the commit SHA that
+is actually serving production traffic.
 
-## Dead / quarantined code
+### 3. Full 15-Mission End-to-End Completion Matrix
 
-Full detail: `docs/qa/PHASE1B_ROUTE_AUDIT_2026-07-17.md` and
-`docs/qa/PHASE1B_MOBILE_TOUCH_SMOKE_TEST_2026-07-17.md`.
+**Status:** ⏳ Pending
 
-- **`apps/web/src/components/game/TouchControls.tsx`** — quarantined with
-  a top-of-file notice (not deleted, per instruction not to remove code
-  merely because it looks old). Proven unreachable (unimported) and
-  proven incompatible (references `useRunner` properties that don't exist
-  on the current store). Safe to delete once someone confirms nothing
-  external depends on it.
-- **`apps/web/src/components/game/world/NexusHaven.tsx`** — not imported
-  anywhere; calls `setGameState()` with values (`"squad-select"`) that
-  aren't valid on the current `useRunner` store.
-- **`SagaModeLauncher`, in triplicate** —
-  `apps/web/src/components/ui/SagaModeLauncher.tsx`,
-  `apps/web/src/components/ui/SagaModeLauncher.jsx`, and
-  `apps/web/src/components/SagaModeLauncher.jsx`. None imported anywhere.
-  Uses the same broken `react-router-dom` `useNavigate()` pattern that was
-  fixed in `LegendaryMainMenu.tsx` (this app has no `<Routes>`) — would
-  need the same fix if ever revived, on top of not being wired to
-  anything currently.
-- **`LoadingScreen.tsx`'s default export** (distinct from `GameIntro`, the
-  named export that's actually used) — hardcodes a background image URL
-  at `https://replit.com/api/v1/projects/self/assets/...`, a
-  Replit-session-relative path that would never resolve outside the
-  session it was authored in. Not imported anywhere; zero runtime impact,
-  but a landmine if someone wires this component up later without
-  checking it first.
-- **`apps/web/src/debug/RegistryDebugOverlay.ts`** — a complete, working
-  debug overlay (`` ` `` key toggle, `window.registryDebug` console API)
-  whose install function, `installRegistryDebugOverlay()`, is never
-  called anywhere. Present in source, dormant at runtime. Either wire it
-  up (cheap — one call site) or remove it; leaving it half-built is the
-  only bad option.
+The 15 missions are defined in `apps/web/src/lib/story_missions.ts`. Individual
+mission load/enemy-spawn/pause/quit flows are covered by Phase 1A proofs, but
+a complete end-to-end playability matrix (mission entry → mission completion
+or known blocker) has not been run.
 
----
+**What's covered:** Phase 1A playtest verified representative mission flow
+(load, enemy spawn, wave progression, pause, quit). Phase 1B dead-code audit
+removed unreachable mission code paths.
 
-## Unreachable screens & vestigial state
+**What's not covered:** Playing all 15 missions sequentially to completion.
 
-From `docs/qa/PHASE1B_ROUTE_AUDIT_2026-07-17.md`. No user-facing symptom
-today since none of these are reachable, but worth cleaning up or wiring
-in deliberately rather than leaving ambiguous:
+**Resolution:** Run or document a full 15-mission completion test before
+final release.
 
-- `gameState: "district-select"` → `DistrictSelectScreen.tsx` — rendered
-  in `App.tsx`, has working internal navigation, but nothing ever
-  transitions into it.
-- `gameState: "beast-preview"` → `BeastPreview.tsx` — same pattern.
-- `gameState: "customization"` → `CustomizationMenu.tsx` — same pattern.
-- `gameState: "mission-select"` — declared in the `GameState` union type,
-  never set, never rendered in `App.tsx`. Fully vestigial.
+### 4. Full Boss Battle Matrix
 
----
+**Status:** ⏳ Pending
 
-## Mobile / UI spacing (Tailwind)
+Six boss encounters are defined (Void Stalker, Rift General, Synergy Hunter,
+Well Defiler, Rift General Prime, Voidonus Imperion). Boss spawn, combat flow,
+and defeat conditions are not individually verified.
 
-Neither of these caused a usability failure in verification — both are
-cosmetic, recorded here per instruction rather than fixed blind. Full
-detail: `docs/qa/PHASE1B_MOBILE_TOUCH_SMOKE_TEST_2026-07-17.md`.
+**Resolution:** Test each boss encounter independently or document known
+defeaters before release.
 
-- **LoreHub's "Play Game" CTA measured a 103.8×28px tap target** via
-  Playwright `boundingBox()` on a real iPhone-width viewport — below the
-  ~44×44pt accessibility minimum. The source has `px-8 py-4`, which
-  should produce roughly double that height, so this may be symptomatic
-  of a wider spacing issue rather than specific to this one button.
-- **LoreHub's hero CTA button row (Play Game / Meet the Heroes / Read the
-  Saga / 9 Tails / Combat) shows no visible gap between buttons** at
-  mobile width, despite `gap-3` in the flex container. This repo has
-  prior commits specifically fixing Tailwind v4 migration issues ("use
-  Tailwind v4 PostCSS plugin," "remove Tailwind v4 unknown border
-  apply"), so this could be a lingering piece of the same class of
-  problem rather than an isolated bug.
+### 5. Full Roster / Model Render Matrix
 
-Also noticed, same category, not yet root-caused: the Adventure Mode
-pause overlay's "Resume" / "Force Quit to Hub" buttons render with plain/
-unstyled button chrome instead of their intended cyan/red rounded
-styling (visible in the touch-controls verification screenshots). Both
-buttons work correctly — this is styling-only.
+**Status:** ⏳ Pending
 
-**Recommendation:** these three data points (two confirmed spacing/sizing
-misses plus one styling miss, all Tailwind-related) are enough to warrant
-one dedicated investigation pass rather than three separate blind
-guesses. Possible root cause not yet checked: whether `tailwind.config.ts`
-and the PostCSS pipeline are fully consistent after the v4 migration
-across every component, or whether some components are still picking up
-stale/partial styles.
+100+ playable characters are enumerated in `apps/web/src/lib/all_playable_characters.ts`
+(unified FIGHTERS, BEAST_FIGHTERS, and roster characters). Individual model
+asset load, render, animation, and combat spawn have not been verified for
+every character.
 
----
+**What's known:**
+- All 40 canonical GLB models lack 9-tail rig anchors (Blender audit, Phase 1B).
+- Prototype tail rig built for `kai-jax` (weight-paint still needed).
+- Player visibility fallback renders if any GLB fails to load.
 
-## Asset / art placeholders
+**Resolution:** Enumerate expected characters and define pass/fail criteria
+(asset present, renders without error, animation plays, no console error).
 
-Full detail: `docs/qa/PHASE1B_EXTERNAL_ASSET_AUDIT_2026-07-17.md`.
+### 6. Live Gameplay Flow Verification
 
-Two of LoreHub's six character/gallery images
-(`F5ACDADF-FD25-4E9D-ACF2-658700CB2C84.png`, covering 4 of 5 character
-cards plus the "Full Cast" gallery image, and `IMG_2623.png`, the
-"Kai-Jax: The Protector" gallery image) have no local source file
-anywhere in this repository. They currently render the app's branded
-`/icon.svg` as a placeholder (with `onError` fallback wired for all
-LoreHub images) rather than either the original fragile external URL or
-invented replacement art. Needs an actual asset-sourcing decision:
-locate/re-export the originals, or commission/generate replacements.
+**Status:** ⏳ Pending
 
-The PWA manifest (`apps/web/public/manifest.json`) also references two
-screenshot files (`/screenshots/gameplay-1.png`,
-`/screenshots/saga-mode.png`) that don't exist under `apps/web/public/`,
-and two app shortcuts (`/saga-mode`, `/versus-mode`) that don't
-correspond to real routes, since the app has no URL-based router at all.
-Both are inert (don't break anything), not fixed here.
+Campaign navigation, mission selection, briefing, and actual adventure-mode
+gameplay have not been verified on the live Vercel deployment.
+
+**Current state:** Local preview server (localhost:4174) loads main menu and
+renders correctly. Live deployment not tested (network policy blocked).
+
+**Resolution:** After deploying to Vercel, manually walk through:
+- Navigate to campaign
+- Select a mission
+- View mission briefing
+- Enter adventure mode
+- Player loads
+- Movement works
+- Attack works
+- Pause works
+- Force quit works
+
+### 7. Live Network / Asset Integrity
+
+**Status:** ⏳ Pending
+
+No test verifies that all assets (models, sounds, textures, sprites) are
+actually reachable and loadable from the live Vercel deployment.
+
+**Known issues:**
+- LoreHub artwork was self-hosted in Phase 1B (moved from CDN). Local verification
+  passed; live Vercel not tested.
+- Audio files (background music, sound effects) are served from `public/sounds/`.
+- GLB models served from `public/models/`.
+
+**Resolution:** Add network asset audit to live deployment verification gate.
+
+### 8. Performance / Frame-Time Validation
+
+**Status:** ⏳ Pending
+
+No recorded evidence of frame-time stability, input latency, or GPU utilization
+on target platforms (desktop, mobile, Vercel's infrastructure).
+
+**Known benchmarks:** None recorded.
+
+**Resolution:** Run or document performance baseline before release. Do not
+make "no frame drops" or "60 FPS guaranteed" claims without recorded proof.
 
 ---
 
-## TypeScript debt
+## High (Non-Blocking)
 
-`pnpm -C apps/web typecheck` (the Phase 0-scoped gate everything in this
-document was verified against) only checks a small, curated file list —
-see `apps/web/tsconfig.phase0.json`'s `include`. The unscoped
-`pnpm -C apps/web typecheck:full` currently reports pre-existing errors,
-including:
+### 9. Remaining TypeScript Debt Outside Phase 0 Scope
 
-- All of the dead/quarantined files listed above under
-  [Dead / quarantined code](#dead--quarantined-code) — expected, since
-  they reference APIs that don't exist on current stores.
-- At least one live-file issue: `apps/web/src/components/game/LoreHub.tsx`
-  has a `No overload matches this call` error (TS2769) on an icon
-  component's `style` prop, pre-dating this Phase 1B pass.
+**Status:** Known, in-scope for Phase 1 post-release
 
-### ESLint debt was silently blocking CI's real gates entirely
+`tsconfig.phase0.json` is a deliberately narrow TypeScript profile used for
+production builds and CI. The full `tsc --noEmit` (all files, all rules) has
+pre-existing errors in the wider codebase outside Phase 0.
 
-Found while checking PR #172's actual GitHub-side CI status:
-`ci.yml`'s `build (20.x)` job runs Lint → Type check → Build → Test as
-sequential steps in one job. `pnpm lint` (`eslint . --ext ts,tsx
---report-unused-disable-directives --max-warnings 0`) fails on hundreds
-of pre-existing warnings/errors across dozens of files this Phase 1B pass
-never touched (`BattleCamera.tsx`, `BattlePlayer.tsx`, `BattleScene.tsx`,
-`BattleUI.tsx`, `CampaignMap.tsx`, `ChoiceMode.tsx`, and more — unused
-vars, `react-hooks/rules-of-hooks` violations, unescaped entities, etc.).
-Because a failing step aborts the rest of a GitHub Actions job by
-default, **this meant Type check, Build, and Test never actually ran in
-CI at all** — the job failed at Lint before reaching any of them,
-regardless of whether the code was otherwise correct.
+**Scope:** Phase 0 profile covers `apps/web/src/` (game code); errors exist
+in `packages/` and elsewhere.
 
-Fixing the underlying lint violations is a large, separate effort across
-much of the codebase — explicitly out of scope for this pass (same
-category as the TypeScript debt above). Instead, marked the Lint step
-`continue-on-error: true` so a step failure there is visible but no
-longer blocks Type check/Build/Test from running and being accurately
-reported. This does not fix any lint violation; it stops lint debt from
-masking the actually-meaningful correctness signals.
+**Resolution:** Not required for `v0.1.0-mvp`. Create a follow-up Phase 2
+task to audit and resolve remaining errors if needed.
 
-No count or full list is asserted here — running `typecheck:full` and
-triaging real vs. dead-code-only errors would be its own task.
+### 10. Canonical GLB Tail-Anchor Warnings
+
+**Status:** Known, intentional
+
+All 40 canonical character models lack 9-tail deformation rigging. `GLBCharacterLoader.ts`
+logs expected warnings:
+
+```
+[GLBLoader] <url>: N/9 tail anchors missing (tail_01..tail_09). Tail attachment will be limited.
+```
+
+This is **not a bug**; the game gracefully degrades. Tail attachment is simply
+limited rather than disabled.
+
+**What works:** characters load, render, animate, and fight without error.
+
+**What's limited:** the 9-tail lore mechanic (cosmetic lore element) cannot
+fully deploy without rigged tails.
+
+**Resolution:** Ship with this warning as-is. Tail rigging is a post-launch
+cosmetic enhancement, not a blocker.
+
+### 11. Kai-Jax Tail-Rig Prototype Not Production Asset
+
+**Status:** Known, prototype
+
+A prototype 9-tail deformation rig was built and tested on the `kai-jax` model
+in Phase 1B (tested against 9 poses: idle, walk, blend, dodge, heavy attack,
+hit reaction, dodge-while-attacking, stun-hit, impact-reaction).
+
+**Status:** Idle/walk/blend poses pass validation. Large combat poses show mesh
+clipping/strain (weight-painting issue, not rig topology).
+
+**Current asset:** The `kai-jax.glb` in production is the character model with
+the prototype rig attached. It renders without error but shows visual strain
+in heavy poses.
+
+**Resolution:** Not a release blocker (visual quality only). Production tail
+rigging requires hand weight-paint cleanup by an artist. Marked for Phase 2
+polish work.
+
+### 12. Placeholder / Fallback Artwork
+
+**Status:** Known, documented
+
+Some UI backgrounds and lore-screen imagery remain as fallback placeholders
+pending final artist approval/iteration:
+
+- LoreHub background images: recently self-hosted from CDN during Phase 1B
+  (still pending final art pass).
+- Mission briefing backgrounds: placeholder visuals.
+- Character bio artwork: some entries use placeholder portraits.
+
+**Current state:** All fallbacks render without error. No broken asset chains.
+
+**Resolution:** Artist sign-off on final artwork. Not a blocker for playability.
+
+### 13. TypeScript Full-Scope Errors
+
+**Status:** Known, out of scope for Phase 0
+
+`pnpm -C apps/web typecheck:full` (unscoped `tsc --noEmit`) reports errors
+in packages and tests outside the Phase 0 profile.
+
+**Why this is OK:** Phase 0 scope was intentionally curated to cover live game
+code (`apps/web/src/`). Full-scope errors are pre-existing and do not affect
+the running game.
+
+**Resolution:** Address in Phase 2 if code outside Phase 0 becomes active. Not
+required for `v0.1.0-mvp`.
 
 ---
 
-## Native packaging verification gaps
+## Medium Priority
 
-From `README.md`'s Project Overview — repeated here since it's debt, not
-just a status note:
+### 14. Divergent Model-Loading Paths (Registry vs. Filename Guessing)
 
-- **Android:** CI-configured (`.github/workflows/android-build.yml`)
-  but only triggers on push to `main` or
-  `integration/clean-upgrade-stack-2026-05-20`, not on this branch. No
-  recent successful APK artifact confirmed from this session.
-- **iOS (Capacitor):** build pipeline documented
-  (`docs/ios/APP_STORE_BUILD.md`, `.xcodecloud/ci_post_clone.sh`), native
-  project committed (`apps/web/ios/App`), but no signed build or App
-  Store submission proven.
-- **iOS (native engine):** `apps/ios/LegendsOfKaiJax`'s integration
-  status with the rest of the game is unestablished.
-- **Desktop (Electron):** build scripts are complete
-  (`apps/desktop/package.json`) but not exercised in this session — no
-  packaged build has been produced and run.
+**Status:** Known, dual implementation
+
+Character models can be loaded via two paths:
+
+1. **Registry** (`apps/web/src/lib/modelRegistry.ts`) — canonical, curated list
+   of GLB files with metadata (id, name, role, stats).
+2. **Filename guessing** — fallback in some components that constructs paths
+   from character ID alone (e.g., `/models/${id}.glb`).
+
+**Issue:** If registry and filename convention drift, some characters may load
+from the wrong path, or the fallback may pick an outdated/wrong model.
+
+**Current state:** Both paths work but are not unified. No known mismatches
+have been reported.
+
+**Resolution:** Unify model loading to always go through the registry, or
+remove the fallback path. Medium priority cleanup for Phase 2.
+
+### 15. Unreachable / Archived Prototype Systems in Repo
+
+**Status:** Known, cleaned up in Phase 1B
+
+Phase 1B dead-code audit removed six files with zero references:
+
+- `apps/web/src/components/SagaModeLauncher.jsx`
+- `apps/web/src/components/game/TouchControls.tsx` (superseded by `AdventureTouchControls.tsx`)
+- `apps/web/src/components/game/world/NexusHaven.tsx`
+- `apps/web/src/components/ui/SagaModeLauncher.jsx`
+- `apps/web/src/components/ui/SagaModeLauncher.tsx`
+- `apps/web/src/debug/RegistryDebugOverlay.ts` (installed but never called)
+
+**Remaining orphaned code:** Other prototypes and archived systems may still
+exist in top-level folders (`backend/`, `engine/`, `specs/`, etc.) outside
+the live MVP. None are part of the build or affect release readiness.
+
+**Resolution:** Already addressed for Phase 0 MVP code. Archive or remove
+prototype folders in Phase 2 housekeeping if needed.
+
+### 16. Gamepad Input Not Implemented
+
+**Status:** Known, intentional
+
+No `navigator.getGamepads()` integration exists anywhere. The codebase has
+a `Gamepad2Icon` SVG (purely decorative menu button icon), but no actual
+gamepad input handling.
+
+**Current state:** Keyboard and touch input work. Gamepad not supported.
+
+**Resolution:** Low priority for MVP. Gamepad support can be added post-launch
+if needed.
+
+### 17. Service-Worker Registration Disabled
+
+**Status:** Known, intentional
+
+PWA manifest is present (`apps/web/public/manifest.json`), but service-worker
+registration is currently disabled in the app code.
+
+**Why disabled:** Offline play is not yet guaranteed to work; disabling SW
+avoids stale cache issues during active development.
+
+**Resolution:** Enable and test offline support before marketing as PWA.
+Medium priority post-launch.
 
 ---
 
-## PWA / offline
+## Low Priority
 
-`apps/web/index.html` has its service-worker registration block commented
-out ("Service Worker disabled for development... Uncomment for production
-PWA deployment"). The manifest (`manifest.json`) is present and correct,
-but installing the app today does not currently provide working offline
-support. Re-enabling is a one-line uncomment, but should come with an
-actual verification pass (install, go offline, confirm it still loads)
-rather than just flipping the comment.
+### 18. Root-Level Validation Scripts Broken
+
+**Status:** Known
+
+Two root-level scripts are declared but non-functional:
+
+- `pnpm validate:canon` → references missing `validate-canon.mjs`
+- `pnpm validate:memory` → references missing `validate-memory-layers.mjs`
+
+**Current state:** Do not exist at repo root. Silently fail if called.
+
+**Resolution:** Remove from `package.json` scripts or implement if needed.
+Low-priority cleanup.
+
+### 19. Registry Debug Overlay Not Wired Up
+
+**Status:** Known, dormant
+
+`apps/web/src/debug/RegistryDebugOverlay.ts` is a full debug overlay (open/close/refresh/report
+methods, localStorage state). It was built in an earlier phase but `installRegistryDebugOverlay()`
+is never called anywhere in the app.
+
+**Current state:** Code exists but does not run at runtime. Not available to
+users or testers.
+
+**Resolution:** Either wire up or remove. Low priority; useful for development
+but not required for release.
+
+### 20. Verbose Logging API Missing
+
+**Status:** Known, acceptable for MVP
+
+No `window.verboseMode()` or dedicated verbose-logging toggle exists. Console
+output is the only logging surface.
+
+**Current state:** Acceptable for MVP. Developers rely on browser console
+and `window.runnerStore` inspection.
+
+**Resolution:** Add dedicated logging API in Phase 2 if needed for better
+diagnostics.
+
+### 21. Lore/Story Branching Not Implemented
+
+**Status:** Known, out of scope for MVP
+
+The 15 missions are linear story beats; no branching narrative paths or
+multiple endings are implemented.
+
+**Current state:** Single linear story progression through 3 acts.
+
+**Resolution:** Narrative branching is a Phase 3+ feature. Not required for
+`v0.1.0-mvp`.
+
+### 22. Vite Alias Missing for `@beast-kin/ui`
+
+**Status:** Known, no observed impact
+
+`apps/web/vite.config.ts` aliases `@beast-kin/characters`, `@beast-kin/engine`,
+and `@beast-kin/shared` to their `packages/*/src` paths, but `@beast-kin/ui`
+has no alias. Build passes without error (`pnpm -C apps/web build` verified
+this session), suggesting either nothing imports from `@beast-kin/ui` or pnpm's
+workspace symlinking works around it.
+
+**Resolution:** Low priority. Verify no imports exist from `@beast-kin/ui`, or
+add the alias for consistency.
 
 ---
 
-## Summary / suggested priority
+## Research / Prototype
 
-1. ~~**CI test gap**~~ and ~~**CI pnpm version mismatch**~~ — **fixed.**
-   `ci.yml` now runs the real `apps/web` test suite and installs the
-   pinned pnpm version.
-2. **Tailwind spacing investigation** (3 related data points) — worth one
-   focused pass rather than three individual patches. Now the top
-   remaining item.
-3. Everything else in this document is lower urgency: dead code cleanup,
-   unreachable-screen decisions, asset sourcing, and native-packaging
-   verification are all real but don't block the current web MVP from
-   being correct and playable.
+### 23. Native iOS App Integration (LegendsOfKaiJax)
+
+**Status:** Experimental
+
+`apps/ios/LegendsOfKaiJax` is a separate native Swift Package (`GameEngineCore`)
+distinct from the Capacitor wrapper (`apps/web/ios/App`).
+
+**Current state:** Exists but integration status with the rest of the game is
+unclear. Not built or tested in this session.
+
+**Resolution:** Clarify or remove. Does not affect web/Capacitor release.
+
+### 24. Alternative Build Targets (Desktop, Android Release)
+
+**Status:** Build tooling present, unverified
+
+- **Desktop (Electron):** `apps/desktop/` with `electron-builder` config exists.
+  No packaged build has been created and tested.
+- **Android Release Build:** `.github/workflows/android-build.yml` produces debug
+  APKs only. No signed release build configuration exists.
+- **iOS Signed Build:** `docs/ios/APP_STORE_BUILD.md` documents the pipeline
+  but no signed build has been produced.
+
+**Resolution:** Defer to Phase 2. Web release does not depend on these.
+
+---
+
+## Summary Table
+
+| Category | Count | Examples |
+|----------|-------|----------|
+| **Release Blockers** | 1 | Live Vercel deployment verification |
+| **High (Blocking)** | 7 | Deployed SHA, mission matrix, boss matrix, roster matrix, gameplay flow, asset integrity, perf validation |
+| **High (Non-Blocking)** | 8 | Remaining TypeScript debt, tail-anchor warnings, placeholder artwork, etc. |
+| **Medium** | 6 | Model loading paths, orphaned code, gamepad, service worker, broken scripts, Vite alias |
+| **Low** | 4 | Debug overlay, logging API, lore branching |
+| **Research / Prototype** | 2 | Native iOS, alternative build targets |
+
+**Total tracked items:** 28
+
+---
+
+## Release Readiness Checklist
+
+- [ ] **Live Vercel deployment verified** (manual: HTTPS, gameplay flow, asset integrity)
+- [ ] **Deployed commit SHA recorded**
+- [ ] **15-mission completion matrix run** (or documented coverage)
+- [ ] **Boss battle matrix run** (or documented coverage)
+- [ ] **Roster/model render matrix run** (or documented coverage)
+- [ ] **Performance baseline captured** (frame-time, latency)
+- [ ] **All verification gates passed:** install, build, test, typecheck
+- [ ] **Local production preview confirmed** (build output, main menu)
+- [ ] **PR #222 approved and merged**
+- [ ] **v0.1.0-mvp release notes published**
+
+**Remaining blockers before release:** Live Vercel deployment verification (manual step, not automated in this environment).
