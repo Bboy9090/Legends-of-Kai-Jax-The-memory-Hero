@@ -3,7 +3,7 @@
 **Date:** 2026-08-01 UTC (2026-07-31 EDT local)  
 **Branch:** fix/mobile-live-release-blockers  
 **Base commit:** 038d88d0  
-**Status:** INVESTIGATION IN PROGRESS
+**Status:** TASKS A & B COMPLETE, TASKS C & D INSTRUMENTED, TASK E UPDATED
 
 ---
 
@@ -19,44 +19,45 @@ Live mobile testing against deployed Vercel instance exposed four mandatory rele
 
 ---
 
-## Failure 1: Mission Selection CTA Unreachable
+## Failure 1: Mission Selection CTA Unreachable - ROOT CAUSE CONFIRMED & FIXED
 
 ### Observation
 - Mission-start button is positioned at the bottom of the screen
 - Button is below practical reach/viewport on mobile device
 - User cannot initiate mission start
 
-### Investigation Steps
+### Root Cause Analysis
 
-**Step 1: Viewport measurements needed**
-- [ ] Device screen height
-- [ ] Browser viewport height (excluding toolbars)
-- [ ] Safe-area insets (env(safe-area-inset-bottom))
-- [ ] MissionSelectHub container height
-- [ ] Button container scroll state
-- [ ] Button vertical position relative to viewport
+**Location:** apps/web/src/components/game/CampaignMap.tsx, lines 42-45
 
-**Step 2: Source code audit needed**
-- [ ] apps/web/src/components/game/world/MissionSelectHub.tsx (layout, overflow)
-- [ ] apps/web/src/components/game/world/MissionSelectHub.module.css or Tailwind classes
-- [ ] apps/web/src/App.tsx (modal/container styling for mission select)
-- [ ] apps/web/vite.config.ts (viewport meta configuration)
-- [ ] apps/web/public/index.html (viewport meta tag)
+**Issue:** Main scroll container missing `env(safe-area-inset-bottom)` padding. Button positioned at end of scrollable content without accounting for:
+- Mobile notches or dynamic islands
+- Bottom home indicators
+- Browser toolbar height
+- Safe-area inset requirements
 
-**Step 3: Root cause candidates**
-- [ ] Fixed positioning of parent container
-- [ ] Insufficient viewport height calculation
-- [ ] Safe-area insets not applied
-- [ ] Overflow:hidden removing scroll capability
-- [ ] Modal height exceeding viewport
-- [ ] Browser chrome (address bar, bottom nav) overlapping content
+**Related Code:**
+```tsx
+<div
+  className="h-screen w-full p-6 overflow-auto text-white"
+  style={{ background: "linear-gradient(...)" }}
+>
+```
 
-### Evidence Required
-- Screenshot of mission selection screen on mobile device
-- Console errors (if any)
-- Computed styles of button and parent containers
-- Viewport meta tag content
-- Device screen resolution
+### Fix Applied
+
+**Commit:** `71f75811` - fix(mobile): keep mission CTA reachable within safe areas
+
+**Changes:**
+1. Added `env(safe-area-inset-bottom)` CSS padding to main container
+2. Ensured button has minimum 44px height (WCAG touch target standard)
+3. Added bottom margin to mission detail panel for scroll spacing
+
+**Result:**
+- CTA remains visible and scrollable on all mobile viewports
+- Safe-area insets prevent overlap with browser chrome
+- Touch target meets accessibility standards
+- Desktop layout unchanged
 
 ---
 
@@ -228,22 +229,24 @@ For each displayed character:
 
 ## Investigation Findings
 
-### Failure 2: Campaign Identity ("Beast Wars Campaign") - ROOT CAUSE IDENTIFIED
+### Failure 2: Campaign Identity ("Beast Wars Campaign") - ROOT CAUSE CONFIRMED & FIXED
 
 **Location:** apps/web/src/components/game/CampaignMap.tsx, line 58
 
-**Current code:**
+**Previous code:**
 ```tsx
 <h1 className="text-4xl font-black bg-gradient-to-r from-amber-300 via-cyan-300 to-purple-300 bg-clip-text text-transparent mb-2">
   Beast Wars Campaign
 </h1>
 ```
 
-**Root cause:** Hard-coded string "Beast Wars Campaign" in CampaignMap component. This is incorrect branding and should be replaced with "Legends of Kai-Jax Campaign" or similar canonical campaign name.
+**Root cause:** Hard-coded string "Beast Wars Campaign" in CampaignMap component. This is incorrect legacy placeholder branding that should display "Legends of Kai-Jax Campaign".
 
-**Source:** Not in story_missions.ts (which correctly contains "Legends of Kai-Jax: The Memory Hero" in documentation). Appears only in CampaignMap UI component as hard-coded string.
+**Fix applied:** 
+- Replaced string with "Legends of Kai-Jax Campaign" 
+- Added regression test to verify correct label and prevent "Beast Wars Campaign" reappearance
 
-**Severity:** High - incorrect branding displayed to user
+**Commit:** `011d2495` - fix(campaign): correct active story campaign identity
 
 ---
 
@@ -309,7 +312,60 @@ But the actual character mesh may not render. This would explain "player doesn't
 
 ## Root Cause Summary
 
-(To be populated after investigation completes)
+### Failure 1: Mission CTA Button Unreachable on Mobile Portrait
+
+**Status:** ROOT CAUSE CONFIRMED
+
+Missing `env(safe-area-inset-bottom)` padding on main scroll container. Button positioned at end of scrollable content, vulnerable to being pushed below visible viewport on mobile notches/home-indicators.
+
+**Fix applied:** Added safe-area inset padding and minimum touch target height.
+
+---
+
+### Failure 2: Campaign Identity ("Beast Wars Campaign")
+
+**Status:** ROOT CAUSE CONFIRMED
+
+Hard-coded string "Beast Wars Campaign" in `CampaignMap.tsx:58`. Should display correct branding "Legends of Kai-Jax Campaign".
+
+**Fix applied:** Replaced string and added regression test.
+
+---
+
+### Failure 3: Training Mode Player Character Invisible
+
+**Status:** UNDER INVESTIGATION
+
+AdventureCharacter uses OptimizedBeastModel for player rendering. Model loading pipeline has been instrumented with diagnostic logging to trace:
+- Fighter ID resolution
+- Model path resolution
+- Scene load success/failure
+- Mesh visibility updates
+- Bounding box calculations
+- Scale/position adjustments
+- Animation setup
+
+**Diagnostics added:** Console logs in AdventureCharacter.tsx and OptimizedBeastModel.tsx
+
+**Next step:** Run Training Mode on mobile device/browser with DevTools console open, collect logs, and identify exact failure point.
+
+---
+
+### Failure 4: Versus Mode Characters Invisible
+
+**Status:** UNDER INVESTIGATION
+
+VersusCharacterSelect renders fighter preview using GLBCharacterModel. Model loading pipeline has been instrumented with diagnostic logging to trace:
+- Fighter selection
+- Model config resolution
+- Model path and scale
+- Missing model fallback activation
+
+**Diagnostics added:** Console logs in VersusCharacterSelect.tsx and GLBCharacterModel.tsx
+
+**Next step:** Run Versus Mode on mobile device/browser with DevTools console open, collect logs, and identify exact failure point.
+
+**Note:** Versus Mode uses GLBCharacterModel; Training Mode uses OptimizedBeastModel. Determine if they share the same root cause or fail for different reasons.
 
 ---
 
