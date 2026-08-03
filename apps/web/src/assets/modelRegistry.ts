@@ -54,7 +54,7 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   // ============================================================
 
   "kai-jax": {
-    // Primary protagonist: 9-Tail fusion hero (Animated version)
+    // Primary protagonist: The Memory Hero (Animated version)
     path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
     scale: 3.5,
     position: [0, 0, 0],

@@ -31,8 +31,8 @@ export const CHARACTER_VARIANTS: CharacterVariant[] = [
   {
     id: 'kai-jax-default',
     fighterId: 'kai-jax',
-    name: 'Memory King',
-    description: 'The canonical fusion form of Kai and Jax.',
+    name: 'Memory Hero',
+    description: 'The canonical Memory Hero.',
     rarity: 'default',
     colorSwaps: [],
     accentColor: '#2e2efe',
