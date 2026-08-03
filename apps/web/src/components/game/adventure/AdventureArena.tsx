@@ -9,6 +9,7 @@ import AdventureCharacter from "./AdventureCharacter";
 import AdventureCamera from "./AdventureCamera";
 import AdventurePlayerController from "./AdventurePlayerController";
 import AdventureEnemyAI from "./AdventureEnemyAI";
+import Mission1EncounterBridge from "./Mission1EncounterBridge";
 import * as THREE from "three";
 
 // ─── Arena Ground ──────────────────────────────────────────────────────────
@@ -374,6 +375,7 @@ export default function AdventureArena({
 
   return (
     <>
+      <Mission1EncounterBridge />
       <AdventureCamera />
       <AdventurePlayerController />
       <ArenaLighting config={config} />
