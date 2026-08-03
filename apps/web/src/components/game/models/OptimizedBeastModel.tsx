@@ -206,13 +206,7 @@ export default function OptimizedBeastModel({
     if (mixer) mixer.update(delta);
     if (!groupRef.current) return;
     
-    if (hitAnim > 0) {
-      const shake = Math.sin(state.clock.elapsedTime * 25) * 0.08 * hitAnim;
-      groupRef.current.position.x = shake;
-    }
-    
-    // Emotion intensity adds a subtle breathing pulse around 1.0 (the clone is
-    // already normalized to the right size — never re-multiply by `scale`).
+    // Emotion intensity adds a subtle breathing pulse around 1.0
     if (emotionIntensity > 0) {
       const pulse = 1 + Math.sin(state.clock.elapsedTime * 4) * 0.03 * emotionIntensity;
       groupRef.current.scale.setScalar(pulse);
