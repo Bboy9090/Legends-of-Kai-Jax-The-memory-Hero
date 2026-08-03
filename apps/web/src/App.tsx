@@ -25,6 +25,13 @@ import AdventureHUD from "./components/game/adventure/AdventureHUD";
 import AdventureTouchControls from "./components/game/adventure/AdventureTouchControls";
 import StoryAdventure from "./components/game/StoryAdventure";
 import SettingsMenu from "./components/game/SettingsMenu";
+import TitleScreen from "./components/game/TitleScreen";
+import SaveSlotScreen from "./components/game/SaveSlotScreen";
+import BootAccessibilityScreen from "./components/game/BootAccessibilityScreen";
+import StoryHubScreen from "./components/game/StoryHubScreen";
+import MissionSelectScreen from "./components/game/MissionSelectScreen";
+import CharacterAbilityScreen from "./components/game/CharacterAbilityScreen";
+import MissionCompleteScreen from "./components/game/MissionCompleteScreen";
 import DevFrameHud from "./components/game/DevFrameHud";
 import GameOverlays from "./components/game/GameOverlays";
 import { useGame } from "./lib/stores/useGame";
@@ -209,11 +216,28 @@ function App() {
       {showIntro && gameState !== "lore-hub" && <GameIntro onComplete={handleIntroComplete} />}
       
       <KeyboardControls map={controls}>
+        {/* Title Screen */}
+        {phase === "ready" && gameState === "title" && !showIntro && <TitleScreen />}
+
         {/* Main Menu */}
         {phase === "ready" && gameState === "menu" && !showIntro && <LegendaryMainMenu />}
 
+        {/* Save Slots */}
+        {phase === "ready" && gameState === "save-slots" && <SaveSlotScreen />}
 
-        {/* Campaign: RPG adventure — map, waves, bosses, progression to big bad */}
+        {/* Story Hub (Raging City Map) */}
+        {phase === "ready" && gameState === "story-hub" && <StoryHubScreen />}
+
+        {/* Mission Select */}
+        {phase === "ready" && gameState === "mission-select" && <MissionSelectScreen />}
+
+        {/* Ability Tree */}
+        {phase === "ready" && gameState === "abilities" && <CharacterAbilityScreen />}
+
+        {/* Mission Complete */}
+        {phase === "ready" && gameState === "mission-complete" && <MissionCompleteScreen />}
+
+        {/* Campaign Map */}
         {phase === "ready" && gameState === "campaign-map" && <CampaignMap />}
 
         {phase === "ready" && gameState === "district-select" && <DistrictSelectScreen />}
