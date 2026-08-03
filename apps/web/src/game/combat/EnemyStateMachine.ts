@@ -289,6 +289,7 @@ export class EnemyStateMachine {
       remainingHealth: this.enemy.stats.currentHealth,
       triggeredStagger,
       triggeredArmorBreak,
+      triggeredDeath,
       nextState: this.enemy.currentState,
     };
   }
