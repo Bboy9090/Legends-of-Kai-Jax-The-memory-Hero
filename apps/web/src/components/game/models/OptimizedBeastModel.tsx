@@ -158,36 +158,48 @@ export default function OptimizedBeastModel({
 
   // Handle animations
   useEffect(() => {
-    if (!actions || Object.keys(actions).length === 0) {
-      console.log('[OptimizedBeastModel] No animations available:', {
-        beastId: beast.id,
-        actionsCount: actions ? Object.keys(actions).length : 0,
-      });
-      return;
+    if (!actions || Object.keys(actions).length === 0) return;
+
+    // Determine desired animation based on state
+    let targetAction = 'idle';
+    if (isAttacking) {
+      targetAction = 'attack';
+    } else if (isMoving) {
+      // Prefer 'walk' over 'run' for natural arm movement
+      targetAction = 'walk';
     }
 
-    const actionName = isAttacking ? 'attack' : isMoving ? 'run' : 'idle';
     const available = Object.keys(actions);
 
-    // Flexible matching: case-insensitive and partial
-    const match = available.find(n => n.toLowerCase() === actionName) ||
-                  available.find(n => n.toLowerCase().includes(actionName)) ||
-                  available[0];
-
-    console.log('[OptimizedBeastModel] Animation setup:', {
-      beastId: beast.id,
-      requestedAction: actionName,
-      availableActions: available,
-      selectedAction: match,
-    });
+    // Enhanced animation matching: prioritize walk over run for moving state
+    let match: string | undefined;
+    if (targetAction === 'walk') {
+      // Look for walk-specific animation first, fall back to run
+      match = available.find(n => {
+        const lower = n.toLowerCase();
+        return lower.includes('walk') || lower === 'walk';
+      }) ||
+      available.find(n => n.toLowerCase().includes('run')) ||
+      available.find(n => n.toLowerCase() === 'run') ||
+      available[0];
+    } else {
+      // For attack/idle, use standard matching
+      match = available.find(n => n.toLowerCase() === targetAction) ||
+              available.find(n => n.toLowerCase().includes(targetAction)) ||
+              available[0];
+    }
 
     if (match && actions[match]) {
-      // Stop all other actions first for a clean transition
-      Object.values(actions).forEach(a => a?.fadeOut(0.2));
-      actions[match].reset().fadeIn(0.2).play();
+      // Stop all other actions with smooth crossfade
+      Object.values(actions).forEach(a => {
+        if (a && a !== actions[match]) {
+          a.fadeOut(0.3);
+        }
+      });
+      // Play selected animation with smooth fade-in
+      actions[match].reset().fadeIn(0.3).play();
     }
   }, [actions, isAttacking, isMoving, beast.id]);
-
 
   // Hit animation and effects
   useFrame((state, delta) => {
@@ -220,10 +232,10 @@ export default function OptimizedBeastModel({
 
   return (
     <group ref={groupRef} rotation={[0, Math.PI / 2, 0]}>
-      {/* Models are authored facing +Z; rotate to face +X so they face opponents. */}
       <Clone object={cloned} />
     </group>
   );
+}
 }
 
 // Preload common models
