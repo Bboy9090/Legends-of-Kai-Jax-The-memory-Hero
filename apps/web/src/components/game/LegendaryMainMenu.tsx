@@ -57,20 +57,26 @@ const LegendaryMainMenu: React.FC = () => {
   }
 
 
-  // Simplified, functional menu items
+  // Required Main Menu items
   const menuItems: MenuItem[] = [
     {
-      id: 'saga',
-      label: 'START SAGA',
-      sublabel: 'Reclaim the stolen memories',
-      action: () => setGameState('campaign-map'),
+      id: 'continue',
+      label: 'CONTINUE',
+      sublabel: 'Resume last saga save',
+      action: () => setGameState('story-hub'),
       legendary: true
     },
     {
-      id: 'versus',
-      label: 'VERSUS MODE',
-      sublabel: '1v1 Combat vs Rivals',
-      action: () => setGameState('versus-select')
+      id: 'story',
+      label: 'STORY HUB',
+      sublabel: 'The Raging City Campaign Map',
+      action: () => setGameState('story-hub')
+    },
+    {
+      id: 'missions',
+      label: 'MISSIONS',
+      sublabel: 'Select active mission briefing',
+      action: () => setGameState('mission-select')
     },
     {
       id: 'training',
@@ -82,16 +88,46 @@ const LegendaryMainMenu: React.FC = () => {
       }
     },
     {
+      id: 'versus',
+      label: 'COMBAT ARENA',
+      sublabel: '1v1 Versus battle mode',
+      action: () => setGameState('versus-select')
+    },
+    {
       id: 'codex',
-      label: 'THE CODEX',
-      sublabel: 'Lore, Moves & Archives',
+      label: 'LEGENDS ARCHIVE',
+      sublabel: 'Lore, Factions & Codex',
       action: () => setGameState('lore-hub')
     },
     {
-      id: 'settings',
-      label: 'SETTINGS',
-      sublabel: 'Audio & Performance',
+      id: 'customize',
+      label: 'CUSTOMIZE',
+      sublabel: 'Character outfits & variants',
+      action: () => setGameState('customization')
+    },
+    {
+      id: 'options',
+      label: 'OPTIONS',
+      sublabel: 'Audio, Video & Controls',
       action: () => setGameState('settings')
+    },
+    {
+      id: 'abilities',
+      label: 'EXTRAS & ABILITIES',
+      sublabel: 'Memory Weave skill tree',
+      action: () => setGameState('abilities')
+    },
+    {
+      id: 'credits',
+      label: 'CREDITS',
+      sublabel: 'Development team',
+      action: () => setGameState('title')
+    },
+    {
+      id: 'quit',
+      label: 'QUIT GAME',
+      sublabel: 'Exit to title screen',
+      action: () => setGameState('title')
     },
   ];
 
