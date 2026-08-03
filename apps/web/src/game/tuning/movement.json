@@ -14,10 +14,10 @@
     "blockMoveSpeedMult": 0.35
   },
   "adventure": {
-    "walkSpeed": 8,
-    "runSpeed": 14,
-    "turnSpeed": 10,
-    "moveAccel": 56,
-    "moveDecel": 64
+    "walkSpeed": 12,
+    "runSpeed": 22,
+    "turnSpeed": 16,
+    "moveAccel": 96,
+    "moveDecel": 96
   }
 }
