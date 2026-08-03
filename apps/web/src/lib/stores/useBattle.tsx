@@ -297,7 +297,7 @@ export const useBattle = create<BattleState>((set, get) => ({
   // Initial state
   playerFighterId: 'jaxon',
   opponentFighterId: 'kaison',
-  selectedArenaId: 'mushroom-plains',
+  selectedArenaId: 'bronx_streets',
   
   playerHealth: 100,
   opponentHealth: 100,

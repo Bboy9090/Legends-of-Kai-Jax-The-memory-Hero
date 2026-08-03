@@ -285,6 +285,6 @@ export function getArenaConfig(arenaId: string): ArenaConfig {
   if (ARENA_REGISTRY[arenaId]) {
     return ARENA_REGISTRY[arenaId];
   }
-  console.warn(`Arena ID "${arenaId}" not found in registry. Falling back to cross_point_arena.`);
-  return ARENA_REGISTRY.cross_point_arena;
+  console.warn(`Arena ID "${arenaId}" not found in registry. Falling back to bronx_streets.`);
+  return ARENA_REGISTRY.bronx_streets;
 }

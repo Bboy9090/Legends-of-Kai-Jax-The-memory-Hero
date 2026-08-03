@@ -56,7 +56,7 @@ export const ACT_I_STORY_MISSIONS: StoryMission[] = [
     ],
     objectives: ['Defeat the first wave of Void remnants', 'Synchronize with the Arena core'],
     difficulty: 1,
-    arena: 'cross_point_arena',
+    arena: 'bronx_streets',
     requiredCharacters: ['kai-jax'],
     storyBeat: 'Kai-Jax awakens and realizes his purpose as the Memory Hero as the Rift starts to consume the arena.',
     rewards: { xp: 200, currency: 150, loot: ['Arena Badge'], unlocks: ['kaison'] },
