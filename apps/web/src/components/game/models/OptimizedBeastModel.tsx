@@ -60,17 +60,12 @@ interface OptimizedBeastModelProps {
  * Get GLB model path for beast
  */
 function getBeastModelPath(beastId: string): string {
-  // Reverted the light-model swap: the lightweight *_beast.glb models rendered
-  // in the headless test env but came up invisible on real devices, so battles
-  // showed no fighters. Restore the registry models (visible, if heavier) as the
-  // source of truth. LIGHT_BATTLE_MODELS retained below for a future, verified
-  // per-device opt-in. Fall back to a guaranteed-existing model if unregistered.
+  // Use lightweight mobile-optimized 1.8MB GLB models for fast 60FPS combat
+  if (LIGHT_BATTLE_MODELS[beastId]) return LIGHT_BATTLE_MODELS[beastId];
   const registered = MODEL_REGISTRY[beastId]?.path;
   if (registered) return registered;
   return FALLBACK_MODEL_PATH;
 }
-// Referenced to avoid an unused-symbol warning; not used until re-verified.
-void LIGHT_BATTLE_MODELS;
 
 /**
  * OPTIMIZED BEAST MODEL - Real GLB with animations
