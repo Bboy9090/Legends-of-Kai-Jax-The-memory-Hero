@@ -29,6 +29,30 @@ function ArenaGround({ config }: { config: ArenaConfig }) {
       </mesh>
 
       {/* Biome-specific ground details */}
+      {biome === 'urban' && (
+        <>
+          {/* Cracked urban asphalt roadway */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
+            <planeGeometry args={[180, 180]} />
+            <meshStandardMaterial color="#141419" roughness={0.88} metalness={0.15} />
+          </mesh>
+          {/* Street asphalt lane markings */}
+          {[-40, -20, 0, 20, 40].map((z, i) => (
+            <mesh key={`lane-${i}`} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, z]}>
+              <planeGeometry args={[120, 0.4]} />
+              <meshStandardMaterial color="#d97706" emissive="#b45309" emissiveIntensity={0.2} roughness={0.9} />
+            </mesh>
+          ))}
+          {/* Sidewalk curbs */}
+          {[-25, 25].map((x, i) => (
+            <mesh key={`curb-${i}`} position={[x, 0.15, 0]}>
+              <boxGeometry args={[8, 0.3, 160]} />
+              <meshStandardMaterial color="#334155" roughness={0.7} />
+            </mesh>
+          ))}
+        </>
+      )}
+
       {biome === 'tech' && (
         <>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
@@ -144,6 +168,61 @@ function ArenaEnvironment({ config }: { config: ArenaConfig }) {
           <pointLight position={[0, p.h + 1, 0]} color={p.color} intensity={1.8} distance={18} decay={2} />
         </group>
       ))}
+
+      {biome === 'urban' && (
+        <>
+          {/* Bronx apartment buildings & brick structures */}
+          {[
+            { x: -35, z: -30, w: 18, h: 28, d: 24, c: "#1e1e24" },
+            { x: 35, z: -30, w: 20, h: 32, d: 22, c: "#262024" },
+            { x: -38, z: 25, w: 22, h: 26, d: 20, c: "#1b2028" },
+            { x: 38, z: 25, w: 18, h: 34, d: 24, c: "#221c22" },
+            { x: 0, z: -45, w: 40, h: 36, d: 16, c: "#18181c" },
+          ].map((b, i) => (
+            <group key={`bldg-${i}`} position={[b.x, b.h / 2, b.z]}>
+              <mesh castShadow receiveShadow>
+                <boxGeometry args={[b.w, b.h, b.d]} />
+                <meshStandardMaterial color={b.c} roughness={0.8} />
+              </mesh>
+              {/* Glowing window arrays */}
+              {[-b.w / 4, b.w / 4].map((wx, j) =>
+                [4, 10, 16, 22].map((wy, k) => (
+                  <mesh key={`win-${j}-${k}`} position={[wx, wy - b.h / 2, b.d / 2 + 0.1]}>
+                    <planeGeometry args={[2.2, 3]} />
+                    <meshStandardMaterial color="#fbbf24" emissive="#f59e0b" emissiveIntensity={0.8} />
+                  </mesh>
+                ))
+              )}
+            </group>
+          ))}
+
+          {/* Glowing neon billboards */}
+          <group position={[0, 18, -36]}>
+            <mesh>
+              <planeGeometry args={[16, 6]} />
+              <meshStandardMaterial color="#f43f5e" emissive="#e11d48" emissiveIntensity={1.8} />
+            </mesh>
+            <pointLight color="#f43f5e" intensity={4} distance={25} />
+          </group>
+
+          {/* Street lamps */}
+          {[-18, 18].map((x, i) =>
+            [-20, 0, 20].map((z, j) => (
+              <group key={`lamp-${i}-${j}`} position={[x, 0, z]}>
+                <mesh position={[0, 4, 0]}>
+                  <cylinderGeometry args={[0.15, 0.25, 8, 8]} />
+                  <meshStandardMaterial color="#0f172a" metalness={0.8} />
+                </mesh>
+                <mesh position={[0, 8.2, 0]}>
+                  <sphereGeometry args={[0.4, 16, 16]} />
+                  <meshStandardMaterial color="#ffedd5" emissive="#ffb703" emissiveIntensity={2.0} />
+                </mesh>
+                <pointLight position={[0, 8, 0]} color="#ffb703" intensity={2.5} distance={14} decay={2} />
+              </group>
+            ))
+          ).flat()}
+        </>
+      )}
 
       {biome === 'nature' && (
         <>
@@ -369,7 +448,7 @@ export default function AdventureArena({
     const s = useAdventure.getState();
     if (s.roamDistrictId) return;
     if (s.arenaId === "open-world") {
-      useAdventure.getState().initAdventure(characterId, null, "cross_point_arena");
+      useAdventure.getState().initAdventure(characterId, null, "bronx_streets");
     }
   }, [characterId]);
 
