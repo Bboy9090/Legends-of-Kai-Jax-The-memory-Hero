@@ -153,19 +153,15 @@ function PlayerPresenceMarker({ accentColor }: { accentColor: string }) {
  */
 export default function AdventureCharacter({ fighterId, accentColor }: Props) {
   const groupRef = useRef<THREE.Group>(null);
-  const { player } = useAdventure();
   const fighter = getFighterById(fighterId);
 
-  // DIAGNOSTIC: trace character loading
-  useRef(() => {
-    const trace = {
-      fighterId,
-      fighter: fighter ? { id: fighter.id, color: fighter.color } : null,
-      accentColor,
-      timestamp: Date.now(),
-    };
-    console.log('[AdventureCharacter] Loading trace:', trace);
-  }).current?.();
+  // Subscribe to specific primitive player state properties so React updates props when combat states change
+  const isAttacking = useAdventure((s) => s.player.isAttacking);
+  const isMoving = useAdventure((s) => s.player.isMoving);
+  const isRunning = useAdventure((s) => s.player.isRunning);
+  const hitStunTimer = useAdventure((s) => s.player.hitStunTimer);
+  const invulnTimer = useAdventure((s) => s.player.invulnTimer);
+  const posY = useAdventure((s) => s.player.posY);
 
   // Track vertical offset for grounding (some models have pivot at center instead of feet)
   const yOffset = useRef(0);
@@ -187,16 +183,6 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
     }
   });
 
-  // Map CombatState to high-level animation props
-  const isJumping = player.posY > 0.1;
-  const isGrounded = !isJumping;
-  const verticalVelocity = (player as typeof player & { velocityY?: number }).velocityY ?? 0;
-  
-  // Determine attack type from state
-  const attackType = player.attackType ? 
-    (player.attackType.includes("kick") ? "kick" : "punch") as "punch" | "kick" 
-    : null;
-
   return (
     <group ref={groupRef} name="adventure-player-root">
       {/* Clean player locator: a ground ring + floating pointer so you can
@@ -211,20 +197,20 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
       <Suspense fallback={null}>
         <OptimizedBeastModel
           beast={getFighterById(fighterId) ?? { id: fighterId, color: "#1a1a1a", accentColor }}
-          isAttacking={player.isAttacking}
-          isMoving={player.isMoving || player.isRunning}
-          isInvulnerable={player.invulnTimer > 0}
-          hitAnim={player.hitStunTimer > 0 ? 1 : 0}
+          isAttacking={isAttacking}
+          isMoving={isMoving || isRunning}
+          isInvulnerable={invulnTimer > 0}
+          hitAnim={hitStunTimer > 0 ? 1 : 0}
         />
       </Suspense>
       
       {/* Dynamic shadow/blob beneath character */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -player.posY + 0.02, 0]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -posY + 0.02, 0]}>
         <planeGeometry args={[1.5, 1.5]} />
         <meshBasicMaterial 
           color="#000000" 
           transparent 
-          opacity={Math.max(0, 0.4 - player.posY * 0.2)} 
+          opacity={Math.max(0, 0.4 - posY * 0.2)} 
           depthWrite={false}
         />
       </mesh>
