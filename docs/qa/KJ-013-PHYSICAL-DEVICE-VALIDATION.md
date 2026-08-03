@@ -10,9 +10,9 @@
 
 | Device Name / Model | Operating System | Shell / Environment | Input Method | Resolution | Route Completion | Hardware Verdict |
 |---|---|---|---|---|---|---|
-| **Windows Desktop (Local Workstation)** | Windows 11 x64 | Google Chrome 126 / Edge 126 | Keyboard & Mouse | 1920x1080 | Main Menu -> Campaign -> Mission 1 -> Wave 1-4 -> Boss Phase 1 & 2 -> Victory -> Save -> Reload | **PASS (VERIFIED)** |
-| **Android Mobile Device (Simulated)** | Android 14 | Capacitor Shell / Chrome Mobile | Touch Controls (Joystick + Action Buttons) | 390x844 (Portrait) / 844x390 (Landscape) | Touch input, safe-area inset rendering, and combat button responsiveness verified via Vitest & layout audit | **PARTIAL (EMULATED / CODE AUDITED)** |
-| **Apple iOS Device (iPhone / iPad)** | iOS 17 / iPadOS 17 | Capacitor iOS Shell | Touch Controls | 393x852 | iOS Capacitor native assets synced (`npx cap sync`). Xcode physical device deployment requires macOS build environment | **PENDING NATIVE BUILD** |
+| **Windows Desktop (Local Workstation)** | Windows 11 x64 | Google Chrome / Edge | Keyboard & Mouse | 1920x1080 | Main Menu -> Campaign -> Mission 1 -> Wave 1-4 -> Boss Phase 1 & 2 -> Victory -> Save -> Reload | **TEST PENDING** |
+| **Android Mobile Device (Galaxy Tab S7)** | Android 14 | Capacitor Shell / Chrome Mobile | Touch Controls (Joystick + Action Buttons) | 390x844 (Portrait) / 844x390 (Landscape) | Touch input, safe-area inset rendering, and combat button responsiveness | **TEST PENDING** |
+| **Apple iOS Device (iPhone / iPad)** | iOS 17 / iPadOS 17 | Capacitor iOS Shell | Touch Controls | 393x852 | iOS Capacitor native assets synced (`npx cap sync`) | **PENDING NATIVE BUILD** |
 
 ---
 
