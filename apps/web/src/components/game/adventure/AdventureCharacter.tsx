@@ -172,10 +172,11 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
 
   useFrame(() => {
     if (!groupRef.current) return;
+    const { player: latestPlayer } = useAdventure.getState();
 
-    // Sync position and rotation from store
-    groupRef.current.position.set(player.posX, player.posY + yOffset.current, player.posZ);
-    groupRef.current.rotation.y = player.rotY;
+    // Sync position and rotation directly from store on every render frame
+    groupRef.current.position.set(latestPlayer.posX, latestPlayer.posY + yOffset.current, latestPlayer.posZ);
+    groupRef.current.rotation.y = latestPlayer.rotY;
     groupRef.current.visible = true;
 
     // DIAGNOSTIC: check mesh visibility on first frame
