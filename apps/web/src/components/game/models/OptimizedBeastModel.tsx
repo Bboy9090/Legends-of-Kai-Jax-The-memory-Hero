@@ -236,7 +236,6 @@ export default function OptimizedBeastModel({
     </group>
   );
 }
-}
 
 // Preload common models
 // Preload the real registered models for the primary fighters (correct paths).

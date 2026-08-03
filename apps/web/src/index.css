@@ -1,8 +1,8 @@
 @import 'tailwindcss';
-@config '../tailwind.config.ts';
 @import './styles/design-system.css';
 @import './styles/bronx_grit.css';
 @import './styles/legendary-effects.css';
+@config '../tailwind.config.ts';
 
 /**
  * ⚡ LEGENDS OF KAI-JAX - MAIN STYLESHEET ⚡
