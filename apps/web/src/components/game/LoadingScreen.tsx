@@ -206,17 +206,17 @@ export function GameIntro({ onComplete }: { onComplete: () => void }) {
       {/* Tagline Phase */}
       {phase === 'tagline' && (
         <div className="text-center animate-[fadeIn_0.5s_ease-out]">
-          <p className="text-2xl sm:text-3xl text-white font-medium mb-4">
-            "When two become one..."
+          <p className="text-2xl sm:text-3xl text-amber-400 font-bold mb-4 tracking-widest uppercase">
+            Welcome to The Raging City
           </p>
           <p 
             className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text"
             style={{
-              background: 'linear-gradient(90deg, #FFD700, #A855F7, #00FFFF)',
+              background: 'linear-gradient(90deg, #f43f5e, #a855f7, #00f2ff)',
               WebkitBackgroundClip: 'text',
             }}
           >
-            THE MEMORY KING RISES
+            THE MEMORY HERO RISES
           </p>
         </div>
       )}

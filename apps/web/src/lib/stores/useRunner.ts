@@ -2,8 +2,12 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export type GameState =
+  | "boot-accessibility"
+  | "title"
   | "lore-hub"
   | "menu"
+  | "save-slots"
+  | "story-hub"
   | "campaign-map"
   | "district-select"
   | "story-mode-select"
@@ -15,6 +19,8 @@ export type GameState =
   | "beast-preview"
   | "adventure"
   | "controller-test"
+  | "abilities"
+  | "mission-complete"
   | "settings"
   | "codex"
   | "playing";

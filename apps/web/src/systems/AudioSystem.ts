@@ -261,6 +261,28 @@ export class AudioSystem {
     osc.stop(now + 0.6);
   }
 
+  /** Play procedural venue-themed battle synth music based on arenaId */
+  playVenueThemedMusic(arenaId: string): void {
+    if (!this.enabled || !this.ctx || !this.masterGain) return;
+    const now = this.ctx.currentTime;
+
+    // Dark-hiphop synth for bronx_streets & urban arenas
+    if (arenaId === 'bronx_streets' || arenaId === 'open-world') {
+      [65.41, 77.78, 98.00, 116.54].forEach((freq, idx) => {
+        const osc = this.ctx!.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.18);
+        const gain = this.ctx!.createGain();
+        gain.gain.setValueAtTime(0.2, now + idx * 0.18);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.18 + 0.35);
+        osc.connect(gain);
+        gain.connect(this.masterGain!);
+        osc.start(now + idx * 0.18);
+        osc.stop(now + idx * 0.18 + 0.4);
+      });
+    }
+  }
+
   /** Helper: create a short noise buffer */
   private noiseBuffer(duration: number): AudioBuffer {
     const ctx = this.ctx!;

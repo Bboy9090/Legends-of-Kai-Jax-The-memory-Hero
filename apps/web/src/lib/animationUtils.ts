@@ -613,9 +613,9 @@ export function animateWalk(
   const armAmp = isRunning ? 0.8 : 0.45;
   const legAmp = isRunning ? 0.9 : 0.55;
 
-  lerpRot(rUA(limbs), bUA(limbs, bases), stride * armAmp - 0.4, undefined, 0.3, 10, delta);
+  lerpRot(rUA(limbs), bUA(limbs, bases), stride * armAmp - 0.4, undefined, -0.1, 10, delta);
   lerpRot(rFA(limbs), bFA(limbs, bases), -0.6 - Math.max(0, stride) * 0.4, undefined, undefined, 10, delta);
-  lerpRot(lUA(limbs), bLUA(limbs, bases), -stride * armAmp - 0.4, undefined, -0.3, 10, delta);
+  lerpRot(lUA(limbs), bLUA(limbs, bases), -stride * armAmp - 0.4, undefined, 0.1, 10, delta);
   lerpRot(lFA(limbs), bLFA(limbs, bases), -0.6 - Math.max(0, -stride) * 0.4, undefined, undefined, 10, delta);
 
   lerpRot(rUL(limbs), bRUL(limbs, bases), -stride * legAmp, undefined, undefined, 10, delta);

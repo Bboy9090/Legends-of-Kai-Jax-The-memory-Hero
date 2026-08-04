@@ -34,7 +34,7 @@ export const CHARACTER_BIOS: CharacterBio[] = [
   {
     heroId: 'jaxon',
     title: 'Chaos Incarnate - Living Lightning',
-    shortBio: 'Fastest hero alive. Controls Chaos Energy, can evolve into Super or Hyper forms.',
+    shortBio: 'Fastest hero alive. Harnesses Shadow Velocity to phase between reality.',
     extendedBio: 'Jaxon is speed incarnate. His control over the Chaos Force allows him to warp through attacks, phase between realities, and ascend into Super and Hyper states. His emotional drive fuels his power—when Jaxon pushes beyond, the entire battlefield feels it. He is the crimson blur, the chaos storm, the hero who refuses to slow down.',
     originStory: 'Born from chaos itself when the multiverse fractured, Jaxon emerged as a being of pure speed and chaos energy. Orphaned in a shattered world, he learned to harness the fractured Chaos Emeralds—fragments of reality itself. Each emerald he collected granted him deeper control over spacetime, until he could vibrate between dimensions. His twin brother Kaison became his anchor to humanity, the only constant in his chaotic existence. Together, they represent duality: speed and precision, emotion and logic. Jaxon\'s journey is one of learning that true power comes not from running away, but from the bonds that hold you still.',
     specialty: 'Speed assaults, mobility, multi-target pressure',
