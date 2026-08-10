@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { useGame } from "../../lib/stores/useGame";
 import { useRunner } from "../../lib/stores/useRunner";
 import { useBattle } from "../../lib/stores/useBattle";
-import { Fighter, FIGHTERS, getFighterById } from "../../lib/characters";
+import { Fighter, PLAYABLE_FIGHTERS, FIGHTERS, getFighterById } from "../../lib/characters";
 import GLBCharacterModel from "./models/GLBCharacterModel";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
 import CinematicPostFX from "./graphics/CinematicPostFX";
@@ -276,7 +276,7 @@ export default function VersusCharacterSelect() {
 
         <div className="w-72 flex flex-col gap-3 overflow-y-auto pr-1">
           <div className="grid grid-cols-3 gap-3 md:gap-2">
-            {FIGHTERS.map((f) => (
+            {PLAYABLE_FIGHTERS.map((f) => (
               <FighterCard
                 key={f.id}
                 fighter={f}

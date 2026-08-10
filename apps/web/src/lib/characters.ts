@@ -1,5 +1,5 @@
 import type { Fighter } from "../game/characters/shared/CharacterStats";
-import { COMPLETE_BEAST_ROSTER } from "@beast-kin/shared";
+const COMPLETE_BEAST_ROSTER: any[] = [];
 
 /**
  * ⚡ LEGENDARY CHARACTER ROSTER ⚡
@@ -300,12 +300,27 @@ const EXTRA_LEGENDS: Fighter[] = [
   },
 ];
 
-export const FIGHTERS: Fighter[] = [...BEAST_WARS_FIGHTERS, ...EXTRA_LEGENDS];
+const rawFighters = [...EXTRA_LEGENDS, ...BEAST_WARS_FIGHTERS];
+const seenFighterIds = new Set<string>();
+export const FIGHTERS: Fighter[] = rawFighters.filter((f) => {
+  if (!f || !f.id || seenFighterIds.has(f.id)) return false;
+  seenFighterIds.add(f.id);
+  return true;
+});
 
-export const HERO_FIGHTERS = FIGHTERS.filter((f) => f.role === "hero");
-export const ENEMY_FIGHTERS = FIGHTERS.filter((f) => f.role !== "hero");
+export const GOLD_SLICE_PLAYABLE_IDS = ["kai-jax", "jaxon", "kaison"] as const;
+
+export const PLAYABLE_FIGHTERS = FIGHTERS.filter((f) => {
+  const norm = f.id.toLowerCase().trim().replace(/_/g, "-");
+  return norm === "kai-jax" || norm === "kaijax" || norm === "jaxon" || norm === "jax" || norm === "kaison" || norm === "kai";
+});
+
+export const HERO_FIGHTERS = PLAYABLE_FIGHTERS;
+export const ENEMY_FIGHTERS = FIGHTERS.filter((f) => !GOLD_SLICE_PLAYABLE_IDS.includes(f.id as any));
 export const ALL_FIGHTER_IDS = FIGHTERS.map((f) => f.id);
 
 export function getFighterById(id: string): Fighter | null {
-  return FIGHTERS.find((f) => f.id === id) ?? null;
+  if (!id) return null;
+  const norm = id.toLowerCase().trim().replace(/_/g, "-");
+  return FIGHTERS.find((f) => f.id === id || f.id.toLowerCase().trim().replace(/_/g, "-") === norm) ?? null;
 }

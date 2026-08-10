@@ -119,6 +119,8 @@ interface AudioState {
   playStoneHit: () => void;
   /** Short movement whoosh (procedural; battle dodge / roll) */
   playDodge: () => void;
+  toggleMute: () => void;
+  toggleSound: () => void;
   /** 0..1 adaptive battle music intensity (combo + low HP); no-op if unsupported */
   battleIntensity: number;
   setBattleIntensity: (n: number) => void;
@@ -144,6 +146,8 @@ export const useAudio = create<AudioState>((set, get) => ({
   setHitSound: (hitSound) => set({ hitSound }),
   setSuccessSound: (successSound) => set({ successSound }),
   setMuted: (isMuted) => set({ isMuted }),
+  toggleMute: () => set((state) => ({ isMuted: !state.isMuted })),
+  toggleSound: () => set((state) => ({ isMuted: !state.isMuted })),
   startBattleMusic: () => { if (!get().isMuted) tryPlay(get().battleMusic); },
   stopBattleMusic: () => { const b = get().battleMusic; if (b) b.pause(); },
   playJump: () => tryPlay(get().hitSound),

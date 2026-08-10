@@ -4,6 +4,7 @@ import { useGLTF } from "@react-three/drei";
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
 import { getModelConfig } from "../../../assets/modelRegistry";
+import { getAssetPath } from "../../../lib/assetPath";
 import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
 import { ENEMY_TIERS } from "../../../game/tuning/enemyTuning";
 import {
@@ -46,9 +47,10 @@ const ENEMY_TARGET_HEIGHTS: Record<string, number> = {
 
 function EnemyMesh({ enemy }: EnemyMeshProps) {
   const config = getModelConfig(enemy.fighterId);
-  const modelPath = config?.path || "/models/stylized-beast.glb";
+  const modelPath = config?.path || null;
+  const safeLoadPath = modelPath || getAssetPath(MODEL_REGISTRY['kai-jax'].path);
 
-  const { scene, animations } = useGLTF(modelPath);
+  const { scene, animations } = useGLTF(safeLoadPath);
   const clonedScene = useMemo(() => SkeletonUtils.clone(scene), [scene]);
 
   const groupRef = useRef<THREE.Group>(null);
@@ -142,7 +144,14 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
   return (
     <group ref={groupRef}>
       <group ref={innerRef} scale={normalizedScale.current}>
-        <primitive object={clonedScene} castShadow receiveShadow />
+        {modelPath ? (
+          <primitive object={clonedScene} castShadow receiveShadow />
+        ) : (
+          <mesh castShadow receiveShadow position={[0, 1, 0]}>
+            <boxGeometry args={[0.8, 1.8, 0.8]} />
+            <meshStandardMaterial color={isTelegraphing ? "#ff4444" : enemy.isAggro ? "#ee3333" : "#883333"} />
+          </mesh>
+        )}
       </group>
       <pointLight
         position={[0, 1.5, 0]}

@@ -4,6 +4,8 @@
  * Real animation mappings for all characters
  */
 
+import * as THREE from 'three';
+
 export interface CharacterAnimationConfig {
   idle: string;
   walk: string;

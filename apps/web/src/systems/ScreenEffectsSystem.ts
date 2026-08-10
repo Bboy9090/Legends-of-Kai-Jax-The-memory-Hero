@@ -13,7 +13,7 @@
  */
 
 import * as THREE from 'three';
-import { EventBus } from '@game/core/EventBus';
+import { EventBus } from '../core/EventBus';
 
 // Effect types
 export interface ShakeConfig {

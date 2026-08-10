@@ -4,7 +4,7 @@
  */
 
 export type AIState = 'idle' | 'patrol' | 'chase' | 'attack' | 'retreat' | 'stun' | 'dead';
-export type EnemyType = 'grunt' | 'tank' | 'attacker' | 'healer' | 'elite' | 'boss';
+export type EnemyType = 'grunt' | 'tank' | 'attacker' | 'healer' | 'elite' | 'boss' | 'void-scout' | 'void-stalker' | 'rift-drone' | 'hyena-scout';
 export type AIBehaviorDifficulty = 'easy' | 'normal' | 'hard' | 'legendary';
 
 export interface AIDecision {

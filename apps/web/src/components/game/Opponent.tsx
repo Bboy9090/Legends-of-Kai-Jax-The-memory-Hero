@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
 import { soundManager } from "../../lib/soundEffects";
+import OptimizedBeastModel from "./models/OptimizedBeastModel";
 import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
 import { useBeastPreset } from "../../lib/stores/useBeastPreset";
 

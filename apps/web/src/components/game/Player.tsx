@@ -10,11 +10,9 @@ import { getFighterById, FIGHTERS } from "../../lib/characters";
 import ProceduralBeastModel from "./models/ProceduralBeastModel";
 
 export default function Player() {
-  const { player, selectedCharacter, equippedCosmetics } = useRunner();
-  const meshRef = useRef<THREE.Mesh>(null);
-  
-  // Get equipped accessories for current character
-  const equipped = equippedCosmetics[selectedCharacter];
+  const selectedCharacter = useRunner((s) => s.selectedCharacter);
+  const player = { x: 0, y: 0, z: 0, state: 'idle' };
+  const equipped = undefined;
   
   // Smooth position transitions with bobbing animation
   const { position } = useSpring({

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 export type GameState =
   | "boot-accessibility"
@@ -45,12 +45,30 @@ interface ProfileData {
   lastPlayedTitle: string | null;
 }
 
-interface RunnerState {
-  // Runtime State (Reset on app launch, not per-profile)
+export type StorageStatus = 'persistent' | 'temporary' | 'unavailable';
+
+export function detectStorageCapability(): StorageStatus {
+  try {
+    if (typeof window !== "undefined" && window.localStorage) {
+      const testKey = "__kai_jax_storage_test__";
+      window.localStorage.setItem(testKey, "1");
+      window.localStorage.getItem(testKey);
+      window.localStorage.removeItem(testKey);
+      return 'persistent';
+    }
+  } catch (_e) {
+    return 'temporary';
+  }
+  return 'unavailable';
+}
+
+export interface RunnerState {
+  // Runtime State
   gameState: GameState;
   selectedCharacter: string | null;
   activeStoryMissionId: string | null;
   trainingSession: boolean;
+  storageStatus: StorageStatus;
   
   // Persistent Profile Management
   activeProfileIndex: number;
@@ -118,6 +136,7 @@ export const useRunner = create<RunnerState>()(
       selectedCharacter: "jaxon",
       activeStoryMissionId: null,
       trainingSession: false,
+      storageStatus: detectStorageCapability(),
       
       // Profiles Initial
       activeProfileIndex: 0,
@@ -226,6 +245,20 @@ export const useRunner = create<RunnerState>()(
     }),
     {
       name: "kai-jax-save",
+      storage: createJSONStorage(() => {
+        try {
+          if (typeof window !== "undefined" && window.localStorage) {
+            window.localStorage.getItem("test");
+            return window.localStorage;
+          }
+        } catch (_e) {}
+        const memoryStorage = new Map<string, string>();
+        return {
+          getItem: (key) => memoryStorage.get(key) ?? null,
+          setItem: (key, value) => { memoryStorage.set(key, value); },
+          removeItem: (key) => { memoryStorage.delete(key); },
+        };
+      }),
     }
   )
 );

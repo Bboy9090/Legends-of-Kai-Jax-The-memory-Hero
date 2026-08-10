@@ -17,7 +17,7 @@
  */
 
 import * as THREE from 'three';
-import { EventBus } from '@game/core/EventBus';
+import { EventBus } from '../core/EventBus';
 
 // Transformation tier definitions
 export enum TransformationTier {

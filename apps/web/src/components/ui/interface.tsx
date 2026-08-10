@@ -6,9 +6,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./card";
 import { VolumeX, Volume2, RotateCw, Trophy } from "lucide-react";
 
 export function Interface() {
-  const restart = useGame((state) => state.restart);
+  const restart = useGame((state) => state.start);
   const phase = useGame((state) => state.phase);
-  const { isMuted, toggleMute } = useAudio();
+  const isMuted = useAudio((state) => state.isMuted);
+  const toggleMute = useAudio((state) => state.toggleSound);
 
   // Handle clicks on the interface in the ready phase to start the game
   useEffect(() => {

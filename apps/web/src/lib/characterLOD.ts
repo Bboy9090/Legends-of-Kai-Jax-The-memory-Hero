@@ -4,7 +4,8 @@
  */
 
 import type { Vector3 } from "three";
-import type { CharacterLODLevel } from "../components/game/models/AnatomicalBeastModel";
+
+export type CharacterLODLevel = 0 | 1 | 2 | 3;
 
 /** Distance thresholds: close < d1 < mid < d2 < far < d3 < very far */
 const D_CLOSE = 12;

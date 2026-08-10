@@ -41,7 +41,13 @@ export default function CustomizationMenu() {
       <div className="max-w-7xl mx-auto p-4 sm:p-6 pb-8 sm:pb-24">
         {/* Fighter Categories */}
         {categories.map(category => {
-          const categoryFighters = FIGHTERS.filter(f => f.category === category.id);
+          const categoryFighters = FIGHTERS.filter(f => {
+            if (category.id === 'heroes') return f.role === 'hero';
+            if (category.id === 'speedsters') return f.baseStats && f.baseStats.speed >= 85 && f.role !== 'hero';
+            if (category.id === 'warriors') return f.role === 'enemy';
+            if (category.id === 'legends') return f.role === 'boss' || f.role === 'rival';
+            return true;
+          });
           
           return (
             <div key={category.id} className="mb-8">
@@ -75,7 +81,7 @@ export default function CustomizationMenu() {
                               {fighter.name}
                             </div>
                             <div className="text-[9px] font-bold text-white/70">
-                              {fighter.category.toUpperCase()}
+                              {(fighter.role || category.name).toUpperCase()}
                             </div>
                           </div>
                         </div>

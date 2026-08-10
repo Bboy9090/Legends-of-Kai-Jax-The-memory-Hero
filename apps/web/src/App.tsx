@@ -1,5 +1,5 @@
+import { lazy, Suspense, useState, useRef, useMemo, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useState, useRef, useMemo, useEffect } from "react";
 import { KeyboardControls } from "@react-three/drei";
 import "@fontsource/inter";
 import "@fontsource/bebas-neue";
@@ -11,27 +11,28 @@ import DialogueDisplay from "./components/game/DialogueDisplay";
 import LegendaryMainMenu from "./components/game/LegendaryMainMenu";
 
 import VersusCharacterSelect from "./components/game/VersusCharacterSelect";
-import BeastPreview from "./components/game/BeastPreview";
-import CampaignMap from "./components/game/CampaignMap";
-import DistrictSelectScreen from "./components/game/DistrictSelectScreen";
 import TransformationOverlay from "./components/game/TransformationOverlay";
 import ScreenEffects from "./components/game/ScreenEffects";
 import { GameIntro } from "./components/game/LoadingScreen";
-import CustomizationMenu from "./components/game/CustomizationMenu";
-import LoreHub from "./components/game/LoreHub";
-import ControllerTestScene from "./components/game/ControllerTestScene";
 import AdventureArena from "./components/game/adventure/AdventureArena";
 import AdventureHUD from "./components/game/adventure/AdventureHUD";
 import AdventureTouchControls from "./components/game/adventure/AdventureTouchControls";
 import StoryAdventure from "./components/game/StoryAdventure";
-import SettingsMenu from "./components/game/SettingsMenu";
 import TitleScreen from "./components/game/TitleScreen";
-import SaveSlotScreen from "./components/game/SaveSlotScreen";
 import BootAccessibilityScreen from "./components/game/BootAccessibilityScreen";
-import StoryHubScreen from "./components/game/StoryHubScreen";
-import MissionSelectScreen from "./components/game/MissionSelectScreen";
-import CharacterAbilityScreen from "./components/game/CharacterAbilityScreen";
-import MissionCompleteScreen from "./components/game/MissionCompleteScreen";
+
+const CustomizationMenu = lazy(() => import("./components/game/CustomizationMenu"));
+const LoreHub = lazy(() => import("./components/game/LoreHub"));
+const SettingsMenu = lazy(() => import("./components/game/SettingsMenu"));
+const CampaignMap = lazy(() => import("./components/game/CampaignMap"));
+const DistrictSelectScreen = lazy(() => import("./components/game/DistrictSelectScreen"));
+const MissionSelectScreen = lazy(() => import("./components/game/MissionSelectScreen"));
+const CharacterAbilityScreen = lazy(() => import("./components/game/CharacterAbilityScreen"));
+const MissionCompleteScreen = lazy(() => import("./components/game/MissionCompleteScreen"));
+const SaveSlotScreen = lazy(() => import("./components/game/SaveSlotScreen"));
+const StoryHubScreen = lazy(() => import("./components/game/StoryHubScreen"));
+const BeastPreview = lazy(() => import("./components/game/BeastPreview"));
+const ControllerTestScene = lazy(() => import("./components/game/ControllerTestScene"));
 import DevFrameHud from "./components/game/DevFrameHud";
 import GameOverlays from "./components/game/GameOverlays";
 import { useGame } from "./lib/stores/useGame";
@@ -206,11 +207,13 @@ function App() {
       {/* Global additive overlays: F3 perf HUD, F1 quest log */}
       <GameOverlays />
 
-      {/* Lore Hub - Landing Page & Codex */}
-      {(gameState === "lore-hub" || gameState === "codex") && <LoreHub />}
+      <Suspense fallback={null}>
+        {/* Lore Hub - Landing Page & Codex */}
+        {(gameState === "lore-hub" || gameState === "codex") && <LoreHub />}
 
-      {/* Settings Menu */}
-      {gameState === "settings" && <SettingsMenu />}
+        {/* Settings Menu */}
+        {gameState === "settings" && <SettingsMenu />}
+      </Suspense>
 
       {/* ⚡ LEGENDARY INTRO SEQUENCE */}
       {showIntro && gameState !== "lore-hub" && <GameIntro onComplete={handleIntroComplete} />}

@@ -110,13 +110,14 @@ export class AnimationStateMachine {
     action.reset().play();
 
     if (onComplete) {
-      const handleComplete = () => {
-        onComplete();
-        action.removeEventListener('finished', handleComplete);
-        // Return to idle
-        this.setState('idle');
+      const handleComplete = (e: any) => {
+        if (e.action === action) {
+          onComplete();
+          this.mixer.removeEventListener('finished', handleComplete);
+          this.setState('idle');
+        }
       };
-      action.addEventListener('finished', handleComplete);
+      this.mixer.addEventListener('finished', handleComplete);
     }
 
     this.currentAction = action;

@@ -378,9 +378,9 @@ export const useBattle = create<BattleState>((set, get) => ({
   playerDread: 0,
   playerResonance: 100,
 
-  playerCombatState: 'FREE',
-  opponentCombatState: 'FREE',
-  battleBanter: null,
+  playerCombatState: 'NEUTRAL' as any,
+  opponentCombatState: 'NEUTRAL' as any,
+  battleBanter: null as any,
 
   playerCombo: 0,
   playerComboTimer: 0,

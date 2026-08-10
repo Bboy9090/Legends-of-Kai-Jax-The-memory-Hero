@@ -385,23 +385,25 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
 };
 
 export function getModelConfig(fighterId: string): GLBModelConfig | null {
-  const config = MODEL_REGISTRY[fighterId] ?? null;
-  if (config) {
-    return {
-      ...config,
-      path: getAssetPath(config.path),
-    };
-  }
-  return null;
+  if (!fighterId) return null;
+  const norm = fighterId.toLowerCase().trim().replace(/_/g, "-");
+  const config = MODEL_REGISTRY[norm] || MODEL_REGISTRY[fighterId];
+  if (!config) return null;
+  return {
+    ...config,
+    path: getAssetPath(config.path),
+  };
 }
 
 export function getModelPath(fighterId: string): string | null {
-  const path = MODEL_REGISTRY[fighterId]?.path ?? null;
-  return path ? getAssetPath(path) : null;
+  const config = getModelConfig(fighterId);
+  return config ? config.path : null;
 }
 
 export function hasModel(fighterId: string): boolean {
-  return fighterId in MODEL_REGISTRY;
+  if (!fighterId) return false;
+  const norm = fighterId.toLowerCase().trim().replace(/_/g, "-");
+  return norm in MODEL_REGISTRY || fighterId in MODEL_REGISTRY;
 }
 
 /**

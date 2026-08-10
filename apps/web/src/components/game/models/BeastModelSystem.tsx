@@ -14,15 +14,14 @@
 import { useRef, useMemo, useEffect } from 'react';
 import { Group, Mesh, MeshStandardMaterial, Color } from 'three';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations } from '@react-three/drei';
-import { LegendaryBeast } from '@legends-of-kai-jax/shared';
+import * as THREE from 'three';
 import { getAnimationConfig, findAnimationClip } from '../../../lib/threejs/GLBAnimationConfig';
 import { useAnimationStateMachine, type AnimationState } from '../../../lib/threejs/AnimationStateMachine';
 import { getDeviceType } from '../../../lib/threejs/PerformanceOptimizer';
 import { useBattle } from '../../../lib/stores/useBattle';
 
 interface BeastModelProps {
-  beast: LegendaryBeast;
+  beast: any;
   bodyRef?: React.RefObject<Group>;
   headRef?: React.RefObject<Group>;
   emotionIntensity?: number;
@@ -140,22 +139,20 @@ export function BeastModel3D({
   const animData = useAnimations(animations, groupRef);
   const actions = animData.actions || {};
   const animationMixer = animData.mixer || null;
-  mixer = animationMixer;
   
   // Animation state machine - REAL IMPLEMENTATION
-  // Works even if no animations (will use procedural animations)
   const { stateMachine, setState, playOnce } = useAnimationStateMachine(
-    mixer,
+    animationMixer,
     animations,
     'idle'
   );
 
   // If GLB loaded with animations, use it - REAL IMPLEMENTATION
-  if (gltf && gltf.scene && animations.length > 0 && mixer && stateMachine) {
+  if (gltf && gltf.scene && animations.length > 0 && animationMixer && stateMachine) {
 
     // Update animations based on state
     useEffect(() => {
-      if (!actions || !stateMachine || !mixer) return;
+      if (!actions || !stateMachine || !animationMixer) return;
       
       const config = getAnimationConfig(beast.id);
       
@@ -175,11 +172,11 @@ export function BeastModel3D({
           setState('idle');
         }
       }
-    }, [animationState, isAttacking, playerAttacking, actions, stateMachine, setState, playOnce, animations, beast.id, mixer]);
+    }, [animationState, isAttacking, playerAttacking, actions, stateMachine, setState, playOnce, animations, beast.id, animationMixer]);
 
     // Update mixer every frame
     useFrame((state, delta) => {
-      if (mixer) mixer.update(delta);
+      if (animationMixer) animationMixer.update(delta);
       if (stateMachine) stateMachine.update(delta);
     });
 

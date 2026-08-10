@@ -12,8 +12,27 @@
 import { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { PERFECT_KAI_JAX } from '@legends-of-kai-jax/shared';
-import { PerfectKaiJaxSystem } from '@legends-of-kai-jax/engine';
+const PERFECT_KAI_JAX = {
+  visual: {
+    colorPalette: { primary: '#1a1a1a', secondary: '#00d4ff', accent: '#7fff00', emissive: '#00f2ff' },
+    proportions: { bodyDiameter: 1.0, height: 2.2 },
+    tails: { count: 3, length: 1.5, thickness: 0.15 },
+    accessories: { memoryOrbs: { count: 3, color: '#7fff00' } }
+  }
+};
+
+class PerfectKaiJaxSystem {
+  private auraIntensity = 0.5;
+  private memoryOrbs = [
+    { position: [0.8, 1.2, 0] as [number, number, number] },
+    { position: [-0.8, 1.2, 0] as [number, number, number] },
+    { position: [0, 1.8, 0.5] as [number, number, number] }
+  ];
+  update(_delta: number) {}
+  getState() {
+    return { auraIntensity: this.auraIntensity, memoryOrbs: this.memoryOrbs };
+  }
+}
 
 interface PerfectKaiJaxModelProps {
   position?: [number, number, number];

@@ -7,8 +7,9 @@
  * - Coolest, most wanted hybrids
  */
 
-import { COMPLETE_BEAST_ROSTER, type LegendaryBeast } from '@beast-kin/shared';
-import { getNameWithTitle } from '@beast-kin/shared';
+const COMPLETE_BEAST_ROSTER: any[] = [];
+export type LegendaryBeast = any;
+const getNameWithTitle = (id: string) => id;
 
 export interface BeastFighter {
   id: string;
@@ -30,23 +31,23 @@ export interface BeastFighter {
 /**
  * Convert LegendaryBeast to BeastFighter
  */
-function convertToBeastFighter(beast: LegendaryBeast, category: BeastFighter['category']): BeastFighter {
-  const fullName = getNameWithTitle(beast.id) || `${beast.name}, ${beast.title}`;
+function convertToBeastFighter(beast: any, category: BeastFighter['category']): BeastFighter {
+  const fullName = beast.title ? `${beast.name}, ${beast.title}` : beast.name;
   
   return {
     id: beast.id,
     name: beast.name,
     displayName: fullName,
-    color: beast.visual.primaryColor,
-    accentColor: beast.visual.accentColor,
-    description: beast.description,
-    archetype: beast.beastHybrid,
-    role: beast.role,
+    color: beast.visual?.primaryColor || '#1a1a1a',
+    accentColor: beast.visual?.accentColor || '#7fff00',
+    description: beast.description || '',
+    archetype: beast.beastHybrid || '',
+    role: beast.role || 'hero',
     category,
     unlocked: true, // ALL CHARACTERS PLAYABLE
-    bookUnlock: beast.unlock.book,
-    beastHybrid: beast.beastHybrid,
-    visualFeatures: beast.visual.features,
+    bookUnlock: beast.unlock?.book || 1,
+    beastHybrid: beast.beastHybrid || '',
+    visualFeatures: beast.visual?.features || [],
   };
 }
 

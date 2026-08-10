@@ -61,9 +61,10 @@ export const LOD_THRESHOLDS = {
 export function getLODModelPath(
   characterId: string,
   distance: number = 0
-): string {
-  const config = LOD_MODEL_REGISTRY[characterId];
-  if (!config) return '/models/stylized-beast.glb'; // Fallback
+): string | null {
+  const norm = (characterId || '').toLowerCase().trim().replace(/_/g, '-');
+  const config = LOD_MODEL_REGISTRY[norm] || LOD_MODEL_REGISTRY[characterId];
+  if (!config) return null;
 
   const deviceType = getDeviceType();
   const thresholds = LOD_THRESHOLDS[deviceType];

@@ -32,16 +32,16 @@ export interface PlayableCharacter {
 /**
  * Convert Fighter to PlayableCharacter
  */
-function fighterToPlayable(fighter: Fighter): PlayableCharacter {
+function fighterToPlayable(fighter: any): PlayableCharacter {
   return {
     id: fighter.id,
     name: fighter.name,
-    displayName: fighter.displayName,
-    color: fighter.color,
-    accentColor: fighter.accentColor,
-    description: fighter.description,
-    category: fighter.category,
-    role: fighter.role,
+    displayName: fighter.displayName || fighter.name,
+    color: fighter.color || '#1a1a1a',
+    accentColor: fighter.accentColor || '#7fff00',
+    description: fighter.description || '',
+    category: fighter.category || 'hero',
+    role: fighter.role || 'hero',
     unlocked: true, // 🦅 ALL PLAYABLE!
     source: 'fighter',
   };
@@ -68,16 +68,16 @@ function beastFighterToPlayable(beast: BeastFighter): PlayableCharacter {
 /**
  * Convert Character to PlayableCharacter
  */
-function rosterCharacterToPlayable(char: Character): PlayableCharacter {
+function rosterCharacterToPlayable(char: any): PlayableCharacter {
   return {
     id: char.id,
     name: char.name,
-    displayName: `${char.name}, ${char.title}`,
+    displayName: char.title ? `${char.name}, ${char.title}` : char.name,
     color: char.primaryColor || '#88d0ff',
     accentColor: char.accentColor || '#ffd700',
-    description: `${char.role} from ${char.universe}`,
-    category: char.role.toLowerCase(),
-    role: char.role,
+    description: char.description || `${char.role || 'Warrior'}`,
+    category: (char.role || 'hero').toLowerCase(),
+    role: char.role || 'hero',
     unlocked: true, // 🦅 ALL PLAYABLE!
     source: 'roster',
   };
@@ -141,9 +141,18 @@ export function getPlayableCharactersByRole(role: string): PlayableCharacter[] {
   return UNIQUE_PLAYABLE_CHARACTERS.filter(c => c.role === role);
 }
 
-/**
- * Check if character is playable - ALL ARE PLAYABLE!
- */
+export const GOLD_SLICE_PLAYABLE_IDS = ["kai-jax", "jaxon", "kaison"] as const;
+export type FighterAvailabilityStatus = 'PLAYABLE' | 'PREVIEW' | 'COMING_SOON' | 'LOCKED' | 'HIDDEN' | 'INVALID';
+
+export function getFighterAvailabilityStatus(id: string): FighterAvailabilityStatus {
+  if (!id) return 'INVALID';
+  const norm = id.toLowerCase().trim().replace(/_/g, "-");
+  if (norm === "kai-jax" || norm === "kaijax" || norm === "kai_jax") return 'PLAYABLE';
+  if (norm === "jaxon" || norm === "jax") return 'PLAYABLE';
+  if (norm === "kaison" || norm === "kai") return 'PLAYABLE';
+  return 'PREVIEW';
+}
+
 export function isCharacterPlayable(characterId: string): boolean {
-  return true; // 🦅 ALL CHARACTERS PLAYABLE!
+  return getFighterAvailabilityStatus(characterId) === 'PLAYABLE';
 }

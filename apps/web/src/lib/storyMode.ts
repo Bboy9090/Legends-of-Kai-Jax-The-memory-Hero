@@ -45,7 +45,7 @@ export interface GameMode {
 
 // ============ STORY ACTS ============
 
-export const STORY_ACTS: Record<ActNumber, StoryAct> = {
+export const STORY_ACTS: Record<number, StoryAct> = {
   1: {
     number: 1,
     title: 'The Zenith Protocol',

@@ -11,36 +11,34 @@ import * as THREE from 'three';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { useBattle } from '../../../lib/stores/useBattle';
 import { MODEL_REGISTRY } from '../../../assets/modelRegistry';
+import { getAssetPath } from '../../../lib/assetPath';
 
-// Guaranteed-to-exist fallback if a fighter has no registered model.
-const FALLBACK_MODEL_PATH = '/models/stylized-beast.glb';
+// Guaranteed-to-exist fallback: slim, athletic, muscular animated 9-tails beast warrior.
+const FALLBACK_MODEL_PATH = '/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb';
 
-// PERFORMANCE: lightweight battle models (~1.8MB) that replace the very heavy
-// 12–25MB registry models during combat. The registry models are gorgeous but
-// too large to load/render smoothly, so battles get these lean equivalents.
-// Unmapped fighters keep their registry model.
+// PERFORMANCE: lightweight battle models fallback for unmapped fighters.
 const LIGHT_BATTLE_MODELS: Record<string, string> = {
-  'kai-jax': '/models/kai_jax_beast.glb',
-  kaijax: '/models/kai_jax_beast.glb',
-  kai_jax: '/models/kai_jax_beast.glb',
-  kai: '/models/kai_jax_beast.glb',
-  silver: '/models/kai_jax_beast.glb',
-  jaxon: '/models/jaxon_beast.glb',
-  jax: '/models/jaxon_beast.glb',
-  velocity: '/models/jaxon_beast.glb',
-  kaison: '/models/kaison_beast.glb',
-  kaxon: '/models/kaison_beast.glb',
-  'voltage-fang': '/models/thunder_lion.glb',
-  steelwolf: '/models/frost_wolf.glb',
-  'ashen-tiger': '/models/emberwolf_warlord.glb',
-  'blazing-fox': '/models/phoenix_warrior.glb',
-  sentinel: '/models/sandstone_sentinel.glb',
-  apex: '/models/shadow_panther.glb',
-  'hyena-scout': '/models/shadow_panther.glb',
-  boryn: '/models/boryx_zenith_beast.glb',
-  borax: '/models/boryx_zenith_beast.glb',
-  malakor: '/models/granite_colossus.glb',
-  behemoth: '/models/earth_turtle.glb',
+  'kai-jax': '/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb',
+  kaijax: '/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb',
+  kai_jax: '/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb',
+  kai: '/models/Meshy_AI_Meshy_Merged_Animations4KAI.glb',
+  silver: '/models/Meshy_AI_Jax_Kai_icey_fox_0219223329_texture.glb',
+  jaxon: '/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb',
+  jax: '/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb',
+  velocity: '/models/Meshy_AI_Animation_Running_withSkinKAIJAXVARIANTSHADOIWSonic.glb',
+  kaison: '/models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb',
+  kaxon: '/models/Meshy_AI_Character_outputLIONBORAX.glb',
+  'voltage-fang': '/models/Meshy_AI_Voltage_Fang_0219222028_texture.glb',
+  steelwolf: '/models/Meshy_AI_Steelwolf_Exosuit_0219223344_texture.glb',
+  'ashen-tiger': '/models/Meshy_AI_Ashen_Tiger_Warrior_0219222741_texture.glb',
+  'blazing-fox': '/models/Meshy_AI_Blazing_Fox_Warrior_0219223318_texture.glb',
+  sentinel: '/models/Meshy_AI_Jax_Stormfang_the_Arm_0219222010_texture.glb',
+  apex: '/models/SABERVILLAIN.glb',
+  'hyena-scout': '/models/hyenaratvbill.glb',
+  boryn: '/models/BORYN.glb',
+  borax: '/models/Borax.glb',
+  malakor: '/models/boss.glb',
+  behemoth: '/models/bosssss.glb',
 };
 
 interface OptimizedBeastModelProps {
@@ -57,14 +55,16 @@ interface OptimizedBeastModelProps {
 }
 
 /**
- * Get GLB model path for beast
+ * Get GLB model path for beast (returns null if no GLB is mapped)
  */
-function getBeastModelPath(beastId: string): string {
-  // Use lightweight mobile-optimized 1.8MB GLB models for fast 60FPS combat
-  if (LIGHT_BATTLE_MODELS[beastId]) return LIGHT_BATTLE_MODELS[beastId];
-  const registered = MODEL_REGISTRY[beastId]?.path;
-  if (registered) return registered;
-  return FALLBACK_MODEL_PATH;
+function getBeastModelPath(beastId: string): string | null {
+  const norm = (beastId || '').toLowerCase().trim().replace(/_/g, '-');
+  const registered = MODEL_REGISTRY[norm]?.path || MODEL_REGISTRY[beastId]?.path;
+  if (registered) return getAssetPath(registered);
+  if (LIGHT_BATTLE_MODELS[norm] || LIGHT_BATTLE_MODELS[beastId]) {
+    return getAssetPath(LIGHT_BATTLE_MODELS[norm] || LIGHT_BATTLE_MODELS[beastId]);
+  }
+  return null;
 }
 
 /**
@@ -86,7 +86,8 @@ export default function OptimizedBeastModel({
   const modelPath = getBeastModelPath(beast.id);
   const [loadError, setLoadError] = useState(false);
 
-  // DIAGNOSTIC: log model path resolution
+  const safeLoadPath = modelPath || getAssetPath(MODEL_REGISTRY['kai-jax'].path);
+
   useEffect(() => {
     console.log('[OptimizedBeastModel] Trace:', {
       beastId: beast.id,
@@ -99,12 +100,10 @@ export default function OptimizedBeastModel({
   const TARGET_HEIGHT = 2.2;
 
   // Load GLB model
-  const { scene, animations } = useGLTF(modelPath, undefined, undefined, (err) => {
-    console.error('[OptimizedBeastModel] Load failed:', {
-      modelPath,
-      error: err?.message || String(err),
-    });
-    console.warn(`Failed to load model: ${modelPath}`, err);
+  const { scene, animations } = useGLTF(safeLoadPath, undefined, undefined, (err: any) => {
+    if (modelPath) {
+      console.warn(`Failed to load model: ${modelPath}`, err);
+    }
     setLoadError(true);
   });
 
@@ -208,7 +207,7 @@ export default function OptimizedBeastModel({
     }
   });
 
-  if (loadError) {
+  if (!modelPath || loadError) {
     return (
       <group ref={groupRef as any}>
         <mesh castShadow position={[0, 0.8, 0]}>
