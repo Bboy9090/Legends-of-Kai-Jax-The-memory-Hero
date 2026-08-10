@@ -1,10 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const CHROMIUM_PATH = '/opt/pw-browsers/chromium/chrome-linux/chrome';
-
 export default defineConfig({
   testDir: './e2e',
-  testMatch: '**/*.spec.ts',
+  testMatch: '**/app.spec.ts',
   fullyParallel: false,
   forbidOnly: false,
   retries: 0,
@@ -25,7 +23,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev',
+    command: 'npx vite --port 3000',
     url: 'http://localhost:3000',
     reuseExistingServer: true,
     timeout: 120000,

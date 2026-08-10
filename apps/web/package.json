@@ -62,7 +62,6 @@
     "@types/three": "^0.185.1",
     "@vitejs/plugin-react": "^5.2.0",
     "autoprefixer": "^10.5.4",
-    "playwright": "^1.62.1",
     "postcss": "^8.5.20",
     "tailwindcss": "^4.3.3",
     "tailwindcss-animate": "^1.0.7",
