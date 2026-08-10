@@ -9,34 +9,34 @@ import { EventBus } from '../../core/EventBus';
 describe('Production Stabilization Pass P0 — Contract Audits', () => {
 
   describe('Rule 2 — Model Fallback Contracts', () => {
-    it('missing Memory Wisp does NOT resolve to Kai-Jax model', () => {
+    it('Memory Wisp resolves to intentional production wisp model', () => {
       const config = getModelConfig('memory-wisp');
       const path = getModelPath('memory-wisp');
-      expect(config).toBeNull();
-      expect(path).toBeNull();
-      expect(path ?? '').not.toContain('9TAILSKAIJAX');
+      expect(config).not.toBeNull();
+      expect(path).toContain('shadow_panther.glb');
+      expect(path).not.toContain('9TAILSKAIJAX');
     });
 
-    it('Rift Drone does NOT resolve to Kai-Jax model', () => {
+    it('Rift Drone resolves to intentional production drone model', () => {
       const config = getModelConfig('rift-drone');
       const path = getModelPath('rift-drone');
-      expect(path ?? '').not.toContain('9TAILSKAIJAX');
-      expect(path).toBe('/models/drone.glb');
+      expect(path).toContain('drone.glb');
+      expect(path).not.toContain('9TAILSKAIJAX');
     });
 
-    it('missing Brute does NOT resolve to Kai-Jax model', () => {
-      const config = getModelConfig('brute-enemy');
-      const path = getModelPath('brute-enemy');
-      expect(config).toBeNull();
-      expect(path).toBeNull();
-      expect(path ?? '').not.toContain('9TAILSKAIJAX');
+    it('Corruption Brute resolves to intentional production colossus model', () => {
+      const config = getModelConfig('corruption-brute');
+      const path = getModelPath('corruption-brute');
+      expect(config).not.toBeNull();
+      expect(path).toContain('granite_colossus.glb');
+      expect(path).not.toContain('9TAILSKAIJAX');
     });
 
-    it('Void Stalker does NOT resolve to Kai-Jax model', () => {
+    it('Void Stalker resolves to intentional production boss model', () => {
       const config = getModelConfig('void-stalker');
       const path = getModelPath('void-stalker');
-      expect(path ?? '').not.toContain('9TAILSKAIJAX');
       expect(path).toContain('darjshadowkaijax.glb');
+      expect(path).not.toContain('9TAILSKAIJAX');
     });
 
     it('unknown fighter ID does NOT resolve to Kai-Jax model', () => {

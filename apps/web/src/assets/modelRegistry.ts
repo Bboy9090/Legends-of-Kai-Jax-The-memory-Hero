@@ -314,8 +314,58 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   },
 
   // ============================================================
-  // ENEMIES
+  // ENEMIES — Mission 1 & Encounter Director Production Models
   // ============================================================
+
+  "memory-wisp": {
+    path: "/models/shadow_panther.glb",
+    scale: 3.2,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+  memory_wisp: {
+    path: "/models/shadow_panther.glb",
+    scale: 3.2,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+  wisp: {
+    path: "/models/shadow_panther.glb",
+    scale: 3.2,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+
+  "corruption-brute": {
+    path: "/models/granite_colossus.glb",
+    scale: 4.5,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+  corruption_brute: {
+    path: "/models/granite_colossus.glb",
+    scale: 4.5,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+  "brute-enemy": {
+    path: "/models/granite_colossus.glb",
+    scale: 4.5,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+  brute: {
+    path: "/models/granite_colossus.glb",
+    scale: 4.5,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+  "void-brute": {
+    path: "/models/granite_colossus.glb",
+    scale: 4.5,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
 
   "hyena-scout": {
     path: "/models/hyenaratvbill.glb",
@@ -323,9 +373,41 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
+  hyena_scout: {
+    path: "/models/hyenaratvbill.glb",
+    scale: 3.2,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+  scout: {
+    path: "/models/hyenaratvbill.glb",
+    scale: 3.2,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+
   "rift-drone": {
     path: "/models/drone.glb",
     scale: 3.5,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+  drone: {
+    path: "/models/drone.glb",
+    scale: 3.5,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+  spidersdrone: {
+    path: "/models/spidersdrone.glb",
+    scale: 3.5,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+
+  "void-stalker-prime": {
+    path: "/models/darjshadowkaijax.glb",
+    scale: 4.2,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
