@@ -25,6 +25,21 @@ export default defineConfig({
       input: {
         index: path.resolve(__dirname, "index.html"),
       },
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('three') || id.includes('@react-three')) {
+              return 'vendor-three';
+            }
+            if (id.includes('lucide-react') || id.includes('@radix-ui')) {
+              return 'vendor-ui';
+            }
+            if (id.includes('react') || id.includes('zustand')) {
+              return 'vendor-react';
+            }
+          }
+        },
+      },
     },
   },
   assetsInclude: ["**/*.gltf", "**/*.glb", "**/*.mp3", "**/*.ogg", "**/*.wav"],
