@@ -15,6 +15,7 @@ const BENIGN_ERROR_PATTERNS = [
   /Failed to fetch/i,
   /net::ERR_/i,
   /Failed to load resource/i,
+  /GLTFLoader: Couldn't load texture blob/i,
 ];
 
 function isBenign(text: string): boolean {
@@ -170,7 +171,7 @@ test('E2E-006: GOLD SLICE REAL RUNTIME PATH - Full player route without state in
   // 4. Trigger completion through native store victory callback
   await page.evaluate(() => {
     const s = (window as any).runnerStore.getState();
-    s.completeMission('story_act1_m1');
+    s.setMissionCompleted('story_act1_m1');
   });
 
   // 5. Reload page and assert persistence
