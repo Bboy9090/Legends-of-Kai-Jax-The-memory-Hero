@@ -225,39 +225,36 @@ function App() {
         {/* Main Menu */}
         {phase === "ready" && gameState === "menu" && !showIntro && <LegendaryMainMenu />}
 
-        {/* Save Slots */}
-        {phase === "ready" && gameState === "save-slots" && <SaveSlotScreen />}
+        <Suspense fallback={null}>
+          {/* Save Slots */}
+          {phase === "ready" && gameState === "save-slots" && <SaveSlotScreen />}
 
-        {/* Story Hub (Raging City Map) */}
-        {phase === "ready" && gameState === "story-hub" && <StoryHubScreen />}
+          {/* Story Hub (Raging City Map) */}
+          {phase === "ready" && gameState === "story-hub" && <StoryHubScreen />}
 
-        {/* Mission Select */}
-        {phase === "ready" && gameState === "mission-select" && <MissionSelectScreen />}
+          {/* Mission Select */}
+          {phase === "ready" && gameState === "mission-select" && <MissionSelectScreen />}
 
-        {/* Ability Tree */}
-        {phase === "ready" && gameState === "abilities" && <CharacterAbilityScreen />}
+          {/* Ability Tree */}
+          {phase === "ready" && gameState === "abilities" && <CharacterAbilityScreen />}
 
-        {/* Mission Complete */}
-        {phase === "ready" && gameState === "mission-complete" && <MissionCompleteScreen />}
+          {/* Mission Complete */}
+          {phase === "ready" && gameState === "mission-complete" && <MissionCompleteScreen />}
 
-        {/* Campaign Map */}
-        {phase === "ready" && gameState === "campaign-map" && <CampaignMap />}
+          {/* Campaign Map */}
+          {phase === "ready" && gameState === "campaign-map" && <CampaignMap />}
 
-        {phase === "ready" && gameState === "district-select" && <DistrictSelectScreen />}
+          {phase === "ready" && gameState === "district-select" && <DistrictSelectScreen />}
 
-        {/* Versus Mode - full 3D beast model character select */}
-        {phase === 'ready' && gameState === 'versus-select' && (
-          <VersusCharacterSelect />
-        )}
-        
-        {/* Beast Preview - inspect the layered rendering system */}
-        {phase === 'ready' && gameState === 'beast-preview' && <BeastPreview />}
-        
-        {/* Customization Menu */}
-        {phase === 'ready' && gameState === 'customization' && <CustomizationMenu />}
+          {/* Beast Preview - inspect the layered rendering system */}
+          {phase === 'ready' && gameState === 'beast-preview' && <BeastPreview />}
+          
+          {/* Customization Menu */}
+          {phase === 'ready' && gameState === 'customization' && <CustomizationMenu />}
 
-        {/* Controller Test - movement state foundation */}
-        {gameState === 'controller-test' && <ControllerTestScene />}
+          {/* Controller Test - movement state foundation */}
+          {gameState === 'controller-test' && <ControllerTestScene />}
+        </Suspense>
         
         {/* ⚡ ADVENTURE MODE - Open World 3D Arena */}
         {gameState === 'adventure' && (() => {
