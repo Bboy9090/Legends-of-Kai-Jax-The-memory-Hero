@@ -32,7 +32,7 @@ export const CHARACTER_SPECS: Record<string, CharacterLoreSpec> = {
     originSector: 'Voltage District',
     signatureAbility: 'Electric Dash',
     backstory: 'A high-speed survivor of the first Rift tear. Jaxon uses his lightning-quick reflexes to outrun the Void.',
-    visualThemes: ['Electric Purple', 'Sonic Quills', 'Blur Effects']
+    visualThemes: ['Electric Purple', 'Shadow Quills', 'Blur Effects']
   },
 
   'kaison': {

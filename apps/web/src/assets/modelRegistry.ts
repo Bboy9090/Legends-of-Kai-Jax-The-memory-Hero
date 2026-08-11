@@ -73,7 +73,7 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
 
-  // Jaxon Swift — Shadow-sonic blitzer
+  // Jaxon Swift — Shadow Speed Blitzer
   jaxon: {
     path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb",
     scale: 3.5,

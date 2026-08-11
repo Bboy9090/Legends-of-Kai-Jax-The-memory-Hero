@@ -370,37 +370,37 @@ export const CHARACTER_BIOS: CharacterBio[] = [
   {
     heroId: 'speedy',
     title: 'The Blue Blur - Chaos Master',
-    shortBio: 'Pure speed. Sonic rings. Spin dash. Chaos control mastery.',
-    extendedBio: 'The original speedster. Speedy moves faster than sound, collects golden rings for power, and harnesses chaos emeralds to transform. His carefree attitude hides a hero\'s heart willing to risk everything for his friends and freedom.',
-    originStory: 'Created by chaos itself, Speedy is the original speedster—the one who taught the multiverse what velocity truly means. His affinity with Chaos Emeralds runs deeper than any other hero, as if he and they are two halves of the same coin. He has raced through centuries, crossed impossible distances, and even achieved momentary godhood through sheer will and chaos force. But Speedy\'s greatest power isn\'t speed—it\'s his refusal to stop fighting for freedom. When others despair, Speedy smiles. When the odds are impossible, he breaks through. His motto is simple: "Gotta go fast," but his meaning runs deep—always push forward, never accept limits, keep moving until victory is won.',
-    specialty: 'Speed blitz, ring collection, aerial combat',
+    shortBio: 'Pure speed. Shadow energy. High-velocity dash. Speed mastery.',
+    extendedBio: 'The original speedster. Speedy moves faster than sound and harnesses shadow energy to transform. His carefree attitude hides a hero\'s heart willing to risk everything for his friends and freedom.',
+    originStory: 'Created by velocity itself, Speedy is the ultimate speedster—the one who taught the multiverse what speed truly means. His affinity with primal energy runs deeper than any other hero. He has raced through centuries, crossed impossible distances, and even achieved momentary godhood through sheer will.',
+    specialty: 'Speed blitz, energy collection, aerial combat',
     transformations: [
       { 
         level: 0, 
         name: 'Base Speed', 
-        description: 'Blue hedgehog, supersonic spin dash', 
+        description: 'Primal form, hyper velocity dash', 
         requirements: 'Default', 
         powerMultiplier: 1.0,
-        transformationSequence: 'A blue blur materializes, rings orbit his form, supersonic energy crackles around him'
+        transformationSequence: 'A blur materializes, energy orbits his form, velocity energy crackles around him'
       },
       { 
         level: 1, 
         name: 'Super Speedy', 
         description: 'Golden form, flight, invincibility', 
-        requirements: '7 Chaos Emeralds', 
+        requirements: '7 Primal Crystals', 
         powerMultiplier: 2.5,
-        transformationSequence: 'All seven emeralds merge into Speedy, his form becomes pure golden energy, chaos aura explodes outward in a shockwave'
+        transformationSequence: 'All seven crystals merge into Speedy, his form becomes pure golden energy, aura explodes outward in a shockwave'
       },
       { 
         level: 2, 
         name: 'Hyper Speedy', 
-        description: 'Rainbow chaos, screen-clearing attacks', 
-        requirements: 'Super Emeralds + Super Chaos', 
+        description: 'Rainbow energy, screen-clearing attacks', 
+        requirements: 'Super Crystals + Primal Force', 
         powerMultiplier: 5.0,
         transformationSequence: 'Beyond Super—Speedy becomes a vortex of rainbow energy, time bends around him, he becomes faster than causality itself'
       },
     ],
-    ultimateAttack: 'Sonic Wind Destroyer - A reality-splitting spin dash',
+    ultimateAttack: 'Shadow Wind Destroyer - A reality-splitting hyper dash',
     synergyPartners: ['jaxon', 'midnight', 'kaison'],
     battleQuotes: [
       'Gotta go fast!',

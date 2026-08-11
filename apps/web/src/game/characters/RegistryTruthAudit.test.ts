@@ -63,4 +63,13 @@ describe('KJ-011.1 — Canon Integrity and Restricted Alias Audit', () => {
     expect(resolveFighterId('kaison')).toBe('kaison');
     expect(resolveFighterId('unknown_id')).toBe('kai-jax');
   });
+
+  it('audits character specs for prohibited franchise-derived terms', async () => {
+    const { CHARACTER_SPECS } = await import('../../lib/characterSpecs');
+    Object.values(CHARACTER_SPECS).forEach((spec) => {
+      const text = JSON.stringify(spec).toLowerCase();
+      expect(text).not.toContain('sonic quills');
+      expect(text).not.toContain('fusion model');
+    });
+  });
 });
