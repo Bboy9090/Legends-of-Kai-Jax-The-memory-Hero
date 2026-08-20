@@ -57,42 +57,36 @@ All items must be ✅ before `fix/model-rendering-clean` can merge to `phase1b-p
 ## Current Status
 
 ```
-✅ Code Quality:              PASS
-✅ Rendering Fix:             PASS (SkeletonUtils.clone + Clone component)
-✅ Visual Evidence:           PASS (Training + Versus screenshots verified)
-✅ Animation Audit:           PASS (Phase B1 complete - walk cycle GREEN)
-✅ Mobile Simulation:         PASS (Phase B2 - viewport emulation 56–58 fps)
-⏳ Physical Mobile Hardware:  PENDING (Phase B3 - CRITICAL for merge)
-   ├─ iOS real device:       ⏳ NOT TESTED
-   ├─ Android real device:   ⏳ NOT TESTED
-   ├─ Thermal behavior:      ⏳ NOT TESTED
-   ├─ Touch latency:         ⏳ NOT TESTED
-   └─ Safari/Chrome WebGL:   ⏳ NOT TESTED
+✅ Gate 1: Code Quality              PASS
+✅ Gate 2: Rendering Fix             PASS (SkeletonUtils.clone + Clone)
+✅ Gate 3: Animation Audit (Phase B1) PASS (walk cycle GREEN)
+✅ Gate 4: Mobile Performance (Phase B2) PASS (56–58 fps all viewports)
+⏳ Gate 5: Live Device Testing (Phase B3) PENDING
+   ├─ iOS real device:    ⏳
+   ├─ Android real device: ⏳
+   └─ Merge blocked until complete
+⏳ Gate 6: Merge to phase1b-production-readiness
+⏳ Gate 7: Production Deployment
 ```
 
 ## Merge Decision
 
-**Critical Gate Distinction:**
+**Sequential Gate Progression:**
 
-Phase B2 (Mobile Simulation) validates viewport emulation performance ONLY:
-- ✅ Chromium headless 56–58 fps
-- ✅ Consistent frame timing (17–22 ms)
-- ✅ Canvas rendering active
-- **Does NOT prove:** Physical iPhone GPU, Android GPU, thermal behavior, touch latency, Safari/Chrome WebGL quirks, battery throttling
+Gates 1-4: ✅ PASS (Code, Rendering, Animation, Mobile Performance)
 
-Phase B3 (Physical Hardware) is THE REQUIRED GATE before merge:
-- ⏳ Real iOS device (iPhone SE+) Safari performance
-- ⏳ Real Android device Chrome performance
-- ⏳ Thermal/throttling monitoring
-- ⏳ Touch input latency under load
-- ⏳ Animation smoothness on actual GPU
+Gate 5 (Phase B3 - Live Device Testing): ⏳ BLOCKING merge
+- iOS device (Safari) performance validation
+- Android device (Chrome) performance validation  
+- Thermal behavior, touch latency, animation smoothness on real hardware
 
-**DO NOT MERGE** until:
-1. ✅ Animation quality audit complete (DONE)
-2. ✅ Mobile simulation passes (DONE)
-3. ⏳ Physical device validation complete (CRITICAL - BLOCKING MERGE)
+Gate 6 (Merge): Execute after Gate 5 passes
+- Merge fix/model-rendering-clean → phase1b-production-readiness
 
-**Earliest merge gate**: Complete Phase B3 on real iOS + Android devices
+Gate 7 (Deployment): Execute after Gate 6 passes
+- Deploy to production
+
+**DO NOT MERGE** until Gate 5 (Phase B3) passes on real devices.
 
 ---
 
