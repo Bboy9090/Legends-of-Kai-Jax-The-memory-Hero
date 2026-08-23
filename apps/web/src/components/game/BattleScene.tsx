@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useAudio } from "../../lib/stores/useAudio";
 import { useTrainingLab } from "../../lib/stores/useTrainingLab";
+import { resolveTrainingStep } from "../../game/combat/trainingStep";
 import BattleCamera from "./BattleCamera";
 import { getFighterById } from "../../lib/characters";
 import BattleArena from "./BattleArena";
@@ -33,6 +34,7 @@ export default function BattleScene() {
     comboCount,
     playerCombatState,
   } = useBattle();
+  const lastConsumedStepEpochRef = useRef(0);
   const reduceMotion = useAccessibility((s) => s.reduceMotion);
   const playerFighter = getFighterById(playerFighterId);
   const grade =
@@ -71,9 +73,17 @@ export default function BattleScene() {
     const live = useBattle.getState();
     if (live.battlePhase !== "fighting") return;
     const training = useTrainingLab.getState();
-    const scale = Number.isFinite(live.timeScale) ? Math.max(0, live.timeScale) : 1;
-    const delta = training.enabled && training.simulationPaused ? 0 : Math.max(0, rawDelta) * scale;
-    live.updateRoundTimer(delta);
+    const step = resolveTrainingStep({
+      rawDelta,
+      timeScale: live.timeScale,
+      simulationPaused: training.enabled && training.simulationPaused,
+      stepEpoch: training.stepEpoch,
+      lastConsumedStepEpoch: lastConsumedStepEpochRef.current,
+    });
+    lastConsumedStepEpochRef.current = step.consumedStepEpoch;
+    if (step.delta <= 0) return;
+
+    live.updateRoundTimer(step.delta);
 
     const comboIntensity = Math.min(1, (live.comboCount + (live.maxCombo > 0 ? live.maxCombo * 0.2 : 0)) / 8);
     const healthIntensity = 1 - Math.min(live.playerHealth, live.opponentHealth) / Math.max(1, live.maxHealth);
