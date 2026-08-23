@@ -19,10 +19,6 @@ const BASE_MELEE_RANGE: Readonly<Record<"punch" | "kick", number>> = Object.free
   kick: 2.8,
 });
 
-function finite(value: number, fallback = 0): number {
-  return Number.isFinite(value) ? value : fallback;
-}
-
 function finiteNonNegative(value: number, fallback = 0): number {
   return Number.isFinite(value) && value >= 0 ? value : fallback;
 }
@@ -56,12 +52,11 @@ export function getBattleAttackRange(
 /**
  * Canonical scalar contact test for the duel arena.
  *
- * Contact is inclusive at the authored boundary. Invalid coordinates resolve to
- * finite zeroes instead of poisoning combat state with NaN/Infinity behavior.
+ * Contact is inclusive at the authored boundary. Invalid coordinates fail closed
+ * so corrupt transforms can never manufacture a phantom hit or clash.
  */
 export function isWithinBattleAttackRange(input: BattleAttackContactInput): boolean {
-  const attackerX = finite(input.attackerX);
-  const defenderX = finite(input.defenderX);
+  if (!Number.isFinite(input.attackerX) || !Number.isFinite(input.defenderX)) return false;
   const range = getBattleAttackRange(input.fighterId, input.attackType, input);
-  return Math.abs(defenderX - attackerX) <= range;
+  return Math.abs(input.defenderX - input.attackerX) <= range;
 }
