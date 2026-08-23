@@ -3,15 +3,21 @@ import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useDifficulty, type Difficulty } from "../../lib/stores/useDifficulty";
 import { BEHAVIOR_PROFILES, type AIBehaviorDifficulty } from "../../lib/enemyAIv2";
+import {
+  chooseAttack,
+  choosePositionAction,
+  getFighterAIIdentity,
+  shouldPunish,
+  type AIAction,
+} from "../../game/combat/aiIdentity";
 
 const AI_MOVE_SPEED = 3.5;
 const GRAVITY = -15;
 const GROUND_Y = 0.8;
-const ATTACK_RANGE = 2.2;
-const PREFERRED_RANGE = 3;
 const JUMP_VELOCITY = 4;
+const ARENA_MIN = -10;
+const ARENA_MAX = 10;
 
-// Map the game's difficulty tiers onto the Wave 2 enemy-AI behavior tiers.
 function toAIDifficulty(d: Difficulty): AIBehaviorDifficulty {
   return d === "story" ? "easy" : d;
 }
@@ -19,8 +25,9 @@ function toAIDifficulty(d: Difficulty): AIBehaviorDifficulty {
 export default function OpponentAI() {
   const attackCooldown = useRef(0);
   const decisionTimer = useRef(0);
-  const currentAction = useRef<"chase" | "retreat" | "idle">("chase");
+  const currentAction = useRef<AIAction>("chase");
   const jumpCooldown = useRef(0);
+  const punishWindow = useRef(0);
   const difficulty = useDifficulty((s) => s.difficulty);
 
   useFrame((_, rawDelta) => {
@@ -30,104 +37,105 @@ export default function OpponentAI() {
     if (state.opponentStaggerTimer > 0 || state.opponentHitStunTimer > 0) return;
 
     const delta = rawDelta * state.timeScale;
-
-    const p = state.opponentPersonality;
-    const isAtLeftWall = state.opponentX <= -9.8;
-    const isAtRightWall = state.opponentX >= 9.8;
-
-    // 🧠 WAVE 2: pull difficulty-scaled cadence from the enemy-AI behavior tiers.
-    // Personality maps onto an enemy archetype; the profile drives how fast the
-    // opponent re-decides and how often it attacks.
+    const identity = getFighterAIIdentity(state.opponentFighterId, state.opponentPersonality);
+    const p = identity.archetype;
     const aiDiff = toAIDifficulty(difficulty);
     const enemyType =
       p === "stalker" ? "attacker" : p === "titan" ? "tank" : p === "caster" ? "elite" : "grunt";
     const profile = BEHAVIOR_PROFILES[enemyType][aiDiff];
-    const decisionInterval = profile.decisionUpdateRate / 1000; // ms → s
+    const decisionInterval = profile.decisionUpdateRate / 1000;
 
     attackCooldown.current = Math.max(0, attackCooldown.current - delta);
     jumpCooldown.current = Math.max(0, jumpCooldown.current - delta);
+    punishWindow.current = Math.max(0, punishWindow.current - delta);
     decisionTimer.current -= delta;
+
+    const signedDist = state.playerX - state.opponentX;
+    const absDist = Math.abs(signedDist);
+    const dir = signedDist >= 0 ? 1 : -1;
+    const isAtLeftWall = state.opponentX <= ARENA_MIN + 0.2;
+    const isAtRightWall = state.opponentX >= ARENA_MAX - 0.2;
 
     let velY = state.opponentVelocityY;
     let wantsJump = false;
 
-    // 🤖 ARCHETYPE DECISION MAPPING
     if (decisionTimer.current <= 0) {
       decisionTimer.current = decisionInterval;
-      const dist = Math.abs(state.playerX - state.opponentX);
-      const isLowHealth = state.opponentHealth / state.maxHealth < 0.3;
 
-      if (p === "stalker") {
-        // Stalkers LOVE the air and walls
-        if (dist > 5) currentAction.current = "chase";
-        else if (dist < 3) currentAction.current = isLowHealth ? "retreat" : "chase";
-        if (jumpCooldown.current <= 0 && state.opponentGrounded) {
-             wantsJump = Math.random() < 0.4;
-             jumpCooldown.current = 1.2;
-        }
-      } else if (p === "titan") {
-        // Titans are terminators. They only walk forward.
-        currentAction.current = "chase";
-        wantsJump = false; // Titans don't jump much pieces of heavy machinery
-      } else if (p === "caster") {
-        // Casters maintain the 'Goldilocks' zone
-        if (dist < 5) currentAction.current = "retreat";
-        else if (dist > 7) currentAction.current = "chase";
-        else currentAction.current = "idle";
+      const punish = shouldPunish(
+        identity,
+        Math.random(),
+        state.playerAttacking,
+        state.playerHitStunTimer
+      );
+      if (punish && absDist <= identity.punishRange) {
+        currentAction.current = "punish";
+        punishWindow.current = Math.max(punishWindow.current, 0.32);
       } else {
-        // Default hybrid logic
-        currentAction.current = dist > PREFERRED_RANGE ? "chase" : "idle";
+        currentAction.current = choosePositionAction(identity, {
+          distance: absDist,
+          opponentHealthRatio: state.opponentHealth / state.maxHealth,
+          playerAttacking: state.playerAttacking,
+          playerAttackElapsed: state.playerAttackElapsed,
+          playerHitStunTimer: state.playerHitStunTimer,
+          opponentGrounded: state.opponentGrounded,
+        });
+      }
+
+      if (
+        state.opponentGrounded &&
+        jumpCooldown.current <= 0 &&
+        Math.random() < identity.jumpChance
+      ) {
+        wantsJump = true;
+        jumpCooldown.current = p === "stalker" ? 1.1 : 1.7;
       }
     }
 
-    // 🦁 BEAST MECHANIC: AI WALL KICK (Stalkers only)
-    if (p === "stalker" && !state.opponentGrounded && (isAtLeftWall || isAtRightWall) && Math.random() < 0.5) {
-        wantsJump = true; // Use jump as kick trigger
+    if (
+      p === "stalker" &&
+      !state.opponentGrounded &&
+      (isAtLeftWall || isAtRightWall) &&
+      jumpCooldown.current <= 0
+    ) {
+      wantsJump = true;
     }
 
-    // Horizontal pop away from a wall during a stalker mid-air vault.
-    // Accumulated here and applied to movement below (declaration order fix).
     let wallKickPush = 0;
-
     if (wantsJump) {
       if (state.opponentGrounded) {
-        velY = JUMP_VELOCITY * (p === "stalker" ? 1.4 : 1.0);
+        velY = JUMP_VELOCITY * (p === "stalker" ? 1.35 : 1);
       } else if (p === "stalker" && (isAtLeftWall || isAtRightWall)) {
-        // 🔥 AUDIT FIX: Decoupled mid-air vaulting
-        velY = JUMP_VELOCITY * 1.2;
-        jumpCooldown.current = 1.5;
-        wallKickPush += (isAtLeftWall ? 0.5 : -0.5);
+        velY = JUMP_VELOCITY * 1.15;
+        wallKickPush = isAtLeftWall ? 0.55 : -0.55;
+        jumpCooldown.current = 1.25;
       }
     }
 
     velY += GRAVITY * delta;
     let newY = state.opponentY + velY * delta;
     let grounded = false;
-
     if (newY <= GROUND_Y) {
       newY = GROUND_Y;
       velY = 0;
       grounded = true;
     }
 
-    const dist = state.playerX - state.opponentX;
-    const absDist = Math.abs(dist);
-    const dir = dist > 0 ? 1 : -1;
+    const baseMoveSpeed = AI_MOVE_SPEED * identity.moveSpeedMult;
     let dx = 0;
-
-    const baseMoveSpeed = p === "stalker" ? AI_MOVE_SPEED * 1.3 : p === "titan" ? AI_MOVE_SPEED * 0.7 : AI_MOVE_SPEED;
-
-    if (currentAction.current === "chase") {
-      dx = dir * baseMoveSpeed * delta;
+    if (currentAction.current === "chase" || currentAction.current === "punish") {
+      const boost = currentAction.current === "punish" ? 1.18 : 1;
+      dx = dir * baseMoveSpeed * boost * delta;
     } else if (currentAction.current === "retreat") {
-      dx = -dir * baseMoveSpeed * 0.8 * delta;
+      dx = -dir * baseMoveSpeed * 0.9 * delta;
     }
     dx += wallKickPush;
 
-    const newX = Math.max(-10, Math.min(10, state.opponentX + dx));
+    // Never mindlessly retreat deeper into a wall. If cornered, hold ground and fight.
+    if ((isAtLeftWall && dx < 0) || (isAtRightWall && dx > 0)) dx = 0;
 
-    // 🎯 SNAP-FACING: Always face target when within range or attacking
-    const faceDirection = state.opponentAttacking || absDist < 12 ? state.playerX > state.opponentX : state.opponentFacingRight;
+    const newX = Math.max(ARENA_MIN, Math.min(ARENA_MAX, state.opponentX + dx));
+    const faceDirection = state.playerX > newX;
 
     useBattle.setState({
       opponentX: newX,
@@ -137,25 +145,36 @@ export default function OpponentAI() {
       opponentFacingRight: faceDirection,
     });
 
-    // ⚔️ ATTACK LOGIC (Scaled by Personality)
-    if (absDist < ATTACK_RANGE && attackCooldown.current <= 0 && !state.opponentAttacking) {
-      const roll = Math.random();
-      let attackType: "punch" | "kick" | "special";
-      
-      if (p === "titan") {
-        attackType = roll < 0.7 ? "kick" : "punch"; // Titans favor heavy kicks
-      } else if (p === "caster") {
-        attackType = roll < 0.6 ? "special" : "kick"; // Casters favor range
-      } else {
-        attackType = roll < 0.4 ? "punch" : roll < 0.8 ? "kick" : "special";
-      }
-      
-      state.opponentAttack(attackType);
-      // Wave 2: base attack spacing comes from the difficulty-scaled profile
-      // (ms → s), with a small random jitter so the cadence isn't robotic.
-      const baseSpacing = profile.attackSpacing / 1000;
-      attackCooldown.current = baseSpacing + Math.random() * 0.5;
+    const canAttack =
+      attackCooldown.current <= 0 &&
+      !state.opponentAttacking &&
+      state.opponentStaggerTimer <= 0 &&
+      state.opponentHitStunTimer <= 0;
+
+    if (!canAttack) return;
+
+    const inPunish = currentAction.current === "punish" || punishWindow.current > 0;
+    const attackRange = inPunish ? identity.punishRange : identity.attackRange;
+    if (absDist > attackRange) return;
+
+    // Difficulty affects willingness to swing, but punish windows remain decisive.
+    const aggressionGate = inPunish || Math.random() < profile.aggressiveness;
+    if (!aggressionGate) {
+      attackCooldown.current = Math.max(0.15, profile.attackSpacing / 1000 * 0.35);
+      return;
     }
+
+    const attackType = chooseAttack(identity, Math.random(), inPunish);
+    state.opponentAttack(attackType);
+
+    const baseSpacing = profile.attackSpacing / 1000;
+    const identityCadence = p === "stalker" ? 0.82 : p === "titan" ? 1.18 : p === "caster" ? 1.08 : 1;
+    const punishCadence = inPunish ? 0.72 : 1;
+    attackCooldown.current = Math.max(
+      0.18,
+      baseSpacing * identityCadence * punishCadence + Math.random() * 0.22
+    );
+    punishWindow.current = 0;
   });
 
   return null;
