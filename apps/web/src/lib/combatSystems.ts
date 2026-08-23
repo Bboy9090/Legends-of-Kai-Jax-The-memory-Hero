@@ -10,8 +10,19 @@ export {
 } from "../game/tuning/combatTuning";
 
 /** Duel move tables — `game/combat/moveData.ts`. */
-export type { AttackType, MoveData, DodgeData } from "../game/combat/moveData";
-export { FRAME_TIME, MOVES, ATTACK_TYPE_TO_MOVE } from "../game/combat/moveData";
+export type {
+  AttackType,
+  DodgeData,
+  HitLevel,
+  MoveData,
+  MoveKey,
+} from "../game/combat/moveData";
+export {
+  FRAME_RATE,
+  FRAME_TIME,
+  MOVES,
+  ATTACK_TYPE_TO_MOVE,
+} from "../game/combat/moveData";
 
 /** Adventure open-world stamina/combo/dodge — `game/tuning/adventure.json`. */
 export { STAMINA_CONFIG, COMBO_CONFIG, DODGE } from "../game/tuning/adventureTuning";
@@ -24,11 +35,14 @@ export {
   getClashPriority,
 } from "../game/combat/guardAndClash";
 export {
+  blockstunSecondsForMove,
   clashPriorityForAttack,
   getMoveForAttack,
   getMoveKeyForPlayerAttack,
   hasStaminaForAttack,
   hitStopSecondsForMove,
+  hitstunSecondsForMove,
+  launchVectorForMove,
   normalizeComboStep,
   resolveClash,
   staminaCostForAttack,
