@@ -1,12 +1,16 @@
 /**
- * KJ-007F: Encounter Director for Mission 1
- * Sequentially manages waves, boss phase transition, and mission completion save hook.
+ * Mission 1 encounter director.
+ *
+ * Owns deterministic wave progression and delegates per-enemy combat behavior to
+ * EnemyStateMachine. Wave composition is declarative so QA, save validation, and
+ * future difficulty variants can inspect the same source of truth.
  */
 
 import {
-  EnemyContract,
+  type EnemyContract,
+  type EnemyDamageResult,
   EnemyStateMachine,
-  Position3D,
+  type Position3D,
   createMemoryWisp,
   createRiftDrone,
   createCorruptionBrute,
@@ -29,12 +33,57 @@ export interface MissionSaveState {
   completedAt?: string;
 }
 
+type EnemyFactory = () => EnemyContract;
+
+const MISSION_ID = 'MISSION_1';
+const WAVE_ORDER: readonly MissionWave[] = Object.freeze([
+  'WAVE_1',
+  'WAVE_2',
+  'WAVE_3',
+  'WAVE_4',
+  'ELITE',
+  'BOSS',
+  'VICTORY',
+]);
+
+const WAVE_FACTORIES: Readonly<Partial<Record<MissionWave, readonly EnemyFactory[]>>> = Object.freeze({
+  WAVE_1: [
+    () => createMemoryWisp('wisp-1', { x: 5, y: 0, z: 0 }),
+    () => createMemoryWisp('wisp-2', { x: -5, y: 0, z: 0 }),
+  ],
+  WAVE_2: [
+    () => createMemoryWisp('wisp-3', { x: 4, y: 0, z: 2 }),
+    () => createRiftDrone('drone-1', { x: 8, y: 0, z: -4 }),
+  ],
+  WAVE_3: [
+    () => createCorruptionBrute('brute-1', { x: 6, y: 0, z: 0 }),
+  ],
+  WAVE_4: [
+    () => createRiftDrone('drone-2', { x: 9, y: 0, z: 3 }),
+    () => createCorruptionBrute('brute-2', { x: 5, y: 0, z: -2 }),
+  ],
+  ELITE: [
+    () => createVoidStalker('stalker-1', { x: 7, y: 0, z: 0 }),
+  ],
+  BOSS: [
+    () => createVoidStalkerPrime('boss-1', { x: 10, y: 0, z: 0 }),
+  ],
+});
+
+function safeDeltaMs(deltaMs: number): number {
+  return Number.isFinite(deltaMs) ? Math.max(0, deltaMs) : 0;
+}
+
+function isFinitePosition(position: Position3D): boolean {
+  return Number.isFinite(position.x) && Number.isFinite(position.y) && Number.isFinite(position.z);
+}
+
 export class EncounterDirector {
   private currentWave: MissionWave = 'WAVE_1';
   private enemies: EnemyStateMachine[] = [];
-  private isPaused: boolean = false;
-  private isCompleted: boolean = false;
-  private saveState: MissionSaveState = { missionId: 'MISSION_1', completed: false };
+  private isPaused = false;
+  private isCompleted = false;
+  private saveState: MissionSaveState = { missionId: MISSION_ID, completed: false };
 
   constructor() {
     this.startWave('WAVE_1');
@@ -45,7 +94,7 @@ export class EncounterDirector {
   }
 
   public getEnemies(): EnemyContract[] {
-    return this.enemies.map((e) => e.getEntity());
+    return this.enemies.map((enemy) => enemy.getEntity());
   }
 
   public isMissionCompleted(): boolean {
@@ -53,7 +102,7 @@ export class EncounterDirector {
   }
 
   public getSaveState(): MissionSaveState {
-    return this.saveState;
+    return { ...this.saveState };
   }
 
   public pause(): void {
@@ -67,122 +116,63 @@ export class EncounterDirector {
   public restart(): void {
     this.isPaused = false;
     this.isCompleted = false;
-    this.saveState = { missionId: 'MISSION_1', completed: false };
+    this.saveState = { missionId: MISSION_ID, completed: false };
     this.startWave('WAVE_1');
   }
 
-  public update(deltaMs: number, playerPosition: Position3D, isPlayerDodging: boolean = false): void {
+  public update(deltaMs: number, playerPosition: Position3D, isPlayerDodging = false): void {
     if (this.isPaused || this.isCompleted) return;
+    if (!isFinitePosition(playerPosition)) return;
 
+    const dt = safeDeltaMs(deltaMs);
     let activeEnemiesCount = 0;
 
-    this.enemies.forEach((enemyMachine) => {
-      const entity = enemyMachine.getEntity();
-      if (!entity.isDead) {
-        enemyMachine.update(deltaMs, playerPosition, isPlayerDodging);
-        if (!entity.isDead) {
-          activeEnemiesCount++;
-        }
-      }
-    });
+    for (const enemyMachine of this.enemies) {
+      const before = enemyMachine.getEntity();
+      if (before.isDead) continue;
 
-    // Wave advancement check
-    if (activeEnemiesCount === 0) {
-      this.advanceWave();
+      enemyMachine.update(dt, playerPosition, isPlayerDodging);
+
+      // Re-read after update. The previous implementation checked a stale snapshot.
+      const after = enemyMachine.getEntity();
+      if (!after.isDead) activeEnemiesCount++;
     }
+
+    if (activeEnemiesCount === 0) this.advanceWave();
   }
 
-  public applyDamageToEnemy(enemyId: string, damage: number, isHeavyAttack: boolean = false) {
-    const target = this.enemies.find((e) => e.getEntity().id === enemyId);
-    if (target) {
-      return target.applySingleHitDamage(damage, isHeavyAttack);
-    }
-    return null;
+  public applyDamageToEnemy(
+    enemyId: string,
+    damage: number,
+    isHeavyAttack = false
+  ): EnemyDamageResult | null {
+    const target = this.enemies.find((enemy) => enemy.getEntity().id === enemyId);
+    return target ? target.applySingleHitDamage(damage, isHeavyAttack) : null;
   }
 
-  private advanceWave() {
-    switch (this.currentWave) {
-      case 'WAVE_1':
-        this.startWave('WAVE_2');
-        break;
-      case 'WAVE_2':
-        this.startWave('WAVE_3');
-        break;
-      case 'WAVE_3':
-        this.startWave('WAVE_4');
-        break;
-      case 'WAVE_4':
-        this.startWave('ELITE');
-        break;
-      case 'ELITE':
-        this.startWave('BOSS');
-        break;
-      case 'BOSS':
-        this.currentWave = 'VICTORY';
-        this.isCompleted = true;
-        this.saveState = {
-          missionId: 'MISSION_1',
-          completed: true,
-          completedAt: new Date().toISOString(),
-        };
-        break;
-      case 'VICTORY':
-        break;
+  private advanceWave(): void {
+    const index = WAVE_ORDER.indexOf(this.currentWave);
+    if (index < 0 || index >= WAVE_ORDER.length - 1) return;
+
+    const nextWave = WAVE_ORDER[index + 1];
+    if (nextWave === 'VICTORY') {
+      this.currentWave = 'VICTORY';
+      this.enemies = [];
+      this.isCompleted = true;
+      this.saveState = {
+        missionId: MISSION_ID,
+        completed: true,
+        completedAt: new Date().toISOString(),
+      };
+      return;
     }
+
+    this.startWave(nextWave);
   }
 
-  private startWave(wave: MissionWave) {
+  private startWave(wave: MissionWave): void {
     this.currentWave = wave;
-    this.enemies = [];
-
-    switch (wave) {
-      case 'WAVE_1':
-        // 2 Memory Wisps
-        this.enemies.push(
-          new EnemyStateMachine(createMemoryWisp('wisp-1', { x: 5, y: 0, z: 0 })),
-          new EnemyStateMachine(createMemoryWisp('wisp-2', { x: -5, y: 0, z: 0 }))
-        );
-        break;
-
-      case 'WAVE_2':
-        // 1 Memory Wisp + 1 Rift Drone
-        this.enemies.push(
-          new EnemyStateMachine(createMemoryWisp('wisp-3', { x: 4, y: 0, z: 2 })),
-          new EnemyStateMachine(createRiftDrone('drone-1', { x: 8, y: 0, z: -4 }))
-        );
-        break;
-
-      case 'WAVE_3':
-        // 1 Corruption Brute
-        this.enemies.push(
-          new EnemyStateMachine(createCorruptionBrute('brute-1', { x: 6, y: 0, z: 0 }))
-        );
-        break;
-
-      case 'WAVE_4':
-        // 1 Rift Drone + 1 Corruption Brute
-        this.enemies.push(
-          new EnemyStateMachine(createRiftDrone('drone-2', { x: 9, y: 0, z: 3 })),
-          new EnemyStateMachine(createCorruptionBrute('brute-2', { x: 5, y: 0, z: -2 }))
-        );
-        break;
-
-      case 'ELITE':
-        // 1 Void Stalker
-        this.enemies.push(
-          new EnemyStateMachine(createVoidStalker('stalker-1', { x: 7, y: 0, z: 0 }))
-        );
-        break;
-
-      case 'BOSS':
-        // Void Stalker Prime
-        this.enemies.push(
-          new EnemyStateMachine(createVoidStalkerPrime('boss-1', { x: 10, y: 0, z: 0 }))
-        );
-        break;
-
-      case 'VICTORY':
-        break;
-    }
+    const factories = WAVE_FACTORIES[wave] ?? [];
+    this.enemies = factories.map((factory) => new EnemyStateMachine(factory()));
   }
 }
