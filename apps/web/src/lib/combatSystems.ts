@@ -24,6 +24,26 @@ export {
   ATTACK_TYPE_TO_MOVE,
 } from "../game/combat/moveData";
 
+/** Canonical per-fighter combat identity — movement, defense, aerial, reaction and combo rules. */
+export type {
+  FighterAerialProfile,
+  FighterArchetype,
+  FighterCombatProfile,
+  FighterComboProfile,
+  FighterComboRoute,
+  FighterDefenseProfile,
+  FighterMovementProfile,
+  FighterReactionProfile,
+  HitReactionClass,
+} from "../game/characters/shared/FighterCombatProfile";
+export {
+  DEFAULT_FIGHTER_COMBAT_PROFILE,
+  FIGHTER_COMBAT_PROFILES,
+  getFighterCombatProfile,
+  getResolvedMovementTuning,
+  resolveCombatProfileId,
+} from "../game/characters/shared/FighterCombatProfile";
+
 /** Adventure open-world stamina/combo/dodge — `game/tuning/adventure.json`. */
 export { STAMINA_CONFIG, COMBO_CONFIG, DODGE } from "../game/tuning/adventureTuning";
 
