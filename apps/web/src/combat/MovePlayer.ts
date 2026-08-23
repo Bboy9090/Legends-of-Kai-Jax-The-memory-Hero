@@ -14,30 +14,42 @@ export interface MovePlayerCallbacks {
   onBlock?: (hit: HitSpec, hitboxPosition: THREE.Vector3) => void;
   onShieldBreak?: (hitboxPosition: THREE.Vector3) => void;
   onActiveFrame?: (hit: HitSpec, hitboxPosition: THREE.Vector3) => void;
+  onCombo?: (count: number, totalDamage: number) => void;
+  onHitstun?: (frames: number) => void;
+  onDodge?: (active: boolean) => void;
 }
 
 export class MovePlayer {
   currentMove: MoveSpec | null = null;
-  frame: number = 0;
+  frame = 0;
   hitboxes: THREE.Mesh[] = [];
   scene: THREE.Scene;
   hurtbox: Hurtbox;
-  hitstopFrames: number = 0;
+  hitstopFrames = 0;
   fighterPosition: THREE.Vector3;
-  facingRight: boolean = true;
-  shieldActive: boolean = false;
-  shieldHP: number = 100;
-  maxShieldHP: number = 100;
-  shieldRegenRate: number = 10; // HP per second
-  shieldRegenDelay: number = 2.0; // Seconds before regen starts
-  timeSinceShieldHit: number = 0;
+  facingRight = true;
+  shieldActive = false;
+  shieldHP = 100;
+  maxShieldHP = 100;
+  shieldRegenRate = 10;
+  shieldRegenDelay = 2.0;
+  timeSinceShieldHit = 0;
   callbacks: MovePlayerCallbacks = {};
-  /** Optional rig (real GLB) for bone-socket hitbox attachment.
-   *  When null OR a requested socket is missing, MovePlayer falls back
-   *  to fighter root + facing math. */
+
+  /** Defender feel-state. */
+  hitstunFrames = 0;
+  dodgeInvulnerabilityFrames = 0;
+  directionalInfluence = 0;
+  comboCount = 0;
+  comboDamage = 0;
+  comboWindowFrames = 0;
+  maxComboWindowFrames = 90;
+
+  /** Prevents the same authored hit from connecting more than once per move execution. */
+  private connectedHitIndexes = new Set<number>();
+
   private rig: CharacterRig | null = null;
-  /** Reusable scratch vector for socket world-position lookups */
-  private _socketWorldPos: THREE.Vector3 = new THREE.Vector3();
+  private _socketWorldPos = new THREE.Vector3();
 
   constructor(scene: THREE.Scene, hurtbox: Hurtbox, fighterPosition: THREE.Vector3) {
     this.scene = scene;
@@ -45,46 +57,25 @@ export class MovePlayer {
     this.fighterPosition = fighterPosition;
   }
 
-  /**
-   * Register feedback callbacks (VFX/audio hooks).
-   */
   setCallbacks(cb: MovePlayerCallbacks): void {
     this.callbacks = { ...this.callbacks, ...cb };
   }
 
-  /**
-   * Attach (or detach) a CharacterRig for bone-socket hitbox math.
-   * Pass null to revert to root+facing fallback. Idempotent.
-   */
   setRig(rig: CharacterRig | null): void {
     this.rig = rig;
-    if (rig?.loaded) {
-      const tails = rig.tails.filter((t) => t).length;
-      console.log(`[MovePlayer] Rig attached. Anchors: root=${!!rig.root} spine=${!!rig.spine} head=${!!rig.head} tails=${tails}/9`);
-    }
   }
 
-  /**
-   * Resolve a HitSpec.socket name to a Three.Object3D from the active rig.
-   * Returns null if the rig is missing or the socket isn't present —
-   * caller is expected to fall back to root+facing math.
-   */
   private resolveSocket(name: string): THREE.Object3D | null {
     if (!this.rig || !this.rig.loaded) return null;
     switch (name) {
-      case 'root':
-        return this.rig.root;
-      case 'spine':
-        return this.rig.spine;
-      case 'head':
-        return this.rig.head;
+      case 'root': return this.rig.root;
+      case 'spine': return this.rig.spine;
+      case 'head': return this.rig.head;
       default: {
         const m = name.match(/^tail_(\d{2})$/);
-        if (m) {
-          const idx = parseInt(m[1], 10) - 1;
-          if (idx >= 0 && idx < 9) return this.rig.tails[idx] ?? null;
-        }
-        return null;
+        if (!m) return null;
+        const idx = parseInt(m[1], 10) - 1;
+        return idx >= 0 && idx < 9 ? this.rig.tails[idx] ?? null : null;
       }
     }
   }
@@ -94,75 +85,60 @@ export class MovePlayer {
       console.warn('[MovePlayer] Move already in progress, cannot start new move');
       return;
     }
-
     this.currentMove = move;
     this.frame = 0;
-    console.log(`[MovePlayer] Starting move: ${move.id}`);
-    console.log(`[MovePlayer] Startup: ${move.startup}f | Active: ${move.active}f | Recovery: ${move.recovery}f`);
+    this.connectedHitIndexes.clear();
     this.callbacks.onMoveStart?.(move);
   }
 
-  /**
-   * Update move player each frame
-   */
   update(): void {
+    if (this.hitstopFrames > 0) {
+      this.hitstopFrames--;
+      return;
+    }
+
+    if (this.hitstunFrames > 0) this.hitstunFrames--;
+    if (this.dodgeInvulnerabilityFrames > 0) {
+      this.dodgeInvulnerabilityFrames--;
+      if (this.dodgeInvulnerabilityFrames === 0) this.callbacks.onDodge?.(false);
+    }
+    if (this.comboWindowFrames > 0) {
+      this.comboWindowFrames--;
+      if (this.comboWindowFrames === 0) this.resetCombo();
+    }
+
     if (!this.currentMove) {
-      // Shield regeneration when not in move
       if (!this.shieldActive && this.shieldHP < this.maxShieldHP) {
-        this.timeSinceShieldHit += 1 / 60; // Assume 60fps
+        this.timeSinceShieldHit += 1 / 60;
         if (this.timeSinceShieldHit >= this.shieldRegenDelay) {
-          this.shieldHP = Math.min(this.maxShieldHP, this.shieldHP + (this.shieldRegenRate / 60));
+          this.shieldHP = Math.min(this.maxShieldHP, this.shieldHP + this.shieldRegenRate / 60);
         }
       }
       return;
     }
 
-    // Hitstop freeze
-    if (this.hitstopFrames > 0) {
-      this.hitstopFrames--;
-      console.log(`[MovePlayer] Hitstop: ${this.hitstopFrames}f remaining`);
-      return;
-    }
-
-    // Clear previous frame hitboxes
     this.clearHitboxes();
-
     const move = this.currentMove;
     this.frame++;
 
-    // Spawn hitboxes for active frames
-    move.hits.forEach((hit) => {
-      if (this.frame >= hit.startF && this.frame <= hit.endF) {
-        this.spawnHitbox(hit);
-      }
+    move.hits.forEach((hit, index) => {
+      if (this.frame >= hit.startF && this.frame <= hit.endF) this.spawnHitbox(hit, index);
     });
 
-    // End move after total frames
     const totalFrames = move.startup + move.active + move.recovery;
     if (this.frame > totalFrames) {
-      console.log(`[MovePlayer] Move ${move.id} complete at frame ${this.frame}`);
       this.currentMove = null;
       this.frame = 0;
+      this.connectedHitIndexes.clear();
     }
   }
 
-  private spawnHitbox(hit: HitSpec): void {
-    // Create hitbox visualization
+  private spawnHitbox(hit: HitSpec, hitIndex: number): void {
     const geo = new THREE.BoxGeometry(hit.halfW * 2, hit.halfH * 2, 1);
-    const mat = new THREE.MeshBasicMaterial({ 
-      wireframe: true, 
-      color: 0xff0000,
-      transparent: true,
-      opacity: 0.7
-    });
+    const mat = new THREE.MeshBasicMaterial({ wireframe: true, color: 0xff0000, transparent: true, opacity: 0.7 });
     const mesh = new THREE.Mesh(geo, mat);
-
     const direction = this.facingRight ? 1 : -1;
 
-    // ── Socket-aware attachment with graceful degradation ───────────
-    // If the move authored a socket name AND the active rig exposes that
-    // anchor, position relative to the socket's world transform.
-    // Otherwise, fall back to root + facing math (legacy behavior).
     let attachedToSocket = false;
     if (hit.socket) {
       const socket = this.resolveSocket(hit.socket);
@@ -179,10 +155,6 @@ export class MovePlayer {
     }
 
     if (!attachedToSocket) {
-      // Position hitbox relative to fighter root.
-      // offY is authored as "height above feet", but fighterPosition.y is
-      // the mesh-CENTER (meshes are 1.8 tall, centered at y=0.9). Subtract
-      // half-height so offY behaves like ground-relative chest/head anchor.
       const FOOT_OFFSET = 0.9;
       mesh.position.set(
         this.fighterPosition.x + hit.offX * direction,
@@ -193,117 +165,118 @@ export class MovePlayer {
 
     this.scene.add(mesh);
     this.hitboxes.push(mesh);
-
-    const attachLog = attachedToSocket
-      ? `socket='${hit.socket}'`
-      : hit.socket
-      ? `fallback(root+facing) [socket='${hit.socket}' missing on rig]`
-      : 'root+facing';
-    console.log(`[MovePlayer] Hitbox @ frame ${this.frame} pos=(${mesh.position.x.toFixed(2)}, ${mesh.position.y.toFixed(2)}) attach=${attachLog}`);
-
-    // Emit active-frame callback (for attack trails)
     this.callbacks.onActiveFrame?.(hit, mesh.position.clone());
-
-    // Check collision immediately
-    this.checkCollision(mesh, hit);
+    this.checkCollision(mesh, hit, hitIndex);
   }
 
-  private checkCollision(hitbox: THREE.Mesh, hit: HitSpec): void {
-    const hb = this.hurtbox.mesh;
+  private checkCollision(hitbox: THREE.Mesh, hit: HitSpec, hitIndex: number): void {
+    if (this.connectedHitIndexes.has(hitIndex)) return;
+    if (this.dodgeInvulnerabilityFrames > 0) return;
 
-    // AABB collision detection
     const hitBB = new THREE.Box3().setFromObject(hitbox);
-    const hurtBB = new THREE.Box3().setFromObject(hb);
+    const hurtBB = new THREE.Box3().setFromObject(this.hurtbox.mesh);
+    if (!hitBB.intersectsBox(hurtBB)) return;
 
-    if (hitBB.intersectsBox(hurtBB)) {
-      console.log(`[MovePlayer] COLLISION DETECTED at frame ${this.frame}!`);
+    if (hit.isGrab) {
+      this.connectedHitIndexes.add(hitIndex);
+      this.applyHit(hit, hitbox.position.clone());
+      return;
+    }
 
-      // Grab check - grabs beat shields
-      if (hit.isGrab) {
-        console.log('[MovePlayer] GRAB landed! Bypassing shield.');
+    if (this.shieldActive) {
+      if (this.shieldHP <= 0) {
+        this.shieldActive = false;
+        this.callbacks.onShieldBreak?.(hitbox.position.clone());
+        this.connectedHitIndexes.add(hitIndex);
         this.applyHit(hit, hitbox.position.clone());
         return;
       }
 
-      // Shield check
-      if (this.shieldActive) {
-        // Check shield HP
-        if (this.shieldHP <= 0) {
-          console.log('[MovePlayer] Shield broken!');
-          this.shieldActive = false;
-          this.callbacks.onShieldBreak?.(hitbox.position.clone());
-          this.applyHit(hit, hitbox.position.clone());
-          return;
-        }
-
-        // Apply shield damage
-        const shieldDmg = this.currentMove?.shield_damage ?? hit.dmg * 0.5;
-        this.shieldHP = Math.max(0, this.shieldHP - shieldDmg);
-        this.timeSinceShieldHit = 0;
-
-        console.log(`[MovePlayer] Hit blocked by shield! Shield HP: ${this.shieldHP.toFixed(1)}/${this.maxShieldHP}`);
-        this.hitstopFrames = this.currentMove?.hitstopOnBlock ?? 0;
-        this.callbacks.onBlock?.(hit, hitbox.position.clone());
-        return;
-      }
-
-      this.applyHit(hit, hitbox.position.clone());
+      const shieldDmg = this.currentMove?.shield_damage ?? hit.dmg * 0.5;
+      this.shieldHP = Math.max(0, this.shieldHP - shieldDmg);
+      this.timeSinceShieldHit = 0;
+      this.hitstopFrames = this.currentMove?.hitstopOnBlock ?? 0;
+      this.connectedHitIndexes.add(hitIndex);
+      this.callbacks.onBlock?.(hit, hitbox.position.clone());
+      return;
     }
+
+    this.connectedHitIndexes.add(hitIndex);
+    this.applyHit(hit, hitbox.position.clone());
   }
 
   private applyHit(hit: HitSpec, hitPos?: THREE.Vector3): void {
-    // Apply damage
     this.hurtbox.takeDamage(hit.dmg);
-
-    // Apply hitstop
     this.hitstopFrames = this.currentMove?.hitstopOnHit ?? 0;
 
-    // Apply knockback (unless grab with 0 knockback for throw animation)
-    const hb = this.hurtbox.mesh;
+    const damageTaken = Math.max(0, this.hurtbox.maxHealth - this.hurtbox.health);
+    const launchScale = 1 + Math.min(0.75, damageTaken / 200);
+    const diResist = THREE.MathUtils.clamp(this.currentMove?.di_resist ?? 0, 0, 1);
+    const diInfluence = this.directionalInfluence * (1 - diResist) * 0.35;
     const direction = this.facingRight ? 1 : -1;
-    hb.position.x += hit.kbX * direction;
-    hb.position.y += hit.kbY;
+    const horizontalLaunch = (hit.kbX + diInfluence) * direction * launchScale;
+    const verticalLaunch = hit.kbY * launchScale;
 
-    const hitType = hit.isGrab ? 'GRAB' : 'HIT';
-    console.log(`[MovePlayer] ${hitType}! Damage: ${hit.dmg} | Knockback: (${hit.kbX}, ${hit.kbY}) | Hitstop: ${this.hitstopFrames}f`);
+    this.hurtbox.mesh.position.x += horizontalLaunch;
+    this.hurtbox.mesh.position.y += verticalLaunch;
 
-    // Emit hit feedback callback with hitbox position (fallback to hurtbox pos)
-    const fxPos = hitPos ?? hb.position.clone();
+    const knockbackMagnitude = Math.abs(horizontalLaunch) + Math.abs(verticalLaunch);
+    this.hitstunFrames = Math.max(6, Math.round(6 + hit.dmg * 0.8 + knockbackMagnitude * 2));
+    this.callbacks.onHitstun?.(this.hitstunFrames);
+
+    this.comboCount += 1;
+    this.comboDamage += hit.dmg;
+    this.comboWindowFrames = this.maxComboWindowFrames;
+    this.callbacks.onCombo?.(this.comboCount, this.comboDamage);
+
+    const fxPos = hitPos ?? this.hurtbox.mesh.position.clone();
     this.callbacks.onHit?.(hit, fxPos);
   }
 
-  /**
-   * Get shield HP
-   */
-  getShieldHP(): number {
-    return this.shieldHP;
+  setDirectionalInfluence(value: number): void {
+    this.directionalInfluence = THREE.MathUtils.clamp(value, -1, 1);
   }
 
-  /**
-   * Check if shield is active
-   */
-  isShielding(): boolean {
-    return this.shieldActive && this.shieldHP > 0;
+  startDodge(invulnerabilityFrames = 12): boolean {
+    if (this.hitstunFrames > 0 || this.currentMove || this.shieldActive) return false;
+    this.dodgeInvulnerabilityFrames = Math.max(1, Math.floor(invulnerabilityFrames));
+    this.callbacks.onDodge?.(true);
+    return true;
   }
+
+  isDodging(): boolean {
+    return this.dodgeInvulnerabilityFrames > 0;
+  }
+
+  isInHitstun(): boolean {
+    return this.hitstunFrames > 0;
+  }
+
+  getComboState(): { count: number; damage: number; windowFrames: number } {
+    return { count: this.comboCount, damage: this.comboDamage, windowFrames: this.comboWindowFrames };
+  }
+
+  resetCombo(): void {
+    this.comboCount = 0;
+    this.comboDamage = 0;
+    this.comboWindowFrames = 0;
+  }
+
+  getShieldHP(): number { return this.shieldHP; }
+  isShielding(): boolean { return this.shieldActive && this.shieldHP > 0; }
 
   private clearHitboxes(): void {
-    this.hitboxes.forEach((h) => this.scene.remove(h));
+    this.hitboxes.forEach((h) => {
+      this.scene.remove(h);
+      h.geometry.dispose();
+      if (Array.isArray(h.material)) h.material.forEach((m) => m.dispose());
+      else h.material.dispose();
+    });
     this.hitboxes = [];
   }
 
-  setFacing(right: boolean): void {
-    this.facingRight = right;
-  }
-
-  setShield(active: boolean): void {
-    this.shieldActive = active;
-  }
-
-  isBusy(): boolean {
-    return this.currentMove !== null || this.hitstopFrames > 0;
-  }
-
-  getCurrentFrame(): number {
-    return this.frame;
-  }
+  setFacing(right: boolean): void { this.facingRight = right; }
+  setShield(active: boolean): void { this.shieldActive = active; }
+  isBusy(): boolean { return this.currentMove !== null || this.hitstopFrames > 0 || this.hitstunFrames > 0; }
+  getCurrentFrame(): number { return this.frame; }
 }
