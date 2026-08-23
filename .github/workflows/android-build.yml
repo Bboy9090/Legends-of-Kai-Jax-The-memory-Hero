@@ -31,7 +31,7 @@ jobs:
           corepack enable
           corepack prepare pnpm@9 --activate
           pnpm install --frozen-lockfile
-          pnpm --filter web run build
+          pnpm --dir apps/web run build
           cd apps/web
           npx cap sync android
 
