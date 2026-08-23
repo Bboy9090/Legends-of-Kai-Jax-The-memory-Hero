@@ -44,8 +44,9 @@ export function getDueRecordedActions(
   previousSec: number,
   nextSec: number
 ): TrainingRecordedAction[] {
-  const start = Math.max(0, Number.isFinite(previousSec) ? previousSec : 0);
-  const end = Math.max(start, Number.isFinite(nextSec) ? nextSec : start);
+  const start = Number.isFinite(previousSec) ? previousSec : 0;
+  const endCandidate = Number.isFinite(nextSec) ? nextSec : start;
+  const end = Math.max(start, endCandidate);
   return sanitizeRecordedActions(actions).filter((entry) => entry.atSec > start && entry.atSec <= end);
 }
 
