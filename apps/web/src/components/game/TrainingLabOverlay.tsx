@@ -12,7 +12,6 @@ import {
 } from "../../game/combat/trainingRecording";
 
 const MAX_INPUT_HISTORY = 12;
-const FRAME_SEC = 1 / 60;
 const DUMMY_OPTIONS: readonly DummyBehavior[] = ["normal", "idle", "jump", "attack"];
 
 function formatSeconds(value: number): string {
@@ -116,8 +115,8 @@ export default function TrainingLabOverlay({ visible }: { visible: boolean }) {
             type="button"
             disabled={!training.simulationPaused}
             className="rounded border border-white/15 bg-white/5 px-2 py-1 text-[10px] enabled:hover:bg-white/10 disabled:opacity-35"
-            onClick={() => battle.updateRoundTimer(FRAME_SEC)}
-            title="Advances the authoritative combat clock by one 60 Hz frame. Controller physics remain frozen until fixed-step extraction is complete."
+            onClick={() => training.requestStep()}
+            title="Issues one synchronized 60 Hz step ticket to the battle clock, player controller, and opponent AI."
           >
             Step combat 1f
           </button>
@@ -226,7 +225,7 @@ export default function TrainingLabOverlay({ visible }: { visible: boolean }) {
       </section>
 
       <div className="mt-3 text-[10px] leading-relaxed text-slate-500">
-        Collision volumes mirror the duel's scalar range model. The 1f control advances combat timers exactly one 60 Hz frame; full physics stepping lands with fixed-step extraction so the tool never overclaims precision.
+        Collision volumes mirror the duel's scalar range model. One step ticket advances the battle clock, player controller, and opponent AI exactly one 60 Hz slice while training pause remains active.
       </div>
     </aside>
   );
