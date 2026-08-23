@@ -12,6 +12,7 @@ export interface TrainingLabState {
   showCollisionVolumes: boolean;
   dummyBehavior: DummyBehavior;
   simulationPaused: boolean;
+  stepEpoch: number;
   recording: boolean;
   recordingStartedAtMs: number;
   recordedActions: TrainingRecordedAction[];
@@ -21,6 +22,7 @@ export interface TrainingLabState {
   setShowCollisionVolumes: (show: boolean) => void;
   setDummyBehavior: (behavior: DummyBehavior) => void;
   setSimulationPaused: (paused: boolean) => void;
+  requestStep: () => boolean;
   startRecording: (nowMs: number) => void;
   stopRecording: () => void;
   recordAction: (action: TrainingDummyAction, nowMs: number) => void;
@@ -35,6 +37,7 @@ const DEFAULTS = Object.freeze({
   showCollisionVolumes: false,
   dummyBehavior: "normal" as DummyBehavior,
   simulationPaused: false,
+  stepEpoch: 0,
   recording: false,
   recordingStartedAtMs: 0,
   recordedActions: [] as TrainingRecordedAction[],
@@ -50,8 +53,16 @@ export const useTrainingLab = create<TrainingLabState>((set, get) => ({
   ...DEFAULTS,
   setEnabled: (enabled) => set({ enabled: !!enabled }),
   setShowCollisionVolumes: (showCollisionVolumes) => set({ showCollisionVolumes: !!showCollisionVolumes }),
-  setDummyBehavior: (dummyBehavior) => set({ dummyBehavior, playbackActive: dummyBehavior === "playback" ? get().playbackActive : false }),
+  setDummyBehavior: (dummyBehavior) => set({
+    dummyBehavior,
+    playbackActive: dummyBehavior === "playback" ? get().playbackActive : false,
+  }),
   setSimulationPaused: (simulationPaused) => set({ simulationPaused: !!simulationPaused }),
+  requestStep: () => {
+    if (!get().simulationPaused) return false;
+    set((state) => ({ stepEpoch: state.stepEpoch + 1 }));
+    return true;
+  },
   startRecording: (nowMs) => set({
     recording: true,
     recordingStartedAtMs: safeNowMs(nowMs),
