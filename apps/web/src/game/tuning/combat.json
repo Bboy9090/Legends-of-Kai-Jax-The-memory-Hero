@@ -15,6 +15,20 @@
     "defaultSec": 2.3,
     "upgradedSec": 2.5
   },
+  "input": {
+    "attackBufferSec": 0.2,
+    "repeatSuppressionSec": 0.035
+  },
+  "impact": {
+    "minimumHitStopSec": 0.04,
+    "minimumBlockHitStopSec": 0.02,
+    "maxKnockbackDistance": 1.2,
+    "postHitInvulnerabilitySec": 0.5,
+    "screenShakeDamageDivisor": 5,
+    "heavyShakeMultiplier": 1.5,
+    "specialShakeMultiplier": 2,
+    "ultimateShakeMultiplier": 2.4
+  },
   "playerDodge": {
     "durationSec": 0.22,
     "staminaCost": 18,
