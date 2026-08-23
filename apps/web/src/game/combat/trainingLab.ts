@@ -54,9 +54,14 @@ export interface TrainingTelemetry {
   staminaRatio: number;
   velocityX: number;
   velocityY: number;
+  frameAdvantage: number | null;
 }
 
 const FRAME_RATE = 60;
+
+function finiteNonNegative(value: number): number {
+  return Math.max(0, Number.isFinite(value) ? value : 0);
+}
 
 export function sanitizeInputHistory(
   events: readonly TrainingInputEvent[],
@@ -67,6 +72,17 @@ export function sanitizeInputHistory(
     .filter((event) => Number.isFinite(event.atMs) && typeof event.code === "string" && event.code.length > 0)
     .slice(-safeMax)
     .map((event) => ({ ...event }));
+}
+
+export function estimateFrameAdvantage(
+  move: TrainingMoveTelemetry | null,
+  opponentHitStunTimer: number
+): number | null {
+  if (!move) return null;
+  const defenderLockout = finiteNonNegative(opponentHitStunTimer);
+  if (defenderLockout <= 0) return null;
+  const attackerRecoveryRemaining = Math.max(0, move.totalSec - move.elapsedSec);
+  return Math.round((defenderLockout - attackerRecoveryRemaining) * FRAME_RATE);
 }
 
 export function resolveTrainingMove(
@@ -81,7 +97,7 @@ export function resolveTrainingMove(
   if (!move) return null;
 
   const timing = getMoveFrameTime(move);
-  const elapsed = Math.max(0, Number.isFinite(elapsedSec) ? elapsedSec : 0);
+  const elapsed = finiteNonNegative(elapsedSec);
   const activeEnd = timing.startupTime + timing.activeTime;
   const phase =
     elapsed < timing.startupTime
@@ -108,20 +124,25 @@ export function resolveTrainingMove(
 
 export function buildTrainingTelemetry(input: TrainingTelemetryInput): TrainingTelemetry {
   const maxStamina = Math.max(1, Number.isFinite(input.maxPlayerStamina) ? input.maxPlayerStamina : 1);
-  const stamina = Math.max(0, Number.isFinite(input.playerStamina) ? input.playerStamina : 0);
+  const stamina = finiteNonNegative(input.playerStamina);
+  const opponentHitStunTimer = finiteNonNegative(input.opponentHitStunTimer);
+  const move = resolveTrainingMove(input.playerAttackType, input.playerComboStep, input.playerAttackElapsed);
+  const frameAdvantage = estimateFrameAdvantage(move, opponentHitStunTimer);
+  const moveWithAdvantage = move ? { ...move, frameAdvantageEstimate: frameAdvantage } : null;
 
   return {
-    move: resolveTrainingMove(input.playerAttackType, input.playerComboStep, input.playerAttackElapsed),
+    move: moveWithAdvantage,
     comboCount: Math.max(0, Math.floor(Number.isFinite(input.comboCount) ? input.comboCount : 0)),
-    comboDamage: Math.max(0, Number.isFinite(input.comboDamage) ? input.comboDamage : 0),
+    comboDamage: finiteNonNegative(input.comboDamage),
     distance: Math.abs((Number.isFinite(input.opponentX) ? input.opponentX : 0) - (Number.isFinite(input.playerX) ? input.playerX : 0)),
-    playerHitStunTimer: Math.max(0, Number.isFinite(input.playerHitStunTimer) ? input.playerHitStunTimer : 0),
-    opponentHitStunTimer: Math.max(0, Number.isFinite(input.opponentHitStunTimer) ? input.opponentHitStunTimer : 0),
-    playerDodgeTimer: Math.max(0, Number.isFinite(input.playerDodgeTimer) ? input.playerDodgeTimer : 0),
-    guardBreakTimer: Math.max(0, Number.isFinite(input.guardBreakTimer) ? input.guardBreakTimer : 0),
-    parryWindow: Math.max(0, Number.isFinite(input.playerBlockParryWindow) ? input.playerBlockParryWindow : 0),
+    playerHitStunTimer: finiteNonNegative(input.playerHitStunTimer),
+    opponentHitStunTimer,
+    playerDodgeTimer: finiteNonNegative(input.playerDodgeTimer),
+    guardBreakTimer: finiteNonNegative(input.guardBreakTimer),
+    parryWindow: finiteNonNegative(input.playerBlockParryWindow),
     staminaRatio: Math.max(0, Math.min(1, stamina / maxStamina)),
     velocityX: Number.isFinite(input.playerVelocityX) ? input.playerVelocityX : 0,
     velocityY: Number.isFinite(input.playerVelocityY) ? input.playerVelocityY : 0,
+    frameAdvantage,
   };
 }
