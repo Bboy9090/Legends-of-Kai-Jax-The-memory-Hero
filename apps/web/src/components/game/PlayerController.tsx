@@ -7,6 +7,7 @@ import { useTrainingLab } from "../../lib/stores/useTrainingLab";
 import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
 import { getResolvedMovementTuning } from "../../game/characters/shared/FighterCombatProfile";
 import type { AttackType } from "../../game/combat/moveData";
+import { resolveTrainingStep } from "../../game/combat/trainingStep";
 import {
   queueBufferedAttack,
   tickBufferedAttack,
@@ -29,6 +30,7 @@ export default function PlayerController() {
   const attackBufferRef = useRef<BufferedAttack | null>(null);
   const coyoteTimerRef = useRef(0);
   const jumpBufferTimerRef = useRef(0);
+  const lastConsumedStepEpochRef = useRef(0);
 
   useEffect(() => {
     const keys = keysRef.current;
@@ -46,8 +48,18 @@ export default function PlayerController() {
     const state = useBattle.getState();
     if (state.battlePhase !== "fighting" && state.battlePhase !== "transforming") return;
     if (state.hitStop > 0) return;
+
     const training = useTrainingLab.getState();
-    if (training.enabled && training.simulationPaused) return;
+    const step = resolveTrainingStep({
+      rawDelta,
+      timeScale: state.timeScale,
+      simulationPaused: training.enabled && training.simulationPaused,
+      stepEpoch: training.stepEpoch,
+      lastConsumedStepEpoch: lastConsumedStepEpochRef.current,
+    });
+    lastConsumedStepEpochRef.current = step.consumedStepEpoch;
+    const delta = step.delta;
+    if (delta <= 0) return;
 
     const movement = getResolvedMovementTuning(state.playerFighterId);
     const gravity = movement.gravity;
@@ -58,7 +70,6 @@ export default function PlayerController() {
     const decel = movement.decel;
     const airControlMult = movement.airControlMult;
 
-    const delta = Math.max(0, rawDelta * state.timeScale);
     const keys = keysRef.current;
     const prev = prevKeysRef.current;
     const justPressed = (code: string) => !!keys[code] && !prev[code];
