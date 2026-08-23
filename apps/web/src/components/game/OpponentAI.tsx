@@ -14,6 +14,10 @@ import {
   type AIAction,
   type AIRandom,
 } from "../../game/combat/aiIdentity";
+import {
+  getDueRecordedActions,
+  getRecordingDuration,
+} from "../../game/combat/trainingRecording";
 
 const b = MOVEMENT_TUNING.battle;
 
@@ -29,6 +33,8 @@ export default function OpponentAI() {
   const punishWindow = useRef(0);
   const rngKeyRef = useRef("");
   const rngRef = useRef<AIRandom>(() => 0.5);
+  const playbackNonceRef = useRef(-1);
+  const playbackElapsedRef = useRef(-Number.EPSILON);
   const difficulty = useDifficulty((s) => s.difficulty);
 
   useFrame((_, rawDelta) => {
@@ -68,8 +74,28 @@ export default function OpponentAI() {
 
     let velY = state.opponentVelocityY;
     let wantsJump = false;
-
     const dummyMode = training.enabled ? training.dummyBehavior : "normal";
+
+    if (dummyMode === "playback" && training.playbackActive) {
+      if (playbackNonceRef.current !== training.playbackNonce) {
+        playbackNonceRef.current = training.playbackNonce;
+        playbackElapsedRef.current = -Number.EPSILON;
+      }
+      const previous = playbackElapsedRef.current;
+      const next = previous + delta;
+      const due = getDueRecordedActions(training.recordedActions, previous, next);
+      for (const entry of due) {
+        if (entry.action === "jump") state.opponentJump();
+        else state.opponentAttack(entry.action);
+      }
+      playbackElapsedRef.current = next;
+      useBattle.setState({ opponentVelocityX: 0, opponentFacingRight: state.playerX > state.opponentX });
+      if (next > getRecordingDuration(training.recordedActions) + 0.12) {
+        useTrainingLab.getState().stopPlayback();
+      }
+      return;
+    }
+
     if (dummyMode === "idle") {
       velY = Math.max(b.terminalVelocity, velY + b.gravity * delta);
       let newY = state.opponentY + velY * delta;
@@ -105,10 +131,7 @@ export default function OpponentAI() {
     }
 
     if (dummyMode === "attack") {
-      useBattle.setState({
-        opponentVelocityX: 0,
-        opponentFacingRight: state.playerX > state.opponentX,
-      });
+      useBattle.setState({ opponentVelocityX: 0, opponentFacingRight: state.playerX > state.opponentX });
       if (attackCooldown.current <= 0 && !state.opponentAttacking) {
         state.opponentAttack(chooseAttack(identity, random(), false));
         attackCooldown.current = Math.max(0.35, profile.attackSpacing / 1000);
