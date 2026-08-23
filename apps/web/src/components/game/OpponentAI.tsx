@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useDifficulty, type Difficulty } from "../../lib/stores/useDifficulty";
+import { useTrainingLab } from "../../lib/stores/useTrainingLab";
 import { BEHAVIOR_PROFILES, type AIBehaviorDifficulty } from "../../lib/enemyAIv2";
 import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
 import {
@@ -34,14 +35,16 @@ export default function OpponentAI() {
     const state = useBattle.getState();
     if (state.battlePhase !== "fighting") return;
     if (state.hitStop > 0) return;
+
+    const training = useTrainingLab.getState();
+    if (training.enabled && training.simulationPaused) return;
     if (state.opponentStaggerTimer > 0 || state.opponentHitStunTimer > 0) return;
 
     const delta = Math.max(0, rawDelta * state.timeScale);
     const identity = getFighterAIIdentity(state.opponentFighterId, state.opponentPersonality);
     const p = identity.archetype;
     const aiDiff = toAIDifficulty(difficulty);
-    const enemyType =
-      p === "stalker" ? "attacker" : p === "titan" ? "tank" : p === "caster" ? "elite" : "grunt";
+    const enemyType = p === "stalker" ? "attacker" : p === "titan" ? "tank" : p === "caster" ? "elite" : "grunt";
     const profile = BEHAVIOR_PROFILES[enemyType][aiDiff];
     const decisionInterval = Math.max(0.05, profile.decisionUpdateRate / 1000);
 
@@ -66,16 +69,56 @@ export default function OpponentAI() {
     let velY = state.opponentVelocityY;
     let wantsJump = false;
 
+    const dummyMode = training.enabled ? training.dummyBehavior : "normal";
+    if (dummyMode === "idle") {
+      velY = Math.max(b.terminalVelocity, velY + b.gravity * delta);
+      let newY = state.opponentY + velY * delta;
+      let grounded = false;
+      if (newY <= b.groundY) { newY = b.groundY; velY = 0; grounded = true; }
+      useBattle.setState({
+        opponentY: newY,
+        opponentVelocityX: 0,
+        opponentVelocityY: velY,
+        opponentGrounded: grounded,
+        opponentFacingRight: state.playerX > state.opponentX,
+      });
+      return;
+    }
+
+    if (dummyMode === "jump") {
+      if (state.opponentGrounded && jumpCooldown.current <= 0) {
+        velY = b.jumpVelocity;
+        jumpCooldown.current = 1.1;
+      }
+      velY = Math.max(b.terminalVelocity, velY + b.gravity * delta);
+      let newY = state.opponentY + velY * delta;
+      let grounded = false;
+      if (newY <= b.groundY) { newY = b.groundY; velY = 0; grounded = true; }
+      useBattle.setState({
+        opponentY: newY,
+        opponentVelocityX: 0,
+        opponentVelocityY: velY,
+        opponentGrounded: grounded,
+        opponentFacingRight: state.playerX > state.opponentX,
+      });
+      return;
+    }
+
+    if (dummyMode === "attack") {
+      useBattle.setState({
+        opponentVelocityX: 0,
+        opponentFacingRight: state.playerX > state.opponentX,
+      });
+      if (attackCooldown.current <= 0 && !state.opponentAttacking) {
+        state.opponentAttack(chooseAttack(identity, random(), false));
+        attackCooldown.current = Math.max(0.35, profile.attackSpacing / 1000);
+      }
+      return;
+    }
+
     if (decisionTimer.current <= 0) {
       decisionTimer.current = decisionInterval;
-
-      const punish = shouldPunish(
-        identity,
-        random(),
-        state.playerAttacking,
-        state.playerHitStunTimer
-      );
-
+      const punish = shouldPunish(identity, random(), state.playerAttacking, state.playerHitStunTimer);
       if (punish && absDist <= identity.punishRange) {
         currentAction.current = "punish";
         punishWindow.current = Math.max(punishWindow.current, 0.32);
@@ -90,22 +133,13 @@ export default function OpponentAI() {
         });
       }
 
-      if (
-        state.opponentGrounded &&
-        jumpCooldown.current <= 0 &&
-        random() < identity.jumpChance
-      ) {
+      if (state.opponentGrounded && jumpCooldown.current <= 0 && random() < identity.jumpChance) {
         wantsJump = true;
         jumpCooldown.current = p === "stalker" ? 1.1 : 1.7;
       }
     }
 
-    if (
-      p === "stalker" &&
-      !state.opponentGrounded &&
-      (isAtLeftWall || isAtRightWall) &&
-      jumpCooldown.current <= 0
-    ) {
+    if (p === "stalker" && !state.opponentGrounded && (isAtLeftWall || isAtRightWall) && jumpCooldown.current <= 0) {
       wantsJump = true;
     }
 
@@ -124,41 +158,28 @@ export default function OpponentAI() {
     velY = Math.max(b.terminalVelocity, velY);
     let newY = state.opponentY + velY * delta;
     let grounded = false;
-    if (newY <= b.groundY) {
-      newY = b.groundY;
-      velY = 0;
-      grounded = true;
-    }
+    if (newY <= b.groundY) { newY = b.groundY; velY = 0; grounded = true; }
 
     const baseMoveSpeed = b.aiBaseMoveSpeed * identity.moveSpeedMult;
     let dx = 0;
     if (currentAction.current === "chase" || currentAction.current === "punish") {
-      const boost = currentAction.current === "punish" ? 1.18 : 1;
-      dx = dir * baseMoveSpeed * boost * delta;
+      dx = dir * baseMoveSpeed * (currentAction.current === "punish" ? 1.18 : 1) * delta;
     } else if (currentAction.current === "retreat") {
       dx = -dir * baseMoveSpeed * b.aiRetreatSpeedMult * delta;
     }
     dx += wallKickPush;
-
     if ((isAtLeftWall && dx < 0) || (isAtRightWall && dx > 0)) dx = 0;
 
     const newX = Math.max(b.arenaXMin, Math.min(b.arenaXMax, state.opponentX + dx));
-    const faceDirection = state.playerX > newX;
-
     useBattle.setState({
       opponentX: newX,
       opponentY: newY,
       opponentVelocityY: velY,
       opponentGrounded: grounded,
-      opponentFacingRight: faceDirection,
+      opponentFacingRight: state.playerX > newX,
     });
 
-    const canAttack =
-      attackCooldown.current <= 0 &&
-      !state.opponentAttacking &&
-      state.opponentStaggerTimer <= 0 &&
-      state.opponentHitStunTimer <= 0;
-
+    const canAttack = attackCooldown.current <= 0 && !state.opponentAttacking && state.opponentStaggerTimer <= 0 && state.opponentHitStunTimer <= 0;
     if (!canAttack) return;
 
     const inPunish = currentAction.current === "punish" || punishWindow.current > 0;
@@ -171,16 +192,11 @@ export default function OpponentAI() {
       return;
     }
 
-    const attackType = chooseAttack(identity, random(), inPunish);
-    state.opponentAttack(attackType);
-
+    state.opponentAttack(chooseAttack(identity, random(), inPunish));
     const baseSpacing = profile.attackSpacing / 1000;
     const identityCadence = p === "stalker" ? 0.82 : p === "titan" ? 1.18 : p === "caster" ? 1.08 : 1;
     const punishCadence = inPunish ? 0.72 : 1;
-    attackCooldown.current = Math.max(
-      0.18,
-      baseSpacing * identityCadence * punishCadence + random() * 0.22
-    );
+    attackCooldown.current = Math.max(0.18, baseSpacing * identityCadence * punishCadence + random() * 0.22);
     punishWindow.current = 0;
   });
 
