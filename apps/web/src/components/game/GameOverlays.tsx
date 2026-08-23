@@ -5,21 +5,25 @@
  *   F1 — Quest Log
  *   F2 — Training Lab
  *   F3 — Performance HUD
- *
- * These overlays stay outside the authoritative combat simulation. Training Lab
- * observes live state and may call explicit battle actions such as resetRound,
- * but it never owns combat state itself.
  */
 
 import { useEffect, useState } from "react";
 import PerformanceHUD from "./PerformanceHUD";
 import QuestLog from "./QuestLog";
 import TrainingLabOverlay from "./TrainingLabOverlay";
+import { useTrainingLab } from "../../lib/stores/useTrainingLab";
 
 export default function GameOverlays() {
   const [showPerf, setShowPerf] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
   const [showTraining, setShowTraining] = useState(false);
+
+  useEffect(() => {
+    useTrainingLab.getState().setEnabled(showTraining);
+    if (!showTraining) {
+      useTrainingLab.getState().setSimulationPaused(false);
+    }
+  }, [showTraining]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
