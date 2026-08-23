@@ -69,6 +69,16 @@ export {
   totalMoveSeconds,
 } from "../game/combat/AttackResolver";
 
+/** Canonical scalar duel reach/contact authority. */
+export type {
+  BattleAttackContactInput,
+  BattleAttackRangeOptions,
+} from "../game/combat/battleRange";
+export {
+  getBattleAttackRange,
+  isWithinBattleAttackRange,
+} from "../game/combat/battleRange";
+
 /** Combat-design doctrine: counter hits, juggle budgets, defensive escape, stage impacts. */
 export type {
   CounterHitContext,
@@ -89,6 +99,13 @@ export {
   resolveJuggleHit,
   resolveStageImpact,
 } from "../game/combat/combatDoctrine";
+
+/** Final side-effect-free duel hit verdict consumed by runtime, tests and future replay/rollback. */
+export type {
+  RuntimeHitResolution,
+  RuntimeHitResolutionInput,
+} from "../game/combat/runtimeHitResolution";
+export { resolveRuntimeHit } from "../game/combat/runtimeHitResolution";
 
 export type { EnemyTierConfig, EnemyTierId } from "../game/tuning/enemyTuning";
 export { ENEMY_TIERS, ENEMY_TUNING } from "../game/tuning/enemyTuning";
