@@ -1,133 +1,149 @@
-import { useRef, useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
+import { useAccessibility } from "../../lib/stores/useAccessibility";
+import {
+  getImpactProfile,
+  impactProfileForDamage,
+  KO_IMPACT_PROFILE,
+  sampleCameraShake,
+  type ImpactProfile,
+} from "../../game/combat/combatPresentation";
 
 export default function CameraEffects() {
   const { camera } = useThree();
-  const { 
-    playerHealth, 
+  const {
+    playerHealth,
     opponentHealth,
     playerAttackType,
     opponentAttackType,
     playerAttacking,
     opponentAttacking,
     battlePhase,
-    setTimeScale
+    setTimeScale,
   } = useBattle();
+  const reduceMotion = useAccessibility((state) => state.reduceMotion);
 
-  const shakeRef = useRef({ intensity: 0, duration: 0 });
-  const prevPlayerHealthRef = useRef(100);
-  const prevOpponentHealthRef = useRef(100);
+  const shakeRef = useRef({ intensity: 0, duration: 0, elapsed: 0 });
+  const prevPlayerHealthRef = useRef(playerHealth);
+  const prevOpponentHealthRef = useRef(opponentHealth);
   const prevPlayerAttackRef = useRef(false);
   const prevOpponentAttackRef = useRef(false);
-  const originalPosRef = useRef({ x: 0, y: 0, z: 0 });
+  const originalPosRef = useRef({ x: camera.position.x, y: camera.position.y, z: camera.position.z });
   const koSlowMoTriggeredRef = useRef(false);
   const slowMoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Store original camera position
   useEffect(() => {
     originalPosRef.current = {
       x: camera.position.x,
       y: camera.position.y,
-      z: camera.position.z
+      z: camera.position.z,
     };
   }, [camera]);
 
-  // Reset KO slow-mo flag when leaving KO phase
   useEffect(() => {
-    if (battlePhase !== 'ko') {
-      koSlowMoTriggeredRef.current = false;
-    }
+    if (battlePhase !== "ko") koSlowMoTriggeredRef.current = false;
   }, [battlePhase]);
 
-  // Trigger screen shake
-  const triggerShake = (intensity: number, duration: number) => {
-    shakeRef.current.intensity = Math.max(shakeRef.current.intensity, intensity);
-    shakeRef.current.duration = Math.max(shakeRef.current.duration, duration);
+  useEffect(() => {
+    return () => {
+      if (slowMoTimeoutRef.current) clearTimeout(slowMoTimeoutRef.current);
+      setTimeScale(1);
+    };
+  }, [setTimeScale]);
+
+  const triggerShake = (profile: Readonly<ImpactProfile>) => {
+    const motionScale = reduceMotion ? 0.3 : 1;
+    shakeRef.current.intensity = Math.max(
+      shakeRef.current.intensity,
+      profile.shakeIntensity * motionScale
+    );
+    shakeRef.current.duration = Math.max(
+      shakeRef.current.duration,
+      profile.shakeDurationSec * motionScale
+    );
+    shakeRef.current.elapsed = 0;
   };
 
-  // Trigger slow motion (updates battle store timeScale)
-  const triggerSlowMo = (scale: number, duration: number) => {
-    // Clear existing timeout to avoid overlapping resets
-    if (slowMoTimeoutRef.current) {
-      clearTimeout(slowMoTimeoutRef.current);
-    }
-    
-    setTimeScale(scale);
+  const triggerSlowMo = (profile: Readonly<ImpactProfile>) => {
+    if (profile.slowMoDurationMs <= 0 || profile.slowMoScale >= 1) return;
+    if (slowMoTimeoutRef.current) clearTimeout(slowMoTimeoutRef.current);
+
+    setTimeScale(Math.max(0.1, Math.min(1, profile.slowMoScale)));
     slowMoTimeoutRef.current = setTimeout(() => {
-      setTimeScale(1.0);
+      setTimeScale(1);
       slowMoTimeoutRef.current = null;
-    }, duration);
+    }, Math.max(0, profile.slowMoDurationMs));
   };
 
-  useFrame((state, delta) => {
-    // Detect player damage
+  const triggerProfile = (profile: Readonly<ImpactProfile>) => {
+    triggerShake(profile);
+    triggerSlowMo(profile);
+  };
+
+  useFrame((_state, rawDelta) => {
+    const delta = Math.max(0, Math.min(0.05, Number.isFinite(rawDelta) ? rawDelta : 0));
+
     if (playerHealth < prevPlayerHealthRef.current) {
       const damage = prevPlayerHealthRef.current - playerHealth;
-      triggerShake(damage * 0.02, 0.2);
-      
-      // Slow-mo on big hits
-      if (damage >= 15) {
-        triggerSlowMo(0.3, 150);
-      }
+      triggerProfile(impactProfileForDamage(damage, opponentAttackType));
     }
     prevPlayerHealthRef.current = playerHealth;
 
-    // Detect opponent damage
     if (opponentHealth < prevOpponentHealthRef.current) {
       const damage = prevOpponentHealthRef.current - opponentHealth;
-      triggerShake(damage * 0.02, 0.2);
-      
-      // Slow-mo on big hits
-      if (damage >= 15) {
-        triggerSlowMo(0.3, 150);
-      }
+      triggerProfile(impactProfileForDamage(damage, playerAttackType));
     }
     prevOpponentHealthRef.current = opponentHealth;
 
-    // Special attack screen shake and slow-mo
-    if (playerAttacking && !prevPlayerAttackRef.current && playerAttackType === 'special') {
-      triggerShake(0.8, 0.4);
-      triggerSlowMo(0.3, 200);
+    if (playerAttacking && !prevPlayerAttackRef.current && playerAttackType) {
+      const profile = getImpactProfile(playerAttackType);
+      if (playerAttackType === "special" || playerAttackType === "ultimate") {
+        triggerShake({ ...profile, shakeIntensity: profile.shakeIntensity * 0.55 });
+      }
     }
     prevPlayerAttackRef.current = playerAttacking;
 
-    if (opponentAttacking && !prevOpponentAttackRef.current && opponentAttackType === 'special') {
-      triggerShake(0.8, 0.4);
-      triggerSlowMo(0.3, 200);
+    if (opponentAttacking && !prevOpponentAttackRef.current && opponentAttackType) {
+      const profile = getImpactProfile(opponentAttackType);
+      if (opponentAttackType === "special") {
+        triggerShake({ ...profile, shakeIntensity: profile.shakeIntensity * 0.5 });
+      }
     }
     prevOpponentAttackRef.current = opponentAttacking;
 
-    // KO slow-mo (ONLY TRIGGER ONCE!)
-    if (battlePhase === 'ko' && !koSlowMoTriggeredRef.current) {
+    if (battlePhase === "ko" && !koSlowMoTriggeredRef.current) {
       koSlowMoTriggeredRef.current = true;
-      triggerShake(1.2, 0.5);
-      triggerSlowMo(0.2, 500);
+      triggerProfile(KO_IMPACT_PROFILE);
     }
 
-    // Apply screen shake
-    if (shakeRef.current.intensity > 0) {
-      const shake = shakeRef.current.intensity;
-      camera.position.x = originalPosRef.current.x + (Math.random() - 0.5) * shake;
-      camera.position.y = originalPosRef.current.y + (Math.random() - 0.5) * shake;
-      camera.position.z = originalPosRef.current.z + (Math.random() - 0.5) * shake * 0.5;
+    if (shakeRef.current.intensity > 0 && shakeRef.current.duration > 0) {
+      shakeRef.current.elapsed += delta;
+      const sample = sampleCameraShake(shakeRef.current.elapsed, shakeRef.current.intensity);
+      camera.position.set(
+        originalPosRef.current.x + sample.x,
+        originalPosRef.current.y + sample.y,
+        originalPosRef.current.z + sample.z
+      );
 
-      shakeRef.current.intensity -= delta * 5;
-      shakeRef.current.duration -= delta;
+      shakeRef.current.duration = Math.max(0, shakeRef.current.duration - delta);
+      shakeRef.current.intensity = Math.max(0, shakeRef.current.intensity - delta * 3.8);
 
       if (shakeRef.current.duration <= 0 || shakeRef.current.intensity <= 0) {
         shakeRef.current.intensity = 0;
         shakeRef.current.duration = 0;
-        // Reset to original position
-        camera.position.x = originalPosRef.current.x;
-        camera.position.y = originalPosRef.current.y;
-        camera.position.z = originalPosRef.current.z;
+        camera.position.set(
+          originalPosRef.current.x,
+          originalPosRef.current.y,
+          originalPosRef.current.z
+        );
       }
     } else {
-      // Update original position when not shaking (to follow camera movement)
-      originalPosRef.current.x = camera.position.x;
-      originalPosRef.current.y = camera.position.y;
-      originalPosRef.current.z = camera.position.z;
+      originalPosRef.current = {
+        x: camera.position.x,
+        y: camera.position.y,
+        z: camera.position.z,
+      };
     }
   });
 
