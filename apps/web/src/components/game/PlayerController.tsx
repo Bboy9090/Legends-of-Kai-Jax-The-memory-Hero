@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useAudio } from "../../lib/stores/useAudio";
 import { useTouchInput } from "../../lib/stores/useTouchInput";
+import { useTrainingLab } from "../../lib/stores/useTrainingLab";
 import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
 import { getResolvedMovementTuning } from "../../game/characters/shared/FighterCombatProfile";
 import type { AttackType } from "../../game/combat/moveData";
@@ -31,12 +32,8 @@ export default function PlayerController() {
 
   useEffect(() => {
     const keys = keysRef.current;
-    const handleDown = (e: KeyboardEvent) => {
-      keys[e.code] = true;
-    };
-    const handleUp = (e: KeyboardEvent) => {
-      keys[e.code] = false;
-    };
+    const handleDown = (e: KeyboardEvent) => { keys[e.code] = true; };
+    const handleUp = (e: KeyboardEvent) => { keys[e.code] = false; };
     window.addEventListener("keydown", handleDown);
     window.addEventListener("keyup", handleUp);
     return () => {
@@ -49,6 +46,8 @@ export default function PlayerController() {
     const state = useBattle.getState();
     if (state.battlePhase !== "fighting" && state.battlePhase !== "transforming") return;
     if (state.hitStop > 0) return;
+    const training = useTrainingLab.getState();
+    if (training.enabled && training.simulationPaused) return;
 
     const movement = getResolvedMovementTuning(state.playerFighterId);
     const gravity = movement.gravity;
@@ -74,34 +73,15 @@ export default function PlayerController() {
     const touchAttacks = touch.consumeAttacks();
 
     let queuedAttack: AttackType | null = null;
-    if (
-      justPressed("KeyJ") ||
-      justPressed("KeyX") ||
-      touchAttacks.includes("punch") ||
-      touchAttacks.includes("attack")
-    ) queuedAttack = "punch";
-    else if (
-      justPressed("KeyK") ||
-      justPressed("KeyZ") ||
-      touchAttacks.includes("kick") ||
-      touchAttacks.includes("heavy")
-    ) queuedAttack = "kick";
-    else if (
-      justPressed("KeyL") ||
-      justPressed("KeyC") ||
-      touchAttacks.includes("special") ||
-      touchAttacks.includes("skill")
-    ) queuedAttack = "special";
+    if (justPressed("KeyJ") || justPressed("KeyX") || touchAttacks.includes("punch") || touchAttacks.includes("attack")) queuedAttack = "punch";
+    else if (justPressed("KeyK") || justPressed("KeyZ") || touchAttacks.includes("kick") || touchAttacks.includes("heavy")) queuedAttack = "kick";
+    else if (justPressed("KeyL") || justPressed("KeyC") || touchAttacks.includes("special") || touchAttacks.includes("skill")) queuedAttack = "special";
     else if (justPressed("KeyR") || touchAttacks.includes("ultimate")) queuedAttack = "ultimate";
 
     if (queuedAttack) attackBufferRef.current = queueBufferedAttack(queuedAttack);
     attackBufferRef.current = tickBufferedAttack(attackBufferRef.current, delta);
 
-    const jumpPressed =
-      justPressed("Space") ||
-      justPressed("ArrowUp") ||
-      justPressed("KeyW") ||
-      touchAttacks.includes("jump");
+    const jumpPressed = justPressed("Space") || justPressed("ArrowUp") || justPressed("KeyW") || touchAttacks.includes("jump");
     if (jumpPressed) jumpBufferTimerRef.current = movement.jumpBufferSec;
 
     if (state.playerDodgeTimer > 0) {
@@ -114,11 +94,7 @@ export default function PlayerController() {
       velY = Math.max(b.terminalVelocity, velY);
       let newY = state.playerY + velY * delta;
       let grounded = false;
-      if (newY <= GROUND_Y) {
-        newY = GROUND_Y;
-        velY = 0;
-        grounded = true;
-      }
+      if (newY <= GROUND_Y) { newY = GROUND_Y; velY = 0; grounded = true; }
       useBattle.setState({
         playerY: newY,
         playerVelocityY: velY,
@@ -137,10 +113,7 @@ export default function PlayerController() {
     inputX = clampUnitAxis(inputX);
 
     const sprintHeld = !!(keys["ShiftLeft"] || keys["ShiftRight"]);
-    const maxSpeed =
-      (sprintHeld ? sprintMaxSpeed : walkMaxSpeed) *
-      (state.playerGrounded ? 1 : airControlMult);
-
+    const maxSpeed = (sprintHeld ? sprintMaxSpeed : walkMaxSpeed) * (state.playerGrounded ? 1 : airControlMult);
     const blockMove = blockHeld && state.playerGrounded && !state.playerAttacking;
 
     let targetVx = inputX * maxSpeed;
@@ -154,7 +127,6 @@ export default function PlayerController() {
     const isAtLeftWall = state.playerX <= b.arenaXMin + 0.1;
     const isAtRightWall = state.playerX >= b.arenaXMax - 0.1;
     let velY = state.playerVelocityY;
-
     const bufferedJump = jumpBufferTimerRef.current > 0;
     const canGroundJump = coyoteTimerRef.current > 0 && !blockMove;
 
@@ -189,7 +161,6 @@ export default function PlayerController() {
     velY = Math.max(b.terminalVelocity, velY);
     let newY = state.playerY + velY * delta;
     let grounded = false;
-
     if (newY <= GROUND_Y) {
       if (!state.playerGrounded && Math.abs(velY) > b.landingImpactVelocity) {
         useBattle.getState().triggerScreenShake(b.landingShakeIntensity);
@@ -202,27 +173,14 @@ export default function PlayerController() {
 
     const dx = vx * delta;
     const newX = Math.max(b.arenaXMin, Math.min(b.arenaXMax, state.playerX + dx));
-
     const distToOpp = Math.abs(state.opponentX - newX);
     const shouldSnapFace = state.playerAttacking || distToOpp < b.facingSnapDistance;
     const faceTowardOpponent = shouldSnapFace ? state.opponentX > newX : state.playerFacingRight;
-
     const towardOpp = Math.sign(state.opponentX - state.playerX) || 1;
-    const wantDodge =
-      (justPressed("KeyQ") || justPressed("KeyE") || touchAttacks.includes("dodge")) &&
-      !blockMove;
+    const wantDodge = (justPressed("KeyQ") || justPressed("KeyE") || touchAttacks.includes("dodge")) && !blockMove;
 
     if (wantDodge) {
-      const dir = (
-        keys["KeyE"]
-          ? 1
-          : keys["KeyQ"]
-            ? -1
-            : inputX !== 0
-              ? Math.sign(inputX)
-              : -towardOpp
-      ) as 1 | -1;
-
+      const dir = (keys["KeyE"] ? 1 : keys["KeyQ"] ? -1 : inputX !== 0 ? Math.sign(inputX) : -towardOpp) as 1 | -1;
       if (state.startPlayerDodge(dir)) {
         prevKeysRef.current = { ...keys };
         return;
@@ -242,20 +200,16 @@ export default function PlayerController() {
     if (!blockMove && buffered) {
       const fresh = useBattle.getState();
       let consumed = false;
-
-      if (buffered.type === "punch" && fresh.playerAttacking) {
-        consumed = fresh.attemptComboCancel();
-      } else if (!fresh.playerAttacking) {
+      if (buffered.type === "punch" && fresh.playerAttacking) consumed = fresh.attemptComboCancel();
+      else if (!fresh.playerAttacking) {
         fresh.playerAttack(buffered.type);
         const after = useBattle.getState();
         consumed = after.playerAttacking && after.playerAttackType === buffered.type;
       }
-
       if (consumed) attackBufferRef.current = null;
     }
 
     if (justPressed("KeyT")) state.triggerTransformation();
-
     prevKeysRef.current = { ...keys };
   });
 
