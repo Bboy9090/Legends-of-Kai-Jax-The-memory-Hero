@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useAudio } from "../../lib/stores/useAudio";
+import { useTrainingLab } from "../../lib/stores/useTrainingLab";
 import BattleCamera from "./BattleCamera";
 import { getFighterById } from "../../lib/characters";
 import BattleArena from "./BattleArena";
@@ -21,8 +22,6 @@ import { useAccessibility } from "../../lib/stores/useAccessibility";
 /* eslint-disable react/no-unknown-property */
 export default function BattleScene() {
   const {
-    updateRoundTimer,
-    battlePhase,
     playerFighterId,
     screenShake,
     hitStop,
@@ -31,10 +30,6 @@ export default function BattleScene() {
     playerAttackType,
     opponentAttacking,
     comboCount,
-    maxCombo,
-    playerHealth,
-    opponentHealth,
-    maxHealth,
     playerCombatState,
   } = useBattle();
   const reduceMotion = useAccessibility((s) => s.reduceMotion);
@@ -67,24 +62,23 @@ export default function BattleScene() {
     const delayMs = 400;
     const timer = setTimeout(() => {
       const s = useBattle.getState();
-      if (s.battlePhase !== "fighting" && s.battlePhase !== "transforming") {
-        s.startBattle();
-      }
+      if (s.battlePhase !== "fighting" && s.battlePhase !== "transforming") s.startBattle();
     }, delayMs);
     return () => clearTimeout(timer);
   }, []);
 
   useFrame((_state, rawDelta) => {
     const live = useBattle.getState();
-    if (live.battlePhase === "fighting") {
-      const scale = Number.isFinite(live.timeScale) ? Math.max(0, live.timeScale) : 1;
-      const delta = Math.max(0, rawDelta) * scale;
-      live.updateRoundTimer(delta);
-      const comboIntensity = Math.min(1, (live.comboCount + (live.maxCombo > 0 ? live.maxCombo * 0.2 : 0)) / 8);
-      const healthIntensity = 1 - Math.min(live.playerHealth, live.opponentHealth) / Math.max(1, live.maxHealth);
-      const intensity = comboIntensity * 0.6 + healthIntensity * 0.4;
-      useAudio.getState().setBattleIntensity(intensity);
-    }
+    if (live.battlePhase !== "fighting") return;
+
+    const training = useTrainingLab.getState();
+    const scale = Number.isFinite(live.timeScale) ? Math.max(0, live.timeScale) : 1;
+    const delta = training.enabled && training.simulationPaused ? 0 : Math.max(0, rawDelta) * scale;
+    live.updateRoundTimer(delta);
+
+    const comboIntensity = Math.min(1, (live.comboCount + (live.maxCombo > 0 ? live.maxCombo * 0.2 : 0)) / 8);
+    const healthIntensity = 1 - Math.min(live.playerHealth, live.opponentHealth) / Math.max(1, live.maxHealth);
+    useAudio.getState().setBattleIntensity(comboIntensity * 0.6 + healthIntensity * 0.4);
   });
 
   return (
