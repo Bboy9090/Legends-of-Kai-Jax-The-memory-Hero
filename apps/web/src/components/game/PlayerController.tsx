@@ -16,21 +16,24 @@ const b = MOVEMENT_TUNING.battle;
 const GRAVITY = b.gravity;
 const GROUND_Y = b.groundY;
 const JUMP_VELOCITY = b.jumpVelocity;
-
 const WALK_MAX_SPEED = b.walkMaxSpeed;
 const SPRINT_MAX_SPEED = b.sprintMaxSpeed;
 const ACCEL = b.accel;
 const DECEL = b.decel;
 const AIR_CONTROL_MULT = b.airControlMult;
 
-function clamp01(x: number): number {
-  return Math.max(0, Math.min(1, x));
+function clampUnitAxis(x: number): number {
+  if (!Number.isFinite(x)) return 0;
+  const magnitude = Math.min(1, Math.abs(x));
+  return magnitude < b.inputDeadzone ? 0 : magnitude * Math.sign(x);
 }
 
 export default function PlayerController() {
   const keysRef = useRef<Record<string, boolean>>({});
   const prevKeysRef = useRef<Record<string, boolean>>({});
   const attackBufferRef = useRef<BufferedAttack | null>(null);
+  const coyoteTimerRef = useRef(0);
+  const jumpBufferTimerRef = useRef(0);
 
   useEffect(() => {
     const keys = keysRef.current;
@@ -53,25 +56,50 @@ export default function PlayerController() {
     if (state.battlePhase !== "fighting" && state.battlePhase !== "transforming") return;
     if (state.hitStop > 0) return;
 
+    const delta = Math.max(0, rawDelta * state.timeScale);
     const keys = keysRef.current;
     const prev = prevKeysRef.current;
-    const justPressed = (code: string) => keys[code] && !prev[code];
+    const justPressed = (code: string) => !!keys[code] && !prev[code];
     const blockHeld = !!(keys["AltLeft"] || keys["AltRight"]);
     useBattle.getState().setPlayerBlockHeld(blockHeld);
 
-    const delta = rawDelta * state.timeScale;
+    if (state.playerGrounded) coyoteTimerRef.current = b.coyoteTimeSec;
+    else coyoteTimerRef.current = Math.max(0, coyoteTimerRef.current - delta);
+    jumpBufferTimerRef.current = Math.max(0, jumpBufferTimerRef.current - delta);
 
     const touch = useTouchInput.getState();
     const touchAttacks = touch.consumeAttacks();
 
     let queuedAttack: AttackType | null = null;
-    if (justPressed("KeyJ") || justPressed("KeyX") || touchAttacks.includes("punch") || touchAttacks.includes("attack")) queuedAttack = "punch";
-    else if (justPressed("KeyK") || justPressed("KeyZ") || touchAttacks.includes("kick") || touchAttacks.includes("heavy")) queuedAttack = "kick";
-    else if (justPressed("KeyL") || justPressed("KeyC") || touchAttacks.includes("special") || touchAttacks.includes("skill")) queuedAttack = "special";
+    if (
+      justPressed("KeyJ") ||
+      justPressed("KeyX") ||
+      touchAttacks.includes("punch") ||
+      touchAttacks.includes("attack")
+    ) queuedAttack = "punch";
+    else if (
+      justPressed("KeyK") ||
+      justPressed("KeyZ") ||
+      touchAttacks.includes("kick") ||
+      touchAttacks.includes("heavy")
+    ) queuedAttack = "kick";
+    else if (
+      justPressed("KeyL") ||
+      justPressed("KeyC") ||
+      touchAttacks.includes("special") ||
+      touchAttacks.includes("skill")
+    ) queuedAttack = "special";
     else if (justPressed("KeyR") || touchAttacks.includes("ultimate")) queuedAttack = "ultimate";
 
     if (queuedAttack) attackBufferRef.current = queueBufferedAttack(queuedAttack);
     attackBufferRef.current = tickBufferedAttack(attackBufferRef.current, delta);
+
+    const jumpPressed =
+      justPressed("Space") ||
+      justPressed("ArrowUp") ||
+      justPressed("KeyW") ||
+      touchAttacks.includes("jump");
+    if (jumpPressed) jumpBufferTimerRef.current = b.jumpBufferSec;
 
     if (state.playerDodgeTimer > 0) {
       prevKeysRef.current = { ...keys };
@@ -79,8 +107,8 @@ export default function PlayerController() {
     }
 
     if (state.guardBreakTimer > 0 || state.playerHitStunTimer > 0) {
-      let velY = state.playerVelocityY;
-      velY += GRAVITY * delta;
+      let velY = state.playerVelocityY + GRAVITY * delta;
+      velY = Math.max(b.terminalVelocity, velY);
       let newY = state.playerY + velY * delta;
       let grounded = false;
       if (newY <= GROUND_Y) {
@@ -102,91 +130,96 @@ export default function PlayerController() {
     let inputX = 0;
     if (keys["ArrowLeft"] || keys["KeyA"]) inputX -= 1;
     if (keys["ArrowRight"] || keys["KeyD"]) inputX += 1;
+    if (touch.isJoystickActive) inputX += touch.joystickX;
+    inputX = clampUnitAxis(inputX);
 
-    if (touch.isJoystickActive) {
-      inputX += touch.joystickX;
-    }
-
-    inputX = clamp01(Math.abs(inputX)) * Math.sign(inputX || 0);
-
-    const sprintHeld = keys["ShiftLeft"] || keys["ShiftRight"];
+    const sprintHeld = !!(keys["ShiftLeft"] || keys["ShiftRight"]);
     const maxSpeed =
-      (sprintHeld ? SPRINT_MAX_SPEED : WALK_MAX_SPEED) * (state.playerGrounded ? 1 : AIR_CONTROL_MULT);
+      (sprintHeld ? SPRINT_MAX_SPEED : WALK_MAX_SPEED) *
+      (state.playerGrounded ? 1 : AIR_CONTROL_MULT);
 
-    const blockMove =
-      blockHeld &&
-      state.playerGrounded &&
-      !state.playerAttacking;
+    const blockMove = blockHeld && state.playerGrounded && !state.playerAttacking;
 
     let targetVx = inputX * maxSpeed;
-    if (Math.abs(inputX) < 0.08) targetVx = 0;
     if (state.playerAttacking) targetVx = 0;
-    if (blockMove) {
-      targetVx *= b.blockMoveSpeedMult;
-    }
+    if (blockMove) targetVx *= b.blockMoveSpeedMult;
 
     let vx = state.playerVelocityX;
     const rate = state.playerAttacking ? b.attackDecel : targetVx === 0 ? DECEL : ACCEL;
     vx = moveTowards(vx, targetVx, rate * delta);
 
-    const dx = vx * delta;
     const isAtLeftWall = state.playerX <= b.arenaXMin + 0.1;
     const isAtRightWall = state.playerX >= b.arenaXMax - 0.1;
-    const newX = Math.max(b.arenaXMin, Math.min(b.arenaXMax, state.playerX + dx));
-
     let velY = state.playerVelocityY;
-    const wantJump =
-      justPressed("Space") ||
-      justPressed("ArrowUp") ||
-      justPressed("KeyW") ||
-      touchAttacks.includes("jump");
 
-    // 🦁 BEAST MECHANIC: WALL KICK
-    if (wantJump && !state.playerGrounded && (isAtLeftWall || isAtRightWall)) {
+    const bufferedJump = jumpBufferTimerRef.current > 0;
+    const canGroundJump = coyoteTimerRef.current > 0 && !blockMove;
+
+    // Wall kick consumes the buffered jump before the normal jump path.
+    if (bufferedJump && !state.playerGrounded && (isAtLeftWall || isAtRightWall)) {
       const kickDir = isAtLeftWall ? 1 : -1;
-      vx = kickDir * SPRINT_MAX_SPEED * 1.5; // Explosive push-off
-      velY = JUMP_VELOCITY * 0.9; // Horizontal focus
+      vx = kickDir * SPRINT_MAX_SPEED * b.wallKickHorizontalMult;
+      velY = JUMP_VELOCITY * b.wallKickVerticalMult;
+      jumpBufferTimerRef.current = 0;
+      coyoteTimerRef.current = 0;
       useAudio.getState().playJump();
-      useBattle.getState().triggerScreenShake(1.5); // Visual feedback
-    } 
-    // 🦁 BEAST MECHANIC: PREDATOR POUNCE
-    else if (wantJump && state.playerGrounded && !blockMove) {
+      useBattle.getState().triggerScreenShake(1.5);
+    } else if (bufferedJump && canGroundJump) {
       const isSprinting = sprintHeld && Math.abs(vx) > WALK_MAX_SPEED;
       if (isSprinting) {
-         vx *= 1.4; // Boost horizontal speed
-         velY = JUMP_VELOCITY * 0.85; // Low profile pounce
+        vx *= b.pounceHorizontalMult;
+        velY = JUMP_VELOCITY * b.pounceVerticalMult;
       } else {
-         velY = JUMP_VELOCITY;
+        velY = JUMP_VELOCITY;
       }
+      jumpBufferTimerRef.current = 0;
+      coyoteTimerRef.current = 0;
       useAudio.getState().playJump();
     }
 
+    const fastFallHeld = !!(keys["ArrowDown"] || keys["KeyS"]);
+    if (!state.playerGrounded && fastFallHeld && velY < 0) {
+      velY -= b.fastFallAccel * delta;
+      velY = Math.max(b.fastFallMaxSpeed, velY);
+    }
+
     velY += GRAVITY * delta;
+    velY = Math.max(b.terminalVelocity, velY);
     let newY = state.playerY + velY * delta;
     let grounded = false;
 
     if (newY <= GROUND_Y) {
-      if (!state.playerGrounded && Math.abs(velY) > 15) {
-         // 🦁 BEAST MECHANIC: WEIGHTY LANDING
-         useBattle.getState().triggerScreenShake(1.2);
+      if (!state.playerGrounded && Math.abs(velY) > b.landingImpactVelocity) {
+        useBattle.getState().triggerScreenShake(b.landingShakeIntensity);
       }
       newY = GROUND_Y;
       velY = 0;
       grounded = true;
+      coyoteTimerRef.current = b.coyoteTimeSec;
     }
 
-    // 🎯 PLAYER INSTINCT: Snap-face opponent during attack startup or close proximity
+    const dx = vx * delta;
+    const newX = Math.max(b.arenaXMin, Math.min(b.arenaXMax, state.playerX + dx));
+
     const distToOpp = Math.abs(state.opponentX - newX);
-    const shouldSnapFace = state.playerAttacking || distToOpp < 2.5;
+    const shouldSnapFace = state.playerAttacking || distToOpp < b.facingSnapDistance;
     const faceTowardOpponent = shouldSnapFace ? state.opponentX > newX : state.playerFacingRight;
 
     const towardOpp = Math.sign(state.opponentX - state.playerX) || 1;
     const wantDodge =
-      (justPressed("KeyQ") || justPressed("KeyE") || touchAttacks.includes("dodge")) && !blockMove;
+      (justPressed("KeyQ") || justPressed("KeyE") || touchAttacks.includes("dodge")) &&
+      !blockMove;
 
-    // Ground evade. Air dodge remains a separate future mechanic.
     if (wantDodge) {
-      const dir = (keys["KeyE"] ? 1 : keys["KeyQ"] ? -1 : inputX !== 0 ? (Math.sign(inputX) as 1 | -1) : ((-towardOpp) as 1 | -1)) as 1 | -1;
+      const dir = (
+        keys["KeyE"]
+          ? 1
+          : keys["KeyQ"]
+            ? -1
+            : inputX !== 0
+              ? Math.sign(inputX)
+              : -towardOpp
+      ) as 1 | -1;
 
       if (state.startPlayerDodge(dir)) {
         prevKeysRef.current = { ...keys };
