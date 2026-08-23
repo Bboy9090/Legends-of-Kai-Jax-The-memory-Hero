@@ -1,3 +1,10 @@
+import {
+  FIGHTER_COMBAT_PROFILES,
+  getFighterCombatProfile,
+  resolveCombatProfileId,
+  type FighterArchetype,
+} from "../characters/shared/FighterCombatProfile";
+
 export type OpponentArchetype = 'aggressive' | 'defensive' | 'stalker' | 'titan' | 'caster';
 export type AIAction = 'chase' | 'retreat' | 'hold' | 'punish' | 'attack' | 'jump';
 export type AIAttack = 'punch' | 'kick' | 'special';
@@ -40,11 +47,9 @@ const DEFAULT_IDENTITY: Readonly<FighterAIIdentity> = Object.freeze({
 });
 
 const IDENTITY_BY_FIGHTER: Readonly<Record<string, Partial<FighterAIIdentity>>> = Object.freeze({
-  'kai-jax': { archetype: 'aggressive', preferredRange: 2.5, punishBias: 0.8, specialBias: 0.35, heavyBias: 0.45 },
-  jaxon: { archetype: 'stalker', preferredRange: 3.2, moveSpeedMult: 1.22, jumpChance: 0.28, punishBias: 0.72, specialBias: 0.22, heavyBias: 0.28 },
-  jax: { archetype: 'stalker', preferredRange: 3.2, moveSpeedMult: 1.22, jumpChance: 0.28, punishBias: 0.72, specialBias: 0.22, heavyBias: 0.28 },
-  kaison: { archetype: 'defensive', preferredRange: 3.6, retreatRange: 1.5, punishBias: 0.82, specialBias: 0.28, heavyBias: 0.52 },
-  kai: { archetype: 'defensive', preferredRange: 3.6, retreatRange: 1.5, punishBias: 0.82, specialBias: 0.28, heavyBias: 0.52 },
+  'kai-jax': { preferredRange: 2.5, punishBias: 0.8, specialBias: 0.35, heavyBias: 0.45 },
+  jaxon: { preferredRange: 3.2, jumpChance: 0.28, punishBias: 0.72, specialBias: 0.22, heavyBias: 0.28 },
+  kaison: { preferredRange: 3.6, retreatRange: 1.5, punishBias: 0.82, specialBias: 0.28, heavyBias: 0.52 },
   'voltage-fang': { archetype: 'titan', preferredRange: 2.2, attackRange: 2.5, moveSpeedMult: 0.78, jumpChance: 0.01, heavyBias: 0.78, specialBias: 0.12 },
   steelwolf: { archetype: 'titan', preferredRange: 2.4, attackRange: 2.5, moveSpeedMult: 0.8, jumpChance: 0.02, heavyBias: 0.74 },
   'ashen-tiger': { archetype: 'aggressive', preferredRange: 2.4, moveSpeedMult: 1.08, punishBias: 0.7, heavyBias: 0.58 },
@@ -62,6 +67,18 @@ function clamp(value: number, min: number, max: number, fallback: number): numbe
 
 export function clampAIRoll(roll: number): number {
   return clamp(roll, 0, 0.999999999, 0.5);
+}
+
+function toOpponentArchetype(archetype: FighterArchetype): OpponentArchetype {
+  switch (archetype) {
+    case "rushdown": return "stalker";
+    case "punish": return "defensive";
+    case "zoner": return "caster";
+    case "heavy": return "titan";
+    case "hybrid":
+    default:
+      return "aggressive";
+  }
 }
 
 function normalizeIdentity(identity: FighterAIIdentity): FighterAIIdentity {
@@ -85,11 +102,28 @@ function normalizeIdentity(identity: FighterAIIdentity): FighterAIIdentity {
 }
 
 export function getFighterAIIdentity(fighterId: string, fallback?: OpponentArchetype): FighterAIIdentity {
-  const patch = IDENTITY_BY_FIGHTER[fighterId] ?? {};
+  const id = resolveCombatProfileId(fighterId);
+  const patch = IDENTITY_BY_FIGHTER[id] ?? {};
+  const combatProfile = FIGHTER_COMBAT_PROFILES[id] ? getFighterCombatProfile(id) : null;
+  const profileMovement = combatProfile?.movement;
+
   return normalizeIdentity({
     ...DEFAULT_IDENTITY,
     ...patch,
-    archetype: patch.archetype ?? fallback ?? DEFAULT_IDENTITY.archetype,
+    archetype:
+      combatProfile
+        ? toOpponentArchetype(combatProfile.archetype)
+        : patch.archetype ?? fallback ?? DEFAULT_IDENTITY.archetype,
+    moveSpeedMult:
+      patch.moveSpeedMult ??
+      (profileMovement
+        ? (profileMovement.walkSpeedMult + profileMovement.sprintSpeedMult) / 2
+        : DEFAULT_IDENTITY.moveSpeedMult),
+    jumpChance:
+      patch.jumpChance ??
+      (profileMovement
+        ? clamp(0.08 * profileMovement.airControlMult * profileMovement.jumpVelocityMult, 0, 0.45, 0.08)
+        : DEFAULT_IDENTITY.jumpChance),
   });
 }
 
