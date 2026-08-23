@@ -14,6 +14,7 @@ import ParticleManager from "./ParticleManager";
 import CameraEffects from "./CameraEffects";
 import AttackTrails from "./AttackTrails";
 import EffectManager from "./EffectManager";
+import CombatDebugVolumes from "./CombatDebugVolumes";
 import SceneEnvironment from "./graphics/SceneEnvironment";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
 import CinematicPostFX from "./graphics/CinematicPostFX";
@@ -55,8 +56,7 @@ export default function BattleScene() {
         ? 0.25
         : 0);
 
-  const punch =
-    Math.min(1, rawPunch * Math.max(0.45, 1 - chaos * 0.85) * (reduceMotion ? 0.38 : 1)) || 0;
+  const punch = Math.min(1, rawPunch * Math.max(0.45, 1 - chaos * 0.85) * (reduceMotion ? 0.38 : 1)) || 0;
 
   useEffect(() => {
     const delayMs = 400;
@@ -70,7 +70,6 @@ export default function BattleScene() {
   useFrame((_state, rawDelta) => {
     const live = useBattle.getState();
     if (live.battlePhase !== "fighting") return;
-
     const training = useTrainingLab.getState();
     const scale = Number.isFinite(live.timeScale) ? Math.max(0, live.timeScale) : 1;
     const delta = training.enabled && training.simulationPaused ? 0 : Math.max(0, rawDelta) * scale;
@@ -91,6 +90,7 @@ export default function BattleScene() {
       <BattleArena />
       <BattlePlayer />
       <Opponent />
+      <CombatDebugVolumes />
       <PlayerController />
       <OpponentAI />
       <ParticleManager />
