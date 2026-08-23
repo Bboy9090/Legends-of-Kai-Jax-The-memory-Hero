@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildTrainingTelemetry,
+  estimateFrameAdvantage,
   resolveTrainingMove,
   sanitizeInputHistory,
   type TrainingInputEvent,
@@ -18,6 +19,16 @@ describe("training lab telemetry", () => {
     expect(resolveTrainingMove("punch", 0, 0)?.key).toBe("light1");
     expect(resolveTrainingMove("punch", 1, 0)?.key).toBe("light2");
     expect(resolveTrainingMove("punch", 2, 0)?.key).toBe("light3");
+  });
+
+  it("reports positive advantage when defender lockout exceeds attacker recovery", () => {
+    const move = resolveTrainingMove("punch", 0, 0.2);
+    expect(move).not.toBeNull();
+    expect(estimateFrameAdvantage(move, 0.5)).toBeGreaterThan(0);
+  });
+
+  it("returns null advantage without active defender lockout", () => {
+    expect(estimateFrameAdvantage(resolveTrainingMove("kick", 0, 0.1), 0)).toBeNull();
   });
 
   it("sanitizes corrupt numeric telemetry instead of leaking NaN into the HUD", () => {
@@ -47,6 +58,7 @@ describe("training lab telemetry", () => {
     expect(telemetry.staminaRatio).toBe(0);
     expect(telemetry.distance).toBe(3);
     expect(telemetry.velocityX).toBe(0);
+    expect(telemetry.frameAdvantage).toBeNull();
   });
 
   it("caps input history and returns defensive copies", () => {
