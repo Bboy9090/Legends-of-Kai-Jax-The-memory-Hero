@@ -10,11 +10,15 @@ import {
   MOVES,
   type AttackType,
   type MoveData,
+  type MoveKey,
 } from "./moveData";
 import { getClashPriority } from "./guardAndClash";
 
 export type ClashOutcome = "tie" | "initiator_wins" | "other_wins";
-export type MoveKey = keyof typeof MOVES;
+export interface LaunchVector {
+  x: number;
+  y: number;
+}
 
 const MAX_LIGHT_CHAIN_STEP = 2;
 
@@ -47,8 +51,7 @@ export function getMoveKeyForPlayerAttack(
   if (attackType === "punch") {
     return `light${normalizeComboStep(comboStep) + 1}` as MoveKey;
   }
-  const key = ATTACK_TYPE_TO_MOVE[attackType];
-  return key && key in MOVES ? (key as MoveKey) : null;
+  return ATTACK_TYPE_TO_MOVE[attackType] ?? null;
 }
 
 export function getMoveForAttack(
@@ -67,10 +70,30 @@ export function hitStopSecondsForMove(move: MoveData): number {
   return Math.max(0, move.hitStopFrames) * FRAME_TIME;
 }
 
+export function hitstunSecondsForMove(move: MoveData): number {
+  return Math.max(0, move.hitstunFrames) * FRAME_TIME;
+}
+
+export function blockstunSecondsForMove(move: MoveData): number {
+  return Math.max(0, move.blockstunFrames) * FRAME_TIME;
+}
+
 /** Total authored move time in seconds at the canonical simulation rate. */
 export function totalMoveSeconds(move: MoveData): number {
   const frames = Math.max(0, move.startup) + Math.max(0, move.active) + Math.max(0, move.recovery);
   return frames * FRAME_TIME;
+}
+
+/** Convert authored knockback + angle into a facing-aware normalized launch vector. */
+export function launchVectorForMove(move: MoveData, facingRight = true): LaunchVector {
+  const magnitude = Math.max(0, finiteNumber(move.knockback));
+  const angleDeg = Math.max(-89, Math.min(89, finiteNumber(move.launchAngleDeg)));
+  const radians = (angleDeg * Math.PI) / 180;
+  const direction = facingRight ? 1 : -1;
+  return {
+    x: Math.cos(radians) * magnitude * direction,
+    y: Math.sin(radians) * magnitude,
+  };
 }
 
 /** True when an attack is allowed to spend stamina without underflow. */
