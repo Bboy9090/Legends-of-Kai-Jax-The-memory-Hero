@@ -5,6 +5,7 @@ import { useDifficulty, type Difficulty } from "../../lib/stores/useDifficulty";
 import { useTrainingLab } from "../../lib/stores/useTrainingLab";
 import { BEHAVIOR_PROFILES, type AIBehaviorDifficulty } from "../../lib/enemyAIv2";
 import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
+import { resolveTrainingStep } from "../../game/combat/trainingStep";
 import {
   chooseAttack,
   choosePositionAction,
@@ -35,6 +36,7 @@ export default function OpponentAI() {
   const rngRef = useRef<AIRandom>(() => 0.5);
   const playbackNonceRef = useRef(-1);
   const playbackElapsedRef = useRef(-Number.EPSILON);
+  const lastConsumedStepEpochRef = useRef(0);
   const difficulty = useDifficulty((s) => s.difficulty);
 
   useFrame((_, rawDelta) => {
@@ -43,10 +45,18 @@ export default function OpponentAI() {
     if (state.hitStop > 0) return;
 
     const training = useTrainingLab.getState();
-    if (training.enabled && training.simulationPaused) return;
+    const step = resolveTrainingStep({
+      rawDelta,
+      timeScale: state.timeScale,
+      simulationPaused: training.enabled && training.simulationPaused,
+      stepEpoch: training.stepEpoch,
+      lastConsumedStepEpoch: lastConsumedStepEpochRef.current,
+    });
+    lastConsumedStepEpochRef.current = step.consumedStepEpoch;
+    const delta = step.delta;
+    if (delta <= 0) return;
     if (state.opponentStaggerTimer > 0 || state.opponentHitStunTimer > 0) return;
 
-    const delta = Math.max(0, rawDelta * state.timeScale);
     const identity = getFighterAIIdentity(state.opponentFighterId, state.opponentPersonality);
     const p = identity.archetype;
     const aiDiff = toAIDifficulty(difficulty);
