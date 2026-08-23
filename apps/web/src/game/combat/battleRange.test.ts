@@ -46,16 +46,16 @@ describe("battle attack range", () => {
     expect(getBattleAttackRange("jaxon", "punch", { contactPadding: -10 })).toBe(2.2);
   });
 
-  it("sanitizes invalid coordinates instead of producing unstable contact", () => {
+  it("fails closed on invalid coordinates", () => {
     expect(isWithinBattleAttackRange({
       attackerX: Number.NaN,
       defenderX: 2.2,
       fighterId: "jaxon",
       attackType: "punch",
-    })).toBe(true);
+    })).toBe(false);
     expect(isWithinBattleAttackRange({
       attackerX: Number.POSITIVE_INFINITY,
-      defenderX: 99,
+      defenderX: 0,
       fighterId: "jaxon",
       attackType: "punch",
     })).toBe(false);
