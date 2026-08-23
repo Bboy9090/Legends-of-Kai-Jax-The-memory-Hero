@@ -24,7 +24,13 @@
     "wallKickVerticalMult": 0.9,
     "pounceHorizontalMult": 1.4,
     "pounceVerticalMult": 0.85,
-    "facingSnapDistance": 2.5
+    "facingSnapDistance": 2.5,
+    "aiBaseMoveSpeed": 3.5,
+    "aiWallMargin": 0.2,
+    "aiRetreatSpeedMult": 0.9,
+    "aiStalkerJumpMult": 1.35,
+    "aiStalkerWallKickVerticalMult": 1.15,
+    "aiStalkerWallKickPush": 0.55
   },
   "adventure": {
     "walkSpeed": 12,
