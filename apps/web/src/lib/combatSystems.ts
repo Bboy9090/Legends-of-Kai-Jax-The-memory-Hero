@@ -69,6 +69,27 @@ export {
   totalMoveSeconds,
 } from "../game/combat/AttackResolver";
 
+/** Combat-design doctrine: counter hits, juggle budgets, defensive escape, stage impacts. */
+export type {
+  CounterHitContext,
+  CounterHitResult,
+  DefensiveEscapeInput,
+  DefensiveEscapeResult,
+  HitOutcome,
+  JuggleResult,
+  JuggleState,
+  StageImpactInput,
+  StageImpactKind,
+  StageImpactResult,
+} from "../game/combat/combatDoctrine";
+export {
+  COMBAT_DOCTRINE_LIMITS,
+  resolveCounterHit,
+  resolveDefensiveEscape,
+  resolveJuggleHit,
+  resolveStageImpact,
+} from "../game/combat/combatDoctrine";
+
 export type { EnemyTierConfig, EnemyTierId } from "../game/tuning/enemyTuning";
 export { ENEMY_TIERS, ENEMY_TUNING } from "../game/tuning/enemyTuning";
 
