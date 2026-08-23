@@ -1,7 +1,12 @@
 /**
- * KJ-007B - KJ-007F: Complete Mission 1 Enemy Roster & AI Implementation
- * Preserves Memory Wisp and adds Rift Drone, Corruption Brute, Void Stalker, Void Stalker Prime, and Encounter Director.
+ * Mission 1 enemy runtime state machine.
+ *
+ * Deterministic, side-effect-contained enemy simulation for Memory Wisp, Rift Drone,
+ * Corruption Brute, Void Stalker, and Void Stalker Prime. Runtime snapshots are deep
+ * copies so rendering/debug tooling cannot accidentally mutate simulation state.
  */
+
+import { createAIRng, type AIRandom } from './aiIdentity';
 
 export type EnemyAIState =
   | 'IDLE'
@@ -82,146 +87,155 @@ export interface EnemyDamageResult {
   nextState: EnemyAIState;
 }
 
-/**
- * Deterministic AI State Machine supporting all Mission 1 enemy archetypes.
- */
+const DETECTION_CONFIRM_MS = 300;
+const TELEPORT_RECOVERY_MS = 200;
+const ATTACK_ACTIVE_MS = 200;
+const BOSS_PHASE_TRANSITION_MS = 1000;
+const BOSS_PHASE_TWO_HEALTH_RATIO = 0.6;
+const BOSS_ANTI_STUN_MS = 2000;
+const RIFT_DRONE_RETREAT_DISTANCE = 4;
+const ARMOR_DAMAGE_MULTIPLIER = 0.3;
+const STAGGER_DAMAGE_THRESHOLD = 10;
+const PROJECTILE_SPEED = 8;
+const PROJECTILE_LIFETIME_MS = 3000;
+const PROJECTILE_OWNER_GRACE_MS = 100;
+const PROJECTILE_OWNER_RADIUS = 1;
+const PROJECTILE_PLAYER_RADIUS = 1.2;
+const TELEPORT_DISTANCE = 2;
+const EPSILON = 0.001;
+
+function clonePosition(position: Position3D): Position3D {
+  return { x: position.x, y: position.y, z: position.z };
+}
+
+function cloneProjectile(projectile: Projectile): Projectile {
+  return {
+    ...projectile,
+    position: clonePosition(projectile.position),
+    velocity: clonePosition(projectile.velocity),
+  };
+}
+
+function safeDeltaMs(deltaMs: number): number {
+  return Number.isFinite(deltaMs) ? Math.max(0, deltaMs) : 0;
+}
+
+function safeDamage(damage: number): number {
+  return Number.isFinite(damage) ? Math.max(0, damage) : 0;
+}
+
+function isFinitePosition(position: Position3D): boolean {
+  return Number.isFinite(position.x) && Number.isFinite(position.y) && Number.isFinite(position.z);
+}
+
+/** Deterministic AI state machine supporting all Mission 1 enemy archetypes. */
 export class EnemyStateMachine {
   private enemy: EnemyContract;
+  private readonly random: AIRandom;
+  private projectileSerial = 0;
 
   constructor(enemy: EnemyContract) {
     this.enemy = {
       ...enemy,
-      position: { ...enemy.position },
+      position: clonePosition(enemy.position),
       stats: { ...enemy.stats },
-      activeProjectiles: enemy.activeProjectiles ? enemy.activeProjectiles.map(p => ({ ...p })) : [],
+      activeProjectiles: (enemy.activeProjectiles ?? []).map(cloneProjectile),
     };
+    this.random = createAIRng(`mission1:${enemy.id}:${enemy.type}`);
   }
 
+  /** Deep snapshot: consumers cannot mutate authoritative runtime state. */
   public getEntity(): EnemyContract {
     return {
       ...this.enemy,
-      activeProjectiles: this.enemy.activeProjectiles.filter((p) => p.active),
+      position: clonePosition(this.enemy.position),
+      stats: { ...this.enemy.stats },
+      activeProjectiles: this.enemy.activeProjectiles
+        .filter((projectile) => projectile.active)
+        .map(cloneProjectile),
     };
   }
 
-  public update(deltaMs: number, playerPosition: Position3D, isPlayerDodging: boolean = false): EnemyAIState {
+  public update(deltaMs: number, playerPosition: Position3D, isPlayerDodging = false): EnemyAIState {
     if (this.enemy.isDead) {
       this.enemy.currentState = 'DEATH';
       return 'DEATH';
     }
+    if (!isFinitePosition(playerPosition)) return this.enemy.currentState;
 
-    // Cooldown updates
-    if (this.enemy.teleportTimerMs > 0) {
-      this.enemy.teleportTimerMs = Math.max(0, this.enemy.teleportTimerMs - deltaMs);
-    }
-    if (this.enemy.antiStunlockTimerMs > 0) {
-      this.enemy.antiStunlockTimerMs = Math.max(0, this.enemy.antiStunlockTimerMs - deltaMs);
-    }
+    const dt = safeDeltaMs(deltaMs);
 
-    // Update active projectiles
-    this.updateProjectiles(deltaMs, playerPosition, isPlayerDodging);
+    this.enemy.teleportTimerMs = Math.max(0, this.enemy.teleportTimerMs - dt);
+    this.enemy.antiStunlockTimerMs = Math.max(0, this.enemy.antiStunlockTimerMs - dt);
+
+    this.updateProjectiles(dt, playerPosition, isPlayerDodging);
 
     const distToPlayer = this.calculateDistance(this.enemy.position, playerPosition);
 
-    // Boss Phase 2 Transition Check (Void Stalker Prime at <= 60% Health)
     if (
       this.enemy.type === 'VOID_STALKER_PRIME' &&
       this.enemy.bossPhase === 1 &&
-      this.enemy.stats.currentHealth <= this.enemy.stats.maxHealth * 0.6
+      this.enemy.stats.currentHealth <= this.enemy.stats.maxHealth * BOSS_PHASE_TWO_HEALTH_RATIO
     ) {
       this.enemy.bossPhase = 2;
-      this.enemy.antiStunlockTimerMs = 2000; // 2s stunlock protection
-      this.enemy.activeProjectiles = []; // Clear hitboxes
+      this.enemy.antiStunlockTimerMs = BOSS_ANTI_STUN_MS;
+      this.enemy.activeProjectiles = [];
       this.transitionTo('PHASE_TRANSITION');
       return 'PHASE_TRANSITION';
     }
 
     switch (this.enemy.currentState) {
       case 'IDLE':
-        if (distToPlayer <= this.enemy.stats.detectionRadius) {
-          this.transitionTo('DETECTION');
-        }
+        if (distToPlayer <= this.enemy.stats.detectionRadius) this.transitionTo('DETECTION');
         break;
 
       case 'DETECTION':
-        this.enemy.stateTimerMs += deltaMs;
-        if (this.enemy.stateTimerMs >= 300) {
-          this.transitionTo('APPROACH');
-        }
+        this.enemy.stateTimerMs += dt;
+        if (this.enemy.stateTimerMs >= DETECTION_CONFIRM_MS) this.transitionTo('APPROACH');
         break;
 
       case 'APPROACH':
-        if (this.enemy.type === 'RIFT_DRONE') {
-          if (distToPlayer < 4.0) {
-            this.transitionTo('RETREAT');
-          } else if (distToPlayer <= this.enemy.stats.preferredDistance) {
-            this.transitionTo('TELEGRAPH');
-          } else {
-            this.moveTowards(playerPosition, (this.enemy.stats.moveSpeed * deltaMs) / 1000);
-          }
-        } else if (this.enemy.type === 'VOID_STALKER' || this.enemy.type === 'VOID_STALKER_PRIME') {
-          if (this.enemy.teleportTimerMs === 0) {
-            this.teleportNearPlayer(playerPosition);
-            this.transitionTo('TELEPORT');
-          } else if (distToPlayer <= this.enemy.stats.attackRange) {
-            this.transitionTo('TELEGRAPH');
-          } else {
-            this.moveTowards(playerPosition, (this.enemy.stats.moveSpeed * deltaMs) / 1000);
-          }
-        } else {
-          // Standard / Brute / Wisp
-          if (distToPlayer <= this.enemy.stats.attackRange) {
-            this.transitionTo('TELEGRAPH');
-          } else if (distToPlayer > this.enemy.stats.detectionRadius) {
-            this.transitionTo('IDLE');
-          } else {
-            this.moveTowards(playerPosition, (this.enemy.stats.moveSpeed * deltaMs) / 1000);
-          }
-        }
+        this.updateApproach(dt, playerPosition, distToPlayer);
         break;
 
       case 'RETREAT':
         if (distToPlayer >= this.enemy.stats.preferredDistance) {
           this.transitionTo('TELEGRAPH');
         } else {
-          this.moveAwayFrom(playerPosition, (this.enemy.stats.moveSpeed * deltaMs) / 1000);
+          this.moveAwayFrom(playerPosition, (this.enemy.stats.moveSpeed * dt) / 1000);
         }
         break;
 
       case 'TELEPORT':
-        this.enemy.stateTimerMs += deltaMs;
-        if (this.enemy.stateTimerMs >= 200) {
+        this.enemy.stateTimerMs += dt;
+        if (this.enemy.stateTimerMs >= TELEPORT_RECOVERY_MS) {
           this.enemy.teleportTimerMs = this.enemy.stats.teleportCooldownMs;
           this.transitionTo('TELEGRAPH');
         }
         break;
 
       case 'TELEGRAPH':
-        this.enemy.stateTimerMs += deltaMs;
+        this.enemy.stateTimerMs += dt;
         if (this.enemy.stateTimerMs >= this.enemy.stats.telegraphDurationMs) {
           this.transitionTo('ATTACK');
-          if (this.enemy.type === 'RIFT_DRONE') {
-            this.spawnProjectile(playerPosition);
-          }
+          if (this.enemy.type === 'RIFT_DRONE') this.spawnProjectile(playerPosition);
         }
         break;
 
       case 'ATTACK':
-        this.enemy.stateTimerMs += deltaMs;
-        if (this.enemy.stateTimerMs >= 200) {
-          this.transitionTo('RECOVERY');
-        }
+        this.enemy.stateTimerMs += dt;
+        if (this.enemy.stateTimerMs >= ATTACK_ACTIVE_MS) this.transitionTo('RECOVERY');
         break;
 
       case 'RECOVERY':
-        this.enemy.stateTimerMs += deltaMs;
+        this.enemy.stateTimerMs += dt;
         if (this.enemy.stateTimerMs >= this.enemy.stats.recoveryDurationMs) {
           this.transitionTo(distToPlayer <= this.enemy.stats.attackRange ? 'TELEGRAPH' : 'APPROACH');
         }
         break;
 
       case 'STAGGER':
-        this.enemy.stateTimerMs += deltaMs;
+        this.enemy.stateTimerMs += dt;
         if (this.enemy.stateTimerMs >= this.enemy.stats.staggerDurationMs) {
           this.enemy.isStaggered = false;
           this.transitionTo('APPROACH');
@@ -229,10 +243,8 @@ export class EnemyStateMachine {
         break;
 
       case 'PHASE_TRANSITION':
-        this.enemy.stateTimerMs += deltaMs;
-        if (this.enemy.stateTimerMs >= 1000) {
-          this.transitionTo('APPROACH');
-        }
+        this.enemy.stateTimerMs += dt;
+        if (this.enemy.stateTimerMs >= BOSS_PHASE_TRANSITION_MS) this.transitionTo('APPROACH');
         break;
 
       case 'DEATH':
@@ -243,7 +255,7 @@ export class EnemyStateMachine {
     return this.enemy.currentState;
   }
 
-  public applySingleHitDamage(damage: number, isHeavyAttack: boolean = false): EnemyDamageResult {
+  public applySingleHitDamage(damage: number, isHeavyAttack = false): EnemyDamageResult {
     if (this.enemy.isDead) {
       return {
         damageDealt: 0,
@@ -255,17 +267,16 @@ export class EnemyStateMachine {
       };
     }
 
-    let actualDamage = Math.max(0, damage);
+    let actualDamage = safeDamage(damage);
     let triggeredArmorBreak = false;
 
-    // Armor mechanic for Corruption Brute
     if (this.enemy.stats.armor > 0) {
       if (isHeavyAttack) {
         this.enemy.stats.armor = 0;
         this.enemy.isArmorBroken = true;
         triggeredArmorBreak = true;
       } else {
-        actualDamage = Math.floor(actualDamage * 0.3); // 70% damage reduction on armor
+        actualDamage = Math.floor(actualDamage * ARMOR_DAMAGE_MULTIPLIER);
       }
     }
 
@@ -273,10 +284,14 @@ export class EnemyStateMachine {
 
     const triggeredDeath = this.enemy.stats.currentHealth === 0;
     const canStagger = this.enemy.antiStunlockTimerMs === 0;
-    const triggeredStagger = !triggeredDeath && canStagger && (triggeredArmorBreak || actualDamage >= 10);
+    const triggeredStagger =
+      !triggeredDeath &&
+      canStagger &&
+      (triggeredArmorBreak || actualDamage >= STAGGER_DAMAGE_THRESHOLD);
 
     if (triggeredDeath) {
       this.enemy.isDead = true;
+      this.enemy.isStaggered = false;
       this.enemy.activeProjectiles = [];
       this.transitionTo('DEATH');
     } else if (triggeredStagger) {
@@ -298,102 +313,120 @@ export class EnemyStateMachine {
     this.enemy.activeProjectiles = [];
   }
 
-  private spawnProjectile(targetPosition: Position3D) {
+  private updateApproach(deltaMs: number, playerPosition: Position3D, distToPlayer: number): void {
+    if (this.enemy.type === 'RIFT_DRONE') {
+      if (distToPlayer < RIFT_DRONE_RETREAT_DISTANCE) {
+        this.transitionTo('RETREAT');
+      } else if (distToPlayer <= this.enemy.stats.preferredDistance) {
+        this.transitionTo('TELEGRAPH');
+      } else {
+        this.moveTowards(playerPosition, (this.enemy.stats.moveSpeed * deltaMs) / 1000);
+      }
+      return;
+    }
+
+    if (this.enemy.type === 'VOID_STALKER' || this.enemy.type === 'VOID_STALKER_PRIME') {
+      if (this.enemy.teleportTimerMs === 0) {
+        this.teleportNearPlayer(playerPosition);
+        this.transitionTo('TELEPORT');
+      } else if (distToPlayer <= this.enemy.stats.attackRange) {
+        this.transitionTo('TELEGRAPH');
+      } else {
+        this.moveTowards(playerPosition, (this.enemy.stats.moveSpeed * deltaMs) / 1000);
+      }
+      return;
+    }
+
+    if (distToPlayer <= this.enemy.stats.attackRange) {
+      this.transitionTo('TELEGRAPH');
+    } else if (distToPlayer > this.enemy.stats.detectionRadius) {
+      this.transitionTo('IDLE');
+    } else {
+      this.moveTowards(playerPosition, (this.enemy.stats.moveSpeed * deltaMs) / 1000);
+    }
+  }
+
+  private spawnProjectile(targetPosition: Position3D): void {
     const dx = targetPosition.x - this.enemy.position.x;
     const dz = targetPosition.z - this.enemy.position.z;
-    const len = Math.max(0.001, Math.sqrt(dx * dx + dz * dz));
+    const len = Math.max(EPSILON, Math.hypot(dx, dz));
 
-    const speed = 8.0;
-    const proj: Projectile = {
-      id: `proj-${Date.now()}-${Math.random()}`,
+    this.projectileSerial += 1;
+    const projectile: Projectile = {
+      id: `${this.enemy.id}-projectile-${this.projectileSerial}`,
       ownerId: this.enemy.id,
-      position: { ...this.enemy.position },
-      velocity: { x: (dx / len) * speed, y: 0, z: (dz / len) * speed },
+      position: clonePosition(this.enemy.position),
+      velocity: { x: (dx / len) * PROJECTILE_SPEED, y: 0, z: (dz / len) * PROJECTILE_SPEED },
       damage: this.enemy.stats.attackPower,
       lifetimeMs: 0,
-      maxLifetimeMs: 3000,
+      maxLifetimeMs: PROJECTILE_LIFETIME_MS,
       active: true,
     };
 
-    this.enemy.activeProjectiles.push(proj);
+    this.enemy.activeProjectiles.push(projectile);
   }
 
-  private updateProjectiles(deltaMs: number, playerPosition: Position3D, isPlayerDodging: boolean) {
-    this.enemy.activeProjectiles.forEach((p) => {
-      if (!p.active) return;
-      p.lifetimeMs += deltaMs;
+  private updateProjectiles(deltaMs: number, playerPosition: Position3D, isPlayerDodging: boolean): void {
+    for (const projectile of this.enemy.activeProjectiles) {
+      if (!projectile.active) continue;
+      projectile.lifetimeMs += deltaMs;
 
-      if (p.lifetimeMs >= p.maxLifetimeMs) {
-        p.active = false;
-        return;
+      if (projectile.lifetimeMs >= projectile.maxLifetimeMs) {
+        projectile.active = false;
+        continue;
       }
 
-      // Move projectile
       const dt = deltaMs / 1000;
-      p.position.x += p.velocity.x * dt;
-      p.position.z += p.velocity.z * dt;
+      projectile.position.x += projectile.velocity.x * dt;
+      projectile.position.z += projectile.velocity.z * dt;
 
-      // Cannot hit owner
-      const distToOwner = this.calculateDistance(p.position, this.enemy.position);
-      if (p.lifetimeMs < 100 && distToOwner < 1.0) {
-        return;
+      const distToOwner = this.calculateDistance(projectile.position, this.enemy.position);
+      if (
+        projectile.lifetimeMs < PROJECTILE_OWNER_GRACE_MS &&
+        distToOwner < PROJECTILE_OWNER_RADIUS
+      ) continue;
+
+      const distToPlayer = this.calculateDistance(projectile.position, playerPosition);
+      if (distToPlayer < PROJECTILE_PLAYER_RADIUS && !isPlayerDodging) {
+        projectile.active = false;
       }
+    }
 
-      // Hit player check
-      const distToPlayer = this.calculateDistance(p.position, playerPosition);
-      if (distToPlayer < 1.2) {
-        if (!isPlayerDodging) {
-          p.active = false; // Single hit, expires
-        }
-      }
-    });
-
-    this.enemy.activeProjectiles = this.enemy.activeProjectiles.filter((p) => p.active);
+    this.enemy.activeProjectiles = this.enemy.activeProjectiles.filter((projectile) => projectile.active);
   }
 
-  private teleportNearPlayer(playerPosition: Position3D) {
-    const angle = Math.random() * Math.PI * 2;
-    const distance = 2.0; // Guaranteed safe distance, never inside player
-    this.enemy.position.x = playerPosition.x + Math.cos(angle) * distance;
-    this.enemy.position.z = playerPosition.z + Math.sin(angle) * distance;
+  private teleportNearPlayer(playerPosition: Position3D): void {
+    const angle = this.random() * Math.PI * 2;
+    this.enemy.position.x = playerPosition.x + Math.cos(angle) * TELEPORT_DISTANCE;
+    this.enemy.position.z = playerPosition.z + Math.sin(angle) * TELEPORT_DISTANCE;
   }
 
-  private transitionTo(newState: EnemyAIState) {
+  private transitionTo(newState: EnemyAIState): void {
     this.enemy.currentState = newState;
     this.enemy.stateTimerMs = 0;
   }
 
-  private moveTowards(target: Position3D, distance: number) {
-    const dx = target.x - this.enemy.position.x;
-    const dz = target.z - this.enemy.position.z;
-    const len = Math.sqrt(dx * dx + dz * dz);
-
-    if (len > 0.001) {
-      this.enemy.position.x += (dx / len) * distance;
-      this.enemy.position.z += (dz / len) * distance;
-    }
+  private moveTowards(target: Position3D, distance: number): void {
+    this.moveAlongVector(target.x - this.enemy.position.x, target.z - this.enemy.position.z, distance);
   }
 
-  private moveAwayFrom(target: Position3D, distance: number) {
-    const dx = this.enemy.position.x - target.x;
-    const dz = this.enemy.position.z - target.z;
-    const len = Math.sqrt(dx * dx + dz * dz);
+  private moveAwayFrom(target: Position3D, distance: number): void {
+    this.moveAlongVector(this.enemy.position.x - target.x, this.enemy.position.z - target.z, distance);
+  }
 
-    if (len > 0.001) {
-      this.enemy.position.x += (dx / len) * distance;
-      this.enemy.position.z += (dz / len) * distance;
-    }
+  private moveAlongVector(dx: number, dz: number, distance: number): void {
+    const len = Math.hypot(dx, dz);
+    const travel = Number.isFinite(distance) ? Math.max(0, distance) : 0;
+    if (len <= EPSILON || travel <= 0) return;
+    this.enemy.position.x += (dx / len) * travel;
+    this.enemy.position.z += (dz / len) * travel;
   }
 
   private calculateDistance(a: Position3D, b: Position3D): number {
-    const dx = a.x - b.x;
-    const dy = a.y - b.y;
-    const dz = a.z - b.z;
-    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
   }
 }
 
-// Factories
 export function createMemoryWisp(id: string, initialPosition: Position3D): EnemyContract {
   return {
     id,
