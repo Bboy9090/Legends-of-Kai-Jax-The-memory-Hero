@@ -4,6 +4,7 @@ import { useBattle } from "../../lib/stores/useBattle";
 import { useAudio } from "../../lib/stores/useAudio";
 import { useTouchInput } from "../../lib/stores/useTouchInput";
 import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
+import { getResolvedMovementTuning } from "../../game/characters/shared/FighterCombatProfile";
 import type { AttackType } from "../../game/combat/moveData";
 import {
   queueBufferedAttack,
@@ -13,14 +14,7 @@ import {
 import { moveTowards } from "../../game/movement/movementMath";
 
 const b = MOVEMENT_TUNING.battle;
-const GRAVITY = b.gravity;
 const GROUND_Y = b.groundY;
-const JUMP_VELOCITY = b.jumpVelocity;
-const WALK_MAX_SPEED = b.walkMaxSpeed;
-const SPRINT_MAX_SPEED = b.sprintMaxSpeed;
-const ACCEL = b.accel;
-const DECEL = b.decel;
-const AIR_CONTROL_MULT = b.airControlMult;
 
 function clampUnitAxis(x: number): number {
   if (!Number.isFinite(x)) return 0;
@@ -56,6 +50,15 @@ export default function PlayerController() {
     if (state.battlePhase !== "fighting" && state.battlePhase !== "transforming") return;
     if (state.hitStop > 0) return;
 
+    const movement = getResolvedMovementTuning(state.playerFighterId);
+    const gravity = movement.gravity;
+    const jumpVelocity = movement.jumpVelocity;
+    const walkMaxSpeed = movement.walkMaxSpeed;
+    const sprintMaxSpeed = movement.sprintMaxSpeed;
+    const accel = movement.accel;
+    const decel = movement.decel;
+    const airControlMult = movement.airControlMult;
+
     const delta = Math.max(0, rawDelta * state.timeScale);
     const keys = keysRef.current;
     const prev = prevKeysRef.current;
@@ -63,7 +66,7 @@ export default function PlayerController() {
     const blockHeld = !!(keys["AltLeft"] || keys["AltRight"]);
     useBattle.getState().setPlayerBlockHeld(blockHeld);
 
-    if (state.playerGrounded) coyoteTimerRef.current = b.coyoteTimeSec;
+    if (state.playerGrounded) coyoteTimerRef.current = movement.coyoteTimeSec;
     else coyoteTimerRef.current = Math.max(0, coyoteTimerRef.current - delta);
     jumpBufferTimerRef.current = Math.max(0, jumpBufferTimerRef.current - delta);
 
@@ -99,7 +102,7 @@ export default function PlayerController() {
       justPressed("ArrowUp") ||
       justPressed("KeyW") ||
       touchAttacks.includes("jump");
-    if (jumpPressed) jumpBufferTimerRef.current = b.jumpBufferSec;
+    if (jumpPressed) jumpBufferTimerRef.current = movement.jumpBufferSec;
 
     if (state.playerDodgeTimer > 0) {
       prevKeysRef.current = { ...keys };
@@ -107,7 +110,7 @@ export default function PlayerController() {
     }
 
     if (state.guardBreakTimer > 0 || state.playerHitStunTimer > 0) {
-      let velY = state.playerVelocityY + GRAVITY * delta;
+      let velY = state.playerVelocityY + gravity * delta;
       velY = Math.max(b.terminalVelocity, velY);
       let newY = state.playerY + velY * delta;
       let grounded = false;
@@ -135,8 +138,8 @@ export default function PlayerController() {
 
     const sprintHeld = !!(keys["ShiftLeft"] || keys["ShiftRight"]);
     const maxSpeed =
-      (sprintHeld ? SPRINT_MAX_SPEED : WALK_MAX_SPEED) *
-      (state.playerGrounded ? 1 : AIR_CONTROL_MULT);
+      (sprintHeld ? sprintMaxSpeed : walkMaxSpeed) *
+      (state.playerGrounded ? 1 : airControlMult);
 
     const blockMove = blockHeld && state.playerGrounded && !state.playerAttacking;
 
@@ -145,7 +148,7 @@ export default function PlayerController() {
     if (blockMove) targetVx *= b.blockMoveSpeedMult;
 
     let vx = state.playerVelocityX;
-    const rate = state.playerAttacking ? b.attackDecel : targetVx === 0 ? DECEL : ACCEL;
+    const rate = state.playerAttacking ? b.attackDecel : targetVx === 0 ? decel : accel;
     vx = moveTowards(vx, targetVx, rate * delta);
 
     const isAtLeftWall = state.playerX <= b.arenaXMin + 0.1;
@@ -155,22 +158,21 @@ export default function PlayerController() {
     const bufferedJump = jumpBufferTimerRef.current > 0;
     const canGroundJump = coyoteTimerRef.current > 0 && !blockMove;
 
-    // Wall kick consumes the buffered jump before the normal jump path.
     if (bufferedJump && !state.playerGrounded && (isAtLeftWall || isAtRightWall)) {
       const kickDir = isAtLeftWall ? 1 : -1;
-      vx = kickDir * SPRINT_MAX_SPEED * b.wallKickHorizontalMult;
-      velY = JUMP_VELOCITY * b.wallKickVerticalMult;
+      vx = kickDir * sprintMaxSpeed * movement.wallKickHorizontalMult;
+      velY = jumpVelocity * movement.wallKickVerticalMult;
       jumpBufferTimerRef.current = 0;
       coyoteTimerRef.current = 0;
       useAudio.getState().playJump();
       useBattle.getState().triggerScreenShake(1.5);
     } else if (bufferedJump && canGroundJump) {
-      const isSprinting = sprintHeld && Math.abs(vx) > WALK_MAX_SPEED;
+      const isSprinting = sprintHeld && Math.abs(vx) > walkMaxSpeed;
       if (isSprinting) {
-        vx *= b.pounceHorizontalMult;
-        velY = JUMP_VELOCITY * b.pounceVerticalMult;
+        vx *= movement.pounceHorizontalMult;
+        velY = jumpVelocity * movement.pounceVerticalMult;
       } else {
-        velY = JUMP_VELOCITY;
+        velY = jumpVelocity;
       }
       jumpBufferTimerRef.current = 0;
       coyoteTimerRef.current = 0;
@@ -179,11 +181,11 @@ export default function PlayerController() {
 
     const fastFallHeld = !!(keys["ArrowDown"] || keys["KeyS"]);
     if (!state.playerGrounded && fastFallHeld && velY < 0) {
-      velY -= b.fastFallAccel * delta;
+      velY -= movement.fastFallAccel * delta;
       velY = Math.max(b.fastFallMaxSpeed, velY);
     }
 
-    velY += GRAVITY * delta;
+    velY += gravity * delta;
     velY = Math.max(b.terminalVelocity, velY);
     let newY = state.playerY + velY * delta;
     let grounded = false;
@@ -195,7 +197,7 @@ export default function PlayerController() {
       newY = GROUND_Y;
       velY = 0;
       grounded = true;
-      coyoteTimerRef.current = b.coyoteTimeSec;
+      coyoteTimerRef.current = movement.coyoteTimeSec;
     }
 
     const dx = vx * delta;
