@@ -6,6 +6,10 @@ import {
   sanitizeInputHistory,
   type TrainingInputEvent,
 } from "../../game/combat/trainingLab";
+import {
+  getRecordingDuration,
+  mapKeyCodeToDummyAction,
+} from "../../game/combat/trainingRecording";
 
 const MAX_INPUT_HISTORY = 12;
 const FRAME_SEC = 1 / 60;
@@ -30,13 +34,18 @@ export default function TrainingLabOverlay({ visible }: { visible: boolean }) {
     if (!visible) return;
     const record = (pressed: boolean) => (event: KeyboardEvent) => {
       if (event.repeat && pressed) return;
+      const nowMs = performance.now();
       const entry: TrainingInputEvent = {
         id: ++sequenceRef.current,
         code: event.code,
         pressed,
-        atMs: performance.now(),
+        atMs: nowMs,
       };
       setInputHistory((history) => sanitizeInputHistory([...history, entry], MAX_INPUT_HISTORY));
+      if (pressed) {
+        const action = mapKeyCodeToDummyAction(event.code);
+        if (action) useTrainingLab.getState().recordAction(action, nowMs);
+      }
     };
     const onDown = record(true);
     const onUp = record(false);
@@ -71,6 +80,7 @@ export default function TrainingLabOverlay({ visible }: { visible: boolean }) {
   );
 
   if (!visible) return null;
+  const recordingDuration = getRecordingDuration(training.recordedActions);
 
   return (
     <aside
@@ -88,6 +98,7 @@ export default function TrainingLabOverlay({ visible }: { visible: boolean }) {
           onClick={() => {
             battle.resetRound();
             training.setSimulationPaused(false);
+            training.stopPlayback();
             setInputHistory([]);
           }}
         >
@@ -119,12 +130,47 @@ export default function TrainingLabOverlay({ visible }: { visible: boolean }) {
           <label htmlFor="training-dummy" className="text-[10px] uppercase tracking-wider text-slate-400">Dummy</label>
           <select
             id="training-dummy"
-            value={training.dummyBehavior}
+            value={training.dummyBehavior === "playback" ? "idle" : training.dummyBehavior}
             onChange={(event) => training.setDummyBehavior(event.target.value as DummyBehavior)}
             className="rounded border border-white/15 bg-slate-900 px-2 py-1 text-[11px] text-slate-200"
           >
             {DUMMY_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
           </select>
+        </div>
+      </section>
+
+      <section className="mb-3 rounded-lg border border-violet-400/15 bg-violet-400/5 p-2">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-300">Dummy recording</div>
+          <div className="font-mono text-[10px] text-slate-400">{training.recordedActions.length} actions · {recordingDuration.toFixed(2)}s</div>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            className={`rounded border px-2 py-1 text-[10px] ${training.recording ? "border-red-400/50 bg-red-400/10 text-red-200" : "border-white/15 bg-white/5 hover:bg-white/10"}`}
+            onClick={() => training.recording ? training.stopRecording() : training.startRecording(performance.now())}
+          >
+            {training.recording ? "Stop recording" : "Record actions"}
+          </button>
+          <button
+            type="button"
+            disabled={training.recordedActions.length === 0}
+            className="rounded border border-white/15 bg-white/5 px-2 py-1 text-[10px] enabled:hover:bg-white/10 disabled:opacity-35"
+            onClick={() => training.playbackActive ? training.stopPlayback() : training.startPlayback()}
+          >
+            {training.playbackActive ? "Stop playback" : "Play dummy"}
+          </button>
+          <button
+            type="button"
+            disabled={training.recordedActions.length === 0}
+            className="rounded border border-white/15 bg-white/5 px-2 py-1 text-[10px] enabled:hover:bg-white/10 disabled:opacity-35"
+            onClick={() => training.clearRecording()}
+          >
+            Clear
+          </button>
+        </div>
+        <div className="mt-2 text-[10px] leading-relaxed text-slate-500">
+          Records jump/punch/kick/special timing from your keyboard inputs and replays those discrete actions on the dummy. Analog movement recording waits for the fixed-step input stream.
         </div>
       </section>
 
@@ -180,7 +226,7 @@ export default function TrainingLabOverlay({ visible }: { visible: boolean }) {
       </section>
 
       <div className="mt-3 text-[10px] leading-relaxed text-slate-500">
-        Collision volumes mirror the duel's scalar range model. The 1f control advances combat timers exactly one 60 Hz frame; full physics frame-step will land with the fixed-step simulation extraction rather than pretending partial stepping is complete.
+        Collision volumes mirror the duel's scalar range model. The 1f control advances combat timers exactly one 60 Hz frame; full physics stepping lands with fixed-step extraction so the tool never overclaims precision.
       </div>
     </aside>
   );
