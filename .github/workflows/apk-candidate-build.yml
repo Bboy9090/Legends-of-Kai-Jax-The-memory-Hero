@@ -17,22 +17,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.9
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-          cache: gradle
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - run: pnpm cap:sync
+      - name: Checkout exact candidate
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Activate pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          node --version
+          java -version
+          pnpm --version
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web application
+        run: pnpm build
+
+      - name: Sync Capacitor Android project
+        run: pnpm cap:sync
+
       - name: Assemble installable candidate APK
         run: |
           cd apps/web/android
@@ -40,7 +44,9 @@ jobs:
           ./gradlew assembleDebug --stacktrace
           test -s app/build/outputs/apk/debug/app-debug.apk
           sha256sum app/build/outputs/apk/debug/app-debug.apk > app/build/outputs/apk/debug/APK-SHA256.txt
-      - uses: actions/upload-artifact@v4
+
+      - name: Upload APK and checksum
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
         with:
           name: Legends-of-Kai-Jax-1.0.0-debug-apk
           path: |
