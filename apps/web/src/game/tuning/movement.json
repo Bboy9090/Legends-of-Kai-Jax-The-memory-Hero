@@ -11,7 +11,20 @@
     "airControlMult": 0.55,
     "arenaXMin": -10,
     "arenaXMax": 10,
-    "blockMoveSpeedMult": 0.35
+    "blockMoveSpeedMult": 0.35,
+    "inputDeadzone": 0.08,
+    "coyoteTimeSec": 0.1,
+    "jumpBufferSec": 0.12,
+    "terminalVelocity": -22,
+    "fastFallAccel": 24,
+    "fastFallMaxSpeed": -16,
+    "landingImpactVelocity": 15,
+    "landingShakeIntensity": 1.2,
+    "wallKickHorizontalMult": 1.5,
+    "wallKickVerticalMult": 0.9,
+    "pounceHorizontalMult": 1.4,
+    "pounceVerticalMult": 0.85,
+    "facingSnapDistance": 2.5
   },
   "adventure": {
     "walkSpeed": 12,
