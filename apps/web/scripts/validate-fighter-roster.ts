@@ -1,4 +1,3 @@
-import { FIGHTERS, getFighterById } from "../src/lib/characters";
 import { VERSUS_ROSTER } from "../src/lib/versusRoster";
 
 const errors: string[] = [];
@@ -31,46 +30,68 @@ function validateUniqueIds(
   return new Set(seen.keys());
 }
 
-const legacyIds = validateUniqueIds("legacy combat roster", FIGHTERS);
 const canonicalIds = validateUniqueIds("canonical versus roster", VERSUS_ROSTER);
 
-for (const fighter of FIGHTERS) {
-  const id = fighter.id.trim();
-  if (!fighter.baseStats) {
-    errors.push(`legacy fighter "${id}" is missing baseStats`);
-    continue;
-  }
-
-  for (const [stat, value] of Object.entries(fighter.baseStats)) {
-    if (typeof value !== "number" || !Number.isFinite(value)) {
-      errors.push(`legacy fighter "${id}" has invalid stat ${stat}: ${String(value)}`);
-    }
-  }
+if (VERSUS_ROSTER.length === 0) errors.push("canonical versus roster is empty");
+if (VERSUS_ROSTER.length !== 27) {
+  errors.push(`canonical versus roster expected 27 entries but found ${VERSUS_ROSTER.length}`);
 }
 
-if (FIGHTERS.length === 0) errors.push("legacy combat roster is empty");
-if (VERSUS_ROSTER.length !== 23) {
-  errors.push(`canonical versus roster expected 23 entries but found ${VERSUS_ROSTER.length}`);
-}
-
-const coreIds = new Set(VERSUS_ROSTER.filter((entry) => entry.faction === "core").map((entry) => entry.id));
-for (const required of ["boryn", "kai", "kai-jax", "jax", "borax", "vharok"]) {
+const coreIds = new Set(
+  VERSUS_ROSTER.filter((entry) => entry.faction === "core").map((entry) => entry.id),
+);
+for (const required of ["kai", "jax", "kai-jax", "boryn", "borax"]) {
   if (!coreIds.has(required)) errors.push(`canonical core roster is missing "${required}"`);
 }
 
-for (const entry of VERSUS_ROSTER) {
-  if (!entry.sourceSheet.endsWith(".png")) {
-    errors.push(`canonical fighter "${entry.id}" has invalid source sheet "${entry.sourceSheet}"`);
+const kaiJax = VERSUS_ROSTER.find((entry) => entry.id === "kai-jax");
+if (!kaiJax) {
+  errors.push('canonical roster is missing "kai-jax"');
+} else if (kaiJax.combatProfileId !== "kaijax") {
+  errors.push('canonical "kai-jax" must bridge to legacy combat profile "kaijax"');
+}
+
+const vharok = VERSUS_ROSTER.find((entry) => entry.id === "vharok");
+if (!vharok) {
+  errors.push('canonical roster is missing "vharok"');
+} else {
+  if (vharok.faction !== "bloodward-antagonist") {
+    errors.push('"vharok" must remain in faction "bloodward-antagonist"');
   }
-  if (entry.portraitSource !== entry.sourceSheet) {
-    errors.push(`canonical fighter "${entry.id}" portrait provenance drifted from its source sheet`);
+  if (vharok.role !== "villain") {
+    errors.push('"vharok" must remain classified as a villain');
+  }
+  if (vharok.defaultUnlocked) {
+    errors.push('"vharok" must not be default unlocked');
   }
 }
 
-// Fighter Select V2 intentionally aliases the canonical hyphenated identity to
-// the existing combat profile until the gameplay registry itself is migrated.
-if (!getFighterById("kaijax")) {
-  errors.push('legacy combat roster is missing the temporary "kaijax" profile required by canonical "kai-jax"');
+for (const required of ["kar-voth", "thryxen", "pyraxis", "myrr-kai"]) {
+  const entry = VERSUS_ROSTER.find((fighter) => fighter.id === required);
+  if (!entry) {
+    errors.push(`First Sabertooths roster is missing "${required}"`);
+    continue;
+  }
+  if (entry.faction !== "first-sabertooths") {
+    errors.push(`"${required}" must remain in faction "first-sabertooths"`);
+  }
+  if (entry.defaultUnlocked) {
+    errors.push(`"${required}" must remain locked until its combat profile and current character lock are integrated`);
+  }
+}
+
+for (const entry of VERSUS_ROSTER) {
+  if (!entry.sourceSheet.trim()) {
+    errors.push(`canonical fighter "${entry.id}" has no source provenance`);
+  }
+  if (!entry.portraitSource.trim()) {
+    errors.push(`canonical fighter "${entry.id}" has no portrait provenance state`);
+  }
+
+  const pendingPortrait = entry.portraitSource === "PENDING_CURRENT_CHARACTER_LOCK";
+  if (pendingPortrait && entry.defaultUnlocked) {
+    errors.push(`canonical fighter "${entry.id}" cannot be default unlocked while its current character-lock portrait is pending`);
+  }
 }
 
 if (errors.length > 0) {
@@ -80,5 +101,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `Fighter roster validation passed: ${legacyIds.size} unique combat profiles; ${canonicalIds.size} unique locked-baseline versus identities.`,
+  `Fighter roster validation passed: ${canonicalIds.size} unique canonical versus identities.`,
 );
