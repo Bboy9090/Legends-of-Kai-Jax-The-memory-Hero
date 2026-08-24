@@ -8,6 +8,10 @@ frontend:
         - pnpm install --filter ./apps/web... --frozen-lockfile
     build:
       commands:
+        - pnpm --filter @beast-kin/shared build
+        - pnpm --filter @beast-kin/engine build
+        - pnpm --filter @beast-kin/characters build
+        - pnpm --filter @beast-kin/ui build
         - pnpm validate:roster
         - pnpm typecheck
         - pnpm build
