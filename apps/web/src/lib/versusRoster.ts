@@ -1,6 +1,7 @@
 export type VersusFaction =
   | "core"
   | "fracture-circle"
+  | "bloodward-antagonist"
   | "covenant"
   | "engineered-horror";
 
@@ -18,12 +19,11 @@ export interface VersusRosterEntry {
 }
 
 /**
- * Canonical Fighter Select V2 allowlist derived from
- * LEGENDS_OF_KAI_JAX_LOCKED_VISUAL_LIBRARY_BASELINE.zip.
+ * Fighter Select V2 allowlist.
  *
- * The locked baseline is authoritative for identity/faction/visual mapping.
- * Individual crop portraits may be generated later from the cited locked sheets,
- * but the source sheet references below must remain traceable.
+ * Visual source-sheet references come from the locked visual-library baseline,
+ * while narrative role/faction classification follows the newer Bloodward canon.
+ * A visual sheet is provenance for appearance, not authority for current story alignment.
  */
 export const VERSUS_ROSTER: readonly VersusRosterEntry[] = [
   { id: "kai", displayName: "Kai", faction: "core", role: "hero", defaultUnlocked: true, sourceSheet: "08_Main_Character_Lineup.png", portraitSource: "08_Main_Character_Lineup.png" },
@@ -31,7 +31,7 @@ export const VERSUS_ROSTER: readonly VersusRosterEntry[] = [
   { id: "kai-jax", displayName: "Kai-Jax", faction: "core", role: "hero", defaultUnlocked: true, sourceSheet: "08_Main_Character_Lineup.png", portraitSource: "08_Main_Character_Lineup.png" },
   { id: "boryn", displayName: "Boryn", faction: "core", role: "ally", defaultUnlocked: true, sourceSheet: "04_Fathers_Mentor_Elder_Fang.png", portraitSource: "04_Fathers_Mentor_Elder_Fang.png" },
   { id: "borax", displayName: "Borax", faction: "core", role: "ally", defaultUnlocked: true, sourceSheet: "04_Fathers_Mentor_Elder_Fang.png", portraitSource: "04_Fathers_Mentor_Elder_Fang.png" },
-  { id: "vharok", displayName: "Vharok", faction: "core", role: "ally", defaultUnlocked: true, sourceSheet: "04_Fathers_Mentor_Elder_Fang.png", portraitSource: "04_Fathers_Mentor_Elder_Fang.png" },
+  { id: "vharok", displayName: "Vharok", faction: "bloodward-antagonist", role: "villain", defaultUnlocked: false, sourceSheet: "04_Fathers_Mentor_Elder_Fang.png", portraitSource: "04_Fathers_Mentor_Elder_Fang.png" },
 
   { id: "aurelion", displayName: "Aurelion", faction: "fracture-circle", role: "ally", defaultUnlocked: true, sourceSheet: "09_Allies_and_Fracture_Circle.png", portraitSource: "09_Allies_and_Fracture_Circle.png" },
   { id: "selene", displayName: "Selene", faction: "fracture-circle", role: "ally", defaultUnlocked: true, sourceSheet: "09_Allies_and_Fracture_Circle.png", portraitSource: "09_Allies_and_Fracture_Circle.png" },
