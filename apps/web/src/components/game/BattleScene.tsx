@@ -1,9 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useAudio } from "../../lib/stores/useAudio";
-import { useTrainingLab } from "../../lib/stores/useTrainingLab";
-import { resolveTrainingStep } from "../../game/combat/trainingStep";
 import BattleCamera from "./BattleCamera";
 import { getFighterById } from "../../lib/characters";
 import BattleArena from "./BattleArena";
@@ -15,7 +13,8 @@ import ParticleManager from "./ParticleManager";
 import CameraEffects from "./CameraEffects";
 import AttackTrails from "./AttackTrails";
 import EffectManager from "./EffectManager";
-import CombatDebugVolumes from "./CombatDebugVolumes";
+import BattleReadabilityOverlay from "./BattleReadabilityOverlay";
+import BattleSessionGuard from "./BattleSessionGuard";
 import SceneEnvironment from "./graphics/SceneEnvironment";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
 import CinematicPostFX from "./graphics/CinematicPostFX";
@@ -24,6 +23,8 @@ import { useAccessibility } from "../../lib/stores/useAccessibility";
 /* eslint-disable react/no-unknown-property */
 export default function BattleScene() {
   const {
+    updateRoundTimer,
+    battlePhase,
     playerFighterId,
     screenShake,
     hitStop,
@@ -32,9 +33,12 @@ export default function BattleScene() {
     playerAttackType,
     opponentAttacking,
     comboCount,
+    maxCombo,
+    playerHealth,
+    opponentHealth,
+    maxHealth,
     playerCombatState,
   } = useBattle();
-  const lastConsumedStepEpochRef = useRef(0);
   const reduceMotion = useAccessibility((s) => s.reduceMotion);
   const playerFighter = getFighterById(playerFighterId);
   const grade =
@@ -58,55 +62,52 @@ export default function BattleScene() {
         ? 0.25
         : 0);
 
-  const punch = Math.min(1, rawPunch * Math.max(0.45, 1 - chaos * 0.85) * (reduceMotion ? 0.38 : 1)) || 0;
+  const punch =
+    Math.min(1, rawPunch * Math.max(0.45, 1 - chaos * 0.85) * (reduceMotion ? 0.38 : 1)) || 0;
 
   useEffect(() => {
     const delayMs = 400;
     const timer = setTimeout(() => {
       const s = useBattle.getState();
-      if (s.battlePhase !== "fighting" && s.battlePhase !== "transforming") s.startBattle();
+      if (s.battlePhase !== "fighting" && s.battlePhase !== "transforming") {
+        s.startBattle();
+      }
     }, delayMs);
     return () => clearTimeout(timer);
   }, []);
 
-  useFrame((_state, rawDelta) => {
-    const live = useBattle.getState();
-    if (live.battlePhase !== "fighting") return;
-    const training = useTrainingLab.getState();
-    const step = resolveTrainingStep({
-      rawDelta,
-      timeScale: live.timeScale,
-      simulationPaused: training.enabled && training.simulationPaused,
-      stepEpoch: training.stepEpoch,
-      lastConsumedStepEpoch: lastConsumedStepEpochRef.current,
-    });
-    lastConsumedStepEpochRef.current = step.consumedStepEpoch;
-    if (step.delta <= 0) return;
-
-    live.updateRoundTimer(step.delta);
-
-    const comboIntensity = Math.min(1, (live.comboCount + (live.maxCombo > 0 ? live.maxCombo * 0.2 : 0)) / 8);
-    const healthIntensity = 1 - Math.min(live.playerHealth, live.opponentHealth) / Math.max(1, live.maxHealth);
-    useAudio.getState().setBattleIntensity(comboIntensity * 0.6 + healthIntensity * 0.4);
+  useFrame((_state, delta) => {
+    if (battlePhase === 'fighting') {
+      updateRoundTimer(delta);
+      const comboIntensity = Math.min(1, (comboCount + (maxCombo > 0 ? maxCombo * 0.2 : 0)) / 8);
+      const healthIntensity = 1 - Math.min(playerHealth, opponentHealth) / maxHealth;
+      const intensity = comboIntensity * 0.6 + healthIntensity * 0.4;
+      useAudio.getState().setBattleIntensity(intensity);
+    }
   });
 
   return (
     <>
+      <BattleSessionGuard />
       <BattleCamera />
+      <BattleReadabilityOverlay />
+
       <LegendaryLightingRig />
       <SceneEnvironment mode="night" environmentIntensity={0.45} />
       <CinematicPostFX grade={grade} accent={accent} punch={punch} center={[0.5, 0.44]} />
+
       <color attach="background" args={[bgColor]} />
+
       <BattleArena />
       <BattlePlayer />
       <Opponent />
-      <CombatDebugVolumes />
       <PlayerController />
       <OpponentAI />
       <ParticleManager />
       <AttackTrails />
       <EffectManager />
       <CameraEffects />
+
       <fog attach="fog" args={[fogColor, 18, 55]} />
     </>
   );

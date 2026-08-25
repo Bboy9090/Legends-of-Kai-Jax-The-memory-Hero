@@ -34,24 +34,29 @@ function resolveBattleCameraMode(s: {
 export default function BattleCamera() {
   const { camera } = useThree();
   const reduceMotion = useAccessibility((s) => s.reduceMotion);
-  const targetRef = useRef(new THREE.Vector3());
+  const targetRef = useRef(new THREE.Vector3(0, 1.2, 0));
   const posRef = useRef(new THREE.Vector3(0, BASE_HEIGHT, BASE_DIST));
   const frameRef = useRef(0);
-  // Smoothed camera multipliers. MUST live at component scope — calling useRef
-  // inside the useFrame callback is an invalid hook call that breaks the frame
-  // loop (the whole battle scene renders black as a result).
   const currentParams = useRef({
     distMul: 1.12,
     heightMul: 1.05,
-    targetYOffset: 1.45,
-    sideBias: 0,
+    targetYOffset: 1.25,
   });
 
   useFrame((state, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
     frameRef.current += 1;
     const b = useBattle.getState();
-    const { playerX, playerY, opponentX, opponentY, screenShake, playerAttacking, opponentAttacking, playerCombatState } = b;
+    const {
+      playerX,
+      playerY,
+      opponentX,
+      opponentY,
+      screenShake,
+      playerAttacking,
+      opponentAttacking,
+      playerCombatState,
+    } = b;
 
     const mode = resolveBattleCameraMode({
       playerAttacking,
@@ -59,70 +64,81 @@ export default function BattleCamera() {
       playerCombatState,
     });
 
-    const playerVelX = b.playerVelocityX || 0;
-    const playerVelY = b.playerVelocityY || 0;
-    const combinedVel = Math.sqrt(playerVelX * playerVelX + playerVelY * playerVelY);
+    const dx = opponentX - playerX;
+    const dy = opponentY - playerY;
+    const horizontalSeparation = Math.abs(dx);
+    const fullSeparation = Math.sqrt(dx * dx + dy * dy);
+    const separation = THREE.MathUtils.clamp(fullSeparation, 3, bt.separationMax);
 
+    // Readability-first rule: the midpoint between both fighters is sacred.
+    // Do not lead with velocity or bias toward either fighter; those cinematic
+    // offsets were causing the camera to abandon the playable action.
     const midX = (playerX + opponentX) * 0.5;
     const midY = (playerY + opponentY) * 0.5;
-    const separation = Math.max(3, Math.min(bt.separationMax, Math.abs(playerX - opponentX)));
 
-    // 🎬 SMOOTH MODE TRANSITIONS
     const targetParams = {
-      distMul: 1.12,
-      heightMul: 1.05,
-      targetYOffset: 1.45,
-      sideBias: 0
+      distMul: 1.16,
+      heightMul: 1.04,
+      targetYOffset: 1.25,
     };
 
+    // Combat should not zoom *into* the action. Give both silhouettes breathing
+    // room so attacks, dodges, and knockback remain readable.
     if (mode === "combat") {
-      targetParams.distMul = 0.90;
-      targetParams.heightMul = 0.95;
-      targetParams.targetYOffset = 1.15;
-      targetParams.sideBias = (playerX - opponentX) * 0.15;
+      targetParams.distMul = 1.12;
+      targetParams.heightMul = 1.02;
+      targetParams.targetYOffset = 1.2;
     } else if (mode === "lockOn") {
-      targetParams.distMul = 0.85;
-      targetParams.heightMul = 0.90;
-      targetParams.targetYOffset = 1.0;
-      targetParams.sideBias = (playerX - opponentX) * 0.22;
+      targetParams.distMul = 1.14;
+      targetParams.heightMul = 1.02;
+      targetParams.targetYOffset = 1.2;
     }
 
-    const lerpSpeed = mode === "exploration" ? 2.5 : 5.0;
-    currentParams.current.distMul = THREE.MathUtils.lerp(currentParams.current.distMul, targetParams.distMul, lerpSpeed * delta);
-    currentParams.current.heightMul = THREE.MathUtils.lerp(currentParams.current.heightMul, targetParams.heightMul, lerpSpeed * delta);
-    currentParams.current.targetYOffset = THREE.MathUtils.lerp(currentParams.current.targetYOffset, targetParams.targetYOffset, lerpSpeed * delta);
-    currentParams.current.sideBias = THREE.MathUtils.lerp(currentParams.current.sideBias, targetParams.sideBias, lerpSpeed * delta);
-
-    const { distMul, heightMul, targetYOffset, sideBias } = currentParams.current;
-
-    // 🎬 CINEMATIC LEADING
-    const leadFactor = 0.8;
-    const leadX = playerVelX * leadFactor * (mode === "exploration" ? 1.2 : 0.6);
-    
-    const dynamicDist = (BASE_DIST + separation * bt.separationDistScale) * distMul;
-    const dynamicHeight = (BASE_HEIGHT + separation * bt.separationHeightScale) * heightMul;
-
-    // 🎬 TARGETING: Lead the camera with character momentum
-    targetRef.current.lerp(
-      new THREE.Vector3(midX + sideBias + leadX, midY + targetYOffset, 0),
-      0.15 // High-lag look-at for weight
+    const paramK = 1 - Math.exp(-(mode === "exploration" ? 3.5 : 5.0) * delta);
+    currentParams.current.distMul = THREE.MathUtils.lerp(
+      currentParams.current.distMul,
+      targetParams.distMul,
+      paramK,
+    );
+    currentParams.current.heightMul = THREE.MathUtils.lerp(
+      currentParams.current.heightMul,
+      targetParams.heightMul,
+      paramK,
+    );
+    currentParams.current.targetYOffset = THREE.MathUtils.lerp(
+      currentParams.current.targetYOffset,
+      targetParams.targetYOffset,
+      paramK,
     );
 
-    const idealPos = new THREE.Vector3(midX + sideBias * 0.5, dynamicHeight, dynamicDist);
-    const lerpRate = mode === "combat" ? CAM_LERP * 1.5 : CAM_LERP;
-    posRef.current.lerp(idealPos, lerpRate * delta);
+    const { distMul, heightMul, targetYOffset } = currentParams.current;
 
-    // 🎬 DYNAMIC FOV: Zoom in during impact/combat
-    const fovBase = 45;
-    const hitStop = b.hitStop || 0; // Fix ReferenceError
-    const fovImpact = (hitStop > 0 ? -5 : 0) + (combinedVel > 15 ? 8 : 0);
-    const targetFov = fovBase + fovImpact + (separation * 0.8);
-    camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 0.1);
-    camera.updateProjectionMatrix();
+    // Horizontal spacing drives the majority of zoom-out. Vertical knockback
+    // also contributes so launched fighters remain visible.
+    const dynamicDist =
+      (BASE_DIST + horizontalSeparation * Math.max(0.5, bt.separationDistScale) + Math.abs(dy) * 0.18) *
+      distMul;
+    const dynamicHeight =
+      (BASE_HEIGHT + separation * Math.max(0.14, bt.separationHeightScale)) * heightMul;
 
-    let shakeScale = 1;
-    if (mode === "combat") shakeScale = bt.shakeScaleCombat;
-    if (mode === "lockOn") shakeScale = bt.shakeScaleLockOn;
+    const idealTarget = new THREE.Vector3(midX, midY + targetYOffset, 0);
+    const lookK = 1 - Math.exp(-8 * delta);
+    targetRef.current.lerp(idealTarget, lookK);
+
+    const idealPos = new THREE.Vector3(midX, dynamicHeight, dynamicDist);
+    const posK = 1 - Math.exp(-CAM_LERP * delta);
+    posRef.current.lerp(idealPos, posK);
+
+    // Keep FOV predictable. Wide enough for separation, never so wide that
+    // fighters become tiny, and never punch in during hit-stop.
+    const targetFov = THREE.MathUtils.clamp(46 + separation * 0.45, 46, 56);
+    if ("fov" in camera && typeof camera.fov === "number") {
+      camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 1 - Math.exp(-6 * delta));
+      camera.updateProjectionMatrix();
+    }
+
+    let shakeScale = mode === "combat" ? bt.shakeScaleCombat * 0.55 : 0.45;
+    if (mode === "lockOn") shakeScale = bt.shakeScaleLockOn * 0.5;
     if (reduceMotion) shakeScale *= bt.reduceMotionShakeMult;
 
     let shakeX = 0;
@@ -130,11 +146,15 @@ export default function BattleCamera() {
     if (screenShake > 0.01) {
       const intensity = Math.min(1, screenShake) * shakeScale;
       const t = Math.floor(state.clock.elapsedTime * 60) + frameRef.current;
-      shakeX = detRand11(t + SHAKE_SEED_BASE) * intensity * 0.16;
-      shakeY = detRand11(t + SHAKE_SEED_BASE + 17) * intensity * 0.11;
+      shakeX = detRand11(t + SHAKE_SEED_BASE) * intensity * 0.1;
+      shakeY = detRand11(t + SHAKE_SEED_BASE + 17) * intensity * 0.07;
     }
 
-    camera.position.set(posRef.current.x + shakeX, posRef.current.y + shakeY, posRef.current.z);
+    camera.position.set(
+      posRef.current.x + shakeX,
+      posRef.current.y + shakeY,
+      posRef.current.z,
+    );
     camera.lookAt(targetRef.current);
   });
 
