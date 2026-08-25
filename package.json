@@ -82,7 +82,7 @@
     "clsx": "^2.1.1",
     "express-rate-limit": "^8.6.0",
     "lucide-react": "^0.561.0",
-    "postcss": "^8.5.20",
+    "postcss": "^8.5.23",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-router-dom": "^7.18.1",
