@@ -4,14 +4,17 @@ import { useBattle } from "../../lib/stores/useBattle";
 import { useDifficulty, type Difficulty } from "../../lib/stores/useDifficulty";
 import { BEHAVIOR_PROFILES, type AIBehaviorDifficulty } from "../../lib/enemyAIv2";
 
-const AI_MOVE_SPEED = 3.9;
+const AI_MOVE_SPEED = 4.1;
 const GRAVITY = -15;
 const GROUND_Y = 0.8;
-const MELEE_ATTACK_RANGE = 2.45;
-const MELEE_HOLD_RANGE = 1.75;
+// Keep AI attack decisions inside the resolver's practical melee windows.
+// Punch resolves at ~1.5, kick at ~2.0; holding near 1.65 keeps pressure alive
+// without creating constant whiff animations from outside actual contact range.
+const MELEE_ATTACK_RANGE = 1.95;
+const MELEE_HOLD_RANGE = 1.6;
 const CASTER_ATTACK_RANGE = 6.0;
-const CASTER_HOLD_MIN = 3.0;
-const CASTER_HOLD_MAX = 5.0;
+const CASTER_HOLD_MIN = 3.1;
+const CASTER_HOLD_MAX = 5.2;
 const JUMP_VELOCITY = 4;
 
 function toAIDifficulty(d: Difficulty): AIBehaviorDifficulty {
@@ -57,13 +60,13 @@ export default function OpponentAI() {
 
       if (p === "stalker") {
         if (distanceNow > MELEE_HOLD_RANGE) currentAction.current = "chase";
-        else currentAction.current = isLowHealth ? "retreat" : "idle";
-        if (jumpCooldown.current <= 0 && state.opponentGrounded && distanceNow > 2.5) {
-          wantsJump = Math.random() < 0.22;
-          jumpCooldown.current = 1.4;
+        else currentAction.current = isLowHealth && distanceNow < 1.2 ? "retreat" : "idle";
+        if (jumpCooldown.current <= 0 && state.opponentGrounded && distanceNow > 3.0) {
+          wantsJump = Math.random() < 0.18;
+          jumpCooldown.current = 1.5;
         }
       } else if (p === "titan") {
-        currentAction.current = distanceNow > 1.55 ? "chase" : "idle";
+        currentAction.current = distanceNow > 1.45 ? "chase" : "idle";
         wantsJump = false;
       } else if (p === "caster") {
         if (distanceNow < CASTER_HOLD_MIN) currentAction.current = "retreat";
@@ -79,7 +82,7 @@ export default function OpponentAI() {
       !state.opponentGrounded &&
       (isAtLeftWall || isAtRightWall) &&
       jumpCooldown.current <= 0 &&
-      Math.random() < 0.18
+      Math.random() < 0.14
     ) {
       wantsJump = true;
     }
@@ -87,11 +90,11 @@ export default function OpponentAI() {
     let wallKickPush = 0;
     if (wantsJump) {
       if (state.opponentGrounded) {
-        velY = JUMP_VELOCITY * (p === "stalker" ? 1.25 : 1.0);
+        velY = JUMP_VELOCITY * (p === "stalker" ? 1.2 : 1.0);
       } else if (p === "stalker" && (isAtLeftWall || isAtRightWall)) {
-        velY = JUMP_VELOCITY * 1.15;
-        jumpCooldown.current = 1.5;
-        wallKickPush += isAtLeftWall ? 0.45 : -0.45;
+        velY = JUMP_VELOCITY * 1.1;
+        jumpCooldown.current = 1.6;
+        wallKickPush += isAtLeftWall ? 0.4 : -0.4;
       }
     }
 
@@ -112,17 +115,17 @@ export default function OpponentAI() {
 
     const baseMoveSpeed =
       p === "stalker"
-        ? AI_MOVE_SPEED * 1.2
+        ? AI_MOVE_SPEED * 1.18
         : p === "titan"
-          ? AI_MOVE_SPEED * 0.78
+          ? AI_MOVE_SPEED * 0.76
           : p === "caster"
-            ? AI_MOVE_SPEED * 0.92
+            ? AI_MOVE_SPEED * 0.9
             : AI_MOVE_SPEED;
 
     if (currentAction.current === "chase") {
       dx = dir * baseMoveSpeed * delta;
     } else if (currentAction.current === "retreat") {
-      dx = -dir * baseMoveSpeed * 0.72 * delta;
+      dx = -dir * baseMoveSpeed * 0.68 * delta;
     }
     dx += wallKickPush;
 
@@ -143,19 +146,19 @@ export default function OpponentAI() {
       let attackType: "punch" | "kick" | "special";
 
       if (p === "titan") {
-        attackType = roll < 0.65 ? "kick" : "punch";
+        attackType = absDist > 1.5 ? "kick" : roll < 0.62 ? "kick" : "punch";
       } else if (p === "caster") {
-        attackType = absDist > MELEE_ATTACK_RANGE ? "special" : roll < 0.7 ? "special" : "kick";
+        attackType = absDist > MELEE_ATTACK_RANGE ? "special" : roll < 0.72 ? "special" : "kick";
       } else if (p === "stalker") {
-        attackType = roll < 0.5 ? "punch" : roll < 0.88 ? "kick" : "special";
+        attackType = absDist > 1.5 ? "kick" : roll < 0.52 ? "punch" : roll < 0.9 ? "kick" : "special";
       } else {
-        attackType = roll < 0.48 ? "punch" : roll < 0.88 ? "kick" : "special";
+        attackType = absDist > 1.5 ? "kick" : roll < 0.5 ? "punch" : roll < 0.9 ? "kick" : "special";
       }
 
       state.opponentAttack(attackType);
       const baseSpacing = Math.max(0.45, profile.attackSpacing / 1000);
-      const pressureMult = difficulty === "story" ? 1.15 : difficulty === "hard" ? 0.88 : difficulty === "legendary" ? 0.78 : 1;
-      attackCooldown.current = baseSpacing * pressureMult + Math.random() * 0.25;
+      const pressureMult = difficulty === "story" ? 1.18 : difficulty === "hard" ? 0.88 : difficulty === "legendary" ? 0.78 : 1;
+      attackCooldown.current = baseSpacing * pressureMult + Math.random() * 0.2;
     }
   });
 
