@@ -42,6 +42,10 @@ requireRule(
   "Versus lifecycle must prevent duplicate KO processing and normalize fresh-round combat state.",
 );
 requireRule(
+  battleGuard.includes("guardedResetRound") && battleGuard.includes('phase === "preRound"'),
+  "Rematch flow must debounce duplicate resetRound calls while a new round is already queued.",
+);
+requireRule(
   battleGuard.includes("playerAttacking: false") &&
     battleGuard.includes("opponentAttacking: false") &&
     battleGuard.includes("playerInvulnerable: false") &&
@@ -127,7 +131,7 @@ if (failures.length > 0) {
 
 console.log("Combat release certification PASS");
 console.log("- single-authority Versus camera and midpoint framing");
-console.log("- gameplay-safe shake, overlap, KO idempotency, and fresh-round cleanup");
+console.log("- gameplay-safe shake, overlap, KO/rematch idempotency, and fresh-round cleanup");
 console.log("- Mission threat cap, telegraph whiff fairness, and anti-stunlock protection");
 console.log("- bounded Mission combat space, compact render footprint, and stable target readability");
 console.log("- differentiated Versus AI personalities");
