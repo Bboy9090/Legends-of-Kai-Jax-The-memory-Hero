@@ -13,10 +13,13 @@ const cameraEffects = read("apps/web/src/components/game/CameraEffects.tsx");
 const battleCamera = read("apps/web/src/components/game/BattleCamera.tsx");
 const battleGuard = read("apps/web/src/components/game/BattleSessionGuard.tsx");
 const missionAI = read("apps/web/src/components/game/adventure/AdventureEnemyAI.tsx");
+const versusAI = read("apps/web/src/components/game/OpponentAI.tsx");
 const battleController = read("apps/web/src/components/game/PlayerController.tsx");
 const missionController = read("apps/web/src/components/game/adventure/AdventurePlayerController.tsx");
 const missionHud = read("apps/web/src/components/game/adventure/AdventureHUD.tsx");
 const missionArena = read("apps/web/src/components/game/adventure/AdventureArena.tsx");
+const targeting = read("apps/web/src/game/combat/targeting.ts");
+const particleManager = read("apps/web/src/components/game/ParticleManager.tsx");
 const battleScene = read("apps/web/src/components/game/BattleScene.tsx");
 
 requireRule(
@@ -60,6 +63,23 @@ requireRule(
   "Mission HUD must identify the auto-target and surface incoming attack warnings.",
 );
 requireRule(
+  targeting.includes("CURRENT_TARGET_BONUS") && targeting.includes("lastAutoTargetId"),
+  "Mission auto-target must preserve target stickiness instead of flickering every frame.",
+);
+requireRule(
+  versusAI.includes('p === "aggressive"') &&
+    versusAI.includes('p === "defensive"') &&
+    versusAI.includes("DEFENSIVE_HOLD_MIN") &&
+    versusAI.includes("personalitySpacing"),
+  "Versus aggressive and defensive personalities must use meaningfully different spacing and pressure behavior.",
+);
+requireRule(
+  particleManager.includes("MAX_PARTICLES = 220") &&
+    !particleManager.includes("MAX_PARTICLES = 500") &&
+    particleManager.includes("pounceEmitCooldownRef"),
+  "Versus particle effects must remain inside the certified readability/performance budget.",
+);
+requireRule(
   battleController.includes("firstConnectedGamepad") &&
     battleController.includes("gamepadconnected") &&
     battleController.includes("gamepaddisconnected") &&
@@ -86,10 +106,11 @@ if (failures.length > 0) {
 }
 
 console.log("Combat release certification PASS");
-console.log("- single-authority Versus camera");
-console.log("- midpoint fighter framing");
-console.log("- gameplay-safe shake/overlap/session guard");
-console.log("- Mission threat cap, telegraph whiff fairness, and post-hit anti-stunlock");
-console.log("- bounded Mission combat space, compact render footprint, and target readability");
+console.log("- single-authority Versus camera and midpoint framing");
+console.log("- gameplay-safe shake, overlap, and session cleanup");
+console.log("- Mission threat cap, telegraph whiff fairness, and anti-stunlock protection");
+console.log("- bounded Mission combat space, compact render footprint, and stable target readability");
+console.log("- differentiated Versus AI personalities");
+console.log("- certified Versus particle performance/readability budget");
 console.log("- Versus + Mission gamepad reconnect/focus cleanup");
 console.log("- stale touch input cleared across round transitions");
