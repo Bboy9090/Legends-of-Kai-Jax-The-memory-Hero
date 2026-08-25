@@ -3,11 +3,12 @@ import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useDifficulty, type Difficulty } from "../../lib/stores/useDifficulty";
 import { BEHAVIOR_PROFILES, type AIBehaviorDifficulty } from "../../lib/enemyAIv2";
+import { COMBAT_RANGES } from "../../game/combat/moveData";
 
 const AI_MOVE_SPEED = 4.1;
 const GRAVITY = -15;
 const GROUND_Y = 0.8;
-const MELEE_ATTACK_RANGE = 1.95;
+const MELEE_ATTACK_RANGE = COMBAT_RANGES.versus.aiMeleeCommit;
 const MELEE_HOLD_RANGE = 1.6;
 const DEFENSIVE_HOLD_MIN = 2.2;
 const DEFENSIVE_HOLD_MAX = 3.4;
@@ -64,15 +65,12 @@ export default function OpponentAI() {
       decisionTimer.current = decisionInterval;
 
       if (p === "aggressive") {
-        // Aggressive AI closes immediately and rarely gives ground.
         currentAction.current = distanceNow > 1.35 ? "chase" : "idle";
         if (jumpCooldown.current <= 0 && state.opponentGrounded && distanceNow > 3.4) {
           wantsJump = Math.random() < 0.12;
           jumpCooldown.current = 1.6;
         }
       } else if (p === "defensive") {
-        // Defensive AI maintains a readable counter-fighting pocket instead of
-        // behaving like the default pressure bot.
         if (distanceNow < DEFENSIVE_HOLD_MIN) currentAction.current = "retreat";
         else if (distanceNow > DEFENSIVE_HOLD_MAX) currentAction.current = "chase";
         else currentAction.current = "idle";
