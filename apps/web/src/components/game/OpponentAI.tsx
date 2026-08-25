@@ -56,7 +56,6 @@ export default function OpponentAI() {
       decisionTimer.current = decisionInterval;
 
       if (p === "stalker") {
-        // Stay in the player's face. Only retreat when wounded and already crowded.
         if (distanceNow > MELEE_HOLD_RANGE) currentAction.current = "chase";
         else currentAction.current = isLowHealth ? "retreat" : "idle";
         if (jumpCooldown.current <= 0 && state.opponentGrounded && distanceNow > 2.5) {
@@ -67,13 +66,10 @@ export default function OpponentAI() {
         currentAction.current = distanceNow > 1.55 ? "chase" : "idle";
         wantsJump = false;
       } else if (p === "caster") {
-        // Casters actually have a ranged attack window now. They hold a readable
-        // mid-range instead of endlessly retreating outside a melee-only trigger.
         if (distanceNow < CASTER_HOLD_MIN) currentAction.current = "retreat";
         else if (distanceNow > CASTER_HOLD_MAX) currentAction.current = "chase";
         else currentAction.current = "idle";
       } else {
-        // Critical fix: never stop outside attack range.
         currentAction.current = distanceNow > MELEE_HOLD_RANGE ? "chase" : "idle";
       }
     }
@@ -149,8 +145,6 @@ export default function OpponentAI() {
       if (p === "titan") {
         attackType = roll < 0.65 ? "kick" : "punch";
       } else if (p === "caster") {
-        // At true ranged distance, commit to the special instead of choosing a
-        // melee move that cannot connect.
         attackType = absDist > MELEE_ATTACK_RANGE ? "special" : roll < 0.7 ? "special" : "kick";
       } else if (p === "stalker") {
         attackType = roll < 0.5 ? "punch" : roll < 0.88 ? "kick" : "special";
@@ -160,7 +154,7 @@ export default function OpponentAI() {
 
       state.opponentAttack(attackType);
       const baseSpacing = Math.max(0.45, profile.attackSpacing / 1000);
-      const pressureMult = difficulty === "easy" || difficulty === "story" ? 1.15 : difficulty === "hard" ? 0.88 : 1;
+      const pressureMult = difficulty === "story" ? 1.15 : difficulty === "hard" ? 0.88 : difficulty === "legendary" ? 0.78 : 1;
       attackCooldown.current = baseSpacing * pressureMult + Math.random() * 0.25;
     }
   });
