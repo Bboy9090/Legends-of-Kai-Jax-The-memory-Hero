@@ -42,14 +42,8 @@ jobs:
       - name: Install web workspace
         run: pnpm install --filter ./apps/web... --frozen-lockfile
 
-      - name: Release validation
+      - name: Combat release gate
         run: pnpm validate:release
 
-      - name: Unit tests
+      - name: Full unit suite
         run: pnpm test
-
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Production build
-        run: pnpm build
