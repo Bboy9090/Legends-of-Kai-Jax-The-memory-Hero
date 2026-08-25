@@ -30,6 +30,7 @@
     "db:push": "drizzle-kit push",
     "validate:model": "python3 assets/models/characters/kai-jax/validate_model.py",
     "validate:registry": "node apps/web/scripts/validate-registry.mjs",
+    "validate:roster": "tsx apps/web/scripts/validate-fighter-roster.ts",
     "inspect:glb": "node apps/web/scripts/inspect-glb.mjs",
     "test": "pnpm -C apps/web test",
     "start": "serve -s apps/web/dist -l 5000"
