@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useTouchInput } from "../../lib/stores/useTouchInput";
@@ -11,24 +11,51 @@ function finiteOr(value: number, fallback: number): number {
   return Number.isFinite(value) ? value : fallback;
 }
 
+function clampArenaX(x: number): number {
+  return Math.max(arenaXMin, Math.min(arenaXMax, x));
+}
+
+function awayDirection(targetX: number, attackerX: number, fallback: 1 | -1): 1 | -1 {
+  if (targetX > attackerX) return 1;
+  if (targetX < attackerX) return -1;
+  return fallback;
+}
+
+function knockDistance(damage: number, attackType: string | null | undefined): number {
+  const mult = attackType === "ultimate" ? 0.1 : attackType === "special" ? 0.08 : attackType === "kick" ? 0.07 : 0.06;
+  return Math.max(0.45, Math.min(1.35, damage * mult));
+}
+
 /**
  * Defensive round/session invariants.
  *
- * This component does not own movement or combat. It only repairs impossible
- * state that can otherwise survive a scene transition and ruin the next fight.
+ * This component does not replace the combat store. It repairs state that can
+ * otherwise survive transitions or become visually impossible during a fight.
  */
 export default function BattleSessionGuard() {
   const battlePhase = useBattle((s) => s.battlePhase);
+  const prevRef = useRef({
+    playerHealth: 100,
+    opponentHealth: 100,
+    playerX: -5,
+    opponentX: 5,
+  });
 
   useEffect(() => {
-    // Never carry held movement or queued touch attacks across round boundaries.
     useTouchInput.getState().releaseJoystick();
     useTouchInput.setState({ pendingAttacks: [] });
 
-    // Slow motion must never leak into a fresh round/menu transition.
     if (battlePhase === "preRound" || battlePhase === "fighting" || battlePhase === "results") {
       useBattle.getState().setTimeScale(1);
     }
+
+    const s = useBattle.getState();
+    prevRef.current = {
+      playerHealth: s.playerHealth,
+      opponentHealth: s.opponentHealth,
+      playerX: s.playerX,
+      opponentX: s.opponentX,
+    };
   }, [battlePhase]);
 
   useEffect(() => {
@@ -50,20 +77,35 @@ export default function BattleSessionGuard() {
     const s = useBattle.getState();
     if (s.battlePhase !== "fighting" && s.battlePhase !== "transforming") return;
 
-    let playerX = Math.max(arenaXMin, Math.min(arenaXMax, finiteOr(s.playerX, -4)));
-    let opponentX = Math.max(arenaXMin, Math.min(arenaXMax, finiteOr(s.opponentX, 4)));
+    const prev = prevRef.current;
+    let playerX = clampArenaX(finiteOr(s.playerX, -4));
+    let opponentX = clampArenaX(finiteOr(s.opponentX, 4));
     const playerY = Math.max(groundY, finiteOr(s.playerY, groundY));
     const opponentY = Math.max(groundY, finiteOr(s.opponentY, groundY));
 
-    // Prevent exact model overlap. When both centers occupy effectively the same
-    // spot, facing and hit readability collapse. Nudge them apart around midpoint.
+    // Correct the legacy fixed-direction knockback. Once fighters cross sides,
+    // a hit must still push the victim away from the attacker, never through them.
+    if (s.playerHealth < prev.playerHealth) {
+      const damage = prev.playerHealth - s.playerHealth;
+      const fallback = s.playerFacingRight ? -1 : 1;
+      const dir = awayDirection(prev.playerX, prev.opponentX, fallback);
+      playerX = clampArenaX(prev.playerX + dir * knockDistance(damage, s.opponentAttackType));
+    }
+
+    if (s.opponentHealth < prev.opponentHealth) {
+      const damage = prev.opponentHealth - s.opponentHealth;
+      const fallback = s.opponentFacingRight ? -1 : 1;
+      const dir = awayDirection(prev.opponentX, prev.playerX, fallback);
+      opponentX = clampArenaX(prev.opponentX + dir * knockDistance(damage, s.playerAttackType));
+    }
+
     const sep = Math.abs(opponentX - playerX);
     if (sep < MIN_FIGHTER_SEPARATION) {
       const mid = (playerX + opponentX) * 0.5;
-      const playerOnLeft = s.playerFacingRight || playerX <= opponentX;
+      const playerOnLeft = playerX <= opponentX;
       const half = MIN_FIGHTER_SEPARATION * 0.5;
-      playerX = Math.max(arenaXMin, Math.min(arenaXMax, mid + (playerOnLeft ? -half : half)));
-      opponentX = Math.max(arenaXMin, Math.min(arenaXMax, mid + (playerOnLeft ? half : -half)));
+      playerX = clampArenaX(mid + (playerOnLeft ? -half : half));
+      opponentX = clampArenaX(mid + (playerOnLeft ? half : -half));
     }
 
     if (
@@ -81,6 +123,14 @@ export default function BattleSessionGuard() {
         opponentFacingRight: playerX > opponentX,
       });
     }
+
+    const current = useBattle.getState();
+    prevRef.current = {
+      playerHealth: current.playerHealth,
+      opponentHealth: current.opponentHealth,
+      playerX: current.playerX,
+      opponentX: current.opponentX,
+    };
   });
 
   return null;
