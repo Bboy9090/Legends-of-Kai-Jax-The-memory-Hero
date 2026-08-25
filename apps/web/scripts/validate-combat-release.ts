@@ -69,6 +69,12 @@ requireRule(
   "Escaping a Mission telegraph must produce a real whiff outside the visible attack range.",
 );
 requireRule(
+  missionAI.includes("ATTACK_ACTIVE_SEC") &&
+    missionAI.includes("attackStateTimers") &&
+    !missionAI.includes("window.setTimeout"),
+  "Mission enemy attack/recovery state must be frame-timed and cannot leak async callbacks into a later encounter.",
+);
+requireRule(
   missionController.includes("MISSION_BOUNDARY = 32") && missionController.includes("THREE.MathUtils.clamp"),
   "Mission movement must stay inside the certified combat boundary.",
 );
@@ -132,7 +138,7 @@ if (failures.length > 0) {
 console.log("Combat release certification PASS");
 console.log("- single-authority Versus camera and midpoint framing");
 console.log("- gameplay-safe shake, overlap, KO/rematch idempotency, and fresh-round cleanup");
-console.log("- Mission threat cap, telegraph whiff fairness, and anti-stunlock protection");
+console.log("- Mission threat cap, telegraph whiff fairness, anti-stunlock, and timer-safe attack recovery");
 console.log("- bounded Mission combat space, compact render footprint, and stable target readability");
 console.log("- differentiated Versus AI personalities");
 console.log("- certified Versus particle and trail performance/readability budgets");
