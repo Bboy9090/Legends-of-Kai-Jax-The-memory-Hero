@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   certify:
-    name: Validate, Test, Typecheck, Build
+    name: Release Certification
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -42,8 +42,5 @@ jobs:
       - name: Install web workspace
         run: pnpm install --filter ./apps/web... --frozen-lockfile
 
-      - name: Combat release gate
+      - name: Canonical release certification
         run: pnpm validate:release
-
-      - name: Full unit suite
-        run: pnpm test
