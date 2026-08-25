@@ -4,21 +4,21 @@
     "health": 40,
     "damage": 5,
     "speed": 3,
-    "aggroRange": 14,
-    "attackRange": 2.5,
-    "attackInterval": 2.0,
-    "telegraphDuration": 0.6,
+    "aggroRange": 13,
+    "attackRange": 2.4,
+    "attackInterval": 1.8,
+    "telegraphDuration": 0.72,
     "retreatThreshold": 0.2
   },
   "minion2": {
     "tier": "minion2",
     "health": 60,
     "damage": 8,
-    "speed": 4,
-    "aggroRange": 16,
-    "attackRange": 3.0,
-    "attackInterval": 1.8,
-    "telegraphDuration": 0.5,
+    "speed": 3.8,
+    "aggroRange": 15,
+    "attackRange": 2.8,
+    "attackInterval": 1.65,
+    "telegraphDuration": 0.64,
     "retreatThreshold": 0.15
   },
   "boss1": {
@@ -26,10 +26,10 @@
     "health": 200,
     "damage": 15,
     "speed": 2.5,
-    "aggroRange": 20,
-    "attackRange": 3.5,
-    "attackInterval": 2.5,
-    "telegraphDuration": 0.8,
+    "aggroRange": 18,
+    "attackRange": 3.4,
+    "attackInterval": 2.35,
+    "telegraphDuration": 0.95,
     "retreatThreshold": 0.1
   },
   "boss2": {
@@ -37,10 +37,10 @@
     "health": 400,
     "damage": 22,
     "speed": 2,
-    "aggroRange": 25,
-    "attackRange": 4.0,
-    "attackInterval": 3.0,
-    "telegraphDuration": 1.0,
+    "aggroRange": 21,
+    "attackRange": 3.8,
+    "attackInterval": 2.8,
+    "telegraphDuration": 1.15,
     "retreatThreshold": 0.05
   }
 }
