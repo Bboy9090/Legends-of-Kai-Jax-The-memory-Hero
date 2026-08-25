@@ -7,8 +7,8 @@ import {
 } from "./versusRoster";
 
 describe("Fighter Select V2 canonical roster", () => {
-  it("contains the 23 locked-baseline roster candidates", () => {
-    expect(VERSUS_ROSTER).toHaveLength(23);
+  it("contains the 27-entry current canonical versus roster", () => {
+    expect(VERSUS_ROSTER).toHaveLength(27);
   });
 
   it("has globally unique canonical fighter ids", () => {
@@ -21,18 +21,26 @@ describe("Fighter Select V2 canonical roster", () => {
     );
   });
 
-  it("includes Vharok as the sixth core roster identity", () => {
+  it("classifies Vharok by current Bloodward canon", () => {
     expect(getVersusRosterEntry("vharok")).toMatchObject({
-      faction: "core",
-      role: "ally",
-      defaultUnlocked: true,
+      faction: "bloodward-antagonist",
+      role: "villain",
+      defaultUnlocked: false,
     });
   });
 
-  it("ships the core and Fracture Circle identities unlocked by roster policy", () => {
+  it("ships the current core heroes/allies and Fracture Circle unlocked by roster policy", () => {
     const unlocked = VERSUS_ROSTER.filter((entry) => entry.defaultUnlocked);
-    expect(unlocked).toHaveLength(13);
+    expect(unlocked).toHaveLength(12);
     expect(unlocked.every((entry) => entry.faction === "core" || entry.faction === "fracture-circle")).toBe(true);
+  });
+
+  it("keeps the First Sabertooths canonically present but locked pending gameplay/portrait integration", () => {
+    const firstSabertooths = VERSUS_ROSTER.filter((entry) => entry.faction === "first-sabertooths");
+    expect(firstSabertooths).toHaveLength(4);
+    expect(firstSabertooths.every((entry) => !entry.defaultUnlocked)).toBe(true);
+    expect(firstSabertooths.every((entry) => entry.sourceSheet.endsWith(".docx"))).toBe(true);
+    expect(firstSabertooths.every((entry) => entry.portraitSource === "PENDING_CURRENT_CHARACTER_LOCK")).toBe(true);
   });
 
   it("keeps Covenant identities locked by default", () => {
@@ -47,10 +55,15 @@ describe("Fighter Select V2 canonical roster", () => {
     expect(horrors.every((entry) => entry.role === "boss" && entry.bossClass && !entry.defaultUnlocked)).toBe(true);
   });
 
-  it("retains locked visual-library provenance for every entry", () => {
+  it("retains explicit visual or publication provenance for every roster entry", () => {
     for (const entry of VERSUS_ROSTER) {
-      expect(entry.sourceSheet).toMatch(/\.png$/);
-      expect(entry.portraitSource).toBe(entry.sourceSheet);
+      expect(entry.sourceSheet.length).toBeGreaterThan(0);
+      expect(entry.portraitSource.length).toBeGreaterThan(0);
+
+      if (entry.faction !== "first-sabertooths") {
+        expect(entry.sourceSheet).toMatch(/\.png$/);
+        expect(entry.portraitSource).toBe(entry.sourceSheet);
+      }
     }
   });
 
