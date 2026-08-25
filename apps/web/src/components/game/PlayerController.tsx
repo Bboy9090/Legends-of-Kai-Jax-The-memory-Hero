@@ -22,14 +22,25 @@ const SPRINT_MAX_SPEED = b.sprintMaxSpeed;
 const ACCEL = b.accel;
 const DECEL = b.decel;
 const AIR_CONTROL_MULT = b.airControlMult;
+const GAMEPAD_DEADZONE = 0.18;
 
 function clamp01(x: number): number {
   return Math.max(0, Math.min(1, x));
 }
 
+function firstConnectedGamepad(): Gamepad | null {
+  if (typeof navigator === "undefined" || typeof navigator.getGamepads !== "function") return null;
+  const pads = navigator.getGamepads();
+  for (const pad of pads) {
+    if (pad?.connected) return pad;
+  }
+  return null;
+}
+
 export default function PlayerController() {
   const keysRef = useRef<Record<string, boolean>>({});
   const prevKeysRef = useRef<Record<string, boolean>>({});
+  const prevPadButtonsRef = useRef<boolean[]>([]);
   const attackBufferRef = useRef<BufferedAttack | null>(null);
 
   useEffect(() => {
@@ -40,11 +51,17 @@ export default function PlayerController() {
     const handleUp = (e: KeyboardEvent) => {
       keys[e.code] = false;
     };
+    const clearHeldInput = () => {
+      Object.keys(keys).forEach((key) => { keys[key] = false; });
+      prevPadButtonsRef.current = [];
+    };
     window.addEventListener("keydown", handleDown);
     window.addEventListener("keyup", handleUp);
+    window.addEventListener("blur", clearHeldInput);
     return () => {
       window.removeEventListener("keydown", handleDown);
       window.removeEventListener("keyup", handleUp);
+      window.removeEventListener("blur", clearHeldInput);
     };
   }, []);
 
@@ -56,7 +73,17 @@ export default function PlayerController() {
     const keys = keysRef.current;
     const prev = prevKeysRef.current;
     const justPressed = (code: string) => keys[code] && !prev[code];
-    const blockHeld = !!(keys["AltLeft"] || keys["AltRight"]);
+
+    const pad = firstConnectedGamepad();
+    const padPressed = (index: number) => !!pad?.buttons[index]?.pressed;
+    const padJustPressed = (index: number) => padPressed(index) && !prevPadButtonsRef.current[index];
+    const padAxisXRaw = pad?.axes?.[0] ?? 0;
+    const padAxisX = Math.abs(padAxisXRaw) >= GAMEPAD_DEADZONE ? padAxisXRaw : 0;
+    const dpadLeft = padPressed(14);
+    const dpadRight = padPressed(15);
+
+    // Standard mapping: LB = block. Keyboard Alt remains supported.
+    const blockHeld = !!(keys["AltLeft"] || keys["AltRight"] || padPressed(4));
     useBattle.getState().setPlayerBlockHeld(blockHeld);
 
     const delta = rawDelta * state.timeScale;
@@ -65,16 +92,22 @@ export default function PlayerController() {
     const touchAttacks = touch.consumeAttacks();
 
     let queuedAttack: AttackType | null = null;
-    if (justPressed("KeyJ") || justPressed("KeyX") || touchAttacks.includes("punch") || touchAttacks.includes("attack")) queuedAttack = "punch";
-    else if (justPressed("KeyK") || justPressed("KeyZ") || touchAttacks.includes("kick") || touchAttacks.includes("heavy")) queuedAttack = "kick";
-    else if (justPressed("KeyL") || justPressed("KeyC") || touchAttacks.includes("special") || touchAttacks.includes("skill")) queuedAttack = "special";
-    else if (justPressed("KeyR") || touchAttacks.includes("ultimate")) queuedAttack = "ultimate";
+    // Standard gamepad: X=punch, Y=kick, B=special, RT=ultimate.
+    if (justPressed("KeyJ") || justPressed("KeyX") || padJustPressed(2) || touchAttacks.includes("punch") || touchAttacks.includes("attack")) queuedAttack = "punch";
+    else if (justPressed("KeyK") || justPressed("KeyZ") || padJustPressed(3) || touchAttacks.includes("kick") || touchAttacks.includes("heavy")) queuedAttack = "kick";
+    else if (justPressed("KeyL") || justPressed("KeyC") || padJustPressed(1) || touchAttacks.includes("special") || touchAttacks.includes("skill")) queuedAttack = "special";
+    else if (justPressed("KeyR") || padJustPressed(7) || touchAttacks.includes("ultimate")) queuedAttack = "ultimate";
 
     if (queuedAttack) attackBufferRef.current = queueBufferedAttack(queuedAttack);
     attackBufferRef.current = tickBufferedAttack(attackBufferRef.current, delta);
 
-    if (state.playerDodgeTimer > 0) {
+    const rememberInputs = () => {
       prevKeysRef.current = { ...keys };
+      prevPadButtonsRef.current = pad ? pad.buttons.map((button) => button.pressed) : [];
+    };
+
+    if (state.playerDodgeTimer > 0) {
+      rememberInputs();
       return;
     }
 
@@ -95,35 +128,29 @@ export default function PlayerController() {
         playerVelocityX: 0,
         playerFacingRight: state.opponentX > state.playerX,
       });
-      prevKeysRef.current = { ...keys };
+      rememberInputs();
       return;
     }
 
     let inputX = 0;
-    if (keys["ArrowLeft"] || keys["KeyA"]) inputX -= 1;
-    if (keys["ArrowRight"] || keys["KeyD"]) inputX += 1;
+    if (keys["ArrowLeft"] || keys["KeyA"] || dpadLeft) inputX -= 1;
+    if (keys["ArrowRight"] || keys["KeyD"] || dpadRight) inputX += 1;
+    inputX += padAxisX;
 
-    if (touch.isJoystickActive) {
-      inputX += touch.joystickX;
-    }
+    if (touch.isJoystickActive) inputX += touch.joystickX;
 
     inputX = clamp01(Math.abs(inputX)) * Math.sign(inputX || 0);
 
-    const sprintHeld = keys["ShiftLeft"] || keys["ShiftRight"];
+    const sprintHeld = keys["ShiftLeft"] || keys["ShiftRight"] || padPressed(10);
     const maxSpeed =
       (sprintHeld ? SPRINT_MAX_SPEED : WALK_MAX_SPEED) * (state.playerGrounded ? 1 : AIR_CONTROL_MULT);
 
-    const blockMove =
-      blockHeld &&
-      state.playerGrounded &&
-      !state.playerAttacking;
+    const blockMove = blockHeld && state.playerGrounded && !state.playerAttacking;
 
     let targetVx = inputX * maxSpeed;
     if (Math.abs(inputX) < 0.08) targetVx = 0;
     if (state.playerAttacking) targetVx = 0;
-    if (blockMove) {
-      targetVx *= b.blockMoveSpeedMult;
-    }
+    if (blockMove) targetVx *= b.blockMoveSpeedMult;
 
     let vx = state.playerVelocityX;
     const rate = state.playerAttacking ? b.attackDecel : targetVx === 0 ? DECEL : ACCEL;
@@ -139,24 +166,23 @@ export default function PlayerController() {
       justPressed("Space") ||
       justPressed("ArrowUp") ||
       justPressed("KeyW") ||
+      padJustPressed(0) ||
+      padJustPressed(12) ||
       touchAttacks.includes("jump");
 
-    // 🦁 BEAST MECHANIC: WALL KICK
     if (wantJump && !state.playerGrounded && (isAtLeftWall || isAtRightWall)) {
       const kickDir = isAtLeftWall ? 1 : -1;
-      vx = kickDir * SPRINT_MAX_SPEED * 1.5; // Explosive push-off
-      velY = JUMP_VELOCITY * 0.9; // Horizontal focus
+      vx = kickDir * SPRINT_MAX_SPEED * 1.5;
+      velY = JUMP_VELOCITY * 0.9;
       useAudio.getState().playJump();
-      useBattle.getState().triggerScreenShake(1.5); // Visual feedback
-    } 
-    // 🦁 BEAST MECHANIC: PREDATOR POUNCE
-    else if (wantJump && state.playerGrounded && !blockMove) {
+      useBattle.getState().triggerScreenShake(1.0);
+    } else if (wantJump && state.playerGrounded && !blockMove) {
       const isSprinting = sprintHeld && Math.abs(vx) > WALK_MAX_SPEED;
       if (isSprinting) {
-         vx *= 1.4; // Boost horizontal speed
-         velY = JUMP_VELOCITY * 0.85; // Low profile pounce
+        vx *= 1.4;
+        velY = JUMP_VELOCITY * 0.85;
       } else {
-         velY = JUMP_VELOCITY;
+        velY = JUMP_VELOCITY;
       }
       useAudio.getState().playJump();
     }
@@ -167,29 +193,31 @@ export default function PlayerController() {
 
     if (newY <= GROUND_Y) {
       if (!state.playerGrounded && Math.abs(velY) > 15) {
-         // 🦁 BEAST MECHANIC: WEIGHTY LANDING
-         useBattle.getState().triggerScreenShake(1.2);
+        useBattle.getState().triggerScreenShake(0.8);
       }
       newY = GROUND_Y;
       velY = 0;
       grounded = true;
     }
 
-    // 🎯 PLAYER INSTINCT: Snap-face opponent during attack startup or close proximity
     const distToOpp = Math.abs(state.opponentX - newX);
     const shouldSnapFace = state.playerAttacking || distToOpp < 2.5;
     const faceTowardOpponent = shouldSnapFace ? state.opponentX > newX : state.playerFacingRight;
 
     const towardOpp = Math.sign(state.opponentX - state.playerX) || 1;
     const wantDodge =
-      (justPressed("KeyQ") || justPressed("KeyE") || touchAttacks.includes("dodge")) && !blockMove;
+      (justPressed("KeyQ") || justPressed("KeyE") || padJustPressed(5) || touchAttacks.includes("dodge")) && !blockMove;
 
-    // Ground evade. Air dodge remains a separate future mechanic.
     if (wantDodge) {
-      const dir = (keys["KeyE"] ? 1 : keys["KeyQ"] ? -1 : inputX !== 0 ? (Math.sign(inputX) as 1 | -1) : ((-towardOpp) as 1 | -1)) as 1 | -1;
+      const dir = (
+        keys["KeyE"] ? 1 :
+        keys["KeyQ"] ? -1 :
+        inputX !== 0 ? Math.sign(inputX) :
+        -towardOpp
+      ) as 1 | -1;
 
       if (state.startPlayerDodge(dir)) {
-        prevKeysRef.current = { ...keys };
+        rememberInputs();
         return;
       }
     }
@@ -219,9 +247,9 @@ export default function PlayerController() {
       if (consumed) attackBufferRef.current = null;
     }
 
-    if (justPressed("KeyT")) state.triggerTransformation();
+    if (justPressed("KeyT") || padJustPressed(6)) state.triggerTransformation();
 
-    prevKeysRef.current = { ...keys };
+    rememberInputs();
   });
 
   return null;
