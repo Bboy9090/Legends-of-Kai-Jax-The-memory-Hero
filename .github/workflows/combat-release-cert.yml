@@ -11,7 +11,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: combat-release-${{ github.ref }}
+  # Push + PR events for the same commit share one lane instead of competing.
+  group: combat-release-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 permissions:
