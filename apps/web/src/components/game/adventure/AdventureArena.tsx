@@ -8,6 +8,7 @@ import { ARENA_REGISTRY, type ArenaConfig, getArenaConfig } from "../../../asset
 import AdventureCharacter from "./AdventureCharacter";
 import AdventureCamera from "./AdventureCamera";
 import AdventurePlayerController from "./AdventurePlayerController";
+import AdventureSessionGuard from "./AdventureSessionGuard";
 import AdventureEnemyAI from "./AdventureEnemyAI";
 import Mission1EncounterBridge from "./Mission1EncounterBridge";
 import * as THREE from "three";
@@ -370,6 +371,7 @@ export default function AdventureArena() {
       <ArenaEnvironment config={arena} />
       <AdventureCharacter />
       <AdventureCamera />
+      <AdventureSessionGuard />
       <AdventurePlayerController />
       <AdventureEnemyAI />
       {missionId === "mission1" && <Mission1EncounterBridge />}
