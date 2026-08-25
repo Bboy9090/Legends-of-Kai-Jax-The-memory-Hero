@@ -12,6 +12,7 @@ function requireRule(ok: boolean, message: string) {
 const cameraEffects = read("apps/web/src/components/game/CameraEffects.tsx");
 const battleCamera = read("apps/web/src/components/game/BattleCamera.tsx");
 const battleGuard = read("apps/web/src/components/game/BattleSessionGuard.tsx");
+const missionGuard = read("apps/web/src/components/game/adventure/AdventureSessionGuard.tsx");
 const missionAI = read("apps/web/src/components/game/adventure/AdventureEnemyAI.tsx");
 const versusAI = read("apps/web/src/components/game/OpponentAI.tsx");
 const battleController = read("apps/web/src/components/game/PlayerController.tsx");
@@ -90,6 +91,18 @@ requireRule(
   "Mission render footprint must stay compact and cannot return to the old 200x200 arena plane.",
 );
 requireRule(
+  missionArena.includes("<AdventureSessionGuard />") && missionGuard.includes("resetAutoTarget"),
+  "Mission arena must mount the session guard and clear sticky target state across session changes.",
+);
+requireRule(
+  missionGuard.includes("pendingAttacks: []") &&
+    missionGuard.includes("timeScale: 1") &&
+    missionGuard.includes("hitStopTimer: 0") &&
+    missionGuard.includes("impactFlash: null") &&
+    missionGuard.includes("encounterIndex"),
+  "Mission session/encounter changes must clear stale touch, hit-stop, time-scale, and impact state.",
+);
+requireRule(
   missionHud.includes("AutoTargetIndicator") && missionHud.includes("Incoming — dodge!"),
   "Mission HUD must identify the auto-target and surface incoming attack warnings.",
 );
@@ -147,6 +160,7 @@ console.log("- single-authority Versus camera and midpoint framing");
 console.log("- gameplay-safe shake, overlap, KO/rematch idempotency, and fresh-round cleanup");
 console.log("- canonical Versus contact-range contract consumed by AI pressure");
 console.log("- Mission threat cap, telegraph whiff fairness, anti-stunlock, and timer-safe attack recovery");
+console.log("- Mission session/encounter cleanup for target, touch, hit-stop, slow-motion, and impact residue");
 console.log("- bounded Mission combat space, compact render footprint, and stable target readability");
 console.log("- differentiated Versus AI personalities");
 console.log("- certified Versus particle and trail performance/readability budgets");
