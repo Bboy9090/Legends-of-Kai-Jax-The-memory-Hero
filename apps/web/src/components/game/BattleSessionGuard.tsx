@@ -6,6 +6,7 @@ import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
 
 const { arenaXMin, arenaXMax, groundY } = MOVEMENT_TUNING.battle;
 const MIN_FIGHTER_SEPARATION = 0.85;
+const MAX_READABLE_SCREEN_SHAKE = 0.4;
 
 function finiteOr(value: number, fallback: number): number {
   return Number.isFinite(value) ? value : fallback;
@@ -114,17 +115,16 @@ export default function BattleSessionGuard() {
       opponentX = clampArenaX(mid + (playerOnLeft ? half : -half));
     }
 
-    if (
-      playerX !== s.playerX ||
-      opponentX !== s.opponentX ||
-      playerY !== s.playerY ||
-      opponentY !== s.opponentY
-    ) {
+    const patch: Partial<typeof s> = {};
+    if (playerX !== s.playerX) patch.playerX = playerX;
+    if (opponentX !== s.opponentX) patch.opponentX = opponentX;
+    if (playerY !== s.playerY) patch.playerY = playerY;
+    if (opponentY !== s.opponentY) patch.opponentY = opponentY;
+    if (s.screenShake > MAX_READABLE_SCREEN_SHAKE) patch.screenShake = MAX_READABLE_SCREEN_SHAKE;
+
+    if (Object.keys(patch).length > 0) {
       useBattle.setState({
-        playerX,
-        opponentX,
-        playerY,
-        opponentY,
+        ...patch,
         playerFacingRight: opponentX > playerX,
         opponentFacingRight: playerX > opponentX,
       });
