@@ -2,25 +2,20 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useDifficulty, type Difficulty } from "../../lib/stores/useDifficulty";
-import { useTrainingLab } from "../../lib/stores/useTrainingLab";
 import { BEHAVIOR_PROFILES, type AIBehaviorDifficulty } from "../../lib/enemyAIv2";
-import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
-import { resolveTrainingStep } from "../../game/combat/trainingStep";
-import {
-  chooseAttack,
-  choosePositionAction,
-  createAIRng,
-  getFighterAIIdentity,
-  shouldPunish,
-  type AIAction,
-  type AIRandom,
-} from "../../game/combat/aiIdentity";
-import {
-  getDueRecordedActions,
-  getRecordingDuration,
-} from "../../game/combat/trainingRecording";
 
-const b = MOVEMENT_TUNING.battle;
+const AI_MOVE_SPEED = 4.1;
+const GRAVITY = -15;
+const GROUND_Y = 0.8;
+// Keep AI attack decisions inside the resolver's practical melee windows.
+// Punch resolves at ~1.5, kick at ~2.0; holding near 1.65 keeps pressure alive
+// without creating constant whiff animations from outside actual contact range.
+const MELEE_ATTACK_RANGE = 1.95;
+const MELEE_HOLD_RANGE = 1.6;
+const CASTER_ATTACK_RANGE = 6.0;
+const CASTER_HOLD_MIN = 3.1;
+const CASTER_HOLD_MAX = 5.2;
+const JUMP_VELOCITY = 4;
 
 function toAIDifficulty(d: Difficulty): AIBehaviorDifficulty {
   return d === "story" ? "easy" : d;
@@ -29,208 +24,142 @@ function toAIDifficulty(d: Difficulty): AIBehaviorDifficulty {
 export default function OpponentAI() {
   const attackCooldown = useRef(0);
   const decisionTimer = useRef(0);
-  const currentAction = useRef<AIAction>("chase");
+  const currentAction = useRef<"chase" | "retreat" | "idle">("chase");
   const jumpCooldown = useRef(0);
-  const punishWindow = useRef(0);
-  const rngKeyRef = useRef("");
-  const rngRef = useRef<AIRandom>(() => 0.5);
-  const playbackNonceRef = useRef(-1);
-  const playbackElapsedRef = useRef(-Number.EPSILON);
-  const lastConsumedStepEpochRef = useRef(0);
   const difficulty = useDifficulty((s) => s.difficulty);
 
   useFrame((_, rawDelta) => {
     const state = useBattle.getState();
     if (state.battlePhase !== "fighting") return;
     if (state.hitStop > 0) return;
-
-    const training = useTrainingLab.getState();
-    const step = resolveTrainingStep({
-      rawDelta,
-      timeScale: state.timeScale,
-      simulationPaused: training.enabled && training.simulationPaused,
-      stepEpoch: training.stepEpoch,
-      lastConsumedStepEpoch: lastConsumedStepEpochRef.current,
-    });
-    lastConsumedStepEpochRef.current = step.consumedStepEpoch;
-    const delta = step.delta;
-    if (delta <= 0) return;
     if (state.opponentStaggerTimer > 0 || state.opponentHitStunTimer > 0) return;
 
-    const identity = getFighterAIIdentity(state.opponentFighterId, state.opponentPersonality);
-    const p = identity.archetype;
-    const aiDiff = toAIDifficulty(difficulty);
-    const enemyType = p === "stalker" ? "attacker" : p === "titan" ? "tank" : p === "caster" ? "elite" : "grunt";
-    const profile = BEHAVIOR_PROFILES[enemyType][aiDiff];
-    const decisionInterval = Math.max(0.05, profile.decisionUpdateRate / 1000);
+    const delta = Math.min(rawDelta, 0.05) * state.timeScale;
+    const p = state.opponentPersonality;
+    const isAtLeftWall = state.opponentX <= -9.8;
+    const isAtRightWall = state.opponentX >= 9.8;
 
-    const rngKey = `${state.opponentFighterId}:${state.totalBattles}:${difficulty}`;
-    if (rngKeyRef.current !== rngKey) {
-      rngKeyRef.current = rngKey;
-      rngRef.current = createAIRng(rngKey);
-    }
-    const random = rngRef.current;
+    const aiDiff = toAIDifficulty(difficulty);
+    const enemyType =
+      p === "stalker" ? "attacker" : p === "titan" ? "tank" : p === "caster" ? "elite" : "grunt";
+    const profile = BEHAVIOR_PROFILES[enemyType][aiDiff];
+    const decisionInterval = Math.max(0.08, profile.decisionUpdateRate / 1000);
 
     attackCooldown.current = Math.max(0, attackCooldown.current - delta);
     jumpCooldown.current = Math.max(0, jumpCooldown.current - delta);
-    punishWindow.current = Math.max(0, punishWindow.current - delta);
     decisionTimer.current -= delta;
-
-    const signedDist = state.playerX - state.opponentX;
-    const absDist = Math.abs(signedDist);
-    const dir = signedDist >= 0 ? 1 : -1;
-    const isAtLeftWall = state.opponentX <= b.arenaXMin + b.aiWallMargin;
-    const isAtRightWall = state.opponentX >= b.arenaXMax - b.aiWallMargin;
 
     let velY = state.opponentVelocityY;
     let wantsJump = false;
-    const dummyMode = training.enabled ? training.dummyBehavior : "normal";
 
-    if (dummyMode === "playback" && training.playbackActive) {
-      if (playbackNonceRef.current !== training.playbackNonce) {
-        playbackNonceRef.current = training.playbackNonce;
-        playbackElapsedRef.current = -Number.EPSILON;
-      }
-      const previous = playbackElapsedRef.current;
-      const next = previous + delta;
-      const due = getDueRecordedActions(training.recordedActions, previous, next);
-      for (const entry of due) {
-        if (entry.action === "jump") state.opponentJump();
-        else state.opponentAttack(entry.action);
-      }
-      playbackElapsedRef.current = next;
-      useBattle.setState({ opponentVelocityX: 0, opponentFacingRight: state.playerX > state.opponentX });
-      if (next > getRecordingDuration(training.recordedActions) + 0.12) {
-        useTrainingLab.getState().stopPlayback();
-      }
-      return;
-    }
-
-    if (dummyMode === "idle") {
-      velY = Math.max(b.terminalVelocity, velY + b.gravity * delta);
-      let newY = state.opponentY + velY * delta;
-      let grounded = false;
-      if (newY <= b.groundY) { newY = b.groundY; velY = 0; grounded = true; }
-      useBattle.setState({
-        opponentY: newY,
-        opponentVelocityX: 0,
-        opponentVelocityY: velY,
-        opponentGrounded: grounded,
-        opponentFacingRight: state.playerX > state.opponentX,
-      });
-      return;
-    }
-
-    if (dummyMode === "jump") {
-      if (state.opponentGrounded && jumpCooldown.current <= 0) {
-        velY = b.jumpVelocity;
-        jumpCooldown.current = 1.1;
-      }
-      velY = Math.max(b.terminalVelocity, velY + b.gravity * delta);
-      let newY = state.opponentY + velY * delta;
-      let grounded = false;
-      if (newY <= b.groundY) { newY = b.groundY; velY = 0; grounded = true; }
-      useBattle.setState({
-        opponentY: newY,
-        opponentVelocityX: 0,
-        opponentVelocityY: velY,
-        opponentGrounded: grounded,
-        opponentFacingRight: state.playerX > state.opponentX,
-      });
-      return;
-    }
-
-    if (dummyMode === "attack") {
-      useBattle.setState({ opponentVelocityX: 0, opponentFacingRight: state.playerX > state.opponentX });
-      if (attackCooldown.current <= 0 && !state.opponentAttacking) {
-        state.opponentAttack(chooseAttack(identity, random(), false));
-        attackCooldown.current = Math.max(0.35, profile.attackSpacing / 1000);
-      }
-      return;
-    }
+    const distanceNow = Math.abs(state.playerX - state.opponentX);
+    const isLowHealth = state.opponentHealth / state.maxHealth < 0.3;
 
     if (decisionTimer.current <= 0) {
       decisionTimer.current = decisionInterval;
-      const punish = shouldPunish(identity, random(), state.playerAttacking, state.playerHitStunTimer);
-      if (punish && absDist <= identity.punishRange) {
-        currentAction.current = "punish";
-        punishWindow.current = Math.max(punishWindow.current, 0.32);
-      } else {
-        currentAction.current = choosePositionAction(identity, {
-          distance: absDist,
-          opponentHealthRatio: state.opponentHealth / Math.max(1, state.maxHealth),
-          playerAttacking: state.playerAttacking,
-          playerAttackElapsed: state.playerAttackElapsed,
-          playerHitStunTimer: state.playerHitStunTimer,
-          opponentGrounded: state.opponentGrounded,
-        });
-      }
 
-      if (state.opponentGrounded && jumpCooldown.current <= 0 && random() < identity.jumpChance) {
-        wantsJump = true;
-        jumpCooldown.current = p === "stalker" ? 1.1 : 1.7;
+      if (p === "stalker") {
+        if (distanceNow > MELEE_HOLD_RANGE) currentAction.current = "chase";
+        else currentAction.current = isLowHealth && distanceNow < 1.2 ? "retreat" : "idle";
+        if (jumpCooldown.current <= 0 && state.opponentGrounded && distanceNow > 3.0) {
+          wantsJump = Math.random() < 0.18;
+          jumpCooldown.current = 1.5;
+        }
+      } else if (p === "titan") {
+        currentAction.current = distanceNow > 1.45 ? "chase" : "idle";
+        wantsJump = false;
+      } else if (p === "caster") {
+        if (distanceNow < CASTER_HOLD_MIN) currentAction.current = "retreat";
+        else if (distanceNow > CASTER_HOLD_MAX) currentAction.current = "chase";
+        else currentAction.current = "idle";
+      } else {
+        currentAction.current = distanceNow > MELEE_HOLD_RANGE ? "chase" : "idle";
       }
     }
 
-    if (p === "stalker" && !state.opponentGrounded && (isAtLeftWall || isAtRightWall) && jumpCooldown.current <= 0) {
+    if (
+      p === "stalker" &&
+      !state.opponentGrounded &&
+      (isAtLeftWall || isAtRightWall) &&
+      jumpCooldown.current <= 0 &&
+      Math.random() < 0.14
+    ) {
       wantsJump = true;
     }
 
     let wallKickPush = 0;
     if (wantsJump) {
       if (state.opponentGrounded) {
-        velY = b.jumpVelocity * (p === "stalker" ? b.aiStalkerJumpMult : 1);
+        velY = JUMP_VELOCITY * (p === "stalker" ? 1.2 : 1.0);
       } else if (p === "stalker" && (isAtLeftWall || isAtRightWall)) {
-        velY = b.jumpVelocity * b.aiStalkerWallKickVerticalMult;
-        wallKickPush = isAtLeftWall ? b.aiStalkerWallKickPush : -b.aiStalkerWallKickPush;
-        jumpCooldown.current = 1.25;
+        velY = JUMP_VELOCITY * 1.1;
+        jumpCooldown.current = 1.6;
+        wallKickPush += isAtLeftWall ? 0.4 : -0.4;
       }
     }
 
-    velY += b.gravity * delta;
-    velY = Math.max(b.terminalVelocity, velY);
+    velY += GRAVITY * delta;
     let newY = state.opponentY + velY * delta;
     let grounded = false;
-    if (newY <= b.groundY) { newY = b.groundY; velY = 0; grounded = true; }
 
-    const baseMoveSpeed = b.aiBaseMoveSpeed * identity.moveSpeedMult;
+    if (newY <= GROUND_Y) {
+      newY = GROUND_Y;
+      velY = 0;
+      grounded = true;
+    }
+
+    const dist = state.playerX - state.opponentX;
+    const absDist = Math.abs(dist);
+    const dir = dist > 0 ? 1 : -1;
     let dx = 0;
-    if (currentAction.current === "chase" || currentAction.current === "punish") {
-      dx = dir * baseMoveSpeed * (currentAction.current === "punish" ? 1.18 : 1) * delta;
+
+    const baseMoveSpeed =
+      p === "stalker"
+        ? AI_MOVE_SPEED * 1.18
+        : p === "titan"
+          ? AI_MOVE_SPEED * 0.76
+          : p === "caster"
+            ? AI_MOVE_SPEED * 0.9
+            : AI_MOVE_SPEED;
+
+    if (currentAction.current === "chase") {
+      dx = dir * baseMoveSpeed * delta;
     } else if (currentAction.current === "retreat") {
-      dx = -dir * baseMoveSpeed * b.aiRetreatSpeedMult * delta;
+      dx = -dir * baseMoveSpeed * 0.68 * delta;
     }
     dx += wallKickPush;
-    if ((isAtLeftWall && dx < 0) || (isAtRightWall && dx > 0)) dx = 0;
 
-    const newX = Math.max(b.arenaXMin, Math.min(b.arenaXMax, state.opponentX + dx));
+    const newX = Math.max(-10, Math.min(10, state.opponentX + dx));
+    const faceDirection = absDist < 12 ? state.playerX > state.opponentX : state.opponentFacingRight;
+
     useBattle.setState({
       opponentX: newX,
       opponentY: newY,
       opponentVelocityY: velY,
       opponentGrounded: grounded,
-      opponentFacingRight: state.playerX > newX,
+      opponentFacingRight: faceDirection,
     });
 
-    const canAttack = attackCooldown.current <= 0 && !state.opponentAttacking && state.opponentStaggerTimer <= 0 && state.opponentHitStunTimer <= 0;
-    if (!canAttack) return;
+    const attackRange = p === "caster" ? CASTER_ATTACK_RANGE : MELEE_ATTACK_RANGE;
+    if (absDist <= attackRange && attackCooldown.current <= 0 && !state.opponentAttacking) {
+      const roll = Math.random();
+      let attackType: "punch" | "kick" | "special";
 
-    const inPunish = currentAction.current === "punish" || punishWindow.current > 0;
-    const attackRange = inPunish ? identity.punishRange : identity.attackRange;
-    if (absDist > attackRange) return;
+      if (p === "titan") {
+        attackType = absDist > 1.5 ? "kick" : roll < 0.62 ? "kick" : "punch";
+      } else if (p === "caster") {
+        attackType = absDist > MELEE_ATTACK_RANGE ? "special" : roll < 0.72 ? "special" : "kick";
+      } else if (p === "stalker") {
+        attackType = absDist > 1.5 ? "kick" : roll < 0.52 ? "punch" : roll < 0.9 ? "kick" : "special";
+      } else {
+        attackType = absDist > 1.5 ? "kick" : roll < 0.5 ? "punch" : roll < 0.9 ? "kick" : "special";
+      }
 
-    const aggressionGate = inPunish || random() < profile.aggressiveness;
-    if (!aggressionGate) {
-      attackCooldown.current = Math.max(0.15, (profile.attackSpacing / 1000) * 0.35);
-      return;
+      state.opponentAttack(attackType);
+      const baseSpacing = Math.max(0.45, profile.attackSpacing / 1000);
+      const pressureMult = difficulty === "story" ? 1.18 : difficulty === "hard" ? 0.88 : difficulty === "legendary" ? 0.78 : 1;
+      attackCooldown.current = baseSpacing * pressureMult + Math.random() * 0.2;
     }
-
-    state.opponentAttack(chooseAttack(identity, random(), inPunish));
-    const baseSpacing = profile.attackSpacing / 1000;
-    const identityCadence = p === "stalker" ? 0.82 : p === "titan" ? 1.18 : p === "caster" ? 1.08 : 1;
-    const punishCadence = inPunish ? 0.72 : 1;
-    attackCooldown.current = Math.max(0.18, baseSpacing * identityCadence * punishCadence + random() * 0.22);
-    punishWindow.current = 0;
   });
 
   return null;
