@@ -30,9 +30,7 @@ const _worldUp = new THREE.Vector3(0, 1, 0);
 function firstConnectedGamepad(): Gamepad | null {
   if (typeof navigator === "undefined" || typeof navigator.getGamepads !== "function") return null;
   const pads = navigator.getGamepads();
-  for (const pad of pads) {
-    if (pad?.connected) return pad;
-  }
+  for (const pad of pads) if (pad?.connected) return pad;
   return null;
 }
 
@@ -52,15 +50,30 @@ export default function AdventurePlayerController() {
     const handleUp = (e: KeyboardEvent) => { keys[e.code] = false; };
     const clearHeld = () => {
       Object.keys(keys).forEach((key) => { keys[key] = false; });
+      prevKeysRef.current = {};
       prevPadButtonsRef.current = [];
+      velSmoothRef.current = { x: 0, z: 0 };
+      useTouchInput.getState().releaseJoystick();
+      useTouchInput.setState({ pendingAttacks: [] });
+      const s = useAdventure.getState();
+      s.setPlayerVelocity(0, 0);
+      s.setPlayerMoving(false, false);
     };
+    const onVisibility = () => { if (document.hidden) clearHeld(); };
     window.addEventListener("keydown", handleDown);
     window.addEventListener("keyup", handleUp);
     window.addEventListener("blur", clearHeld);
+    window.addEventListener("gamepadconnected", clearHeld);
+    window.addEventListener("gamepaddisconnected", clearHeld);
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       window.removeEventListener("keydown", handleDown);
       window.removeEventListener("keyup", handleUp);
       window.removeEventListener("blur", clearHeld);
+      window.removeEventListener("gamepadconnected", clearHeld);
+      window.removeEventListener("gamepaddisconnected", clearHeld);
+      document.removeEventListener("visibilitychange", onVisibility);
+      clearHeld();
     };
   }, []);
 
@@ -121,7 +134,7 @@ export default function AdventurePlayerController() {
         store.setPlayerPos(
           THREE.MathUtils.clamp(newX, -MISSION_BOUNDARY, MISSION_BOUNDARY),
           0,
-          THREE.MathUtils.clamp(newZ, -MISSION_BOUNDARY, MISSION_BOUNDARY)
+          THREE.MathUtils.clamp(newZ, -MISSION_BOUNDARY, MISSION_BOUNDARY),
         );
       }
       rememberInputs();
@@ -143,11 +156,7 @@ export default function AdventurePlayerController() {
     if (keys["KeyD"] || keys["ArrowRight"] || padPressed(15)) inputX += 1;
     inputX += padX;
     inputZ += padY;
-
-    if (touch.isJoystickActive) {
-      inputX += touch.joystickX;
-      inputZ += touch.joystickY;
-    }
+    if (touch.isJoystickActive) { inputX += touch.joystickX; inputZ += touch.joystickY; }
 
     const inputLen = Math.sqrt(inputX * inputX + inputZ * inputZ);
     const hasInput = inputLen > 0.01;
@@ -155,7 +164,6 @@ export default function AdventurePlayerController() {
 
     let worldX = 0;
     let worldZ = 0;
-
     if (hasInput) {
       state.camera.getWorldDirection(_camDir);
       _camDir.y = 0;
@@ -171,7 +179,6 @@ export default function AdventurePlayerController() {
 
     if (p.combatState === CombatState.ATTACKING) {
       attackTimerRef.current = Math.max(0, attackTimerRef.current - delta);
-
       if (attackTimerRef.current <= 0) {
         store.clearAttack();
         store.setComboTimer(COMBO_CONFIG.resetTime);
@@ -207,24 +214,15 @@ export default function AdventurePlayerController() {
       if (currentMove && currentMove.cancelAt > 0) {
         const timing = getMoveFrameTime(currentMove);
         const elapsed = timing.totalTime - attackTimerRef.current;
-        if (elapsed >= timing.cancelTime) {
-          let nextAttack: string | null = null;
-          if (justPressed("KeyJ") || justPressed("KeyX") || padJustPressed(2) || touchAttacks.includes("attack")) {
-            const nextStep = p.comboStep + 1;
-            if (nextStep < COMBO_CONFIG.maxChain) {
-              const moveKey = `light${nextStep + 1}`;
-              if (MOVES[moveKey] && store.useStamina(MOVES[moveKey].staminaCost)) {
-                nextAttack = moveKey;
-                store.setComboStep(nextStep);
-              }
-            }
-          }
-          if (nextAttack) {
-            const move = MOVES[nextAttack];
-            const timing = getMoveFrameTime(move);
-            store.playerAttack(nextAttack as any);
-            attackTimerRef.current = timing.totalTime;
+        if (elapsed >= timing.cancelTime && (justPressed("KeyJ") || justPressed("KeyX") || padJustPressed(2) || touchAttacks.includes("attack"))) {
+          const nextStep = p.comboStep + 1;
+          const moveKey = `light${nextStep + 1}`;
+          if (nextStep < COMBO_CONFIG.maxChain && MOVES[moveKey] && store.useStamina(MOVES[moveKey].staminaCost)) {
+            const move = MOVES[moveKey];
+            store.playerAttack(moveKey as any);
+            attackTimerRef.current = getMoveFrameTime(move).totalTime;
             attackHitRef.current = false;
+            store.setComboStep(nextStep);
             store.setSuperArmor(!!move.superArmor);
             if (targetId) {
               const target = enemies.find((e) => e.id === targetId);
@@ -233,7 +231,6 @@ export default function AdventurePlayerController() {
           }
         }
       }
-
       rememberInputs();
       return;
     }
@@ -246,9 +243,7 @@ export default function AdventurePlayerController() {
       store.setCombatState(CombatState.DODGING);
       store.setDodgeTimer(DODGE.duration);
       store.setInvulnTimer(DODGE.iFrames / 60);
-      dodgeDirRef.current = hasInput
-        ? { x: worldX, z: worldZ }
-        : { x: -Math.sin(p.rotY), z: -Math.cos(p.rotY) };
+      dodgeDirRef.current = hasInput ? { x: worldX, z: worldZ } : { x: -Math.sin(p.rotY), z: -Math.cos(p.rotY) };
       rememberInputs();
       return;
     }
@@ -261,13 +256,11 @@ export default function AdventurePlayerController() {
     if (attackInput && !exhausted) {
       const moveData = MOVES[attackInput];
       if (moveData && store.useStamina(moveData.staminaCost)) {
-        const timing = getMoveFrameTime(moveData);
         store.playerAttack(attackInput as any);
-        attackTimerRef.current = timing.totalTime;
+        attackTimerRef.current = getMoveFrameTime(moveData).totalTime;
         attackHitRef.current = false;
         store.setComboStep(0);
         store.setSuperArmor(!!moveData.superArmor);
-
         if (targetId) {
           const target = enemies.find((e) => e.id === targetId);
           if (target) store.setPlayerRot(Math.atan2(target.posX - p.posX, target.posZ - p.posZ));
@@ -280,23 +273,15 @@ export default function AdventurePlayerController() {
 
     const targetVx = worldX * moveSpeed;
     const targetVz = worldZ * moveSpeed;
-    let svx = velSmoothRef.current.x;
-    let svz = velSmoothRef.current.z;
-    const rate = hasInput ? MOVE_ACCEL : MOVE_DECEL;
-    svx = moveTowards(svx, targetVx, rate * delta);
-    svz = moveTowards(svz, targetVz, rate * delta);
-
+    let svx = moveTowards(velSmoothRef.current.x, targetVx, (hasInput ? MOVE_ACCEL : MOVE_DECEL) * delta);
+    let svz = moveTowards(velSmoothRef.current.z, targetVz, (hasInput ? MOVE_ACCEL : MOVE_DECEL) * delta);
     if (!hasInput) {
       if (Math.abs(svx) < 0.05) svx = 0;
       if (Math.abs(svz) < 0.05) svz = 0;
     }
-
     const cap = moveSpeed + 0.01;
     const vlen = Math.sqrt(svx * svx + svz * svz);
-    if (vlen > cap && vlen > 0) {
-      svx = (svx / vlen) * cap;
-      svz = (svz / vlen) * cap;
-    }
+    if (vlen > cap && vlen > 0) { svx = (svx / vlen) * cap; svz = (svz / vlen) * cap; }
     velSmoothRef.current = { x: svx, z: svz };
     store.setPlayerVelocity(svx, svz);
     store.setPlayerMoving(hasInput || vlen > 0.15, (hasInput && isRunning) || (isRunning && vlen > 0.15));
@@ -304,10 +289,7 @@ export default function AdventurePlayerController() {
     if (hasInput && isStatueFighter(p.fighterId)) {
       stoneStepTimer.current += delta;
       const stepInterval = isRunning ? 0.3 : 0.5;
-      if (stoneStepTimer.current >= stepInterval) {
-        stoneStepTimer.current = 0;
-        useAudio.getState().playStoneMove();
-      }
+      if (stoneStepTimer.current >= stepInterval) { stoneStepTimer.current = 0; useAudio.getState().playStoneMove(); }
     } else stoneStepTimer.current = 0;
 
     if (isRunning && hasInput) store.useStamina(15 * delta);
@@ -326,7 +308,7 @@ export default function AdventurePlayerController() {
     store.setPlayerPos(
       THREE.MathUtils.clamp(newX, -MISSION_BOUNDARY, MISSION_BOUNDARY),
       0,
-      THREE.MathUtils.clamp(newZ, -MISSION_BOUNDARY, MISSION_BOUNDARY)
+      THREE.MathUtils.clamp(newZ, -MISSION_BOUNDARY, MISSION_BOUNDARY),
     );
 
     const aliveForCombat = store.enemies.filter((e) => !e.isDead);
@@ -339,10 +321,8 @@ export default function AdventurePlayerController() {
 
     if (p.comboTimer > 0) {
       const newTimer = p.comboTimer - delta;
-      if (newTimer <= 0) {
-        store.setComboTimer(0);
-        store.setComboStep(0);
-      } else store.setComboTimer(newTimer);
+      if (newTimer <= 0) { store.setComboTimer(0); store.setComboStep(0); }
+      else store.setComboTimer(newTimer);
     }
 
     if (justPressed("Escape") || justPressed("KeyP") || padJustPressed(9)) store.togglePause();
