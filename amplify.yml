@@ -1,0 +1,21 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - corepack enable
+        - corepack prepare pnpm@9.15.9 --activate
+        - pnpm install --filter ./apps/web... --frozen-lockfile
+    build:
+      commands:
+        - pnpm validate:release
+  artifacts:
+    baseDirectory: apps/web/dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - apps/web/node_modules/**/*
+      - packages/*/node_modules/**/*
+      - ~/.pnpm-store/**/*

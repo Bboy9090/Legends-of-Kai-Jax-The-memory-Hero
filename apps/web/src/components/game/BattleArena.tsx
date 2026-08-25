@@ -1,112 +1,92 @@
-import { useRef, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useMemo } from 'react';
 import * as THREE from 'three';
-import { Sparkles, Float } from '@react-three/drei';
+import { Sparkles } from '@react-three/drei';
 
 /**
- * LEGENDS OF KAI-JAX: LEGENDARY BATTLE ARENA
- * High-fidelity, cinematic arena with dynamic lighting and grit.
+ * Readability-first versus arena.
+ * The playable battle lane is roughly x=-10..10, so the visual stage now
+ * reinforces that footprint instead of surrounding a 1v1 with a 100x100 void.
  */
 export default function BattleArena() {
-  const floorRef = useRef<THREE.Mesh>(null!);
-  const ringRef = useRef<THREE.Group>(null!);
-
   const gridTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
-    canvas.height = 512;
+    canvas.height = 256;
     const ctx = canvas.getContext('2d')!;
-    ctx.strokeStyle = 'rgba(0, 242, 255, 0.2)';
+
+    ctx.fillStyle = '#070711';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = 'rgba(0, 242, 255, 0.12)';
     ctx.lineWidth = 2;
-    ctx.strokeRect(0, 0, 512, 512);
-    ctx.strokeStyle = 'rgba(0, 242, 255, 0.05)';
-    for(let i = 0; i < 8; i++) {
-      ctx.moveTo(i * 64, 0);
-      ctx.lineTo(i * 64, 512);
-      ctx.moveTo(0, i * 64);
-      ctx.lineTo(512, i * 64);
+    for (let x = 0; x <= canvas.width; x += 64) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
     }
+    for (let y = 0; y <= canvas.height; y += 64) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = 'rgba(127, 0, 255, 0.28)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
     ctx.stroke();
+
     const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(20, 20);
+    tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
     return tex;
   }, []);
 
-  useFrame((state) => {
-    const t = state.clock.elapsedTime;
-    if (ringRef.current) {
-      ringRef.current.rotation.z = t * 0.05;
-    }
-  });
-
   return (
     <group>
-      {/* Primary Battle Floor */}
-      <mesh ref={floorRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[100, 100]} />
-        <meshStandardMaterial 
-          color="#050510" 
-          roughness={0.8} 
-          metalness={0.2}
+      {/* Combat platform: deliberately close to the actual x=-10..10 bounds. */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]} receiveShadow>
+        <planeGeometry args={[24, 14]} />
+        <meshStandardMaterial
+          color="#080812"
+          roughness={0.82}
+          metalness={0.12}
           map={gridTexture}
         />
       </mesh>
 
-      {/* Cinematic Fog Gradients */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
-        <circleGeometry args={[20, 64]} />
-        <meshBasicMaterial 
-          color="#0a0a20" 
-          transparent 
-          opacity={0.8}
-        />
+      {/* Soft center combat mark; static so it never competes with motion. */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
+        <ringGeometry args={[2.8, 3.0, 64]} />
+        <meshBasicMaterial color="#00f2ff" transparent opacity={0.18} />
       </mesh>
 
-      {/* The Central "Memory Ring" */}
-      <group ref={ringRef} position={[0, 0.01, 0]}>
-        <mesh rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[11.8, 12, 128]} />
-          <meshBasicMaterial color="#00f2ff" transparent opacity={0.3} />
-        </mesh>
-        <mesh rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[11.5, 11.6, 64]} />
-          <meshBasicMaterial color="#7f00ff" transparent opacity={0.2} />
-        </mesh>
-        
-        {/* Floating Memory Nodes around the ring */}
-        {[0, 1, 2, 3].map((i) => (
-          <Float key={i} speed={2} rotationIntensity={1} floatIntensity={1}>
-            <mesh position={[Math.cos(i * Math.PI / 2) * 12, 1, Math.sin(i * Math.PI / 2) * 12]}>
-              <octahedronGeometry args={[0.3, 0]} />
-              <meshBasicMaterial color={i % 2 === 0 ? "#00f2ff" : "#7f00ff"} />
-            </mesh>
-          </Float>
-        ))}
-      </group>
-
-      {/* Environment Detail: Distant Monoliths */}
-      {[...Array(8)].map((_, i) => {
-        const angle = (i / 8) * Math.PI * 2;
-        const dist = 35;
-        return (
-          <mesh 
-            key={i} 
-            position={[Math.cos(angle) * dist, 10, Math.sin(angle) * dist]}
-            castShadow
-          >
-            <boxGeometry args={[2, 40, 2]} />
-            <meshStandardMaterial color="#0a0a15" metalness={0.8} roughness={0.1} />
+      {/* Clear edge language at the true gameplay walls. */}
+      {[-10, 10].map((x) => (
+        <group key={x} position={[x, 0, 0]}>
+          <mesh position={[0, 0.025, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[0.14, 13.5]} />
+            <meshBasicMaterial color="#7f00ff" transparent opacity={0.52} />
           </mesh>
-        );
-      })}
+          <pointLight position={[0, 0.8, 0]} intensity={0.8} color="#7f00ff" distance={4} />
+        </group>
+      ))}
 
-      {/* Atmospheric Particles */}
-      <Sparkles count={200} scale={50} size={2} speed={0.4} color="#00f2ff" opacity={0.4} />
-      <Sparkles count={100} scale={30} size={4} speed={0.2} color="#7f00ff" opacity={0.2} />
-      
-      {/* Ground Glow */}
-      <pointLight position={[0, 0.5, 0]} intensity={2} color="#00f2ff" distance={20} />
+      {/* Low, distant silhouettes for depth without blocking fighter reads. */}
+      {[-16, -12, 12, 16].map((x, index) => (
+        <mesh key={x} position={[x, 4.5, -14 - (index % 2) * 3]}>
+          <boxGeometry args={[1.5, 9, 1.5]} />
+          <meshStandardMaterial color="#090914" metalness={0.55} roughness={0.5} />
+        </mesh>
+      ))}
+
+      {/* Atmosphere stays subtle; combat silhouettes remain dominant. */}
+      <Sparkles count={48} scale={[26, 10, 18]} size={1.25} speed={0.16} color="#00f2ff" opacity={0.18} />
+
+      <pointLight position={[0, 2.5, 2]} intensity={1.2} color="#00f2ff" distance={18} />
+      <pointLight position={[0, 4, -6]} intensity={0.75} color="#7f00ff" distance={18} />
     </group>
   );
 }

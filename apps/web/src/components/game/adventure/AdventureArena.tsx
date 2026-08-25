@@ -8,146 +8,147 @@ import { ARENA_REGISTRY, type ArenaConfig, getArenaConfig } from "../../../asset
 import AdventureCharacter from "./AdventureCharacter";
 import AdventureCamera from "./AdventureCamera";
 import AdventurePlayerController from "./AdventurePlayerController";
+import AdventureSessionGuard from "./AdventureSessionGuard";
 import AdventureEnemyAI from "./AdventureEnemyAI";
 import Mission1EncounterBridge from "./Mission1EncounterBridge";
 import * as THREE from "three";
 
-// ─── Arena Ground ──────────────────────────────────────────────────────────
+const VISUAL_ARENA_SIZE = 76;
+const VISUAL_ARENA_HALF = VISUAL_ARENA_SIZE / 2;
+const SCRIPTED_ENCOUNTER_CLEAR_DELAY_SEC = 0.9;
+
 function ArenaGround({ config }: { config: ArenaConfig }) {
   const { biome, ground } = config;
 
   return (
     <group>
-      {/* Base plane */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[200, 200]} />
+        <planeGeometry args={[VISUAL_ARENA_SIZE, VISUAL_ARENA_SIZE]} />
         <meshStandardMaterial
           color={ground.color}
-          roughness={biome === 'nature' ? 0.9 : 0.4}
-          metalness={biome === 'tech' || biome === 'void' ? 0.6 : 0.1}
+          roughness={biome === "nature" ? 0.9 : 0.4}
+          metalness={biome === "tech" || biome === "void" ? 0.6 : 0.1}
         />
       </mesh>
 
-      {/* Biome-specific ground details */}
-      {biome === 'urban' && (
+      {biome === "urban" && (
         <>
-          {/* Cracked urban asphalt roadway */}
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
-            <planeGeometry args={[180, 180]} />
+            <planeGeometry args={[72, 72]} />
             <meshStandardMaterial color="#141419" roughness={0.88} metalness={0.15} />
           </mesh>
-          {/* Street asphalt lane markings */}
-          {[-40, -20, 0, 20, 40].map((z, i) => (
+          {[-20, 0, 20].map((z, i) => (
             <mesh key={`lane-${i}`} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, z]}>
-              <planeGeometry args={[120, 0.4]} />
-              <meshStandardMaterial color="#d97706" emissive="#b45309" emissiveIntensity={0.2} roughness={0.9} />
+              <planeGeometry args={[68, 0.35]} />
+              <meshStandardMaterial color="#d97706" emissive="#b45309" emissiveIntensity={0.14} roughness={0.9} />
             </mesh>
           ))}
-          {/* Sidewalk curbs */}
-          {[-25, 25].map((x, i) => (
-            <mesh key={`curb-${i}`} position={[x, 0.15, 0]}>
-              <boxGeometry args={[8, 0.3, 160]} />
+          {[-29, 29].map((x, i) => (
+            <mesh key={`curb-${i}`} position={[x, 0.12, 0]}>
+              <boxGeometry args={[2.4, 0.24, 70]} />
               <meshStandardMaterial color="#334155" roughness={0.7} />
             </mesh>
           ))}
         </>
       )}
 
-      {biome === 'tech' && (
+      {biome === "tech" && (
         <>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
-            <circleGeometry args={[45, 6]} />
+            <circleGeometry args={[31, 6]} />
             <meshStandardMaterial color="#1a2840" roughness={0.3} metalness={0.8} />
           </mesh>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
-            <ringGeometry args={[43, 45, 64]} />
-            <meshStandardMaterial color={ground.gridColor} emissive={ground.gridColor} emissiveIntensity={0.5} transparent opacity={0.7} />
+            <ringGeometry args={[29, 31, 48]} />
+            <meshStandardMaterial color={ground.gridColor} emissive={ground.gridColor} emissiveIntensity={0.38} transparent opacity={0.62} />
           </mesh>
-          <gridHelper args={[90, 30, ground.gridColor, "#113311"]} position={[0, 0.02, 0]} />
+          <gridHelper args={[64, 24, ground.gridColor, "#113311"]} position={[0, 0.02, 0]} />
         </>
       )}
 
-      {biome === 'nature' && (
+      {biome === "nature" && (
         <>
-          {[-15, 0, 15, -8, 8].map((x, i) =>
-            [-12, 0, 12, -6, 6].map((z, j) => (
-              <mesh key={`moss-${i}-${j}`} rotation={[-Math.PI / 2, 0, Math.random()]} position={[x + (Math.random()-0.5)*4, 0.01, z + (Math.random()-0.5)*4]}>
-                <circleGeometry args={[2 + Math.random() * 3, 8]} />
-                <meshStandardMaterial color={j % 2 === 0 ? "#1a4a28" : "#0f2a18"} roughness={1.0} />
+          {[-16, 0, 16].map((x, i) =>
+            [-16, 0, 16].map((z, j) => (
+              <mesh key={`moss-${i}-${j}`} rotation={[-Math.PI / 2, 0, (i + j) * 0.35]} position={[x, 0.01, z]}>
+                <circleGeometry args={[3 + ((i + j) % 2), 8]} />
+                <meshStandardMaterial color={(i + j) % 2 === 0 ? "#1a4a28" : "#0f2a18"} roughness={1.0} />
               </mesh>
-            ))
+            )),
           ).flat()}
         </>
       )}
 
-      {biome === 'void' && (
+      {biome === "void" && (
         <>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
-            <circleGeometry args={[40, 32]} />
+            <circleGeometry args={[31, 32]} />
             <meshStandardMaterial color="#1a0828" roughness={0.05} metalness={1.0} />
           </mesh>
-          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-            <mesh key={`crack-${i}`} rotation={[-Math.PI/2, 0, (i / 7) * Math.PI * 2]} position={[0, 0.01, 0]}>
-              <planeGeometry args={[40, 0.15]} />
-              <meshStandardMaterial color={ground.gridColor} emissive={ground.gridColor} emissiveIntensity={1.5} transparent opacity={0.6} />
+          {[0, 1, 2, 3, 4].map((i) => (
+            <mesh key={`crack-${i}`} rotation={[-Math.PI / 2, 0, (i / 5) * Math.PI * 2]} position={[0, 0.01, 0]}>
+              <planeGeometry args={[30, 0.12]} />
+              <meshStandardMaterial color={ground.gridColor} emissive={ground.gridColor} emissiveIntensity={1.1} transparent opacity={0.52} />
             </mesh>
           ))}
-          <gridHelper args={[80, 20, ground.gridColor, "#200830"]} position={[0, 0.03, 0]} />
+          <gridHelper args={[64, 18, ground.gridColor, "#200830"]} position={[0, 0.03, 0]} />
         </>
       )}
 
-      {biome === 'mystic' && (
+      {biome === "mystic" && (
         <>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
-            <circleGeometry args={[50, 64]} />
+            <circleGeometry args={[32, 48]} />
             <meshStandardMaterial color="#071828" roughness={0.15} metalness={0.9} />
           </mesh>
-          {[5, 15, 25, 35].map((r, i) => (
-            <mesh key={`ring-${i}`} rotation={[-Math.PI/2, 0, 0]} position={[0, 0.01 + i * 0.002, 0]}>
-              <ringGeometry args={[r, r + 0.5, 64]} />
-              <meshStandardMaterial color={ground.gridColor} emissive={ground.gridColor} emissiveIntensity={0.4 - i * 0.05} transparent opacity={0.5} />
+          {[8, 18, 28].map((r, i) => (
+            <mesh key={`ring-${i}`} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01 + i * 0.002, 0]}>
+              <ringGeometry args={[r, r + 0.42, 48]} />
+              <meshStandardMaterial color={ground.gridColor} emissive={ground.gridColor} emissiveIntensity={0.32 - i * 0.05} transparent opacity={0.42} />
             </mesh>
           ))}
-          <gridHelper args={[100, 40, ground.gridColor, "#0e2540"]} position={[0, 0.015, 0]} />
+          <gridHelper args={[66, 28, ground.gridColor, "#0e2540"]} position={[0, 0.015, 0]} />
         </>
       )}
 
-      {biome === 'storm' && (
+      {biome === "storm" && (
         <>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
-            <circleGeometry args={[44, 32]} />
+            <circleGeometry args={[31, 32]} />
             <meshStandardMaterial color="#4a5870" roughness={0.8} metalness={0.1} />
           </mesh>
-          {[-3, -1, 1, 3].map((col) =>
-            [-3, -1, 1, 3].map((row) => (
-              <mesh key={`tile-${col}-${row}`} rotation={[-Math.PI/2, 0, 0]} position={[col * 8, 0.01, row * 8]}>
-                <planeGeometry args={[7.6, 7.6]} />
+          {[-2, 0, 2].map((col) =>
+            [-2, 0, 2].map((row) => (
+              <mesh key={`tile-${col}-${row}`} rotation={[-Math.PI / 2, 0, 0]} position={[col * 10, 0.01, row * 10]}>
+                <planeGeometry args={[9.4, 9.4]} />
                 <meshStandardMaterial color={(col + row) % 2 === 0 ? "#4a5870" : "#3a4a60"} roughness={0.7} />
               </mesh>
-            ))
+            )),
           ).flat()}
         </>
       )}
+
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.035, 0]}>
+        <ringGeometry args={[31.5, 32.2, 64]} />
+        <meshBasicMaterial color="#22d3ee" transparent opacity={0.18} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
     </group>
   );
 }
 
-// ─── Pillars / Structural Elements ──────────────────────────────────────────
 function ArenaEnvironment({ config }: { config: ArenaConfig }) {
   const { biome, lighting } = config;
-  
+
   const pillars = useMemo(() => {
-    const count = biome === 'void' ? 8 : biome === 'tech' ? 12 : 6;
+    const count = biome === "void" || biome === "tech" ? 6 : 4;
     return Array.from({ length: count }, (_, i) => {
       const angle = (i / count) * Math.PI * 2;
-      const r = biome === 'mystic' ? 48 : 42;
+      const r = biome === "mystic" ? 35 : 34;
       return {
         x: Math.cos(angle) * r,
         z: Math.sin(angle) * r,
-        h: biome === 'fire' ? 14 + (i % 2) * 6
-          : biome === 'void' ? 20 + i * 1.5
-          : 6 + Math.sin(i * 1.3) * 3,
-        color: i % 3 === 0 ? lighting.color : i % 3 === 1 ? "#ffffff" : lighting.ambientColor,
+        h: biome === "fire" ? 12 + (i % 2) * 4 : biome === "void" ? 14 + i : 6 + Math.sin(i * 1.3) * 2,
+        color: i % 2 === 0 ? lighting.color : lighting.ambientColor,
       };
     });
   }, [biome, lighting]);
@@ -157,83 +158,78 @@ function ArenaEnvironment({ config }: { config: ArenaConfig }) {
       {pillars.map((p, i) => (
         <group key={i} position={[p.x, 0, p.z]}>
           <mesh position={[0, p.h / 2, 0]} castShadow>
-            {biome === 'fire'
-              ? <boxGeometry args={[2.5, p.h, 2.5]} />
-              : biome === 'void'
-              ? <cylinderGeometry args={[0.4, 0.8, p.h, 6]} />
-              : <boxGeometry args={[1.5, p.h, 1.5]} />
-            }
-            <meshStandardMaterial color="#111111" roughness={0.2} metalness={0.9} />
+            {biome === "fire" ? (
+              <boxGeometry args={[2.2, p.h, 2.2]} />
+            ) : biome === "void" ? (
+              <cylinderGeometry args={[0.35, 0.7, p.h, 6]} />
+            ) : (
+              <boxGeometry args={[1.3, p.h, 1.3]} />
+            )}
+            <meshStandardMaterial color="#111111" roughness={0.25} metalness={0.8} />
           </mesh>
-          <pointLight position={[0, p.h + 1, 0]} color={p.color} intensity={1.8} distance={18} decay={2} />
+          <mesh position={[0, p.h + 0.5, 0]}>
+            <sphereGeometry args={[0.28, 10, 10]} />
+            <meshBasicMaterial color={p.color} />
+          </mesh>
         </group>
       ))}
 
-      {biome === 'urban' && (
+      {biome === "urban" && (
         <>
-          {/* Bronx apartment buildings & brick structures */}
           {[
-            { x: -35, z: -30, w: 18, h: 28, d: 24, c: "#1e1e24" },
-            { x: 35, z: -30, w: 20, h: 32, d: 22, c: "#262024" },
-            { x: -38, z: 25, w: 22, h: 26, d: 20, c: "#1b2028" },
-            { x: 38, z: 25, w: 18, h: 34, d: 24, c: "#221c22" },
-            { x: 0, z: -45, w: 40, h: 36, d: 16, c: "#18181c" },
+            { x: -33, z: -25, w: 12, h: 22, d: 14, c: "#1e1e24" },
+            { x: 33, z: -24, w: 13, h: 24, d: 14, c: "#262024" },
+            { x: -33, z: 24, w: 14, h: 20, d: 13, c: "#1b2028" },
+            { x: 33, z: 24, w: 12, h: 23, d: 14, c: "#221c22" },
           ].map((b, i) => (
             <group key={`bldg-${i}`} position={[b.x, b.h / 2, b.z]}>
               <mesh castShadow receiveShadow>
                 <boxGeometry args={[b.w, b.h, b.d]} />
                 <meshStandardMaterial color={b.c} roughness={0.8} />
               </mesh>
-              {/* Glowing window arrays */}
               {[-b.w / 4, b.w / 4].map((wx, j) =>
-                [4, 10, 16, 22].map((wy, k) => (
-                  <mesh key={`win-${j}-${k}`} position={[wx, wy - b.h / 2, b.d / 2 + 0.1]}>
-                    <planeGeometry args={[2.2, 3]} />
-                    <meshStandardMaterial color="#fbbf24" emissive="#f59e0b" emissiveIntensity={0.8} />
+                [5, 11, 17].map((wy, k) => (
+                  <mesh key={`win-${j}-${k}`} position={[wx, wy - b.h / 2, b.d / 2 + 0.06]}>
+                    <planeGeometry args={[1.8, 2.4]} />
+                    <meshBasicMaterial color={k % 2 === 0 ? "#fbbf24" : "#475569"} />
                   </mesh>
-                ))
+                )),
               )}
             </group>
           ))}
-
-          {/* Glowing neon billboards */}
-          <group position={[0, 18, -36]}>
+          <group position={[0, 14, -34]}>
             <mesh>
-              <planeGeometry args={[16, 6]} />
-              <meshStandardMaterial color="#f43f5e" emissive="#e11d48" emissiveIntensity={1.8} />
+              <planeGeometry args={[12, 4]} />
+              <meshBasicMaterial color="#e11d48" />
             </mesh>
-            <pointLight color="#f43f5e" intensity={4} distance={25} />
           </group>
-
-          {/* Street lamps */}
-          {[-18, 18].map((x, i) =>
-            [-20, 0, 20].map((z, j) => (
+          {[-20, 20].map((x, i) =>
+            [-16, 16].map((z, j) => (
               <group key={`lamp-${i}-${j}`} position={[x, 0, z]}>
-                <mesh position={[0, 4, 0]}>
-                  <cylinderGeometry args={[0.15, 0.25, 8, 8]} />
+                <mesh position={[0, 3.5, 0]}>
+                  <cylinderGeometry args={[0.12, 0.2, 7, 8]} />
                   <meshStandardMaterial color="#0f172a" metalness={0.8} />
                 </mesh>
-                <mesh position={[0, 8.2, 0]}>
-                  <sphereGeometry args={[0.4, 16, 16]} />
-                  <meshStandardMaterial color="#ffedd5" emissive="#ffb703" emissiveIntensity={2.0} />
+                <mesh position={[0, 7.2, 0]}>
+                  <sphereGeometry args={[0.3, 10, 10]} />
+                  <meshBasicMaterial color="#ffb703" />
                 </mesh>
-                <pointLight position={[0, 8, 0]} color="#ffb703" intensity={2.5} distance={14} decay={2} />
               </group>
-            ))
+            )),
           ).flat()}
         </>
       )}
 
-      {biome === 'nature' && (
+      {biome === "nature" && (
         <>
-          {[[-30, 0, -25], [28, 0, -20], [-22, 0, 30], [35, 0, 22]].map(([x, y, z], i) => (
+          {[[-28, 0, -24], [28, 0, -22], [-24, 0, 28], [28, 0, 24]].map(([x, y, z], i) => (
             <group key={`tree-${i}`} position={[x, y, z]}>
-              <mesh position={[0, 5, 0]} castShadow>
-                <cylinderGeometry args={[0.5, 0.8, 10, 8]} />
+              <mesh position={[0, 4, 0]} castShadow>
+                <cylinderGeometry args={[0.45, 0.7, 8, 8]} />
                 <meshStandardMaterial color="#2a1a0a" roughness={1.0} />
               </mesh>
-              <mesh position={[0, 12, 0]} castShadow>
-                <coneGeometry args={[5, 8, 8]} />
+              <mesh position={[0, 9.5, 0]} castShadow>
+                <coneGeometry args={[4, 7, 8]} />
                 <meshStandardMaterial color="#1a4a28" roughness={0.9} />
               </mesh>
             </group>
@@ -241,11 +237,7 @@ function ArenaEnvironment({ config }: { config: ArenaConfig }) {
         </>
       )}
 
-      <fog attach="fog" args={[
-        lighting.fogColor, 
-        biome === 'void' ? 10 : biome === 'nature' ? 30 : 20, 
-        biome === 'void' ? 60 : biome === 'storm' ? 50 : 120
-      ]} />
+      <fog attach="fog" args={[lighting.fogColor, biome === "void" ? 10 : 18, biome === "void" ? 52 : 78]} />
     </group>
   );
 }
@@ -254,18 +246,16 @@ function ArenaLighting({ config }: { config: ArenaConfig }) {
   const { lighting } = config;
   return (
     <group>
-      <ambientLight intensity={0.8} color={lighting.ambientColor} />
+      <ambientLight intensity={0.72} color={lighting.ambientColor} />
       <directionalLight
-        position={[10, 25, 10]}
-        intensity={lighting.intensity}
+        position={[10, 24, 10]}
+        intensity={Math.min(2.2, lighting.intensity)}
         color={lighting.color}
         castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
+        shadow-mapSize-width={768}
+        shadow-mapSize-height={768}
       />
-      <hemisphereLight
-        args={[lighting.color, "#000000", 0.8]}
-      />
+      <hemisphereLight args={[lighting.color, "#000000", 0.55]} />
     </group>
   );
 }
@@ -293,176 +283,145 @@ function WaveSpawner({ roamSessionId }: { roamSessionId: number }) {
       dead.forEach((e) => adv.removeEnemy(e.id));
     }
 
-    const aliveEnemies = adv.enemies.filter((e) => !e.isDead);
-    const aliveCount = aliveEnemies.length;
+    const alive = adv.enemies.filter((e) => !e.isDead).length;
+    if (alive === 0 && prevAlive.current > 0) spawnTimer.current = 0;
+    prevAlive.current = alive;
+    if (alive > 0) return;
 
-    if (adv.roamDistrictId) {
-      const meta = getDistrictMeta(adv.roamDistrictId);
-      if (!meta) return;
+    spawnTimer.current += delta;
+    if (spawnTimer.current < 1.5) return;
+    spawnTimer.current = 0;
+    waveNum.current += 1;
 
-      if (adv.districtCompleted) return;
-
-      if (aliveCount > 0) {
-        prevAlive.current = aliveCount;
-        spawnTimer.current = 0;
-        return;
-      }
-
-      if (
-        prevAlive.current > 0 &&
-        aliveCount === 0 &&
-        adv.encounterIndex > 0 &&
-        adv.encounterIndex < meta.encounters.length &&
-        adv.checkpointBetweenEncounters
-      ) {
-        useAdventure.getState().applyDistrictCheckpoint();
-      }
-      prevAlive.current = 0;
-
-      if (adv.encounterIndex >= meta.encounters.length) {
-        useAdventure.setState({ districtCompleted: true });
-        if (adv.roamDistrictId) {
-          useMissions.getState().completeDistrictRoam(adv.roamDistrictId);
-        }
-        return;
-      }
-
-      spawnTimer.current += delta;
-      const isFirst = adv.waveCount === 0;
-      const delay = isFirst ? 2 : 1.5;
-      if (spawnTimer.current <= delay) return;
-
-      const spec = meta.encounters[adv.encounterIndex];
-      const list = buildEncounterEnemies({
-        districtId: adv.roamDistrictId,
-        encounterIndex: adv.encounterIndex,
-        spec,
+    const tier = waveNum.current % 5 === 0 ? "boss1" : waveNum.current % 3 === 0 ? "minion2" : "minion1";
+    const tierCfg = ENEMY_TIERS[tier];
+    const count = tier === "boss1" ? 1 : Math.min(4, 1 + Math.floor(waveNum.current / 2));
+    const next: AdventureEnemy[] = [];
+    for (let i = 0; i < count; i += 1) {
+      const angle = (i / Math.max(1, count)) * Math.PI * 2 + waveNum.current * 0.4;
+      const radius = tier === "boss1" ? 17 : 11 + (i % 2) * 3;
+      const x = Math.sin(angle) * radius;
+      const z = Math.cos(angle) * radius;
+      next.push({
+        id: `wave-${waveNum.current}-${i}`,
+        fighterId: tier === "boss1" ? "vharok" : i % 2 === 0 ? "vesryn" : "rookan",
+        tier,
+        posX: x,
+        posY: 0,
+        posZ: z,
+        rotY: Math.atan2(-x, -z),
+        health: tierCfg.health,
+        maxHealth: tierCfg.health,
+        isAggro: true,
+        isAttacking: false,
+        isDead: false,
+        aiState: "chase",
+        telegraphTimer: 0,
+        patrolTargetX: x,
+        patrolTargetZ: z,
+        stunTimer: 0,
       });
-      adv.spawnEnemies(list);
-      useAdventure.setState({
-        waveCount: adv.encounterIndex + 1,
-        encounterIndex: adv.encounterIndex + 1,
-      });
-      waveNum.current = adv.encounterIndex + 1;
-      spawnTimer.current = 0;
-      return;
     }
-
-    if (aliveEnemies.length === 0) {
-      spawnTimer.current += delta;
-      if (spawnTimer.current > 2) {
-        spawnTimer.current = 0;
-        waveNum.current++;
-
-        const wave = waveNum.current;
-        const count = Math.min(2 + wave, 6);
-        const minionIds = ["hyena-scout", "rift-drone", "blazing-fox", "sparky", "velocity"];
-        const bossIds = ["malakor", "behemoth"];
-        const newEnemies: AdventureEnemy[] = [];
-
-        const spawnBoss = wave > 0 && wave % 3 === 0;
-
-        for (let i = 0; i < count; i++) {
-          const angle = (i / count) * Math.PI * 2 + Math.random() * 0.5;
-          const dist = 15 + Math.random() * 10;
-          const tier = (wave >= 4 ? "minion2" : "minion1") as AdventureEnemy["tier"];
-          const tierConfig = ENEMY_TIERS[tier];
-          const fighterId = minionIds[i % minionIds.length];
-          const hp = tierConfig.health + wave * 8;
-          newEnemies.push({
-            id: `wave${wave}-enemy${i}`,
-            fighterId,
-            tier,
-            posX: Math.cos(angle) * dist,
-            posY: 0,
-            posZ: Math.sin(angle) * dist,
-            rotY: 0,
-            health: hp,
-            maxHealth: hp,
-            isAggro: false,
-            isAttacking: false,
-            isDead: false,
-            aiState: "idle",
-            telegraphTimer: 0,
-            patrolTargetX: Math.cos(angle) * dist + (Math.random() - 0.5) * 10,
-            patrolTargetZ: Math.sin(angle) * dist + (Math.random() - 0.5) * 10,
-            stunTimer: 0,
-          });
-        }
-
-        if (spawnBoss) {
-          const bossTier = (wave >= 6 ? "boss2" : "boss1") as AdventureEnemy["tier"];
-          const bossConfig = ENEMY_TIERS[bossTier];
-          const bossAngle = Math.random() * Math.PI * 2;
-          const bossDist = 20;
-          const bossId = bossIds[wave >= 6 ? 1 : 0];
-          const bossHp = bossConfig.health + wave * 15;
-          newEnemies.push({
-            id: `wave${wave}-boss`,
-            fighterId: bossId,
-            tier: bossTier,
-            posX: Math.cos(bossAngle) * bossDist,
-            posY: 0,
-            posZ: Math.sin(bossAngle) * bossDist,
-            rotY: 0,
-            health: bossHp,
-            maxHealth: bossHp,
-            isAggro: false,
-            isAttacking: false,
-            isDead: false,
-            aiState: "idle",
-            telegraphTimer: 0,
-            patrolTargetX: Math.cos(bossAngle) * bossDist + (Math.random() - 0.5) * 8,
-            patrolTargetZ: Math.sin(bossAngle) * bossDist + (Math.random() - 0.5) * 8,
-            stunTimer: 0,
-          });
-        }
-
-        adv.spawnEnemies(newEnemies);
-        useAdventure.setState({ waveCount: waveNum.current });
-      }
-    }
+    adv.spawnEnemies(next);
+    useAdventure.setState({ waveCount: waveNum.current });
   });
 
   return null;
 }
 
-interface AdventureArenaProps {
-  characterId: string;
-  accentColor: string;
-}
-
-export default function AdventureArena({
-  characterId,
-  accentColor,
-}: AdventureArenaProps) {
-  const roamSessionId = useAdventure((s) => s.roamSessionId);
-  const arenaId = useAdventure((s) => s.arenaId);
-
-  // Get current arena config or fallback to default
-  const config = useMemo(() => {
-    return getArenaConfig(arenaId);
-  }, [arenaId]);
+function ScriptedEncounterSpawner({ roamSessionId }: { roamSessionId: number }) {
+  const started = useRef(false);
+  const lastEncounter = useRef(-1);
+  const clearTimer = useRef(0);
+  const completionIssued = useRef(false);
 
   useEffect(() => {
-    const s = useAdventure.getState();
-    if (s.roamDistrictId) return;
-    if (s.arenaId === "open-world") {
-      useAdventure.getState().initAdventure(characterId, null, "bronx_streets");
+    started.current = false;
+    lastEncounter.current = -1;
+    clearTimer.current = 0;
+    completionIssued.current = false;
+  }, [roamSessionId]);
+
+  useFrame((_, rawDelta) => {
+    const delta = Math.min(rawDelta, 0.05);
+    const adv = useAdventure.getState();
+    if (adv.isPaused || !adv.roamDistrictId || adv.districtCompleted) return;
+    const meta = getDistrictMeta(adv.roamDistrictId);
+    if (!meta) return;
+
+    const encounter = meta.encounters[adv.encounterIndex];
+    if (!encounter) {
+      if (!completionIssued.current) {
+        completionIssued.current = true;
+        useAdventure.setState({ districtCompleted: true });
+        useMissions.getState().completeDistrictRoam(adv.roamDistrictId);
+      }
+      return;
     }
-  }, [characterId]);
+
+    if (!started.current || adv.encounterIndex !== lastEncounter.current) {
+      adv.spawnEnemies(
+        buildEncounterEnemies({
+          districtId: adv.roamDistrictId,
+          encounterIndex: adv.encounterIndex,
+          spec: encounter,
+        }),
+      );
+      started.current = true;
+      lastEncounter.current = adv.encounterIndex;
+      clearTimer.current = 0;
+      return;
+    }
+
+    const alive = adv.enemies.some((enemy) => !enemy.isDead);
+    if (alive) {
+      clearTimer.current = 0;
+      return;
+    }
+
+    clearTimer.current += delta;
+    if (clearTimer.current < SCRIPTED_ENCOUNTER_CLEAR_DELAY_SEC) return;
+    clearTimer.current = 0;
+
+    const nextEncounterIndex = adv.encounterIndex + 1;
+    if (nextEncounterIndex >= meta.encounters.length) {
+      if (!completionIssued.current) {
+        completionIssued.current = true;
+        useAdventure.setState({ districtCompleted: true });
+        useMissions.getState().completeDistrictRoam(adv.roamDistrictId);
+      }
+      return;
+    }
+
+    // Checkpoint belongs to the encounter we just cleared. Restore resources,
+    // then advance; AdventureSessionGuard clears transient combat state at the handoff.
+    adv.applyDistrictCheckpoint();
+    useAdventure.setState({ encounterIndex: nextEncounterIndex });
+  });
+
+  return null;
+}
+
+export default function AdventureArena() {
+  const arenaId = useAdventure((s) => s.arenaId);
+  const roamDistrictId = useAdventure((s) => s.roamDistrictId);
+  const roamSessionId = useAdventure((s) => s.roamSessionId);
+  const missionId = useAdventure((s) => s.missionId);
+  const trainingSession = useMissions((s) => s.active?.id === "training");
+  const arena = getArenaConfig(arenaId) || ARENA_REGISTRY[0];
 
   return (
     <>
-      <Mission1EncounterBridge />
+      <ArenaLighting config={arena} />
+      <ArenaGround config={arena} />
+      <ArenaEnvironment config={arena} />
+      <AdventureCharacter />
       <AdventureCamera />
+      <AdventureSessionGuard />
       <AdventurePlayerController />
-      <ArenaLighting config={config} />
-      <ArenaGround config={config} />
-      <ArenaEnvironment config={config} />
-      <AdventureCharacter fighterId={characterId} accentColor={accentColor} />
       <AdventureEnemyAI />
-      <WaveSpawner roamSessionId={roamSessionId} />
+      {missionId === "mission1" && <Mission1EncounterBridge />}
+      {roamDistrictId ? <ScriptedEncounterSpawner roamSessionId={roamSessionId} /> : !missionId && !trainingSession ? <WaveSpawner roamSessionId={roamSessionId} /> : null}
     </>
   );
 }
