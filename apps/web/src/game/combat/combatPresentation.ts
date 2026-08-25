@@ -78,6 +78,7 @@ export function sampleCameraShake(
 ): { x: number; y: number; z: number } {
   const t = Number.isFinite(elapsedSec) ? elapsedSec : 0;
   const i = Math.max(0, Number.isFinite(intensity) ? intensity : 0);
+  if (i === 0) return { x: 0, y: 0, z: 0 };
   return {
     x: Math.sin(t * 113.7) * i * 0.5,
     y: Math.sin(t * 157.3 + 1.7) * i * 0.45,

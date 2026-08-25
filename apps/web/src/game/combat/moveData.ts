@@ -1,9 +1,14 @@
 /**
  * Canonical duel move tables (battle + adventure attack resolution).
  * Adventure stamina/combo/dodge tuning: `game/tuning/adventure.json`.
+ *
+ * Frame values are authored at 60 Hz. Reaction metadata is kept beside the
+ * current certified damage/stamina/knockback values so every combat consumer
+ * reads one schema instead of partially overlapping move tables.
  */
 
 export type AttackType = "punch" | "kick" | "special" | "ultimate";
+export type HitLevel = "light" | "medium" | "heavy" | "special" | "ultimate";
 
 export interface MoveData {
   startup: number;
@@ -14,6 +19,10 @@ export interface MoveData {
   staminaCost: number;
   knockback: number;
   hitStopFrames: number;
+  hitstunFrames: number;
+  blockstunFrames: number;
+  launchAngleDeg: number;
+  hitLevel: HitLevel;
   superArmor?: boolean;
 }
 
@@ -25,7 +34,8 @@ export interface DodgeData {
   duration: number;
 }
 
-export const FRAME_TIME = 1 / 60;
+export const FRAME_RATE = 60;
+export const FRAME_TIME = 1 / FRAME_RATE;
 
 /**
  * Certified practical contact ranges.
@@ -45,9 +55,8 @@ export const COMBAT_RANGES = {
   },
 } as const;
 
-export const MOVES: Record<string, MoveData> = {
-  // Lights should feel immediate and chainable, not sticky.
-  light1: {
+export const MOVES = Object.freeze({
+  light1: Object.freeze({
     startup: 5,
     active: 4,
     recovery: 8,
@@ -56,8 +65,12 @@ export const MOVES: Record<string, MoveData> = {
     staminaCost: 4,
     knockback: 1.2,
     hitStopFrames: 3,
-  },
-  light2: {
+    hitstunFrames: 11,
+    blockstunFrames: 7,
+    launchAngleDeg: 12,
+    hitLevel: "light",
+  }),
+  light2: Object.freeze({
     startup: 5,
     active: 4,
     recovery: 9,
@@ -66,8 +79,12 @@ export const MOVES: Record<string, MoveData> = {
     staminaCost: 4,
     knockback: 1.6,
     hitStopFrames: 3,
-  },
-  light3: {
+    hitstunFrames: 13,
+    blockstunFrames: 8,
+    launchAngleDeg: 18,
+    hitLevel: "light",
+  }),
+  light3: Object.freeze({
     startup: 6,
     active: 5,
     recovery: 12,
@@ -76,10 +93,12 @@ export const MOVES: Record<string, MoveData> = {
     staminaCost: 7,
     knockback: 3.4,
     hitStopFrames: 5,
-  },
-  // Heavy attacks earn their commitment with stronger impact, but recover fast
-  // enough that one whiff does not make the match feel frozen.
-  heavy: {
+    hitstunFrames: 18,
+    blockstunFrames: 11,
+    launchAngleDeg: 28,
+    hitLevel: "medium",
+  }),
+  heavy: Object.freeze({
     startup: 9,
     active: 6,
     recovery: 16,
@@ -88,9 +107,13 @@ export const MOVES: Record<string, MoveData> = {
     staminaCost: 22,
     knockback: 5.5,
     hitStopFrames: 8,
+    hitstunFrames: 28,
+    blockstunFrames: 17,
+    launchAngleDeg: 34,
+    hitLevel: "heavy",
     superArmor: true,
-  },
-  skill: {
+  }),
+  skill: Object.freeze({
     startup: 8,
     active: 8,
     recovery: 17,
@@ -99,12 +122,18 @@ export const MOVES: Record<string, MoveData> = {
     staminaCost: 27,
     knockback: 4.6,
     hitStopFrames: 6,
-  },
-};
+    hitstunFrames: 24,
+    blockstunFrames: 15,
+    launchAngleDeg: 42,
+    hitLevel: "special",
+  }),
+} satisfies Readonly<Record<string, MoveData>>);
 
-export const ATTACK_TYPE_TO_MOVE: Record<AttackType, string> = {
+export type MoveKey = keyof typeof MOVES;
+
+export const ATTACK_TYPE_TO_MOVE: Readonly<Record<AttackType, MoveKey>> = Object.freeze({
   punch: "light1",
   kick: "light2",
   special: "skill",
   ultimate: "heavy",
-};
+});

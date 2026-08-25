@@ -174,7 +174,10 @@ export function resolveStageImpact(input: StageImpactInput): StageImpactResult {
   const speed = finiteNonNegative(input.launchSpeed);
   const breakMeter = clamp01(input.stageBreakMeter);
   const heavyClass = input.hitLevel === "heavy" || input.hitLevel === "special" || input.hitLevel === "ultimate";
-  const reachesWallImpactThreshold = speed >= 6.5 || (input.attackType === "ultimate" && speed >= 6);
+  // The certified heavy move currently launches at 5.5. Ultimate maps to that
+  // heavy move, so its authored wall-break rule must be reachable without a
+  // counter-hit multiplier artificially increasing launch speed first.
+  const reachesWallImpactThreshold = speed >= 6.5 || (input.attackType === "ultimate" && speed >= 5.5);
 
   if (input.nearWall && heavyClass && reachesWallImpactThreshold) {
     const breaks = breakMeter >= 0.8 || input.attackType === "ultimate" || speed >= 10;
