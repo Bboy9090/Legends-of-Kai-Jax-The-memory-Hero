@@ -83,19 +83,17 @@ export interface BuildEncounterOptions {
   spec: EncounterSpec;
 }
 
-/**
- * Build enemy list for one encounter. Positions are deterministic from indices.
- */
+/** Build a compact readable combat pocket around mission start. */
 export function buildEncounterEnemies(opts: BuildEncounterOptions): AdventureEnemy[] {
   const { districtId, encounterIndex, spec } = opts;
   const waveScale = spec.tierScale + encounterIndex;
   const out: AdventureEnemy[] = [];
-  const baseRadius = 14 + encounterIndex * 2;
+  const baseRadius = 9 + encounterIndex * 1.5;
 
   for (let i = 0; i < spec.minionCount; i++) {
     const t = i / Math.max(1, spec.minionCount);
-    const angle = t * Math.PI * 2 + det01(encounterIndex, i * 3) * 0.4;
-    const dist = baseRadius + det01(districtId.length, i) * 8;
+    const angle = t * Math.PI * 2 + det01(encounterIndex, i * 3) * 0.35;
+    const dist = baseRadius + det01(districtId.length, i) * 5;
     const tier = (waveScale >= 4 ? "minion2" : "minion1") as AdventureEnemy["tier"];
     const cfg = ENEMY_TIERS[tier];
     const hp = cfg.health + waveScale * 10;
@@ -127,7 +125,7 @@ export function buildEncounterEnemies(opts: BuildEncounterOptions): AdventureEne
     const bossIds = ["malakor", "behemoth"];
     const bossFighter = bossIds[encounterIndex % bossIds.length];
     const ba = det01(encounterIndex + 9, 1) * Math.PI * 2;
-    const bd = 20 + det01(encounterIndex, 7) * 4;
+    const bd = 15 + det01(encounterIndex, 7) * 3;
     const bhp = bossCfg.health + waveScale * 18;
     out.push({
       id: `${districtId}-${spec.id}-boss`,
