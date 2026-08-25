@@ -39,17 +39,27 @@ export default function BattleSessionGuard() {
 
   useEffect(() => {
     const originalEndBattle = useBattle.getState().endBattle;
+    const originalResetRound = useBattle.getState().resetRound;
+
     const guardedEndBattle: typeof originalEndBattle = (winner) => {
       const phase = useBattle.getState().battlePhase;
       if (phase === "ko" || phase === "results") return;
       originalEndBattle(winner);
     };
 
-    useBattle.setState({ endBattle: guardedEndBattle });
+    const guardedResetRound: typeof originalResetRound = () => {
+      const phase = useBattle.getState().battlePhase;
+      if (phase === "preRound") return;
+      originalResetRound();
+    };
+
+    useBattle.setState({ endBattle: guardedEndBattle, resetRound: guardedResetRound });
     return () => {
-      if (useBattle.getState().endBattle === guardedEndBattle) {
-        useBattle.setState({ endBattle: originalEndBattle });
-      }
+      const current = useBattle.getState();
+      const restore: Partial<typeof current> = {};
+      if (current.endBattle === guardedEndBattle) restore.endBattle = originalEndBattle;
+      if (current.resetRound === guardedResetRound) restore.resetRound = originalResetRound;
+      if (Object.keys(restore).length > 0) useBattle.setState(restore);
     };
   }, []);
 
