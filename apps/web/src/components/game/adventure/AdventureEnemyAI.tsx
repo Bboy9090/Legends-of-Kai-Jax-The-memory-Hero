@@ -30,6 +30,7 @@ interface EnemyMeshProps {
 
 const MAX_SIMULTANEOUS_THREATS = 2;
 const ATTACK_RECOVERY_SEC = 0.48;
+const POST_HIT_INVULN_SEC = 0.42;
 
 function TelegraphRing({ enemy }: { enemy: AdventureEnemy }) {
   if (enemy.aiState !== "telegraph" || enemy.isDead) return null;
@@ -267,7 +268,6 @@ export default function AdventureEnemyAI() {
         if (newTimer >= tierConfig.telegraphDuration) {
           adv.setEnemyTelegraph(enemy.id, 0);
 
-          // Escaping the visible threat radius must earn a real whiff.
           if (dist > tierConfig.attackRange) {
             adv.setEnemyAttacking(enemy.id, false);
             adv.setEnemyAIState(enemy.id, "chase");
@@ -278,7 +278,13 @@ export default function AdventureEnemyAI() {
 
           adv.setEnemyAIState(enemy.id, "attack");
           adv.setEnemyAttacking(enemy.id, true);
+
+          // Ordinary enemy hits get a short post-hit protection window. This is
+          // long enough to stop pack stun-locks, but shorter than a full dodge.
+          const wasVulnerable = player.invulnTimer <= 0;
           adv.damagePlayer(tierConfig.damage);
+          if (wasVulnerable) adv.setInvulnTimer(POST_HIT_INVULN_SEC);
+
           if (isStatueFighter(enemy.fighterId)) useAudio.getState().playStoneAttack();
 
           window.setTimeout(() => {
