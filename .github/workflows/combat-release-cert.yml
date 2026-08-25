@@ -24,20 +24,22 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout exact commit without external actions
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          git init .
+          git remote add origin "https://github.com/${REPOSITORY}.git"
+          git fetch --depth=1 origin "${COMMIT_SHA}"
+          git checkout --detach FETCH_HEAD
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.9
-          run_install: false
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          node --version
+          pnpm --version
 
       - name: Install web workspace
         run: pnpm install --filter ./apps/web... --frozen-lockfile
