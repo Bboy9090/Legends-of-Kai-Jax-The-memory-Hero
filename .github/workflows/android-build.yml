@@ -5,53 +5,57 @@ on:
     branches: [ "main", "integration/clean-upgrade-stack-2026-05-20" ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-android:
     name: Build APK
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v4
+      - name: Checkout source without external actions
+        env:
+          REPOSITORY: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          git clone --no-checkout "https://github.com/$REPOSITORY.git" source
+          cd source
+          git checkout --detach "$SHA"
+          test "$(git rev-parse HEAD)" = "$SHA"
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Build web app and sync Android
+        working-directory: source
+        run: |
+          corepack enable
+          corepack prepare pnpm@9 --activate
+          pnpm install --frozen-lockfile
+          pnpm --dir apps/web run build
+          cd apps/web
+          npx cap sync android
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Dependencies
-        run: pnpm install
-
-      - name: Build Web App
-        run: pnpm --filter web run build
-
-      - name: Sync Capacitor Android
-        working-directory: ./apps/web
-        run: npx cap sync android
-
-      - name: Build APK (Debug)
-        working-directory: ./apps/web/android
+      - name: Build debug APK
+        working-directory: source/apps/web/android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace
+          test -s app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Legends-of-Kai-Jax-APK
-          path: apps/web/android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 7
+      - name: Record APK checksum
+        working-directory: source
+        run: |
+          mkdir -p release
+          cp apps/web/android/app/build/outputs/apk/debug/app-debug.apk release/Legends-of-Kai-Jax-main.apk
+          sha256sum release/Legends-of-Kai-Jax-main.apk | tee release/SHA256SUMS.txt
+          printf '%s\n' "${{ github.sha }}" > release/BUILD-SHA.txt
+
+      - name: Publish APK as release asset
+        working-directory: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+        run: |
+          SHORT_SHA="${SHA:0:7}"
+          TAG="apk-main-$SHORT_SHA"
+          gh release create "$TAG"             release/Legends-of-Kai-Jax-main.apk             release/SHA256SUMS.txt             release/BUILD-SHA.txt             --target "$SHA"             --title "Legends of Kai Jax APK $SHORT_SHA"             --notes "Installable debug APK built from exact main commit $SHA."

@@ -174,8 +174,9 @@ export function resolveStageImpact(input: StageImpactInput): StageImpactResult {
   const speed = finiteNonNegative(input.launchSpeed);
   const breakMeter = clamp01(input.stageBreakMeter);
   const heavyClass = input.hitLevel === "heavy" || input.hitLevel === "special" || input.hitLevel === "ultimate";
+  const reachesWallImpactThreshold = speed >= 6.5 || (input.attackType === "ultimate" && speed >= 6);
 
-  if (input.nearWall && heavyClass && speed >= 6.5) {
+  if (input.nearWall && heavyClass && reachesWallImpactThreshold) {
     const breaks = breakMeter >= 0.8 || input.attackType === "ultimate" || speed >= 10;
     return breaks
       ? {

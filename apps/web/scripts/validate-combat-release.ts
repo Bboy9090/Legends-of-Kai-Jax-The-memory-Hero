@@ -12,13 +12,16 @@ function requireRule(ok: boolean, message: string) {
 const cameraEffects = read("apps/web/src/components/game/CameraEffects.tsx");
 const battleCamera = read("apps/web/src/components/game/BattleCamera.tsx");
 const battleGuard = read("apps/web/src/components/game/BattleSessionGuard.tsx");
+const missionGuard = read("apps/web/src/components/game/adventure/AdventureSessionGuard.tsx");
 const missionAI = read("apps/web/src/components/game/adventure/AdventureEnemyAI.tsx");
 const versusAI = read("apps/web/src/components/game/OpponentAI.tsx");
+const opponentRenderer = read("apps/web/src/components/game/Opponent.tsx");
 const battleController = read("apps/web/src/components/game/PlayerController.tsx");
 const missionController = read("apps/web/src/components/game/adventure/AdventurePlayerController.tsx");
 const missionHud = read("apps/web/src/components/game/adventure/AdventureHUD.tsx");
 const missionArena = read("apps/web/src/components/game/adventure/AdventureArena.tsx");
 const targeting = read("apps/web/src/game/combat/targeting.ts");
+const moveData = read("apps/web/src/game/combat/moveData.ts");
 const particleManager = read("apps/web/src/components/game/ParticleManager.tsx");
 const attackTrails = read("apps/web/src/components/game/AttackTrails.tsx");
 const battleScene = read("apps/web/src/components/game/BattleScene.tsx");
@@ -57,6 +60,20 @@ requireRule(
   "Versus scene must mount both session-safety and readability overlays.",
 );
 requireRule(
+  battleScene.includes("<OpponentAI") &&
+    opponentRenderer.includes("presentation-only") &&
+    !opponentRenderer.includes("moveOpponent(") &&
+    !opponentRenderer.includes("opponentAttack(") &&
+    !opponentRenderer.includes("opponentJump("),
+  "OpponentAI must be the single opponent gameplay authority; Opponent.tsx must remain presentation-only.",
+);
+requireRule(
+  moveData.includes("export const COMBAT_RANGES") &&
+    moveData.includes("aiMeleeCommit: 1.95") &&
+    versusAI.includes("COMBAT_RANGES.versus.aiMeleeCommit"),
+  "Versus AI pressure must consume the canonical certified melee-range contract.",
+);
+requireRule(
   missionAI.includes("MAX_SIMULTANEOUS_THREATS = 2"),
   "Mission combat must cap simultaneous active threats at two.",
 );
@@ -69,12 +86,43 @@ requireRule(
   "Escaping a Mission telegraph must produce a real whiff outside the visible attack range.",
 );
 requireRule(
+  missionAI.includes("ATTACK_ACTIVE_SEC") &&
+    missionAI.includes("attackStateTimers") &&
+    !missionAI.includes("window.setTimeout"),
+  "Mission enemy attack/recovery state must be frame-timed and cannot leak async callbacks into a later encounter.",
+);
+requireRule(
   missionController.includes("MISSION_BOUNDARY = 32") && missionController.includes("THREE.MathUtils.clamp"),
   "Mission movement must stay inside the certified combat boundary.",
 );
 requireRule(
+  moveData.includes("playerMelee: 4.0") && missionController.includes("COMBAT_RANGES.mission.playerMelee"),
+  "Mission player hit-confirm must consume the canonical certified contact range.",
+);
+requireRule(
   missionArena.includes("VISUAL_ARENA_SIZE = 76") && !missionArena.includes("planeGeometry args={[200, 200]}"),
   "Mission render footprint must stay compact and cannot return to the old 200x200 arena plane.",
+);
+requireRule(
+  missionArena.includes("<AdventureSessionGuard />") && missionGuard.includes("resetAutoTarget"),
+  "Mission arena must mount the session guard and clear sticky target state across session changes.",
+);
+requireRule(
+  missionGuard.includes("pendingAttacks: []") &&
+    missionGuard.includes("timeScale: 1") &&
+    missionGuard.includes("hitStopTimer: 0") &&
+    missionGuard.includes("impactFlash: null") &&
+    missionGuard.includes("encounterIndex"),
+  "Mission session/encounter changes must clear stale touch, hit-stop, time-scale, and impact state.",
+);
+requireRule(
+  missionArena.includes("SCRIPTED_ENCOUNTER_CLEAR_DELAY_SEC") &&
+    missionArena.includes("clearTimer") &&
+    missionArena.includes("applyDistrictCheckpoint()") &&
+    missionArena.includes("encounterIndex: nextEncounterIndex") &&
+    missionArena.includes("completeDistrictRoam") &&
+    missionArena.includes("buildEncounterEnemies({"),
+  "District roam must advance sequential scripted encounters, checkpoint between fights, and complete exactly once.",
 );
 requireRule(
   missionHud.includes("AutoTargetIndicator") && missionHud.includes("Incoming — dodge!"),
@@ -131,8 +179,12 @@ if (failures.length > 0) {
 
 console.log("Combat release certification PASS");
 console.log("- single-authority Versus camera and midpoint framing");
+console.log("- single-authority Versus opponent AI");
 console.log("- gameplay-safe shake, overlap, KO/rematch idempotency, and fresh-round cleanup");
-console.log("- Mission threat cap, telegraph whiff fairness, and anti-stunlock protection");
+console.log("- canonical Versus and Mission contact-range contracts consumed by live gameplay");
+console.log("- Mission threat cap, telegraph whiff fairness, anti-stunlock, and timer-safe attack recovery");
+console.log("- Mission session/encounter cleanup for target, touch, hit-stop, slow-motion, and impact residue");
+console.log("- sequential district encounters, checkpoints, and one-shot completion reward");
 console.log("- bounded Mission combat space, compact render footprint, and stable target readability");
 console.log("- differentiated Versus AI personalities");
 console.log("- certified Versus particle and trail performance/readability budgets");

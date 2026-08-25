@@ -8,12 +8,14 @@ import { ARENA_REGISTRY, type ArenaConfig, getArenaConfig } from "../../../asset
 import AdventureCharacter from "./AdventureCharacter";
 import AdventureCamera from "./AdventureCamera";
 import AdventurePlayerController from "./AdventurePlayerController";
+import AdventureSessionGuard from "./AdventureSessionGuard";
 import AdventureEnemyAI from "./AdventureEnemyAI";
 import Mission1EncounterBridge from "./Mission1EncounterBridge";
 import * as THREE from "three";
 
 const VISUAL_ARENA_SIZE = 76;
 const VISUAL_ARENA_HALF = VISUAL_ARENA_SIZE / 2;
+const SCRIPTED_ENCOUNTER_CLEAR_DELAY_SEC = 0.9;
 
 function ArenaGround({ config }: { config: ArenaConfig }) {
   const { biome, ground } = config;
@@ -330,26 +332,71 @@ function WaveSpawner({ roamSessionId }: { roamSessionId: number }) {
 function ScriptedEncounterSpawner({ roamSessionId }: { roamSessionId: number }) {
   const started = useRef(false);
   const lastEncounter = useRef(-1);
+  const clearTimer = useRef(0);
+  const completionIssued = useRef(false);
 
   useEffect(() => {
     started.current = false;
     lastEncounter.current = -1;
+    clearTimer.current = 0;
+    completionIssued.current = false;
   }, [roamSessionId]);
 
-  useFrame(() => {
+  useFrame((_, rawDelta) => {
+    const delta = Math.min(rawDelta, 0.05);
     const adv = useAdventure.getState();
     if (adv.isPaused || !adv.roamDistrictId || adv.districtCompleted) return;
     const meta = getDistrictMeta(adv.roamDistrictId);
     if (!meta) return;
 
-    const alive = adv.enemies.filter((e) => !e.isDead).length;
-    if (!started.current || (alive === 0 && adv.encounterIndex !== lastEncounter.current)) {
-      const encounter = meta.encounters[adv.encounterIndex];
-      if (!encounter) return;
-      adv.spawnEnemies(buildEncounterEnemies(encounter, adv.encounterIndex));
+    const encounter = meta.encounters[adv.encounterIndex];
+    if (!encounter) {
+      if (!completionIssued.current) {
+        completionIssued.current = true;
+        useAdventure.setState({ districtCompleted: true });
+        useMissions.getState().completeDistrictRoam(adv.roamDistrictId);
+      }
+      return;
+    }
+
+    if (!started.current || adv.encounterIndex !== lastEncounter.current) {
+      adv.spawnEnemies(
+        buildEncounterEnemies({
+          districtId: adv.roamDistrictId,
+          encounterIndex: adv.encounterIndex,
+          spec: encounter,
+        }),
+      );
       started.current = true;
       lastEncounter.current = adv.encounterIndex;
+      clearTimer.current = 0;
+      return;
     }
+
+    const alive = adv.enemies.some((enemy) => !enemy.isDead);
+    if (alive) {
+      clearTimer.current = 0;
+      return;
+    }
+
+    clearTimer.current += delta;
+    if (clearTimer.current < SCRIPTED_ENCOUNTER_CLEAR_DELAY_SEC) return;
+    clearTimer.current = 0;
+
+    const nextEncounterIndex = adv.encounterIndex + 1;
+    if (nextEncounterIndex >= meta.encounters.length) {
+      if (!completionIssued.current) {
+        completionIssued.current = true;
+        useAdventure.setState({ districtCompleted: true });
+        useMissions.getState().completeDistrictRoam(adv.roamDistrictId);
+      }
+      return;
+    }
+
+    // Checkpoint belongs to the encounter we just cleared. Restore resources,
+    // then advance; AdventureSessionGuard clears transient combat state at the handoff.
+    adv.applyDistrictCheckpoint();
+    useAdventure.setState({ encounterIndex: nextEncounterIndex });
   });
 
   return null;
@@ -370,6 +417,7 @@ export default function AdventureArena() {
       <ArenaEnvironment config={arena} />
       <AdventureCharacter />
       <AdventureCamera />
+      <AdventureSessionGuard />
       <AdventurePlayerController />
       <AdventureEnemyAI />
       {missionId === "mission1" && <Mission1EncounterBridge />}

@@ -1,45 +1,55 @@
-import { describe, expect, it } from "vitest";
-import { getAutoTarget, scoreAutoTarget, type AutoTargetEnemy } from "./targeting";
+import { beforeEach, describe, expect, it } from "vitest";
+import { getAutoTarget, resetAutoTarget } from "./targeting";
 
-const enemy = (id: string, posX: number, posZ: number): AutoTargetEnemy => ({
+type Enemy = { id: string; posX: number; posZ: number; isDead: boolean };
+
+const enemy = (id: string, posX: number, posZ: number, isDead = false): Enemy => ({
   id,
   posX,
   posZ,
-  isDead: false,
+  isDead,
 });
 
-describe("auto targeting", () => {
-  it("returns null when no valid enemies", () => {
+describe("getAutoTarget", () => {
+  beforeEach(() => resetAutoTarget());
+
+  it("returns null when no valid enemies exist", () => {
     expect(getAutoTarget(0, 0, 0, [])).toBeNull();
   });
 
-  it("prefers a closer target aligned with player facing", () => {
-    const target = getAutoTarget(0, 0, 0, [
-      enemy("front", 0, 3),
-      enemy("side", 3, 0),
-    ]);
-    expect(target).toBe("front");
+  it("ignores dead enemies and enemies outside normal acquisition range", () => {
+    const enemies = [
+      enemy("dead", 0, 3, true),
+      enemy("far", 0, 19),
+      enemy("valid", 0, 10),
+    ];
+
+    expect(getAutoTarget(0, 0, 0, enemies)).toBe("valid");
   });
 
-  it("ignores dead and invalid candidates", () => {
-    const dead = { ...enemy("dead", 0, 1), isDead: true };
-    const invalid = enemy("invalid", Number.NaN, 1);
-    expect(getAutoTarget(0, 0, 0, [dead, invalid])).toBeNull();
+  it("prefers an enemy in front over an equally distant enemy behind", () => {
+    const enemies = [enemy("behind", 0, -6), enemy("front", 0, 6)];
+
+    expect(getAutoTarget(0, 0, 0, enemies)).toBe("front");
   });
 
-  it("uses stable id ordering for exact score ties", () => {
-    expect(getAutoTarget(0, 0, 0, [enemy("beta", 0, 3), enemy("alpha", 0, 3)])).toBe("alpha");
-  });
+  it("keeps the current target when a challenger is only slightly closer", () => {
+    const enemies = [enemy("current", 0, 8), enemy("challenger", 0, 7)];
 
-  it("keeps current target when it remains competitively scored", () => {
-    const enemies = [enemy("best", 0, 3), enemy("current", 0.25, 3.05)];
     expect(getAutoTarget(0, 0, 0, enemies, "current")).toBe("current");
   });
 
-  it("returns rich score information for debugging and assist systems", () => {
-    const scored = scoreAutoTarget(0, 0, 0, enemy("front", 0, 4));
-    expect(scored?.id).toBe("front");
-    expect(scored?.distance).toBeCloseTo(4);
-    expect(scored?.angle).toBeCloseTo(0);
+  it("switches when another target is meaningfully better", () => {
+    const enemies = [enemy("current", 0, 8), enemy("challenger", 0, 4)];
+
+    expect(getAutoTarget(0, 0, 0, enemies, "current")).toBe("challenger");
+  });
+
+  it("gives the current target a small range grace without expanding normal acquisition", () => {
+    const enemies = [enemy("current", 0, 19)];
+
+    expect(getAutoTarget(0, 0, 0, enemies, "current")).toBe("current");
+    resetAutoTarget();
+    expect(getAutoTarget(0, 0, 0, enemies, null)).toBeNull();
   });
 });

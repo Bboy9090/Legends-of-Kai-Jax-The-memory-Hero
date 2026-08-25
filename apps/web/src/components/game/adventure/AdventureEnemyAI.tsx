@@ -30,6 +30,7 @@ interface EnemyMeshProps {
 
 const MAX_SIMULTANEOUS_THREATS = 2;
 const ATTACK_RECOVERY_SEC = 0.48;
+const ATTACK_ACTIVE_SEC = 0.42;
 const POST_HIT_INVULN_SEC = 0.42;
 
 function TelegraphRing({ enemy }: { enemy: AdventureEnemy }) {
@@ -173,6 +174,7 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
 
 export default function AdventureEnemyAI() {
   const attackTimers = useRef<Record<string, number>>({});
+  const attackStateTimers = useRef<Record<string, number>>({});
   const recoveryTimers = useRef<Record<string, number>>({});
 
   useFrame((_, rawDelta) => {
@@ -181,16 +183,27 @@ export default function AdventureEnemyAI() {
     if (adv.isPaused) return;
 
     const { player, enemies } = adv;
+    const liveIds = new Set(enemies.map((enemy) => enemy.id));
+    for (const id of Object.keys(attackTimers.current)) if (!liveIds.has(id)) delete attackTimers.current[id];
+    for (const id of Object.keys(attackStateTimers.current)) if (!liveIds.has(id)) delete attackStateTimers.current[id];
+    for (const id of Object.keys(recoveryTimers.current)) if (!liveIds.has(id)) delete recoveryTimers.current[id];
+
     let activeThreats = enemies.filter(
       (e) => !e.isDead && (e.aiState === "telegraph" || e.aiState === "attack" || e.isAttacking),
     ).length;
 
     enemies.forEach((enemy) => {
-      if (enemy.isDead) return;
+      if (enemy.isDead) {
+        delete attackTimers.current[enemy.id];
+        delete attackStateTimers.current[enemy.id];
+        delete recoveryTimers.current[enemy.id];
+        return;
+      }
 
       recoveryTimers.current[enemy.id] = Math.max(0, (recoveryTimers.current[enemy.id] || 0) - delta);
 
       if (enemy.stunTimer > 0) {
+        delete attackStateTimers.current[enemy.id];
         adv.setEnemyStun(enemy.id, Math.max(0, enemy.stunTimer - delta));
         adv.setEnemyAttacking(enemy.id, false);
         return;
@@ -278,32 +291,31 @@ export default function AdventureEnemyAI() {
 
           adv.setEnemyAIState(enemy.id, "attack");
           adv.setEnemyAttacking(enemy.id, true);
+          attackStateTimers.current[enemy.id] = ATTACK_ACTIVE_SEC;
 
-          // Ordinary enemy hits get a short post-hit protection window. This is
-          // long enough to stop pack stun-locks, but shorter than a full dodge.
           const wasVulnerable = player.invulnTimer <= 0;
           adv.damagePlayer(tierConfig.damage);
           if (wasVulnerable) adv.setInvulnTimer(POST_HIT_INVULN_SEC);
 
           if (isStatueFighter(enemy.fighterId)) useAudio.getState().playStoneAttack();
-
-          window.setTimeout(() => {
-            const state = useAdventure.getState();
-            const e = state.enemies.find((en) => en.id === enemy.id);
-            if (e && !e.isDead) {
-              state.setEnemyAttacking(enemy.id, false);
-              state.setEnemyAIState(enemy.id, "chase");
-              recoveryTimers.current[enemy.id] = ATTACK_RECOVERY_SEC;
-            }
-          }, 420);
         }
         return;
       }
 
       if (enemy.aiState === "attack" || enemy.isAttacking) {
+        const remaining = Math.max(0, (attackStateTimers.current[enemy.id] || ATTACK_ACTIVE_SEC) - delta);
+        attackStateTimers.current[enemy.id] = remaining;
         useAdventure.setState((s) => ({
           enemies: s.enemies.map((e) => (e.id === enemy.id ? { ...e, rotY: newRot } : e)),
         }));
+
+        if (remaining <= 0) {
+          delete attackStateTimers.current[enemy.id];
+          adv.setEnemyAttacking(enemy.id, false);
+          adv.setEnemyAIState(enemy.id, "chase");
+          recoveryTimers.current[enemy.id] = ATTACK_RECOVERY_SEC;
+          activeThreats = Math.max(0, activeThreats - 1);
+        }
         return;
       }
 

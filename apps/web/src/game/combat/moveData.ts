@@ -27,6 +27,24 @@ export interface DodgeData {
 
 export const FRAME_TIME = 1 / 60;
 
+/**
+ * Certified practical contact ranges.
+ * Keep these centralized so AI pressure, telegraphs and player-side checks do not
+ * drift into different invisible distances over time.
+ */
+export const COMBAT_RANGES = {
+  versus: {
+    punch: 2.2,
+    kick: 2.8,
+    specialFallback: 4.0,
+    ultimateFallback: 4.5,
+    aiMeleeCommit: 1.95,
+  },
+  mission: {
+    playerMelee: 4.0,
+  },
+} as const;
+
 export const MOVES: Record<string, MoveData> = {
   // Lights should feel immediate and chainable, not sticky.
   light1: {
