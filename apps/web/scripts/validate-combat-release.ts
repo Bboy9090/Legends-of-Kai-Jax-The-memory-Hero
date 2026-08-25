@@ -20,6 +20,7 @@ const missionHud = read("apps/web/src/components/game/adventure/AdventureHUD.tsx
 const missionArena = read("apps/web/src/components/game/adventure/AdventureArena.tsx");
 const targeting = read("apps/web/src/game/combat/targeting.ts");
 const particleManager = read("apps/web/src/components/game/ParticleManager.tsx");
+const attackTrails = read("apps/web/src/components/game/AttackTrails.tsx");
 const battleScene = read("apps/web/src/components/game/BattleScene.tsx");
 
 requireRule(
@@ -80,6 +81,12 @@ requireRule(
   "Versus particle effects must remain inside the certified readability/performance budget.",
 );
 requireRule(
+  attackTrails.includes("MAX_TRAIL_POINTS = 24") &&
+    attackTrails.includes("TRAIL_EMIT_INTERVAL") &&
+    attackTrails.includes("slice(-4)"),
+  "Versus attack trails must stay throttled and limit glow-mesh fanout.",
+);
+requireRule(
   battleController.includes("firstConnectedGamepad") &&
     battleController.includes("gamepadconnected") &&
     battleController.includes("gamepaddisconnected") &&
@@ -111,6 +118,6 @@ console.log("- gameplay-safe shake, overlap, and session cleanup");
 console.log("- Mission threat cap, telegraph whiff fairness, and anti-stunlock protection");
 console.log("- bounded Mission combat space, compact render footprint, and stable target readability");
 console.log("- differentiated Versus AI personalities");
-console.log("- certified Versus particle performance/readability budget");
+console.log("- certified Versus particle and trail performance/readability budgets");
 console.log("- Versus + Mission gamepad reconnect/focus cleanup");
 console.log("- stale touch input cleared across round transitions");
