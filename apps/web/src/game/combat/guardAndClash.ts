@@ -1,34 +1,29 @@
 /**
- * Guard pressure and attack clash priority (pure rules).
+ * Guard pressure and attack-clash priority.
+ *
+ * These are pure deterministic rules. Keep balance data declarative so combat,
+ * AI evaluation, tests, replay tooling, and future netcode all consume one table.
  */
 import type { AttackType } from "./moveData";
 
+export const GUARD_PRESSURE_BY_ATTACK: Readonly<Record<AttackType, number>> = Object.freeze({
+  punch: 12,
+  kick: 22,
+  special: 40,
+  ultimate: 55,
+});
+
+export const CLASH_PRIORITY_BY_ATTACK: Readonly<Record<AttackType, number>> = Object.freeze({
+  punch: 1,
+  kick: 2,
+  special: 3,
+  ultimate: 4,
+});
+
 export function attackBreaksGuard(type: AttackType): number {
-  switch (type) {
-    case "ultimate":
-      return 55;
-    case "special":
-      return 40;
-    case "kick":
-      return 22;
-    case "punch":
-      return 12;
-    default:
-      return 0;
-  }
+  return GUARD_PRESSURE_BY_ATTACK[type];
 }
 
 export function getClashPriority(type: AttackType | null | undefined): number {
-  switch (type) {
-    case "ultimate":
-      return 4;
-    case "special":
-      return 3;
-    case "kick":
-      return 2;
-    case "punch":
-      return 1;
-    default:
-      return 0;
-  }
+  return type ? CLASH_PRIORITY_BY_ATTACK[type] : 0;
 }

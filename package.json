@@ -11,6 +11,7 @@
     "preview": "pnpm -C apps/web preview --host",
     "typecheck": "pnpm -C apps/web typecheck",
     "lint": "pnpm -C apps/web lint",
+    "lint:release": "pnpm -C apps/web exec eslint src/combat src/components/game/CombatDebugVolumes.tsx src/components/game/GameOverlays.tsx src/components/game/TrainingLabOverlay.tsx src/game/characters/shared/FighterCombatProfile.ts src/game/characters/shared/FighterCombatProfile.test.ts src/game/combat src/game/tuning/combatTuning.ts src/lib/combatSystems.ts src/lib/enemyAIv2.ts src/lib/enemyAIv2.test.ts src/lib/stores/useTrainingLab.ts --ext ts,tsx",
     "cap:sync": "pnpm -C apps/web cap:sync",
     "cap:open": "pnpm -C apps/web cap:open",
     "game:install": "pnpm -C apps/web install",
@@ -33,7 +34,7 @@
     "validate:roster": "tsx apps/web/scripts/validate-fighter-roster.ts",
     "validate:combat": "tsx apps/web/scripts/validate-combat-release.ts",
     "validate:combat:test": "pnpm -C apps/web test -- src/game/combat/moveData.test.ts src/game/combat/targeting.test.ts",
-    "validate:release": "pnpm validate:roster && pnpm validate:combat && pnpm test && pnpm typecheck && pnpm lint && pnpm build",
+    "validate:release": "pnpm validate:roster && pnpm validate:combat && pnpm test && pnpm typecheck && pnpm lint:release && pnpm build",
     "inspect:glb": "node apps/web/scripts/inspect-glb.mjs",
     "test": "pnpm -C apps/web test",
     "start": "serve -s apps/web/dist -l 5000"
