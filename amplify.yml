@@ -9,6 +9,7 @@ frontend:
     build:
       commands:
         - pnpm validate:roster
+        - pnpm exec tsx apps/web/scripts/validate-combat-release.ts
         - pnpm typecheck
         - pnpm build
   artifacts:
