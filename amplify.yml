@@ -8,10 +8,7 @@ frontend:
         - pnpm install --filter ./apps/web... --frozen-lockfile
     build:
       commands:
-        - pnpm validate:roster
-        - pnpm exec tsx apps/web/scripts/validate-combat-release.ts
-        - pnpm typecheck
-        - pnpm build
+        - pnpm validate:release
   artifacts:
     baseDirectory: apps/web/dist
     files:
