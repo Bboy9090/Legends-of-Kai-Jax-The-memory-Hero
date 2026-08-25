@@ -29,6 +29,7 @@ function knockDistance(damage: number, attackType: string | null | undefined): n
 
 export default function BattleSessionGuard() {
   const battlePhase = useBattle((s) => s.battlePhase);
+  const prevPhaseRef = useRef(battlePhase);
   const prevRef = useRef({
     playerHealth: 100,
     opponentHealth: 100,
@@ -37,8 +38,74 @@ export default function BattleSessionGuard() {
   });
 
   useEffect(() => {
+    const originalEndBattle = useBattle.getState().endBattle;
+    const guardedEndBattle: typeof originalEndBattle = (winner) => {
+      const phase = useBattle.getState().battlePhase;
+      if (phase === "ko" || phase === "results") return;
+      originalEndBattle(winner);
+    };
+
+    useBattle.setState({ endBattle: guardedEndBattle });
+    return () => {
+      if (useBattle.getState().endBattle === guardedEndBattle) {
+        useBattle.setState({ endBattle: originalEndBattle });
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     useTouchInput.getState().releaseJoystick();
     useTouchInput.setState({ pendingAttacks: [] });
+
+    const previousPhase = prevPhaseRef.current;
+    const enteringFreshFight =
+      battlePhase === "fighting" &&
+      (previousPhase === "preRound" || previousPhase === "results" || previousPhase === "ko");
+
+    if (enteringFreshFight) {
+      useBattle.setState({
+        playerVelocityX: 0,
+        playerVelocityY: 0,
+        opponentVelocityX: 0,
+        opponentVelocityY: 0,
+        playerGrounded: true,
+        opponentGrounded: true,
+        playerAttacking: false,
+        playerAttackType: null,
+        playerAttackElapsed: 0,
+        playerAttackHasHit: false,
+        playerComboStep: 0,
+        opponentAttacking: false,
+        opponentAttackType: null,
+        opponentAttackElapsed: 0,
+        opponentAttackHasHit: false,
+        playerInvulnerable: false,
+        opponentInvulnerable: false,
+        playerBlockHeld: false,
+        playerDodgeTimer: 0,
+        playerFacingRight: true,
+        opponentFacingRight: false,
+      });
+    }
+
+    if (battlePhase === "ko" || battlePhase === "results") {
+      useBattle.setState({
+        playerVelocityX: 0,
+        playerVelocityY: 0,
+        opponentVelocityX: 0,
+        opponentVelocityY: 0,
+        playerAttacking: false,
+        playerAttackType: null,
+        playerAttackElapsed: 0,
+        playerAttackHasHit: false,
+        opponentAttacking: false,
+        opponentAttackType: null,
+        opponentAttackElapsed: 0,
+        opponentAttackHasHit: false,
+        playerBlockHeld: false,
+        playerDodgeTimer: 0,
+      });
+    }
 
     if (battlePhase === "preRound" || battlePhase === "fighting" || battlePhase === "results") {
       useBattle.getState().setTimeScale(1);
@@ -51,6 +118,7 @@ export default function BattleSessionGuard() {
       playerX: s.playerX,
       opponentX: s.opponentX,
     };
+    prevPhaseRef.current = battlePhase;
   }, [battlePhase]);
 
   useEffect(() => {
