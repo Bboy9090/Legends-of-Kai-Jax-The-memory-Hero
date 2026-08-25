@@ -19,6 +19,7 @@ const missionController = read("apps/web/src/components/game/adventure/Adventure
 const missionHud = read("apps/web/src/components/game/adventure/AdventureHUD.tsx");
 const missionArena = read("apps/web/src/components/game/adventure/AdventureArena.tsx");
 const targeting = read("apps/web/src/game/combat/targeting.ts");
+const moveData = read("apps/web/src/game/combat/moveData.ts");
 const particleManager = read("apps/web/src/components/game/ParticleManager.tsx");
 const attackTrails = read("apps/web/src/components/game/AttackTrails.tsx");
 const battleScene = read("apps/web/src/components/game/BattleScene.tsx");
@@ -55,6 +56,12 @@ requireRule(
 requireRule(
   battleScene.includes("<BattleSessionGuard") && battleScene.includes("<BattleReadabilityOverlay"),
   "Versus scene must mount both session-safety and readability overlays.",
+);
+requireRule(
+  moveData.includes("export const COMBAT_RANGES") &&
+    moveData.includes("aiMeleeCommit: 1.95") &&
+    versusAI.includes("COMBAT_RANGES.versus.aiMeleeCommit"),
+  "Versus AI pressure must consume the canonical certified melee-range contract.",
 );
 requireRule(
   missionAI.includes("MAX_SIMULTANEOUS_THREATS = 2"),
@@ -138,6 +145,7 @@ if (failures.length > 0) {
 console.log("Combat release certification PASS");
 console.log("- single-authority Versus camera and midpoint framing");
 console.log("- gameplay-safe shake, overlap, KO/rematch idempotency, and fresh-round cleanup");
+console.log("- canonical Versus contact-range contract consumed by AI pressure");
 console.log("- Mission threat cap, telegraph whiff fairness, anti-stunlock, and timer-safe attack recovery");
 console.log("- bounded Mission combat space, compact render footprint, and stable target readability");
 console.log("- differentiated Versus AI personalities");
