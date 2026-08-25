@@ -14,6 +14,7 @@ import CameraEffects from "./CameraEffects";
 import AttackTrails from "./AttackTrails";
 import EffectManager from "./EffectManager";
 import BattleReadabilityOverlay from "./BattleReadabilityOverlay";
+import BattleSessionGuard from "./BattleSessionGuard";
 import SceneEnvironment from "./graphics/SceneEnvironment";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
 import CinematicPostFX from "./graphics/CinematicPostFX";
@@ -87,6 +88,7 @@ export default function BattleScene() {
 
   return (
     <>
+      <BattleSessionGuard />
       <BattleCamera />
       <BattleReadabilityOverlay />
 
