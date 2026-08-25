@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   certify:
-    name: Validate, Typecheck, Build
+    name: Validate, Test, Typecheck, Build
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -44,6 +44,9 @@ jobs:
 
       - name: Release validation
         run: pnpm validate:release
+
+      - name: Unit tests
+        run: pnpm test
 
       - name: Typecheck
         run: pnpm typecheck
