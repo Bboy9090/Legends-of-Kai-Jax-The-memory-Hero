@@ -25,16 +25,22 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - name: Checkout exact commit without external actions
+      - name: Materialize exact commit without external actions
         env:
           REPOSITORY: ${{ github.repository }}
           COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          git init .
-          git remote add origin "https://github.com/${REPOSITORY}.git"
-          git fetch --depth=1 origin "${COMMIT_SHA}"
-          git checkout --detach FETCH_HEAD
-          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${REPOSITORY}/tarball/${COMMIT_SHA}" \
+            --output source.tar.gz
+          tar --extract --gzip --file source.tar.gz --strip-components=1
+          rm source.tar.gz
+          test -f package.json
+          printf '%s\n' "${COMMIT_SHA}" > .certified-head-sha
 
       - name: Activate pnpm
         run: |
