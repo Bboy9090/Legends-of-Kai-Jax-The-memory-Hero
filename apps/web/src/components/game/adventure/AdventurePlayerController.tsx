@@ -20,15 +20,26 @@ const MOVE_ACCEL = adv.moveAccel;
 const MOVE_DECEL = adv.moveDecel;
 const MISSION_BOUNDARY = 32;
 const PLAYER_HIT_RANGE = 4.0;
+const GAMEPAD_DEADZONE = 0.18;
 
 const _camDir = new THREE.Vector3();
 const _camRight = new THREE.Vector3();
 const _moveDir = new THREE.Vector3();
 const _worldUp = new THREE.Vector3(0, 1, 0);
 
+function firstConnectedGamepad(): Gamepad | null {
+  if (typeof navigator === "undefined" || typeof navigator.getGamepads !== "function") return null;
+  const pads = navigator.getGamepads();
+  for (const pad of pads) {
+    if (pad?.connected) return pad;
+  }
+  return null;
+}
+
 export default function AdventurePlayerController() {
   const keysRef = useRef<Record<string, boolean>>({});
   const prevKeysRef = useRef<Record<string, boolean>>({});
+  const prevPadButtonsRef = useRef<boolean[]>([]);
   const attackTimerRef = useRef(0);
   const stoneStepTimer = useRef(0);
   const dodgeDirRef = useRef({ x: 0, z: 0 });
@@ -39,11 +50,17 @@ export default function AdventurePlayerController() {
     const keys = keysRef.current;
     const handleDown = (e: KeyboardEvent) => { keys[e.code] = true; };
     const handleUp = (e: KeyboardEvent) => { keys[e.code] = false; };
+    const clearHeld = () => {
+      Object.keys(keys).forEach((key) => { keys[key] = false; });
+      prevPadButtonsRef.current = [];
+    };
     window.addEventListener("keydown", handleDown);
     window.addEventListener("keyup", handleUp);
+    window.addEventListener("blur", clearHeld);
     return () => {
       window.removeEventListener("keydown", handleDown);
       window.removeEventListener("keyup", handleUp);
+      window.removeEventListener("blur", clearHeld);
     };
   }, []);
 
@@ -57,15 +74,26 @@ export default function AdventurePlayerController() {
     const prev = prevKeysRef.current;
     const justPressed = (code: string) => keys[code] && !prev[code];
 
+    const pad = firstConnectedGamepad();
+    const padPressed = (index: number) => !!pad?.buttons[index]?.pressed;
+    const padJustPressed = (index: number) => padPressed(index) && !prevPadButtonsRef.current[index];
+    const rawPadX = pad?.axes?.[0] ?? 0;
+    const rawPadY = pad?.axes?.[1] ?? 0;
+    const padX = Math.abs(rawPadX) >= GAMEPAD_DEADZONE ? rawPadX : 0;
+    const padY = Math.abs(rawPadY) >= GAMEPAD_DEADZONE ? rawPadY : 0;
+
+    const rememberInputs = () => {
+      prevKeysRef.current = { ...keys };
+      prevPadButtonsRef.current = pad ? pad.buttons.map((button) => button.pressed) : [];
+    };
+
     if (p.hitStopTimer > 0) {
       store.setHitStopTimer(Math.max(0, p.hitStopTimer - rawDelta));
-      prevKeysRef.current = { ...keys };
+      rememberInputs();
       return;
     }
 
-    if (p.screenShake > 0) {
-      store.triggerScreenShake(Math.max(0, p.screenShake - delta * 8));
-    }
+    if (p.screenShake > 0) store.triggerScreenShake(Math.max(0, p.screenShake - delta * 8));
 
     const touch = useTouchInput.getState();
     const touchAttacks = touch.consumeAttacks();
@@ -76,7 +104,7 @@ export default function AdventurePlayerController() {
     if (p.hitStunTimer > 0) {
       store.setHitStunTimer(Math.max(0, p.hitStunTimer - delta));
       if (p.hitStunTimer - delta <= 0) store.setCombatState(CombatState.FREE);
-      prevKeysRef.current = { ...keys };
+      rememberInputs();
       return;
     }
 
@@ -96,7 +124,7 @@ export default function AdventurePlayerController() {
           THREE.MathUtils.clamp(newZ, -MISSION_BOUNDARY, MISSION_BOUNDARY)
         );
       }
-      prevKeysRef.current = { ...keys };
+      rememberInputs();
       return;
     }
 
@@ -104,15 +132,17 @@ export default function AdventurePlayerController() {
     const targetId = getAutoTarget(p.posX, p.posZ, p.rotY, enemies);
     store.setAutoTargetId(targetId);
 
-    const isRunning = keys["ShiftLeft"] || keys["ShiftRight"];
+    const isRunning = keys["ShiftLeft"] || keys["ShiftRight"] || padPressed(10);
     const moveSpeed = isRunning ? RUN_SPEED : WALK_SPEED;
 
     let inputX = 0;
     let inputZ = 0;
-    if (keys["KeyW"] || keys["ArrowUp"]) inputZ -= 1;
-    if (keys["KeyS"] || keys["ArrowDown"]) inputZ += 1;
-    if (keys["KeyA"] || keys["ArrowLeft"]) inputX -= 1;
-    if (keys["KeyD"] || keys["ArrowRight"]) inputX += 1;
+    if (keys["KeyW"] || keys["ArrowUp"] || padPressed(12)) inputZ -= 1;
+    if (keys["KeyS"] || keys["ArrowDown"] || padPressed(13)) inputZ += 1;
+    if (keys["KeyA"] || keys["ArrowLeft"] || padPressed(14)) inputX -= 1;
+    if (keys["KeyD"] || keys["ArrowRight"] || padPressed(15)) inputX += 1;
+    inputX += padX;
+    inputZ += padY;
 
     if (touch.isJoystickActive) {
       inputX += touch.joystickX;
@@ -179,7 +209,7 @@ export default function AdventurePlayerController() {
         const elapsed = timing.totalTime - attackTimerRef.current;
         if (elapsed >= timing.cancelTime) {
           let nextAttack: string | null = null;
-          if (justPressed("KeyJ") || justPressed("KeyX") || touchAttacks.includes("attack")) {
+          if (justPressed("KeyJ") || justPressed("KeyX") || padJustPressed(2) || touchAttacks.includes("attack")) {
             const nextStep = p.comboStep + 1;
             if (nextStep < COMBO_CONFIG.maxChain) {
               const moveKey = `light${nextStep + 1}`;
@@ -204,12 +234,12 @@ export default function AdventurePlayerController() {
         }
       }
 
-      prevKeysRef.current = { ...keys };
+      rememberInputs();
       return;
     }
 
     const exhausted = p.stamina < STAMINA_CONFIG.exhaustedThreshold;
-    const wantDodge = justPressed("Space") || touchAttacks.includes("dodge");
+    const wantDodge = justPressed("Space") || padJustPressed(0) || padJustPressed(5) || touchAttacks.includes("dodge");
     if (wantDodge && !exhausted && store.useStamina(DODGE.staminaCost)) {
       velSmoothRef.current = { x: 0, z: 0 };
       store.setPlayerVelocity(0, 0);
@@ -219,14 +249,14 @@ export default function AdventurePlayerController() {
       dodgeDirRef.current = hasInput
         ? { x: worldX, z: worldZ }
         : { x: -Math.sin(p.rotY), z: -Math.cos(p.rotY) };
-      prevKeysRef.current = { ...keys };
+      rememberInputs();
       return;
     }
 
     let attackInput: string | null = null;
-    if (justPressed("KeyJ") || justPressed("KeyX") || touchAttacks.includes("attack")) attackInput = "light1";
-    else if (justPressed("KeyK") || justPressed("KeyZ") || touchAttacks.includes("heavy")) attackInput = "heavy";
-    else if (justPressed("KeyL") || justPressed("KeyC") || touchAttacks.includes("skill")) attackInput = "skill";
+    if (justPressed("KeyJ") || justPressed("KeyX") || padJustPressed(2) || touchAttacks.includes("attack")) attackInput = "light1";
+    else if (justPressed("KeyK") || justPressed("KeyZ") || padJustPressed(3) || touchAttacks.includes("heavy")) attackInput = "heavy";
+    else if (justPressed("KeyL") || justPressed("KeyC") || padJustPressed(1) || touchAttacks.includes("skill")) attackInput = "skill";
 
     if (attackInput && !exhausted) {
       const moveData = MOVES[attackInput];
@@ -243,7 +273,7 @@ export default function AdventurePlayerController() {
           if (target) store.setPlayerRot(Math.atan2(target.posX - p.posX, target.posZ - p.posZ));
         }
         if (isStatueFighter(p.fighterId)) useAudio.getState().playStoneAttack();
-        prevKeysRef.current = { ...keys };
+        rememberInputs();
         return;
       }
     }
@@ -315,8 +345,8 @@ export default function AdventurePlayerController() {
       } else store.setComboTimer(newTimer);
     }
 
-    if (justPressed("Escape") || justPressed("KeyP")) store.togglePause();
-    prevKeysRef.current = { ...keys };
+    if (justPressed("Escape") || justPressed("KeyP") || padJustPressed(9)) store.togglePause();
+    rememberInputs();
   });
 
   return null;
