@@ -53,15 +53,37 @@ export default function PlayerController() {
     };
     const clearHeldInput = () => {
       Object.keys(keys).forEach((key) => { keys[key] = false; });
+      prevKeysRef.current = {};
       prevPadButtonsRef.current = [];
+      attackBufferRef.current = null;
+      useTouchInput.getState().releaseJoystick();
+      useTouchInput.setState({ pendingAttacks: [] });
+      useBattle.getState().setPlayerBlockHeld(false);
     };
+    const handleVisibility = () => {
+      if (document.hidden) clearHeldInput();
+    };
+    const handlePadChange = () => {
+      // A reconnect may reuse the same browser slot with stale edge state.
+      // Reset button history so the next deliberate press is recognized cleanly.
+      prevPadButtonsRef.current = [];
+      attackBufferRef.current = null;
+    };
+
     window.addEventListener("keydown", handleDown);
     window.addEventListener("keyup", handleUp);
     window.addEventListener("blur", clearHeldInput);
+    window.addEventListener("gamepadconnected", handlePadChange);
+    window.addEventListener("gamepaddisconnected", handlePadChange);
+    document.addEventListener("visibilitychange", handleVisibility);
     return () => {
       window.removeEventListener("keydown", handleDown);
       window.removeEventListener("keyup", handleUp);
       window.removeEventListener("blur", clearHeldInput);
+      window.removeEventListener("gamepadconnected", handlePadChange);
+      window.removeEventListener("gamepaddisconnected", handlePadChange);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      clearHeldInput();
     };
   }, []);
 
@@ -82,7 +104,6 @@ export default function PlayerController() {
     const dpadLeft = padPressed(14);
     const dpadRight = padPressed(15);
 
-    // Standard mapping: LB = block. Keyboard Alt remains supported.
     const blockHeld = !!(keys["AltLeft"] || keys["AltRight"] || padPressed(4));
     useBattle.getState().setPlayerBlockHeld(blockHeld);
 
@@ -92,7 +113,6 @@ export default function PlayerController() {
     const touchAttacks = touch.consumeAttacks();
 
     let queuedAttack: AttackType | null = null;
-    // Standard gamepad: X=punch, Y=kick, B=special, RT=ultimate.
     if (justPressed("KeyJ") || justPressed("KeyX") || padJustPressed(2) || touchAttacks.includes("punch") || touchAttacks.includes("attack")) queuedAttack = "punch";
     else if (justPressed("KeyK") || justPressed("KeyZ") || padJustPressed(3) || touchAttacks.includes("kick") || touchAttacks.includes("heavy")) queuedAttack = "kick";
     else if (justPressed("KeyL") || justPressed("KeyC") || padJustPressed(1) || touchAttacks.includes("special") || touchAttacks.includes("skill")) queuedAttack = "special";
