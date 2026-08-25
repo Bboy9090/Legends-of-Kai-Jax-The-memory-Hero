@@ -6,6 +6,8 @@ import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
 
 const ARENA_X_MIN = MOVEMENT_TUNING.battle.arenaXMin;
 const ARENA_X_MAX = MOVEMENT_TUNING.battle.arenaXMax;
+const MAX_PARTICLES = 220;
+const PARTICLE_LIFE = 0.52;
 
 interface Particle {
   x: number;
@@ -21,8 +23,6 @@ interface Particle {
   b: number;
 }
 
-const MAX_PARTICLES = 500; // TRIPLED for MASSIVE particle explosions!
-
 export default function ParticleManager() {
   const {
     playerX,
@@ -37,251 +37,196 @@ export default function ParticleManager() {
     opponentHealth,
     battlePhase,
     winner,
-    timeScale
+    timeScale,
   } = useBattle();
 
   const particlesRef = useRef<Particle[]>([]);
   const positionsRef = useRef(new Float32Array(MAX_PARTICLES * 3));
   const colorsRef = useRef(new Float32Array(MAX_PARTICLES * 3));
   const sizesRef = useRef(new Float32Array(MAX_PARTICLES));
-  
   const prevPlayerHealthRef = useRef(100);
   const prevOpponentHealthRef = useRef(100);
   const prevPlayerAttackRef = useRef(false);
   const prevOpponentAttackRef = useRef(false);
-  const prevBattlePhaseRef = useRef('intro');
+  const prevBattlePhaseRef = useRef("intro");
   const koParticlesFiredRef = useRef(false);
-
-  // 🦁 APEX TRACKING: Particle triggers
   const prevGroundedRef = useRef(true);
-  const prevPouncingRef = useRef(false);
   const prevWallContactRef = useRef(false);
+  const pounceEmitCooldownRef = useRef(0);
 
-  // ENHANCED emit - EXPLOSIVE particles!
-  const emit = (x: number, y: number, z: number, count: number, color: [number, number, number], speed: number, sizeMultiplier = 1.0) => {
-    for (let i = 0; i < count; i++) {
-      if (particlesRef.current.length < MAX_PARTICLES) {
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(2 * Math.random() - 1);
-        const spd = speed * (0.7 + Math.random() * 0.6);
-        
-        particlesRef.current.push({
-          x, y, z,
-          vx: Math.sin(phi) * Math.cos(theta) * spd,
-          vy: Math.abs(Math.sin(phi) * Math.sin(theta)) * spd * 0.5,
-          vz: Math.cos(phi) * spd,
-          life: 0.7, // Longer life for more visibility!
-          size: (0.25 + Math.random() * 0.2) * sizeMultiplier, // BIGGER particles!
-          r: Math.min(1, color[0] + (Math.random() - 0.5) * 0.3),
-          g: Math.min(1, color[1] + (Math.random() - 0.5) * 0.3),
-          b: Math.min(1, color[2] + (Math.random() - 0.5) * 0.3)
-        });
-      }
+  const emit = (
+    x: number,
+    y: number,
+    z: number,
+    count: number,
+    color: [number, number, number],
+    speed: number,
+    sizeMultiplier = 1,
+  ) => {
+    const capacity = MAX_PARTICLES - particlesRef.current.length;
+    const safeCount = Math.min(Math.max(0, Math.floor(count)), capacity);
+    for (let i = 0; i < safeCount; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const spd = speed * (0.72 + Math.random() * 0.45);
+      particlesRef.current.push({
+        x,
+        y,
+        z,
+        vx: Math.sin(phi) * Math.cos(theta) * spd,
+        vy: Math.abs(Math.sin(phi) * Math.sin(theta)) * spd * 0.45,
+        vz: Math.cos(phi) * spd,
+        life: PARTICLE_LIFE,
+        size: (0.18 + Math.random() * 0.14) * sizeMultiplier,
+        r: Math.max(0, Math.min(1, color[0] + (Math.random() - 0.5) * 0.18)),
+        g: Math.max(0, Math.min(1, color[1] + (Math.random() - 0.5) * 0.18)),
+        b: Math.max(0, Math.min(1, color[2] + (Math.random() - 0.5) * 0.18)),
+      });
     }
   };
 
-  useFrame((state, delta) => {
-    // Apply slow-motion time scale
+  useFrame((_, rawDelta) => {
+    const delta = Math.min(rawDelta, 0.05);
     const scaledDelta = delta * timeScale;
-    
-    // LEGENDARY KO EXPLOSION - ONCE when entering KO phase!
-    if (battlePhase === 'ko' && prevBattlePhaseRef.current !== 'ko' && !koParticlesFiredRef.current) {
+
+    if (battlePhase === "ko" && prevBattlePhaseRef.current !== "ko" && !koParticlesFiredRef.current) {
       koParticlesFiredRef.current = true;
-      const koX = winner === 'player' ? opponentX : playerX;
-      const koY = winner === 'player' ? opponentY : playerY;
-      
-      // APOCALYPTIC PARTICLE BURST!!!
-      emit(koX, koY + 1, 0, 100, [1, 0, 0], 12, 3.0); // MASSIVE red explosion!
-      emit(koX, koY + 1, 0, 80, [1, 1, 1], 10, 2.5); // Huge white flash
-      emit(koX, koY + 1, 0, 60, [1, 0.5, 0], 8, 2.0); // Orange shockwave
-      emit(koX, koY + 1, 0, 50, [1, 1, 0], 9, 2.2); // Yellow sparks
-      
-      // Victory sparkles for winner
-      const winnerX = winner === 'player' ? playerX : opponentX;
-      const winnerY = winner === 'player' ? playerY : opponentY;
-      emit(winnerX, winnerY + 1.5, 0, 50, [1, 1, 0], 4, 1.5); // Gold confetti
-      emit(winnerX, winnerY + 1.5, 0, 40, [0, 1, 1], 3, 1.2); // Cyan sparkles
+      const koX = winner === "player" ? opponentX : playerX;
+      const koY = winner === "player" ? opponentY : playerY;
+      const winnerX = winner === "player" ? playerX : opponentX;
+      const winnerY = winner === "player" ? playerY : opponentY;
+
+      emit(koX, koY + 1, 0, 46, [1, 0.08, 0.05], 9, 1.9);
+      emit(koX, koY + 1, 0, 26, [1, 0.85, 0.25], 7, 1.45);
+      emit(winnerX, winnerY + 1.4, 0, 20, [1, 0.9, 0.15], 3.5, 1.1);
     }
-    
-    // Reset KO flag when leaving KO phase
-    if (battlePhase !== 'ko') {
-      koParticlesFiredRef.current = false;
-    }
+    if (battlePhase !== "ko") koParticlesFiredRef.current = false;
     prevBattlePhaseRef.current = battlePhase;
-    
-    // EXPLOSIVE HIT EFFECTS - HUGE bursts of particles!
+
     if (playerHealth < prevPlayerHealthRef.current) {
-      // MASSIVE hit burst!
-      emit(playerX, playerY + 1, 0, 40, [1, 0.3, 0.3], 8, 2.0); // Red impact
-      emit(playerX, playerY + 1, 0, 20, [1, 1, 1], 6, 1.5); // White flash
-      emit(playerX, playerY + 1, 0, 15, [1, 0.8, 0], 5, 1.2); // Orange sparks
+      emit(playerX, playerY + 1, 0, 18, [1, 0.25, 0.2], 6.5, 1.25);
+      emit(playerX, playerY + 1, 0, 8, [1, 1, 1], 4.5, 0.9);
     }
     prevPlayerHealthRef.current = playerHealth;
 
-    // EXPLOSIVE HIT EFFECTS on opponent too!
     if (opponentHealth < prevOpponentHealthRef.current) {
-      // MASSIVE hit burst!
-      emit(opponentX, opponentY + 1, 0, 40, [1, 0.3, 0.3], 8, 2.0); // Red impact
-      emit(opponentX, opponentY + 1, 0, 20, [1, 1, 1], 6, 1.5); // White flash
-      emit(opponentX, opponentY + 1, 0, 15, [1, 0.8, 0], 5, 1.2); // Orange sparks
+      emit(opponentX, opponentY + 1, 0, 18, [1, 0.25, 0.2], 6.5, 1.25);
+      emit(opponentX, opponentY + 1, 0, 8, [1, 1, 1], 4.5, 0.9);
     }
     prevOpponentHealthRef.current = opponentHealth;
 
-    // DRAMATIC ATTACK EFFECTS - WAY more particles!
     if (playerAttacking && !prevPlayerAttackRef.current && playerAttackType) {
-      const attackX = playerX + (opponentX > playerX ? 1.5 : -1.5);
+      const attackX = playerX + (opponentX > playerX ? 1.25 : -1.25);
       const colors: Record<string, [number, number, number]> = {
-        punch: [1, 0.84, 0],   // Bright gold
-        kick: [1, 0.4, 0],     // Fiery orange
-        special: [1, 0, 1]     // Magenta
+        punch: [1, 0.84, 0],
+        kick: [1, 0.4, 0],
+        special: [0.9, 0.05, 1],
+        ultimate: [1, 0.85, 0.15],
       };
-      const counts: Record<string, number> = {
-        punch: 30,    // TRIPLED particles!
-        kick: 45,     // TRIPLED!
-        special: 80   // MASSIVE special attack!
-      };
-      const sizes: Record<string, number> = {
-        punch: 1.2,
-        kick: 1.5,
-        special: 2.5  // HUGE special particles!
-      };
-      
-      // Primary attack burst
-      emit(attackX, playerY + 1, 0, counts[playerAttackType] || 30, colors[playerAttackType] || [1, 1, 0], 6, sizes[playerAttackType] || 1.0);
-      
-      // Add white flash for all attacks
-      emit(attackX, playerY + 1, 0, 15, [1, 1, 1], 5, sizes[playerAttackType] || 1.0);
-      
-      // Special gets extra effects!
-      if (playerAttackType === 'special') {
-        emit(attackX, playerY + 1, 0, 30, [0, 1, 1], 7, 2.0); // Cyan ring
-        emit(attackX, playerY + 1, 0, 25, [1, 1, 0], 8, 1.8); // Yellow burst
+      const counts: Record<string, number> = { punch: 10, kick: 16, special: 34, ultimate: 46 };
+      const sizes: Record<string, number> = { punch: 0.9, kick: 1.05, special: 1.55, ultimate: 1.8 };
+      emit(
+        attackX,
+        playerY + 1,
+        0,
+        counts[playerAttackType] ?? 10,
+        colors[playerAttackType] ?? [1, 1, 0],
+        playerAttackType === "special" || playerAttackType === "ultimate" ? 6.5 : 5.2,
+        sizes[playerAttackType] ?? 1,
+      );
+      if (playerAttackType === "special" || playerAttackType === "ultimate") {
+        emit(attackX, playerY + 1, 0, 10, [0.2, 0.95, 1], 5.5, 1.15);
       }
     }
     prevPlayerAttackRef.current = playerAttacking;
 
-    // DRAMATIC OPPONENT ATTACK EFFECTS too!
     if (opponentAttacking && !prevOpponentAttackRef.current && opponentAttackType) {
-      const attackX = opponentX + (playerX > opponentX ? 1.5 : -1.5);
+      const attackX = opponentX + (playerX > opponentX ? 1.25 : -1.25);
       const colors: Record<string, [number, number, number]> = {
-        punch: [1, 0.84, 0],
-        kick: [1, 0.4, 0],
-        special: [0.6, 0, 1]  // Purple for villain special!
+        punch: [1, 0.72, 0.08],
+        kick: [1, 0.32, 0.05],
+        special: [0.55, 0.05, 1],
       };
-      const counts: Record<string, number> = {
-        punch: 30,
-        kick: 45,
-        special: 80
-      };
-      const sizes: Record<string, number> = {
-        punch: 1.2,
-        kick: 1.5,
-        special: 2.5
-      };
-      
-      emit(attackX, opponentY + 1, 0, counts[opponentAttackType] || 30, colors[opponentAttackType] || [1, 1, 0], 6, sizes[opponentAttackType] || 1.0);
-      emit(attackX, opponentY + 1, 0, 15, [1, 1, 1], 5, sizes[opponentAttackType] || 1.0);
-      
-      if (opponentAttackType === 'special') {
-        emit(attackX, opponentY + 1, 0, 30, [1, 0, 0], 7, 2.0); // Red ring
-        emit(attackX, opponentY + 1, 0, 25, [0.8, 0, 0.8], 8, 1.8); // Purple burst
-      }
+      const counts: Record<string, number> = { punch: 10, kick: 16, special: 34 };
+      emit(
+        attackX,
+        opponentY + 1,
+        0,
+        counts[opponentAttackType] ?? 10,
+        colors[opponentAttackType] ?? [1, 1, 0],
+        opponentAttackType === "special" ? 6.5 : 5.2,
+        opponentAttackType === "special" ? 1.55 : 1,
+      );
+      if (opponentAttackType === "special") emit(attackX, opponentY + 1, 0, 10, [1, 0.15, 0.15], 5.5, 1.1);
     }
     prevOpponentAttackRef.current = opponentAttacking;
-    
-    // 🦁 BEAST MECHANIC: ENVIRONMENTAL PARTICLES
+
     const snap = useBattle.getState();
     const isPouncing = !snap.playerGrounded && Math.abs(snap.playerVelocityX) > 12;
     const isAtWall = snap.playerX <= ARENA_X_MIN + 0.15 || snap.playerX >= ARENA_X_MAX - 0.15;
 
-    // Heavy Landing Ripple
-    if (snap.playerGrounded && !prevGroundedRef.current && Math.abs(snap.playerVelocityY) > 5) {
-      const intensity = Math.min(3, Math.abs(snap.playerVelocityY) / 10);
-      emit(snap.playerX, snap.playerY - 0.5, 0, 25 * intensity, [0.7, 0.7, 0.7], 4 * intensity, 1.2 * intensity);
+    if (snap.playerGrounded && !prevGroundedRef.current) {
+      emit(snap.playerX, snap.playerY - 0.45, 0, 10, [0.65, 0.65, 0.65], 3.2, 0.9);
     }
-    
-    // Wall Kick Sparks
     if (isAtWall && !prevWallContactRef.current && isPouncing) {
-       emit(snap.playerX, snap.playerY + 0.5, 0, 30, [1, 1, 0.5], 8, 1.5); // Friction sparks
-       emit(snap.playerX, snap.playerY + 0.5, 0, 15, [1, 1, 1], 10, 2.0);  // High energy flash
+      emit(snap.playerX, snap.playerY + 0.5, 0, 12, [1, 0.9, 0.35], 6, 1.05);
     }
 
-    // Pounce Exhaust
-    if (isPouncing) {
-      if (state.clock.elapsedTime % 0.05 < 0.02) {
-        emit(snap.playerX - Math.sign(snap.playerVelocityX) * 0.8, snap.playerY + 0.5, 0, 3, [1, 1, 1], 1, 0.8);
-      }
+    pounceEmitCooldownRef.current = Math.max(0, pounceEmitCooldownRef.current - delta);
+    if (isPouncing && pounceEmitCooldownRef.current <= 0) {
+      emit(snap.playerX - Math.sign(snap.playerVelocityX) * 0.7, snap.playerY + 0.45, 0, 2, [1, 1, 1], 1, 0.55);
+      pounceEmitCooldownRef.current = 0.09;
     }
 
     prevGroundedRef.current = snap.playerGrounded;
-    prevPouncingRef.current = isPouncing;
     prevWallContactRef.current = isAtWall;
 
-    // Update particles
     let activeCount = 0;
-    particlesRef.current = particlesRef.current.filter(p => {
+    particlesRef.current = particlesRef.current.filter((p) => {
       p.life -= scaledDelta;
       if (p.life <= 0) return false;
-
-      // Apply gravity
-      p.vy -= 10 * scaledDelta;
-      
-      // Update position
+      p.vy -= 9 * scaledDelta;
       p.x += p.vx * scaledDelta;
       p.y += p.vy * scaledDelta;
       p.z += p.vz * scaledDelta;
 
-      // Add to buffers
       const idx = activeCount * 3;
       positionsRef.current[idx] = p.x;
       positionsRef.current[idx + 1] = p.y;
       positionsRef.current[idx + 2] = p.z;
-
-      const fade = p.life / 0.5;
+      const fade = Math.max(0, Math.min(1, p.life / PARTICLE_LIFE));
       colorsRef.current[idx] = p.r * fade;
       colorsRef.current[idx + 1] = p.g * fade;
       colorsRef.current[idx + 2] = p.b * fade;
-
-      sizesRef.current[activeCount] = p.size * (0.5 + fade * 0.5);
-
+      sizesRef.current[activeCount] = p.size * (0.55 + fade * 0.45);
       activeCount++;
       return true;
     });
+
+    for (let i = activeCount; i < MAX_PARTICLES; i++) {
+      const idx = i * 3;
+      positionsRef.current[idx] = 9999;
+      positionsRef.current[idx + 1] = 9999;
+      positionsRef.current[idx + 2] = 9999;
+      sizesRef.current[i] = 0;
+    }
   });
 
   return (
-    <points>
+    <points frustumCulled={false}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={MAX_PARTICLES}
-          array={positionsRef.current}
-          itemSize={3}
-          usage={THREE.DynamicDrawUsage}
-        />
-        <bufferAttribute
-          attach="attributes-color"
-          count={MAX_PARTICLES}
-          array={colorsRef.current}
-          itemSize={3}
-          usage={THREE.DynamicDrawUsage}
-        />
-        <bufferAttribute
-          attach="attributes-size"
-          count={MAX_PARTICLES}
-          array={sizesRef.current}
-          itemSize={1}
-          usage={THREE.DynamicDrawUsage}
-        />
+        <bufferAttribute attach="attributes-position" count={MAX_PARTICLES} array={positionsRef.current} itemSize={3} usage={THREE.DynamicDrawUsage} />
+        <bufferAttribute attach="attributes-color" count={MAX_PARTICLES} array={colorsRef.current} itemSize={3} usage={THREE.DynamicDrawUsage} />
+        <bufferAttribute attach="attributes-size" count={MAX_PARTICLES} array={sizesRef.current} itemSize={1} usage={THREE.DynamicDrawUsage} />
       </bufferGeometry>
       <pointsMaterial
-        size={0.4}  // DOUBLED base size for visibility!
+        size={0.3}
         vertexColors
         transparent
-        opacity={1.0}  // Full brightness!
+        opacity={0.86}
         sizeAttenuation
         depthWrite={false}
-        blending={THREE.AdditiveBlending}  // Additive for GLOW!
+        blending={THREE.AdditiveBlending}
       />
     </points>
   );
