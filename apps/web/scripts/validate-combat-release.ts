@@ -15,6 +15,7 @@ const battleGuard = read("apps/web/src/components/game/BattleSessionGuard.tsx");
 const missionGuard = read("apps/web/src/components/game/adventure/AdventureSessionGuard.tsx");
 const missionAI = read("apps/web/src/components/game/adventure/AdventureEnemyAI.tsx");
 const versusAI = read("apps/web/src/components/game/OpponentAI.tsx");
+const opponentRenderer = read("apps/web/src/components/game/Opponent.tsx");
 const battleController = read("apps/web/src/components/game/PlayerController.tsx");
 const missionController = read("apps/web/src/components/game/adventure/AdventurePlayerController.tsx");
 const missionHud = read("apps/web/src/components/game/adventure/AdventureHUD.tsx");
@@ -57,6 +58,14 @@ requireRule(
 requireRule(
   battleScene.includes("<BattleSessionGuard") && battleScene.includes("<BattleReadabilityOverlay"),
   "Versus scene must mount both session-safety and readability overlays.",
+);
+requireRule(
+  battleScene.includes("<OpponentAI") &&
+    opponentRenderer.includes("presentation-only") &&
+    !opponentRenderer.includes("moveOpponent(") &&
+    !opponentRenderer.includes("opponentAttack(") &&
+    !opponentRenderer.includes("opponentJump("),
+  "OpponentAI must be the single opponent gameplay authority; Opponent.tsx must remain presentation-only.",
 );
 requireRule(
   moveData.includes("export const COMBAT_RANGES") &&
@@ -157,6 +166,7 @@ if (failures.length > 0) {
 
 console.log("Combat release certification PASS");
 console.log("- single-authority Versus camera and midpoint framing");
+console.log("- single-authority Versus opponent AI");
 console.log("- gameplay-safe shake, overlap, KO/rematch idempotency, and fresh-round cleanup");
 console.log("- canonical Versus contact-range contract consumed by AI pressure");
 console.log("- Mission threat cap, telegraph whiff fairness, anti-stunlock, and timer-safe attack recovery");
