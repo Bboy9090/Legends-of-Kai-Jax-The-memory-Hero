@@ -4,7 +4,7 @@ import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
 import { useTouchInput } from "../../../lib/stores/useTouchInput";
 import { CombatState } from "../../../game/combat/stateEnums";
-import { MOVES } from "../../../game/combat/moveData";
+import { COMBAT_RANGES, MOVES } from "../../../game/combat/moveData";
 import { getMoveFrameTime } from "../../../game/combat/frameTiming";
 import { DODGE, STAMINA_CONFIG, COMBO_CONFIG } from "../../../game/tuning/adventureTuning";
 import { getAutoTarget } from "../../../game/combat/targeting";
@@ -19,7 +19,7 @@ const TURN_SPEED = adv.turnSpeed;
 const MOVE_ACCEL = adv.moveAccel;
 const MOVE_DECEL = adv.moveDecel;
 const MISSION_BOUNDARY = 32;
-const PLAYER_HIT_RANGE = 4.0;
+const PLAYER_HIT_RANGE = COMBAT_RANGES.mission.playerMelee;
 const GAMEPAD_DEADZONE = 0.18;
 
 const _camDir = new THREE.Vector3();
