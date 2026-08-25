@@ -62,8 +62,8 @@ export default function AdventureSessionGuard() {
     useTouchInput.getState().releaseJoystick();
     useTouchInput.setState({ pendingAttacks: [] });
 
-    // Encounter checkpoints may heal/refill resources, but they must never
-    // preserve hit-stop, stun, attack, dodge, target, or camera-effect residue.
+    // Encounter checkpoints may heal/refill resources and intentionally flash.
+    // Clear combat/camera residue without erasing that checkpoint feedback.
     useAdventure.setState((s) => ({
       player: {
         ...s.player,
@@ -72,8 +72,11 @@ export default function AdventureSessionGuard() {
         speed: 0,
         isMoving: false,
         isRunning: false,
+        isCombat: false,
         isAttacking: false,
         attackType: null,
+        attackCooldown: 0,
+        attackTimer: 0,
         combatState: CombatState.FREE,
         comboStep: 0,
         comboTimer: 0,
@@ -81,11 +84,11 @@ export default function AdventureSessionGuard() {
         invulnTimer: 0,
         hitStunTimer: 0,
         hitStopTimer: 0,
+        staminaRegenDelay: 0,
         autoTargetId: null,
         superArmor: false,
         screenShake: 0,
         timeScale: 1,
-        impactFlash: null,
       },
     }));
   }, [encounterIndex]);
