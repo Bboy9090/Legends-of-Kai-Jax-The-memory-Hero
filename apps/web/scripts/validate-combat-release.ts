@@ -15,6 +15,8 @@ const battleGuard = read("apps/web/src/components/game/BattleSessionGuard.tsx");
 const missionAI = read("apps/web/src/components/game/adventure/AdventureEnemyAI.tsx");
 const battleController = read("apps/web/src/components/game/PlayerController.tsx");
 const missionController = read("apps/web/src/components/game/adventure/AdventurePlayerController.tsx");
+const missionHud = read("apps/web/src/components/game/adventure/AdventureHUD.tsx");
+const battleScene = read("apps/web/src/components/game/BattleScene.tsx");
 
 requireRule(
   !cameraEffects.includes("camera.position") && !cameraEffects.includes("useThree("),
@@ -29,6 +31,10 @@ requireRule(
   "BattleSessionGuard must cap shake and prevent unreadable fighter overlap.",
 );
 requireRule(
+  battleScene.includes("<BattleSessionGuard") && battleScene.includes("<BattleReadabilityOverlay"),
+  "Versus scene must mount both session-safety and readability overlays.",
+);
+requireRule(
   missionAI.includes("MAX_SIMULTANEOUS_THREATS = 2"),
   "Mission combat must cap simultaneous active threats at two.",
 );
@@ -41,12 +47,31 @@ requireRule(
   "Escaping a Mission telegraph must produce a real whiff outside the visible attack range.",
 );
 requireRule(
-  battleController.includes("firstConnectedGamepad") && battleController.includes("gamepadconnected"),
-  "Versus must support standard gamepad input and reconnect edge-state cleanup.",
+  missionController.includes("MISSION_BOUNDARY = 32") && missionController.includes("THREE.MathUtils.clamp"),
+  "Mission movement must stay inside the certified combat boundary.",
 );
 requireRule(
-  missionController.includes("firstConnectedGamepad") && missionController.includes("GAMEPAD_DEADZONE"),
-  "Mission must support standard gamepad movement/action input.",
+  missionHud.includes("AutoTargetIndicator") && missionHud.includes("Incoming — dodge!"),
+  "Mission HUD must identify the auto-target and surface incoming attack warnings.",
+);
+requireRule(
+  battleController.includes("firstConnectedGamepad") &&
+    battleController.includes("gamepadconnected") &&
+    battleController.includes("gamepaddisconnected") &&
+    battleController.includes("visibilitychange"),
+  "Versus must support standard gamepad input and reconnect/focus cleanup.",
+);
+requireRule(
+  missionController.includes("firstConnectedGamepad") &&
+    missionController.includes("GAMEPAD_DEADZONE") &&
+    missionController.includes("gamepadconnected") &&
+    missionController.includes("gamepaddisconnected") &&
+    missionController.includes("visibilitychange"),
+  "Mission must support standard gamepad input and reconnect/focus cleanup.",
+);
+requireRule(
+  battleGuard.includes("pendingAttacks: []") && battleGuard.includes("releaseJoystick"),
+  "Round/session transitions must clear stale touch movement and queued attacks.",
 );
 
 if (failures.length > 0) {
@@ -58,7 +83,8 @@ if (failures.length > 0) {
 console.log("Combat release certification PASS");
 console.log("- single-authority Versus camera");
 console.log("- midpoint fighter framing");
-console.log("- gameplay-safe shake/overlap guard");
-console.log("- Mission threat cap and telegraph whiff fairness");
-console.log("- Mission post-hit anti-stunlock window");
-console.log("- Versus + Mission gamepad coverage");
+console.log("- gameplay-safe shake/overlap/session guard");
+console.log("- Mission threat cap, telegraph whiff fairness, and post-hit anti-stunlock");
+console.log("- bounded Mission combat space and target readability");
+console.log("- Versus + Mission gamepad reconnect/focus cleanup");
+console.log("- stale touch input cleared across round transitions");
