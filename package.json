@@ -31,6 +31,8 @@
     "validate:model": "python3 assets/models/characters/kai-jax/validate_model.py",
     "validate:registry": "node apps/web/scripts/validate-registry.mjs",
     "validate:roster": "tsx apps/web/scripts/validate-fighter-roster.ts",
+    "validate:combat": "tsx apps/web/scripts/validate-combat-release.ts",
+    "validate:release": "pnpm validate:roster && pnpm validate:combat && pnpm typecheck && pnpm build",
     "inspect:glb": "node apps/web/scripts/inspect-glb.mjs",
     "test": "pnpm -C apps/web test",
     "start": "serve -s apps/web/dist -l 5000"

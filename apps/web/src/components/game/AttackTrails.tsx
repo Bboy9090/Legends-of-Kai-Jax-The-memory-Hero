@@ -13,7 +13,9 @@ interface TrailPoint {
   color: THREE.Color;
 }
 
-const MAX_TRAIL_POINTS = 100;
+const MAX_TRAIL_POINTS = 24;
+const TRAIL_LIFE = 0.22;
+const TRAIL_EMIT_INTERVAL = 1 / 30;
 
 export default function AttackTrails() {
   const {
@@ -29,167 +31,111 @@ export default function AttackTrails() {
     opponentAttacking,
     opponentAttackType,
     opponentFacingRight,
-    timeScale
+    timeScale,
   } = useBattle();
 
   const playerTrailRef = useRef<TrailPoint[]>([]);
   const opponentTrailRef = useRef<TrailPoint[]>([]);
-  
   const playerGeometryRef = useRef<THREE.BufferGeometry>(null);
   const opponentGeometryRef = useRef<THREE.BufferGeometry>(null);
+  const playerEmitTimerRef = useRef(0);
+  const opponentEmitTimerRef = useRef(0);
 
   const playerFighter = getFighterById(playerFighterId);
   const opponentFighter = getFighterById(opponentFighterId);
+  const trailColor = new THREE.Color(playerFighter?.accentColor || "#FFD700");
+  const opponentTrailColor = new THREE.Color(opponentFighter?.accentColor || "#FF4444");
 
-  const trailColor = playerFighter ? new THREE.Color(playerFighter.accentColor) : new THREE.Color('#FFD700');
-  const opponentTrailColor = opponentFighter ? new THREE.Color(opponentFighter.accentColor) : new THREE.Color('#FF4444');
-
-  useFrame((state, delta) => {
+  useFrame((state, rawDelta) => {
+    const delta = Math.min(rawDelta, 0.05);
     const scaledDelta = delta * timeScale;
+    playerEmitTimerRef.current = Math.max(0, playerEmitTimerRef.current - delta);
+    opponentEmitTimerRef.current = Math.max(0, opponentEmitTimerRef.current - delta);
 
-    // PLAYER ATTACK TRAILS
-    if (playerAttacking && playerAttackType) {
-      // Create trail points based on attack type
-      const attackX = playerX + (playerFacingRight ? 1.5 : -1.5);
-      const attackY = playerY + (playerAttackType === 'kick' ? 0.3 : 1.0);
-      
-      // Add new trail point
-      if (playerTrailRef.current.length < MAX_TRAIL_POINTS) {
-        playerTrailRef.current.push({
-          x: attackX,
-          y: attackY,
-          z: Math.sin(Date.now() * 0.01) * 0.3, // Wavy motion!
-          life: 0.3,
-          size: playerAttackType === 'special' ? 0.5 : 0.3,
-          color: trailColor.clone()
-        });
-      }
+    if (playerAttacking && playerAttackType && playerEmitTimerRef.current <= 0) {
+      const attackX = playerX + (playerFacingRight ? 1.35 : -1.35);
+      const attackY = playerY + (playerAttackType === "kick" ? 0.45 : 1.0);
+      if (playerTrailRef.current.length >= MAX_TRAIL_POINTS) playerTrailRef.current.shift();
+      playerTrailRef.current.push({
+        x: attackX,
+        y: attackY,
+        z: Math.sin(state.clock.elapsedTime * 18) * 0.16,
+        life: TRAIL_LIFE,
+        size: playerAttackType === "special" || playerAttackType === "ultimate" ? 0.34 : 0.2,
+        color: trailColor.clone(),
+      });
+      playerEmitTimerRef.current = TRAIL_EMIT_INTERVAL;
     }
 
-    // OPPONENT ATTACK TRAILS
-    if (opponentAttacking && opponentAttackType) {
-      const attackX = opponentX + (opponentFacingRight ? 1.5 : -1.5);
-      const attackY = opponentY + (opponentAttackType === 'kick' ? 0.3 : 1.0);
-      
-      if (opponentTrailRef.current.length < MAX_TRAIL_POINTS) {
-        opponentTrailRef.current.push({
-          x: attackX,
-          y: attackY,
-          z: Math.sin(Date.now() * 0.01) * 0.3,
-          life: 0.3,
-          size: opponentAttackType === 'special' ? 0.5 : 0.3,
-          color: opponentTrailColor.clone()
-        });
-      }
+    if (opponentAttacking && opponentAttackType && opponentEmitTimerRef.current <= 0) {
+      const attackX = opponentX + (opponentFacingRight ? 1.35 : -1.35);
+      const attackY = opponentY + (opponentAttackType === "kick" ? 0.45 : 1.0);
+      if (opponentTrailRef.current.length >= MAX_TRAIL_POINTS) opponentTrailRef.current.shift();
+      opponentTrailRef.current.push({
+        x: attackX,
+        y: attackY,
+        z: Math.sin(state.clock.elapsedTime * 18) * 0.16,
+        life: TRAIL_LIFE,
+        size: opponentAttackType === "special" ? 0.34 : 0.2,
+        color: opponentTrailColor.clone(),
+      });
+      opponentEmitTimerRef.current = TRAIL_EMIT_INTERVAL;
     }
 
-    // Update player trails
-    playerTrailRef.current = playerTrailRef.current.filter(point => {
+    playerTrailRef.current = playerTrailRef.current.filter((point) => {
+      point.life -= scaledDelta;
+      return point.life > 0;
+    });
+    opponentTrailRef.current = opponentTrailRef.current.filter((point) => {
       point.life -= scaledDelta;
       return point.life > 0;
     });
 
-    // Update opponent trails
-    opponentTrailRef.current = opponentTrailRef.current.filter(point => {
-      point.life -= scaledDelta;
-      return point.life > 0;
-    });
-
-    // Update geometry for player trails
-    if (playerGeometryRef.current && playerTrailRef.current.length > 1) {
-      const positions: number[] = [];
-      const colors: number[] = [];
-      
-      playerTrailRef.current.forEach(point => {
-        positions.push(point.x, point.y, point.z);
-        const fade = point.life / 0.3;
-        colors.push(point.color.r * fade, point.color.g * fade, point.color.b * fade);
+    const updateGeometry = (geometry: THREE.BufferGeometry | null, points: TrailPoint[]) => {
+      if (!geometry) return;
+      const positions = new Float32Array(points.length * 3);
+      const colors = new Float32Array(points.length * 3);
+      points.forEach((point, i) => {
+        const idx = i * 3;
+        const fade = Math.max(0, Math.min(1, point.life / TRAIL_LIFE));
+        positions[idx] = point.x;
+        positions[idx + 1] = point.y;
+        positions[idx + 2] = point.z;
+        colors[idx] = point.color.r * fade;
+        colors[idx + 1] = point.color.g * fade;
+        colors[idx + 2] = point.color.b * fade;
       });
+      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+      geometry.computeBoundingSphere();
+    };
 
-      playerGeometryRef.current.setAttribute(
-        'position',
-        new THREE.Float32BufferAttribute(positions, 3)
-      );
-      playerGeometryRef.current.setAttribute(
-        'color',
-        new THREE.Float32BufferAttribute(colors, 3)
-      );
-    }
-
-    // Update geometry for opponent trails
-    if (opponentGeometryRef.current && opponentTrailRef.current.length > 1) {
-      const positions: number[] = [];
-      const colors: number[] = [];
-      
-      opponentTrailRef.current.forEach(point => {
-        positions.push(point.x, point.y, point.z);
-        const fade = point.life / 0.3;
-        colors.push(point.color.r * fade, point.color.g * fade, point.color.b * fade);
-      });
-
-      opponentGeometryRef.current.setAttribute(
-        'position',
-        new THREE.Float32BufferAttribute(positions, 3)
-      );
-      opponentGeometryRef.current.setAttribute(
-        'color',
-        new THREE.Float32BufferAttribute(colors, 3)
-      );
-    }
+    updateGeometry(playerGeometryRef.current, playerTrailRef.current);
+    updateGeometry(opponentGeometryRef.current, opponentTrailRef.current);
   });
 
   return (
     <>
-      {/* Player Attack Trails */}
-      {playerTrailRef.current.length > 1 && (
-        <line>
-          <bufferGeometry ref={playerGeometryRef} />
-          <lineBasicMaterial
-            vertexColors
-            linewidth={5}
-            transparent
-            opacity={0.8}
-            blending={THREE.AdditiveBlending}
-          />
-        </line>
-      )}
+      <line>
+        <bufferGeometry ref={playerGeometryRef} />
+        <lineBasicMaterial vertexColors transparent opacity={0.68} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </line>
+      <line>
+        <bufferGeometry ref={opponentGeometryRef} />
+        <lineBasicMaterial vertexColors transparent opacity={0.68} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </line>
 
-      {/* Opponent Attack Trails */}
-      {opponentTrailRef.current.length > 1 && (
-        <line>
-          <bufferGeometry ref={opponentGeometryRef} />
-          <lineBasicMaterial
-            vertexColors
-            linewidth={5}
-            transparent
-            opacity={0.8}
-            blending={THREE.AdditiveBlending}
-          />
-        </line>
-      )}
-
-      {/* GLOWING ORBS at trail points for extra visibility! */}
-      {playerTrailRef.current.map((point, i) => (
+      {/* Only the newest few points get glow meshes; the line carries the rest. */}
+      {playerTrailRef.current.slice(-4).map((point, i) => (
         <mesh key={`player-orb-${i}`} position={[point.x, point.y, point.z]}>
-          <sphereGeometry args={[point.size * (point.life / 0.3), 8, 6]} />
-          <meshBasicMaterial
-            color={point.color}
-            transparent
-            opacity={point.life / 0.3}
-            blending={THREE.AdditiveBlending}
-          />
+          <sphereGeometry args={[point.size * Math.max(0.3, point.life / TRAIL_LIFE), 6, 4]} />
+          <meshBasicMaterial color={point.color} transparent opacity={0.58 * (point.life / TRAIL_LIFE)} blending={THREE.AdditiveBlending} depthWrite={false} />
         </mesh>
       ))}
-
-      {opponentTrailRef.current.map((point, i) => (
+      {opponentTrailRef.current.slice(-4).map((point, i) => (
         <mesh key={`opponent-orb-${i}`} position={[point.x, point.y, point.z]}>
-          <sphereGeometry args={[point.size * (point.life / 0.3), 8, 6]} />
-          <meshBasicMaterial
-            color={point.color}
-            transparent
-            opacity={point.life / 0.3}
-            blending={THREE.AdditiveBlending}
-          />
+          <sphereGeometry args={[point.size * Math.max(0.3, point.life / TRAIL_LIFE), 6, 4]} />
+          <meshBasicMaterial color={point.color} transparent opacity={0.58 * (point.life / TRAIL_LIFE)} blending={THREE.AdditiveBlending} depthWrite={false} />
         </mesh>
       ))}
     </>
