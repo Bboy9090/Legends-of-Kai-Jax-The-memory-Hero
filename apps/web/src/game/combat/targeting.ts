@@ -2,13 +2,14 @@ import { AUTO_TARGET_CONFIG } from "../tuning/adventureTuning";
 
 const CURRENT_TARGET_BONUS = 1.35;
 const CURRENT_TARGET_GRACE_MULT = 1.15;
+let lastAutoTargetId: string | null = null;
 
 export function getAutoTarget(
   playerX: number,
   playerZ: number,
   playerRotY: number,
   enemies: Array<{ id: string; posX: number; posZ: number; isDead: boolean }>,
-  currentTargetId: string | null = null,
+  currentTargetId: string | null = lastAutoTargetId,
 ): string | null {
   let bestId: string | null = null;
   let bestScore = Infinity;
@@ -34,9 +35,7 @@ export function getAutoTarget(
     const dot = forwardX * dirX + forwardZ * dirZ;
     const angle = Math.acos(Math.max(-1, Math.min(1, dot)));
 
-    // Keep the current target unless another enemy is meaningfully better.
-    // This prevents frame-to-frame lock flicker when two enemies have nearly
-    // identical scores while still allowing immediate replacement on death/range loss.
+    // Keep the existing target unless another enemy is meaningfully better.
     const stickyBonus = isCurrent ? CURRENT_TARGET_BONUS : 0;
     const score = dist + angle * angleW - stickyBonus;
     if (score < bestScore) {
@@ -45,5 +44,10 @@ export function getAutoTarget(
     }
   }
 
+  lastAutoTargetId = bestId;
   return bestId;
+}
+
+export function resetAutoTarget(): void {
+  lastAutoTargetId = null;
 }
