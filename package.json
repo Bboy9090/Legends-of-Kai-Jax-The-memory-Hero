@@ -33,7 +33,7 @@
     "validate:roster": "tsx apps/web/scripts/validate-fighter-roster.ts",
     "validate:combat": "tsx apps/web/scripts/validate-combat-release.ts",
     "validate:combat:test": "pnpm -C apps/web test -- src/game/combat/moveData.test.ts src/game/combat/targeting.test.ts",
-    "validate:release": "pnpm validate:roster && pnpm validate:combat && pnpm test && pnpm typecheck && pnpm build",
+    "validate:release": "pnpm validate:roster && pnpm validate:combat && pnpm test && pnpm typecheck && pnpm lint && pnpm build",
     "inspect:glb": "node apps/web/scripts/inspect-glb.mjs",
     "test": "pnpm -C apps/web test",
     "start": "serve -s apps/web/dist -l 5000"
