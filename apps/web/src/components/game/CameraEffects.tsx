@@ -1,133 +1,86 @@
-import { useRef, useEffect } from "react";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 
+/**
+ * Combat presentation effects that do NOT own camera position.
+ * BattleCamera is the single source of truth for framing and shake application.
+ * This component only requests shake intensity and slow-motion events.
+ */
 export default function CameraEffects() {
-  const { camera } = useThree();
-  const { 
-    playerHealth, 
+  const {
+    playerHealth,
     opponentHealth,
     playerAttackType,
     opponentAttackType,
     playerAttacking,
     opponentAttacking,
     battlePhase,
-    setTimeScale
+    setTimeScale,
   } = useBattle();
 
-  const shakeRef = useRef({ intensity: 0, duration: 0 });
   const prevPlayerHealthRef = useRef(100);
   const prevOpponentHealthRef = useRef(100);
   const prevPlayerAttackRef = useRef(false);
   const prevOpponentAttackRef = useRef(false);
-  const originalPosRef = useRef({ x: 0, y: 0, z: 0 });
   const koSlowMoTriggeredRef = useRef(false);
   const slowMoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Store original camera position
   useEffect(() => {
-    originalPosRef.current = {
-      x: camera.position.x,
-      y: camera.position.y,
-      z: camera.position.z
-    };
-  }, [camera]);
-
-  // Reset KO slow-mo flag when leaving KO phase
-  useEffect(() => {
-    if (battlePhase !== 'ko') {
-      koSlowMoTriggeredRef.current = false;
-    }
+    if (battlePhase !== "ko") koSlowMoTriggeredRef.current = false;
   }, [battlePhase]);
 
-  // Trigger screen shake
-  const triggerShake = (intensity: number, duration: number) => {
-    shakeRef.current.intensity = Math.max(shakeRef.current.intensity, intensity);
-    shakeRef.current.duration = Math.max(shakeRef.current.duration, duration);
+  useEffect(() => {
+    return () => {
+      if (slowMoTimeoutRef.current) clearTimeout(slowMoTimeoutRef.current);
+      useBattle.getState().setTimeScale(1.0);
+    };
+  }, []);
+
+  const requestShake = (intensity: number) => {
+    useBattle.getState().triggerScreenShake(Math.min(1.2, Math.max(0, intensity)));
   };
 
-  // Trigger slow motion (updates battle store timeScale)
   const triggerSlowMo = (scale: number, duration: number) => {
-    // Clear existing timeout to avoid overlapping resets
-    if (slowMoTimeoutRef.current) {
-      clearTimeout(slowMoTimeoutRef.current);
-    }
-    
+    if (slowMoTimeoutRef.current) clearTimeout(slowMoTimeoutRef.current);
     setTimeScale(scale);
     slowMoTimeoutRef.current = setTimeout(() => {
-      setTimeScale(1.0);
+      useBattle.getState().setTimeScale(1.0);
       slowMoTimeoutRef.current = null;
     }, duration);
   };
 
-  useFrame((state, delta) => {
-    // Detect player damage
+  useFrame(() => {
     if (playerHealth < prevPlayerHealthRef.current) {
       const damage = prevPlayerHealthRef.current - playerHealth;
-      triggerShake(damage * 0.02, 0.2);
-      
-      // Slow-mo on big hits
-      if (damage >= 15) {
-        triggerSlowMo(0.3, 150);
-      }
+      requestShake(Math.min(0.7, damage * 0.018));
+      if (damage >= 18) triggerSlowMo(0.45, 110);
     }
     prevPlayerHealthRef.current = playerHealth;
 
-    // Detect opponent damage
     if (opponentHealth < prevOpponentHealthRef.current) {
       const damage = prevOpponentHealthRef.current - opponentHealth;
-      triggerShake(damage * 0.02, 0.2);
-      
-      // Slow-mo on big hits
-      if (damage >= 15) {
-        triggerSlowMo(0.3, 150);
-      }
+      requestShake(Math.min(0.7, damage * 0.018));
+      if (damage >= 18) triggerSlowMo(0.45, 110);
     }
     prevOpponentHealthRef.current = opponentHealth;
 
-    // Special attack screen shake and slow-mo
-    if (playerAttacking && !prevPlayerAttackRef.current && playerAttackType === 'special') {
-      triggerShake(0.8, 0.4);
-      triggerSlowMo(0.3, 200);
+    if (playerAttacking && !prevPlayerAttackRef.current && playerAttackType === "special") {
+      requestShake(0.45);
+      triggerSlowMo(0.5, 120);
     }
     prevPlayerAttackRef.current = playerAttacking;
 
-    if (opponentAttacking && !prevOpponentAttackRef.current && opponentAttackType === 'special') {
-      triggerShake(0.8, 0.4);
-      triggerSlowMo(0.3, 200);
+    if (opponentAttacking && !prevOpponentAttackRef.current && opponentAttackType === "special") {
+      requestShake(0.45);
+      triggerSlowMo(0.5, 120);
     }
     prevOpponentAttackRef.current = opponentAttacking;
 
-    // KO slow-mo (ONLY TRIGGER ONCE!)
-    if (battlePhase === 'ko' && !koSlowMoTriggeredRef.current) {
+    if (battlePhase === "ko" && !koSlowMoTriggeredRef.current) {
       koSlowMoTriggeredRef.current = true;
-      triggerShake(1.2, 0.5);
-      triggerSlowMo(0.2, 500);
-    }
-
-    // Apply screen shake
-    if (shakeRef.current.intensity > 0) {
-      const shake = shakeRef.current.intensity;
-      camera.position.x = originalPosRef.current.x + (Math.random() - 0.5) * shake;
-      camera.position.y = originalPosRef.current.y + (Math.random() - 0.5) * shake;
-      camera.position.z = originalPosRef.current.z + (Math.random() - 0.5) * shake * 0.5;
-
-      shakeRef.current.intensity -= delta * 5;
-      shakeRef.current.duration -= delta;
-
-      if (shakeRef.current.duration <= 0 || shakeRef.current.intensity <= 0) {
-        shakeRef.current.intensity = 0;
-        shakeRef.current.duration = 0;
-        // Reset to original position
-        camera.position.x = originalPosRef.current.x;
-        camera.position.y = originalPosRef.current.y;
-        camera.position.z = originalPosRef.current.z;
-      }
-    } else {
-      // Update original position when not shaking (to follow camera movement)
-      originalPosRef.current.x = camera.position.x;
-      originalPosRef.current.y = camera.position.y;
-      originalPosRef.current.z = camera.position.z;
+      requestShake(0.8);
+      triggerSlowMo(0.3, 350);
     }
   });
 
