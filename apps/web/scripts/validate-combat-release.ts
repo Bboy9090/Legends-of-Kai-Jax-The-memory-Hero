@@ -16,6 +16,7 @@ const missionAI = read("apps/web/src/components/game/adventure/AdventureEnemyAI.
 const battleController = read("apps/web/src/components/game/PlayerController.tsx");
 const missionController = read("apps/web/src/components/game/adventure/AdventurePlayerController.tsx");
 const missionHud = read("apps/web/src/components/game/adventure/AdventureHUD.tsx");
+const missionArena = read("apps/web/src/components/game/adventure/AdventureArena.tsx");
 const battleScene = read("apps/web/src/components/game/BattleScene.tsx");
 
 requireRule(
@@ -49,6 +50,10 @@ requireRule(
 requireRule(
   missionController.includes("MISSION_BOUNDARY = 32") && missionController.includes("THREE.MathUtils.clamp"),
   "Mission movement must stay inside the certified combat boundary.",
+);
+requireRule(
+  missionArena.includes("VISUAL_ARENA_SIZE = 76") && !missionArena.includes("planeGeometry args={[200, 200]}"),
+  "Mission render footprint must stay compact and cannot return to the old 200x200 arena plane.",
 );
 requireRule(
   missionHud.includes("AutoTargetIndicator") && missionHud.includes("Incoming — dodge!"),
@@ -85,6 +90,6 @@ console.log("- single-authority Versus camera");
 console.log("- midpoint fighter framing");
 console.log("- gameplay-safe shake/overlap/session guard");
 console.log("- Mission threat cap, telegraph whiff fairness, and post-hit anti-stunlock");
-console.log("- bounded Mission combat space and target readability");
+console.log("- bounded Mission combat space, compact render footprint, and target readability");
 console.log("- Versus + Mission gamepad reconnect/focus cleanup");
 console.log("- stale touch input cleared across round transitions");
