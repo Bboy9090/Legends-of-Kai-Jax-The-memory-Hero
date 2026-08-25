@@ -26,12 +26,6 @@ function knockDistance(damage: number, attackType: string | null | undefined): n
   return Math.max(0.45, Math.min(1.35, damage * mult));
 }
 
-/**
- * Defensive round/session invariants.
- *
- * This component does not replace the combat store. It repairs state that can
- * otherwise survive transitions or become visually impossible during a fight.
- */
 export default function BattleSessionGuard() {
   const battlePhase = useBattle((s) => s.battlePhase);
   const prevRef = useRef({
@@ -59,16 +53,30 @@ export default function BattleSessionGuard() {
   }, [battlePhase]);
 
   useEffect(() => {
-    const release = () => {
+    const releaseHeldTouch = () => {
       useTouchInput.getState().releaseJoystick();
+    };
+    const releaseAllTransientInput = () => {
+      releaseHeldTouch();
       useTouchInput.setState({ pendingAttacks: [] });
     };
-    window.addEventListener("blur", release);
-    document.addEventListener("visibilitychange", release);
+    const onVisibility = () => {
+      if (document.visibilityState !== "visible") releaseAllTransientInput();
+    };
+
+    window.addEventListener("blur", releaseAllTransientInput);
+    window.addEventListener("pointerup", releaseHeldTouch, true);
+    window.addEventListener("pointercancel", releaseHeldTouch, true);
+    window.addEventListener("touchcancel", releaseHeldTouch, true);
+    document.addEventListener("visibilitychange", onVisibility);
+
     return () => {
-      window.removeEventListener("blur", release);
-      document.removeEventListener("visibilitychange", release);
-      release();
+      window.removeEventListener("blur", releaseAllTransientInput);
+      window.removeEventListener("pointerup", releaseHeldTouch, true);
+      window.removeEventListener("pointercancel", releaseHeldTouch, true);
+      window.removeEventListener("touchcancel", releaseHeldTouch, true);
+      document.removeEventListener("visibilitychange", onVisibility);
+      releaseAllTransientInput();
       useBattle.getState().setTimeScale(1);
     };
   }, []);
@@ -83,8 +91,6 @@ export default function BattleSessionGuard() {
     const playerY = Math.max(groundY, finiteOr(s.playerY, groundY));
     const opponentY = Math.max(groundY, finiteOr(s.opponentY, groundY));
 
-    // Correct the legacy fixed-direction knockback. Once fighters cross sides,
-    // a hit must still push the victim away from the attacker, never through them.
     if (s.playerHealth < prev.playerHealth) {
       const damage = prev.playerHealth - s.playerHealth;
       const fallback = s.playerFacingRight ? -1 : 1;
