@@ -32,8 +32,21 @@ requireRule(
   "BattleCamera must frame from both fighters, not a single-player chase target.",
 );
 requireRule(
-  battleGuard.includes("MAX_GAMEPLAY_SHAKE") && battleGuard.includes("MIN_FIGHTER_SEPARATION"),
+  battleGuard.includes("MAX_READABLE_SCREEN_SHAKE") && battleGuard.includes("MIN_FIGHTER_SEPARATION"),
   "BattleSessionGuard must cap shake and prevent unreadable fighter overlap.",
+);
+requireRule(
+  battleGuard.includes("guardedEndBattle") &&
+    battleGuard.includes('phase === "ko" || phase === "results"') &&
+    battleGuard.includes("enteringFreshFight"),
+  "Versus lifecycle must prevent duplicate KO processing and normalize fresh-round combat state.",
+);
+requireRule(
+  battleGuard.includes("playerAttacking: false") &&
+    battleGuard.includes("opponentAttacking: false") &&
+    battleGuard.includes("playerInvulnerable: false") &&
+    battleGuard.includes("opponentInvulnerable: false"),
+  "Fresh rounds must clear stale attacks and invulnerability state.",
 );
 requireRule(
   battleScene.includes("<BattleSessionGuard") && battleScene.includes("<BattleReadabilityOverlay"),
@@ -114,7 +127,7 @@ if (failures.length > 0) {
 
 console.log("Combat release certification PASS");
 console.log("- single-authority Versus camera and midpoint framing");
-console.log("- gameplay-safe shake, overlap, and session cleanup");
+console.log("- gameplay-safe shake, overlap, KO idempotency, and fresh-round cleanup");
 console.log("- Mission threat cap, telegraph whiff fairness, and anti-stunlock protection");
 console.log("- bounded Mission combat space, compact render footprint, and stable target readability");
 console.log("- differentiated Versus AI personalities");
