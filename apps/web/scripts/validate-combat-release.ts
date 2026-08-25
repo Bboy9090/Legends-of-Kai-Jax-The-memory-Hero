@@ -112,6 +112,15 @@ requireRule(
   "Mission session/encounter changes must clear stale touch, hit-stop, time-scale, and impact state.",
 );
 requireRule(
+  missionArena.includes("SCRIPTED_ENCOUNTER_CLEAR_DELAY_SEC") &&
+    missionArena.includes("clearTimer") &&
+    missionArena.includes("applyDistrictCheckpoint()") &&
+    missionArena.includes("encounterIndex: nextEncounterIndex") &&
+    missionArena.includes("completeDistrictRoam") &&
+    missionArena.includes("buildEncounterEnemies({"),
+  "District roam must advance sequential scripted encounters, checkpoint between fights, and complete exactly once.",
+);
+requireRule(
   missionHud.includes("AutoTargetIndicator") && missionHud.includes("Incoming — dodge!"),
   "Mission HUD must identify the auto-target and surface incoming attack warnings.",
 );
@@ -171,6 +180,7 @@ console.log("- gameplay-safe shake, overlap, KO/rematch idempotency, and fresh-r
 console.log("- canonical Versus contact-range contract consumed by AI pressure");
 console.log("- Mission threat cap, telegraph whiff fairness, anti-stunlock, and timer-safe attack recovery");
 console.log("- Mission session/encounter cleanup for target, touch, hit-stop, slow-motion, and impact residue");
+console.log("- sequential district encounters, checkpoints, and one-shot completion reward");
 console.log("- bounded Mission combat space, compact render footprint, and stable target readability");
 console.log("- differentiated Versus AI personalities");
 console.log("- certified Versus particle and trail performance/readability budgets");
