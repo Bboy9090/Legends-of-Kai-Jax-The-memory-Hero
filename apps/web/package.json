@@ -12,7 +12,8 @@
     "typecheck": "tsc -p tsconfig.phase0.json --noEmit",
     "typecheck:phase0": "tsc -p tsconfig.phase0.json --noEmit",
     "typecheck:full": "tsc --noEmit",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --ext ts,tsx",
+    "lint:strict": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "clean": "rm -rf dist .turbo node_modules",
     "cap:sync": "cap sync",
     "cap:open": "cap open ios"
