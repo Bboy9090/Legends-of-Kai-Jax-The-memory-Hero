@@ -10,6 +10,7 @@ import { DODGE, STAMINA_CONFIG, COMBO_CONFIG } from "../../../game/tuning/advent
 import { getAutoTarget } from "../../../game/combat/targeting";
 import * as THREE from "three";
 import { MOVEMENT_TUNING } from "../../../game/tuning/movementTuning";
+import { moveTowards } from "../../../game/movement/movementMath";
 
 const adv = MOVEMENT_TUNING.adventure;
 const WALK_SPEED = adv.walkSpeed;
@@ -17,10 +18,13 @@ const RUN_SPEED = adv.runSpeed;
 const TURN_SPEED = adv.turnSpeed;
 const MOVE_ACCEL = adv.moveAccel;
 const MOVE_DECEL = adv.moveDecel;
+const MISSION_BOUNDARY = 32;
+const PLAYER_HIT_RANGE = 4.0;
 
 const _camDir = new THREE.Vector3();
 const _camRight = new THREE.Vector3();
 const _moveDir = new THREE.Vector3();
+const _worldUp = new THREE.Vector3(0, 1, 0);
 
 export default function AdventurePlayerController() {
   const keysRef = useRef<Record<string, boolean>>({});
@@ -66,19 +70,12 @@ export default function AdventurePlayerController() {
     const touch = useTouchInput.getState();
     const touchAttacks = touch.consumeAttacks();
 
-    if (p.staminaRegenDelay > 0) {
-      store.setStaminaRegenDelay(Math.max(0, p.staminaRegenDelay - delta));
-    }
-
-    if (p.invulnTimer > 0) {
-      store.setInvulnTimer(Math.max(0, p.invulnTimer - delta));
-    }
+    if (p.staminaRegenDelay > 0) store.setStaminaRegenDelay(Math.max(0, p.staminaRegenDelay - delta));
+    if (p.invulnTimer > 0) store.setInvulnTimer(Math.max(0, p.invulnTimer - delta));
 
     if (p.hitStunTimer > 0) {
       store.setHitStunTimer(Math.max(0, p.hitStunTimer - delta));
-      if (p.hitStunTimer - delta <= 0) {
-        store.setCombatState(CombatState.FREE);
-      }
+      if (p.hitStunTimer - delta <= 0) store.setCombatState(CombatState.FREE);
       prevKeysRef.current = { ...keys };
       return;
     }
@@ -93,11 +90,10 @@ export default function AdventurePlayerController() {
         const dodgeSpeed = DODGE.distance / DODGE.duration;
         const newX = p.posX + dodgeDirRef.current.x * dodgeSpeed * delta;
         const newZ = p.posZ + dodgeDirRef.current.z * dodgeSpeed * delta;
-        const boundary = 45;
         store.setPlayerPos(
-          THREE.MathUtils.clamp(newX, -boundary, boundary),
+          THREE.MathUtils.clamp(newX, -MISSION_BOUNDARY, MISSION_BOUNDARY),
           0,
-          THREE.MathUtils.clamp(newZ, -boundary, boundary)
+          THREE.MathUtils.clamp(newZ, -MISSION_BOUNDARY, MISSION_BOUNDARY)
         );
       }
       prevKeysRef.current = { ...keys };
@@ -134,7 +130,7 @@ export default function AdventurePlayerController() {
       state.camera.getWorldDirection(_camDir);
       _camDir.y = 0;
       _camDir.normalize();
-      _camRight.crossVectors(_camDir, new THREE.Vector3(0, 1, 0)).normalize();
+      _camRight.crossVectors(_camDir, _worldUp).normalize();
       _moveDir.set(0, 0, 0);
       _moveDir.addScaledVector(_camRight, inputX);
       _moveDir.addScaledVector(_camDir, -inputZ);
@@ -154,7 +150,7 @@ export default function AdventurePlayerController() {
         const currentMove = p.attackType ? MOVES[p.attackType] : null;
         if (currentMove) {
           const timing = getMoveFrameTime(currentMove);
-          const elapsed = (timing.totalTime - attackTimerRef.current);
+          const elapsed = timing.totalTime - attackTimerRef.current;
           if (elapsed >= timing.startupTime && elapsed < timing.startupTime + timing.activeTime) {
             attackHitRef.current = true;
             enemies.forEach((enemy) => {
@@ -162,7 +158,7 @@ export default function AdventurePlayerController() {
               const dx = p.posX - enemy.posX;
               const dz = p.posZ - enemy.posZ;
               const dist = Math.sqrt(dx * dx + dz * dz);
-              if (dist < 3.5) {
+              if (dist <= PLAYER_HIT_RANGE) {
                 store.damageEnemy(enemy.id, currentMove.damage);
                 if (isStatueFighter(enemy.fighterId)) useAudio.getState().playStoneHit();
                 store.setHitStopTimer(currentMove.hitStopFrames / 60);
@@ -202,11 +198,7 @@ export default function AdventurePlayerController() {
             store.setSuperArmor(!!move.superArmor);
             if (targetId) {
               const target = enemies.find((e) => e.id === targetId);
-              if (target) {
-                const dx = target.posX - p.posX;
-                const dz = target.posZ - p.posZ;
-                store.setPlayerRot(Math.atan2(dx, dz));
-              }
+              if (target) store.setPlayerRot(Math.atan2(target.posX - p.posX, target.posZ - p.posZ));
             }
           }
         }
@@ -217,7 +209,6 @@ export default function AdventurePlayerController() {
     }
 
     const exhausted = p.stamina < STAMINA_CONFIG.exhaustedThreshold;
-
     const wantDodge = justPressed("Space") || touchAttacks.includes("dodge");
     if (wantDodge && !exhausted && store.useStamina(DODGE.staminaCost)) {
       velSmoothRef.current = { x: 0, z: 0 };
@@ -233,13 +224,9 @@ export default function AdventurePlayerController() {
     }
 
     let attackInput: string | null = null;
-    if (justPressed("KeyJ") || justPressed("KeyX") || touchAttacks.includes("attack")) {
-      attackInput = "light1";
-    } else if (justPressed("KeyK") || justPressed("KeyZ") || touchAttacks.includes("heavy")) {
-      attackInput = "heavy";
-    } else if (justPressed("KeyL") || justPressed("KeyC") || touchAttacks.includes("skill")) {
-      attackInput = "skill";
-    }
+    if (justPressed("KeyJ") || justPressed("KeyX") || touchAttacks.includes("attack")) attackInput = "light1";
+    else if (justPressed("KeyK") || justPressed("KeyZ") || touchAttacks.includes("heavy")) attackInput = "heavy";
+    else if (justPressed("KeyL") || justPressed("KeyC") || touchAttacks.includes("skill")) attackInput = "skill";
 
     if (attackInput && !exhausted) {
       const moveData = MOVES[attackInput];
@@ -248,16 +235,12 @@ export default function AdventurePlayerController() {
         store.playerAttack(attackInput as any);
         attackTimerRef.current = timing.totalTime;
         attackHitRef.current = false;
-        store.setComboStep(attackInput === "light1" ? 0 : 0);
+        store.setComboStep(0);
         store.setSuperArmor(!!moveData.superArmor);
 
         if (targetId) {
           const target = enemies.find((e) => e.id === targetId);
-          if (target) {
-            const dx = target.posX - p.posX;
-            const dz = target.posZ - p.posZ;
-            store.setPlayerRot(Math.atan2(dx, dz));
-          }
+          if (target) store.setPlayerRot(Math.atan2(target.posX - p.posX, target.posZ - p.posZ));
         }
         if (isStatueFighter(p.fighterId)) useAudio.getState().playStoneAttack();
         prevKeysRef.current = { ...keys };
@@ -270,12 +253,14 @@ export default function AdventurePlayerController() {
     let svx = velSmoothRef.current.x;
     let svz = velSmoothRef.current.z;
     const rate = hasInput ? MOVE_ACCEL : MOVE_DECEL;
-    svx += Math.sign(targetVx - svx) * rate * delta;
-    svz += Math.sign(targetVz - svz) * rate * delta;
+    svx = moveTowards(svx, targetVx, rate * delta);
+    svz = moveTowards(svz, targetVz, rate * delta);
+
     if (!hasInput) {
       if (Math.abs(svx) < 0.05) svx = 0;
       if (Math.abs(svz) < 0.05) svz = 0;
     }
+
     const cap = moveSpeed + 0.01;
     const vlen = Math.sqrt(svx * svx + svz * svz);
     if (vlen > cap && vlen > 0) {
@@ -293,64 +278,44 @@ export default function AdventurePlayerController() {
         stoneStepTimer.current = 0;
         useAudio.getState().playStoneMove();
       }
-    } else {
-      stoneStepTimer.current = 0;
-    }
+    } else stoneStepTimer.current = 0;
 
-    if (isRunning && hasInput) {
-      store.useStamina(15 * delta);
-    }
-
-    if (p.staminaRegenDelay <= 0 && p.combatState === CombatState.FREE) {
-      store.regenStamina(STAMINA_CONFIG.regenRate * delta);
-    }
+    if (isRunning && hasInput) store.useStamina(15 * delta);
+    if (p.staminaRegenDelay <= 0 && p.combatState === CombatState.FREE) store.regenStamina(STAMINA_CONFIG.regenRate * delta);
 
     if (hasInput) {
       const targetRot = Math.atan2(worldX, worldZ);
-      const currentRot = p.rotY;
-      let diff = targetRot - currentRot;
+      let diff = targetRot - p.rotY;
       while (diff > Math.PI) diff -= Math.PI * 2;
       while (diff < -Math.PI) diff += Math.PI * 2;
-      const newRot = currentRot + diff * Math.min(1, TURN_SPEED * delta);
-      store.setPlayerRot(newRot);
+      store.setPlayerRot(p.rotY + diff * Math.min(1, TURN_SPEED * delta));
     }
 
     const newX = p.posX + svx * delta;
     const newZ = p.posZ + svz * delta;
-    const boundary = 45;
     store.setPlayerPos(
-      THREE.MathUtils.clamp(newX, -boundary, boundary),
+      THREE.MathUtils.clamp(newX, -MISSION_BOUNDARY, MISSION_BOUNDARY),
       0,
-      THREE.MathUtils.clamp(newZ, -boundary, boundary)
+      THREE.MathUtils.clamp(newZ, -MISSION_BOUNDARY, MISSION_BOUNDARY)
     );
 
     const aliveForCombat = store.enemies.filter((e) => !e.isDead);
     const enemyNearby = aliveForCombat.some((e) => {
       const dx = newX - e.posX;
       const dz = newZ - e.posZ;
-      return dx * dx + dz * dz < 14 * 14;
+      return dx * dx + dz * dz < 12 * 12;
     });
-    store.setPlayerCombat(
-      enemyNearby ||
-        p.isAttacking ||
-        p.hitStunTimer > 0 ||
-        p.combatState !== CombatState.FREE
-    );
+    store.setPlayerCombat(enemyNearby || p.isAttacking || p.hitStunTimer > 0 || p.combatState !== CombatState.FREE);
 
     if (p.comboTimer > 0) {
       const newTimer = p.comboTimer - delta;
       if (newTimer <= 0) {
         store.setComboTimer(0);
         store.setComboStep(0);
-      } else {
-        store.setComboTimer(newTimer);
-      }
+      } else store.setComboTimer(newTimer);
     }
 
-    if (justPressed("Escape") || justPressed("KeyP")) {
-      store.togglePause();
-    }
-
+    if (justPressed("Escape") || justPressed("KeyP")) store.togglePause();
     prevKeysRef.current = { ...keys };
   });
 
