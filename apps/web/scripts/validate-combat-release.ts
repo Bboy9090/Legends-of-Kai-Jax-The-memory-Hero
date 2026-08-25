@@ -96,6 +96,10 @@ requireRule(
   "Mission movement must stay inside the certified combat boundary.",
 );
 requireRule(
+  moveData.includes("playerMelee: 4.0") && missionController.includes("COMBAT_RANGES.mission.playerMelee"),
+  "Mission player hit-confirm must consume the canonical certified contact range.",
+);
+requireRule(
   missionArena.includes("VISUAL_ARENA_SIZE = 76") && !missionArena.includes("planeGeometry args={[200, 200]}"),
   "Mission render footprint must stay compact and cannot return to the old 200x200 arena plane.",
 );
@@ -177,7 +181,7 @@ console.log("Combat release certification PASS");
 console.log("- single-authority Versus camera and midpoint framing");
 console.log("- single-authority Versus opponent AI");
 console.log("- gameplay-safe shake, overlap, KO/rematch idempotency, and fresh-round cleanup");
-console.log("- canonical Versus contact-range contract consumed by AI pressure");
+console.log("- canonical Versus and Mission contact-range contracts consumed by live gameplay");
 console.log("- Mission threat cap, telegraph whiff fairness, anti-stunlock, and timer-safe attack recovery");
 console.log("- Mission session/encounter cleanup for target, touch, hit-stop, slow-motion, and impact residue");
 console.log("- sequential district encounters, checkpoints, and one-shot completion reward");
