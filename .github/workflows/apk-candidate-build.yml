@@ -1,0 +1,52 @@
+name: APK Candidate Build
+
+on:
+  push:
+    branches:
+      - codex/apk-build-20260823
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  debug-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Clone exact candidate without external Actions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git clone --depth 1 --branch "$GITHUB_REF_NAME" "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" source
+          cd source
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+
+      - name: Build web app and sync Android
+        working-directory: source
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          node --version
+          java -version
+          pnpm --version
+          pnpm install --frozen-lockfile
+          pnpm build
+          pnpm cap:sync
+
+      - name: Assemble installable candidate APK
+        working-directory: source/apps/web/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          sha256sum app/build/outputs/apk/debug/app-debug.apk > app/build/outputs/apk/debug/APK-SHA256.txt
+
+      - name: Publish APK as a prerelease asset
+        working-directory: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SHORT_SHA="$(git rev-parse --short=12 HEAD)"
+          TAG="apk-candidate-${SHORT_SHA}"
+          gh release create "$TAG"             apps/web/android/app/build/outputs/apk/debug/app-debug.apk             apps/web/android/app/build/outputs/apk/debug/APK-SHA256.txt             --repo "$GITHUB_REPOSITORY"             --target "$GITHUB_SHA"             --title "Legends of Kai Jax APK Candidate ${SHORT_SHA}"             --notes "Installable Android debug APK candidate built from exact commit $GITHUB_SHA."             --prerelease
