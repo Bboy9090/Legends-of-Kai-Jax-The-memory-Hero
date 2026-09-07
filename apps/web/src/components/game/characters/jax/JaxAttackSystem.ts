@@ -1,18 +1,20 @@
 /**
  * JAX ATTACK SYSTEM
- * Hitbox lifecycle and damage mechanics
- *
- * Attack events:
- * - jax_light_combo: fast electrical hitbox, combo damage
- * - jax_pressure_heavy: physical hitbox with pressure knockback
- * - jax_lightning_special: targeted storm hit
- * - jax_storm_ultimate: placeholder storm event
+ * Deterministic hitbox lifecycle and target filtering for Jax.
  */
 
 import * as THREE from 'three';
 
+export type JaxAttackType =
+  | 'jax_light_combo'
+  | 'jax_pressure_heavy'
+  | 'jax_lightning_special'
+  | 'jax_storm_ultimate';
+
+export type AttackPhase = 'IDLE' | 'STARTUP' | 'ACTIVE' | 'RECOVERY';
+
 export interface AttackEvent {
-  type: 'jax_light_combo' | 'jax_pressure_heavy' | 'jax_lightning_special' | 'jax_storm_ultimate';
+  type: JaxAttackType;
   startTime: number;
   duration: number;
   position: THREE.Vector3;
@@ -24,13 +26,14 @@ export interface AttackEvent {
   activeEnd: number;
 }
 
-export interface HitRecord {
-  targetId: string;
-  timestamp: number;
+const ATTACK_CONFIG: Record<JaxAttackType, {
+  duration: number;
+  activeStart: number;
+  activeEnd: number;
   damage: number;
-}
-
-const ATTACK_CONFIG = {
+  radius: number;
+  knockback: number;
+}> = {
   jax_light_combo: {
     duration: 0.35,
     activeStart: 0.05,
@@ -67,27 +70,27 @@ const ATTACK_CONFIG = {
 
 export class JaxAttackSystem {
   private currentAttack: AttackEvent | null = null;
-  private hitTargets: Set<string> = new Set();
-  private scene: THREE.Scene;
+  private hitTargets = new Set<string>();
 
-  constructor(scene: THREE.Scene) {
-    this.scene = scene;
-  }
+  constructor(private scene: THREE.Scene) {}
 
   startAttack(
-    type: keyof typeof ATTACK_CONFIG,
+    type: JaxAttackType,
     position: THREE.Vector3,
     direction: THREE.Vector3,
     currentTime: number
   ): AttackEvent {
     const config = ATTACK_CONFIG[type];
+    const safeDirection = direction.lengthSq() > 0.0001
+      ? direction.clone().normalize()
+      : new THREE.Vector3(0, 0, 1);
 
-    const attack: AttackEvent = {
+    this.currentAttack = {
       type,
       startTime: currentTime,
       duration: config.duration,
       position: position.clone(),
-      direction: direction.normalize(),
+      direction: safeDirection,
       damage: config.damage,
       radius: config.radius,
       knockback: config.knockback,
@@ -95,36 +98,37 @@ export class JaxAttackSystem {
       activeEnd: config.activeEnd,
     };
 
-    this.currentAttack = attack;
-    this.hitTargets.clear(); // Reset hit tracking for new attack
-    return attack;
+    this.hitTargets.clear();
+    return this.currentAttack;
   }
 
-  update(
-    currentTime: number,
-    position: THREE.Vector3
-  ): AttackEvent | null {
+  update(currentTime: number, position: THREE.Vector3): AttackEvent | null {
     if (!this.currentAttack) return null;
 
-    // Update attack position to follow Jax
     this.currentAttack.position.copy(position);
-
     const elapsed = currentTime - this.currentAttack.startTime;
 
-    // Attack expired
     if (elapsed > this.currentAttack.duration) {
       this.currentAttack = null;
+      this.hitTargets.clear();
       return null;
     }
 
     return this.currentAttack;
   }
 
-  isHitboxActive(currentTime: number): boolean {
-    if (!this.currentAttack) return false;
+  getPhase(currentTime: number): AttackPhase {
+    if (!this.currentAttack) return 'IDLE';
 
     const elapsed = currentTime - this.currentAttack.startTime;
-    return elapsed >= this.currentAttack.activeStart && elapsed <= this.currentAttack.activeEnd;
+    if (elapsed < 0 || elapsed > this.currentAttack.duration) return 'IDLE';
+    if (elapsed < this.currentAttack.activeStart) return 'STARTUP';
+    if (elapsed <= this.currentAttack.activeEnd) return 'ACTIVE';
+    return 'RECOVERY';
+  }
+
+  isHitboxActive(currentTime: number): boolean {
+    return this.getPhase(currentTime) === 'ACTIVE';
   }
 
   tryHit(
@@ -136,88 +140,89 @@ export class JaxAttackSystem {
       return { hit: false, damage: 0 };
     }
 
-    // Check distance
-    const distance = targetPos.distanceTo(this.currentAttack.position);
-    if (distance > this.currentAttack.radius) {
-      return { hit: false, damage: 0 };
-    }
-
-    // Prevent double-hitting same target in same attack
     if (this.hitTargets.has(targetId)) {
       return { hit: false, damage: 0 };
     }
 
-    // Record hit
-    this.hitTargets.add(targetId);
+    if (targetPos.distanceTo(this.currentAttack.position) > this.currentAttack.radius) {
+      return { hit: false, damage: 0 };
+    }
 
-    return {
-      hit: true,
-      damage: this.currentAttack.damage,
-    };
+    this.hitTargets.add(targetId);
+    return { hit: true, damage: this.currentAttack.damage };
+  }
+
+  processActiveHitboxes(
+    currentTime: number,
+    onHit: (target: THREE.Object3D, damage: number, attack: AttackEvent) => void
+  ): void {
+    if (!this.currentAttack || !this.isHitboxActive(currentTime)) return;
+
+    for (const target of this.findCombatTargets()) {
+      const targetId = String(target.userData.targetId ?? target.uuid);
+      const targetPos = new THREE.Vector3();
+      target.getWorldPosition(targetPos);
+
+      const result = this.tryHit(targetId, targetPos, currentTime);
+      if (result.hit) {
+        onHit(target, result.damage, this.currentAttack);
+      }
+    }
+  }
+
+  private findCombatTargets(): THREE.Object3D[] {
+    if (!this.currentAttack) return [];
+
+    const targets: THREE.Object3D[] = [];
+    const attack = this.currentAttack;
+
+    this.scene.traverse((obj) => {
+      if (!obj.userData.combatTarget) return;
+
+      // The special is deliberately targetable/telegraphed in the MVP so the
+      // eventual enemy registry can mark lightning-valid targets explicitly.
+      if (attack.type === 'jax_lightning_special' && !obj.userData.isLightningTarget) {
+        return;
+      }
+
+      const objPos = new THREE.Vector3();
+      obj.getWorldPosition(objPos);
+      if (objPos.distanceTo(attack.position) > attack.radius) return;
+
+      if (attack.type === 'jax_light_combo' && !this.isInForwardCone(objPos, 0.0)) {
+        return;
+      }
+
+      if (attack.type === 'jax_lightning_special' && !this.isInForwardCone(objPos, 0.5)) {
+        return;
+      }
+
+      targets.push(obj);
+    });
+
+    return targets;
+  }
+
+  private isInForwardCone(targetPos: THREE.Vector3, minimumDot: number): boolean {
+    if (!this.currentAttack) return false;
+
+    const toTarget = targetPos.clone().sub(this.currentAttack.position);
+    if (toTarget.lengthSq() < 0.0001) return true;
+
+    return toTarget.normalize().dot(this.currentAttack.direction) >= minimumDot;
   }
 
   getKnockbackForce(): THREE.Vector3 | null {
     if (!this.currentAttack) return null;
-
-    return this.currentAttack.direction.clone()
-      .multiplyScalar(this.currentAttack.knockback);
+    return this.currentAttack.direction.clone().multiplyScalar(this.currentAttack.knockback);
   }
 
   getCurrentAttack(): AttackEvent | null {
     return this.currentAttack;
   }
 
-  processActiveHitboxes(
-    currentTime: number,
-    onHit: (targetId: string, damage: number) => void
-  ): void {
-    if (!this.currentAttack || !this.isHitboxActive(currentTime)) return;
-
-    const targets = this.findCombatTargets();
-    for (const target of targets) {
-      const result = this.tryHit(target.id, target.position, currentTime);
-      if (result.hit) {
-        onHit(target.id, result.damage);
-      }
-    }
-  }
-
-  private findCombatTargets(): Array<{ id: string; position: THREE.Vector3; type: string }> {
-    if (!this.currentAttack) return [];
-
-    const targets: Array<{ id: string; position: THREE.Vector3; type: string }> = [];
-    const isSpecial = this.currentAttack.type === 'jax_lightning_special';
-
-    for (const obj of this.scene.children) {
-      if (!obj.userData.combatTarget) continue;
-
-      const objPos = new THREE.Vector3();
-      obj.getWorldPosition(objPos);
-
-      const distance = objPos.distanceTo(this.currentAttack.position);
-      if (distance > this.currentAttack.radius) continue;
-
-      if (isSpecial) {
-        if (!this.isInForwardCone(objPos)) continue;
-      }
-
-      targets.push({
-        id: obj.userData.targetId || obj.uuid,
-        position: objPos,
-        type: this.currentAttack.type,
-      });
-    }
-
-    return targets;
-  }
-
-  private isInForwardCone(targetPos: THREE.Vector3): boolean {
-    if (!this.currentAttack) return false;
-
-    const toTarget = targetPos.clone().sub(this.currentAttack.position);
-    const dotProduct = toTarget.normalize().dot(this.currentAttack.direction);
-
-    return dotProduct > 0.5; // ~60 degree forward cone
+  getConfig(type: JaxAttackType) {
+    return { ...ATTACK_CONFIG[type] };
   }
 
   reset() {
