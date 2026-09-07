@@ -52,7 +52,6 @@
     "@capacitor/cli": "^5.7.8",
     "@capacitor/ios": "^5.7.8",
     "@electron/rebuild": "^4.2.0",
-    "@playwright/test": "^1.63.0",
     "@tailwindcss/typography": "^0.5.20",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
