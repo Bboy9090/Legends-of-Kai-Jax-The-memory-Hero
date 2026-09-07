@@ -1,15 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Flame, Shield, Sparkles, Zap } from "lucide-react";
 
+import { STORY_HERO_IDS, isStoryHeroId, type StoryHeroId } from "../../game/story/storyHeroPolicy";
 import { getFighterById } from "../../lib/characters";
 import { useRunner } from "../../lib/stores/useRunner";
 
-export const STORY_HERO_IDS = ["kai", "jax"] as const;
-export type StoryHeroId = (typeof STORY_HERO_IDS)[number];
-
-export function isStoryHeroId(id: string | null | undefined): id is StoryHeroId {
-  return id === "kai" || id === "jax";
-}
+export { STORY_HERO_IDS, isStoryHeroId } from "../../game/story/storyHeroPolicy";
+export type { StoryHeroId } from "../../game/story/storyHeroPolicy";
 
 const STORY_HEROES: Record<StoryHeroId, {
   name: string;
