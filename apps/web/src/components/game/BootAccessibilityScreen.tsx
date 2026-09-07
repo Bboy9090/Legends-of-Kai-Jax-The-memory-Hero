@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { useRunner } from '../../lib/stores/useRunner';
 import { useAudio } from '../../lib/stores/useAudio';
-import { Volume2, VolumeX, Eye, Sparkles, ArrowRight, ShieldCheck, Monitor } from 'lucide-react';
+import { useAccessibility } from '../../lib/stores/useAccessibility';
+import { Volume2, VolumeX, Eye, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function BootAccessibilityScreen({ onComplete }: { onComplete: () => void }) {
   const { isMuted, toggleMute } = useAudio();
+  const { reduceMotion, setReduceMotion } = useAccessibility();
   const [highContrast, setHighContrast] = useState(false);
-  const [textSize, setTextSize] = useState<'standard' | 'large'>('standard');
-  const [reduceMotion, setReduceMotion] = useState(false);
 
   const handleConfirm = () => {
     onComplete();
@@ -63,8 +62,8 @@ export default function BootAccessibilityScreen({ onComplete }: { onComplete: ()
           <div className="flex items-center gap-4">
             <Eye className="w-6 h-6 text-amber-400" />
             <div>
-              <p className="font-bold text-white text-base">High-Contrast UI Mode</p>
-              <p className="text-xs text-slate-400">Enhance borders and HUD outlines for maximum visibility during combat.</p>
+              <p className="font-bold text-white text-base">High-Contrast Setup Preview</p>
+              <p className="text-xs text-slate-400">Preview stronger contrast on this setup screen. Full-game high-contrast support remains a separate implementation gate.</p>
             </div>
           </div>
           <button
@@ -73,7 +72,7 @@ export default function BootAccessibilityScreen({ onComplete }: { onComplete: ()
               highContrast ? 'bg-amber-500 text-black font-black' : 'bg-white/10 text-slate-300 border border-white/10'
             }`}
           >
-            {highContrast ? 'ON' : 'OFF'}
+            {highContrast ? 'PREVIEW ON' : 'PREVIEW OFF'}
           </button>
         </div>
 
@@ -83,7 +82,7 @@ export default function BootAccessibilityScreen({ onComplete }: { onComplete: ()
             <Sparkles className="w-6 h-6 text-purple-400" />
             <div>
               <p className="font-bold text-white text-base">Reduce Motion & Camera Shake</p>
-              <p className="text-xs text-slate-400">Disable intense screen shake and fast background transitions.</p>
+              <p className="text-xs text-slate-400">Persistently reduces camera shake and motion-heavy combat presentation.</p>
             </div>
           </div>
           <button
