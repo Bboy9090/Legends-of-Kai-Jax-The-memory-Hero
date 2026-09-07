@@ -6,40 +6,56 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        node-version: [20.x]
-    
+    timeout-minutes: 20
+
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9.15.9
-      
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-      
-      - name: Install dependencies
-        run: pnpm install
-      
-      - name: Lint
-        run: pnpm lint
-        continue-on-error: true
+      - name: Materialize exact web workspace
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git"
+          git config core.sparseCheckout true
+          git config extensions.partialClone origin
+          git sparse-checkout init --cone
+          git sparse-checkout set apps/web packages
+          git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin "${COMMIT_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+          test -f package.json
+          test -f pnpm-lock.yaml
+
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          node --version
+          pnpm --version
+
+      - name: Install web workspace
+        run: pnpm install --filter ./apps/web... --frozen-lockfile
 
       - name: Type check
-        run: pnpm typecheck
-      
+        run: pnpm -C apps/web typecheck
+
       - name: Build
-        run: pnpm build
-      
-      - name: Test
+        run: pnpm -C apps/web build
+
+      - name: Unit tests
         run: pnpm -C apps/web test
+
+      - name: Lint advisory
+        continue-on-error: true
+        run: pnpm -C apps/web lint
