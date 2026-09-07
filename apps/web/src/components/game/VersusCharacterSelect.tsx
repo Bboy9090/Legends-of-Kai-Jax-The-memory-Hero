@@ -12,41 +12,38 @@ import VariantSelector from "./VariantSelector";
 import { useGame } from "../../lib/stores/useGame";
 import { useRunner } from "../../lib/stores/useRunner";
 import { useBattle } from "../../lib/stores/useBattle";
-import { FIGHTERS, getFighterById } from "../../lib/characters";
+import { getFighterById } from "../../lib/characters";
 import { getDefaultVariant } from "../../lib/characterVariants";
 import { getQualitySettings } from "../../lib/threejs/PerformanceOptimizer";
 import {
   VERSUS_ROSTER,
+  getCombatProfileId,
   type VersusRosterEntry,
 } from "../../lib/versusRoster";
 
 const GRID_COLUMNS = 3;
 const GAMEPAD_REPEAT_MS = 180;
 
-const COMBAT_ID_ALIASES: Record<string, string> = {
-  "kai-jax": "kaijax",
-};
-
-function resolveCombatId(id: string): string {
-  return COMBAT_ID_ALIASES[id] ?? id;
+function getCombatProfile(entry: VersusRosterEntry) {
+  return getFighterById(getCombatProfileId(entry));
 }
 
-function getCombatProfile(entry: VersusRosterEntry) {
-  return getFighterById(resolveCombatId(entry.id));
+function isEntryUnlocked(entry: VersusRosterEntry, fusionUnlocked: boolean): boolean {
+  return entry.defaultUnlocked || (entry.id === "kai-jax" && fusionUnlocked);
 }
 
 function getGrade(fighterId: string): "cosmic" | "ice" | "ember" | "neutral" {
   if (fighterId === "kai-jax" || fighterId === "kaijax") return "cosmic";
-  if (fighterId === "jax") return "ice";
   if (fighterId === "kai") return "ember";
   return "neutral";
 }
 
 function factionLabel(faction: VersusRosterEntry["faction"]): string {
   switch (faction) {
-    case "core": return "Core";
-    case "fracture-circle": return "Fracture Circle";
-    case "covenant": return "Covenant";
+    case "core": return "Core Lineage";
+    case "first-sabertooths": return "First Sabertooths";
+    case "bloodward-antagonist": return "Bloodward Antagonist";
+    case "ancient-antagonist": return "Ancient Antagonist";
     case "engineered-horror": return "Engineered Horror";
   }
 }
@@ -138,18 +135,19 @@ export default function VersusCharacterSelect() {
   const setTrainingSession = useRunner((s) => s.setTrainingSession);
   const setCharacter = useRunner((s) => s.setCharacter);
   const persistedCharacter = useRunner((s) => s.selectedCharacter);
+  const fusionUnlocked = useRunner((s) => s.kaiJaxFusionUnlocked);
+  const completedStoryMissionIds = useRunner((s) => s.completedStoryMissionIds);
   const setPlayerFighter = useBattle((s) => s.setPlayerFighter);
   const setOpponentFighter = useBattle((s) => s.setOpponentFighter);
-  const completedStoryMissionIds = useRunner((s) => s.completedStoryMissionIds);
 
   const playableEntries = useMemo(
-    () => VERSUS_ROSTER.filter((entry) => entry.defaultUnlocked && Boolean(getCombatProfile(entry))),
-    [],
+    () => VERSUS_ROSTER.filter((entry) => isEntryUnlocked(entry, fusionUnlocked) && Boolean(getCombatProfile(entry))),
+    [fusionUnlocked],
   );
 
   const initialSelection = useMemo(() => {
     const persisted = persistedCharacter
-      ? VERSUS_ROSTER.find((entry) => resolveCombatId(entry.id) === persistedCharacter || entry.id === persistedCharacter)
+      ? VERSUS_ROSTER.find((entry) => entry.id === persistedCharacter || getCombatProfileId(entry) === persistedCharacter)
       : undefined;
     return persisted?.id ?? playableEntries[0]?.id ?? VERSUS_ROSTER[0]?.id ?? "kai";
   }, [persistedCharacter, playableEntries]);
@@ -159,8 +157,8 @@ export default function VersusCharacterSelect() {
 
   const selectedEntry = VERSUS_ROSTER.find((entry) => entry.id === selectedId) ?? VERSUS_ROSTER[0];
   const selectedProfile = selectedEntry ? getCombatProfile(selectedEntry) : null;
-  const selectedPlayable = Boolean(selectedEntry?.defaultUnlocked && selectedProfile);
-  const selectedCombatId = selectedEntry ? resolveCombatId(selectedEntry.id) : "";
+  const selectedPlayable = Boolean(selectedEntry && isEntryUnlocked(selectedEntry, fusionUnlocked) && selectedProfile);
+  const selectedCombatId = selectedEntry ? getCombatProfileId(selectedEntry) : "";
 
   const selectedVariantId = selectedCombatId
     ? variantByFighter[selectedCombatId] ?? getDefaultVariant(selectedCombatId)?.id ?? ""
@@ -188,17 +186,18 @@ export default function VersusCharacterSelect() {
   const beginMatch = useCallback((training: boolean) => {
     if (!selectedEntry || !selectedPlayable || !selectedProfile) return;
 
-    const playerId = resolveCombatId(selectedEntry.id);
-    const opponentPool = playableEntries
-      .map((entry) => resolveCombatId(entry.id))
-      .filter((id) => id !== playerId && Boolean(getFighterById(id)));
-    const opponentId = opponentPool[0] ?? FIGHTERS.find((fighter) => fighter.id !== playerId)?.id ?? playerId;
+    const playerCombatId = getCombatProfileId(selectedEntry);
+    const opponentEntry = playableEntries.find((entry) => {
+      const combatId = getCombatProfileId(entry);
+      return combatId !== playerCombatId && Boolean(getFighterById(combatId));
+    });
+    const opponentCombatId = opponentEntry ? getCombatProfileId(opponentEntry) : playerCombatId;
 
     resetPhase();
     setTrainingSession(training);
-    setCharacter(playerId);
-    setPlayerFighter(playerId);
-    setOpponentFighter(opponentId);
+    setCharacter(selectedEntry.id);
+    setPlayerFighter(playerCombatId);
+    setOpponentFighter(opponentCombatId);
     start();
     setGameState("playing");
   }, [selectedEntry, selectedPlayable, selectedProfile, playableEntries, resetPhase, setTrainingSession, setCharacter, setPlayerFighter, setOpponentFighter, start, setGameState]);
@@ -271,7 +270,7 @@ export default function VersusCharacterSelect() {
         </button>
         <div className="text-center min-w-0">
           <h1 className="text-lg sm:text-2xl font-black tracking-[0.14em] sm:tracking-[0.25em] text-white/90 uppercase truncate">Choose Your Fighter</h1>
-          <p className="hidden md:block text-[10px] uppercase tracking-[0.18em] text-slate-500 mt-1">Locked Visual Baseline · Arrows/WASD · A confirm · B back · Y training</p>
+          <p className="hidden md:block text-[10px] uppercase tracking-[0.18em] text-slate-500 mt-1">Bloodward Canon · Archive Arena · Arrows/WASD · A confirm · B back · Y training</p>
         </div>
         <div className="w-16 sm:w-20" aria-hidden="true" />
       </header>
@@ -314,7 +313,7 @@ export default function VersusCharacterSelect() {
               <div className="absolute inset-0 flex items-center justify-center p-8 text-center bg-slate-950/70">
                 <div>
                   <div className="text-5xl font-black tracking-widest" style={{ color: accent }}>{selectedEntry?.displayName.slice(0, 2).toUpperCase()}</div>
-                  <p className="mt-4 text-sm text-slate-300">Locked visual identity confirmed. Combat model and moveset profile still need integration.</p>
+                  <p className="mt-4 text-sm text-slate-300">Canon identity confirmed. Combat model and moveset profile still need integration.</p>
                   <p className="mt-2 text-[11px] text-slate-500">Source: {selectedEntry?.sourceSheet}</p>
                 </div>
               </div>
@@ -347,10 +346,10 @@ export default function VersusCharacterSelect() {
           </div>
         </section>
 
-        <aside className="lg:w-[25rem] max-h-[36vh] lg:max-h-none flex flex-col gap-3 overflow-y-auto pr-1" role="group" aria-label="Locked baseline fighter roster">
+        <aside className="lg:w-[25rem] max-h-[36vh] lg:max-h-none flex flex-col gap-3 overflow-y-auto pr-1" role="group" aria-label="Bloodward publication-safe fighter roster">
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-2">
             {VERSUS_ROSTER.map((entry) => {
-              const playable = entry.defaultUnlocked && Boolean(getCombatProfile(entry));
+              const playable = isEntryUnlocked(entry, fusionUnlocked) && Boolean(getCombatProfile(entry));
               return (
                 <FighterCard
                   key={entry.id}
