@@ -26,7 +26,7 @@ export type GameState =
   | "codex"
   | "playing";
 
-/** Campaign node id. Order: start → districts → final boss. */
+/** Legacy campaign-node IDs kept only so old battle/session code remains typed while the route is quarantined. */
 export type CampaignNodeId =
   | "start"
   | "district-1"
@@ -53,6 +53,8 @@ interface RunnerState {
   selectedCharacter: string | null;
   activeStoryMissionId: string | null;
   trainingSession: boolean;
+  /** Inert compatibility pointer for pre-Bloodward campaign sessions. New story routes must not set it. */
+  campaignCurrentNode: CampaignNodeId | null;
   
   // Persistent Profile Management
   activeProfileIndex: number;
@@ -63,6 +65,7 @@ interface RunnerState {
   setCharacter: (id: string | null) => void;
   setTrainingSession: (v: boolean) => void;
   setActiveStoryMission: (id: string | null) => void;
+  setCampaignCurrentNode: (nodeId: CampaignNodeId | null) => void;
   addScore: (points: number) => void;
   unlockKaiJaxFusion: () => void;
   
@@ -145,6 +148,7 @@ export const useRunner = create<RunnerState>()(
       selectedCharacter: "kai",
       activeStoryMissionId: null,
       trainingSession: false,
+      campaignCurrentNode: null,
       
       // Profiles Initial
       activeProfileIndex: 0,
@@ -170,6 +174,8 @@ export const useRunner = create<RunnerState>()(
       setTrainingSession: (trainingSession) => set({ trainingSession }),
       setCharacter: (selectedCharacter) => set({ selectedCharacter }),
       setActiveStoryMission: (activeStoryMissionId) => set({ activeStoryMissionId }),
+      // Compatibility only. Current Story Hub / Bloodward routes intentionally never call this.
+      setCampaignCurrentNode: (campaignCurrentNode) => set({ campaignCurrentNode }),
       
       addScore: (points) => {
         const { totalScore, activeProfileIndex, profiles } = get();
@@ -241,6 +247,7 @@ export const useRunner = create<RunnerState>()(
           completedRoamDistrictIds: targetProfile.completedRoamDistrictIds || [],
           unlockedUpgrades: targetProfile.unlockedUpgrades,
           kaiJaxFusionUnlocked: targetProfile.kaiJaxFusionUnlocked,
+          campaignCurrentNode: null,
         });
       },
 
@@ -257,6 +264,7 @@ export const useRunner = create<RunnerState>()(
             completedRoamDistrictIds: DEFAULT_PROFILE.completedRoamDistrictIds,
             unlockedUpgrades: DEFAULT_PROFILE.unlockedUpgrades,
             kaiJaxFusionUnlocked: DEFAULT_PROFILE.kaiJaxFusionUnlocked,
+            campaignCurrentNode: null,
           });
         } else {
           set({ profiles: newProfiles });
@@ -292,6 +300,8 @@ export const useRunner = create<RunnerState>()(
           completedRoamDistrictIds: activeProfile.completedRoamDistrictIds,
           unlockedUpgrades: activeProfile.unlockedUpgrades,
           kaiJaxFusionUnlocked: activeProfile.kaiJaxFusionUnlocked,
+          // Never revive the old Cross Point/Rift campaign pointer from persisted data.
+          campaignCurrentNode: null,
         } as RunnerState;
       },
     }
