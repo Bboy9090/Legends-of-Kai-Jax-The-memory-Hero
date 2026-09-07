@@ -150,10 +150,6 @@ class TouchInputHandler {
     attackUltimate: false,
   };
 
-  // Legacy: attack queue for backward compatibility
-  private touchAttackQueue: string[] = [];
-  private maxQueueSize: number = 4;
-
   constructor() {
     // This will be integrated with the useTouchInput store
     // For now, we provide the interface
@@ -173,18 +169,6 @@ class TouchInputHandler {
   // Set button state (true = pressed, false = released)
   setButtonState(button: keyof typeof this.buttonState, pressed: boolean) {
     this.buttonState[button] = pressed;
-  }
-
-  queueAttack(type: 'light' | 'heavy' | 'special' | 'ultimate' | 'dodge') {
-    // Prevent duplicate queuing of same attack
-    if (this.touchAttackQueue[this.touchAttackQueue.length - 1] === type) return;
-    this.touchAttackQueue = [...this.touchAttackQueue, type].slice(-this.maxQueueSize);
-  }
-
-  consumeNextAttack(): string | null {
-    if (this.touchAttackQueue.length === 0) return null;
-    const attack = this.touchAttackQueue.shift();
-    return attack || null;
   }
 
   hasAnyInput(): boolean {
@@ -470,14 +454,6 @@ export class GameplayInputManager {
     pressed: boolean
   ) {
     this.touchHandler.setButtonState(action, pressed);
-  }
-
-  /**
-   * Queue a touch attack action (legacy - use setTouchAction instead)
-   * @deprecated Use setTouchAction with attackLight/attackHeavy/etc instead
-   */
-  queueTouchAttack(type: 'light' | 'heavy' | 'special' | 'ultimate' | 'dodge') {
-    this.touchHandler.queueAttack(type);
   }
 
   /**
