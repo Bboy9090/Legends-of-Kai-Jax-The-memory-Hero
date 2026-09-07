@@ -162,6 +162,24 @@ describe('DisplacementController', () => {
     expect(lastResult!.x).toBeLessThanOrEqual(6.01);
   });
 
+  it('sweeps and returns the authored six-unit endpoint on completion', () => {
+    let position = new THREE.Vector3();
+    controller.update(
+      0.016,
+      traversalInput({ traversal: true, moveX: 1 }),
+      position,
+      false
+    );
+
+    position = controller.update(0.05, traversalInput(), position, false)!;
+    position = controller.update(0.05, traversalInput(), position, false)!;
+    position = controller.update(0.05, traversalInput(), position, false)!;
+
+    expect(controller.isDisplacing()).toBe(false);
+    expect(position.x).toBeCloseTo(6, 5);
+    expect(controller.getState().blocked).toBe(false);
+  });
+
   it('falls back to a safe forward direction instead of consuming a zero vector', () => {
     const position = new THREE.Vector3();
     controller.update(

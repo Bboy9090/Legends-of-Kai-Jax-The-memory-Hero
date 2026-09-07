@@ -67,12 +67,6 @@ export class DisplacementController {
       this.displacementElapsed += delta;
       const progress = Math.min(1, this.displacementElapsed / DISPLACEMENT_CONFIG.duration);
 
-      if (progress >= 1) {
-        this.state.isDisplacing = false;
-        this.displacementStartPos = null;
-        return null;
-      }
-
       const eased = 1 - Math.pow(1 - progress, 2);
       const targetDistance = this.displacementStartedAirborne
         ? DISPLACEMENT_CONFIG.airDistance
@@ -82,10 +76,17 @@ export class DisplacementController {
         this.currentDirection.clone().multiplyScalar(targetDistance * eased)
       );
 
-      const collision = this.sweepCollision(candidate);
+      const collision = this.sweepCollision(position, candidate);
       if (collision.blocked) {
         this.state.isDisplacing = false;
         this.state.blocked = true;
+        this.state.lastDisplacementVelocity.set(0, 0, 0);
+        this.displacementStartPos = null;
+        return collision.safePos;
+      }
+
+      if (progress >= 1) {
+        this.state.isDisplacing = false;
         this.state.lastDisplacementVelocity.set(0, 0, 0);
         this.displacementStartPos = null;
         return collision.safePos;
@@ -139,8 +140,11 @@ export class DisplacementController {
     }
   }
 
-  private sweepCollision(targetPos: THREE.Vector3): { safePos: THREE.Vector3; blocked: boolean } {
-    const start = this.displacementStartPos ?? targetPos;
+  private sweepCollision(
+    startPos: THREE.Vector3,
+    targetPos: THREE.Vector3
+  ): { safePos: THREE.Vector3; blocked: boolean } {
+    const start = startPos.clone();
     const segment = targetPos.clone().sub(start);
     const distance = segment.length();
 
@@ -149,7 +153,12 @@ export class DisplacementController {
     }
 
     const direction = segment.normalize();
-    const raycaster = new THREE.Raycaster(start, direction, 0, distance);
+    const raycaster = new THREE.Raycaster(
+      start,
+      direction,
+      0,
+      distance + DISPLACEMENT_CONFIG.collisionRadius
+    );
     const colliders: THREE.Object3D[] = [];
 
     this.scene.traverse((obj) => {
