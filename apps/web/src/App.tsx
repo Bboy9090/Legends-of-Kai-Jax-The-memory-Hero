@@ -24,7 +24,6 @@ import { JaxTestScene } from "./components/game/characters/jax/JaxTestScene";
 import AdventureArena from "./components/game/adventure/AdventureArena";
 import AdventureHUD from "./components/game/adventure/AdventureHUD";
 import AdventureTouchControls from "./components/game/adventure/AdventureTouchControls";
-import StoryAdventure from "./components/game/StoryAdventure";
 import SettingsMenu from "./components/game/SettingsMenu";
 import TitleScreen from "./components/game/TitleScreen";
 import SaveSlotScreen from "./components/game/SaveSlotScreen";
@@ -39,18 +38,20 @@ import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
 import { useBattle } from "./lib/stores/useBattle";
 import { useAudio } from "./lib/stores/useAudio";
-import { useMissions } from "./lib/stores/useMissions";
 import { useProgression } from "./lib/stores/useProgression";
 import { registerServiceWorker } from "./lib/offlineModeSystem";
-import { FIGHTERS, getFighterById } from "./lib/characters";
+import { getFighterById } from "./lib/characters";
+import {
+  VERSUS_ROSTER,
+  getCombatProfileId,
+  getVersusRosterEntry,
+} from "./lib/versusRoster";
 import { initializeVoiceSystem, preloadVoices } from "./lib/voiceActing";
 import * as THREE from "three";
 import { getQualitySettings } from "./lib/threejs/PerformanceOptimizer";
 
-// Compute quality settings once (device/pixel-ratio never changes mid-session)
 const QUALITY = getQualitySettings();
 
-// Define control keys for the game
 enum Controls {
   jump = 'jump',
   slide = 'slide',
@@ -85,9 +86,25 @@ const controls = [
   { name: Controls.ultimate, keys: ["KeyR"] },
 ];
 
+function resolvePublicCombatId(publicId: string | null | undefined): string {
+  if (!publicId) return "kai";
+  const entry = getVersusRosterEntry(publicId);
+  return entry ? getCombatProfileId(entry) : "kai";
+}
+
+function resolveArenaOpponentCombatId(playerPublicId: string | null | undefined): string {
+  const playerCombatId = resolvePublicCombatId(playerPublicId);
+  const opponent = VERSUS_ROSTER.find((entry) => {
+    if (!entry.defaultUnlocked) return false;
+    const combatId = getCombatProfileId(entry);
+    return combatId !== playerCombatId && Boolean(getFighterById(combatId));
+  });
+  return opponent ? getCombatProfileId(opponent) : playerCombatId;
+}
+
 function App() {
   const { phase } = useGame();
-  const { gameState, selectedCharacter, activeStoryMissionId } = useRunner();
+  const { gameState, selectedCharacter } = useRunner();
   const battleCanvasActive =
     (phase === "playing" || phase === "ended") && gameState === "playing";
 
@@ -95,7 +112,6 @@ function App() {
     console.log('[Blocker A Trace] App render', { phase, gameState, battleCanvasActive });
   }, [phase, gameState, battleCanvasActive]);
 
-  // If we left battle with phase "ended" but navigated to a menu screen, recover so UI mounts.
   useEffect(() => {
     const menuLike =
       gameState === "menu" ||
@@ -109,22 +125,19 @@ function App() {
       useGame.getState().reset();
     }
   }, [phase, gameState]);
+
   const { setPlayerFighter, setOpponentFighter, screenShake } = useBattle();
-  const { 
-    setBackgroundMusic, 
-    setBattleMusic, 
-    setHitSound, 
+  const {
+    setBackgroundMusic,
+    setBattleMusic,
+    setHitSound,
     setSuccessSound,
     backgroundMusic,
     isMuted
   } = useAudio();
-  
-  // ⚡ LEGENDARY INTRO SYSTEM
+
   const [showIntro, setShowIntro] = useState(true);
 
-  // Wave 2: ensure progression store is initialized (registers window global
-  // used by the mission-XP bridge), and register the offline service worker.
-  // Also initialize voice acting system for character dialogue.
   useEffect(() => {
     void useProgression.getState();
     registerServiceWorker().catch(() => {
@@ -134,7 +147,6 @@ function App() {
     preloadVoices();
   }, []);
 
-  // Initialize audio on mount (non-fatal if files missing)
   useEffect(() => {
     try {
       const bgMusic = new Audio("/sounds/background.mp3");
@@ -152,7 +164,6 @@ function App() {
     }
   }, [setBackgroundMusic, setBattleMusic, setHitSound, setSuccessSound]);
 
-  // Play background music in menu states
   useEffect(() => {
     if (!backgroundMusic || isMuted) return;
 
@@ -165,22 +176,19 @@ function App() {
     }
   }, [gameState, backgroundMusic, isMuted]);
 
-  // Set up battle fighters when character is selected
+  // Public roster ids stay in runner/profile state. Only the battle renderer receives
+  // the temporary legacy combat-profile id where a migration bridge is still needed.
   useEffect(() => {
     if (selectedCharacter && phase === 'playing') {
-      setPlayerFighter(selectedCharacter);
-      const opponents = FIGHTERS.map(f => f.id).filter(id => id !== selectedCharacter);
-      const randomOpponent = opponents[Math.floor(Math.random() * opponents.length)] || selectedCharacter;
-      setOpponentFighter(randomOpponent);
+      setPlayerFighter(resolvePublicCombatId(selectedCharacter));
+      setOpponentFighter(resolveArenaOpponentCombatId(selectedCharacter));
     }
   }, [selectedCharacter, phase, setPlayerFighter, setOpponentFighter]);
 
-  // Handle intro completion
   const handleIntroComplete = () => {
     setShowIntro(false);
   };
 
-  // Calculate screen shake transform - stable random offsets per shake intensity change
   const shakeOffsetRef = useRef({ x: 0, y: 0 });
   const shakeTransform = useMemo(() => {
     if (screenShake > 0) {
@@ -194,75 +202,44 @@ function App() {
   }, [screenShake]);
 
   return (
-    <div 
-      style={{ 
-        width: '100vw', 
-        height: '100vh', 
-        position: 'relative', 
+    <div
+      style={{
+        width: '100vw',
+        height: '100vh',
+        position: 'relative',
         overflow: gameState === 'lore-hub' ? 'auto' : 'hidden',
         background: 'linear-gradient(to bottom, #0a0a1a, #1a0a2e)',
         transform: shakeTransform,
       }}
     >
-      {/* Global additive overlays: F3 perf HUD, F1 quest log */}
       <GameOverlays />
 
-      {/* Lore Hub - Landing Page & Codex */}
       {(gameState === "lore-hub" || gameState === "codex") && <LoreHub />}
-
-      {/* Settings Menu */}
       {gameState === "settings" && <SettingsMenu />}
-
-      {/* ⚡ LEGENDARY INTRO SEQUENCE */}
       {showIntro && gameState !== "lore-hub" && <GameIntro onComplete={handleIntroComplete} />}
-      
+
       <KeyboardControls map={controls}>
-        {/* Title Screen */}
         {phase === "ready" && gameState === "title" && !showIntro && <TitleScreen />}
-
-        {/* Main Menu */}
         {phase === "ready" && gameState === "menu" && !showIntro && <LegendaryMainMenu />}
-
-        {/* Save Slots */}
         {phase === "ready" && gameState === "save-slots" && <SaveSlotScreen />}
-
-        {/* Story Hub (Raging City Map) */}
         {phase === "ready" && gameState === "story-hub" && <StoryHubScreen />}
-
-        {/* Mission Select */}
         {phase === "ready" && gameState === "mission-select" && <MissionSelectScreen />}
-
-        {/* Ability Tree */}
         {phase === "ready" && gameState === "abilities" && <CharacterAbilityScreen />}
-
-        {/* Mission Complete */}
         {phase === "ready" && gameState === "mission-complete" && <MissionCompleteScreen />}
-
-        {/* Campaign Map */}
         {phase === "ready" && gameState === "campaign-map" && <CampaignMap />}
-
         {phase === "ready" && gameState === "district-select" && <DistrictSelectScreen />}
 
-        {/* Versus Mode - full 3D beast model character select */}
         {phase === 'ready' && gameState === 'versus-select' && (
           <VersusCharacterSelect />
         )}
-        
-        {/* Beast Preview - inspect the layered rendering system */}
+
         {phase === 'ready' && gameState === 'beast-preview' && <BeastPreview />}
-        
-        {/* Customization Menu */}
         {phase === 'ready' && gameState === 'customization' && <CustomizationMenu />}
-
-        {/* Controller Test - movement state foundation */}
         {gameState === 'controller-test' && <ControllerTestScene />}
-
-        {/* Jax Test Scene - traversal and combat testing */}
         {gameState === 'jax-test' && <JaxTestScene />}
-        
-        {/* ⚡ ADVENTURE MODE - Open World 3D Arena */}
+
         {gameState === 'adventure' && (() => {
-          const charId = selectedCharacter || "kai-jax";
+          const charId = resolvePublicCombatId(selectedCharacter);
           const fighter = getFighterById(charId);
           return (
             <>
@@ -302,63 +279,10 @@ function App() {
           );
         })()}
 
-        {/* ⚡ STORY MODE - Adventure with narrative */}
-        {gameState === 'story-mode' && (() => {
-          const charId = selectedCharacter || "kai-jax";
-          const fighter = getFighterById(charId);
-          const storyMissionId = activeStoryMissionId || "story_act1_m1";
-          return (
-            <>
-              <div className="relative w-full h-screen">
-                <Canvas
-                  shadows
-                  camera={{
-                    position: [0, 4, 7],
-                    fov: 50,
-                    near: 0.1,
-                    far: 200,
-                  }}
-                  onCreated={({ gl }) => {
-                    const q = getQualitySettings();
-                    gl.setPixelRatio(q.pixelRatio);
-                    gl.outputColorSpace = THREE.SRGBColorSpace;
-                    gl.toneMapping = THREE.ACESFilmicToneMapping;
-                    gl.toneMappingExposure = 0.85;
-                    gl.shadowMap.enabled = true;
-                    gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
-                  }}
-                  gl={{
-                    antialias: getQualitySettings().antialias,
-                    powerPreference: "high-performance",
-                  }}
-                >
-                  <Suspense fallback={null}>
-                    <AdventureArena
-                      characterId={charId}
-                      accentColor={fighter?.accentColor || "#00f2ff"}
-                    />
-                  </Suspense>
-                </Canvas>
-                <AdventureHUD />
-                <StoryAdventure
-                  missionId={storyMissionId}
-                  characterId={charId}
-                  onComplete={(success) => {
-                    if (success) {
-                      useMissions.getState().startMission("story", storyMissionId);
-                      useMissions.getState().completeMission(true);
-                    }
-                    useRunner.getState().setGameState("campaign-map");
-                  }}
-                  onBack={() => useRunner.getState().setGameState("campaign-map")}
-                />
-              </div>
-              <AdventureTouchControls />
-            </>
-          );
-        })()}
+        {/* Legacy multiverse StoryAdventure data is quarantined. Keep this route on
+            the Bloodward-safe mission briefing until current story missions replace it. */}
+        {gameState === 'story-mode' && <MissionSelectScreen />}
 
-        {/* ⚡ BATTLE CANVAS - THE MAIN EVENT! */}
         {battleCanvasActive && (
           <>
             <div className="relative w-full h-screen">
@@ -388,11 +312,10 @@ function App() {
                 </Suspense>
               </Canvas>
               <div className="absolute bottom-4 left-0 right-0 text-center text-slate-400 text-sm pointer-events-none hidden md:block">
-                ← → move · Space jump · J punch · K kick · L special · Q/E dodge · Alt block · R ultimate · T transform
+                ← → move · Space jump · J punch · K kick · L special · Q/E dodge · Alt block · R ultimate · T fusion when story-unlocked
               </div>
             </div>
-            
-            {/* ⚡ LEGENDARY UI OVERLAYS */}
+
             <BattleUI />
             <TransformationOverlay />
             <ScreenEffects />
