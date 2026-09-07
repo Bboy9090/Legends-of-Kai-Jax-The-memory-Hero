@@ -48,10 +48,12 @@ jobs:
         run: pnpm install --filter ./apps/web... --frozen-lockfile
 
       - name: Install Chromium runtime
-        run: pnpm -C apps/web exec playwright install --with-deps chromium
+        run: node apps/web/node_modules/@playwright/test/cli.js install --with-deps chromium
 
       - name: Run Jax live runtime sequence
-        run: pnpm -C apps/web exec playwright test e2e/jax-runtime.spec.ts --config=playwright.config.ts
+        run: |
+          cd apps/web
+          node node_modules/@playwright/test/cli.js test e2e/jax-runtime.spec.ts --config=playwright.config.ts
 
       - name: Upload-free evidence summary
         if: always()
