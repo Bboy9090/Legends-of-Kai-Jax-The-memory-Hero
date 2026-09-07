@@ -29,6 +29,7 @@ import TitleScreen from "./components/game/TitleScreen";
 import SaveSlotScreen from "./components/game/SaveSlotScreen";
 import BootAccessibilityScreen from "./components/game/BootAccessibilityScreen";
 import StoryHubScreen from "./components/game/StoryHubScreen";
+import StoryHeroSelect from "./components/game/StoryHeroSelect";
 import MissionSelectScreen from "./components/game/MissionSelectScreen";
 import CharacterAbilityScreen from "./components/game/CharacterAbilityScreen";
 import MissionCompleteScreen from "./components/game/MissionCompleteScreen";
@@ -223,6 +224,7 @@ function App() {
         {phase === "ready" && gameState === "menu" && !showIntro && <LegendaryMainMenu />}
         {phase === "ready" && gameState === "save-slots" && <SaveSlotScreen />}
         {phase === "ready" && gameState === "story-hub" && <StoryHubScreen />}
+        {phase === "ready" && gameState === "character-select" && <StoryHeroSelect />}
         {phase === "ready" && gameState === "mission-select" && <MissionSelectScreen />}
         {phase === "ready" && gameState === "abilities" && <CharacterAbilityScreen />}
         {phase === "ready" && gameState === "mission-complete" && <MissionCompleteScreen />}
