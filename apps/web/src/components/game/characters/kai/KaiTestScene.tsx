@@ -32,10 +32,26 @@ function KaiTestContent() {
   // Get scene from Three.js context
   const { scene } = useThree();
 
-  // Add test assets to scene
+  // Add test assets to scene with cleanup for React Strict Mode
   useEffect(() => {
+    // Clean up test assets from previous mount (React Strict Mode)
+    const wallToRemove = scene.getObjectByName('wall_climbable');
+    if (wallToRemove) scene.remove(wallToRemove);
+
+    const anchorsToRemove = scene.getObjectByName('web_anchors');
+    if (anchorsToRemove) scene.remove(anchorsToRemove);
+
+    // Create fresh test assets
     createTestClimbableWall(scene);
     createTestWebAnchors(scene);
+
+    // Return cleanup for next mount
+    return () => {
+      const wall = scene.getObjectByName('wall_climbable');
+      if (wall) scene.remove(wall);
+      const anchors = scene.getObjectByName('web_anchors');
+      if (anchors) scene.remove(anchors);
+    };
   }, [scene]);
 
   // Use Kai controller for input/movement

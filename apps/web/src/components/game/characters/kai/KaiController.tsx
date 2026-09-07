@@ -1,25 +1,28 @@
 /**
  * KAI CONTROLLER
- * Memory Spider Movement & Combat System - Day 1-2 MVP
+ * Memory Spider Movement & Combat System - Day 3.5 Refactor
  *
  * Core mechanics:
- * - 3D movement (WASD + mouse, touch joystick, gamepad)
- * - Wall-climbing detection (when near vertical surfaces)
- * - Web-swing momentum (curved traversal)
- * - Light combo attacks (3-hit light, 2-hit heavy)
+ * - Unified input from keyboard/gamepad/touch
+ * - Locomotion modes: GROUND, WALL, WEB_ZIP (one owner per frame)
+ * - Wall-climbing with update-driven controller
+ * - Web-swing with momentum and steering
+ * - Light/heavy/special/ultimate combo attacks
  * - Dodge with invulnerability frames
  * - Energy/stamina management
  *
- * Input: Unified GameplayInputState (keyboard/touch/gamepad)
+ * Architecture: KaiController is the sole owner of kai.position per frame.
+ * Traversal systems (WallClimbController, WebZipController) are update-driven:
+ * they return movement results, not write position directly.
  */
 
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useAudio } from '../../../../lib/stores/useAudio';
 import { gameplayInputManager, GameplayInputState } from '../../../../lib/input/GameplayInputState';
-import { useWallClimbSystem } from './WallClimbSystem';
-import { useWebZipSystem } from './WebZipSystem';
+import { WallClimbController } from './WallClimbSystem';
+import { WebZipController } from './WebZipSystem';
 
 interface KaiControllerState {
   position: THREE.Vector3;
@@ -96,19 +99,9 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
     return current && !previous;
   };
 
-  // Initialize wall climb system
-  const wallClimbSystem = useWallClimbSystem(kaiRef, scene, {
-    moveX: 0,
-    moveY: 0,
-    jump: false,
-    traversalModifier: false,
-  });
-
-  // Initialize web zip system
-  const webZipSystem = useWebZipSystem(kaiRef, scene, {
-    traversal: false,
-    moveX: 0,
-  });
+  // Create update-driven controllers (not hooks)
+  const wallClimbController = useMemo(() => new WallClimbController(scene), [scene]);
+  const webZipController = useMemo(() => new WebZipController(scene), [scene]);
 
   // Main update loop
   useFrame((frameState, rawDelta) => {
@@ -160,16 +153,47 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       }
     }
 
-    // Update wall climb and web zip systems with current input
-    kai.isWallCrawling = wallClimbSystem.isClimbing();
-    kai.isWebZipping = webZipSystem.isZipping();
+    // Register web anchors on first frame
+    webZipController.registerAnchorsFromScene();
 
-    // Only apply ground movement if not wall climbing or web zipping
-    // Those systems handle their own position updates
-    if (!kai.isWallCrawling && !kai.isWebZipping) {
-      // Movement input from unified input manager
+    // LOCOMOTION MODE DECISION: Only one system owns position per frame
+    // Update traversal controllers with LIVE input
+    const wallClimbResult = wallClimbController.update(delta, {
+      moveX: input.moveX,
+      moveY: input.moveY,
+      jump: input.jump,
+      traversalModifier: input.traversalModifier,
+    }, kai.position, kaiRef.current.getWorldDirection(new THREE.Vector3()));
+
+    const webZipResult = webZipController.update(delta, {
+      traversal: input.traversal,
+      moveX: input.moveX,
+    }, kai.position);
+
+    // Update state flags
+    kai.isWallCrawling = wallClimbController.isClimbing();
+    kai.isWebZipping = webZipController.isZipping();
+
+    // Determine active locomotion mode and apply position
+    let newPos = kai.position.clone();
+    let finalPos: THREE.Vector3;
+
+    if (kai.isWallCrawling && wallClimbResult) {
+      // WALL mode: wall climbing owns position
+      finalPos = wallClimbResult;
+      kai.isMoving = false;
+    } else if (kai.isWebZipping && webZipResult) {
+      // WEB_ZIP mode: web zipping owns position
+      finalPos = webZipResult;
+      kai.isMoving = false;
+    } else if (webZipResult && webZipResult !== kai.position) {
+      // MOMENTUM mode: residual momentum from previous zip
+      finalPos = webZipResult;
+      kai.isMoving = false;
+    } else {
+      // GROUND mode: normal walking/running
       const inputX = input.moveX;
-      const inputZ = input.moveY; // Y axis becomes Z in 3D space
+      const inputZ = input.moveY;
       const inputLen = Math.hypot(inputX, inputZ);
 
       kai.isMoving = inputLen > 0.01;
@@ -195,28 +219,23 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       kai.velocity.multiplyScalar(MOVEMENT_CONFIG.friction);
 
       // Update position
-      const newPos = kai.position.clone().add(kai.velocity.clone().multiplyScalar(delta));
-
-      // Boundary constraints (arena or level bounds)
-      const BOUNDARY = 50;
-      newPos.x = THREE.MathUtils.clamp(newPos.x, -BOUNDARY, BOUNDARY);
-      newPos.z = THREE.MathUtils.clamp(newPos.z, -BOUNDARY, BOUNDARY);
-
-      kaiRef.current.position.copy(newPos);
+      finalPos = kai.position.clone().add(kai.velocity.clone().multiplyScalar(delta));
 
       // Rotation toward movement direction
       if (kai.isMoving) {
         const targetRot = Math.atan2(kai.velocity.x, kai.velocity.z);
         kaiRef.current.rotation.y += (targetRot - kaiRef.current.rotation.y) * MOVEMENT_CONFIG.turnSpeed;
       }
-    } else {
-      kai.isMoving = false;
     }
 
-    // Register web anchors on first frame (for web zip system)
-    if (!webZipSystem.state.isZipping) {
-      webZipSystem.registerAnchorsFromScene();
-    }
+    // Boundary constraints (arena or level bounds)
+    const BOUNDARY = 50;
+    finalPos.x = THREE.MathUtils.clamp(finalPos.x, -BOUNDARY, BOUNDARY);
+    finalPos.z = THREE.MathUtils.clamp(finalPos.z, -BOUNDARY, BOUNDARY);
+
+    // KaiController is the SOLE position writer this frame
+    kaiRef.current.position.copy(finalPos);
+    kai.position.copy(finalPos);
 
     // FIX: Attack input - set timer for proper state lifecycle (unified input)
     if (wasJustPressed(input.attackLight, prevInput?.attackLight ?? false)) {

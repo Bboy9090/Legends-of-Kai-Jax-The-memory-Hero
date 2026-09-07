@@ -63,6 +63,7 @@ class KeyboardInputHandler {
     let moveX = 0;
     let moveY = 0;
 
+    // WASD/Arrows = pure movement (no collision with traversal)
     if (this.keys['KeyW'] || this.keys['ArrowUp']) moveY -= 1;
     if (this.keys['KeyS'] || this.keys['ArrowDown']) moveY += 1;
     if (this.keys['KeyA'] || this.keys['ArrowLeft']) moveX -= 1;
@@ -75,25 +76,41 @@ class KeyboardInputHandler {
       moveY /= moveLen;
     }
 
+    // Check if any digital input was pressed (for lastActiveDevice)
+    const hasDigitalInput = this.keys['KeyQ'] || this.keys['Space'] || this.keys['KeyE'] ||
+                           this.keys['KeyJ'] || this.keys['KeyX'] || this.keys['KeyK'] ||
+                           this.keys['KeyZ'] || this.keys['KeyL'] || this.keys['KeyC'] ||
+                           this.keys['KeyI'] || this.keys['KeyV'] || this.keys['KeyF'];
+
     return {
       moveX,
       moveY,
       cameraX: 0,
       cameraY: 0,
       isRunning: this.keys['ShiftLeft'] || this.keys['ShiftRight'],
+      // CORRECTED CONTROL MAP (no collisions):
       attackLight: this.keys['KeyJ'] || this.keys['KeyX'],
       attackHeavy: this.keys['KeyK'] || this.keys['KeyZ'],
       attackSpecial: this.keys['KeyL'] || this.keys['KeyC'],
       attackUltimate: this.keys['KeyI'] || this.keys['KeyV'],
-      dodge: this.keys['Space'],
-      jump: this.keys['Space'],
-      traversal: this.keys['KeyW'] || this.keys['ArrowUp'],
+      dodge: this.keys['KeyQ'],  // Q = dodge (not Space!)
+      jump: this.keys['Space'],  // Space = jump (not dodge!)
+      traversal: this.keys['KeyE'],  // E = traversal/Web Zip (not interact!)
       traversalModifier: this.keys['ShiftLeft'] || this.keys['ShiftRight'],
       fusion: false,
-      interact: this.keys['KeyE'],
+      interact: this.keys['KeyF'],  // F = interact (not E!)
       pause: this.keys['Escape'],
       menu: this.keys['Tab'],
     };
+  }
+
+  // Track which keyboard input was most recently active (for device prompt)
+  getLastActiveDevice(): 'keyboard' | null {
+    // Check if ANY key is currently pressed
+    if (Object.values(this.keys).some(v => v)) {
+      return 'keyboard';
+    }
+    return null;
   }
 
   // For detecting press (not held)
@@ -109,11 +126,31 @@ class KeyboardInputHandler {
 
 /**
  * Touch input handler (using virtual joystick + buttons)
+ * COMPLETE state tracking for all actions (not just attack queue)
  */
 class TouchInputHandler {
   private joystickX: number = 0;
   private joystickY: number = 0;
   private joystickActive: boolean = false;
+  private cameraX: number = 0;
+  private cameraY: number = 0;
+
+  // Button state (held, not queued)
+  private buttonState: Record<string, boolean> = {
+    jump: false,
+    dodge: false,
+    traversal: false,
+    traversalModifier: false,
+    interact: false,
+    pause: false,
+    menu: false,
+    attackLight: false,
+    attackHeavy: false,
+    attackSpecial: false,
+    attackUltimate: false,
+  };
+
+  // Legacy: attack queue for backward compatibility
   private touchAttackQueue: string[] = [];
   private maxQueueSize: number = 4;
 
@@ -128,6 +165,16 @@ class TouchInputHandler {
     this.joystickActive = active;
   }
 
+  updateCamera(x: number, y: number) {
+    this.cameraX = Math.max(-1, Math.min(1, x));
+    this.cameraY = Math.max(-1, Math.min(1, y));
+  }
+
+  // Set button state (true = pressed, false = released)
+  setButtonState(button: keyof typeof this.buttonState, pressed: boolean) {
+    this.buttonState[button] = pressed;
+  }
+
   queueAttack(type: 'light' | 'heavy' | 'special' | 'ultimate' | 'dodge') {
     // Prevent duplicate queuing of same attack
     if (this.touchAttackQueue[this.touchAttackQueue.length - 1] === type) return;
@@ -140,36 +187,31 @@ class TouchInputHandler {
     return attack || null;
   }
 
+  hasAnyInput(): boolean {
+    return this.joystickActive || Math.abs(this.cameraX) > 0.1 || Math.abs(this.cameraY) > 0.1 ||
+           Object.values(this.buttonState).some(v => v);
+  }
+
   getState(): Partial<GameplayInputState> {
     const state: Partial<GameplayInputState> = {
       moveX: this.joystickX,
       moveY: this.joystickY,
-      cameraX: 0,
-      cameraY: 0,
-      isRunning: false,
-      jump: false,
-      traversal: false,
-      traversalModifier: false,
+      cameraX: this.cameraX,
+      cameraY: this.cameraY,
+      isRunning: this.buttonState.traversalModifier,
+      jump: this.buttonState.jump,
+      traversal: this.buttonState.traversal,
+      traversalModifier: this.buttonState.traversalModifier,
       fusion: false,
-      interact: false,
-      pause: false,
-      menu: false,
-      attackLight: false,
-      attackHeavy: false,
-      attackSpecial: false,
-      attackUltimate: false,
-      dodge: false,
+      interact: this.buttonState.interact,
+      pause: this.buttonState.pause,
+      menu: this.buttonState.menu,
+      attackLight: this.buttonState.attackLight,
+      attackHeavy: this.buttonState.attackHeavy,
+      attackSpecial: this.buttonState.attackSpecial,
+      attackUltimate: this.buttonState.attackUltimate,
+      dodge: this.buttonState.dodge,
     };
-
-    // Consume one attack per frame if queued
-    const nextAttack = this.consumeNextAttack();
-    if (nextAttack) {
-      state.attackLight = nextAttack === 'light';
-      state.attackHeavy = nextAttack === 'heavy';
-      state.attackSpecial = nextAttack === 'special';
-      state.attackUltimate = nextAttack === 'ultimate';
-      state.dodge = nextAttack === 'dodge';
-    }
 
     return state;
   }
@@ -224,25 +266,38 @@ class GamepadInputHandler {
     if (Math.abs(cameraX) < deadzone) cameraX = 0;
     if (Math.abs(cameraY) < deadzone) cameraY = 0;
 
+    // Detect any active gamepad input
+    const hasAnyInput = gp.buttons.some(btn => btn?.pressed) ||
+                       Math.abs(moveX) > deadzone || Math.abs(moveY) > deadzone ||
+                       Math.abs(cameraX) > deadzone || Math.abs(cameraY) > deadzone;
+
     return {
       moveX,
       moveY,
       cameraX,
       cameraY,
-      isRunning: gp.buttons[4]?.pressed || false, // LB
-      jump: gp.buttons[0]?.pressed || false, // A
-      traversal: gp.buttons[0]?.pressed || false, // A (context-sensitive with jump)
-      traversalModifier: gp.buttons[4]?.pressed || false, // LB
-      attackLight: gp.buttons[2]?.pressed || false, // X
-      attackHeavy: gp.buttons[3]?.pressed || false, // Y
-      attackSpecial: gp.buttons[5]?.pressed || false, // RB
-      attackUltimate: gp.buttons[7]?.pressed || false, // RT (analog trigger, treat as digital)
-      dodge: gp.buttons[1]?.pressed || false, // B (dedicated dodge button)
-      interact: gp.buttons[6]?.pressed || false, // LT
+      isRunning: gp.buttons[4]?.pressed || false, // LB = run
+      jump: gp.buttons[0]?.pressed || false, // A = jump only (no collision)
+      traversal: false, // Traversal on gamepad is handled via LB modifier + stick input
+      traversalModifier: gp.buttons[4]?.pressed || false, // LB = traversal modifier (run or wall climb)
+      attackLight: gp.buttons[2]?.pressed || false, // X = light
+      attackHeavy: gp.buttons[3]?.pressed || false, // Y = heavy
+      attackSpecial: gp.buttons[5]?.pressed || false, // RB = special
+      attackUltimate: gp.buttons[7]?.pressed || false, // RT = ultimate
+      dodge: gp.buttons[1]?.pressed || false, // B = dodge only (no collision)
+      interact: gp.buttons[6]?.pressed || false, // LT = interact
       fusion: false, // Not yet implemented
-      pause: gp.buttons[9]?.pressed || false, // Start
-      menu: gp.buttons[8]?.pressed || false, // Select
+      pause: gp.buttons[9]?.pressed || false, // Start = pause
+      menu: gp.buttons[8]?.pressed || false, // Select = menu
     };
+  }
+
+  // Track if gamepad had any input
+  hasActiveInput(): boolean {
+    if (this.gamepadIndex === null) return false;
+    const gp = navigator.getGamepads()[this.gamepadIndex];
+    if (!gp) return false;
+    return gp.buttons.some(btn => btn?.pressed) || gp.axes.some(axis => Math.abs(axis) > 0.15);
   }
 }
 
@@ -347,6 +402,18 @@ export class GameplayInputManager {
     state.traversalModifier = (touchState.traversalModifier || false) || (keyboardState.traversalModifier || false) || (gamepadState.traversalModifier || false);
     state.fusion = (touchState.fusion || false) || (keyboardState.fusion || false) || (gamepadState.fusion || false);
     state.interact = (touchState.interact || false) || (keyboardState.interact || false) || (gamepadState.interact || false);
+    state.pause = (touchState.pause || false) || (keyboardState.pause || false) || (gamepadState.pause || false);
+    state.menu = (touchState.menu || false) || (keyboardState.menu || false) || (gamepadState.menu || false);
+
+    // Update lastActiveDevice based on ANY input (analog or digital), not just movement
+    // Priority: Gamepad > Keyboard > Touch
+    if (this.gamepadHandler.hasActiveInput()) {
+      state.lastActiveDevice = 'gamepad';
+    } else if (keyboardState.moveX || keyboardState.moveY || this.keyboardHandler.getLastActiveDevice()) {
+      state.lastActiveDevice = 'keyboard';
+    } else if (this.touchHandler.hasAnyInput()) {
+      state.lastActiveDevice = 'touch';
+    }
     state.pause = (touchState.pause || false) || (keyboardState.pause || false) || (gamepadState.pause || false);
     state.menu = (touchState.menu || false) || (keyboardState.menu || false) || (gamepadState.menu || false);
 
