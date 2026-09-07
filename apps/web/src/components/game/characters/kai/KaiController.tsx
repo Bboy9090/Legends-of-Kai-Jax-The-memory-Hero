@@ -3,18 +3,21 @@
  * Memory Spider Movement & Combat System - Day 1-2 MVP
  *
  * Core mechanics:
- * - 3D movement (WASD + mouse)
+ * - 3D movement (WASD + mouse, touch joystick, gamepad)
  * - Wall-climbing detection (when near vertical surfaces)
  * - Web-swing momentum (curved traversal)
  * - Light combo attacks (3-hit light, 2-hit heavy)
  * - Dodge with invulnerability frames
  * - Energy/stamina management
+ *
+ * Input: Unified GameplayInputState (keyboard/touch/gamepad)
  */
 
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useAudio } from '../../../../lib/stores/useAudio';
+import { gameplayInputManager, GameplayInputState } from '../../../../lib/input/GameplayInputState';
 
 interface KaiControllerState {
   position: THREE.Vector3;
@@ -66,8 +69,7 @@ const WALL_CLIMB_CONFIG = {
 };
 
 export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
-  const keysRef = useRef<Record<string, boolean>>({});
-  const prevKeysRef = useRef<Record<string, boolean>>({});
+  const prevInputRef = useRef<GameplayInputState | null>(null);
   const stateRef = useRef<KaiControllerState>({
     position: new THREE.Vector3(0, 0, 0),
     velocity: new THREE.Vector3(0, 0, 0),
@@ -85,22 +87,10 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
     maxEnergy: COMBAT_CONFIG.maxEnergy,
   });
 
-  // Keyboard input tracking
-  useEffect(() => {
-    const keys = keysRef.current;
-    const handleDown = (e: KeyboardEvent) => {
-      keys[e.code] = true;
-    };
-    const handleUp = (e: KeyboardEvent) => {
-      keys[e.code] = false;
-    };
-    window.addEventListener('keydown', handleDown);
-    window.addEventListener('keyup', handleUp);
-    return () => {
-      window.removeEventListener('keydown', handleDown);
-      window.removeEventListener('keyup', handleUp);
-    };
-  }, []);
+  // Helper to detect if input just changed from false to true
+  const wasJustPressed = (current: boolean, previous: boolean | null): boolean => {
+    return current && !previous;
+  };
 
   // Main update loop
   useFrame((state, rawDelta) => {
@@ -108,9 +98,10 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
 
     const delta = Math.min(rawDelta, 0.033); // Cap at 30fps minimum
     const kai = stateRef.current;
-    const keys = keysRef.current;
-    const prev = prevKeysRef.current;
-    const justPressed = (code: string) => keys[code] && !prev[code];
+
+    // Get unified input state from all sources (keyboard, touch, gamepad)
+    const input = gameplayInputManager.getState();
+    const prevInput = prevInputRef.current;
 
     // Update Kai position from ref
     kaiRef.current.getWorldPosition(kai.position);
@@ -163,23 +154,14 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
     // This would detect walls and enable wall crawl mode
     kai.isWallCrawling = false;
 
-    // Movement input
-    let inputX = 0;
-    let inputZ = 0;
-    if (keys['KeyW'] || keys['ArrowUp']) inputZ -= 1;
-    if (keys['KeyS'] || keys['ArrowDown']) inputZ += 1;
-    if (keys['KeyA'] || keys['ArrowLeft']) inputX -= 1;
-    if (keys['KeyD'] || keys['ArrowRight']) inputX += 1;
-
-    const inputLen = Math.sqrt(inputX * inputX + inputZ * inputZ);
-    if (inputLen > 0.01) {
-      inputX /= inputLen;
-      inputZ /= inputLen;
-    }
+    // Movement input from unified input manager
+    const inputX = input.moveX;
+    const inputZ = input.moveY; // Y axis becomes Z in 3D space
+    const inputLen = Math.hypot(inputX, inputZ);
 
     kai.isMoving = inputLen > 0.01;
 
-    const isRunning = keys['ShiftLeft'] || keys['ShiftRight'];
+    const isRunning = input.isRunning;
     const targetSpeed = isRunning ? MOVEMENT_CONFIG.runSpeed : MOVEMENT_CONFIG.walkSpeed;
 
     // Calculate world-space movement direction
@@ -215,8 +197,8 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
       kaiRef.current.rotation.y += (targetRot - kaiRef.current.rotation.y) * MOVEMENT_CONFIG.turnSpeed;
     }
 
-    // FIX: Attack input - set timer for proper state lifecycle
-    if (justPressed('KeyJ') || justPressed('KeyX')) {
+    // FIX: Attack input - set timer for proper state lifecycle (unified input)
+    if (wasJustPressed(input.attackLight, prevInput?.attackLight ?? false)) {
       if (kai.energy >= COMBAT_CONFIG.lightAttackCost && !kai.isDodging && !kai.isAttacking) {
         kai.attackCombo = Math.min(3, kai.attackCombo + 1);
         kai.energy -= COMBAT_CONFIG.lightAttackCost;
@@ -227,7 +209,7 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
       }
     }
 
-    if (justPressed('KeyK') || justPressed('KeyZ')) {
+    if (wasJustPressed(input.attackHeavy, prevInput?.attackHeavy ?? false)) {
       if (kai.energy >= COMBAT_CONFIG.heavyAttackCost && !kai.isDodging && !kai.isAttacking) {
         kai.attackCombo = 0; // Reset combo on heavy
         kai.energy -= COMBAT_CONFIG.heavyAttackCost;
@@ -238,8 +220,28 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
       }
     }
 
+    if (wasJustPressed(input.attackSpecial, prevInput?.attackSpecial ?? false)) {
+      if (kai.energy >= COMBAT_CONFIG.specialAttackCost && !kai.isDodging && !kai.isAttacking) {
+        kai.energy -= COMBAT_CONFIG.specialAttackCost;
+        kai.isAttacking = true;
+        kai.attackTimer = 0.8; // Special attack duration
+        kai.comboResetTimer = 0;
+        useAudio.getState().playAttack?.('special');
+      }
+    }
+
+    if (wasJustPressed(input.attackUltimate, prevInput?.attackUltimate ?? false)) {
+      if (kai.energy >= 80 && !kai.isDodging && !kai.isAttacking) {
+        kai.energy -= 80;
+        kai.isAttacking = true;
+        kai.attackTimer = 1.2; // Ultimate attack duration
+        kai.comboResetTimer = 0;
+        useAudio.getState().playAttack?.('ultimate');
+      }
+    }
+
     // FIX: Dodge input - set timer and properly track invulnerability
-    if (justPressed('Space')) {
+    if (wasJustPressed(input.dodge, prevInput?.dodge ?? false)) {
       if (kai.energy >= DODGING_CONFIG.staminalCost && !kai.isDodging && !kai.isAttacking) {
         kai.isDodging = true;
         kai.dodgeTimer = DODGING_CONFIG.duration; // Track dodge duration
@@ -253,7 +255,8 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
     // Copy back for external access
     Object.assign(kai, { ...kai });
 
-    prevKeysRef.current = { ...keys };
+    // Store current input for next frame
+    prevInputRef.current = { ...input };
   });
 
   return {
