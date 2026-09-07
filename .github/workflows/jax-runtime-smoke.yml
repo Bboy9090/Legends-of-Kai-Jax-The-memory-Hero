@@ -47,13 +47,19 @@ jobs:
           ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
         run: pnpm install --filter ./apps/web... --frozen-lockfile
 
+      - name: Resolve Playwright test runner
+        run: |
+          PW_PACKAGE="$(pnpm -C apps/web exec node -p "require.resolve('@playwright/test/package.json')")"
+          PW_CLI="$(dirname "${PW_PACKAGE}")/cli.js"
+          test -f "${PW_CLI}"
+          echo "PW_CLI=${PW_CLI}" >> "${GITHUB_ENV}"
+          node "${PW_CLI}" --version
+
       - name: Install Chromium runtime
-        run: node apps/web/node_modules/@playwright/test/cli.js install --with-deps chromium
+        run: node "${PW_CLI}" install --with-deps chromium
 
       - name: Run Jax live runtime sequence
-        run: |
-          cd apps/web
-          node node_modules/@playwright/test/cli.js test e2e/jax-runtime.spec.ts --config=playwright.config.ts
+        run: node "${PW_CLI}" test apps/web/e2e/jax-runtime.spec.ts --config=apps/web/playwright.config.ts
 
       - name: Upload-free evidence summary
         if: always()
