@@ -6,7 +6,10 @@
  * - Light: Venom jab (fast, 3-hit combo)
  * - Heavy: Venomous swipe (slow, high damage)
  * - Special: Web binding (hold enemies in place)
- * - Ultimate: Memory strike (7-9 tail projectile attack)
+ * - Ultimate: Memory-Web Eruption (anchor + venom detonation)
+ *
+ * TIMING BUG FIX: Uses monotonic elapsedTime for all attack expirations
+ * CANON: No tail mechanics in Kai (7+ tails belong to Kai-Jax fusion only)
  */
 
 import { useRef, useEffect } from 'react';
@@ -17,7 +20,7 @@ interface AttackHitbox {
   position: THREE.Vector3;
   radius: number;
   damage: number;
-  startTime: number;
+  startTimeElapsed: number; // Three.js elapsedTime when attack started
   duration: number;
   knockback: number;
 }
@@ -60,6 +63,9 @@ export function useKaiAttackSystem(characterRef: React.RefObject<THREE.Group>) {
     comboResetTime: 0,
   });
 
+  // Cache of Three.js clock for consistent timing
+  const clockRef = useRef({ elapsedTime: 0 });
+
   // Initialize attack system
   useEffect(() => {
     if (!characterRef.current) return;
@@ -70,9 +76,10 @@ export function useKaiAttackSystem(characterRef: React.RefObject<THREE.Group>) {
     }
   }, [characterRef]);
 
-  // Main attack tick
+  // Main attack tick - uses monotonic elapsedTime for all timers
   useFrame((state, delta) => {
     const attacks = stateRef.current;
+    clockRef.current.elapsedTime = state.clock.elapsedTime;
 
     // Update combo timer
     if (attacks.comboCounter > 0) {
@@ -82,9 +89,9 @@ export function useKaiAttackSystem(characterRef: React.RefObject<THREE.Group>) {
       }
     }
 
-    // Update active attacks
+    // Update active attacks - use monotonic elapsedTime for expiration
     attacks.activeAttacks = attacks.activeAttacks.filter((hitbox) => {
-      const elapsed = state.clock.elapsedTime - hitbox.startTime;
+      const elapsed = state.clock.elapsedTime - hitbox.startTimeElapsed;
       return elapsed < hitbox.duration;
     });
   });
@@ -100,7 +107,7 @@ export function useKaiAttackSystem(characterRef: React.RefObject<THREE.Group>) {
       position: position.clone(),
       radius: ATTACK_RANGE.light,
       damage,
-      startTime: Date.now() / 1000,
+      startTimeElapsed: clockRef.current.elapsedTime,
       duration: ATTACK_TIMING.light.startup + ATTACK_TIMING.light.active,
       knockback: 5,
     };
@@ -117,7 +124,7 @@ export function useKaiAttackSystem(characterRef: React.RefObject<THREE.Group>) {
       position: position.clone(),
       radius: ATTACK_RANGE.heavy,
       damage: ATTACK_DAMAGE.heavy,
-      startTime: Date.now() / 1000,
+      startTimeElapsed: clockRef.current.elapsedTime,
       duration: ATTACK_TIMING.heavy.startup + ATTACK_TIMING.heavy.active,
       knockback: 10,
     };
@@ -134,7 +141,7 @@ export function useKaiAttackSystem(characterRef: React.RefObject<THREE.Group>) {
       position: position.clone(),
       radius: ATTACK_RANGE.special,
       damage: ATTACK_DAMAGE.special,
-      startTime: Date.now() / 1000,
+      startTimeElapsed: clockRef.current.elapsedTime,
       duration: ATTACK_TIMING.special.startup + ATTACK_TIMING.special.active,
       knockback: 0, // Web binds instead of knocking back
     };
@@ -146,12 +153,12 @@ export function useKaiAttackSystem(characterRef: React.RefObject<THREE.Group>) {
   }
 
   function startUltimateAttack(position: THREE.Vector3, direction: THREE.Vector3) {
-    // Memory strike - projectile from 7+ tails
+    // Memory-Web Eruption - anchor + detonation (canon: no tail mechanics on Kai)
     const hitbox: AttackHitbox = {
       position: position.clone(),
       radius: ATTACK_RANGE.ultimate,
       damage: ATTACK_DAMAGE.ultimate,
-      startTime: Date.now() / 1000,
+      startTimeElapsed: clockRef.current.elapsedTime,
       duration: ATTACK_TIMING.ultimate.startup + ATTACK_TIMING.ultimate.active,
       knockback: 15,
     };
@@ -194,21 +201,29 @@ export function useKaiAttackSystem(characterRef: React.RefObject<THREE.Group>) {
 export interface VenomStack {
   stacks: number;
   duration: number; // 8 seconds per stack
+  accumulatedDamage: number; // Frame-rate independent damage tracking
 }
 
 export function useVenomSystem(targetRef: React.RefObject<THREE.Group>) {
   const venomRef = useRef<VenomStack>({
     stacks: 0,
     duration: 0,
+    accumulatedDamage: 0,
   });
 
+  // FIX: Apply venom damage delta-scaled for frame-rate independence
   useFrame((_, delta) => {
     const venom = venomRef.current;
     if (venom.stacks > 0) {
+      // Apply damage proportional to delta time (frame-rate independent)
+      const damagePerSecond = venom.stacks * 2;
+      venom.accumulatedDamage += damagePerSecond * delta;
+
       venom.duration -= delta;
       if (venom.duration <= 0) {
         venom.stacks = 0;
         venom.duration = 0;
+        venom.accumulatedDamage = 0;
       }
     }
   });
@@ -218,10 +233,11 @@ export function useVenomSystem(targetRef: React.RefObject<THREE.Group>) {
     venomRef.current.duration = 8;
   }
 
-  function applyVenomDamage(targetHealth: number): number {
-    const venom = venomRef.current;
-    const damagePerSecond = venom.stacks * 2;
-    return targetHealth - damagePerSecond;
+  // Returns accumulated venom damage since last check (frame-rate independent)
+  function getAndClearVenomDamage(): number {
+    const damage = venomRef.current.accumulatedDamage;
+    venomRef.current.accumulatedDamage = 0;
+    return damage;
   }
 
   function explodeVenom(): number {
@@ -231,13 +247,14 @@ export function useVenomSystem(targetRef: React.RefObject<THREE.Group>) {
     const explosionDamage = 50 + venom.stacks * 10; // Base 50 + 10 per stack
     venom.stacks = 0;
     venom.duration = 0;
+    venom.accumulatedDamage = 0;
 
     return explosionDamage;
   }
 
   return {
     addVenomStack,
-    applyVenomDamage,
+    getAndClearVenomDamage,
     explodeVenom,
     getStacks: () => venomRef.current.stacks,
   };

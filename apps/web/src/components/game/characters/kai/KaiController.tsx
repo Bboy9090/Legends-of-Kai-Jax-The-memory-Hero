@@ -22,10 +22,13 @@ interface KaiControllerState {
   rotation: THREE.Euler;
   isMoving: boolean;
   isAttacking: boolean;
+  attackTimer: number; // FIX: Track attack duration separately
   isWallCrawling: boolean;
   isDodging: boolean;
+  dodgeTimer: number; // FIX: Track dodge duration separately
   invulnTimer: number;
   attackCombo: number;
+  comboResetTimer: number; // FIX: Track combo window
   energy: number;
   maxEnergy: number;
 }
@@ -71,10 +74,13 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
     rotation: new THREE.Euler(0, 0, 0),
     isMoving: false,
     isAttacking: false,
+    attackTimer: 0,
     isWallCrawling: false,
     isDodging: false,
+    dodgeTimer: 0,
     invulnTimer: 0,
     attackCombo: 0,
+    comboResetTimer: 0,
     energy: COMBAT_CONFIG.maxEnergy,
     maxEnergy: COMBAT_CONFIG.maxEnergy,
   });
@@ -113,20 +119,36 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
     // Energy regeneration
     kai.energy = Math.min(kai.energy + COMBAT_CONFIG.energyRegen * delta, kai.maxEnergy);
 
-    // Invulnerability timer
+    // FIX: Invulnerability timer
     if (kai.invulnTimer > 0) {
       kai.invulnTimer -= delta;
     }
 
-    // Dodge state
+    // FIX: Dodge state lifecycle - automatically exit when timer expires
     if (kai.isDodging) {
-      // Dodge implementation would go here
-      // For now, just decrement timer
+      kai.dodgeTimer -= delta;
+      if (kai.dodgeTimer <= 0) {
+        kai.isDodging = false;
+        kai.dodgeTimer = 0;
+      }
     }
 
-    // Attack state
+    // FIX: Attack state lifecycle - automatically exit when timer expires
     if (kai.isAttacking) {
-      // Attack logic will be implemented in separate AttackSystem
+      kai.attackTimer -= delta;
+      if (kai.attackTimer <= 0) {
+        kai.isAttacking = false;
+        kai.attackTimer = 0;
+      }
+    }
+
+    // FIX: Combo reset timer
+    if (kai.comboResetTimer > 0) {
+      kai.comboResetTimer -= delta;
+      if (kai.comboResetTimer <= 0) {
+        kai.attackCombo = 0;
+        kai.comboResetTimer = 0;
+      }
     }
 
     // Wall detection - raycasts to find nearby walls
@@ -193,39 +215,39 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
       kaiRef.current.rotation.y += (targetRot - kaiRef.current.rotation.y) * MOVEMENT_CONFIG.turnSpeed;
     }
 
-    // Attack input
+    // FIX: Attack input - set timer for proper state lifecycle
     if (justPressed('KeyJ') || justPressed('KeyX')) {
-      if (kai.energy >= COMBAT_CONFIG.lightAttackCost && !kai.isDodging) {
+      if (kai.energy >= COMBAT_CONFIG.lightAttackCost && !kai.isDodging && !kai.isAttacking) {
         kai.attackCombo = Math.min(3, kai.attackCombo + 1);
         kai.energy -= COMBAT_CONFIG.lightAttackCost;
         kai.isAttacking = true;
+        kai.attackTimer = COMBAT_CONFIG.lightAttackDuration; // Set timer to auto-exit
+        kai.comboResetTimer = COMBAT_CONFIG.comboTimeWindow; // Reset combo timer
         useAudio.getState().playAttack?.('light');
       }
     }
 
     if (justPressed('KeyK') || justPressed('KeyZ')) {
-      if (kai.energy >= COMBAT_CONFIG.heavyAttackCost && !kai.isDodging) {
+      if (kai.energy >= COMBAT_CONFIG.heavyAttackCost && !kai.isDodging && !kai.isAttacking) {
         kai.attackCombo = 0; // Reset combo on heavy
         kai.energy -= COMBAT_CONFIG.heavyAttackCost;
         kai.isAttacking = true;
+        kai.attackTimer = COMBAT_CONFIG.heavyAttackDuration; // Set timer to auto-exit
+        kai.comboResetTimer = COMBAT_CONFIG.comboTimeWindow;
         useAudio.getState().playAttack?.('heavy');
       }
     }
 
-    // Dodge input
+    // FIX: Dodge input - set timer and properly track invulnerability
     if (justPressed('Space')) {
-      if (kai.energy >= DODGING_CONFIG.staminalCost && !kai.isDodging) {
+      if (kai.energy >= DODGING_CONFIG.staminalCost && !kai.isDodging && !kai.isAttacking) {
         kai.isDodging = true;
-        kai.invulnTimer = DODGING_CONFIG.invulnDuration;
+        kai.dodgeTimer = DODGING_CONFIG.duration; // Track dodge duration
+        kai.invulnTimer = DODGING_CONFIG.invulnDuration; // Track invulnerability window
         kai.energy -= DODGING_CONFIG.staminalCost;
         kai.attackCombo = 0;
         useAudio.getState().playDodge?.();
       }
-    }
-
-    // Reset combo timer
-    if (kai.attackCombo > 0 && !kai.isAttacking) {
-      // Combo timing would be tracked separately
     }
 
     // Copy back for external access
