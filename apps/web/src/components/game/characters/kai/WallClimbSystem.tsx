@@ -65,9 +65,9 @@ export class WallClimbController {
 
       if (hit.object.userData?.climbable || hit.object.name?.includes('wall')) {
         if (hit.face) {
-          const normal = new THREE.Vector3();
-          hit.face.normal.copy(normal);
-          normal.transformDirection(hit.object.matrixWorld);
+          const normal = new THREE.Vector3()
+            .copy(hit.face.normal)
+            .transformDirection(hit.object.matrixWorld);
 
           const verticalComponent = Math.abs(normal.y);
           if (verticalComponent < 0.8) {
@@ -92,11 +92,10 @@ export class WallClimbController {
       this.state.climbSurface = hit.object;
       this.state.wallPlanePoint.copy(hit.point);
 
-      const normal = new THREE.Vector3();
-      hit.face.normal.copy(normal);
-      normal.transformDirection(hit.object.matrixWorld);
-      this.state.wallNormal.copy(normal);
-      this.state.wallNormal.normalize();
+      const normal = new THREE.Vector3()
+        .copy(hit.face.normal)
+        .transformDirection(hit.object.matrixWorld);
+      this.state.wallNormal.copy(normal).normalize();
     }
   }
 
