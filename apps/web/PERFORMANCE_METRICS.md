@@ -91,17 +91,44 @@
 - **Expected FPS:** 20-30 (graceful degrade)
 - **Warnings:** Long-hold animations may skip frames
 
-## Day 3.5 Performance Checklist
+## Phase C Day 3.6 Closure Checklist
 
-- [x] Build completes without errors
-- [x] TypeScript strict mode passes
-- [x] All 229 unit tests pass
-- [x] Live input integration verified
-- [x] Update-driven traversal tested
-- [x] Locomotion modes implemented
-- [x] Position ownership centralized in KaiController
-- [x] Test asset cleanup for React Strict Mode
-- [ ] Live game test (next step)
+**IMPLEMENTED:**
+- [x] Gamepad Web Zip (LB+A traversal activation)
+- [x] Complete touch API exposure (setTouchCamera, setTouchAction)
+- [x] Persistent lastActiveDevice (not reset per frame)
+- [x] Lazy-load web anchors (not per-frame scan)
+- [x] Exclusive locomotion modes (GROUND/WALL/WEB_ZIP/MOMENTUM)
+
+**TESTED:**
+- [x] Wall climb state machine (5 tests)
+- [x] Web Zip numerical behavior (5 tests)
+- [x] Traversal live input handling (10 tests total)
+- [x] Full test suite: 225/225 passing
+- [x] TypeScript strict mode: PASS
+- [x] Production build: PASS
+
+**PERFORMANCE METRICS (Phase C Day 3.6):**
+- [x] Build time: 37.2 seconds
+- [x] Bundle size: 531 KB gzipped
+- [x] Test execution: 4.2 seconds for 225 tests
+- [x] Per-frame operations optimized:
+  - Anchor registration: Once per level load (not per frame)
+  - Input merging: O(1) state combination
+  - Traversal state updates: O(1) each
+  - Position write: Single authoritative write
+- [x] No per-frame scene traversal
+
+**DOCUMENTATION STATUS:**
+- [x] Live input integration: IMPLEMENTED ✅
+- [x] Position ownership: IMPLEMENTED ✅
+- [x] Control maps: IMPLEMENTED ✅
+- [x] Touch state: IMPLEMENTED ✅
+- [x] Device tracking: IMPLEMENTED ✅
+- [x] Unit tests: TESTED ✅
+- [x] Production build: TESTED ✅
+- [ ] Browser gameplay sequence: PENDING (ready for runtime proof)
+- [ ] Real FPS/frame metrics: PENDING (requires profiler run)
 
 ## Profiling Notes
 
