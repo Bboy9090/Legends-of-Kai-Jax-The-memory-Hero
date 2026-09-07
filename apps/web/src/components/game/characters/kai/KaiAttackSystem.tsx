@@ -223,7 +223,9 @@ export function useVenomSystem(targetRef: React.RefObject<THREE.Group>) {
       if (venom.duration <= 0) {
         venom.stacks = 0;
         venom.duration = 0;
-        venom.accumulatedDamage = 0;
+        // NOTE: Do NOT reset accumulatedDamage here!
+        // The damage is still pending consumption via getAndClearVenomDamage()
+        // It will be cleared only when explicitly retrieved or after grace period
       }
     }
   });

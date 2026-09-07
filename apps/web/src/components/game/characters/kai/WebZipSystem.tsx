@@ -35,7 +35,11 @@ const WEB_ZIP_CONFIG = {
   momentumRetention: 0.4, // How much momentum to keep after release
 };
 
-export function useWebZipSystem(kaiRef: React.RefObject<THREE.Group>, scene: THREE.Scene) {
+export function useWebZipSystem(
+  kaiRef: React.RefObject<THREE.Group>,
+  scene: THREE.Scene,
+  input: { traversal: boolean; moveX: number }
+) {
   const stateRef = useRef<WebZipState>({
     isZipping: false,
     targetAnchor: null,
@@ -45,6 +49,7 @@ export function useWebZipSystem(kaiRef: React.RefObject<THREE.Group>, scene: THR
   });
 
   const anchorsRef = useRef<WebAnchor[]>([]);
+  const prevTraversalRef = useRef(false);
 
   // Register web anchors in scene
   const registerAnchorsFromScene = (): void => {
@@ -104,17 +109,24 @@ export function useWebZipSystem(kaiRef: React.RefObject<THREE.Group>, scene: THR
     if (!kaiRef.current) return;
 
     const state = stateRef.current;
+    const kai = kaiRef.current;
+
+    // Detect traversal press (rising edge)
+    const traversalPressed = input.traversal && !prevTraversalRef.current;
+    prevTraversalRef.current = input.traversal;
 
     if (!state.isZipping) {
       // Look for nearby anchor to zip to
-      const kai = kaiRef.current;
       const nearestAnchor = findNearestAnchor(kai.position);
 
       // Visual feedback: show available anchor
       if (nearestAnchor) {
-        // In production, display HUD indicator for nearby anchor
-        // For now, could emit event or set userData
         kai.userData.nearbyWebAnchor = nearestAnchor;
+
+        // Start zip on traversal button press
+        if (traversalPressed) {
+          startZip(nearestAnchor);
+        }
       } else {
         kai.userData.nearbyWebAnchor = null;
       }
@@ -128,9 +140,12 @@ export function useWebZipSystem(kaiRef: React.RefObject<THREE.Group>, scene: THR
       // Active zip to anchor
       state.zipProgress += delta / WEB_ZIP_CONFIG.zipDuration;
 
-      if (state.zipProgress >= 1.0) {
+      // Allow cancel on traversal release
+      if (!input.traversal) {
+        completeZip();
+      } else if (state.zipProgress >= 1.0) {
         // Reached anchor
-        kaiRef.current.position.copy(state.targetAnchor);
+        kai.position.copy(state.targetAnchor);
         completeZip();
       } else {
         // Interpolate toward anchor using eased curve
@@ -140,7 +155,14 @@ export function useWebZipSystem(kaiRef: React.RefObject<THREE.Group>, scene: THR
 
         const newPos = state.zipStartPos.clone();
         newPos.lerp(state.targetAnchor, eased);
-        kaiRef.current.position.copy(newPos);
+
+        // Apply steering using moveX input (limited influence)
+        if (Math.abs(input.moveX) > 0.1) {
+          const steerAmount = input.moveX * 0.5; // Limited steering
+          newPos.x += steerAmount * delta;
+        }
+
+        kai.position.copy(newPos);
       }
     }
   });

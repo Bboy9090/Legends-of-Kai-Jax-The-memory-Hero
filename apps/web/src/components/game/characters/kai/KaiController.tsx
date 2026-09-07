@@ -18,6 +18,8 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useAudio } from '../../../../lib/stores/useAudio';
 import { gameplayInputManager, GameplayInputState } from '../../../../lib/input/GameplayInputState';
+import { useWallClimbSystem } from './WallClimbSystem';
+import { useWebZipSystem } from './WebZipSystem';
 
 interface KaiControllerState {
   position: THREE.Vector3;
@@ -27,6 +29,7 @@ interface KaiControllerState {
   isAttacking: boolean;
   attackTimer: number; // FIX: Track attack duration separately
   isWallCrawling: boolean;
+  isWebZipping: boolean;
   isDodging: boolean;
   dodgeTimer: number; // FIX: Track dodge duration separately
   invulnTimer: number;
@@ -68,7 +71,7 @@ const WALL_CLIMB_CONFIG = {
   climbSpeed: 2.0,
 };
 
-export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
+export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: THREE.Scene) {
   const prevInputRef = useRef<GameplayInputState | null>(null);
   const stateRef = useRef<KaiControllerState>({
     position: new THREE.Vector3(0, 0, 0),
@@ -78,6 +81,7 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
     isAttacking: false,
     attackTimer: 0,
     isWallCrawling: false,
+    isWebZipping: false,
     isDodging: false,
     dodgeTimer: 0,
     invulnTimer: 0,
@@ -92,8 +96,22 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
     return current && !previous;
   };
 
+  // Initialize wall climb system
+  const wallClimbSystem = useWallClimbSystem(kaiRef, scene, {
+    moveX: 0,
+    moveY: 0,
+    jump: false,
+    traversalModifier: false,
+  });
+
+  // Initialize web zip system
+  const webZipSystem = useWebZipSystem(kaiRef, scene, {
+    traversal: false,
+    moveX: 0,
+  });
+
   // Main update loop
-  useFrame((state, rawDelta) => {
+  useFrame((frameState, rawDelta) => {
     if (!kaiRef.current) return;
 
     const delta = Math.min(rawDelta, 0.033); // Cap at 30fps minimum
@@ -142,59 +160,62 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>) {
       }
     }
 
-    // Wall detection - raycasts to find nearby walls
-    const raycaster = new THREE.Raycaster(
-      kai.position,
-      new THREE.Vector3(0, 0, 1),
-      0,
-      WALL_CLIMB_CONFIG.detectionDistance
-    );
+    // Update wall climb and web zip systems with current input
+    kai.isWallCrawling = wallClimbSystem.isClimbing();
+    kai.isWebZipping = webZipSystem.isZipping();
 
-    // For now, wall climbing is disabled until we have proper level geometry
-    // This would detect walls and enable wall crawl mode
-    kai.isWallCrawling = false;
+    // Only apply ground movement if not wall climbing or web zipping
+    // Those systems handle their own position updates
+    if (!kai.isWallCrawling && !kai.isWebZipping) {
+      // Movement input from unified input manager
+      const inputX = input.moveX;
+      const inputZ = input.moveY; // Y axis becomes Z in 3D space
+      const inputLen = Math.hypot(inputX, inputZ);
 
-    // Movement input from unified input manager
-    const inputX = input.moveX;
-    const inputZ = input.moveY; // Y axis becomes Z in 3D space
-    const inputLen = Math.hypot(inputX, inputZ);
+      kai.isMoving = inputLen > 0.01;
 
-    kai.isMoving = inputLen > 0.01;
+      const isRunning = input.isRunning;
+      const targetSpeed = isRunning ? MOVEMENT_CONFIG.runSpeed : MOVEMENT_CONFIG.walkSpeed;
 
-    const isRunning = input.isRunning;
-    const targetSpeed = isRunning ? MOVEMENT_CONFIG.runSpeed : MOVEMENT_CONFIG.walkSpeed;
+      // Calculate world-space movement direction
+      const moveDir = new THREE.Vector3(inputX, 0, inputZ);
+      const cameraDir = new THREE.Vector3();
+      frameState.camera.getWorldDirection(cameraDir);
+      cameraDir.y = 0;
+      cameraDir.normalize();
 
-    // Calculate world-space movement direction
-    const moveDir = new THREE.Vector3(inputX, 0, inputZ);
-    const cameraDir = new THREE.Vector3();
-    state.camera.getWorldDirection(cameraDir);
-    cameraDir.y = 0;
-    cameraDir.normalize();
+      const moveInWorldSpace = moveDir.length() > 0;
+      if (moveInWorldSpace) {
+        moveDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(cameraDir.x, cameraDir.z));
+      }
 
-    const moveInWorldSpace = moveDir.length() > 0;
-    if (moveInWorldSpace) {
-      moveDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(cameraDir.x, cameraDir.z));
+      // Apply velocity
+      const targetVel = moveDir.multiplyScalar(targetSpeed);
+      kai.velocity.lerp(targetVel, MOVEMENT_CONFIG.accel * delta);
+      kai.velocity.multiplyScalar(MOVEMENT_CONFIG.friction);
+
+      // Update position
+      const newPos = kai.position.clone().add(kai.velocity.clone().multiplyScalar(delta));
+
+      // Boundary constraints (arena or level bounds)
+      const BOUNDARY = 50;
+      newPos.x = THREE.MathUtils.clamp(newPos.x, -BOUNDARY, BOUNDARY);
+      newPos.z = THREE.MathUtils.clamp(newPos.z, -BOUNDARY, BOUNDARY);
+
+      kaiRef.current.position.copy(newPos);
+
+      // Rotation toward movement direction
+      if (kai.isMoving) {
+        const targetRot = Math.atan2(kai.velocity.x, kai.velocity.z);
+        kaiRef.current.rotation.y += (targetRot - kaiRef.current.rotation.y) * MOVEMENT_CONFIG.turnSpeed;
+      }
+    } else {
+      kai.isMoving = false;
     }
 
-    // Apply velocity
-    const targetVel = moveDir.multiplyScalar(targetSpeed);
-    kai.velocity.lerp(targetVel, MOVEMENT_CONFIG.accel * delta);
-    kai.velocity.multiplyScalar(MOVEMENT_CONFIG.friction);
-
-    // Update position
-    const newPos = kai.position.clone().add(kai.velocity.clone().multiplyScalar(delta));
-
-    // Boundary constraints (arena or level bounds)
-    const BOUNDARY = 50;
-    newPos.x = THREE.MathUtils.clamp(newPos.x, -BOUNDARY, BOUNDARY);
-    newPos.z = THREE.MathUtils.clamp(newPos.z, -BOUNDARY, BOUNDARY);
-
-    kaiRef.current.position.copy(newPos);
-
-    // Rotation toward movement direction
-    if (kai.isMoving) {
-      const targetRot = Math.atan2(kai.velocity.x, kai.velocity.z);
-      kaiRef.current.rotation.y += (targetRot - kaiRef.current.rotation.y) * MOVEMENT_CONFIG.turnSpeed;
+    // Register web anchors on first frame (for web zip system)
+    if (!webZipSystem.state.isZipping) {
+      webZipSystem.registerAnchorsFromScene();
     }
 
     // FIX: Attack input - set timer for proper state lifecycle (unified input)

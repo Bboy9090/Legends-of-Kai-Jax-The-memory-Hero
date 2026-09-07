@@ -4,12 +4,12 @@
  *
  * Mechanics:
  * - Forward raycast detection for climbable surfaces
- * - Attach to wall when detected
- * - Vertical/horizontal movement while climbing
- * - Detach on jump or edge detection
+ * - Attach to wall when detected with forward input
+ * - W = climb UP, S = climb DOWN
+ * - Detach on jump, edge detection, loss of wall, or release
  */
 
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -17,80 +17,80 @@ interface WallClimbState {
   isOnWall: boolean;
   wallNormal: THREE.Vector3;
   climbSurface: THREE.Object3D | null;
-  attachPoint: THREE.Vector3;
+  wallPlanePoint: THREE.Vector3;
   climbVelocity: THREE.Vector3;
 }
 
 const WALL_CLIMB_CONFIG = {
   detectionDistance: 1.5,
-  detectionAngle: Math.PI / 4, // 45 degrees
   climbSpeed: 3.0,
-  detachThreshold: 2.0, // Distance to detach from wall
+  perpendiculardistanceThreshold: 1.0,
   edgeDetectionDistance: 0.5,
 };
 
 export function useWallClimbSystem(
   kaiRef: React.RefObject<THREE.Group>,
   scene: THREE.Scene,
-  input: { moveX: number; moveY: number }
+  input: { moveX: number; moveY: number; jump: boolean; traversalModifier: boolean }
 ) {
   const stateRef = useRef<WallClimbState>({
     isOnWall: false,
     wallNormal: new THREE.Vector3(0, 0, 1),
     climbSurface: null,
-    attachPoint: new THREE.Vector3(),
+    wallPlanePoint: new THREE.Vector3(),
     climbVelocity: new THREE.Vector3(),
   });
 
   const raycasterRef = useRef(new THREE.Raycaster());
+  const prevJumpRef = useRef(false);
 
-  // Detect climbable walls
-  const detectWall = (position: THREE.Vector3, direction: THREE.Vector3): boolean => {
+  // Detect climbable walls and return intersection or null
+  const detectWall = (position: THREE.Vector3, direction: THREE.Vector3): THREE.Intersection<THREE.Object3D> | null => {
     const raycaster = raycasterRef.current;
     raycaster.set(position, direction);
 
-    // Query collision objects in scene
     const intersects = raycaster.intersectObjects(scene.children, true);
 
     for (const hit of intersects) {
-      // Check if surface is climbable (angle check)
-      const normal = new THREE.Vector3();
+      if (hit.distance > WALL_CLIMB_CONFIG.detectionDistance) continue;
 
-      // For now, accept any vertical surface (walls, not floors/ceilings)
-      // In production, check custom climbability flag
-      if (hit.object.userData?.climbable ||
-          (hit.distance < WALL_CLIMB_CONFIG.detectionDistance && hit.object.name?.includes('wall'))) {
-
-        // Validate surface angle (must be steep enough)
+      if (hit.object.userData?.climbable || hit.object.name?.includes('wall')) {
         if (hit.face) {
+          const normal = new THREE.Vector3();
           hit.face.normal.copy(normal);
           normal.transformDirection(hit.object.matrixWorld);
 
-          // If surface normal points mostly sideways (not up/down), it's climbable
           const verticalComponent = Math.abs(normal.y);
           if (verticalComponent < 0.8) {
-            return true;
+            return hit;
           }
         }
       }
     }
 
-    return false;
+    return null;
+  };
+
+  // Measure perpendicular distance from point to wall plane
+  const getPerpendiculardistanceToWall = (point: THREE.Vector3, planePoint: THREE.Vector3, normal: THREE.Vector3): number => {
+    const toPoint = point.clone().sub(planePoint);
+    return Math.abs(toPoint.dot(normal));
   };
 
   // Attach Kai to wall
   const attachToWall = (position: THREE.Vector3, direction: THREE.Vector3): void => {
     const state = stateRef.current;
-    const raycaster = raycasterRef.current;
-    raycaster.set(position, direction);
+    const hit = detectWall(position, direction);
 
-    const intersects = raycaster.intersectObjects(scene.children, true);
-    if (intersects.length > 0) {
-      const hit = intersects[0];
+    if (hit && hit.face) {
       state.isOnWall = true;
       state.climbSurface = hit.object;
-      state.attachPoint.copy(hit.point);
-      state.wallNormal.copy(hit.face?.normal || new THREE.Vector3(0, 0, 1));
+      state.wallPlanePoint.copy(hit.point);
+
+      const normal = new THREE.Vector3();
+      hit.face.normal.copy(normal);
+      normal.transformDirection(hit.object.matrixWorld);
+      state.wallNormal.copy(normal);
       state.wallNormal.normalize();
     }
   };
@@ -112,48 +112,71 @@ export function useWallClimbSystem(
     const dir = new THREE.Vector3(0, 0, 1);
     kai.getWorldDirection(dir);
 
-    // Check for nearby wall
-    const wallDetected = detectWall(pos, dir);
+    // Detect jump transition (rising edge)
+    const jumpPressed = input.jump && !prevJumpRef.current;
+    prevJumpRef.current = input.jump;
 
-    if (!state.isOnWall && wallDetected && input.moveY < 0.5) {
-      // Attach to wall (moving forward into wall)
-      attachToWall(pos, dir);
-    } else if (state.isOnWall) {
-      // Check detachment conditions
-      const distanceFromWall = state.attachPoint.distanceTo(pos);
-
-      if (distanceFromWall > WALL_CLIMB_CONFIG.detachThreshold || !wallDetected) {
-        // Detach if too far or wall disappeared
-        detachFromWall();
-      } else {
-        // Climbing movement
-        const climbDir = new THREE.Vector3(0, 1, 0); // Up
-
-        // Vertical input (W/S controls up/down)
-        if (input.moveY > 0.2) {
-          // Climbing up
-          state.climbVelocity.copy(climbDir).multiplyScalar(WALL_CLIMB_CONFIG.climbSpeed);
-        } else if (input.moveY < -0.2) {
-          // Climbing down
-          state.climbVelocity.copy(climbDir).multiplyScalar(-WALL_CLIMB_CONFIG.climbSpeed * 0.6);
-        } else {
-          // No vertical input - maintain position
-          state.climbVelocity.multiplyScalar(0.8);
-        }
-
-        // Apply climbing velocity
-        const newPos = pos.clone().add(state.climbVelocity.clone().multiplyScalar(delta));
-
-        // Keep on wall surface (constrain to wall distance)
-        const toWall = state.attachPoint.clone().sub(newPos);
-        const distToWall = toWall.length();
-        if (distToWall > 0.1) {
-          const normalized = toWall.normalize();
-          newPos.addScaledVector(normalized, 0.1 - distToWall);
-        }
-
-        kai.position.copy(newPos);
+    if (!state.isOnWall) {
+      // Try to attach: must have forward input (W = moveY < -0.2)
+      const wallHit = detectWall(pos, dir);
+      if (wallHit && input.moveY < -0.2) {
+        attachToWall(pos, dir);
       }
+    } else {
+      // On wall: check detachment conditions
+
+      // 1. Jump pressed: detach immediately
+      if (jumpPressed) {
+        detachFromWall();
+        return;
+      }
+
+      // 2. Release traversal modifier: detach (manual drop)
+      if (!input.traversalModifier) {
+        detachFromWall();
+        return;
+      }
+
+      // 3. Loss of wall: detach
+      const wallHit = detectWall(pos, dir);
+      if (!wallHit) {
+        detachFromWall();
+        return;
+      }
+
+      // 4. Too far perpendicular to wall: detach
+      const perpDist = getPerpendiculardistanceToWall(pos, state.wallPlanePoint, state.wallNormal);
+      if (perpDist > WALL_CLIMB_CONFIG.perpendiculardistanceThreshold) {
+        detachFromWall();
+        return;
+      }
+
+      // Climbing movement: W = up, S = down
+      const climbDir = new THREE.Vector3(0, 1, 0);
+
+      if (input.moveY < -0.2) {
+        // W key: climbing up
+        state.climbVelocity.copy(climbDir).multiplyScalar(WALL_CLIMB_CONFIG.climbSpeed);
+      } else if (input.moveY > 0.2) {
+        // S key: climbing down
+        state.climbVelocity.copy(climbDir).multiplyScalar(-WALL_CLIMB_CONFIG.climbSpeed * 0.6);
+      } else {
+        // No vertical input: maintain position (friction)
+        state.climbVelocity.multiplyScalar(0.8);
+      }
+
+      // Apply climbing velocity
+      const newPos = pos.clone().add(state.climbVelocity.clone().multiplyScalar(delta));
+
+      // Constrain perpendicular distance to wall (0.15 units away from surface)
+      const toWall = state.wallNormal.clone().multiplyScalar(
+        getPerpendiculardistanceToWall(newPos, state.wallPlanePoint, state.wallNormal)
+      );
+      const constrainedPos = newPos.clone().sub(toWall).add(
+        state.wallNormal.clone().multiplyScalar(0.15)
+      );
+
+      kai.position.copy(constrainedPos);
     }
   });
 

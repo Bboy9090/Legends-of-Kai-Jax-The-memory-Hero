@@ -24,6 +24,7 @@ interface KaiCharacterProps {
   isMoving?: boolean;
   isAttacking?: boolean;
   isWallCrawling?: boolean;
+  isWebZipping?: boolean;
   bodyRef?: React.RefObject<THREE.Group>;
 }
 
@@ -37,6 +38,7 @@ export function KaiCharacter({
   isMoving = false,
   isAttacking = false,
   isWallCrawling = false,
+  isWebZipping = false,
   bodyRef,
 }: KaiCharacterProps) {
   const groupRef = useRef<THREE.Group>(null!);
