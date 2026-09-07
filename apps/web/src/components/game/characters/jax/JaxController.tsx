@@ -160,6 +160,7 @@ export function useJaxController(
     const jax = stateRef.current;
     const input = gameplayInputManager.getState();
     const prevInput = prevInputRef.current;
+    const currentTime = frameState.clock.elapsedTime;
 
     jaxRef.current.getWorldPosition(jax.position);
     jax.rotation.copy(jaxRef.current.rotation);
@@ -180,12 +181,11 @@ export function useJaxController(
       }
     }
 
-    if (jax.isAttacking) {
-      jax.attackTimer = Math.max(0, jax.attackTimer - delta);
-      if (jax.attackTimer === 0) {
-        jax.isAttacking = false;
-      }
-    }
+    let currentAttack = attackSystem.update(currentTime, jax.position);
+    jax.isAttacking = currentAttack !== null;
+    jax.attackTimer = currentAttack
+      ? Math.max(0, currentAttack.duration - (currentTime - currentAttack.startTime))
+      : 0;
 
     if (jax.comboResetTimer > 0) {
       jax.comboResetTimer = Math.max(0, jax.comboResetTimer - delta);
@@ -328,8 +328,6 @@ export function useJaxController(
       }
     }
 
-    const currentTime = frameState.clock.elapsedTime;
-
     if (wasJustPressed(input.attackLight, prevInput?.attackLight ?? false)) {
       if (
         jax.energy >= COMBAT_CONFIG.lightAttackCost &&
@@ -407,7 +405,7 @@ export function useJaxController(
       }
     }
 
-    const currentAttack = attackSystem.update(currentTime, jax.position);
+    currentAttack = attackSystem.update(currentTime, jax.position);
 
     attackSystem.processActiveHitboxes(currentTime, (target, damage, attack) => {
       const health = typeof target.userData.health === 'number'
