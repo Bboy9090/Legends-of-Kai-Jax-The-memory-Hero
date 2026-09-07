@@ -67,7 +67,7 @@ const ATTACK_CONFIG = {
 
 export class JaxAttackSystem {
   private currentAttack: AttackEvent | null = null;
-  private hitRecords: Map<string, HitRecord> = new Map();
+  private hitTargets: Set<string> = new Set();
   private scene: THREE.Scene;
 
   constructor(scene: THREE.Scene) {
@@ -96,6 +96,7 @@ export class JaxAttackSystem {
     };
 
     this.currentAttack = attack;
+    this.hitTargets.clear(); // Reset hit tracking for new attack
     return attack;
   }
 
@@ -142,17 +143,12 @@ export class JaxAttackSystem {
     }
 
     // Prevent double-hitting same target in same attack
-    const lastHit = this.hitRecords.get(targetId);
-    if (lastHit && (currentTime - lastHit.timestamp) < 0.05) {
+    if (this.hitTargets.has(targetId)) {
       return { hit: false, damage: 0 };
     }
 
     // Record hit
-    this.hitRecords.set(targetId, {
-      targetId,
-      timestamp: currentTime,
-      damage: this.currentAttack.damage,
-    });
+    this.hitTargets.add(targetId);
 
     return {
       hit: true,
@@ -171,8 +167,61 @@ export class JaxAttackSystem {
     return this.currentAttack;
   }
 
+  processActiveHitboxes(
+    currentTime: number,
+    onHit: (targetId: string, damage: number) => void
+  ): void {
+    if (!this.currentAttack || !this.isHitboxActive(currentTime)) return;
+
+    const targets = this.findCombatTargets();
+    for (const target of targets) {
+      const result = this.tryHit(target.id, target.position, currentTime);
+      if (result.hit) {
+        onHit(target.id, result.damage);
+      }
+    }
+  }
+
+  private findCombatTargets(): Array<{ id: string; position: THREE.Vector3; type: string }> {
+    if (!this.currentAttack) return [];
+
+    const targets: Array<{ id: string; position: THREE.Vector3; type: string }> = [];
+    const isSpecial = this.currentAttack.type === 'jax_lightning_special';
+
+    for (const obj of this.scene.children) {
+      if (!obj.userData.combatTarget) continue;
+
+      const objPos = new THREE.Vector3();
+      obj.getWorldPosition(objPos);
+
+      const distance = objPos.distanceTo(this.currentAttack.position);
+      if (distance > this.currentAttack.radius) continue;
+
+      if (isSpecial) {
+        if (!this.isInForwardCone(objPos)) continue;
+      }
+
+      targets.push({
+        id: obj.userData.targetId || obj.uuid,
+        position: objPos,
+        type: this.currentAttack.type,
+      });
+    }
+
+    return targets;
+  }
+
+  private isInForwardCone(targetPos: THREE.Vector3): boolean {
+    if (!this.currentAttack) return false;
+
+    const toTarget = targetPos.clone().sub(this.currentAttack.position);
+    const dotProduct = toTarget.normalize().dot(this.currentAttack.direction);
+
+    return dotProduct > 0.5; // ~60 degree forward cone
+  }
+
   reset() {
     this.currentAttack = null;
-    this.hitRecords.clear();
+    this.hitTargets.clear();
   }
 }

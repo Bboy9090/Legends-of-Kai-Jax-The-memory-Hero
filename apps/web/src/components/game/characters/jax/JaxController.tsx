@@ -102,8 +102,7 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
   const stormAirSystem = useMemo(() => new StormAirSystem(), []);
   const attackSystem = useMemo(() => new JaxAttackSystem(scene), [scene]);
 
-  const checkGrounded = (pos: THREE.Vector3): boolean => {
-    // Raycast downward to detect ground/platform
+  const checkGrounded = (pos: THREE.Vector3): { grounded: boolean; groundY: number } => {
     const raycaster = new THREE.Raycaster(
       pos.clone().add(new THREE.Vector3(0, 0.1, 0)),
       new THREE.Vector3(0, -1, 0),
@@ -111,13 +110,16 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
       0.5
     );
 
-    const colliders = scene.children.filter(obj =>
-      obj.userData.isCollider || obj.userData.isGround ||
-      (obj.geometry && !(obj as any).userData.isLightningTarget)
+    const walkables = scene.children.filter(obj =>
+      obj.userData.isWalkable || obj.userData.isGround
     );
 
-    const hits = raycaster.intersectObjects(colliders, true);
-    return hits.length > 0;
+    const hits = raycaster.intersectObjects(walkables, true);
+    if (hits.length > 0) {
+      return { grounded: true, groundY: hits[0].point.y };
+    }
+
+    return { grounded: false, groundY: pos.y };
   };
 
   useFrame((frameState, rawDelta) => {
@@ -170,12 +172,24 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
     }
 
     // Ground detection via raycast (supports platforms at any height)
-    const isGrounded = checkGrounded(jax.position) && jax.velocity.y <= 0.1;
+    const { grounded, groundY } = checkGrounded(jax.position);
+    const isGrounded = grounded && jax.velocity.y <= 0.1;
+    const wasAirborne = jax.isAirborne;
     jax.isAirborne = !isGrounded;
 
-    // Reset vertical velocity when landing
+    // Reset vertical velocity and snap when landing
     if (isGrounded && jax.velocity.y < 0) {
       jax.velocity.y = 0;
+
+      // Snap to ground and reset air displacement charge on real landing
+      if (wasAirborne) {
+        jax.position.y = groundY;
+        const displacementState = displacementController.getState();
+        if (displacementState.airCharges < 1) {
+          // Charge was used; restore it
+          displacementController.reset();
+        }
+      }
     }
 
     // LOCOMOTION MODE DECISION: Only one system owns position per frame
@@ -292,9 +306,29 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
       }
     }
 
-    // Update current attack
-    const currentTime = Date.now() / 1000; // Simple elapsed time
+    // Update current attack using deterministic simulation time
+    const currentTime = frameState.clock.elapsedTime;
     const currentAttack = attackSystem.update(currentTime, jax.position);
+
+    // Process active hitboxes and apply damage
+    attackSystem.processActiveHitboxes(currentTime, (targetId, damage) => {
+      const target = scene.getObjectByProperty('uuid', targetId) || scene.getObjectByProperty('userData.targetId', targetId);
+      if (target && target.userData) {
+        target.userData.health = (target.userData.health || 100) - damage;
+
+        // Apply knockback for pressure/special/ultimate attacks
+        const knockback = attackSystem.getKnockbackForce();
+        if (knockback && currentAttack) {
+          const isKnockbackAttack = currentAttack.type === 'jax_pressure_heavy' ||
+            currentAttack.type === 'jax_lightning_special' ||
+            currentAttack.type === 'jax_storm_ultimate';
+
+          if (isKnockbackAttack && target.userData.velocity) {
+            target.userData.velocity.copy(knockback);
+          }
+        }
+      }
+    });
 
     // ATTACK: Light
     if (wasJustPressed(input.attackLight, prevInput?.attackLight ?? false)) {

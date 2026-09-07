@@ -12,39 +12,20 @@
  * - Debug HUD
  */
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, createContext, useContext } from 'react';
 import * as THREE from 'three';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { JaxCharacter } from './JaxCharacter';
 
-function DebugHUD({ jaxState, scene }: any) {
-  const [stats, setStats] = useState({
-    mode: 'GROUND',
-    energy: 100,
-    charges: 1,
-    fps: 60,
-    position: [0, 0, 0],
-  });
+const JaxStateContext = createContext<{ jaxState: any; setJaxState: (state: any) => void }>({
+  jaxState: null,
+  setJaxState: () => {},
+});
 
-  useFrame(() => {
-    if (jaxState) {
-      setStats({
-        mode: jaxState.locomotionMode || 'GROUND',
-        energy: Math.round(jaxState.energy || 0),
-        charges: jaxState.displacementCharges || 1,
-        fps: Math.round(1 / (1 / 60)),
-        position: [
-          jaxState.position?.x?.toFixed(1),
-          jaxState.position?.y?.toFixed(1),
-          jaxState.position?.z?.toFixed(1),
-        ],
-      });
-    }
-  });
-
+function DebugHUD() {
   return (
     <group>
-      {/* Mode indicator text mesh */}
+      {/* Mode indicator text mesh (could be enhanced with canvas texture for text) */}
       <mesh position={[-20, 10, 0]}>
         <planeGeometry args={[8, 2]} />
         <meshBasicMaterial color={0x000000} />
@@ -56,7 +37,8 @@ function DebugHUD({ jaxState, scene }: any) {
 function TestEnvironment() {
   const { scene, camera } = useThree();
   const jaxRef = useRef<THREE.Group>(null);
-  const [jaxState, setJaxState] = useState<any>(null);
+  const jaxControllerRef = useRef<any>(null);
+  const { setJaxState } = useContext(JaxStateContext);
 
   useEffect(() => {
     // Setup scene
@@ -80,6 +62,8 @@ function TestEnvironment() {
     const ground = new THREE.Mesh(groundGeom, groundMat);
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
+    ground.userData.isGround = true;
+    ground.userData.isWalkable = true;
     scene.add(ground);
 
     // Elevated platform (for air testing)
@@ -90,6 +74,7 @@ function TestEnvironment() {
     platform.castShadow = true;
     platform.receiveShadow = true;
     platform.userData.isCollider = true;
+    platform.userData.isWalkable = true;
     scene.add(platform);
 
     // Collision wall
@@ -111,7 +96,7 @@ function TestEnvironment() {
       scene.add(marker);
     }
 
-    // Pressure-reactive dummy
+    // Pressure-reactive dummy (combat-enabled)
     const dummyGeom = new THREE.CapsuleGeometry(0.3, 1.5, 8, 8);
     const dummyMat = new THREE.MeshStandardMaterial({
       color: 0xff4444,
@@ -122,10 +107,14 @@ function TestEnvironment() {
     dummy.position.set(10, 0.75, 0);
     dummy.castShadow = true;
     dummy.receiveShadow = true;
+    dummy.userData.combatTarget = true;
+    dummy.userData.targetId = 'dummy_pressure';
     dummy.userData.isPressureTarget = true;
+    dummy.userData.health = 100;
+    dummy.userData.velocity = new THREE.Vector3();
     scene.add(dummy);
 
-    // Lightning target
+    // Lightning target (combat-enabled)
     const targetGeom = new THREE.SphereGeometry(0.5, 8, 8);
     const targetMat = new THREE.MeshStandardMaterial({
       color: 0xffff00,
@@ -135,7 +124,11 @@ function TestEnvironment() {
     const target = new THREE.Mesh(targetGeom, targetMat);
     target.position.set(-15, 3, -10);
     target.castShadow = true;
+    target.userData.combatTarget = true;
+    target.userData.targetId = 'target_lightning';
     target.userData.isLightningTarget = true;
+    target.userData.health = 100;
+    target.userData.velocity = new THREE.Vector3();
     scene.add(target);
 
     // Camera setup
@@ -148,34 +141,39 @@ function TestEnvironment() {
   }, [scene, camera]);
 
   useFrame(() => {
-    if (jaxRef.current) {
-      const controller = (jaxRef.current as any).__jaxController;
-      if (controller) {
-        setJaxState(controller.getState());
-      }
+    if (jaxControllerRef.current) {
+      setJaxState(jaxControllerRef.current.getState());
     }
   });
 
   return (
     <>
-      <JaxCharacter scene={scene} />
-      <DebugHUD jaxState={jaxState} scene={scene} />
+      <JaxCharacter
+        scene={scene}
+        onController={(controller) => {
+          jaxControllerRef.current = controller;
+        }}
+      />
+      <DebugHUD />
     </>
   );
 }
 
 export function JaxTestScene() {
+  const [jaxState, setJaxState] = useState<any>(null);
+
   return (
-    <div style={{ width: '100%', height: '100vh' }}>
-      <Canvas
-        gl={{
-          antialias: true,
-          shadowMap: { enabled: true, type: THREE.PCFShadowMap },
-        }}
-        shadows
-      >
-        <TestEnvironment />
-      </Canvas>
+    <JaxStateContext.Provider value={{ jaxState, setJaxState }}>
+      <div style={{ width: '100%', height: '100vh' }}>
+        <Canvas
+          gl={{
+            antialias: true,
+            shadowMap: { enabled: true, type: THREE.PCFShadowMap },
+          }}
+          shadows
+        >
+          <TestEnvironment />
+        </Canvas>
 
       {/* Debug UI overlay */}
       <div
@@ -189,9 +187,17 @@ export function JaxTestScene() {
           backgroundColor: 'rgba(0,0,0,0.7)',
           padding: '10px',
           zIndex: 100,
+          maxWidth: '300px',
         }}
       >
         <div>JAX TEST SCENE</div>
+        <div style={{ marginTop: '10px', fontSize: '11px', borderBottom: '1px solid #00ff00', paddingBottom: '5px' }}>
+          <div>Mode: {jaxState?.locomotionMode || 'LOADING'}</div>
+          <div>Energy: {jaxState?.energy ? Math.round(jaxState.energy) : 0}/100</div>
+          <div>Airborne: {jaxState?.isAirborne ? 'YES' : 'NO'}</div>
+          <div>Pos: ({jaxState?.position?.x?.toFixed(1) || 0}, {jaxState?.position?.y?.toFixed(1) || 0}, {jaxState?.position?.z?.toFixed(1) || 0})</div>
+          <div>Attack: {jaxState?.isAttacking ? 'ACTIVE' : 'IDLE'}</div>
+        </div>
         <div style={{ marginTop: '5px', fontSize: '11px' }}>
           <div>WASD: Move</div>
           <div>Shift: Run</div>
@@ -204,6 +210,7 @@ export function JaxTestScene() {
           <div>I: Ultimate</div>
         </div>
       </div>
-    </div>
+      </div>
+    </JaxStateContext.Provider>
   );
 }

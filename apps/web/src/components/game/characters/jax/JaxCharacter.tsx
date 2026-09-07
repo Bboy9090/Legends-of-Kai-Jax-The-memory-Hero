@@ -12,11 +12,16 @@ import { useJaxController } from './JaxController';
 
 interface JaxCharacterProps {
   scene: THREE.Scene;
+  onController?: (controller: any) => void;
 }
 
-export function JaxCharacter({ scene }: JaxCharacterProps) {
+export function JaxCharacter({ scene, onController }: JaxCharacterProps) {
   const jaxRef = useRef<THREE.Group>(null);
   const jaxController = useJaxController(jaxRef, scene);
+
+  useEffect(() => {
+    onController?.(jaxController);
+  }, [jaxController, onController]);
 
   useEffect(() => {
     if (!jaxRef.current) return;
@@ -51,13 +56,6 @@ export function JaxCharacter({ scene }: JaxCharacterProps) {
     }
 
     group.position.y = 0;
-    scene.add(group);
-
-    return () => {
-      if (scene.children.includes(group)) {
-        scene.remove(group);
-      }
-    };
   }, [scene]);
 
   return (
