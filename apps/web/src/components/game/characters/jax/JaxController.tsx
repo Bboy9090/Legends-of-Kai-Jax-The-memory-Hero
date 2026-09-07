@@ -194,8 +194,6 @@ export function useJaxController(
       }
     }
 
-    // A velocity-aware probe prevents Jax from tunneling through thin elevated
-    // walkable platforms at the 30 FPS fallback simulation step.
     const landingProbe = Math.max(0.35, Math.max(0, -jax.velocity.y) * delta + 0.2);
     const ground = queryGround(jax.position, landingProbe);
     const isGrounded = ground.grounded && jax.velocity.y <= 0.1;
@@ -212,17 +210,20 @@ export function useJaxController(
       }
     }
 
-    const cameraDir = new THREE.Vector3();
-    frameState.camera.getWorldDirection(cameraDir);
-    cameraDir.y = 0;
-    if (cameraDir.lengthSq() < 0.0001) cameraDir.set(0, 0, -1);
-    cameraDir.normalize();
+    // Convert shared input (W = moveY -1) into camera-relative world intent.
+    const cameraForward = new THREE.Vector3();
+    frameState.camera.getWorldDirection(cameraForward);
+    cameraForward.y = 0;
+    if (cameraForward.lengthSq() < 0.0001) cameraForward.set(0, 0, -1);
+    cameraForward.normalize();
 
-    const cameraYaw = Math.atan2(cameraDir.x, cameraDir.z);
-    const worldMoveDir = new THREE.Vector3(input.moveX, 0, input.moveY);
-    if (worldMoveDir.lengthSq() > 0.0001) {
-      worldMoveDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraYaw);
-    }
+    const cameraRight = new THREE.Vector3()
+      .crossVectors(cameraForward, new THREE.Vector3(0, 1, 0))
+      .normalize();
+
+    const worldMoveDir = cameraRight.multiplyScalar(input.moveX)
+      .add(cameraForward.multiplyScalar(-input.moveY));
+    if (worldMoveDir.lengthSq() > 1) worldMoveDir.normalize();
 
     const facingDir = jaxRef.current.getWorldDirection(new THREE.Vector3());
     facingDir.y = 0;
@@ -250,8 +251,6 @@ export function useJaxController(
       jax.isAirborne
     );
 
-    // Air control uses the same camera-relative movement intent as ground
-    // movement and displacement.
     const airControlResult = stormAirSystem.updateAirControl(
       delta,
       {
