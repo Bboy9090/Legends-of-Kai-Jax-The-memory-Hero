@@ -9,72 +9,77 @@ import { getMoveSet } from "../../lib/combatAbilities";
 import { useState, useEffect, useRef } from "react";
 import { Zap, RotateCcw, Home, Star, Sparkles, CheckCircle2, XCircle, Target, ChevronRight } from "../ui/icons";
 
-// ⚡ LEGENDARY SYNERGY METER
+// ⚡ KAI/JAX SYNCHRONIZATION METER
 function SynergyMeter({ 
   value, 
   maxValue = 100, 
   fighterColor,
+  fusionAvailable = false,
   side = 'left' 
 }: { 
   value: number; 
   maxValue?: number;
   fighterColor: string;
+  fusionAvailable?: boolean;
   side?: 'left' | 'right';
 }) {
   const percentage = (value / maxValue) * 100;
   const isFull = percentage >= 100;
   const isCharging = percentage >= 50;
+  const isFusionReady = isFull && fusionAvailable;
   
   return (
     <div className={`flex items-center gap-2 ${side === 'right' ? 'flex-row-reverse' : ''}`}>
-      {/* Synergy Icon */}
+      {/* Synchronization Icon */}
       <div 
-        className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${isFull ? 'animate-pulse' : ''}`}
+        className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${isFusionReady ? 'animate-pulse' : ''}`}
         style={{
-          background: isFull 
-            ? 'linear-gradient(135deg, #FFD700, #FF6B6B)' 
-            : isCharging 
-              ? `linear-gradient(135deg, ${fighterColor}, #A855F7)` 
-              : '#374151',
-          boxShadow: isFull 
-            ? '0 0 20px #FFD700, 0 0 40px #FFD70080' 
-            : isCharging 
-              ? `0 0 15px ${fighterColor}` 
+          background: isFusionReady
+            ? 'linear-gradient(135deg, #FFD700, #FF6B6B)'
+            : isFull
+              ? `linear-gradient(135deg, ${fighterColor}, #A855F7)`
+              : isCharging 
+                ? `linear-gradient(135deg, ${fighterColor}, #A855F7)` 
+                : '#374151',
+          boxShadow: isFusionReady
+            ? '0 0 20px #FFD700, 0 0 40px #FFD70080'
+            : isFull || isCharging
+              ? `0 0 15px ${fighterColor}`
               : 'none',
         }}
       >
-        <Zap className={`w-4 h-4 ${isFull ? 'text-white animate-bounce' : isCharging ? 'text-white' : 'text-gray-500'}`} />
+        <Zap className={`w-4 h-4 ${isFusionReady ? 'text-white animate-bounce' : isCharging ? 'text-white' : 'text-gray-500'}`} />
       </div>
       
-      {/* Synergy Bar */}
+      {/* Synchronization Bar */}
       <div className="relative w-24 h-3 bg-gray-800/80 rounded-full overflow-hidden border border-gray-600">
         <div 
           className={`absolute inset-y-0 ${side === 'right' ? 'right-0' : 'left-0'} transition-all duration-300`}
           style={{
             width: `${percentage}%`,
-            background: isFull 
-              ? 'linear-gradient(90deg, #FFD700, #FF6B6B, #A855F7)' 
+            background: isFusionReady
+              ? 'linear-gradient(90deg, #FFD700, #FF6B6B, #A855F7)'
               : `linear-gradient(90deg, ${fighterColor}, #A855F7)`,
-            boxShadow: isFull ? 'inset 0 0 10px rgba(255,255,255,0.5)' : 'none',
+            boxShadow: isFusionReady ? 'inset 0 0 10px rgba(255,255,255,0.5)' : 'none',
           }}
         />
-        {isFull && (
+        {isFusionReady && (
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-[shimmer_1s_infinite]" />
         )}
       </div>
       
-      {/* Transform Ready Text */}
+      {/* Fusion readiness must match the story unlock, not merely a full meter. */}
       {isFull && (
-        <span className="mk-hud text-xs text-yellow-300 animate-pulse whitespace-nowrap">
-          FUSION READY!
+        <span className={`mk-hud text-xs whitespace-nowrap ${isFusionReady ? 'text-yellow-300 animate-pulse' : 'text-purple-200'}`}>
+          {isFusionReady ? 'FUSION READY!' : 'SYNC FULL · STORY LOCKED'}
         </span>
       )}
     </div>
   );
 }
 
-// 🌌 OVERDRIVE / ULTIMATE METER — the super gauge that gates the ultimate
-function OverdriveMeter({
+// 🌌 ANCESTRAL OUTPUT METER — combat resource that gates the ultimate
+function AncestralOutputMeter({
   value,
   maxValue = 100,
   fighterColor,
@@ -96,7 +101,7 @@ function OverdriveMeter({
           className="text-[10px] font-black uppercase tracking-[0.2em]"
           style={{ color: ready ? "#FDE047" : fighterColor }}
         >
-          Overdrive
+          Ancestral Output
         </span>
         <span className="flex-1" />
         {ready ? (
@@ -222,6 +227,8 @@ function LegendaryHealthBar({
   side,
   wins,
   synergy = 0,
+  showSynergy = false,
+  fusionAvailable = false,
   isTransformed = false,
   dread,
   resonance,
@@ -232,6 +239,8 @@ function LegendaryHealthBar({
   side: 'left' | 'right';
   wins: number;
   synergy?: number;
+  showSynergy?: boolean;
+  fusionAvailable?: boolean;
   isTransformed?: boolean;
   dread?: number;
   resonance?: number;
@@ -367,10 +376,17 @@ function LegendaryHealthBar({
           </div>
         </div>
         
-        {/* Synergy Meter */}
-        <div className={`mt-2 ${side === 'right' ? 'flex justify-end' : ''}`}>
-          <SynergyMeter value={synergy} fighterColor={fighter.color} side={side} />
-        </div>
+        {/* Kai/Jax synchronization is only shown where fusion is mechanically relevant. */}
+        {showSynergy && (
+          <div className={`mt-2 ${side === 'right' ? 'flex justify-end' : ''}`}>
+            <SynergyMeter
+              value={synergy}
+              fighterColor={fighter.color}
+              fusionAvailable={fusionAvailable}
+              side={side}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -834,6 +850,7 @@ export default function BattleUI() {
     setCampaignCompleted,
     setCampaignCurrentNode,
     trainingSession,
+    kaiJaxFusionUnlocked,
   } = useRunner();
   const playerFighter = getFighterById(playerFighterId);
   const opponentFighter = getFighterById(opponentFighterId);
@@ -851,6 +868,14 @@ export default function BattleUI() {
     playerOverdrive,
     maxOverdrive,
   } = useBattle();
+
+  const fusionEligibleFighter = playerFighterId === "kai" || playerFighterId === "jax";
+  const fusionAvailable = fusionEligibleFighter && kaiJaxFusionUnlocked;
+  const fusionControlLabel = !fusionEligibleFighter
+    ? "Fusion N/A"
+    : fusionAvailable
+      ? "Fusion"
+      : "Fusion Locked";
 
   // Ultimate is usable when the meter is full and the fighter can channel it
   // (native ultimate roster or currently transformed) — mirrors useBattle gate.
@@ -953,6 +978,8 @@ export default function BattleUI() {
                side="left"
                wins={playerWins}
                synergy={playerSynergy}
+               showSynergy={fusionEligibleFighter}
+               fusionAvailable={fusionAvailable}
                isTransformed={playerTransformed}
                dread={playerDread}
                resonance={playerResonance}
@@ -988,9 +1015,9 @@ export default function BattleUI() {
          </div>
        )}
       
-      {/* Overdrive / Ultimate meter — visible super gauge */}
+      {/* Ancestral output / ultimate meter */}
       {battlePhase === "fighting" && (
-        <OverdriveMeter
+        <AncestralOutputMeter
           value={playerOverdrive}
           maxValue={maxOverdrive}
           fighterColor={playerFighter.accentColor || "#22d3ee"}
@@ -1090,7 +1117,7 @@ export default function BattleUI() {
               </div>
               <div className="flex items-center gap-1.5">
                 <kbd className="bg-amber-500/50 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">T</kbd>
-                <span className="text-amber-200">Transform</span>
+                <span className={fusionAvailable ? "text-amber-200" : "text-slate-400"}>{fusionControlLabel}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <kbd className="bg-white/25 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">Y</kbd>
