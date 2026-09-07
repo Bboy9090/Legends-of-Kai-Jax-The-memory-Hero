@@ -177,7 +177,6 @@ function TestEnvironment({
   }, [scene, camera]);
 
   useFrame((_, delta) => {
-    // Minimal target reaction physics for the isolated test scene only.
     scene.traverse((obj) => {
       if (!obj.userData.combatTarget) return;
       const velocity = obj.userData.velocity;
@@ -272,8 +271,9 @@ export function JaxTestScene() {
           <div data-testid="jax-cooldown">Cooldown: {debug.cooldown.toFixed(2)}</div>
           <div data-testid="jax-attack">Attack: {debug.attackType} / {debug.attackPhase}</div>
           <div data-testid="jax-fps">FPS: {debug.fps.toFixed(1)}</div>
-          <div data-testid="jax-pressure-health">
-            Pressure dummy HP: {Math.round(debug.pressureHealth)} @ ({debug.pressureX.toFixed(2)}, {debug.pressureZ.toFixed(2)})
+          <div data-testid="jax-pressure-health">Pressure dummy HP: {Math.round(debug.pressureHealth)}</div>
+          <div data-testid="jax-pressure-position">
+            Pressure dummy Pos: ({debug.pressureX.toFixed(2)}, {debug.pressureZ.toFixed(2)})
           </div>
           <div data-testid="jax-lightning-health">
             Lightning target HP: {Math.round(debug.lightningHealth)}
