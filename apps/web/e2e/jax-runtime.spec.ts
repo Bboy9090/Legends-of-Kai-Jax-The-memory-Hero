@@ -33,12 +33,22 @@ function collectErrors(page: Page): string[] {
 
 async function bootJaxTest(page: Page) {
   await page.goto('/');
+  await expect(page.locator('body')).toBeVisible();
   await page.waitForFunction(() => Boolean((window as any).runnerStore), null, {
     timeout: 15_000,
   });
+
+  // Use Zustand's direct setState for the isolated developer harness. This
+  // avoids any persisted-profile rehydration race and then proves the store
+  // actually accepted the test route before waiting for React to mount it.
   await page.evaluate(() => {
-    (window as any).runnerStore.getState().setGameState('jax-test');
+    (window as any).runnerStore.setState({ gameState: 'jax-test' });
   });
+  await page.waitForFunction(
+    () => (window as any).runnerStore?.getState().gameState === 'jax-test',
+    null,
+    { timeout: 5_000 }
+  );
 
   await expect(page.getByTestId('jax-debug-hud')).toBeVisible({ timeout: 15_000 });
   await page.waitForTimeout(5_000);
