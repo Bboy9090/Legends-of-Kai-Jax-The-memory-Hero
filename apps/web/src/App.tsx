@@ -20,6 +20,7 @@ import { GameIntro } from "./components/game/LoadingScreen";
 import CustomizationMenu from "./components/game/CustomizationMenu";
 import LoreHub from "./components/game/LoreHub";
 import ControllerTestScene from "./components/game/ControllerTestScene";
+import { JaxTestScene } from "./components/game/characters/jax/JaxTestScene";
 import AdventureArena from "./components/game/adventure/AdventureArena";
 import AdventureHUD from "./components/game/adventure/AdventureHUD";
 import AdventureTouchControls from "./components/game/adventure/AdventureTouchControls";
@@ -255,6 +256,9 @@ function App() {
 
         {/* Controller Test - movement state foundation */}
         {gameState === 'controller-test' && <ControllerTestScene />}
+
+        {/* Jax Test Scene - traversal and combat testing */}
+        {gameState === 'jax-test' && <JaxTestScene />}
         
         {/* ⚡ ADVENTURE MODE - Open World 3D Arena */}
         {gameState === 'adventure' && (() => {
