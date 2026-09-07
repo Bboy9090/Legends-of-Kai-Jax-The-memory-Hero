@@ -271,15 +271,19 @@ class GamepadInputHandler {
                        Math.abs(moveX) > deadzone || Math.abs(moveY) > deadzone ||
                        Math.abs(cameraX) > deadzone || Math.abs(cameraY) > deadzone;
 
+    // Gamepad traversal logic: LB+A = traversal (contextual Web Zip / wall climb)
+    const lbPressed = gp.buttons[4]?.pressed || false;
+    const aPressed = gp.buttons[0]?.pressed || false;
+
     return {
       moveX,
       moveY,
       cameraX,
       cameraY,
-      isRunning: gp.buttons[4]?.pressed || false, // LB = run
-      jump: gp.buttons[0]?.pressed || false, // A = jump only (no collision)
-      traversal: false, // Traversal on gamepad is handled via LB modifier + stick input
-      traversalModifier: gp.buttons[4]?.pressed || false, // LB = traversal modifier (run or wall climb)
+      isRunning: lbPressed, // LB = run
+      jump: aPressed && !lbPressed, // A = jump ONLY when LB not held
+      traversal: aPressed && lbPressed, // LB+A = contextual traversal (Web Zip or wall climb)
+      traversalModifier: lbPressed, // LB = modifier for run or traversal context
       attackLight: gp.buttons[2]?.pressed || false, // X = light
       attackHeavy: gp.buttons[3]?.pressed || false, // Y = heavy
       attackSpecial: gp.buttons[5]?.pressed || false, // RB = special
@@ -319,6 +323,7 @@ export class GameplayInputManager {
   /**
    * Get the current combined input state
    * Smart per-action arbitration: analog inputs choose by magnitude, digital inputs OR together
+   * Maintains persistent lastActiveDevice tracking
    */
   getState(): GameplayInputState {
     // Start with default state
@@ -340,7 +345,7 @@ export class GameplayInputManager {
       interact: false,
       pause: false,
       menu: false,
-      lastActiveDevice: 'keyboard',
+      lastActiveDevice: this._lastActiveDevice, // Start with persistent device
     };
 
     const touchState = this.touchHandler.getState();
@@ -405,17 +410,22 @@ export class GameplayInputManager {
     state.pause = (touchState.pause || false) || (keyboardState.pause || false) || (gamepadState.pause || false);
     state.menu = (touchState.menu || false) || (keyboardState.menu || false) || (gamepadState.menu || false);
 
-    // Update lastActiveDevice based on ANY input (analog or digital), not just movement
+    // Update persistent lastActiveDevice based on ANY input (analog or digital)
+    // Only update when a device actually produces input (not idle)
     // Priority: Gamepad > Keyboard > Touch
     if (this.gamepadHandler.hasActiveInput()) {
+      this._lastActiveDevice = 'gamepad';
       state.lastActiveDevice = 'gamepad';
     } else if (keyboardState.moveX || keyboardState.moveY || this.keyboardHandler.getLastActiveDevice()) {
+      this._lastActiveDevice = 'keyboard';
       state.lastActiveDevice = 'keyboard';
     } else if (this.touchHandler.hasAnyInput()) {
+      this._lastActiveDevice = 'touch';
       state.lastActiveDevice = 'touch';
+    } else {
+      // No current input: return the persistent lastActiveDevice
+      state.lastActiveDevice = this._lastActiveDevice;
     }
-    state.pause = (touchState.pause || false) || (keyboardState.pause || false) || (gamepadState.pause || false);
-    state.menu = (touchState.menu || false) || (keyboardState.menu || false) || (gamepadState.menu || false);
 
     // Normalize movement vector
     const moveLen = Math.hypot(state.moveX, state.moveY);
@@ -435,11 +445,50 @@ export class GameplayInputManager {
   }
 
   /**
-   * Queue a touch attack action
+   * Set touch camera input
+   */
+  setTouchCamera(x: number, y: number) {
+    this.touchHandler.updateCamera(x, y);
+  }
+
+  /**
+   * Set touch action state
+   */
+  setTouchAction(
+    action:
+      | 'jump'
+      | 'dodge'
+      | 'traversal'
+      | 'traversalModifier'
+      | 'interact'
+      | 'pause'
+      | 'menu'
+      | 'attackLight'
+      | 'attackHeavy'
+      | 'attackSpecial'
+      | 'attackUltimate',
+    pressed: boolean
+  ) {
+    this.touchHandler.setButtonState(action, pressed);
+  }
+
+  /**
+   * Queue a touch attack action (legacy - use setTouchAction instead)
+   * @deprecated Use setTouchAction with attackLight/attackHeavy/etc instead
    */
   queueTouchAttack(type: 'light' | 'heavy' | 'special' | 'ultimate' | 'dodge') {
     this.touchHandler.queueAttack(type);
   }
+
+  /**
+   * Get persistent lastActiveDevice (does not reset each frame)
+   */
+  getLastActiveDevice(): 'keyboard' | 'gamepad' | 'touch' {
+    return this._lastActiveDevice;
+  }
+
+  // Private: store persistent device tracking
+  private _lastActiveDevice: 'keyboard' | 'gamepad' | 'touch' = 'keyboard';
 }
 
 // Export singleton instance

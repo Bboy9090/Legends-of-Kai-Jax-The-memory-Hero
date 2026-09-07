@@ -24,20 +24,23 @@ import { gameplayInputManager, GameplayInputState } from '../../../../lib/input/
 import { WallClimbController } from './WallClimbSystem';
 import { WebZipController } from './WebZipSystem';
 
+type LocomotionMode = 'GROUND' | 'WALL' | 'WEB_ZIP' | 'MOMENTUM' | 'AIR';
+
 interface KaiControllerState {
   position: THREE.Vector3;
   velocity: THREE.Vector3;
   rotation: THREE.Euler;
+  locomotionMode: LocomotionMode;
   isMoving: boolean;
   isAttacking: boolean;
-  attackTimer: number; // FIX: Track attack duration separately
+  attackTimer: number;
   isWallCrawling: boolean;
   isWebZipping: boolean;
   isDodging: boolean;
-  dodgeTimer: number; // FIX: Track dodge duration separately
+  dodgeTimer: number;
   invulnTimer: number;
   attackCombo: number;
-  comboResetTimer: number; // FIX: Track combo window
+  comboResetTimer: number;
   energy: number;
   maxEnergy: number;
 }
@@ -80,6 +83,7 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
     position: new THREE.Vector3(0, 0, 0),
     velocity: new THREE.Vector3(0, 0, 0),
     rotation: new THREE.Euler(0, 0, 0),
+    locomotionMode: 'GROUND',
     isMoving: false,
     isAttacking: false,
     attackTimer: 0,
@@ -102,6 +106,9 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
   // Create update-driven controllers (not hooks)
   const wallClimbController = useMemo(() => new WallClimbController(scene), [scene]);
   const webZipController = useMemo(() => new WebZipController(scene), [scene]);
+
+  // Track whether anchors have been registered (lazy-load, not every frame)
+  const anchorsRegisteredRef = useRef(false);
 
   // Main update loop
   useFrame((frameState, rawDelta) => {
@@ -153,8 +160,11 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       }
     }
 
-    // Register web anchors on first frame
-    webZipController.registerAnchorsFromScene();
+    // Register web anchors once on first frame (lazy-load, not every frame)
+    if (!anchorsRegisteredRef.current) {
+      webZipController.registerAnchorsFromScene();
+      anchorsRegisteredRef.current = true;
+    }
 
     // LOCOMOTION MODE DECISION: Only one system owns position per frame
     // Update traversal controllers with LIVE input
@@ -174,24 +184,29 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
     kai.isWallCrawling = wallClimbController.isClimbing();
     kai.isWebZipping = webZipController.isZipping();
 
-    // Determine active locomotion mode and apply position
-    let newPos = kai.position.clone();
+    // EXCLUSIVE LOCOMOTION MODE: only one system owns position per frame
     let finalPos: THREE.Vector3;
+    let nextMode: LocomotionMode = 'GROUND';
 
+    // Priority: WALL > WEB_ZIP > MOMENTUM > GROUND
     if (kai.isWallCrawling && wallClimbResult) {
       // WALL mode: wall climbing owns position
       finalPos = wallClimbResult;
       kai.isMoving = false;
+      nextMode = 'WALL';
     } else if (kai.isWebZipping && webZipResult) {
-      // WEB_ZIP mode: web zipping owns position
+      // WEB_ZIP mode: web zipping owns position (exclusive with WALL)
       finalPos = webZipResult;
       kai.isMoving = false;
-    } else if (webZipResult && webZipResult !== kai.position) {
+      nextMode = 'WEB_ZIP';
+    } else if (webZipResult && webZipResult.distanceTo(kai.position) > 0.001) {
       // MOMENTUM mode: residual momentum from previous zip
       finalPos = webZipResult;
       kai.isMoving = false;
+      nextMode = 'MOMENTUM';
     } else {
       // GROUND mode: normal walking/running
+      nextMode = 'GROUND';
       const inputX = input.moveX;
       const inputZ = input.moveY;
       const inputLen = Math.hypot(inputX, inputZ);
@@ -232,6 +247,9 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
     const BOUNDARY = 50;
     finalPos.x = THREE.MathUtils.clamp(finalPos.x, -BOUNDARY, BOUNDARY);
     finalPos.z = THREE.MathUtils.clamp(finalPos.z, -BOUNDARY, BOUNDARY);
+
+    // Update exclusive locomotion mode
+    kai.locomotionMode = nextMode;
 
     // KaiController is the SOLE position writer this frame
     kaiRef.current.position.copy(finalPos);
@@ -302,5 +320,9 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
   return {
     state: stateRef.current,
     getState: () => stateRef.current,
+    // Explicit refresh for anchor changes (level loads, etc)
+    refreshAnchors: () => {
+      webZipController.registerAnchorsFromScene();
+    },
   };
 }
