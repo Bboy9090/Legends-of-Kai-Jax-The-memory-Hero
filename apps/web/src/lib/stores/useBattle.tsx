@@ -1,13 +1,12 @@
 import { create } from 'zustand';
-import { subscribeWithSelector } from 'zustand/middleware';
 
 const BANTER_POOL = {
   taunt: [
     "Predictable. Try something else.",
-    "Is that the best the Memory King can do?",
-    "Your speed is lacking. I expected more.",
-    "The Void consumes all. Even your memories.",
-    "You're fighting a losing war, little hero.",
+    "You're telegraphing every strike.",
+    "You call that pressure?",
+    "Keep reaching. I'll keep punishing it.",
+    "You're fighting the rhythm instead of reading it.",
   ],
   smirk: [
     "Not today!",
@@ -17,11 +16,11 @@ const BANTER_POOL = {
     "Feeling the pressure yet?",
   ],
   encourage: [
-    "Nice one, Jaxon!",
-    "Hold the line, we've got this!",
-    "Stay focused, Kaison!",
-    "Together, we're Kai-Jax!",
-    "One more hit—don't give up!",
+    "Hold the line!",
+    "Stay focused!",
+    "Keep moving!",
+    "Trust the opening!",
+    "One more clean hit—don't give up!",
   ]
 };
 
@@ -33,6 +32,7 @@ import { useDifficulty, getDamageTakenMultiplier } from "./useDifficulty";
 import { useRunner } from "./useRunner";
 import { getCharacterMoves } from "../characterMoves";
 import { BattleCombatState } from "../../game/combat/stateEnums";
+import { canTriggerKaiJaxFusion } from "../../game/fusion/fusionPolicy";
 import {
   MOVES,
   ATTACK_TYPE_TO_MOVE,
@@ -44,8 +44,6 @@ import {
 import {
   BATTLE_STAMINA,
   DEFAULT_MAX_COMBO_TIMER_SEC,
-  FUSION_HEAL_ON_FUSION,
-  FUSION_SYNERGY_THRESHOLD,
   FUSION_TRANSFORM_INTRO_MS,
   PLAYER_DODGE,
   ULTIMATE_SUPER_ARMOR_SEC,
@@ -71,7 +69,7 @@ function getEffectiveMaxComboTimer(): number {
 }
 
 export interface BattleState {
-  // Selected fighters
+  // Selected fighters use combat-profile ids. Public/save ids remain in useRunner.
   playerFighterId: string;
   opponentFighterId: string;
   selectedArenaId: string;
@@ -81,7 +79,7 @@ export interface BattleState {
   opponentHealth: number;
   maxHealth: number;
   
-  // ⚡ LEGENDARY SYNERGY & TRANSFORMATION SYSTEM
+  // Kai/Jax synchronization and temporary base fusion
   playerSynergy: number;
   maxSynergy: number;
   playerTransformed: boolean;
@@ -89,14 +87,14 @@ export interface BattleState {
   maxTransformationTime: number;
   playerPreFusionFighterId: string | null;
 
-  // 🌌 OVERDRIVE METER — "Multiverse Overdrive" ultimate gate
+  // Combat ultimate meter
   playerOverdrive: number;
   maxOverdrive: number;
   combatInactivityTimer: number;
   /** Super armor during ultimate activation (seconds remaining) */
   ultimateSuperArmorRemaining: number;
   
-  // 🔥 COMBO SYSTEM
+  // Combo system
   comboCount: number;
   comboDamage: number;
   comboTimer: number;
@@ -163,9 +161,9 @@ export interface BattleState {
   opponentInvulnerable: boolean;
   opponentPersonality: 'aggressive' | 'defensive' | 'stalker' | 'titan' | 'caster';
   
-  // Tactical Trinity Metrics
-  playerDread: number; // match tension/danger
-  playerResonance: number; // defensive/parry energy
+  // Tactical metrics
+  playerDread: number;
+  playerResonance: number;
   
   triggerBanter: (source: 'player' | 'opponent', type: 'taunt' | 'smirk' | 'encourage', situation?: string) => void;
 
@@ -212,24 +210,24 @@ export interface BattleState {
   opponentAttack: (type: 'punch' | 'kick' | 'special') => void;
   opponentTakeDamage: (damage: number, attackType?: 'punch' | 'kick' | 'special' | 'ultimate') => void;
   
-  // ⚡ LEGENDARY SYNERGY & TRANSFORMATION
+  // Kai/Jax synchronization and fusion
   addSynergy: (amount: number) => void;
   triggerTransformation: () => void;
   updateTransformation: (delta: number) => void;
   endTransformation: () => void;
 
-  // 🌌 OVERDRIVE — fills on deal/receive damage, drains when camping
+  // Ultimate meter
   addOverdrive: (amount: number) => void;
   updateOverdrive: (delta: number) => void;
 
-  // 🤝 ASSIST — one per stock/round (Support Summons)
+  // Assist — one per stock/round
   playerAssistsRemaining: number;
   summonAssist: () => void;
 
-  // 🏛️ ENVIRONMENT — terrain breaks under heavy hits (0-1)
+  // Environment — terrain breaks under heavy hits (0-1)
   stageCrackLevel: number;
   
-  // 🔥 COMBO SYSTEM
+  // Combo system
   addToCombo: (damage: number) => void;
   updateCombo: (delta: number) => void;
   resetCombo: () => void;
@@ -282,9 +280,9 @@ function hapticKO(): void {
 function hitStunDurationForAttack(attackType: AttackType | undefined): number {
   switch (attackType) {
     case "ultimate":
-      return 0.65; // Extended for ultimate payoff
+      return 0.65;
     case "special":
-      return 0.45; // Heavier special impact
+      return 0.45;
     case "kick":
       return 0.28;
     case "punch":
@@ -294,24 +292,22 @@ function hitStunDurationForAttack(attackType: AttackType | undefined): number {
 }
 
 export const useBattle = create<BattleState>((set, get) => ({
-  // Initial state
-  playerFighterId: 'jaxon',
-  opponentFighterId: 'kaison',
+  // Publication-safe initial combat pair. App/Fighter Select will overwrite as needed.
+  playerFighterId: 'kai',
+  opponentFighterId: 'jax',
   selectedArenaId: 'bronx_streets',
   
   playerHealth: 100,
   opponentHealth: 100,
   maxHealth: 100,
   
-  // ⚡ LEGENDARY SYNERGY & TRANSFORMATION
   playerSynergy: 0,
   maxSynergy: 100,
   playerTransformed: false,
   transformationTimeRemaining: 0,
-  maxTransformationTime: 30, // 30 seconds of Kai-Jax power!
+  maxTransformationTime: 30,
   playerPreFusionFighterId: null,
 
-  // 🌌 OVERDRIVE
   playerOverdrive: 0,
   maxOverdrive: 100,
   combatInactivityTimer: 0,
@@ -319,7 +315,6 @@ export const useBattle = create<BattleState>((set, get) => ({
   playerAssistsRemaining: 1,
   stageCrackLevel: 0,
   
-  // 🔥 COMBO SYSTEM
   comboCount: 0,
   comboDamage: 0,
   comboTimer: 0,
@@ -332,7 +327,6 @@ export const useBattle = create<BattleState>((set, get) => ({
   winner: null,
   timeScale: 1.0,
   
-  // Screen effects
   screenShake: 0,
   screenFlash: null,
   hitStop: 0,
@@ -389,14 +383,12 @@ export const useBattle = create<BattleState>((set, get) => ({
 
   triggerBanter: (source, type, situation) => {
     const pool = BANTER_POOL[type] || BANTER_POOL.taunt;
-    // Search for relevant situation keywords in the lines
     let situationLines = pool.filter(l => !situation || l.toLowerCase().includes(situation.toLowerCase()));
     if (situationLines.length === 0) situationLines = pool;
     
     const text = situationLines[Math.floor(Math.random() * situationLines.length)];
     set({ battleBanter: { source, type, text } });
     
-    // Auto-clear after 2.5s
     setTimeout(() => {
       const current = get().battleBanter;
       if (current?.text === text) set({ battleBanter: null });
@@ -430,6 +422,7 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerSynergy: 0,
       playerTransformed: false,
       transformationTimeRemaining: 0,
+      playerPreFusionFighterId: null,
       playerOverdrive: 0,
       combatInactivityTimer: 0,
       ultimateSuperArmorRemaining: 0,
@@ -526,7 +519,6 @@ export const useBattle = create<BattleState>((set, get) => ({
     const { battlePhase, roundTime, hitStop } = get();
     if (battlePhase !== 'fighting') return;
     
-    // Handle hit stop (freeze game briefly for impact)
     if (hitStop > 0) {
       set({ hitStop: hitStop - delta });
       return;
@@ -561,19 +553,13 @@ export const useBattle = create<BattleState>((set, get) => ({
     set({ roundTime: newTime });
 
     get().tickBattleCombatFsm(delta);
-    
     get().tickPlayerAttack(delta);
     get().tickOpponentAttack(delta);
     get().updateTransformation(delta);
     get().updateCombo(delta);
-
-    // Update overdrive (drain when camping, update super armor)
     get().updateOverdrive(delta);
-
-    // Mission survival timers (only does work if a mission is active)
     useMissions.getState().tickSurvival(delta);
     
-    // Decay screen shake
     if (get().screenShake > 0) {
       set({ screenShake: Math.max(0, get().screenShake - delta * 10) });
     }
@@ -637,7 +623,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     if (playerAttacking || (battlePhase !== 'fighting' && battlePhase !== 'transforming')) return;
 
     const { playerFighterId, playerOverdrive, maxOverdrive } = get();
-    const hasNativeUltimate = ['kai-jax', 'kai', 'jax', 'boryn'].includes(playerFighterId);
+    const hasNativeUltimate = ['kaijax', 'kai', 'jax', 'boryn', 'borax'].includes(playerFighterId);
     const canUltimate = playerOverdrive >= maxOverdrive && (playerTransformed || hasNativeUltimate);
     if (type === 'ultimate' && !canUltimate) return;
 
@@ -793,7 +779,6 @@ export const useBattle = create<BattleState>((set, get) => ({
         get().triggerScreenShake(2);
         useAudio.getState().playSpecial();
         
-        // ⚡ TRINITY: Resonance increase and Smirk on parry
         const newRes = Math.min(100, s.playerResonance + 20);
         set({ playerResonance: newRes });
         get().triggerBanter('player', 'smirk', 'Not today!');
@@ -863,7 +848,6 @@ export const useBattle = create<BattleState>((set, get) => ({
     useAudio.getState().playHit();
     get().resetCombo();
 
-    // 🕸️ TRINITY: Increase Dread on damage
     const newDread = Math.min(100, s.playerDread + (scaledDamage / 2));
     set({ playerDread: newDread });
 
@@ -978,7 +962,6 @@ export const useBattle = create<BattleState>((set, get) => ({
     if (damage >= 15 || attackType === 'special' || attackType === 'ultimate') {
       set({ stageCrackLevel: Math.min(1, stageCrackLevel + 0.15) });
     }
-    // Taking damage cancels the opponent's current move to improve readability and prevent "hit-through" moments.
     set({
       damageDealt: damageDealt + damage,
       opponentAttacking: false,
@@ -1002,7 +985,6 @@ export const useBattle = create<BattleState>((set, get) => ({
     useAudio.getState().playHit();
     hapticHit();
 
-    // ⚔️ TRINITY: Smirk on heavy damage
     if (damage > 15 || Math.random() < 0.2) {
       get().triggerBanter('player', 'smirk');
     }
@@ -1017,59 +999,54 @@ export const useBattle = create<BattleState>((set, get) => ({
     }
   },
 
-  // ⚡ LEGENDARY SYNERGY SYSTEM (Resonance for Jaxon/Kaison -> Kai-Jax)
+  // Synchronization is a Kai/Jax-only resource. It cannot turn legacy prototype
+  // identities into Kai-Jax and cannot bypass the story gate.
   addSynergy: (amount) => {
     const { playerSynergy, maxSynergy, playerTransformed, playerFighterId } = get();
-    if (playerTransformed || playerFighterId === 'kai-jax') return; // Can't build synergy while transformed or already fused
+    if (playerTransformed || (playerFighterId !== 'kai' && playerFighterId !== 'jax')) return;
     
     const newSynergy = Math.min(maxSynergy, playerSynergy + amount);
     set({ playerSynergy: newSynergy });
     
-    // Flash when ready to transform (50% for Jaxon/Kaison fusion)!
-    const fusionThreshold = FUSION_SYNERGY_THRESHOLD;
-    if ((playerFighterId === 'jaxon' || playerFighterId === 'kaison')) {
-      if (newSynergy >= fusionThreshold && playerSynergy < fusionThreshold) {
-        get().triggerScreenFlash('#FFD700');
-      }
-    } else if (newSynergy >= maxSynergy && playerSynergy < maxSynergy) {
+    if (newSynergy >= maxSynergy && playerSynergy < maxSynergy && useRunner.getState().kaiJaxFusionUnlocked) {
       get().triggerScreenFlash('#FFD700');
     }
   },
   
   triggerTransformation: () => {
-    const { playerSynergy, playerTransformed, playerFighterId } = get();
-    // Fusion metadata: `game/tails/TailAbilityRegistry` (FUSION_KAI_JAX_TAIL)
+    const { playerSynergy, maxSynergy, playerTransformed, playerFighterId, battlePhase } = get();
+    const fusionUnlocked = useRunner.getState().kaiJaxFusionUnlocked;
 
-    // Jaxon/Kaison -> Kai-Jax fusion requires 50% Resonance
-    const fusionThreshold = FUSION_SYNERGY_THRESHOLD;
-    if (playerTransformed || playerFighterId === 'kai-jax') return;
-    if ((playerFighterId === 'jaxon' || playerFighterId === 'kaison') && playerSynergy < fusionThreshold) return;
-    
-    // Enter transformation phase (60-frame hit-stop for core integration)
+    if (!canTriggerKaiJaxFusion({
+      fighterId: playerFighterId,
+      fusionUnlocked,
+      synergy: playerSynergy,
+      maxSynergy,
+      transformed: playerTransformed,
+      battlePhase,
+    })) return;
+
     set({ 
       battlePhase: 'transforming',
-      timeScale: 0.1, // Super slow-mo for cinematic transformation
-      playerFighterId: 'kai-jax', // Switch to Kai-Jax character immediately
-      playerPreFusionFighterId: playerFighterId, // Store for revert
+      timeScale: 0.1,
+      playerFighterId: 'kaijax',
+      playerPreFusionFighterId: playerFighterId,
     });
     
-    // Epic screen effects
     get().triggerScreenFlash('#FFFFFF');
     get().triggerScreenShake(10);
     
-    // Complete transformation after 2 seconds (60-frame hit-stop at 30fps)
     setTimeout(() => {
+      const current = get();
+      if (current.battlePhase !== 'transforming' || current.playerFighterId !== 'kaijax') return;
       set({
         playerTransformed: true,
-        playerSynergy: Math.max(0, playerSynergy - fusionThreshold), // Consume 50% for fusion
-        transformationTimeRemaining: get().maxTransformationTime,
+        playerSynergy: 0,
+        transformationTimeRemaining: current.maxTransformationTime,
         battlePhase: 'fighting',
         timeScale: 1.0,
-        // Heal on fusion (Bovarr's Anchor stabilizes)
-        playerHealth: Math.min(get().maxHealth, get().playerHealth + FUSION_HEAL_ON_FUSION),
       });
-      
-      get().triggerScreenFlash('#FFBF00'); // Amber - Father's Strand ignites
+      get().triggerScreenFlash('#FFBF00');
     }, FUSION_TRANSFORM_INTRO_MS);
   },
   
@@ -1091,39 +1068,35 @@ export const useBattle = create<BattleState>((set, get) => ({
   
   endTransformation: () => {
     const { playerFighterId, playerPreFusionFighterId } = get();
-    
-    // Revert to pre-fusion fighter (jaxon or kaison)
-    const revertTo = playerFighterId === 'kai-jax' && playerPreFusionFighterId
+    const revertTo = playerFighterId === 'kaijax' && playerPreFusionFighterId
       ? playerPreFusionFighterId
-      : playerFighterId === 'kai-jax' ? 'jaxon' : playerFighterId;
+      : playerFighterId === 'kaijax' ? 'kai' : playerFighterId;
     set({
       playerTransformed: false,
       transformationTimeRemaining: 0,
       playerFighterId: revertTo,
       playerPreFusionFighterId: null,
+      playerSynergy: 0,
     });
     get().triggerScreenFlash('#A855F7');
   },
 
-  // 🌌 OVERDRIVE — fills on deal/receive damage, drains when avoiding combat (camping prevention)
   addOverdrive: (amount) => {
     const { playerOverdrive, maxOverdrive } = get();
     const newOverdrive = Math.min(maxOverdrive, playerOverdrive + amount);
     set({
       playerOverdrive: newOverdrive,
-      combatInactivityTimer: 0, // Reset — we just had combat
+      combatInactivityTimer: 0,
     });
   },
 
   updateOverdrive: (delta) => {
     const { combatInactivityTimer, playerOverdrive, ultimateSuperArmorRemaining } = get();
-    // Tick super armor down
     if (ultimateSuperArmorRemaining > 0) {
       set({ ultimateSuperArmorRemaining: Math.max(0, ultimateSuperArmorRemaining - delta) });
     }
-    // Drain when camping (no combat for 3+ seconds)
     const CAMP_THRESHOLD = 3;
-    const DRAIN_RATE = 12; // per second when camping
+    const DRAIN_RATE = 12;
     const newInactivity = combatInactivityTimer + delta;
     set({ combatInactivityTimer: newInactivity });
     if (newInactivity >= CAMP_THRESHOLD && playerOverdrive > 0) {
@@ -1145,7 +1118,6 @@ export const useBattle = create<BattleState>((set, get) => ({
     set({ playerAssistsRemaining: playerAssistsRemaining - 1 });
   },
   
-  // 🔥 COMBO SYSTEM
   addToCombo: (damage) => {
     const { comboCount, comboDamage, maxComboTimer, maxCombo } = get();
     const newCombo = comboCount + 1;
@@ -1158,7 +1130,6 @@ export const useBattle = create<BattleState>((set, get) => ({
       maxCombo: newMaxCombo,
     });
 
-    // Mission combo tracking (tracks peak combo reached)
     useMissions.getState().recordCombo(newCombo);
     
     if (newCombo % 5 === 0) {
@@ -1192,7 +1163,6 @@ export const useBattle = create<BattleState>((set, get) => ({
     });
   },
   
-  // Screen effects
   triggerScreenShake: (intensity) => {
     set({ screenShake: intensity });
   },
@@ -1231,8 +1201,10 @@ export const useBattle = create<BattleState>((set, get) => ({
       battlePhase: 'ko',
       winner,
       timeScale: legendaryFinish && winner === 'player' ? 0.15 : 0.3,
-      playerTransformed: false, // End transformation on KO
+      playerTransformed: false,
       transformationTimeRemaining: 0,
+      playerPreFusionFighterId: null,
+      playerSynergy: 0,
     });
     
     get().triggerScreenFlash(winner === 'player' ? (legendaryFinish ? '#FFE066' : '#FFD700') : '#FF0000');
@@ -1240,7 +1212,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     if (winner === 'player') {
       get().triggerBanter('player', 'encourage', 'Victory!');
     } else {
-      get().triggerBanter('opponent', 'taunt', 'Devoured.');
+      get().triggerBanter('opponent', 'taunt');
     }
     get().triggerScreenShake(legendaryFinish && winner === 'player' ? 12 : 8);
 
@@ -1249,7 +1221,6 @@ export const useBattle = create<BattleState>((set, get) => ({
     
     useAudio.getState().playKO();
     
-    // Calculate score with bonuses
     const { maxCombo, playerHealth, maxHealth } = get();
     const baseScore = winner === 'player' ? 100 : 0;
     const comboBonus = maxCombo * 5;
@@ -1294,12 +1265,13 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
   
   returnToMenu: () => {
-    console.log("[Battle] 🏠 Returning to menu");
+    console.log("[Battle] Returning to menu");
     useAudio.getState().stopBattleMusic();
     set({ 
       timeScale: 1.0,
       playerTransformed: false,
       transformationTimeRemaining: 0,
+      playerPreFusionFighterId: null,
       playerSynergy: 0,
     });
   },
@@ -1309,7 +1281,13 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
   
   setPlayerFighter: (fighterId) => {
-    set({ playerFighterId: fighterId });
+    set({
+      playerFighterId: fighterId,
+      playerTransformed: false,
+      transformationTimeRemaining: 0,
+      playerPreFusionFighterId: null,
+      playerSynergy: 0,
+    });
   },
   
   setOpponentFighter: (fighterId) => {
