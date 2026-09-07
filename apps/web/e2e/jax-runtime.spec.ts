@@ -41,7 +41,6 @@ async function bootJaxTest(page: Page) {
   });
 
   await expect(page.getByTestId('jax-debug-hud')).toBeVisible({ timeout: 15_000 });
-  // Let the intro overlay finish and give the R3F scene enough time to settle.
   await page.waitForTimeout(5_000);
   await expect(page.locator('canvas').first()).toBeVisible();
 }
@@ -53,11 +52,18 @@ async function readPosition(page: Page): Promise<[number, number, number]> {
   return [Number(match[1]), Number(match[2]), Number(match[3])];
 }
 
+async function readPair(page: Page, testId: string): Promise<[number, number]> {
+  const text = await page.getByTestId(testId).innerText();
+  const match = text.match(/\((-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?)\)/);
+  if (!match) throw new Error(`Could not parse pair from ${testId}: ${text}`);
+  return [Number(match[1]), Number(match[2])];
+}
+
 async function readNumber(page: Page, testId: string): Promise<number> {
   const text = await page.getByTestId(testId).innerText();
-  const match = text.match(/-?\d+(?:\.\d+)?/g);
-  if (!match?.length) throw new Error(`Could not parse number from ${testId}: ${text}`);
-  return Number(match[match.length - 1]);
+  const match = text.match(/-?\d+(?:\.\d+)?/);
+  if (!match) throw new Error(`Could not parse number from ${testId}: ${text}`);
+  return Number(match[0]);
 }
 
 test('Jax runtime: movement, jump and displacement change real controller state', async ({ page }) => {
@@ -97,13 +103,16 @@ test('Jax runtime: light, pressure-heavy and lightning special affect live targe
   const pressureAfterLight = await readNumber(page, 'jax-pressure-health');
   expect(pressureAfterLight).toBe(pressureStart - 8);
 
-  const pressurePositionBefore = await page.getByTestId('jax-pressure-health').innerText();
+  const pressurePositionBefore = await readPair(page, 'jax-pressure-position');
   await page.keyboard.press('k');
   await page.waitForTimeout(650);
   const pressureAfterHeavy = await readNumber(page, 'jax-pressure-health');
   expect(pressureAfterHeavy).toBe(pressureAfterLight - 15);
-  const pressurePositionAfter = await page.getByTestId('jax-pressure-health').innerText();
-  expect(pressurePositionAfter).not.toBe(pressurePositionBefore);
+  const pressurePositionAfter = await readPair(page, 'jax-pressure-position');
+  expect(Math.hypot(
+    pressurePositionAfter[0] - pressurePositionBefore[0],
+    pressurePositionAfter[1] - pressurePositionBefore[1]
+  )).toBeGreaterThan(0.01);
 
   const lightningStart = await readNumber(page, 'jax-lightning-health');
   await page.keyboard.press('l');
