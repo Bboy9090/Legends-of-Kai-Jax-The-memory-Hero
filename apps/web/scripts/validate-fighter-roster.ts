@@ -30,11 +30,11 @@ function validateUniqueIds(
   return new Set(seen.keys());
 }
 
-const canonicalIds = validateUniqueIds("canonical versus roster", VERSUS_ROSTER);
+const canonicalIds = validateUniqueIds("publication-safe versus roster", VERSUS_ROSTER);
 
-if (VERSUS_ROSTER.length === 0) errors.push("canonical versus roster is empty");
-if (VERSUS_ROSTER.length !== 27) {
-  errors.push(`canonical versus roster expected 27 entries but found ${VERSUS_ROSTER.length}`);
+if (VERSUS_ROSTER.length === 0) errors.push("publication-safe versus roster is empty");
+if (VERSUS_ROSTER.length !== 12) {
+  errors.push(`publication-safe versus roster expected 12 entries but found ${VERSUS_ROSTER.length}`);
 }
 
 const coreIds = new Set(
@@ -44,16 +44,31 @@ for (const required of ["kai", "jax", "kai-jax", "boryn", "borax"]) {
   if (!coreIds.has(required)) errors.push(`canonical core roster is missing "${required}"`);
 }
 
+const defaultUnlockedIds = VERSUS_ROSTER
+  .filter((entry) => entry.defaultUnlocked)
+  .map((entry) => entry.id);
+const expectedDefaultUnlocked = ["kai", "jax", "boryn", "borax"];
+if (JSON.stringify(defaultUnlockedIds) !== JSON.stringify(expectedDefaultUnlocked)) {
+  errors.push(
+    `default Arena roster must be ${expectedDefaultUnlocked.join(", ")} but found ${defaultUnlockedIds.join(", ")}`,
+  );
+}
+
 const kaiJax = VERSUS_ROSTER.find((entry) => entry.id === "kai-jax");
 if (!kaiJax) {
   errors.push('canonical roster is missing "kai-jax"');
-} else if (kaiJax.combatProfileId !== "kaijax") {
-  errors.push('canonical "kai-jax" must bridge to legacy combat profile "kaijax"');
+} else {
+  if (kaiJax.combatProfileId !== "kaijax") {
+    errors.push('canonical "kai-jax" must bridge explicitly to legacy combat profile "kaijax"');
+  }
+  if (kaiJax.defaultUnlocked) {
+    errors.push('canonical "kai-jax" must remain story gated by default');
+  }
 }
 
 const vharok = VERSUS_ROSTER.find((entry) => entry.id === "vharok");
 if (!vharok) {
-  errors.push('canonical roster is missing "vharok"');
+  errors.push('publication-safe roster is missing "vharok"');
 } else {
   if (vharok.faction !== "bloodward-antagonist") {
     errors.push('"vharok" must remain in faction "bloodward-antagonist"');
@@ -80,6 +95,36 @@ for (const required of ["kar-voth", "thryxen", "pyraxis", "myrr-kai"]) {
   }
 }
 
+const ulgorr = VERSUS_ROSTER.find((entry) => entry.id === "ulgorr");
+if (!ulgorr || ulgorr.faction !== "ancient-antagonist" || ulgorr.role !== "boss" || !ulgorr.bossClass || ulgorr.defaultUnlocked) {
+  errors.push('"ulgorr" must remain a locked ancient-antagonist boss candidate');
+}
+
+const behemoth = VERSUS_ROSTER.find((entry) => entry.id === "behemoth");
+if (!behemoth || behemoth.faction !== "engineered-horror" || behemoth.role !== "boss" || !behemoth.bossClass || behemoth.defaultUnlocked) {
+  errors.push('"behemoth" must remain a locked engineered-horror boss candidate');
+}
+
+const unverifiedAgainstCurrentBloodward = [
+  "aurelion",
+  "selene",
+  "sable-nine",
+  "widow-of-the-alley",
+  "varkesh-the-grafted",
+  "sybeth-the-choir-mother",
+  "ironvein-overseer",
+  "korthyx-prime",
+  "pillar-twins",
+  "hollow-architect",
+  "fang-colossus",
+  "erasure-choir",
+];
+for (const id of unverifiedAgainstCurrentBloodward) {
+  if (canonicalIds.has(id)) {
+    errors.push(`unverified identity "${id}" must not be auto-promoted into the publication-safe versus roster`);
+  }
+}
+
 for (const entry of VERSUS_ROSTER) {
   if (!entry.sourceSheet.trim()) {
     errors.push(`canonical fighter "${entry.id}" has no source provenance`);
@@ -101,5 +146,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `Fighter roster validation passed: ${canonicalIds.size} unique canonical versus identities.`,
+  `Fighter roster validation passed: ${canonicalIds.size} unique publication-safe versus identities.`,
 );
