@@ -1,307 +1,289 @@
-# Phase C Week 1: Kickoff & Fighter Asset Acquisition
+# Phase C Week 1 — Canon Roster & Functional Integration
 
-**Duration:** Days 1-7 (Sept 1-7, 2026)  
-**Focus:** Epic C1.1 & C1.3 (Fighter archetypes, asset acquisition, stats design)  
-**Owner:** 3D Artist (primary), Game Designer, Engineer (support)
+**Window:** Phase-relative Days 1-7  
+**Primary objective:** Make the first canon fighters mechanically real without allowing prototype art, generic archetypes, or stale lore to become publication truth.  
+**Primary game:** cinematic action-adventure.  
+**Secondary mode:** Combat Arena / Training / Legends Archive.
 
----
-
-## Monday (Day 1): Phase C Kickoff
-
-### Team Meeting (30 min)
-- [ ] Review Phase C overview and 6-week roadmap
-- [ ] Confirm team roles and responsibilities
-- [ ] Walkthrough Phase C task breakdown
-- [ ] Address questions and concerns
-- [ ] Distribute all documentation
-
-### Standup (15 min)
-- [ ] Engineer: Prepare fighter integration environment
-- [ ] 3D Artist: Begin asset search, finalize archetypes
-- [ ] Game Designer: Create move set templates
-- [ ] QA: Set up regression testing infrastructure
-
-### Engineer Preparation
-- [ ] Clone latest Phase B code (fix/model-rendering-clean branch)
-- [ ] Verify OptimizedBeastModel component works with test fighter
-- [ ] Set up fighter registry JSON structure (template)
-- [ ] Create fighter loader pseudocode
-- [ ] Prepare development environment for C1.2 work
-
-### 3D Artist Starting C1.1
-- [ ] Define 6 fighter archetypes:
-  - [ ] **Velocity** — Speed demon (fast attacks, low health)
-  - [ ] **Kaison** — Heavy hitter (slow, high damage)
-  - [ ] **Voltage Fang** — Electric fighter (shock effects, medium)
-  - [ ] **Steelwolf** — Tank (high defense, low damage)
-  - [ ] **Ashen Tiger** — Technical master (complex combos)
-  - [ ] **Blazing Fox** — Balanced (versatile)
-- [ ] Create fighter reference sheet (visual style, silhouettes)
-- [ ] Document animation requirements (11 core animations)
-- [ ] Identify asset sources:
-  - [ ] Meshy AI (if budget available)
-  - [ ] Unity Asset Store (existing models)
-  - [ ] Contractor artist (if time/budget permits)
-  - [ ] Internal artist (if available)
-
-### Game Designer Starting C1.3
-- [ ] Define base stats template:
-  - [ ] Health (50-200 range)
-  - [ ] Speed (0.5-2.0 multiplier)
-  - [ ] Strength (0.5-2.0 multiplier)
-  - [ ] Defense (0.5-2.0 multiplier)
-- [ ] Create per-archetype stat distributions:
-  - [ ] Velocity: high speed, low health, medium strength
-  - [ ] Kaison: low speed, high health, high strength
-  - [ ] Voltage Fang: medium speed, medium health, high strength
-  - [ ] Steelwolf: low speed, high health, high defense
-  - [ ] Ashen Tiger: high speed, medium health, complex moveset
-  - [ ] Blazing Fox: medium all stats (baseline)
-- [ ] Document move set framework:
-  - [ ] Light attack (fast, low damage, 5 frames)
-  - [ ] Medium attack (medium speed/damage, 7 frames)
-  - [ ] Heavy attack (slow, high damage, 10 frames)
-  - [ ] Special ability (unique per fighter, 50 energy cost)
-  - [ ] Dodge (invulnerability frames, low recovery)
+> **Calendar correction:** Older Phase C files attached Week 1 to Sept 1-7 while a later execution status also called Sept 7 "Day 1." Those cannot both be true. This checklist therefore uses phase-relative days only until one authoritative Phase C Day 1 calendar date is chosen.
 
 ---
 
-## Tuesday (Day 2): Asset Research & Sourcing
+## Current Verified Foundation
 
-### 3D Artist: Asset Sourcing
-- [ ] Research Meshy AI capabilities and pricing
-  - [ ] Create test prompt for one fighter
-  - [ ] Evaluate quality vs. manual art
-  - [ ] Estimate timeline (2-3 hours per fighter)
-- [ ] Browse Unity Asset Store for existing fighter models
-  - [ ] Search: "fighting game character", "humanoid fighter"
-  - [ ] Filter by animation count (need 11+ clips)
-  - [ ] Check licensing (commercial use OK?)
-  - [ ] Note potential candidates
-- [ ] Reach out to contractor artists (if applicable)
-  - [ ] Send brief and examples
-  - [ ] Request quotes for 6 fighters
-  - [ ] Negotiate timeline (target: 3-4 days)
-- [ ] Document findings in "Asset Sourcing Report"
-  - [ ] Pros/cons per source
-  - [ ] Cost estimates
-  - [ ] Timeline estimates
-  - [ ] Quality assessment
+The following work is already present on the active Phase C branch and must not be rewritten casually:
 
-### Engineer: Fighter Integration Prep
-- [ ] Create fighter registry template (JSON)
-  ```json
-  {
-    "id": "fighter-id",
-    "name": "Fighter Name",
-    "archetype": "speed|heavy|electric|tank|technical|balanced",
-    "model": { "gltfPath": "path/to/model.glb" },
-    "animations": { "idle": {...}, "walk": {...}, ... },
-    "stats": { "health": 100, "speed": 1.0, ... },
-    "moves": [...]
-  }
-  ```
-- [ ] Write fighter loader function (pseudocode)
-- [ ] Test with Phase B Kai-Jax model
-- [ ] Document animation clip naming convention
-- [ ] Create validation checklist
+- [x] Kai shared keyboard/gamepad/touch gameplay input foundation
+- [x] Kai single-position-owner locomotion architecture
+- [x] Kai wall climb / Web Zip traversal foundation
+- [x] Kai attack / venom lifecycle foundation
+- [x] Jax Kar-Voth + Thryxen canon identity in gameplay code
+- [x] Jax camera-relative ground and air movement
+- [x] Jax ground/air displacement charge lifecycle
+- [x] Jax full-path swept displacement collision
+- [x] StormAirSystem as the single Jax vertical-physics authority
+- [x] Jax attack lifecycle with deterministic timing and hit protection
+- [x] Kai-Jax removed from default-unlocked public roster state
+- [x] Story hero selection restricted to Kai/Jax normal protagonist use
+- [x] Purchasable Nine-Tail / score-as-lineage progression removed from Character Ability UI
+- [x] Combat Arena chronology rule documented
+- [x] Phase C Fighter Schema v2 replaces the generic public speed/heavy/electric/tank template
 
-### Game Designer: Move Set Details
-- [ ] Create move spreadsheet template:
-  - [ ] Move ID, name, type, animation, damage, speed, recovery
-  - [ ] Per-archetype variations
-  - [ ] Balance targets (no move > 100 damage)
-- [ ] Draft Velocity move set:
-  - [ ] Light: quick jab (10 damage, 0.4s)
-  - [ ] Medium: combo punch (20 damage, 0.6s)
-  - [ ] Heavy: spinning kick (35 damage, 0.8s)
-  - [ ] Special: speed burst (50 damage + speed boost, 5s cooldown)
-  - [ ] Dodge: forward evasion (0.3s recovery)
-- [ ] Outline other fighter move sets (simplify for now)
+These checks describe repository implementation state only. They do **not** prove final art, physical-device performance, App Store archive readiness, or complete story chronology.
 
 ---
 
-## Wednesday (Day 3): Asset Acquisition Decision
+## Day 1 — Canon Audit Before Asset Spend
 
-### 3D Artist: Finalize Asset Plan
-- [ ] Complete asset sourcing report
-- [ ] Make acquisition decision:
-  - Option A: Meshy AI (fast, cheaper, quality TBD)
-  - Option B: Asset Store (proven quality, potentially cheaper)
-  - Option C: Contractor artist (best quality, slower)
-  - Option D: Hybrid (some from AI, some from store)
-- [ ] Place orders/start projects immediately
-- [ ] Document acquisition timeline and dependencies
+### Game Designer
 
-### All Team: Status Sync (15 min)
-- [ ] 3D Artist: Asset sourcing complete, orders placed
-- [ ] Engineer: Fighter loader prepared, ready for integration
-- [ ] Game Designer: Move sets drafted, stats template ready
-- [ ] QA: Testing infrastructure prepared
+- [ ] Audit every current fighter candidate against the active publication/manuscript authority.
+- [ ] Assign one status to every candidate:
+  - `story-canon`
+  - `historical-canon`
+  - `arena-canon`
+  - `prototype-only`
+  - `canon-decision-required`
+- [ ] Confirm current public priority:
+  1. Kai
+  2. Jax
+  3. Boryn
+  4. Borax
+  5. Kai-Jax — story-gated
+  6. current-authority Book One enemy/boss representative only when the exact source confirms it
+- [ ] Keep Velocity, Kaison, Voltage Fang, Steelwolf, Ashen Tiger, and Blazing Fox as internal templates unless promoted by a current canon source.
+- [ ] Record every unresolved lore point as **CANON DECISION REQUIRED** instead of filling it by invention.
 
-### Engineer: Integration Environment Ready
-- [ ] Verify fighter schema works with test assets
-- [ ] Mock up first fighter JSON file
-- [ ] Test loader against mock data
-- [ ] Prepare for asset integration (starting C1.2 on Day 4)
+### Engineer
 
----
+- [x] Replace generic Phase C fighter schema with canon-safe schema.
+- [ ] Wire runtime fighter definitions to schema v2 or create an explicit migration adapter.
+- [ ] Keep public/save identity separate from legacy combat-profile aliases.
+- [ ] Fail validation when prototype-only fighters are story-selectable.
+- [ ] Fail validation when Kai-Jax base tail count is not exactly 3.
+- [ ] Fail validation when story-gated lineage/tails are tied to XP, score, or currency.
 
-## Thursday-Friday (Days 4-5): Asset Integration Begins (C1.2)
+### 3D / Character Artist
 
-### 3D Artist: First Assets Arriving
-- [ ] Receive first fighter model(s)
-- [ ] Validate animation clips (count, naming, quality)
-- [ ] Check for missing animations (checklist validation)
-- [ ] Optimize model if needed (file size < 2MB)
-- [ ] Export to GLTF format if necessary
-- [ ] Deliver first fighter to Engineer for integration testing
-
-### Engineer: Integration Testing (C1.2 Starting)
-- [ ] Receive first fighter model from 3D Artist
-- [ ] Create fighter JSON file from schema template
-- [ ] Load model using fighter loader function
-- [ ] Test in Training mode:
-  - [ ] Fighter visible (no invisible glitch)
-  - [ ] Animations play (idle, walk, attack)
-  - [ ] No errors in console
-  - [ ] Performance ≥57 fps on mobile viewport
-- [ ] Debug any issues immediately
-- [ ] Document integration process for batch 2
-
-### Game Designer: Balancing Starts
-- [ ] Finalize all 6 fighter move sets
-- [ ] Create balance spreadsheet (win rates expectations)
-- [ ] Define progression unlock levels
-- [ ] Document cosmetic variants (colors per fighter)
+- [ ] Do not generate final meshes until fighter canon status and visual authority are known.
+- [ ] Gather clean front/side/back/3-4 reference views where available.
+- [ ] Confirm rig requirements before asset acquisition.
+- [ ] For Kai, reject any base mesh/rig plan that cannot support four functional spider limbs.
+- [ ] For Kai-Jax, reject any base model that starts with nine tails.
 
 ---
 
-## Friday-Saturday (Days 6-7): Week 1 Wrap-Up
+## Day 2 — Gameplay Identity Lock
 
-### 3D Artist: Batch 1 Progress
-- [ ] Target: 2-3 fighters ready by end of week
-- [ ] Asset optimization complete
-- [ ] Delivery to Engineer for integration
+Create a complete identity sheet for each fighter under active production.
 
-### Engineer: Integration Progress
-- [ ] 2-3 fighters integrated and tested
-- [ ] All visible, animating smoothly
-- [ ] Performance benchmarked (57+ fps confirmed)
-- [ ] Ready for C1.3 (stats/moves) implementation
+Required fields:
 
-### Game Designer: Move Set Finalization
-- [ ] All 6 fighters move sets complete
-- [ ] Balance spreadsheet reviewed
-- [ ] Progression curve defined
-- [ ] Ready for C1.4 (AI implementation)
+- [ ] Movement identity
+- [ ] Normal attack identity
+- [ ] Heavy attack identity
+- [ ] Launcher
+- [ ] Aerial identity
+- [ ] Defense
+- [ ] Dodge
+- [ ] Traversal ability
+- [ ] Signature 1
+- [ ] Signature 2
+- [ ] Signature 3
+- [ ] Ancestral ability
+- [ ] Team / assist behavior
+- [ ] Environment interaction
+- [ ] Fusion interaction
+- [ ] Ultimate / story-gated power
+- [ ] Weakness
+- [ ] Resource model
+- [ ] Combat personality
+- [ ] Technical difficulty
 
-### Team Standup (15 min)
-- [ ] Review Week 1 progress
-- [ ] Confirm Week 2 readiness
-- [ ] Address blockers or delays
-- [ ] Adjust timeline if needed
+### Character Locks
 
----
+#### Kai
 
-## Week 1 Success Criteria
+- [ ] Memory-Web / Ember / Venom / Spider-limb mobility all represented.
+- [ ] Four spider limbs affect locomotion or combat rather than existing as decoration.
+- [ ] Wall movement and aerial redirection are part of traversal testing.
+- [ ] Modern Raging City visual authority maintained.
 
-✅ **C1.1 (Asset Acquisition):**
-- Fighter archetypes finalized (6 characters defined)
-- Asset sourcing plan complete (decision made: Meshy AI, Asset Store, contractor, etc.)
-- First batch of fighters acquired or in progress
-- Animation requirements documented and validated
+#### Jax
 
-✅ **C1.3 (Stats & Move Sets):**
-- Move set templates created for all 6 fighters
-- Damage/speed/recovery values documented
-- Balance spreadsheet initialized
-- Progression unlock plan documented
+- [ ] Storm / Lightning / Pressure / Displacement all represented.
+- [ ] Jax movement remains distinct from Kai.
+- [ ] Displacement remains traversal plus combat positioning, not a simple dash reskin.
+- [ ] Air control remains under StormAirSystem authority.
 
-✅ **C1.2 (Integration) - Starting:**
-- Fighter loader function created (pseudocode/code)
-- Fighter JSON schema validated
-- First fighter(s) successfully integrated and tested
-- Performance baseline 57+ fps confirmed on test fighter
+#### Boryn
 
-✅ **Infrastructure:**
-- Fighter registry template ready
-- Development environment set up
-- Testing procedures documented
-- Team communication channels active
+- [ ] Protection, interception, endurance, heavy retaliation, and sacrifice reflected mechanically.
+- [ ] Do not use a generic slow-tank design as the final identity.
 
----
+#### Borax
 
-## Go/No-Go Gate: End of Week 1
+- [ ] Stances, parries/counters, storm discipline, precision displacement, and punish play represented.
+- [ ] Do not solve mentor superiority by simply inflating damage and health.
 
-**If Week 1 succeeds:**
-- ✅ GO to Week 2 (continue C1 + start C2)
-- Proceed with remaining fighters (C1.2 continues)
-- Begin combat polish prep (C2 planning)
+#### Kai-Jax
 
-**If blockers arise:**
-- ❌ ASSESS: Is delay recoverable within Week 1?
-- ❌ ESCALATE: If assets unavailable or quality issues
-- ❌ PIVOT: Use backup asset sources if primary fails
+- [ ] Base fusion = exactly 3 tails.
+- [ ] Four spider limbs retained.
+- [ ] All four ancestral lines represented.
+- [ ] Story unlock remains required.
+- [ ] Ninth tail remains late-story coronation only.
 
 ---
 
-## Week 1 Deliverables
+## Day 3 — Asset Sourcing Decision
 
-**By End of Day 7:**
-- Fighter archetypes defined + reference sheet
-- Asset sourcing report complete
-- First batch fighters acquired or in progress (target: 2-3)
-- Fighter JSON schema + loader function ready
-- Move set templates for all 6 fighters
-- Balance spreadsheet initialized
-- At least 1 fighter successfully integrated and tested
-- Performance baseline: ≥57 fps confirmed
+### Required classification before acquisition
 
----
+Every proposed asset must be tagged:
 
-## Blockers & Contingencies
+- [ ] CANON HERO
+- [ ] CANON ALLY
+- [ ] CANON ENEMY
+- [ ] CANON HISTORICAL
+- [ ] PROTOTYPE ONLY
+- [ ] CANON DECISION REQUIRED
 
-**Blocker: Assets not available**
-- Contingency: Use Meshy AI + Unity Asset Store combination
-- Timeline impact: +2-3 days if relying on contractor
+### Asset source decision
 
-**Blocker: Animation clip count mismatch**
-- Contingency: Reuse animations from existing fighters or retarget
-- Timeline impact: +1-2 days per fighter
+For each active fighter choose and document one path:
 
-**Blocker: Performance regression**
-- Contingency: Optimize model file size, reduce texture resolution
-- Timeline impact: +2-3 days for optimization
+- [ ] project-original model
+- [ ] Meshy base mesh / multi-view aid
+- [ ] contractor model
+- [ ] licensed asset-library base
+- [ ] temporary placeholder
 
-**Blocker: Schema validation fails**
-- Contingency: Simplify schema, iterate on design
-- Timeline impact: +1 day for refinement
+### Provenance
 
----
+Before calling any asset production-ready, record:
 
-## Communication Schedule
+- [ ] provider / artist
+- [ ] asset origin
+- [ ] license / terms
+- [ ] commercial-use permission
+- [ ] modification history
+- [ ] evidence location
+- [ ] approved visual-lock comparison
 
-- **Daily:** 15 min standup (same time each day)
-- **Wednesday EOD:** Status sync + asset decision
-- **Friday EOD:** Week 1 review + Week 2 prep
-- **Slack:** #phase-c-daily for async updates
+Meshy is a base-mesh aid only. It is not the authority for established character design or custom rig decisions.
 
 ---
 
-## Next Week Preview (Week 2)
+## Days 4-5 — First Fighter Integration
 
-If Week 1 succeeds:
-- C1.1 continues: Batch 2 fighters (remaining 3-4)
-- C1.2 accelerates: All fighters integrated and tested
-- C1.4 begins: AI opponent behavior + Training mode finalization
-- C2 planning: Combat polish specs finalized
+### Priority integration order
 
-If Week 1 blocked:
-- Resolve blockers immediately
-- Adjust Week 2 timeline
-- Escalate if recovery unlikely
+Use the first assets that are actually ready and licensed, but prioritize:
+
+1. Kai
+2. Jax
+3. Boryn or Borax
+
+Do not delay Kai/Jax closure to polish prototype-only roster entries.
+
+### Engineer checks per fighter
+
+- [ ] Definition validates against Fighter Schema v2.
+- [ ] Public ID is stable.
+- [ ] Model loads without missing material/texture failures.
+- [ ] Required animation clips exist.
+- [ ] Character-specific appendage clips exist where required.
+- [ ] Collision volume matches the visible body.
+- [ ] Traversal ability works in a Raging City gameplay space.
+- [ ] Combat state transitions do not create position-authority conflicts.
+- [ ] Touch controls reach the same gameplay actions as keyboard/gamepad where intended.
+- [ ] Arena use does not silently change story chronology.
+
+### Performance
+
+- [ ] Measure rather than estimate.
+- [ ] Target 60 fps.
+- [ ] Current Phase C acceptable integration floor: 57 fps.
+- [ ] Record viewport/device/profile used for every measurement.
+- [ ] Do not treat a desktop browser viewport as physical-phone evidence.
 
 ---
 
-**Week 1 Goal: Foundation for 6+ fighter roster complete. Team ramping to full velocity by Week 2.**
+## Days 6-7 — Week 1 Closure
+
+### Roster
+
+- [ ] Six canon-aligned fighter definitions or explicit CANON DECISION REQUIRED slots exist.
+- [ ] At least Kai and Jax are functionally distinct and playable in the intended test surface.
+- [ ] First 2-3 final or near-final fighter assets are integrated **only if provenance and visual locks are complete**.
+- [ ] Kai-Jax remains story-gated.
+- [ ] Historical/deceased fighters use Archive/Memory/Training framing outside their literal chronology.
+
+### Story-first integration
+
+- [ ] One Raging City gameplay environment supports exploration/traversal testing.
+- [ ] Kai and Jax produce meaningfully different traversal routes or tactics.
+- [ ] Story Mode remains the primary navigation/product flow.
+- [ ] Combat Arena remains a secondary chronology-safe mode.
+- [ ] Memory mechanics are represented as gameplay requirements, not only menu lore.
+
+### Engineering verification
+
+- [ ] Typecheck passes on exact current head.
+- [ ] Production build passes on exact current head.
+- [ ] Unit tests pass on exact current head.
+- [ ] Kai runtime smoke passes on exact current head.
+- [ ] Jax runtime smoke passes on exact current head.
+- [ ] Production preview smoke passes on exact current head.
+- [ ] iOS native preflight passes if native files changed or the current gate requires it.
+- [ ] No local-only screenshot or local file is counted as durable release evidence.
+
+---
+
+## Week 1 Go / No-Go Gate
+
+### GO only when
+
+- Six roster slots are canon-safe.
+- Kai/Jax gameplay identities are clearly distinct.
+- Kai four-limb requirements are protected.
+- Kai-Jax three-tail base and story unlock are protected.
+- Boryn/Borax chronology is protected.
+- Prototype names are not public story canon.
+- Asset provenance is recorded for anything being treated as production art.
+- Exact-head automated verification is green.
+- Performance evidence is measured on the stated profile/device.
+
+### NO-GO when
+
+- A prototype is being polished as a final fighter before canon classification.
+- A missing source is being filled with invented lore.
+- Kai is humanized or loses Myrr’Kai / spider-limb dominance.
+- Jax becomes a generic electric speed archetype.
+- Kai-Jax is selectable before the story unlock or rendered as default Nine-Tail.
+- XP, score, or currency purchases lineage authority or tails.
+- Historical/dead characters appear in literal present-story chronology without framing.
+- Final assets lack commercial-use evidence.
+
+---
+
+## Week 1 Deliverable Package
+
+By closure, the project should have:
+
+- Canon roster audit
+- Fighter Schema v2 definitions
+- Kai/Jax/Boryn/Borax/Kai-Jax identity sheets
+- Sixth enemy/boss slot sourced or explicitly marked CANON DECISION REQUIRED
+- Story unlock rules
+- Arena unlock/framing rules
+- Tail/fusion progression rules
+- Asset provenance ledger
+- Animation/rig requirements
+- First integrated fighter assets where legitimately ready
+- Raging City traversal test surface
+- Exact-head CI/runtime evidence
+- Updated blocker list
+
+No tag, release, merge, or App Store claim follows automatically from completing this checklist.
