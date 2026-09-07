@@ -121,9 +121,9 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
     const input = gameplayInputManager.getState();
     const prevInput = prevInputRef.current;
 
-    // Update Kai position from ref
+    // Update Kai transform from ref without casting an Euler as a Vector3.
     kaiRef.current.getWorldPosition(kai.position);
-    kaiRef.current.getWorldDirection(kai.rotation as any);
+    kai.rotation.copy(kaiRef.current.rotation);
 
     // Energy regeneration
     kai.energy = Math.min(kai.energy + COMBAT_CONFIG.energyRegen * delta, kai.maxEnergy);
