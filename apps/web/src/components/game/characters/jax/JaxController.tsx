@@ -1,40 +1,38 @@
 /**
  * JAX CONTROLLER
- * Electricity Spider Movement & Combat System
+ * Storm/Displacement Beast-Kin movement and combat controller.
  *
- * Core mechanics:
- * - Unified input from keyboard/gamepad/touch
- * - Locomotion modes: GROUND, AIR, DISPLACEMENT, AIR_DISPLACEMENT, RECOVERY
- * - Displacement system with charge/cooldown
- * - Superior air control via storm pressure
- * - Fast electrical combo attacks
- * - Pressure-based heavy attack knockback
- * - Lightning special ability
- *
- * Architecture: JaxController is the sole owner of jax.position per frame.
- * Traversal systems (DisplacementController, StormAirSystem) are update-driven:
- * they return movement results, not write position directly.
+ * Jax is dominated by Kar-Voth (electricity/displacement) and Thryxen
+ * (storm/pressure/sovereignty). JaxController is the sole writer of Jax's
+ * position; traversal and air systems only return movement results.
  */
 
-import { useRef, useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useAudio } from '../../../../lib/stores/useAudio';
 import { gameplayInputManager, GameplayInputState } from '../../../../lib/input/GameplayInputState';
 import { DisplacementController } from './DisplacementSystem';
 import { StormAirSystem } from './StormAirSystem';
-import { JaxAttackSystem } from './JaxAttackSystem';
+import { AttackPhase, JaxAttackSystem, JaxAttackType } from './JaxAttackSystem';
 
-type LocomotionMode = 'GROUND' | 'AIR' | 'DISPLACEMENT' | 'AIR_DISPLACEMENT' | 'RECOVERY';
+export type JaxLocomotionMode =
+  | 'GROUND'
+  | 'AIR'
+  | 'DISPLACEMENT'
+  | 'AIR_DISPLACEMENT'
+  | 'RECOVERY';
 
-interface JaxControllerState {
+export interface JaxControllerState {
   position: THREE.Vector3;
   velocity: THREE.Vector3;
   rotation: THREE.Euler;
-  locomotionMode: LocomotionMode;
+  locomotionMode: JaxLocomotionMode;
   isMoving: boolean;
   isAttacking: boolean;
   attackTimer: number;
+  currentAttackType: JaxAttackType | null;
+  attackPhase: AttackPhase;
   isAirborne: boolean;
   isDodging: boolean;
   dodgeTimer: number;
@@ -44,6 +42,9 @@ interface JaxControllerState {
   energy: number;
   maxEnergy: number;
   displacementCharges: number;
+  groundDisplacementCharges: number;
+  airDisplacementCharges: number;
+  displacementCooldown: number;
 }
 
 const MOVEMENT_CONFIG = {
@@ -51,8 +52,9 @@ const MOVEMENT_CONFIG = {
   runSpeed: 8.5,
   turnSpeed: 0.15,
   accel: 18,
-  decel: 14,
   friction: 0.90,
+  jumpVelocity: 8.0,
+  boundary: 50,
 };
 
 const COMBAT_CONFIG = {
@@ -61,19 +63,30 @@ const COMBAT_CONFIG = {
   lightAttackCost: 12,
   heavyAttackCost: 25,
   specialAttackCost: 45,
+  ultimateAttackCost: 75,
   comboTimeWindow: 0.6,
   lightAttackDuration: 0.35,
   heavyAttackDuration: 0.5,
+  specialAttackDuration: 0.7,
+  ultimateAttackDuration: 1.0,
 };
 
 const DODGING_CONFIG = {
-  distance: 3.5,
   duration: 0.35,
   invulnDuration: 0.4,
-  staminalCost: 18,
+  staminaCost: 18,
 };
 
-export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: THREE.Scene) {
+interface GroundQueryResult {
+  grounded: boolean;
+  groundY: number;
+  surface: THREE.Object3D | null;
+}
+
+export function useJaxController(
+  jaxRef: React.RefObject<THREE.Group>,
+  scene: THREE.Scene
+) {
   const prevInputRef = useRef<GameplayInputState | null>(null);
   const stateRef = useRef<JaxControllerState>({
     position: new THREE.Vector3(0, 0, 0),
@@ -83,6 +96,8 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
     isMoving: false,
     isAttacking: false,
     attackTimer: 0,
+    currentAttackType: null,
+    attackPhase: 'IDLE',
     isAirborne: false,
     isDodging: false,
     dodgeTimer: 0,
@@ -92,34 +107,50 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
     energy: COMBAT_CONFIG.maxEnergy,
     maxEnergy: COMBAT_CONFIG.maxEnergy,
     displacementCharges: 1,
+    groundDisplacementCharges: 1,
+    airDisplacementCharges: 1,
+    displacementCooldown: 0,
   });
-
-  const wasJustPressed = (current: boolean, previous: boolean | null): boolean => {
-    return current && !previous;
-  };
 
   const displacementController = useMemo(() => new DisplacementController(scene), [scene]);
   const stormAirSystem = useMemo(() => new StormAirSystem(), []);
   const attackSystem = useMemo(() => new JaxAttackSystem(scene), [scene]);
 
-  const checkGrounded = (pos: THREE.Vector3): { grounded: boolean; groundY: number } => {
-    const raycaster = new THREE.Raycaster(
-      pos.clone().add(new THREE.Vector3(0, 0.1, 0)),
-      new THREE.Vector3(0, -1, 0),
-      0,
-      0.5
-    );
+  const wasJustPressed = (current: boolean, previous: boolean | null): boolean =>
+    current && !previous;
 
-    const walkables = scene.children.filter(obj =>
-      obj.userData.isWalkable || obj.userData.isGround
-    );
+  const queryGround = (
+    position: THREE.Vector3,
+    probeDistance: number
+  ): GroundQueryResult => {
+    const walkables: THREE.Object3D[] = [];
+    scene.traverse((obj) => {
+      if (obj.userData.isWalkable || obj.userData.isGround) {
+        walkables.push(obj);
+      }
+    });
 
-    const hits = raycaster.intersectObjects(walkables, true);
-    if (hits.length > 0) {
-      return { grounded: true, groundY: hits[0].point.y };
+    if (walkables.length === 0) {
+      return { grounded: false, groundY: position.y, surface: null };
     }
 
-    return { grounded: false, groundY: pos.y };
+    const raycaster = new THREE.Raycaster(
+      position.clone().add(new THREE.Vector3(0, 0.15, 0)),
+      new THREE.Vector3(0, -1, 0),
+      0,
+      Math.max(0.35, probeDistance + 0.15)
+    );
+
+    const hits = raycaster.intersectObjects(walkables, false);
+    if (hits.length === 0) {
+      return { grounded: false, groundY: position.y, surface: null };
+    }
+
+    return {
+      grounded: true,
+      groundY: hits[0].point.y,
+      surface: hits[0].object,
+    };
   };
 
   useFrame((frameState, rawDelta) => {
@@ -127,108 +158,105 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
 
     const delta = Math.min(rawDelta, 0.033);
     const jax = stateRef.current;
-
-    // Get unified input state
     const input = gameplayInputManager.getState();
     const prevInput = prevInputRef.current;
 
-    // Update Jax position from ref
     jaxRef.current.getWorldPosition(jax.position);
-    jaxRef.current.getWorldDirection(jax.rotation as any);
+    jax.rotation.copy(jaxRef.current.rotation);
 
-    // Energy regeneration
-    jax.energy = Math.min(jax.energy + COMBAT_CONFIG.energyRegen * delta, jax.maxEnergy);
+    jax.energy = Math.min(
+      jax.energy + COMBAT_CONFIG.energyRegen * delta,
+      jax.maxEnergy
+    );
 
-    // Invulnerability timer
     if (jax.invulnTimer > 0) {
-      jax.invulnTimer -= delta;
+      jax.invulnTimer = Math.max(0, jax.invulnTimer - delta);
     }
 
-    // Dodge state lifecycle
     if (jax.isDodging) {
-      jax.dodgeTimer -= delta;
-      if (jax.dodgeTimer <= 0) {
+      jax.dodgeTimer = Math.max(0, jax.dodgeTimer - delta);
+      if (jax.dodgeTimer === 0) {
         jax.isDodging = false;
-        jax.dodgeTimer = 0;
       }
     }
 
-    // Attack state lifecycle
     if (jax.isAttacking) {
-      jax.attackTimer -= delta;
-      if (jax.attackTimer <= 0) {
+      jax.attackTimer = Math.max(0, jax.attackTimer - delta);
+      if (jax.attackTimer === 0) {
         jax.isAttacking = false;
-        jax.attackTimer = 0;
       }
     }
 
-    // Combo reset timer
     if (jax.comboResetTimer > 0) {
-      jax.comboResetTimer -= delta;
-      if (jax.comboResetTimer <= 0) {
+      jax.comboResetTimer = Math.max(0, jax.comboResetTimer - delta);
+      if (jax.comboResetTimer === 0) {
         jax.attackCombo = 0;
-        jax.comboResetTimer = 0;
       }
     }
 
-    // Ground detection via raycast (supports platforms at any height)
-    const { grounded, groundY } = checkGrounded(jax.position);
-    const isGrounded = grounded && jax.velocity.y <= 0.1;
+    // A velocity-aware probe prevents Jax from tunneling through thin elevated
+    // walkable platforms at the 30 FPS fallback simulation step.
+    const landingProbe = Math.max(0.35, Math.max(0, -jax.velocity.y) * delta + 0.2);
+    const ground = queryGround(jax.position, landingProbe);
+    const isGrounded = ground.grounded && jax.velocity.y <= 0.1;
     const wasAirborne = jax.isAirborne;
     jax.isAirborne = !isGrounded;
 
-    // Reset vertical velocity and snap when landing
-    if (isGrounded && jax.velocity.y < 0) {
-      jax.velocity.y = 0;
-
-      // Snap to ground and reset air displacement charge on real landing
+    if (isGrounded) {
+      if (jax.velocity.y < 0) {
+        jax.velocity.y = 0;
+      }
       if (wasAirborne) {
-        jax.position.y = groundY;
-        const displacementState = displacementController.getState();
-        if (displacementState.airCharges < 1) {
-          // Charge was used; restore it
-          displacementController.reset();
-        }
+        jax.position.y = ground.groundY;
+        displacementController.onLanded();
       }
     }
 
-    // LOCOMOTION MODE DECISION: Only one system owns position per frame
-    // Edge-trigger: only start displacement on rising edge (false → true)
-    const traversalEdge = wasJustPressed(input.traversal, prevInput?.traversal ?? false);
-
-    // Compute camera-relative movement direction for displacement
-    const moveDir = new THREE.Vector3(input.moveX, 0, input.moveY);
     const cameraDir = new THREE.Vector3();
     frameState.camera.getWorldDirection(cameraDir);
     cameraDir.y = 0;
+    if (cameraDir.lengthSq() < 0.0001) cameraDir.set(0, 0, -1);
     cameraDir.normalize();
 
-    if (moveDir.length() > 0.1) {
-      moveDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(cameraDir.x, cameraDir.z));
-    } else {
-      moveDir.copy(jaxRef.current.getWorldDirection(new THREE.Vector3()));
+    const cameraYaw = Math.atan2(cameraDir.x, cameraDir.z);
+    const worldMoveDir = new THREE.Vector3(input.moveX, 0, input.moveY);
+    if (worldMoveDir.lengthSq() > 0.0001) {
+      worldMoveDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraYaw);
     }
+
+    const facingDir = jaxRef.current.getWorldDirection(new THREE.Vector3());
+    facingDir.y = 0;
+    if (facingDir.lengthSq() < 0.0001) facingDir.set(0, 0, 1);
+    facingDir.normalize();
+
+    const traversalEdge = wasJustPressed(
+      input.traversal,
+      prevInput?.traversal ?? false
+    );
+
+    const displacementAim = worldMoveDir.lengthSq() > 0.0001
+      ? worldMoveDir.clone().normalize()
+      : facingDir;
 
     const displacementResult = displacementController.update(
       delta,
       {
         traversal: traversalEdge,
-        moveX: moveDir.x,
-        moveY: moveDir.z,
-        aiming: moveDir,
+        moveX: displacementAim.x,
+        moveY: displacementAim.z,
+        aiming: displacementAim,
       },
       jax.position,
       jax.isAirborne
     );
 
-    const isDisplacing = displacementController.isDisplacing();
-
-    // Air control (StormAirSystem is the sole vertical physics authority)
+    // Air control uses the same camera-relative movement intent as ground
+    // movement and displacement.
     const airControlResult = stormAirSystem.updateAirControl(
       delta,
       {
-        moveX: input.moveX,
-        moveY: input.moveY,
+        moveX: worldMoveDir.x,
+        moveY: worldMoveDir.z,
         jump: input.jump,
         traversal: input.traversal,
       },
@@ -236,188 +264,218 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
       jax.isAirborne
     );
 
-    // EXCLUSIVE LOCOMOTION MODE
     let finalPos: THREE.Vector3;
-    let nextMode: LocomotionMode = 'GROUND';
+    let nextMode: JaxLocomotionMode = 'GROUND';
 
-    // Priority: DISPLACEMENT > AIR_DISPLACEMENT > AIR > GROUND
     if (displacementResult !== null) {
       finalPos = displacementResult;
       nextMode = jax.isAirborne ? 'AIR_DISPLACEMENT' : 'DISPLACEMENT';
       jax.isMoving = false;
     } else if (jax.isAirborne) {
-      // Air mode
       nextMode = 'AIR';
-      jax.velocity = airControlResult;
-      finalPos = jax.position.clone().add(jax.velocity.clone().multiplyScalar(delta));
-      jax.isMoving = false;
+      jax.velocity.copy(airControlResult);
+      finalPos = jax.position.clone().addScaledVector(jax.velocity, delta);
+      jax.isMoving = Math.hypot(input.moveX, input.moveY) > 0.01;
     } else {
-      // GROUND mode: normal walking/running
-      nextMode = 'GROUND';
-      const inputX = input.moveX;
-      const inputZ = input.moveY;
-      const inputLen = Math.hypot(inputX, inputZ);
+      const inputLength = Math.hypot(input.moveX, input.moveY);
+      jax.isMoving = inputLength > 0.01;
+      const targetSpeed = input.isRunning
+        ? MOVEMENT_CONFIG.runSpeed
+        : MOVEMENT_CONFIG.walkSpeed;
 
-      jax.isMoving = inputLen > 0.01;
+      const targetVelocity = worldMoveDir.lengthSq() > 0.0001
+        ? worldMoveDir.clone().normalize().multiplyScalar(targetSpeed)
+        : new THREE.Vector3();
 
-      const isRunning = input.isRunning;
-      const targetSpeed = isRunning ? MOVEMENT_CONFIG.runSpeed : MOVEMENT_CONFIG.walkSpeed;
+      const alpha = Math.min(1, MOVEMENT_CONFIG.accel * delta);
+      jax.velocity.x = THREE.MathUtils.lerp(jax.velocity.x, targetVelocity.x, alpha);
+      jax.velocity.z = THREE.MathUtils.lerp(jax.velocity.z, targetVelocity.z, alpha);
 
-      const moveDir = new THREE.Vector3(inputX, 0, inputZ);
-      const cameraDir = new THREE.Vector3();
-      frameState.camera.getWorldDirection(cameraDir);
-      cameraDir.y = 0;
-      cameraDir.normalize();
-
-      const moveInWorldSpace = moveDir.length() > 0;
-      if (moveInWorldSpace) {
-        moveDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(cameraDir.x, cameraDir.z));
+      if (!jax.isMoving) {
+        const damping = Math.pow(MOVEMENT_CONFIG.friction, delta * 60);
+        jax.velocity.x *= damping;
+        jax.velocity.z *= damping;
       }
 
-      const targetVel = moveDir.multiplyScalar(targetSpeed);
-      jax.velocity.x = THREE.MathUtils.lerp(jax.velocity.x, targetVel.x, MOVEMENT_CONFIG.accel * delta);
-      jax.velocity.z = THREE.MathUtils.lerp(jax.velocity.z, targetVel.z, MOVEMENT_CONFIG.accel * delta);
-      jax.velocity.multiplyScalar(MOVEMENT_CONFIG.friction);
+      finalPos = jax.position.clone().addScaledVector(jax.velocity, delta);
+      nextMode = 'GROUND';
 
-      finalPos = jax.position.clone().add(jax.velocity.clone().multiplyScalar(delta));
-
-      // Rotation toward movement direction
-      if (jax.isMoving) {
-        const targetRot = Math.atan2(jax.velocity.x, jax.velocity.z);
-        jaxRef.current.rotation.y += (targetRot - jaxRef.current.rotation.y) * MOVEMENT_CONFIG.turnSpeed;
+      if (jax.isMoving && jax.velocity.lengthSq() > 0.0001) {
+        const targetRotation = Math.atan2(jax.velocity.x, jax.velocity.z);
+        jaxRef.current.rotation.y +=
+          (targetRotation - jaxRef.current.rotation.y) * MOVEMENT_CONFIG.turnSpeed;
       }
     }
 
-    // Boundary constraints
-    const BOUNDARY = 50;
-    finalPos.x = THREE.MathUtils.clamp(finalPos.x, -BOUNDARY, BOUNDARY);
-    finalPos.z = THREE.MathUtils.clamp(finalPos.z, -BOUNDARY, BOUNDARY);
+    finalPos.x = THREE.MathUtils.clamp(
+      finalPos.x,
+      -MOVEMENT_CONFIG.boundary,
+      MOVEMENT_CONFIG.boundary
+    );
+    finalPos.z = THREE.MathUtils.clamp(
+      finalPos.z,
+      -MOVEMENT_CONFIG.boundary,
+      MOVEMENT_CONFIG.boundary
+    );
 
     jax.locomotionMode = nextMode;
-
-    // JaxController is the SOLE position writer this frame
     jaxRef.current.position.copy(finalPos);
     jax.position.copy(finalPos);
 
-    // JUMP
     if (wasJustPressed(input.jump, prevInput?.jump ?? false)) {
       if (isGrounded && !jax.isDodging) {
-        jax.velocity.y = 8.0; // Jump velocity
+        jax.velocity.y = MOVEMENT_CONFIG.jumpVelocity;
+        jax.isAirborne = true;
       }
     }
 
-    // Update current attack using deterministic simulation time
     const currentTime = frameState.clock.elapsedTime;
-    const currentAttack = attackSystem.update(currentTime, jax.position);
 
-    // Process active hitboxes and apply damage
-    attackSystem.processActiveHitboxes(currentTime, (targetId, damage) => {
-      const target = scene.getObjectByProperty('uuid', targetId) || scene.getObjectByProperty('userData.targetId', targetId);
-      if (target && target.userData) {
-        target.userData.health = (target.userData.health || 100) - damage;
-
-        // Apply knockback for pressure/special/ultimate attacks
-        const knockback = attackSystem.getKnockbackForce();
-        if (knockback && currentAttack) {
-          const isKnockbackAttack = currentAttack.type === 'jax_pressure_heavy' ||
-            currentAttack.type === 'jax_lightning_special' ||
-            currentAttack.type === 'jax_storm_ultimate';
-
-          if (isKnockbackAttack && target.userData.velocity) {
-            target.userData.velocity.copy(knockback);
-          }
-        }
-      }
-    });
-
-    // ATTACK: Light
     if (wasJustPressed(input.attackLight, prevInput?.attackLight ?? false)) {
-      if (jax.energy >= COMBAT_CONFIG.lightAttackCost && !jax.isDodging && !jax.isAttacking) {
+      if (
+        jax.energy >= COMBAT_CONFIG.lightAttackCost &&
+        !jax.isDodging &&
+        !jax.isAttacking
+      ) {
         jax.attackCombo = Math.min(3, jax.attackCombo + 1);
         jax.energy -= COMBAT_CONFIG.lightAttackCost;
         jax.isAttacking = true;
         jax.attackTimer = COMBAT_CONFIG.lightAttackDuration;
         jax.comboResetTimer = COMBAT_CONFIG.comboTimeWindow;
-        attackSystem.startAttack(
-          'jax_light_combo',
-          jax.position,
-          jaxRef.current.getWorldDirection(new THREE.Vector3()),
-          currentTime
-        );
+        attackSystem.startAttack('jax_light_combo', jax.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('light');
       }
     }
 
-    // ATTACK: Heavy (pressure knockback)
     if (wasJustPressed(input.attackHeavy, prevInput?.attackHeavy ?? false)) {
-      if (jax.energy >= COMBAT_CONFIG.heavyAttackCost && !jax.isDodging && !jax.isAttacking) {
+      if (
+        jax.energy >= COMBAT_CONFIG.heavyAttackCost &&
+        !jax.isDodging &&
+        !jax.isAttacking
+      ) {
         jax.attackCombo = 0;
         jax.energy -= COMBAT_CONFIG.heavyAttackCost;
         jax.isAttacking = true;
         jax.attackTimer = COMBAT_CONFIG.heavyAttackDuration;
         jax.comboResetTimer = COMBAT_CONFIG.comboTimeWindow;
-        attackSystem.startAttack(
-          'jax_pressure_heavy',
-          jax.position,
-          jaxRef.current.getWorldDirection(new THREE.Vector3()),
-          currentTime
-        );
+        attackSystem.startAttack('jax_pressure_heavy', jax.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('heavy');
       }
     }
 
-    // ATTACK: Special (lightning/storm)
     if (wasJustPressed(input.attackSpecial, prevInput?.attackSpecial ?? false)) {
-      if (jax.energy >= COMBAT_CONFIG.specialAttackCost && !jax.isDodging && !jax.isAttacking) {
+      if (
+        jax.energy >= COMBAT_CONFIG.specialAttackCost &&
+        !jax.isDodging &&
+        !jax.isAttacking
+      ) {
         jax.energy -= COMBAT_CONFIG.specialAttackCost;
         jax.isAttacking = true;
-        jax.attackTimer = 0.7;
+        jax.attackTimer = COMBAT_CONFIG.specialAttackDuration;
         jax.comboResetTimer = 0;
-        attackSystem.startAttack(
-          'jax_lightning_special',
-          jax.position,
-          jaxRef.current.getWorldDirection(new THREE.Vector3()),
-          currentTime
-        );
+        attackSystem.startAttack('jax_lightning_special', jax.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('special');
       }
     }
 
-    // ATTACK: Ultimate (storm sovereignty placeholder)
     if (wasJustPressed(input.attackUltimate, prevInput?.attackUltimate ?? false)) {
-      if (jax.energy >= 75 && !jax.isDodging && !jax.isAttacking) {
-        jax.energy -= 75;
+      if (
+        jax.energy >= COMBAT_CONFIG.ultimateAttackCost &&
+        !jax.isDodging &&
+        !jax.isAttacking
+      ) {
+        jax.energy -= COMBAT_CONFIG.ultimateAttackCost;
         jax.isAttacking = true;
-        jax.attackTimer = 1.0;
+        jax.attackTimer = COMBAT_CONFIG.ultimateAttackDuration;
         jax.comboResetTimer = 0;
-        attackSystem.startAttack(
-          'jax_storm_ultimate',
-          jax.position,
-          jaxRef.current.getWorldDirection(new THREE.Vector3()),
-          currentTime
-        );
+        attackSystem.startAttack('jax_storm_ultimate', jax.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('ultimate');
       }
     }
 
-    // DODGE
     if (wasJustPressed(input.dodge, prevInput?.dodge ?? false)) {
-      if (jax.energy >= DODGING_CONFIG.staminalCost && !jax.isDodging && !jax.isAttacking) {
+      if (
+        jax.energy >= DODGING_CONFIG.staminaCost &&
+        !jax.isDodging &&
+        !jax.isAttacking
+      ) {
         jax.isDodging = true;
         jax.dodgeTimer = DODGING_CONFIG.duration;
         jax.invulnTimer = DODGING_CONFIG.invulnDuration;
-        jax.energy -= DODGING_CONFIG.staminalCost;
+        jax.energy -= DODGING_CONFIG.staminaCost;
         jax.attackCombo = 0;
         useAudio.getState().playDodge?.();
       }
     }
 
-    Object.assign(jax, { ...jax });
+    const currentAttack = attackSystem.update(currentTime, jax.position);
+
+    attackSystem.processActiveHitboxes(currentTime, (target, damage, attack) => {
+      const health = typeof target.userData.health === 'number'
+        ? target.userData.health
+        : 100;
+      target.userData.health = Math.max(0, health - damage);
+      target.userData.lastHitBy = 'jax';
+      target.userData.lastDamage = damage;
+      target.userData.lastAttackType = attack.type;
+      target.userData.hitCount = (target.userData.hitCount ?? 0) + 1;
+
+      const targetPos = new THREE.Vector3();
+      target.getWorldPosition(targetPos);
+
+      let knockback: THREE.Vector3 | null = null;
+      if (attack.type === 'jax_pressure_heavy') {
+        const pressure = stormAirSystem.calculatePressure(
+          'heavy',
+          jax.position,
+          attack.direction
+        );
+        knockback = stormAirSystem.applyPressureForce(
+          targetPos,
+          jax.position,
+          pressure
+        );
+      } else if (attack.type === 'jax_lightning_special') {
+        knockback = attack.direction.clone().multiplyScalar(attack.knockback);
+      } else if (attack.type === 'jax_storm_ultimate') {
+        const pressure = stormAirSystem.calculatePressure(
+          'special',
+          jax.position,
+          attack.direction
+        );
+        knockback = stormAirSystem.applyPressureForce(
+          targetPos,
+          jax.position,
+          pressure
+        );
+      }
+
+      if (knockback) {
+        const velocity = target.userData.velocity instanceof THREE.Vector3
+          ? target.userData.velocity as THREE.Vector3
+          : new THREE.Vector3();
+        velocity.add(knockback);
+        target.userData.velocity = velocity;
+      }
+    });
+
+    jax.currentAttackType = currentAttack?.type ?? null;
+    jax.attackPhase = attackSystem.getPhase(currentTime);
+
+    const displacementState = displacementController.getState();
+    jax.displacementCharges = displacementState.groundCharges;
+    jax.groundDisplacementCharges = displacementState.groundCharges;
+    jax.airDisplacementCharges = displacementState.airCharges;
+    jax.displacementCooldown = displacementState.cooldown;
+
     prevInputRef.current = { ...input };
   });
 
   return {
     state: stateRef.current,
     getState: () => stateRef.current,
+    getAttackSystem: () => attackSystem,
+    getDisplacementSystem: () => displacementController,
+    getStormAirSystem: () => stormAirSystem,
   };
 }
