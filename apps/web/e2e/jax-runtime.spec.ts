@@ -31,12 +31,22 @@ function collectErrors(page: Page): string[] {
   return errors;
 }
 
-async function bootJaxTest(page: Page) {
+async function bootJaxTest(page: Page, errors: string[]) {
   // The developer harness is routed before the persisted application shell so
   // runtime proof cannot be invalidated by intro/profile hydration timing.
-  await page.goto('/?mode=jax-test');
+  const response = await page.goto('/?mode=jax-test');
   await expect(page.locator('body')).toBeVisible();
-  await expect(page.getByTestId('jax-debug-hud')).toBeVisible({ timeout: 15_000 });
+  try {
+    await expect(page.getByTestId('jax-debug-hud')).toBeVisible({ timeout: 15_000 });
+  } catch (error) {
+    const rootHtml = await page.locator('#root').innerHTML().catch(() => '<missing #root>');
+    throw new Error([
+      `Jax harness failed to mount at ${page.url()} (HTTP ${response?.status() ?? 'unknown'}).`,
+      `Root HTML: ${rootHtml.slice(0, 2_000) || '<empty>'}`,
+      `Browser errors: ${errors.join(' | ') || '<none captured>'}`,
+      error instanceof Error ? error.message : String(error),
+    ].join('\n'));
+  }
   await expect(page.locator('canvas').first()).toBeVisible();
   await page.waitForTimeout(1_000);
 }
@@ -64,7 +74,7 @@ async function readNumber(page: Page, testId: string): Promise<number> {
 
 test('Jax runtime: movement, jump and displacement change real controller state', async ({ page }) => {
   const errors = collectErrors(page);
-  await bootJaxTest(page);
+  await bootJaxTest(page, errors);
 
   const start = await readPosition(page);
   await page.keyboard.down('w');
@@ -91,7 +101,7 @@ test('Jax runtime: movement, jump and displacement change real controller state'
 
 test('Jax runtime: light, pressure-heavy and lightning special affect live targets', async ({ page }) => {
   const errors = collectErrors(page);
-  await bootJaxTest(page);
+  await bootJaxTest(page, errors);
 
   const pressureStart = await readNumber(page, 'jax-pressure-health');
   await page.keyboard.press('j');
@@ -121,7 +131,7 @@ test('Jax runtime: light, pressure-heavy and lightning special affect live targe
 
 test('Jax runtime: HUD reports measured FPS instead of a hard-coded constant', async ({ page }) => {
   const errors = collectErrors(page);
-  await bootJaxTest(page);
+  await bootJaxTest(page, errors);
 
   const fps = await readNumber(page, 'jax-fps');
   expect(fps).toBeGreaterThan(0);
