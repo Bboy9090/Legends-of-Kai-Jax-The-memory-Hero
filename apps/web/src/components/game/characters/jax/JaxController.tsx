@@ -23,6 +23,7 @@ import { useAudio } from '../../../../lib/stores/useAudio';
 import { gameplayInputManager, GameplayInputState } from '../../../../lib/input/GameplayInputState';
 import { DisplacementController } from './DisplacementSystem';
 import { StormAirSystem } from './StormAirSystem';
+import { JaxAttackSystem } from './JaxAttackSystem';
 
 type LocomotionMode = 'GROUND' | 'AIR' | 'DISPLACEMENT' | 'AIR_DISPLACEMENT' | 'RECOVERY';
 
@@ -99,6 +100,25 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
 
   const displacementController = useMemo(() => new DisplacementController(scene), [scene]);
   const stormAirSystem = useMemo(() => new StormAirSystem(), []);
+  const attackSystem = useMemo(() => new JaxAttackSystem(scene), [scene]);
+
+  const checkGrounded = (pos: THREE.Vector3): boolean => {
+    // Raycast downward to detect ground/platform
+    const raycaster = new THREE.Raycaster(
+      pos.clone().add(new THREE.Vector3(0, 0.1, 0)),
+      new THREE.Vector3(0, -1, 0),
+      0,
+      0.5
+    );
+
+    const colliders = scene.children.filter(obj =>
+      obj.userData.isCollider || obj.userData.isGround ||
+      (obj.geometry && !(obj as any).userData.isLightningTarget)
+    );
+
+    const hits = raycaster.intersectObjects(colliders, true);
+    return hits.length > 0;
+  };
 
   useFrame((frameState, rawDelta) => {
     if (!jaxRef.current) return;
@@ -149,9 +169,14 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
       }
     }
 
-    // Ground detection: simple check for now (improved in Issue 6)
-    const isGrounded = jax.position.y <= 0.5 && jax.velocity.y >= -0.1;
+    // Ground detection via raycast (supports platforms at any height)
+    const isGrounded = checkGrounded(jax.position) && jax.velocity.y <= 0.1;
     jax.isAirborne = !isGrounded;
+
+    // Reset vertical velocity when landing
+    if (isGrounded && jax.velocity.y < 0) {
+      jax.velocity.y = 0;
+    }
 
     // LOCOMOTION MODE DECISION: Only one system owns position per frame
     // Edge-trigger: only start displacement on rising edge (false → true)
@@ -267,6 +292,10 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
       }
     }
 
+    // Update current attack
+    const currentTime = Date.now() / 1000; // Simple elapsed time
+    const currentAttack = attackSystem.update(currentTime, jax.position);
+
     // ATTACK: Light
     if (wasJustPressed(input.attackLight, prevInput?.attackLight ?? false)) {
       if (jax.energy >= COMBAT_CONFIG.lightAttackCost && !jax.isDodging && !jax.isAttacking) {
@@ -275,6 +304,12 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
         jax.isAttacking = true;
         jax.attackTimer = COMBAT_CONFIG.lightAttackDuration;
         jax.comboResetTimer = COMBAT_CONFIG.comboTimeWindow;
+        attackSystem.startAttack(
+          'jax_light_combo',
+          jax.position,
+          jaxRef.current.getWorldDirection(new THREE.Vector3()),
+          currentTime
+        );
         useAudio.getState().playAttack?.('light');
       }
     }
@@ -287,6 +322,12 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
         jax.isAttacking = true;
         jax.attackTimer = COMBAT_CONFIG.heavyAttackDuration;
         jax.comboResetTimer = COMBAT_CONFIG.comboTimeWindow;
+        attackSystem.startAttack(
+          'jax_pressure_heavy',
+          jax.position,
+          jaxRef.current.getWorldDirection(new THREE.Vector3()),
+          currentTime
+        );
         useAudio.getState().playAttack?.('heavy');
       }
     }
@@ -298,6 +339,12 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
         jax.isAttacking = true;
         jax.attackTimer = 0.7;
         jax.comboResetTimer = 0;
+        attackSystem.startAttack(
+          'jax_lightning_special',
+          jax.position,
+          jaxRef.current.getWorldDirection(new THREE.Vector3()),
+          currentTime
+        );
         useAudio.getState().playAttack?.('special');
       }
     }
@@ -309,6 +356,12 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
         jax.isAttacking = true;
         jax.attackTimer = 1.0;
         jax.comboResetTimer = 0;
+        attackSystem.startAttack(
+          'jax_storm_ultimate',
+          jax.position,
+          jaxRef.current.getWorldDirection(new THREE.Vector3()),
+          currentTime
+        );
         useAudio.getState().playAttack?.('ultimate');
       }
     }
