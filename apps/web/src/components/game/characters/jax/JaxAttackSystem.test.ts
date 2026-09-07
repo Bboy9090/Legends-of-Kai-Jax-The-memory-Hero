@@ -87,6 +87,23 @@ describe('JaxAttackSystem', () => {
     expect(hits).toEqual([]);
   });
 
+  it('uses planar range for a ground target with an elevated mesh center', () => {
+    createTarget(scene, 'raised-center', new THREE.Vector3(1.2, 0.75, 0.5));
+    const hits: string[] = [];
+
+    system.startAttack(
+      'jax_light_combo',
+      new THREE.Vector3(),
+      new THREE.Vector3(0, 0, 1),
+      0
+    );
+    system.processActiveHitboxes(0.1, (target) => {
+      hits.push(String(target.userData.targetId));
+    });
+
+    expect(hits).toEqual(['raised-center']);
+  });
+
   it('heavy attack can hit a nearby general combat target', () => {
     createTarget(scene, 'heavy-target', new THREE.Vector3(1.2, 0, 0));
     const damages: number[] = [];

@@ -144,7 +144,7 @@ export class JaxAttackSystem {
       return { hit: false, damage: 0 };
     }
 
-    if (targetPos.distanceTo(this.currentAttack.position) > this.currentAttack.radius) {
+    if (this.getPlanarDistance(targetPos) > this.currentAttack.radius) {
       return { hit: false, damage: 0 };
     }
 
@@ -187,7 +187,7 @@ export class JaxAttackSystem {
 
       const objPos = new THREE.Vector3();
       obj.getWorldPosition(objPos);
-      if (objPos.distanceTo(attack.position) > attack.radius) return;
+      if (this.getPlanarDistance(objPos) > attack.radius) return;
 
       if (attack.type === 'jax_light_combo' && !this.isInForwardCone(objPos, 0.0)) {
         return;
@@ -207,9 +207,18 @@ export class JaxAttackSystem {
     if (!this.currentAttack) return false;
 
     const toTarget = targetPos.clone().sub(this.currentAttack.position);
+    toTarget.y = 0;
     if (toTarget.lengthSq() < 0.0001) return true;
 
     return toTarget.normalize().dot(this.currentAttack.direction) >= minimumDot;
+  }
+
+  private getPlanarDistance(targetPos: THREE.Vector3): number {
+    if (!this.currentAttack) return Number.POSITIVE_INFINITY;
+
+    const offset = targetPos.clone().sub(this.currentAttack.position);
+    offset.y = 0;
+    return offset.length();
   }
 
   getKnockbackForce(): THREE.Vector3 | null {
