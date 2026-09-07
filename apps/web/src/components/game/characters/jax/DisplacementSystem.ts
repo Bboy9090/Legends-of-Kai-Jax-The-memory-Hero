@@ -72,9 +72,15 @@ export class DisplacementController {
       this.state.cooldown -= delta;
     }
 
-    // Recharge on landing
+    // Recharge air charges on landing
     if (!isAirborne && this.state.airCharges < DISPLACEMENT_CONFIG.airCharges) {
       this.state.airCharges = DISPLACEMENT_CONFIG.airCharges;
+    }
+
+    // Recharge ground charges when grounded, cooldown expired, and not displacing
+    if (!isAirborne && this.state.groundCharges < DISPLACEMENT_CONFIG.groundCharges &&
+        this.state.cooldown <= 0 && !this.state.isDisplacing) {
+      this.state.groundCharges = DISPLACEMENT_CONFIG.groundCharges;
     }
 
     // Continue current displacement if active
@@ -93,11 +99,12 @@ export class DisplacementController {
         const newPos = this.displacementStartPos.clone()
           .add(this.currentDirection.clone().multiplyScalar(distance));
 
-        // Check collision
+        // Check collision and find safe stop point
         if (this.checkCollision(newPos)) {
           this.state.isDisplacing = false;
           this.state.blocked = true;
-          return position; // Stop at obstruction
+          const safePos = this.findSafeStopPoint(newPos);
+          return safePos; // Stop at safe collision point
         }
 
         this.state.blocked = false;
@@ -156,32 +163,49 @@ export class DisplacementController {
   }
 
   private checkCollision(position: THREE.Vector3): boolean {
-    // Simple sphere collision check against scene geometry
-    const raycaster = new THREE.Raycaster(
-      position,
-      new THREE.Vector3(0, -1, 0),
-      0,
-      DISPLACEMENT_CONFIG.collisionRadius
-    );
-
-    const intersects = raycaster.intersectObjects(this.scene.children, true);
-
-    // Check for wall collision
+    // Swept sphere collision: raycast along displacement direction
+    // Check if any collider blocks the path
     const wallRay = new THREE.Raycaster(
-      position,
+      this.displacementStartPos || position,
       this.currentDirection,
       0,
-      DISPLACEMENT_CONFIG.collisionRadius * 2
+      DISPLACEMENT_CONFIG.collisionRadius + 0.1 // Small buffer
     );
 
-    const wallIntersects = wallRay.intersectObjects(
-      this.scene.children.filter(obj =>
-        obj.userData.isWall || obj.userData.isCollider
-      ),
-      true
+    const colliders = this.scene.children.filter(obj =>
+      obj.userData.isWall || obj.userData.isCollider
     );
 
-    return wallIntersects.length > 0;
+    const intersects = wallRay.intersectObjects(colliders, true);
+    return intersects.length > 0;
+  }
+
+  private findSafeStopPoint(targetPos: THREE.Vector3): THREE.Vector3 {
+    // If collision ahead, find the last safe position before collision
+    const direction = targetPos.clone().sub(this.displacementStartPos || new THREE.Vector3()).normalize();
+    const maxDist = targetPos.distanceTo(this.displacementStartPos || new THREE.Vector3());
+
+    const checkRay = new THREE.Raycaster(
+      this.displacementStartPos || targetPos,
+      direction,
+      0,
+      maxDist
+    );
+
+    const colliders = this.scene.children.filter(obj =>
+      obj.userData.isWall || obj.userData.isCollider
+    );
+
+    const intersects = checkRay.intersectObjects(colliders, true);
+
+    if (intersects.length > 0) {
+      // Stop before the first collision point
+      const hitDist = intersects[0].distance - DISPLACEMENT_CONFIG.collisionRadius;
+      return (this.displacementStartPos || targetPos).clone()
+        .add(direction.multiplyScalar(Math.max(0, hitDist)));
+    }
+
+    return targetPos;
   }
 
   isDisplacing(): boolean {

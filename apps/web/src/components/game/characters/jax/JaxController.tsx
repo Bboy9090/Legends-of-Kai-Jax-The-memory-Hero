@@ -72,9 +72,6 @@ const DODGING_CONFIG = {
   staminalCost: 18,
 };
 
-const GRAVITY = 20;
-const TERMINAL_VELOCITY = 15;
-
 export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: THREE.Scene) {
   const prevInputRef = useRef<GameplayInputState | null>(null);
   const stateRef = useRef<JaxControllerState>({
@@ -152,25 +149,34 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
       }
     }
 
-    // Apply gravity
-    const isGrounded = jax.velocity.y <= 0.1 && jax.position.y <= 0.5;
-    if (!isGrounded) {
-      jax.velocity.y -= GRAVITY * delta;
-      jax.velocity.y = Math.max(jax.velocity.y, -TERMINAL_VELOCITY);
-      jax.isAirborne = true;
-    } else {
-      jax.velocity.y = 0;
-      jax.isAirborne = false;
-    }
+    // Ground detection: simple check for now (improved in Issue 6)
+    const isGrounded = jax.position.y <= 0.5 && jax.velocity.y >= -0.1;
+    jax.isAirborne = !isGrounded;
 
     // LOCOMOTION MODE DECISION: Only one system owns position per frame
+    // Edge-trigger: only start displacement on rising edge (false → true)
+    const traversalEdge = wasJustPressed(input.traversal, prevInput?.traversal ?? false);
+
+    // Compute camera-relative movement direction for displacement
+    const moveDir = new THREE.Vector3(input.moveX, 0, input.moveY);
+    const cameraDir = new THREE.Vector3();
+    frameState.camera.getWorldDirection(cameraDir);
+    cameraDir.y = 0;
+    cameraDir.normalize();
+
+    if (moveDir.length() > 0.1) {
+      moveDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(cameraDir.x, cameraDir.z));
+    } else {
+      moveDir.copy(jaxRef.current.getWorldDirection(new THREE.Vector3()));
+    }
+
     const displacementResult = displacementController.update(
       delta,
       {
-        traversal: input.traversal,
-        moveX: input.moveX,
-        moveY: input.moveY,
-        aiming: jaxRef.current.getWorldDirection(new THREE.Vector3()),
+        traversal: traversalEdge,
+        moveX: moveDir.x,
+        moveY: moveDir.z,
+        aiming: moveDir,
       },
       jax.position,
       jax.isAirborne
@@ -178,21 +184,18 @@ export function useJaxController(jaxRef: React.RefObject<THREE.Group>, scene: TH
 
     const isDisplacing = displacementController.isDisplacing();
 
-    // Air control
-    let airControlResult = jax.velocity.clone();
-    if (jax.isAirborne) {
-      airControlResult = stormAirSystem.updateAirControl(
-        delta,
-        {
-          moveX: input.moveX,
-          moveY: input.moveY,
-          jump: input.jump,
-          traversal: input.traversal,
-        },
-        jax.velocity,
-        true
-      );
-    }
+    // Air control (StormAirSystem is the sole vertical physics authority)
+    const airControlResult = stormAirSystem.updateAirControl(
+      delta,
+      {
+        moveX: input.moveX,
+        moveY: input.moveY,
+        jump: input.jump,
+        traversal: input.traversal,
+      },
+      jax.velocity,
+      jax.isAirborne
+    );
 
     // EXCLUSIVE LOCOMOTION MODE
     let finalPos: THREE.Vector3;

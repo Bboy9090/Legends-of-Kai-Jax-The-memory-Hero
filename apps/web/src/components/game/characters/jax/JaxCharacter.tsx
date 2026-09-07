@@ -1,6 +1,9 @@
 /**
  * JAX CHARACTER
- * Electricity Spider model and animation controller
+ * Storm Beast-Kin model and animation controller
+ *
+ * Jax is dominated by Kar-Voth (electricity/displacement) and Thryxen (storm/sovereignty)
+ * NOT part of the Myrr'Kai (spider) line - that's Kai's domain
  */
 
 import { useRef, useEffect } from 'react';

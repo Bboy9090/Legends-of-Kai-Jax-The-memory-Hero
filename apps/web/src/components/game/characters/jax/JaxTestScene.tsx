@@ -170,8 +170,7 @@ export function JaxTestScene() {
       <Canvas
         gl={{
           antialias: true,
-          shadowMap: { enabled: true },
-          shadowMap: { type: THREE.PCFShadowShadowMap },
+          shadowMap: { enabled: true, type: THREE.PCFShadowMap },
         }}
         shadows
       >
