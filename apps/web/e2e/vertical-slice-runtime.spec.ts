@@ -103,9 +103,18 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
 
   await page.keyboard.down('w');
   try {
+    // Prove controller-owned movement crosses the actual mission threshold first.
+    // Kai's 0.033 s simulation cap means a very slow software-WebGL runner can
+    // require substantially more wall-clock time than a normal device. The guard
+    // timeout is intentionally generous; the assertion itself remains state-driven.
+    await expect.poll(async () => (await readPosition(page))[2], {
+      timeout: hero === 'kai' ? 20_000 : 8_000,
+      intervals: [150, 200, 250, 400],
+    }).toBeGreaterThan(-5);
+
     await expect.poll(async () => page.getByTestId('slice-stage').innerText(), {
-      timeout: 8_000,
-      intervals: [150, 200, 250],
+      timeout: 2_000,
+      intervals: [75, 100, 150],
     }).toContain('encounter');
   } finally {
     await page.keyboard.up('w');
