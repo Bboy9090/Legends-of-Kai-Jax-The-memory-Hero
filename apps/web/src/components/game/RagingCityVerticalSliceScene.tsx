@@ -29,6 +29,7 @@ import { useRunner } from '../../lib/stores/useRunner';
 import { getFighterById } from '../../lib/characters';
 import { useKaiController } from './characters/kai/KaiController';
 import { useJaxController } from './characters/jax/JaxController';
+import { FangCombatantVisual } from './characters/fang/FangCombatantVisual';
 import {
   applyFangKnockback,
   createFangCombatant,
@@ -223,7 +224,7 @@ function VerticalSliceEnvironment({
   const fighter = getFighterById(charId ?? '');
 
   const playerRef = useRef<THREE.Group>(null);
-  const fangRef = useRef<THREE.Mesh>(null);
+  const fangRef = useRef<THREE.Group>(null);
   const controllerDebugRef = useRef<ControllerDebugState>({ ...INITIAL_CONTROLLER_DEBUG });
   const previousInteractRef = useRef(false);
   const previousAttackInputRef = useRef({ light: false, heavy: false, special: false, ultimate: false });
@@ -518,11 +519,9 @@ function VerticalSliceEnvironment({
       )}
 
       {renderStage === 'encounter' && (
-        <mesh
+        <group
           ref={fangRef}
           name="fang-syndicate-combatant-proxy"
-          position={[0, 0.8, 2]}
-          castShadow
           userData={{
             combatTarget: true,
             targetId: 'fang_01',
@@ -530,15 +529,8 @@ function VerticalSliceEnvironment({
             health: 100,
           }}
         >
-          <capsuleGeometry args={[0.45, 1.1, 6, 10]} />
-          <meshStandardMaterial
-            color="#37214f"
-            emissive="#2854b8"
-            emissiveIntensity={0.34}
-            roughness={0.62}
-            metalness={0.18}
-          />
-        </mesh>
+          <FangCombatantVisual state={mission.fangCombatant} />
+        </group>
       )}
 
       {renderStage === 'memory-trace' && (
