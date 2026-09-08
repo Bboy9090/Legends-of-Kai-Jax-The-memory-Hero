@@ -553,7 +553,7 @@ function VerticalSliceEnvironment({
 
       <group ref={playerRef} position={[0, 0, -20]}>
         {isKai ? (
-          <KaiCharacter bodyRef={playerRef} isMoving={false} isAttacking={false} isWallCrawling={false} isWebZipping={false} />
+          <KaiCharacter isMoving={false} isAttacking={false} isWallCrawling={false} isWebZipping={false} />
         ) : (
           <JaxCharacter scene={scene} />
         )}
