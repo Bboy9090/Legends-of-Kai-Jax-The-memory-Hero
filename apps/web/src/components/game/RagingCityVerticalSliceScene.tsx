@@ -32,6 +32,8 @@ import { useJaxController } from './characters/jax/JaxController';
 import { FangCombatantVisual } from './characters/fang/FangCombatantVisual';
 import { MemoryTraceVisual } from './effects/MemoryTraceVisual';
 import { ExtractionPortalVisual } from './effects/ExtractionPortalVisual';
+import { EnvironmentAmbience } from './effects/EnvironmentAmbience';
+import { AtmosphericEffects } from './effects/AtmosphericEffects';
 import {
   applyFangKnockback,
   createFangCombatant,
@@ -442,9 +444,8 @@ function VerticalSliceEnvironment({
 
   return (
     <group>
-      <ambientLight intensity={0.55} color="#dbeafe" />
-      <directionalLight position={[12, 24, -8]} intensity={1.0} color="#f8fafc" castShadow />
-      <hemisphereLight args={["#334155", "#050505", 0.45]} />
+      <EnvironmentAmbience stage={renderStage} fangBehavior={mission.fangCombatant.behavior} playerHealth={mission.playerHealth} />
+      <AtmosphericEffects stage={renderStage} fangBehavior={mission.fangCombatant.behavior} />
 
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
