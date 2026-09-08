@@ -235,11 +235,10 @@ test('Ashblock Kai accepted heavy attack damages the same source-safe Fang comba
     intervals: [100, 150, 200],
   }).toMatch(/CHASE|WINDUP|RECOVERY/);
 
-  // Fang begins its first windup at the outer attack envelope (1.8 units),
-  // while Kai's slice heavy resolves inside 1.5 units. A WINDUP alone therefore
-  // does not prove Kai is in heavy range. Let the real Fang attack resolve, then
-  // prove it performs its cooldown CHASE and settles into RECOVERY at stop range.
-  // This is state-driven and keeps both actors under their real controllers.
+  // Let the first real Fang attack land. During cooldown, FangCombatantAI keeps
+  // RECOVERY authority whenever the Fang is already inside its 1.8-unit attack
+  // envelope; it does not enter CHASE just to creep from 1.8 to Kai heavy's
+  // tighter 1.5-unit radius. The player must close that final gap.
   await expect.poll(async () => readNumber(page, 'slice-player-health'), {
     timeout: 6_000,
     intervals: [100, 150, 200, 250],
@@ -248,12 +247,21 @@ test('Ashblock Kai accepted heavy attack damages the same source-safe Fang comba
   await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
     timeout: 3_000,
     intervals: [75, 100, 150],
-  }).toContain('CHASE');
-
-  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
-    timeout: 3_000,
-    intervals: [75, 100, 150],
   }).toContain('RECOVERY');
+
+  // Close the remaining melee gap with Kai's real controller. The assertion is
+  // position-driven so slow software-WebGL runners cannot fail merely because
+  // they simulate fewer movement frames per wall-clock second.
+  const closeStart = await readPosition(page);
+  await page.keyboard.down('w');
+  try {
+    await expect.poll(async () => (await readPosition(page))[2], {
+      timeout: 8_000,
+      intervals: [75, 100, 150, 200],
+    }).toBeGreaterThan(closeStart[2] + 0.45);
+  } finally {
+    await page.keyboard.up('w');
+  }
 
   const energyBefore = await readNumber(page, 'slice-energy');
   const fangHealthBefore = await readNumber(page, 'slice-fang-health');
@@ -261,7 +269,7 @@ test('Ashblock Kai accepted heavy attack damages the same source-safe Fang comba
 
   // Energy consumption proves KaiController accepted the heavy input; Fang HP
   // loss proves the slice adapter resolved that accepted attack against the
-  // shared deterministic combatant at actual melee contact range.
+  // shared deterministic combatant after the player actually closed melee range.
   await expect.poll(async () => readNumber(page, 'slice-energy'), {
     timeout: 2_000,
     intervals: [75, 100, 150],
