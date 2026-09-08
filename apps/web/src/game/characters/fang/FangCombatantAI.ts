@@ -124,12 +124,21 @@ export function updateFangCombatantAI(
     };
   }
 
-  if (
-    distance <= FANG_COMBATANT_CONFIG.attackRange &&
-    canFangCombatantAttack(state, currentTime)
-  ) {
-    state.attackWindupTimer = FANG_COMBATANT_CONFIG.attackWindup;
-    state.behavior = 'WINDUP';
+  if (distance <= FANG_COMBATANT_CONFIG.attackRange) {
+    if (canFangCombatantAttack(state, currentTime)) {
+      state.attackWindupTimer = FANG_COMBATANT_CONFIG.attackWindup;
+      state.behavior = 'WINDUP';
+      return {
+        behavior: state.behavior,
+        distanceToPlayer: distance,
+        attackResolved: false,
+        attackDamage: 0,
+      };
+    }
+
+    // Once the Fang is already in attack range, cooldown/recovery owns the
+    // state. Do not keep creeping into the player while an attack is cooling down.
+    state.behavior = 'RECOVERY';
     return {
       behavior: state.behavior,
       distanceToPlayer: distance,
