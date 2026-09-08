@@ -30,6 +30,8 @@ import { getFighterById } from '../../lib/characters';
 import { useKaiController } from './characters/kai/KaiController';
 import { useJaxController } from './characters/jax/JaxController';
 import { FangCombatantVisual } from './characters/fang/FangCombatantVisual';
+import { MemoryTraceVisual } from './effects/MemoryTraceVisual';
+import { ExtractionPortalVisual } from './effects/ExtractionPortalVisual';
 import {
   applyFangKnockback,
   createFangCombatant,
@@ -534,20 +536,10 @@ function VerticalSliceEnvironment({
       )}
 
       {renderStage === 'memory-trace' && (
-        <mesh name="ashblock-memory-trace" position={[0, 0.6, 5]} castShadow userData={{ memoryTrace: true }}>
-          <sphereGeometry args={[0.6, 16, 16]} />
-          <meshStandardMaterial color="#8b5cf6" emissive="#6d28d9" emissiveIntensity={0.55} />
-        </mesh>
+        <MemoryTraceVisual isActivated={mission.memoryTraceActivated} />
       )}
 
-      <mesh name="ashblock-extraction" position={[0, 0.6, 17]} castShadow userData={{ extraction: true }}>
-        <cylinderGeometry args={[0.7, 0.7, 0.14, 24]} />
-        <meshStandardMaterial
-          color={renderStage === 'extraction' || renderStage === 'complete' ? '#22c55e' : '#475569'}
-          emissive={renderStage === 'extraction' || renderStage === 'complete' ? '#16a34a' : '#000000'}
-          emissiveIntensity={renderStage === 'extraction' || renderStage === 'complete' ? 0.6 : 0}
-        />
-      </mesh>
+      <ExtractionPortalVisual isUnlocked={mission.extractionUnlocked} />
 
       {isKai ? (
         <KaiControllerBridge playerRef={playerRef} debugRef={controllerDebugRef} />
