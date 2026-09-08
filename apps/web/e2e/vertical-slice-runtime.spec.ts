@@ -226,18 +226,41 @@ test('Ashblock Kai accepted heavy attack damages the same source-safe Fang comba
     intervals: [100, 150, 200],
   }).toMatch(/CHASE|WINDUP|RECOVERY/);
 
-  // The combatant stops at melee distance; wait until its windup proves the
-  // shared encounter has reached real contact range before resolving Kai heavy.
-  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
+  // Fang begins its first windup at the outer attack envelope (1.8 units),
+  // while Kai's slice heavy resolves inside 1.5 units. A WINDUP alone therefore
+  // does not prove Kai is in heavy range. Let the real Fang attack resolve, then
+  // prove it performs its cooldown CHASE and settles into RECOVERY at stop range.
+  // This is state-driven and keeps both actors under their real controllers.
+  await expect.poll(async () => readNumber(page, 'slice-player-health'), {
     timeout: 6_000,
-    intervals: [100, 150, 200],
-  }).toContain('WINDUP');
+    intervals: [100, 150, 200, 250],
+  }).toBeLessThan(100);
 
+  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
+    timeout: 3_000,
+    intervals: [75, 100, 150],
+  }).toContain('CHASE');
+
+  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
+    timeout: 3_000,
+    intervals: [75, 100, 150],
+  }).toContain('RECOVERY');
+
+  const energyBefore = await readNumber(page, 'slice-energy');
   const fangHealthBefore = await readNumber(page, 'slice-fang-health');
   await page.keyboard.press('k');
+
+  // Energy consumption proves KaiController accepted the heavy input; Fang HP
+  // loss proves the slice adapter resolved that accepted attack against the
+  // shared deterministic combatant at actual melee contact range.
+  await expect.poll(async () => readNumber(page, 'slice-energy'), {
+    timeout: 2_000,
+    intervals: [75, 100, 150],
+  }).toBeLessThan(energyBefore);
+
   await expect.poll(async () => readNumber(page, 'slice-fang-health'), {
     timeout: 2_500,
-    intervals: [100, 150, 200],
+    intervals: [75, 100, 150, 200],
   }).toBeLessThan(fangHealthBefore);
 
   expect(errors, `Unexpected Kai encounter errors:\n${errors.join('\n')}`).toEqual([]);
