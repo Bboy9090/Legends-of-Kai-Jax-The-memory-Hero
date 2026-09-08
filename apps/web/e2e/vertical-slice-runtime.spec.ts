@@ -77,21 +77,24 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
     await page.keyboard.down('e');
     try {
       await expect(page.getByTestId('slice-webzip')).toContainText('YES', { timeout: 1_500 });
-      // A partial zip leaves Kai in front of the climb wall, where plain W can
-      // repeatedly attach/detach without the traversal modifier. Hold traversal
-      // through the real 0.8 s Web Zip lifecycle so Kai reaches the first anchor
-      // beyond the wall before continuing camera-forward under controller authority.
-      await expect.poll(async () => page.getByTestId('slice-webzip').innerText(), {
-        timeout: 2_500,
-        intervals: [100, 150, 200],
-      }).toContain('NO');
+      // KaiController intentionally caps per-frame simulation delta. Headless
+      // Chromium can therefore take more wall-clock time than the nominal 0.8 s
+      // zip duration. Prove the real zip carried Kai beyond the climb wall by
+      // controller-owned position instead of racing a wall-clock completion.
       await expect.poll(async () => (await readPosition(page))[2], {
-        timeout: 1_000,
-        intervals: [100, 150],
+        timeout: 8_000,
+        intervals: [100, 150, 200, 250],
       }).toBeGreaterThan(-12);
     } finally {
       await page.keyboard.up('e');
     }
+
+    // Releasing traversal must exit the real Web Zip state before the walking
+    // phase begins. No position or mission state is mutated by the test.
+    await expect.poll(async () => page.getByTestId('slice-webzip').innerText(), {
+      timeout: 2_000,
+      intervals: [75, 100, 150],
+    }).toContain('NO');
   } else {
     await page.keyboard.press('e');
     await expect(page.getByTestId('slice-mode')).toContainText('DISPLACEMENT', { timeout: 1_500 });
