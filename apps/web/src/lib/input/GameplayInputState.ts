@@ -290,30 +290,14 @@ class GamepadInputHandler {
 }
 
 /**
- * Unified input manager that combines all input sources
- * Priority: gamepad > keyboard > touch (highest priority first)
- *
- * ATTACK INPUT BUFFERING: Attack presses are latched and consumed rather than
- * sampled at render rate. This prevents missed keydown/keyup edges on slow frames.
+ * Unified gameplay input manager. Digital combat actions remain level-based here;
+ * character-specific buffered action consumption is handled separately so reading
+ * shared state never clears another system's input.
  */
 export class GameplayInputManager {
   private keyboardHandler: KeyboardInputHandler;
   private touchHandler: TouchInputHandler;
   private gamepadHandler: GamepadInputHandler;
-
-  // Attack press queues (latched on rising edge, cleared after consume)
-  private attackLightPressed = false;
-  private attackHeavyPressed = false;
-  private attackSpecialPressed = false;
-  private attackUltimatePressed = false;
-  private dodgePressed = false;
-  private jumpPressed = false;
-  private interactPressed = false;
-
-  // Track previous state to detect rising edges
-  private prevKeyboardState: Partial<GameplayInputState> = {};
-  private prevTouchState: Partial<GameplayInputState> = {};
-  private prevGamepadState: Partial<GameplayInputState> = {};
 
   constructor() {
     this.keyboardHandler = new KeyboardInputHandler();
@@ -322,24 +306,8 @@ export class GameplayInputManager {
   }
 
   /**
-   * Detect rising edge for a specific action across all input sources
-   */
-  private wasActionPressed(
-    touchNow: boolean,
-    keyboardNow: boolean,
-    gamepadNow: boolean,
-    touchPrev: boolean,
-    keyboardPrev: boolean,
-    gamepadPrev: boolean
-  ): boolean {
-    // Any source transitioning from false to true = rising edge
-    return (touchNow && !touchPrev) || (keyboardNow && !keyboardPrev) || (gamepadNow && !gamepadPrev);
-  }
-
-  /**
    * Get the current combined input state
    * Smart per-action arbitration: analog inputs choose by magnitude, digital inputs OR together
-   * ATTACK BUFFERING: Attack presses are latched when edges occur and consumed when queried
    * Maintains persistent lastActiveDevice tracking
    */
   getState(): GameplayInputState {
@@ -412,67 +380,20 @@ export class GameplayInputManager {
       }
     }
 
-    // Held digital inputs: OR them together (any source being true makes output true)
+    // Digital inputs: OR them together (any source being true makes output true)
     state.isRunning = (touchState.isRunning || false) || (keyboardState.isRunning || false) || (gamepadState.isRunning || false);
+    state.attackLight = (touchState.attackLight || false) || (keyboardState.attackLight || false) || (gamepadState.attackLight || false);
+    state.attackHeavy = (touchState.attackHeavy || false) || (keyboardState.attackHeavy || false) || (gamepadState.attackHeavy || false);
+    state.attackSpecial = (touchState.attackSpecial || false) || (keyboardState.attackSpecial || false) || (gamepadState.attackSpecial || false);
+    state.attackUltimate = (touchState.attackUltimate || false) || (keyboardState.attackUltimate || false) || (gamepadState.attackUltimate || false);
+    state.dodge = (touchState.dodge || false) || (keyboardState.dodge || false) || (gamepadState.dodge || false);
+    state.jump = (touchState.jump || false) || (keyboardState.jump || false) || (gamepadState.jump || false);
     state.traversal = (touchState.traversal || false) || (keyboardState.traversal || false) || (gamepadState.traversal || false);
     state.traversalModifier = (touchState.traversalModifier || false) || (keyboardState.traversalModifier || false) || (gamepadState.traversalModifier || false);
     state.fusion = (touchState.fusion || false) || (keyboardState.fusion || false) || (gamepadState.fusion || false);
+    state.interact = (touchState.interact || false) || (keyboardState.interact || false) || (gamepadState.interact || false);
     state.pause = (touchState.pause || false) || (keyboardState.pause || false) || (gamepadState.pause || false);
     state.menu = (touchState.menu || false) || (keyboardState.menu || false) || (gamepadState.menu || false);
-
-    // Attack/Action input buffering: detect rising edges and latch them
-    // This prevents missed presses when keyup occurs between render frames
-    const attackLightEdge = this.wasActionPressed(
-      touchState.attackLight || false, keyboardState.attackLight || false, gamepadState.attackLight || false,
-      this.prevTouchState.attackLight || false, this.prevKeyboardState.attackLight || false, this.prevGamepadState.attackLight || false
-    );
-    const attackHeavyEdge = this.wasActionPressed(
-      touchState.attackHeavy || false, keyboardState.attackHeavy || false, gamepadState.attackHeavy || false,
-      this.prevTouchState.attackHeavy || false, this.prevKeyboardState.attackHeavy || false, this.prevGamepadState.attackHeavy || false
-    );
-    const attackSpecialEdge = this.wasActionPressed(
-      touchState.attackSpecial || false, keyboardState.attackSpecial || false, gamepadState.attackSpecial || false,
-      this.prevTouchState.attackSpecial || false, this.prevKeyboardState.attackSpecial || false, this.prevGamepadState.attackSpecial || false
-    );
-    const attackUltimateEdge = this.wasActionPressed(
-      touchState.attackUltimate || false, keyboardState.attackUltimate || false, gamepadState.attackUltimate || false,
-      this.prevTouchState.attackUltimate || false, this.prevKeyboardState.attackUltimate || false, this.prevGamepadState.attackUltimate || false
-    );
-    const dodgeEdge = this.wasActionPressed(
-      touchState.dodge || false, keyboardState.dodge || false, gamepadState.dodge || false,
-      this.prevTouchState.dodge || false, this.prevKeyboardState.dodge || false, this.prevGamepadState.dodge || false
-    );
-    const jumpEdge = this.wasActionPressed(
-      touchState.jump || false, keyboardState.jump || false, gamepadState.jump || false,
-      this.prevTouchState.jump || false, this.prevKeyboardState.jump || false, this.prevGamepadState.jump || false
-    );
-    const interactEdge = this.wasActionPressed(
-      touchState.interact || false, keyboardState.interact || false, gamepadState.interact || false,
-      this.prevTouchState.interact || false, this.prevKeyboardState.interact || false, this.prevGamepadState.interact || false
-    );
-
-    // Latch edges into press queue
-    if (attackLightEdge) this.attackLightPressed = true;
-    if (attackHeavyEdge) this.attackHeavyPressed = true;
-    if (attackSpecialEdge) this.attackSpecialPressed = true;
-    if (attackUltimateEdge) this.attackUltimatePressed = true;
-    if (dodgeEdge) this.dodgePressed = true;
-    if (jumpEdge) this.jumpPressed = true;
-    if (interactEdge) this.interactPressed = true;
-
-    // Provide buffered attack presses (consumed next time controller checks)
-    state.attackLight = this.attackLightPressed;
-    state.attackHeavy = this.attackHeavyPressed;
-    state.attackSpecial = this.attackSpecialPressed;
-    state.attackUltimate = this.attackUltimatePressed;
-    state.dodge = this.dodgePressed;
-    state.jump = this.jumpPressed;
-    state.interact = this.interactPressed;
-
-    // Store current state for next frame's edge detection
-    this.prevTouchState = touchState;
-    this.prevKeyboardState = keyboardState;
-    this.prevGamepadState = gamepadState;
 
     // Update persistent lastActiveDevice based on ANY input (analog or digital)
     // Only update when a device actually produces input (not idle)
@@ -499,37 +420,6 @@ export class GameplayInputManager {
     }
 
     return state;
-  }
-
-  /**
-   * Clear buffered attack press (called after controller consumes it)
-   */
-  consumeAttackLight() {
-    this.attackLightPressed = false;
-  }
-
-  consumeAttackHeavy() {
-    this.attackHeavyPressed = false;
-  }
-
-  consumeAttackSpecial() {
-    this.attackSpecialPressed = false;
-  }
-
-  consumeAttackUltimate() {
-    this.attackUltimatePressed = false;
-  }
-
-  consumeDodge() {
-    this.dodgePressed = false;
-  }
-
-  consumeJump() {
-    this.jumpPressed = false;
-  }
-
-  consumeInteract() {
-    this.interactPressed = false;
   }
 
   /**
