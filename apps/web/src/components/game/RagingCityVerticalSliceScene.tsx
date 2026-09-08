@@ -300,6 +300,7 @@ function VerticalSliceEnvironment({
 
     if (mission.stage === 'traversal' && playerPos.z > -5) {
       mission.encounterActive = true;
+      console.log('[STAGE-TRANSITION] Transitioning to encounter', { playerZ: playerPos.z });
       transitionStage('encounter');
     }
 
@@ -339,44 +340,64 @@ function VerticalSliceEnvironment({
     previousAttackInputRef.current = attackInput;
 
     const fangObject = fangRef.current;
-    if (mission.stage === 'encounter' && fangObject && !mission.playerDown) {
-      const externalHealth = typeof fangObject.userData.health === 'number'
-        ? fangObject.userData.health
-        : fangState.health;
-
-      if (externalHealth < fangState.health) {
-        damageFangCombatant(fangState, fangState.health - externalHealth, currentTime);
-      }
-
-      const externalVelocity = fangObject.userData.velocity;
-      if (externalVelocity instanceof THREE.Vector3 && externalVelocity.lengthSq() > 0.0001) {
-        applyFangKnockback(fangState, {
-          x: externalVelocity.x,
-          y: externalVelocity.y,
-          z: externalVelocity.z,
+    if (mission.stage === 'encounter' && !mission.playerDown) {
+      if (!fangObject) {
+        console.warn('[FANG-AI] Stage is encounter but fangObject is null', {
+          stage: mission.stage,
+          playerDown: mission.playerDown,
+          fangRefCurrent: fangRef.current,
         });
-        externalVelocity.set(0, 0, 0);
-      }
+      } else {
+        const externalHealth = typeof fangObject.userData.health === 'number'
+          ? fangObject.userData.health
+          : fangState.health;
 
-      const aiResult = updateFangCombatantAI(
-        fangState,
-        { x: playerPos.x, y: playerPos.y, z: playerPos.z },
-        delta,
-        currentTime
-      );
+        if (externalHealth < fangState.health) {
+          damageFangCombatant(fangState, fangState.health - externalHealth, currentTime);
+        }
 
-      fangObject.position.set(
-        fangState.position.x,
-        Math.max(0.8, fangState.position.y + 0.3),
-        fangState.position.z
-      );
-      fangObject.userData.health = fangState.health;
-      fangObject.userData.isDead = fangState.isDead;
-      fangObject.userData.behavior = fangState.behavior;
+        const externalVelocity = fangObject.userData.velocity;
+        if (externalVelocity instanceof THREE.Vector3 && externalVelocity.lengthSq() > 0.0001) {
+          applyFangKnockback(fangState, {
+            x: externalVelocity.x,
+            y: externalVelocity.y,
+            z: externalVelocity.z,
+          });
+          externalVelocity.set(0, 0, 0);
+        }
 
-      if (aiResult.attackResolved && controllerDebugRef.current.invulnTimer <= 0) {
-        mission.playerHealth = Math.max(0, mission.playerHealth - aiResult.attackDamage);
-        mission.playerDown = mission.playerHealth === 0;
+        const aiResult = updateFangCombatantAI(
+          fangState,
+          { x: playerPos.x, y: playerPos.y, z: playerPos.z },
+          delta,
+          currentTime
+        );
+
+        fangObject.position.set(
+          fangState.position.x,
+          Math.max(0.8, fangState.position.y + 0.3),
+          fangState.position.z
+        );
+        fangObject.userData.health = fangState.health;
+        fangObject.userData.isDead = fangState.isDead;
+        fangObject.userData.behavior = fangState.behavior;
+
+        if (aiResult.attackResolved) {
+          console.log('[FANG-ATTACK] Attack resolved!', {
+            damage: aiResult.attackDamage,
+            invulnTimer: controllerDebugRef.current.invulnTimer,
+            playerHealth: mission.playerHealth,
+          });
+        }
+
+        if (aiResult.attackResolved && controllerDebugRef.current.invulnTimer <= 0) {
+          mission.playerHealth = Math.max(0, mission.playerHealth - aiResult.attackDamage);
+          mission.playerDown = mission.playerHealth === 0;
+          console.log('[FANG-DAMAGE] Player health updated', {
+            newHealth: mission.playerHealth,
+            damage: aiResult.attackDamage,
+          });
+        }
       }
     }
 

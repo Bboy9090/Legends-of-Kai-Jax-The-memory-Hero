@@ -99,6 +99,12 @@ function stepFangCombatantAI(
 
     if (state.attackWindupTimer === 0) {
       const stillInRange = distance <= FANG_COMBATANT_CONFIG.attackRange * 1.15;
+      console.log('[FANG-WINDUP] Windup completed', {
+        distance,
+        attackRange: FANG_COMBATANT_CONFIG.attackRange,
+        maxRange: FANG_COMBATANT_CONFIG.attackRange * 1.15,
+        stillInRange,
+      });
       markFangCombatantAttackResolved(state, currentTime);
       return {
         behavior: state.behavior,
@@ -128,6 +134,11 @@ function stepFangCombatantAI(
 
   if (distance <= FANG_COMBATANT_CONFIG.attackRange) {
     if (canFangCombatantAttack(state, currentTime)) {
+      console.log('[FANG-WINDUP] Initiating windup attack', {
+        distance,
+        attackRange: FANG_COMBATANT_CONFIG.attackRange,
+        windupDuration: FANG_COMBATANT_CONFIG.attackWindup,
+      });
       state.attackWindupTimer = FANG_COMBATANT_CONFIG.attackWindup;
       state.behavior = 'WINDUP';
       return {
@@ -151,8 +162,17 @@ function stepFangCombatantAI(
 
   if (distance > FANG_COMBATANT_CONFIG.stopRange) {
     state.behavior = 'CHASE';
+    const prevZ = state.position.z;
     moveToward(state, playerPosition, delta);
     distance = planarDistance(state.position, playerPosition);
+    if (Math.random() < 0.05) {
+      console.log('[FANG-CHASE] Chasing player', {
+        distance,
+        fangZ: state.position.z,
+        playerZ: playerPosition.z,
+        moved: Math.abs(state.position.z - prevZ),
+      });
+    }
   } else {
     state.behavior = 'RECOVERY';
   }
