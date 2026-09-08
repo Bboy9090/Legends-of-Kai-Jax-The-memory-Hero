@@ -564,7 +564,7 @@ function VerticalSliceEnvironment({
           const y = index % 2 === 0 ? 0.5 : 1.15;
           return (
             <mesh
-              key={`slice-kai-limb-${index}`]
+              key={`slice-kai-limb-${index}`}
               position={[side * 0.48, y, 0]}
               rotation={[0, 0, side * 0.65]}
               castShadow
