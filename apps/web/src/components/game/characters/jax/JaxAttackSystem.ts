@@ -70,7 +70,9 @@ const ATTACK_CONFIG: Record<JaxAttackType, {
 
 export class JaxAttackSystem {
   private currentAttack: AttackEvent | null = null;
+  private expiredAttack: AttackEvent | null = null;
   private hitTargets = new Set<string>();
+  private lastHitboxSampleTime: number | null = null;
 
   constructor(private scene: THREE.Scene) {}
 
@@ -98,7 +100,9 @@ export class JaxAttackSystem {
       activeEnd: config.activeEnd,
     };
 
+    this.expiredAttack = null;
     this.hitTargets.clear();
+    this.lastHitboxSampleTime = currentTime;
     return this.currentAttack;
   }
 
@@ -109,8 +113,12 @@ export class JaxAttackSystem {
     const elapsed = currentTime - this.currentAttack.startTime;
 
     if (elapsed > this.currentAttack.duration) {
+      // Preserve the just-expired event until processActiveHitboxes() gets one
+      // final chance to consume an ACTIVE window crossed by a slow render frame.
+      // This keeps lifecycle reporting truthful (update returns null) without
+      // letting software-WebGL frame rate erase a legitimate attack hit window.
+      this.expiredAttack = this.currentAttack;
       this.currentAttack = null;
-      this.hitTargets.clear();
       return null;
     }
 
@@ -140,41 +148,65 @@ export class JaxAttackSystem {
       return { hit: false, damage: 0 };
     }
 
-    if (this.hitTargets.has(targetId)) {
-      return { hit: false, damage: 0 };
-    }
-
-    if (this.getPlanarDistance(targetPos) > this.currentAttack.radius) {
-      return { hit: false, damage: 0 };
-    }
-
-    this.hitTargets.add(targetId);
-    return { hit: true, damage: this.currentAttack.damage };
+    return this.tryHitForAttack(this.currentAttack, targetId, targetPos);
   }
 
   processActiveHitboxes(
     currentTime: number,
     onHit: (target: THREE.Object3D, damage: number, attack: AttackEvent) => void
   ): void {
-    if (!this.currentAttack || !this.isHitboxActive(currentTime)) return;
+    const attack = this.currentAttack ?? this.expiredAttack;
+    if (!attack) return;
 
-    for (const target of this.findCombatTargets()) {
-      const targetId = String(target.userData.targetId ?? target.uuid);
-      const targetPos = new THREE.Vector3();
-      target.getWorldPosition(targetPos);
+    const previousSampleTime = this.lastHitboxSampleTime ?? currentTime;
+    const intervalStart = Math.min(previousSampleTime, currentTime);
+    const intervalEnd = Math.max(previousSampleTime, currentTime);
+    const activeWindowStart = attack.startTime + attack.activeStart;
+    const activeWindowEnd = attack.startTime + attack.activeEnd;
+    const crossedActiveWindow =
+      intervalEnd >= activeWindowStart && intervalStart <= activeWindowEnd;
 
-      const result = this.tryHit(targetId, targetPos, currentTime);
-      if (result.hit) {
-        onHit(target, result.damage, this.currentAttack);
+    this.lastHitboxSampleTime = currentTime;
+
+    if (crossedActiveWindow) {
+      for (const target of this.findCombatTargets(attack)) {
+        const targetId = String(target.userData.targetId ?? target.uuid);
+        const targetPos = new THREE.Vector3();
+        target.getWorldPosition(targetPos);
+
+        const result = this.tryHitForAttack(attack, targetId, targetPos);
+        if (result.hit) {
+          onHit(target, result.damage, attack);
+        }
       }
+    }
+
+    if (this.expiredAttack === attack) {
+      this.expiredAttack = null;
+      this.hitTargets.clear();
+      this.lastHitboxSampleTime = null;
     }
   }
 
-  private findCombatTargets(): THREE.Object3D[] {
-    if (!this.currentAttack) return [];
+  private tryHitForAttack(
+    attack: AttackEvent,
+    targetId: string,
+    targetPos: THREE.Vector3
+  ): { hit: boolean; damage: number } {
+    if (this.hitTargets.has(targetId)) {
+      return { hit: false, damage: 0 };
+    }
 
+    if (this.getPlanarDistance(targetPos, attack) > attack.radius) {
+      return { hit: false, damage: 0 };
+    }
+
+    this.hitTargets.add(targetId);
+    return { hit: true, damage: attack.damage };
+  }
+
+  private findCombatTargets(attack: AttackEvent): THREE.Object3D[] {
     const targets: THREE.Object3D[] = [];
-    const attack = this.currentAttack;
 
     this.scene.traverse((obj) => {
       if (!obj.userData.combatTarget) return;
@@ -187,13 +219,13 @@ export class JaxAttackSystem {
 
       const objPos = new THREE.Vector3();
       obj.getWorldPosition(objPos);
-      if (this.getPlanarDistance(objPos) > attack.radius) return;
+      if (this.getPlanarDistance(objPos, attack) > attack.radius) return;
 
-      if (attack.type === 'jax_light_combo' && !this.isInForwardCone(objPos, 0.0)) {
+      if (attack.type === 'jax_light_combo' && !this.isInForwardCone(objPos, 0.0, attack)) {
         return;
       }
 
-      if (attack.type === 'jax_lightning_special' && !this.isInForwardCone(objPos, 0.5)) {
+      if (attack.type === 'jax_lightning_special' && !this.isInForwardCone(objPos, 0.5, attack)) {
         return;
       }
 
@@ -203,20 +235,27 @@ export class JaxAttackSystem {
     return targets;
   }
 
-  private isInForwardCone(targetPos: THREE.Vector3, minimumDot: number): boolean {
-    if (!this.currentAttack) return false;
+  private isInForwardCone(
+    targetPos: THREE.Vector3,
+    minimumDot: number,
+    attack: AttackEvent = this.currentAttack as AttackEvent
+  ): boolean {
+    if (!attack) return false;
 
-    const toTarget = targetPos.clone().sub(this.currentAttack.position);
+    const toTarget = targetPos.clone().sub(attack.position);
     toTarget.y = 0;
     if (toTarget.lengthSq() < 0.0001) return true;
 
-    return toTarget.normalize().dot(this.currentAttack.direction) >= minimumDot;
+    return toTarget.normalize().dot(attack.direction) >= minimumDot;
   }
 
-  private getPlanarDistance(targetPos: THREE.Vector3): number {
-    if (!this.currentAttack) return Number.POSITIVE_INFINITY;
+  private getPlanarDistance(
+    targetPos: THREE.Vector3,
+    attack: AttackEvent = this.currentAttack as AttackEvent
+  ): number {
+    if (!attack) return Number.POSITIVE_INFINITY;
 
-    const offset = targetPos.clone().sub(this.currentAttack.position);
+    const offset = targetPos.clone().sub(attack.position);
     offset.y = 0;
     return offset.length();
   }
@@ -236,6 +275,8 @@ export class JaxAttackSystem {
 
   reset() {
     this.currentAttack = null;
+    this.expiredAttack = null;
     this.hitTargets.clear();
+    this.lastHitboxSampleTime = null;
   }
 }
