@@ -328,7 +328,7 @@ export function useJaxController(
       }
     }
 
-    if (wasJustPressed(input.attackLight, prevInput?.attackLight ?? false)) {
+    if (input.attackLight) {
       if (
         jax.energy >= COMBAT_CONFIG.lightAttackCost &&
         !jax.isDodging &&
@@ -342,9 +342,10 @@ export function useJaxController(
         attackSystem.startAttack('jax_light_combo', jax.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('light');
       }
+      gameplayInputManager.consumeAttackLight();
     }
 
-    if (wasJustPressed(input.attackHeavy, prevInput?.attackHeavy ?? false)) {
+    if (input.attackHeavy) {
       if (
         jax.energy >= COMBAT_CONFIG.heavyAttackCost &&
         !jax.isDodging &&
@@ -358,9 +359,10 @@ export function useJaxController(
         attackSystem.startAttack('jax_pressure_heavy', jax.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('heavy');
       }
+      gameplayInputManager.consumeAttackHeavy();
     }
 
-    if (wasJustPressed(input.attackSpecial, prevInput?.attackSpecial ?? false)) {
+    if (input.attackSpecial) {
       if (
         jax.energy >= COMBAT_CONFIG.specialAttackCost &&
         !jax.isDodging &&
@@ -373,9 +375,10 @@ export function useJaxController(
         attackSystem.startAttack('jax_lightning_special', jax.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('special');
       }
+      gameplayInputManager.consumeAttackSpecial();
     }
 
-    if (wasJustPressed(input.attackUltimate, prevInput?.attackUltimate ?? false)) {
+    if (input.attackUltimate) {
       if (
         jax.energy >= COMBAT_CONFIG.ultimateAttackCost &&
         !jax.isDodging &&
@@ -388,9 +391,10 @@ export function useJaxController(
         attackSystem.startAttack('jax_storm_ultimate', jax.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('ultimate');
       }
+      gameplayInputManager.consumeAttackUltimate();
     }
 
-    if (wasJustPressed(input.dodge, prevInput?.dodge ?? false)) {
+    if (input.dodge) {
       if (
         jax.energy >= DODGING_CONFIG.staminaCost &&
         !jax.isDodging &&
@@ -403,6 +407,7 @@ export function useJaxController(
         jax.attackCombo = 0;
         useAudio.getState().playDodge?.();
       }
+      gameplayInputManager.consumeDodge();
     }
 
     currentAttack = attackSystem.update(currentTime, jax.position);
