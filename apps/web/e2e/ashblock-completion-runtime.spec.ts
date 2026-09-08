@@ -170,18 +170,37 @@ async function attackAndWaitForDamage(
   return afterHealth;
 }
 
+async function waitForJaxHeavyEnvelope(page: Page) {
+  // Jax pressure heavy has a 2.0-unit radius. Fang WINDUP/RECOVERY only occurs
+  // while the combatant is already inside its 1.8-unit attack envelope, so either
+  // state is sufficient proof that the heavy is in range. This remains entirely
+  // state-driven and avoids any test-only target repositioning after knockback.
+  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
+    timeout: 8_000,
+    intervals: [75, 100, 150, 200],
+  }).toMatch(/WINDUP|RECOVERY/);
+}
+
 async function defeatFang(page: Page, hero: 'kai' | 'jax') {
   await closeIntoMeleeRange(page);
 
-  const attackKey: 'j' | 'k' = hero === 'kai' ? 'k' : 'j';
-  const maxAttempts = hero === 'kai' ? 6 : 20;
-  const minimumSuccessfulHits = hero === 'kai' ? 3 : 13;
-  const settleMs = hero === 'kai' ? 1_000 : 650;
+  // Both heroes use their real heavy input here. Kai's slice heavy resolves for 35
+  // damage through the accepted KaiController lifecycle. Jax pressure heavy resolves
+  // for 15 through JaxAttackSystem and can knock the Fang outward, so Jax waits for
+  // the deterministic AI to re-enter its real attack envelope before each follow-up.
+  const attackKey: 'k' = 'k';
+  const maxAttempts = hero === 'kai' ? 6 : 10;
+  const minimumSuccessfulHits = hero === 'kai' ? 3 : 7;
+  const settleMs = hero === 'kai' ? 1_000 : 850;
 
   let successfulHits = 0;
   let health = await readNumber(page, 'slice-fang-health');
 
   for (let attempt = 0; attempt < maxAttempts && health > 0; attempt += 1) {
+    if (hero === 'jax') {
+      await waitForJaxHeavyEnvelope(page);
+    }
+
     const nextHealth = await attackAndWaitForDamage(page, attackKey, health, settleMs);
     if (nextHealth < health) successfulHits += 1;
     health = nextHealth;
