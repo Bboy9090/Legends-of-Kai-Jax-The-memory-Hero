@@ -523,20 +523,19 @@ function VerticalSliceEnvironment({
         </>
       )}
 
-      {renderStage === 'encounter' && (
-        <group
-          ref={fangRef}
-          name="fang-syndicate-combatant-proxy"
-          userData={{
-            combatTarget: true,
-            targetId: 'fang_01',
-            isLightningTarget: true,
-            health: 100,
-          }}
-        >
-          <FangCombatantVisual state={renderMission.fangCombatant} />
-        </group>
-      )}
+      <group
+        ref={fangRef}
+        name="fang-syndicate-combatant-proxy"
+        visible={renderMission.stage === 'encounter'}
+        userData={{
+          combatTarget: true,
+          targetId: 'fang_01',
+          isLightningTarget: true,
+          health: 100,
+        }}
+      >
+        <FangCombatantVisual state={renderMission.fangCombatant} />
+      </group>
 
       {renderStage === 'memory-trace' && (
         <MemoryTraceVisual isActivated={renderMission.memoryTraceActivated} />
