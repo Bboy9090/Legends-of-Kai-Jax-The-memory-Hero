@@ -25,9 +25,9 @@ export function JaxCharacter({ scene, onController }: JaxCharacterProps) {
     onController?.(jaxController);
   }, [jaxController, onController]);
 
-  // Load production GLTF model
-  const { isLoaded: gltfLoaded } = useGLTFCharacter({
-    modelPath: '/models/Meshy_AI_Character_output9TAILSKAIJAX.glb',
+  // Load production GLTF model using the correct Jax asset from registry
+  const { groupRef: loaderGroupRef, isLoaded: gltfLoaded } = useGLTFCharacter({
+    modelPath: '/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb',
     onLoaded: (model) => {
       if (!jaxRef.current) return;
       jaxRef.current.position.y = 0;
@@ -36,8 +36,19 @@ export function JaxCharacter({ scene, onController }: JaxCharacterProps) {
       console.warn('Failed to load Jax GLTF model, using fallback:', error);
       setFallbackReady(true);
     },
-    scale: 1,
+    scale: 3.5,
   });
+
+  // Copy loaded model from loader group to jax ref when ready
+  useEffect(() => {
+    if (!jaxRef.current || !loaderGroupRef?.current || !gltfLoaded) return;
+
+    // Move loaded model children from loader group to jax ref
+    while (loaderGroupRef.current.children.length > 0) {
+      const child = loaderGroupRef.current.children[0];
+      jaxRef.current.add(child);
+    }
+  }, [gltfLoaded, loaderGroupRef]);
 
   // Show GLTF model if loaded, otherwise use fallback
   useEffect(() => {
@@ -91,5 +102,12 @@ export function JaxCharacter({ scene, onController }: JaxCharacterProps) {
     }
   }, [gltfLoaded, fallbackReady]);
 
-  return <group ref={jaxRef} position={[0, 0, 0]} />;
+  return (
+    <>
+      {/* Hidden loader group - required for useGLTFCharacter hook to trigger load */}
+      <group ref={loaderGroupRef} visible={false} />
+      {/* Main character group - models will be moved here after loading */}
+      <group ref={jaxRef} position={[0, 0, 0]} />
+    </>
+  );
 }
