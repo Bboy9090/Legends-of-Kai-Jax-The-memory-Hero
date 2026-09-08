@@ -70,6 +70,33 @@ describe('JaxAttackSystem', () => {
     scene.remove(target);
   });
 
+  it('preserves a heavy hit when one slow render frame crosses the full active window', () => {
+    createTarget(scene, 'slow-frame-heavy-target', new THREE.Vector3(1.2, 0, 0));
+    const damages: number[] = [];
+
+    system.startAttack(
+      'jax_pressure_heavy',
+      new THREE.Vector3(),
+      new THREE.Vector3(0, 0, 1),
+      0
+    );
+
+    // The pressure-heavy active window is 0.10s -> 0.35s and the full attack
+    // expires at 0.50s. A software-WebGL frame can arrive after all three points.
+    // update() should truthfully report the lifecycle as expired while retaining
+    // one pending hitbox sample so combat does not become render-FPS dependent.
+    expect(system.update(0.6, new THREE.Vector3())).toBeNull();
+    system.processActiveHitboxes(0.6, (_target, damage) => {
+      damages.push(damage);
+    });
+
+    expect(damages).toEqual([15]);
+    system.processActiveHitboxes(0.7, (_target, damage) => {
+      damages.push(damage);
+    });
+    expect(damages).toEqual([15]);
+  });
+
   it('rejects a light target behind Jax', () => {
     createTarget(scene, 'behind', new THREE.Vector3(0, 0, -1));
     const hits: string[] = [];
