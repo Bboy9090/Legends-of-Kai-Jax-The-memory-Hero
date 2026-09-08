@@ -15,6 +15,10 @@ export interface FangAIUpdateResult {
   attackDamage: number;
 }
 
+const MAX_SIM_STEP = 0.05;
+const MAX_WALL_CLOCK_CATCHUP = 0.5;
+const lastUpdateTimeByState = new WeakMap<FangCombatantState, number>();
+
 function planarDistance(a: FangVector3, b: FangVector3): number {
   return Math.hypot(b.x - a.x, b.z - a.z);
 }
@@ -58,14 +62,12 @@ function applyExternalVelocity(state: FangCombatantState, delta: number): void {
   if (Math.abs(state.velocity.z) < 0.001) state.velocity.z = 0;
 }
 
-export function updateFangCombatantAI(
+function stepFangCombatantAI(
   state: FangCombatantState,
   playerPosition: FangVector3,
-  deltaTime: number,
+  delta: number,
   currentTime: number
 ): FangAIUpdateResult {
-  const delta = Math.max(0, Math.min(deltaTime, 0.05));
-
   updateFangCombatant(state, delta);
   applyExternalVelocity(state, delta);
 
@@ -160,5 +162,66 @@ export function updateFangCombatantAI(
     distanceToPlayer: distance,
     attackResolved: false,
     attackDamage: 0,
+  };
+}
+
+export function updateFangCombatantAI(
+  state: FangCombatantState,
+  playerPosition: FangVector3,
+  deltaTime: number,
+  currentTime: number
+): FangAIUpdateResult {
+  const suppliedDelta = Number.isFinite(deltaTime) ? Math.max(0, deltaTime) : 0;
+  const previousUpdateTime = lastUpdateTimeByState.get(state);
+  const wallClockDelta = previousUpdateTime === undefined || !Number.isFinite(currentTime)
+    ? 0
+    : Math.max(0, currentTime - previousUpdateTime);
+
+  if (Number.isFinite(currentTime)) {
+    lastUpdateTimeByState.set(state, currentTime);
+  }
+
+  // The scene intentionally caps its render-frame gameplay delta for controller
+  // stability. Presentation-heavy/headless WebGL can render well below realtime,
+  // so use elapsed simulation time as catch-up authority while retaining bounded
+  // <=50 ms AI substeps. This prevents visuals from slowing Fang pursuit/windup.
+  const catchupDelta = Math.min(wallClockDelta, MAX_WALL_CLOCK_CATCHUP);
+  const simulationDelta = Math.max(suppliedDelta, catchupDelta);
+
+  if (simulationDelta <= 0) {
+    return stepFangCombatantAI(state, playerPosition, 0, currentTime);
+  }
+
+  let remaining = simulationDelta;
+  let simulated = 0;
+  let result: FangAIUpdateResult = {
+    behavior: state.behavior,
+    distanceToPlayer: planarDistance(state.position, playerPosition),
+    attackResolved: false,
+    attackDamage: 0,
+  };
+  let attackResolved = false;
+  let attackDamage = 0;
+
+  while (remaining > 0.000001) {
+    const step = Math.min(remaining, MAX_SIM_STEP);
+    simulated += step;
+    const stepTime = Number.isFinite(currentTime)
+      ? currentTime - simulationDelta + simulated
+      : currentTime;
+
+    const stepResult = stepFangCombatantAI(state, playerPosition, step, stepTime);
+    if (stepResult.attackResolved) {
+      attackResolved = true;
+      attackDamage += stepResult.attackDamage;
+    }
+    result = stepResult;
+    remaining -= step;
+  }
+
+  return {
+    ...result,
+    attackResolved,
+    attackDamage,
   };
 }
