@@ -10,15 +10,13 @@ const BENIGN_ERROR_PATTERNS = [
   /SwiftShader/i,
   /Software WebGL/i,
   /THREE\.WebGLRenderer: Context Lost/i,
-  // The vertical-slice harness renders developer proxy geometry rather than a
-  // production GLTF character. Headless Chromium can emit transient failures
-  // for blob-backed GLTF textures imported elsewhere in the dev bundle during
-  // navigation/reload. Production-preview/model-rendering gates remain
-  // responsible for real asset integrity; this runtime lane is scoped to the
-  // live Kai/Jax controller and mission-state proof.
-  /THREE\.GLTFLoader: Couldn't load texture blob:http:\/\/localhost:3000\//i,
   /Failed to fetch/i,
   /net::ERR_/i,
+  // The isolated slice renders developer proxy geometry, while the shared
+  // fighter registry can still initialize GLTF resources in headless Chromium.
+  // Blob-texture decode failures from that non-authoritative model path do not
+  // invalidate controller/mission runtime proof. Other GLTF errors stay fatal.
+  /THREE\.GLTFLoader: Couldn't load texture blob:http:\/\/localhost:3000\//i,
 ];
 
 function isBenign(text: string): boolean {
@@ -71,6 +69,15 @@ async function readNumber(page: Page, testId: string): Promise<number> {
   return Number(match[0]);
 }
 
+async function enterEncounter(page: Page) {
+  await page.keyboard.down('w');
+  await expect.poll(async () => page.getByTestId('slice-stage').innerText(), {
+    timeout: 6_000,
+    intervals: [150, 200, 250],
+  }).toContain('encounter');
+  await page.keyboard.up('w');
+}
+
 test('Ashblock Kai slice uses the real Kai controller for camera-forward movement and Web Zip', async ({ page }) => {
   const errors = collectErrors(page);
   await bootSlice(page, 'kai', errors);
@@ -84,7 +91,6 @@ test('Ashblock Kai slice uses the real Kai controller for camera-forward movemen
 
   expect(moved[2], 'W should move Kai camera-forward along the Ashblock route').toBeGreaterThan(start[2] + 0.2);
 
-  // Fresh start is close enough to the first real Web Zip anchor; reload so the wall approach cannot interfere.
   await page.reload();
   await bootSlice(page, 'kai', errors);
   const beforeZip = await readPosition(page);
@@ -116,9 +122,6 @@ test('Ashblock Kai slice reaches the real climbable wall with Shift+W', async ({
     intervals: [100, 150, 200],
   }).toContain('YES');
 
-  // Entering WALL mode occurs one frame before the first constrained climb step.
-  // Poll the controller-owned Y position so this proves actual vertical movement
-  // instead of racing the attach frame.
   await expect.poll(async () => (await readPosition(page))[1], {
     timeout: 2_000,
     intervals: [75, 100, 150],
@@ -152,4 +155,56 @@ test('Ashblock Jax slice uses the real Jax controller for movement and displacem
   expect(Math.hypot(duringDash[0] - beforeDash[0], duringDash[2] - beforeDash[2])).toBeGreaterThan(0.5);
   expect(await readNumber(page, 'slice-fps')).toBeGreaterThan(0);
   expect(errors, `Unexpected Jax slice errors:\n${errors.join('\n')}`).toEqual([]);
+});
+
+test('Ashblock Fang AI chases and damages Jax, while Jax heavy can damage the Fang', async ({ page }) => {
+  const errors = collectErrors(page);
+  await bootSlice(page, 'jax', errors);
+  await enterEncounter(page);
+
+  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
+    timeout: 4_000,
+    intervals: [100, 150, 200],
+  }).toMatch(/CHASE|WINDUP|RECOVERY/);
+
+  await expect.poll(async () => readNumber(page, 'slice-player-health'), {
+    timeout: 6_000,
+    intervals: [150, 200, 250],
+  }).toBeLessThan(100);
+
+  const fangHealthBefore = await readNumber(page, 'slice-fang-health');
+  await page.keyboard.press('k');
+  await expect.poll(async () => readNumber(page, 'slice-fang-health'), {
+    timeout: 2_500,
+    intervals: [100, 150, 200],
+  }).toBeLessThan(fangHealthBefore);
+
+  expect(errors, `Unexpected Jax encounter errors:\n${errors.join('\n')}`).toEqual([]);
+});
+
+test('Ashblock Kai accepted heavy attack damages the same source-safe Fang combatant', async ({ page }) => {
+  const errors = collectErrors(page);
+  await bootSlice(page, 'kai', errors);
+  await enterEncounter(page);
+
+  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
+    timeout: 4_000,
+    intervals: [100, 150, 200],
+  }).toMatch(/CHASE|WINDUP|RECOVERY/);
+
+  // The combatant stops at melee distance; wait until its windup proves the
+  // shared encounter has reached real contact range before resolving Kai heavy.
+  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
+    timeout: 6_000,
+    intervals: [100, 150, 200],
+  }).toContain('WINDUP');
+
+  const fangHealthBefore = await readNumber(page, 'slice-fang-health');
+  await page.keyboard.press('k');
+  await expect.poll(async () => readNumber(page, 'slice-fang-health'), {
+    timeout: 2_500,
+    intervals: [100, 150, 200],
+  }).toBeLessThan(fangHealthBefore);
+
+  expect(errors, `Unexpected Kai encounter errors:\n${errors.join('\n')}`).toEqual([]);
 });
