@@ -592,6 +592,155 @@ function VerticalSliceEnvironment({
   );
 }
 
+function PlayerHUD({
+  debug,
+  forcedCharacter,
+}: {
+  debug: VerticalSliceDebugSnapshot;
+  forcedCharacter?: VerticalSliceHero;
+}) {
+  const missionObjectives: Record<MissionStage, string> = {
+    traversal: 'Reach the Ashblock disturbance',
+    encounter: 'Defeat the Fang Syndicate combatant',
+    'memory-trace': 'Investigate the Memory Trace',
+    extraction: 'Reach extraction',
+    complete: 'Ashblock secured',
+  };
+
+  const fangHealthPercent = (debug.fangHealth / 100) * 100;
+  const playerHealthPercent = (debug.playerHealth / 100) * 100;
+
+  return (
+    <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 sm:p-6 text-white font-sans">
+      {/* Top-left: Hero identity + Objective */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <div className="text-sm sm:text-base font-bold uppercase tracking-wide">
+            {debug.hero === 'kai' && '⚪ Kai'}
+            {debug.hero === 'jax' && '🟣 Jax'}
+            {debug.hero === 'INVALID' && '? Unknown'}
+          </div>
+        </div>
+        <div className="text-xs sm:text-sm text-slate-300 max-w-xs">
+          {missionObjectives[debug.stage]}
+        </div>
+      </div>
+
+      {/* Bottom-left: Player HP + Energy bars */}
+      <div className="flex flex-col gap-4 max-w-xs">
+        <div>
+          <div className="text-xs font-semibold text-slate-300 mb-1">Health</div>
+          <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div
+              className={`h-full transition-all duration-300 ${
+                debug.playerDown
+                  ? 'bg-gray-500'
+                  : playerHealthPercent > 30
+                    ? 'bg-gradient-to-r from-green-500 to-lime-400'
+                    : 'bg-gradient-to-r from-red-600 to-orange-400'
+              }`}
+              style={{ width: `${Math.max(0, playerHealthPercent)}%` }}
+            />
+          </div>
+          <div className="text-xs text-slate-400 mt-0.5">
+            {debug.playerHealth.toFixed(0)} / 100
+            {debug.playerDown && ' (DOWN)'}
+          </div>
+        </div>
+
+        <div>
+          <div className="text-xs font-semibold text-slate-300 mb-1">Energy</div>
+          <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-200"
+              style={{ width: `${Math.min(100, (debug.energy / 100) * 100)}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Right side: Combat info (shown during encounter) */}
+      {debug.stage === 'encounter' && (
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex flex-col gap-3">
+          {/* Fang HP + Behavior */}
+          <div className="flex flex-col gap-1 bg-black/60 rounded-lg p-3 backdrop-blur-sm">
+            <div className="text-xs font-semibold text-slate-300">Fang</div>
+            <div className="text-[10px] text-slate-400 mb-1">{debug.fangBehavior}</div>
+            <div className="h-3 w-40 bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-300"
+                style={{ width: `${Math.max(0, fangHealthPercent)}%` }}
+              />
+            </div>
+            <div className="text-xs text-slate-400 mt-1">{debug.fangHealth.toFixed(0)} / 100</div>
+          </div>
+        </div>
+      )}
+
+      {/* Memory Trace indicator */}
+      {debug.stage === 'memory-trace' && (
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-purple-900/60 border border-purple-500/50 rounded-lg px-4 py-2 backdrop-blur-sm">
+          <div className="text-sm font-semibold text-purple-300">
+            {debug.memoryTraceActivated ? '✓ Memory Trace Complete' : '◆ Memory Trace Ready'}
+          </div>
+        </div>
+      )}
+
+      {/* Extraction indicator */}
+      {debug.stage === 'extraction' && (
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-green-900/60 border border-green-500/50 rounded-lg px-4 py-2 backdrop-blur-sm">
+          <div className="text-sm font-semibold text-green-300">➤ Extraction Ready</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DeveloperDiagnostics({
+  debug,
+  isCollapsed,
+  setIsCollapsed,
+}: {
+  debug: VerticalSliceDebugSnapshot;
+  isCollapsed: boolean;
+  setIsCollapsed: (v: boolean) => void;
+}) {
+  return (
+    <div
+      data-testid="vertical-slice-debug-hud"
+      className="absolute bottom-3 left-3 z-40 rounded-xl border border-purple-500/30 bg-black/80 px-3 py-2 font-mono text-[10px] text-slate-200 pointer-events-auto cursor-pointer"
+      onClick={() => setIsCollapsed(!isCollapsed)}
+    >
+      <div className="font-bold text-purple-300 flex items-center justify-between gap-2">
+        <span>DIAGNOSTICS</span>
+        <span className="text-xs">{isCollapsed ? '▶' : '▼'}</span>
+      </div>
+
+      {!isCollapsed && (
+        <div className="mt-1.5 space-y-0.5">
+          <div data-testid="slice-hero">Hero: {debug.hero.toUpperCase()}</div>
+          <div data-testid="slice-stage">Stage: {debug.stage}</div>
+          <div data-testid="slice-position">Pos: ({debug.position.map((value) => value.toFixed(2)).join(', ')})</div>
+          <div data-testid="slice-mode">Mode: {debug.locomotionMode}</div>
+          <div data-testid="slice-wall">Wall: {debug.wallCrawling ? 'YES' : 'NO'}</div>
+          <div data-testid="slice-webzip">Web Zip: {debug.webZipping ? 'YES' : 'NO'}</div>
+          <div data-testid="slice-ground-charge">Ground Charge: {debug.groundCharges ?? 'N/A'}</div>
+          <div data-testid="slice-air-charge">Air Charge: {debug.airCharges ?? 'N/A'}</div>
+          <div data-testid="slice-energy">Energy: {debug.energy.toFixed(1)}</div>
+          <div data-testid="slice-player-health">Player HP: {debug.playerHealth.toFixed(0)}</div>
+          <div data-testid="slice-player-down">Player Down: {debug.playerDown ? 'YES' : 'NO'}</div>
+          <div data-testid="slice-fang-health">Fang HP: {debug.fangHealth.toFixed(0)}</div>
+          <div data-testid="slice-fang-behavior">Fang: {debug.fangBehavior}</div>
+          <div data-testid="slice-fang-windup">Windup: {debug.fangWindup.toFixed(2)}</div>
+          <div data-testid="slice-memory">Memory Trace: {debug.memoryTraceActivated ? 'COMPLETE' : 'PENDING'}</div>
+          <div data-testid="slice-extraction">Extraction: {debug.extractionUnlocked ? 'OPEN' : 'LOCKED'}</div>
+          <div data-testid="slice-fps">FPS: {debug.fps.toFixed(1)}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function RagingCityVerticalSliceScene({
   forcedCharacter,
 }: {
@@ -601,6 +750,7 @@ export default function RagingCityVerticalSliceScene({
     ...INITIAL_DEBUG,
     hero: forcedCharacter ?? 'INVALID',
   });
+  const [diagnosticsCollapsed, setDiagnosticsCollapsed] = useState(false);
   const handleDebug = useCallback(
     (snapshot: VerticalSliceDebugSnapshot) => setDebug(snapshot),
     []
@@ -614,29 +764,12 @@ export default function RagingCityVerticalSliceScene({
         </Suspense>
       </Canvas>
 
-      <div
-        data-testid="vertical-slice-debug-hud"
-        className="absolute top-3 left-3 z-50 rounded-xl border border-purple-500/30 bg-black/80 px-3 py-2 font-mono text-[11px] text-slate-200 pointer-events-none"
-      >
-        <div className="font-bold text-purple-300">ASHBLOCK HEIGHTS — LIVE SLICE</div>
-        <div data-testid="slice-hero">Hero: {debug.hero.toUpperCase()}</div>
-        <div data-testid="slice-stage">Stage: {debug.stage}</div>
-        <div data-testid="slice-position">Pos: ({debug.position.map((value) => value.toFixed(2)).join(', ')})</div>
-        <div data-testid="slice-mode">Mode: {debug.locomotionMode}</div>
-        <div data-testid="slice-wall">Wall: {debug.wallCrawling ? 'YES' : 'NO'}</div>
-        <div data-testid="slice-webzip">Web Zip: {debug.webZipping ? 'YES' : 'NO'}</div>
-        <div data-testid="slice-ground-charge">Ground Charge: {debug.groundCharges ?? 'N/A'}</div>
-        <div data-testid="slice-air-charge">Air Charge: {debug.airCharges ?? 'N/A'}</div>
-        <div data-testid="slice-energy">Energy: {debug.energy.toFixed(1)}</div>
-        <div data-testid="slice-player-health">Player HP: {debug.playerHealth.toFixed(0)}</div>
-        <div data-testid="slice-player-down">Player Down: {debug.playerDown ? 'YES' : 'NO'}</div>
-        <div data-testid="slice-fang-health">Fang HP: {debug.fangHealth.toFixed(0)}</div>
-        <div data-testid="slice-fang-behavior">Fang: {debug.fangBehavior}</div>
-        <div data-testid="slice-fang-windup">Windup: {debug.fangWindup.toFixed(2)}</div>
-        <div data-testid="slice-memory">Memory Trace: {debug.memoryTraceActivated ? 'COMPLETE' : 'PENDING'}</div>
-        <div data-testid="slice-extraction">Extraction: {debug.extractionUnlocked ? 'OPEN' : 'LOCKED'}</div>
-        <div data-testid="slice-fps">FPS: {debug.fps.toFixed(1)}</div>
-      </div>
+      <PlayerHUD debug={debug} forcedCharacter={forcedCharacter} />
+      <DeveloperDiagnostics
+        debug={debug}
+        isCollapsed={diagnosticsCollapsed}
+        setIsCollapsed={setDiagnosticsCollapsed}
+      />
     </div>
   );
 }
