@@ -31,6 +31,7 @@ import { useMissions } from "./useMissions";
 import { useDifficulty, getDamageTakenMultiplier } from "./useDifficulty";
 import { useRunner } from "./useRunner";
 import { getCharacterMoves } from "../characterMoves";
+import { canUseNativeUltimate } from "../characters";
 import { BattleCombatState } from "../../game/combat/stateEnums";
 import { canTriggerKaiJaxFusion } from "../../game/fusion/fusionPolicy";
 import {
@@ -623,8 +624,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     if (playerAttacking || (battlePhase !== 'fighting' && battlePhase !== 'transforming')) return;
 
     const { playerFighterId, playerOverdrive, maxOverdrive } = get();
-    const hasNativeUltimate = ['kaijax', 'kai', 'jax', 'boryn', 'borax'].includes(playerFighterId);
-    const canUltimate = playerOverdrive >= maxOverdrive && (playerTransformed || hasNativeUltimate);
+    const canUltimate = playerOverdrive >= maxOverdrive && (playerTransformed || canUseNativeUltimate(playerFighterId));
     if (type === 'ultimate' && !canUltimate) return;
 
     const staminaCost = staminaCostForAttack(type);

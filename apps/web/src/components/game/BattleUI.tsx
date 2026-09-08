@@ -2,7 +2,7 @@ import { useBattle } from "../../lib/stores/useBattle";
 import { useGame } from "../../lib/stores/useGame";
 import { useRunner } from "../../lib/stores/useRunner";
 import { useMissions } from "../../lib/stores/useMissions";
-import { getFighterById } from "../../lib/characters";
+import { getFighterById, canUseNativeUltimate } from "../../lib/characters";
 import { getPortraitPath } from "../../data/characterDesigns";
 import MoveSetTooltip from "./MoveSetTooltip";
 import { getMoveSet } from "../../lib/combatAbilities";
@@ -879,8 +879,7 @@ export default function BattleUI() {
 
   // Ultimate is usable when the meter is full and the fighter can channel it
   // (native ultimate roster or currently transformed) — mirrors useBattle gate.
-  const hasNativeUltimate = ["kai-jax", "kai", "jax", "boryn"].includes(playerFighterId);
-  const canUseUltimate = playerTransformed || hasNativeUltimate;
+  const canUseUltimate = playerTransformed || canUseNativeUltimate(playerFighterId);
 
   // Transient "ULTIMATE READY" banner on the moment the meter fills.
   const [ultReadyFlash, setUltReadyFlash] = useState(false);
