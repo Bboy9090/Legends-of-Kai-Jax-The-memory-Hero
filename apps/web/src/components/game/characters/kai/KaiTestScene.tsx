@@ -78,7 +78,7 @@ function KaiRuntimeEnvironment({
 
     add(new THREE.AmbientLight(0xffffff, 0.65));
     const keyLight = add(new THREE.DirectionalLight(0xffffff, 0.95));
-    keyLight.position.set(5, 9, 6);
+    keyLight.position.set(5, 9, -6);
 
     const ground = add(new THREE.Mesh(
       new THREE.PlaneGeometry(40, 40),
@@ -88,8 +88,7 @@ function KaiRuntimeEnvironment({
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
 
-    // Wall is intentionally directly in Kai's default +Z facing direction so
-    // Shift+W can prove the live wall-climb path without test-only teleporting.
+    // Camera looks toward +Z, so W now proves the shared camera-forward contract.
     const wall = add(new THREE.Mesh(
       new THREE.BoxGeometry(4, 6, 0.3),
       new THREE.MeshStandardMaterial({ color: 0x514763 })
@@ -103,8 +102,8 @@ function KaiRuntimeEnvironment({
     const anchorGroup = add(new THREE.Group());
     anchorGroup.name = 'kai-runtime-web-anchors';
     const anchorPositions = [
-      new THREE.Vector3(0, 4.5, -6),
-      new THREE.Vector3(5, 3.5, -4),
+      new THREE.Vector3(0, 4.5, 6),
+      new THREE.Vector3(5, 3.5, 4),
     ];
     for (const position of anchorPositions) {
       const anchor = new THREE.Mesh(
@@ -120,12 +119,10 @@ function KaiRuntimeEnvironment({
       anchorGroup.add(anchor);
     }
 
-    camera.position.set(0, 3.5, 8);
+    camera.position.set(0, 3.5, -8);
     camera.lookAt(0, 1.2, 0);
     camera.updateMatrixWorld(true);
 
-    // The anchors are created after the controller, so refresh the real
-    // controller registry explicitly instead of relying on frame timing.
     controllerRef.current.refreshAnchors();
 
     return () => {
