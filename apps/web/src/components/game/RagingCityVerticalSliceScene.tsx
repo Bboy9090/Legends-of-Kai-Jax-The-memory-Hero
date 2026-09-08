@@ -1,26 +1,31 @@
 /**
  * RAGING CITY VERTICAL SLICE SCENE
- * Day 5.1 - Ashblock Heights mission shell with 4-stage mission structure
+ * Day 5.1A - Ashblock Heights with real Kai/Jax controller integration
  *
  * Architecture:
  * - Canvas-based scene for Ashblock Heights vertical slice
+ * - Real controller ownership: useKaiController or useJaxController
+ * - One playerRef for both controller and render (no duplicate position state)
  * - Mission stages: traversal → encounter → memory trace → extraction
  * - Character routing: Kai vs Jax determines traversal path
  * - Fang Syndicate combatant encounter (source-safe internal contract)
- * - Memory Trace interaction with neutral narrative payload
- *
- * Future: Integrate real Kai/Jax controllers once scene shell is stable
+ * - Memory Trace requires actual proximity + interact input (no auto-activation)
+ * - Story hero access: Kai or Jax only (kai-jax is earned fusion, not selectable)
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Suspense } from 'react';
 import { useRunner } from '../../lib/stores/useRunner';
-import { getFighterById, resolvePublicCombatId } from '../../lib/characters';
-import { createFangCombatant, damageFangCombatant, updateFangCombatant, type FangCombatantState } from '../../game/characters/fang/FangCombatantContract';
+import { getFighterById } from '../../lib/characters';
+import { useKaiController } from './characters/kai/KaiController';
+import { useJaxController } from './characters/jax/JaxController';
+import { createFangCombatant, updateFangCombatant, type FangCombatantState } from '../../game/characters/fang/FangCombatantContract';
+import { gameplayInputManager } from '../../lib/input/GameplayInputState';
 
 type MissionStage = 'traversal' | 'encounter' | 'memory-trace' | 'extraction' | 'complete';
+type ControllerHandle = ReturnType<typeof useKaiController> | ReturnType<typeof useJaxController>;
 
 interface MissionStateRef {
   stage: MissionStage;
@@ -28,18 +33,33 @@ interface MissionStateRef {
   memoryTraceActivated: boolean;
   extractionUnlocked: boolean;
   fangCombatant: FangCombatantState;
-  playerPosition: THREE.Vector3;
   totalTime: number;
+  controller: ControllerHandle | null;
 }
 
 function VerticalSliceEnvironment() {
   const { scene, camera } = useThree();
-  const { selectedCharacter, activeStoryMissionId, setGameState, completeStoryMission } = useRunner();
+  const { selectedCharacter, activeStoryMissionId, setGameState, setMissionCompleted } = useRunner();
 
-  const charId = resolvePublicCombatId(selectedCharacter);
+  // Story hero must be canonical: "kai" or "jax" only. kai-jax is earned fusion, not story selectable.
+  const charId = selectedCharacter;
+  const isKai = charId === 'kai';
+  const isJax = charId === 'jax';
+
+  // Redirect if not Kai or Jax
+  useEffect(() => {
+    if (!isKai && !isJax) {
+      setGameState('mission-select');
+    }
+  }, [charId, isKai, isJax, setGameState]);
+
   const fighter = getFighterById(charId);
-  const isKai = charId === 'kai' || charId === 'kai-jax';
-  const isJax = charId === 'jax' || charId === 'kai-jax';
+  const playerRef = useRef<THREE.Group>(null);
+
+  // Mount the real controller (Kai or Jax)
+  const kaiController = useKaiController(playerRef, scene);
+  const jaxController = useJaxController(playerRef, scene);
+  const controller = isKai ? kaiController : jaxController;
 
   const stateRef = useRef<MissionStateRef>({
     stage: 'traversal',
@@ -47,11 +67,12 @@ function VerticalSliceEnvironment() {
     memoryTraceActivated: false,
     extractionUnlocked: false,
     fangCombatant: createFangCombatant('fang_01'),
-    playerPosition: new THREE.Vector3(0, 1, -20),
     totalTime: 0,
+    controller,
   });
 
   const state = stateRef.current;
+  state.controller = controller;
 
   // Scene setup
   useEffect(() => {
@@ -59,7 +80,6 @@ function VerticalSliceEnvironment() {
     scene.background = bg;
     scene.fog = new THREE.Fog(0x1a1a2e, 120, 400);
 
-    // Lighting
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(20, 30, 10);
@@ -75,29 +95,19 @@ function VerticalSliceEnvironment() {
     };
   }, [scene, camera]);
 
-  // Character validation
-  useEffect(() => {
-    if (!isKai && !isJax) {
-      setGameState('mission-select');
-    }
-  }, [charId, isKai, isJax, setGameState]);
-
+  // Mission stage progression reads controller-owned position (NOT auto-movement)
   useFrame(({ camera }, delta) => {
-    state.totalTime += delta;
+    if (!controller || !playerRef.current) return;
 
-    // Update Fang combatant
+    state.totalTime += delta;
+    const playerPos = playerRef.current.position;
+
     updateFangCombatant(state.fangCombatant, delta);
 
-    // Stage progression
-    if (state.stage === 'traversal') {
-      // Player moves forward automatically in demo (would use controller input)
-      state.playerPosition.z += delta * 3;
-
-      // Traversal complete when reaching encounter area
-      if (state.playerPosition.z > -5) {
-        state.stage = 'encounter';
-        state.encounterActive = true;
-      }
+    // Stage progression based on controller-owned player position
+    if (state.stage === 'traversal' && playerPos.z > -5) {
+      state.stage = 'encounter';
+      state.encounterActive = true;
     }
 
     if (state.stage === 'encounter' && state.fangCombatant.isDead) {
@@ -105,30 +115,37 @@ function VerticalSliceEnvironment() {
       state.encounterActive = false;
     }
 
+    // Memory Trace requires proximity AND interact input (not auto-activation)
+    const distToTrace = Math.hypot(playerPos.x - 0, playerPos.z - 5);
+    if (state.stage === 'memory-trace' && distToTrace < 2) {
+      const input = gameplayInputManager.getState();
+      if (input.interact) {
+        state.memoryTraceActivated = true;
+      }
+    }
+
     if (state.stage === 'memory-trace' && state.memoryTraceActivated) {
       state.stage = 'extraction';
       state.extractionUnlocked = true;
     }
 
-    // Auto-activate memory trace after 2 seconds in that stage
-    if (state.stage === 'memory-trace' && !state.memoryTraceActivated && state.totalTime > 30) {
-      state.memoryTraceActivated = true;
-    }
-
-    if (state.stage === 'extraction' && state.playerPosition.z > 15) {
+    // Extraction unlocked only when objectives complete
+    if (state.stage === 'extraction' && playerPos.z > 15) {
       state.stage = 'complete';
       if (activeStoryMissionId) {
-        completeStoryMission(activeStoryMissionId);
+        setMissionCompleted(activeStoryMissionId);
       }
       setGameState('mission-complete');
     }
 
-    // Camera follow
+    // Camera follow player
     camera.position.lerp(
-      new THREE.Vector3(0, 5, state.playerPosition.z + 15),
+      new THREE.Vector3(0, 5, playerPos.z + 15),
       0.1
     );
   });
+
+  if (!fighter) return null;
 
   if (!fighter) return null;
 
@@ -160,19 +177,25 @@ function VerticalSliceEnvironment() {
         ))
       )}
 
-      {/* Kai-specific: Wall climb path on left */}
+      {/* Kai-specific: Wall climb path on left (tagged as climbable) */}
       {isKai && (
         <>
           {[-100, -50, 0, 50].map((z_base, i) => (
-            <mesh key={`kai-wall-${i}`} position={[-20, 3, z_base]} castShadow receiveShadow>
+            <mesh
+              key={`kai-wall-${i}`}
+              position={[-20, 3, z_base]}
+              castShadow
+              receiveShadow
+              userData={{ climbable: true, isWall: true }}
+            >
               <boxGeometry args={[1.2, 8, 15]} />
               <meshStandardMaterial color="#4a4a4a" roughness={0.6} />
             </mesh>
           ))}
-          {/* Web zip anchors */}
+          {/* Web zip anchors (tagged for aerial traversal) */}
           {[-20, -10, 0].map((x, i) =>
             [0, 50].map((z, j) => (
-              <mesh key={`web-anchor-${i}-${j}`} position={[x, 6, z]} castShadow>
+              <mesh key={`web-anchor-${i}-${j}`} position={[x, 6, z]} castShadow userData={{ webAnchor: true }}>
                 <sphereGeometry args={[0.3, 8, 8]} />
                 <meshStandardMaterial color="#ff00ff" emissive="#ff00ff" emissiveIntensity={0.6} />
               </mesh>
@@ -181,16 +204,26 @@ function VerticalSliceEnvironment() {
         </>
       )}
 
-      {/* Jax-specific: Displacement gaps on right */}
+      {/* Jax-specific: Displacement gaps with tagged walkable/collider geometry */}
       {isJax && (
         <>
           {[0, 50].map((z_base, i) => (
             <group key={`jax-platforms-${i}`}>
-              <mesh position={[20, 1, z_base]} castShadow receiveShadow>
+              <mesh
+                position={[20, 1, z_base]}
+                castShadow
+                receiveShadow
+                userData={{ isWalkable: true, isCollider: true }}
+              >
                 <boxGeometry args={[2, 2, 12]} />
                 <meshStandardMaterial color="#1a3a4a" roughness={0.6} />
               </mesh>
-              <mesh position={[20, 1, z_base + 18]} castShadow receiveShadow>
+              <mesh
+                position={[20, 1, z_base + 18]}
+                castShadow
+                receiveShadow
+                userData={{ isWalkable: true, isCollider: true }}
+              >
                 <boxGeometry args={[2, 2, 12]} />
                 <meshStandardMaterial color="#1a3a4a" roughness={0.6} />
               </mesh>
@@ -199,12 +232,9 @@ function VerticalSliceEnvironment() {
         </>
       )}
 
-      {/* Fang Syndicate Combatant - Encounter */}
+      {/* Fang Syndicate Combatant - Encounter (source-safe: no rank/weapon/biography) */}
       {state.encounterActive && (
-        <mesh
-          position={[0, state.fangCombatant.position.y, state.fangCombatant.position.z]}
-          castShadow
-        >
+        <mesh position={[0, 0.5, 2]} castShadow>
           <sphereGeometry args={[0.8, 16, 16]} />
           <meshStandardMaterial
             color={state.fangCombatant.isDead ? '#333333' : '#ff3333'}
@@ -214,9 +244,9 @@ function VerticalSliceEnvironment() {
         </mesh>
       )}
 
-      {/* Memory Trace interaction point */}
+      {/* Memory Trace interaction point (requires proximity + interact input) */}
       {state.stage === 'memory-trace' && (
-        <mesh position={[0, 0.5, 5]} castShadow>
+        <mesh position={[0, 0.5, 5]} castShadow userData={{ memoryTrace: true }}>
           <sphereGeometry args={[0.6, 16, 16]} />
           <meshStandardMaterial
             color={state.memoryTraceActivated ? '#00ff00' : '#00ffff'}
@@ -226,8 +256,8 @@ function VerticalSliceEnvironment() {
         </mesh>
       )}
 
-      {/* Extraction marker */}
-      <mesh position={[0, 0.5, 15]} castShadow>
+      {/* Extraction marker (locked until objectives complete) */}
+      <mesh position={[0, 0.5, 15]} castShadow userData={{ extraction: true }}>
         <sphereGeometry args={[0.8, 16, 16]} />
         <meshStandardMaterial
           color={state.extractionUnlocked ? '#00ff00' : '#555555'}
@@ -236,15 +266,17 @@ function VerticalSliceEnvironment() {
         />
       </mesh>
 
-      {/* Player character proxy */}
-      <mesh position={state.playerPosition} castShadow>
-        <sphereGeometry args={[0.5, 16, 16]} />
-        <meshStandardMaterial
-          color={fighter.color}
-          emissive={fighter.accentColor}
-          emissiveIntensity={0.3}
-        />
-      </mesh>
+      {/* Player character - uses controller-owned position */}
+      <group ref={playerRef} position={[0, 1, -20]}>
+        <mesh castShadow>
+          <sphereGeometry args={[0.5, 16, 16]} />
+          <meshStandardMaterial
+            color={fighter.color}
+            emissive={fighter.accentColor}
+            emissiveIntensity={0.3}
+          />
+        </mesh>
+      </group>
     </group>
   );
 }
