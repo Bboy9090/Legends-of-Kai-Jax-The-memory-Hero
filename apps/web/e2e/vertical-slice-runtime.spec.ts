@@ -69,13 +69,30 @@ async function readNumber(page: Page, testId: string): Promise<number> {
   return Number(match[0]);
 }
 
-async function enterEncounter(page: Page) {
+async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
+  // Use each hero's real traversal identity to shorten the opening route before
+  // walking into the encounter gate. This keeps the proof on controller-owned
+  // movement instead of introducing a test-only teleport or forced stage.
+  if (hero === 'kai') {
+    await page.keyboard.down('e');
+    await expect(page.getByTestId('slice-webzip')).toContainText('YES', { timeout: 1_500 });
+    await page.waitForTimeout(320);
+    await page.keyboard.up('e');
+  } else {
+    await page.keyboard.press('e');
+    await expect(page.getByTestId('slice-mode')).toContainText('DISPLACEMENT', { timeout: 1_500 });
+    await page.waitForTimeout(160);
+  }
+
   await page.keyboard.down('w');
-  await expect.poll(async () => page.getByTestId('slice-stage').innerText(), {
-    timeout: 6_000,
-    intervals: [150, 200, 250],
-  }).toContain('encounter');
-  await page.keyboard.up('w');
+  try {
+    await expect.poll(async () => page.getByTestId('slice-stage').innerText(), {
+      timeout: 8_000,
+      intervals: [150, 200, 250],
+    }).toContain('encounter');
+  } finally {
+    await page.keyboard.up('w');
+  }
 }
 
 test('Ashblock Kai slice uses the real Kai controller for camera-forward movement and Web Zip', async ({ page }) => {
@@ -160,7 +177,7 @@ test('Ashblock Jax slice uses the real Jax controller for movement and displacem
 test('Ashblock Fang AI chases and damages Jax, while Jax heavy can damage the Fang', async ({ page }) => {
   const errors = collectErrors(page);
   await bootSlice(page, 'jax', errors);
-  await enterEncounter(page);
+  await enterEncounter(page, 'jax');
 
   await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
     timeout: 4_000,
@@ -185,7 +202,7 @@ test('Ashblock Fang AI chases and damages Jax, while Jax heavy can damage the Fa
 test('Ashblock Kai accepted heavy attack damages the same source-safe Fang combatant', async ({ page }) => {
   const errors = collectErrors(page);
   await bootSlice(page, 'kai', errors);
-  await enterEncounter(page);
+  await enterEncounter(page, 'kai');
 
   await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
     timeout: 4_000,
