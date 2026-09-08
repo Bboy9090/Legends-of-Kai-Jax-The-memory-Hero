@@ -34,6 +34,7 @@ import { MemoryTraceVisual } from './effects/MemoryTraceVisual';
 import { ExtractionPortalVisual } from './effects/ExtractionPortalVisual';
 import { EnvironmentAmbience } from './effects/EnvironmentAmbience';
 import { AtmosphericEffects } from './effects/AtmosphericEffects';
+import { PerformanceOptimizer } from './performance/PerformanceOptimizer';
 import {
   applyFangKnockback,
   createFangCombatant,
@@ -444,6 +445,7 @@ function VerticalSliceEnvironment({
 
   return (
     <group>
+      <PerformanceOptimizer />
       <EnvironmentAmbience stage={renderStage} fangBehavior={mission.fangCombatant.behavior} playerHealth={mission.playerHealth} />
       <AtmosphericEffects stage={renderStage} fangBehavior={mission.fangCombatant.behavior} />
 
