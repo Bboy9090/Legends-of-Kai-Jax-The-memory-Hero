@@ -28,9 +28,9 @@ interface KaiCharacterProps {
   bodyRef?: React.RefObject<THREE.Group>;
 }
 
-const KAI_MODEL_PATH = '/models/kai_spider.glb';
-const KAI_SCALE = 2.0;
-const TARGET_HEIGHT = 2.2;
+const KAI_MODEL_PATH = '/models/Meshy_AI_Character_output4KAI.glb';
+const KAI_SCALE = 1.0;
+const TARGET_HEIGHT = 2.0;
 
 export function KaiCharacter({
   position = [0, 0, 0],
