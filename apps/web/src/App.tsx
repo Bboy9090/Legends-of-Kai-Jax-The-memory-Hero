@@ -21,6 +21,7 @@ import CustomizationMenu from "./components/game/CustomizationMenu";
 import LoreHub from "./components/game/LoreHub";
 import ControllerTestScene from "./components/game/ControllerTestScene";
 import { JaxTestScene } from "./components/game/characters/jax/JaxTestScene";
+import RagingCityVerticalSliceScene from "./components/game/RagingCityVerticalSliceScene";
 import AdventureArena from "./components/game/adventure/AdventureArena";
 import AdventureHUD from "./components/game/adventure/AdventureHUD";
 import AdventureTouchControls from "./components/game/adventure/AdventureTouchControls";
@@ -239,6 +240,7 @@ function App() {
         {phase === 'ready' && gameState === 'customization' && <CustomizationMenu />}
         {gameState === 'controller-test' && <ControllerTestScene />}
         {gameState === 'jax-test' && <JaxTestScene />}
+        {gameState === 'vertical-slice' && <RagingCityVerticalSliceScene />}
 
         {gameState === 'adventure' && (() => {
           const charId = resolvePublicCombatId(selectedCharacter);

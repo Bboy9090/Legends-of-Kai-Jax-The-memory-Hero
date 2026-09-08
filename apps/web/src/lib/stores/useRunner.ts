@@ -18,6 +18,7 @@ export type GameState =
   | "customization"
   | "beast-preview"
   | "adventure"
+  | "vertical-slice"
   | "controller-test"
   | "jax-test"
   | "abilities"

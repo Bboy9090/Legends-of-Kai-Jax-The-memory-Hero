@@ -40,7 +40,14 @@ export default function MissionSelectScreen() {
   }, [activeStoryMissionId]);
 
   const handleStartMission = () => {
-    setGameState('adventure');
+    // Route vertical slice missions to the new scene with real Kai/Jax controllers
+    // Temporary: only ashblock-heights implemented; others remain briefing-only
+    if (activeStoryMissionId === 'vertical_slice_ashblock_heights') {
+      setGameState('vertical-slice');
+    } else {
+      // Legacy missions not yet implemented
+      setGameState('adventure');
+    }
   };
 
   return (
