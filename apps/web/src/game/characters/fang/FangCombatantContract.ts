@@ -118,7 +118,10 @@ export function updateFangCombatant(
     return;
   }
 
-  const delta = Math.max(0, Math.min(deltaTime, 0.05));
+  // Timers must consume the elapsed time supplied by the caller. The runtime AI
+  // already clamps frame simulation deltas for movement stability, while direct
+  // deterministic tests may advance a timer by a larger fixed step.
+  const delta = Number.isFinite(deltaTime) ? Math.max(0, deltaTime) : 0;
 
   if (state.isStaggered) {
     state.staggerTimer = Math.max(0, state.staggerTimer - delta);
