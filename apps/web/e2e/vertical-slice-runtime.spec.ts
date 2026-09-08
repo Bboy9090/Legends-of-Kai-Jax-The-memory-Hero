@@ -109,8 +109,14 @@ test('Ashblock Kai slice reaches the real climbable wall with Shift+W', async ({
     intervals: [100, 150, 200],
   }).toContain('YES');
 
-  const climbed = await readPosition(page);
-  expect(climbed[1]).toBeGreaterThan(start[1] + 0.05);
+  // Entering WALL mode occurs one frame before the first constrained climb step.
+  // Poll the controller-owned Y position so this proves actual vertical movement
+  // instead of racing the attach frame.
+  await expect.poll(async () => (await readPosition(page))[1], {
+    timeout: 2_000,
+    intervals: [75, 100, 150],
+  }).toBeGreaterThan(start[1] + 0.05);
+
   await page.keyboard.up('w');
   await page.keyboard.up('Shift');
 
