@@ -29,8 +29,6 @@ import { useRunner } from '../../lib/stores/useRunner';
 import { getFighterById } from '../../lib/characters';
 import { useKaiController } from './characters/kai/KaiController';
 import { useJaxController } from './characters/jax/JaxController';
-import { KaiCharacter } from './characters/kai/KaiCharacter';
-import { JaxCharacter } from './characters/jax/JaxCharacter';
 import { FangCombatantVisual } from './characters/fang/FangCombatantVisual';
 import { MemoryTraceVisual } from './effects/MemoryTraceVisual';
 import { ExtractionPortalVisual } from './effects/ExtractionPortalVisual';
@@ -552,11 +550,29 @@ function VerticalSliceEnvironment({
       )}
 
       <group ref={playerRef} position={[0, 0, -20]}>
-        {isKai ? (
-          <KaiCharacter isMoving={false} isAttacking={false} isWallCrawling={false} isWebZipping={false} />
-        ) : (
-          <JaxCharacter scene={scene} />
-        )}
+        <mesh castShadow position={[0, 0.85, 0]}>
+          <capsuleGeometry args={[0.3, 1.1, 6, 10]} />
+          <meshStandardMaterial
+            color={fighter.color}
+            emissive={fighter.accentColor}
+            emissiveIntensity={0.32}
+          />
+        </mesh>
+        {isKai && [0, 1, 2, 3].map((index) => {
+          const side = index < 2 ? -1 : 1;
+          const y = index % 2 === 0 ? 0.5 : 1.15;
+          return (
+            <mesh
+              key={`slice-kai-limb-${index}`}
+              position={[side * 0.48, y, 0]}
+              rotation={[0, 0, side * 0.65]}
+              castShadow
+            >
+              <cylinderGeometry args={[0.05, 0.05, 0.85, 8]} />
+              <meshStandardMaterial color="#7c3aed" />
+            </mesh>
+          );
+        })}
       </group>
     </group>
   );
