@@ -98,42 +98,31 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
     maxEnergy: COMBAT_CONFIG.maxEnergy,
   });
 
-  // Helper to detect if input just changed from false to true
   const wasJustPressed = (current: boolean, previous: boolean | null): boolean => {
     return current && !previous;
   };
 
-  // Create update-driven controllers (not hooks)
   const wallClimbController = useMemo(() => new WallClimbController(scene), [scene]);
   const webZipController = useMemo(() => new WebZipController(scene), [scene]);
-
-  // Track whether anchors have been registered (lazy-load, not every frame)
   const anchorsRegisteredRef = useRef(false);
 
-  // Main update loop
   useFrame((frameState, rawDelta) => {
     if (!kaiRef.current) return;
 
-    const delta = Math.min(rawDelta, 0.033); // Cap at 30fps minimum
+    const delta = Math.min(rawDelta, 0.033);
     const kai = stateRef.current;
-
-    // Get unified input state from all sources (keyboard, touch, gamepad)
     const input = gameplayInputManager.getState();
     const prevInput = prevInputRef.current;
 
-    // Update Kai transform from ref without casting an Euler as a Vector3.
     kaiRef.current.getWorldPosition(kai.position);
     kai.rotation.copy(kaiRef.current.rotation);
 
-    // Energy regeneration
     kai.energy = Math.min(kai.energy + COMBAT_CONFIG.energyRegen * delta, kai.maxEnergy);
 
-    // FIX: Invulnerability timer
     if (kai.invulnTimer > 0) {
       kai.invulnTimer -= delta;
     }
 
-    // FIX: Dodge state lifecycle - automatically exit when timer expires
     if (kai.isDodging) {
       kai.dodgeTimer -= delta;
       if (kai.dodgeTimer <= 0) {
@@ -142,7 +131,6 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       }
     }
 
-    // FIX: Attack state lifecycle - automatically exit when timer expires
     if (kai.isAttacking) {
       kai.attackTimer -= delta;
       if (kai.attackTimer <= 0) {
@@ -151,7 +139,6 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       }
     }
 
-    // FIX: Combo reset timer
     if (kai.comboResetTimer > 0) {
       kai.comboResetTimer -= delta;
       if (kai.comboResetTimer <= 0) {
@@ -160,14 +147,11 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       }
     }
 
-    // Register web anchors once on first frame (lazy-load, not every frame)
     if (!anchorsRegisteredRef.current) {
       webZipController.registerAnchorsFromScene();
       anchorsRegisteredRef.current = true;
     }
 
-    // LOCOMOTION MODE DECISION: Only one system owns position per frame
-    // Update traversal controllers with LIVE input
     const wallClimbResult = wallClimbController.update(delta, {
       moveX: input.moveX,
       moveY: input.moveY,
@@ -180,99 +164,86 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       moveX: input.moveX,
     }, kai.position);
 
-    // Update state flags
     kai.isWallCrawling = wallClimbController.isClimbing();
     kai.isWebZipping = webZipController.isZipping();
 
-    // EXCLUSIVE LOCOMOTION MODE: only one system owns position per frame
     let finalPos: THREE.Vector3;
     let nextMode: LocomotionMode = 'GROUND';
 
-    // Priority: WALL > WEB_ZIP > MOMENTUM > GROUND
     if (kai.isWallCrawling && wallClimbResult) {
-      // WALL mode: wall climbing owns position
       finalPos = wallClimbResult;
       kai.isMoving = false;
       nextMode = 'WALL';
     } else if (kai.isWebZipping && webZipResult) {
-      // WEB_ZIP mode: web zipping owns position (exclusive with WALL)
       finalPos = webZipResult;
       kai.isMoving = false;
       nextMode = 'WEB_ZIP';
     } else if (webZipResult && webZipResult.distanceTo(kai.position) > 0.001) {
-      // MOMENTUM mode: residual momentum from previous zip
       finalPos = webZipResult;
       kai.isMoving = false;
       nextMode = 'MOMENTUM';
     } else {
-      // GROUND mode: normal walking/running
       nextMode = 'GROUND';
       const inputX = input.moveX;
-      const inputZ = input.moveY;
-      const inputLen = Math.hypot(inputX, inputZ);
-
+      const inputY = input.moveY;
+      const inputLen = Math.hypot(inputX, inputY);
       kai.isMoving = inputLen > 0.01;
 
       const isRunning = input.isRunning;
       const targetSpeed = isRunning ? MOVEMENT_CONFIG.runSpeed : MOVEMENT_CONFIG.walkSpeed;
 
-      // Calculate world-space movement direction
-      const moveDir = new THREE.Vector3(inputX, 0, inputZ);
-      const cameraDir = new THREE.Vector3();
-      frameState.camera.getWorldDirection(cameraDir);
-      cameraDir.y = 0;
-      cameraDir.normalize();
+      // Shared camera-relative convention: W (moveY=-1) always means camera forward.
+      const cameraForward = new THREE.Vector3();
+      frameState.camera.getWorldDirection(cameraForward);
+      cameraForward.y = 0;
+      if (cameraForward.lengthSq() < 0.0001) cameraForward.set(0, 0, -1);
+      cameraForward.normalize();
 
-      const moveInWorldSpace = moveDir.length() > 0;
-      if (moveInWorldSpace) {
-        moveDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(cameraDir.x, cameraDir.z));
-      }
+      const cameraRight = new THREE.Vector3()
+        .crossVectors(cameraForward, new THREE.Vector3(0, 1, 0))
+        .normalize();
 
-      // Apply velocity
+      const moveDir = cameraRight.multiplyScalar(inputX)
+        .add(cameraForward.multiplyScalar(-inputY));
+      if (moveDir.lengthSq() > 1) moveDir.normalize();
+
       const targetVel = moveDir.multiplyScalar(targetSpeed);
-      kai.velocity.lerp(targetVel, MOVEMENT_CONFIG.accel * delta);
+      kai.velocity.lerp(targetVel, Math.min(1, MOVEMENT_CONFIG.accel * delta));
       kai.velocity.multiplyScalar(MOVEMENT_CONFIG.friction);
 
-      // Update position
       finalPos = kai.position.clone().add(kai.velocity.clone().multiplyScalar(delta));
 
-      // Rotation toward movement direction
-      if (kai.isMoving) {
+      if (kai.isMoving && kai.velocity.lengthSq() > 0.0001) {
         const targetRot = Math.atan2(kai.velocity.x, kai.velocity.z);
         kaiRef.current.rotation.y += (targetRot - kaiRef.current.rotation.y) * MOVEMENT_CONFIG.turnSpeed;
       }
     }
 
-    // Boundary constraints (arena or level bounds)
     const BOUNDARY = 50;
     finalPos.x = THREE.MathUtils.clamp(finalPos.x, -BOUNDARY, BOUNDARY);
     finalPos.z = THREE.MathUtils.clamp(finalPos.z, -BOUNDARY, BOUNDARY);
 
-    // Update exclusive locomotion mode
     kai.locomotionMode = nextMode;
-
-    // KaiController is the SOLE position writer this frame
     kaiRef.current.position.copy(finalPos);
     kai.position.copy(finalPos);
 
-    // FIX: Attack input - set timer for proper state lifecycle (unified input)
     if (wasJustPressed(input.attackLight, prevInput?.attackLight ?? false)) {
       if (kai.energy >= COMBAT_CONFIG.lightAttackCost && !kai.isDodging && !kai.isAttacking) {
         kai.attackCombo = Math.min(3, kai.attackCombo + 1);
         kai.energy -= COMBAT_CONFIG.lightAttackCost;
         kai.isAttacking = true;
-        kai.attackTimer = COMBAT_CONFIG.lightAttackDuration; // Set timer to auto-exit
-        kai.comboResetTimer = COMBAT_CONFIG.comboTimeWindow; // Reset combo timer
+        kai.attackTimer = COMBAT_CONFIG.lightAttackDuration;
+        kai.comboResetTimer = COMBAT_CONFIG.comboTimeWindow;
         useAudio.getState().playAttack?.('light');
       }
     }
 
     if (wasJustPressed(input.attackHeavy, prevInput?.attackHeavy ?? false)) {
       if (kai.energy >= COMBAT_CONFIG.heavyAttackCost && !kai.isDodging && !kai.isAttacking) {
-        kai.attackCombo = 0; // Reset combo on heavy
+        kai.attackCombo = 0;
         kai.energy -= COMBAT_CONFIG.heavyAttackCost;
         kai.isAttacking = true;
-        kai.attackTimer = COMBAT_CONFIG.heavyAttackDuration; // Set timer to auto-exit
+        kai.attackTimer = COMBAT_CONFIG.heavyAttackDuration;
         kai.comboResetTimer = COMBAT_CONFIG.comboTimeWindow;
         useAudio.getState().playAttack?.('heavy');
       }
@@ -282,7 +253,7 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       if (kai.energy >= COMBAT_CONFIG.specialAttackCost && !kai.isDodging && !kai.isAttacking) {
         kai.energy -= COMBAT_CONFIG.specialAttackCost;
         kai.isAttacking = true;
-        kai.attackTimer = 0.8; // Special attack duration
+        kai.attackTimer = 0.8;
         kai.comboResetTimer = 0;
         useAudio.getState().playAttack?.('special');
       }
@@ -292,35 +263,30 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       if (kai.energy >= 80 && !kai.isDodging && !kai.isAttacking) {
         kai.energy -= 80;
         kai.isAttacking = true;
-        kai.attackTimer = 1.2; // Ultimate attack duration
+        kai.attackTimer = 1.2;
         kai.comboResetTimer = 0;
         useAudio.getState().playAttack?.('ultimate');
       }
     }
 
-    // FIX: Dodge input - set timer and properly track invulnerability
     if (wasJustPressed(input.dodge, prevInput?.dodge ?? false)) {
       if (kai.energy >= DODGING_CONFIG.staminalCost && !kai.isDodging && !kai.isAttacking) {
         kai.isDodging = true;
-        kai.dodgeTimer = DODGING_CONFIG.duration; // Track dodge duration
-        kai.invulnTimer = DODGING_CONFIG.invulnDuration; // Track invulnerability window
+        kai.dodgeTimer = DODGING_CONFIG.duration;
+        kai.invulnTimer = DODGING_CONFIG.invulnDuration;
         kai.energy -= DODGING_CONFIG.staminalCost;
         kai.attackCombo = 0;
         useAudio.getState().playDodge?.();
       }
     }
 
-    // Copy back for external access
     Object.assign(kai, { ...kai });
-
-    // Store current input for next frame
     prevInputRef.current = { ...input };
   });
 
   return {
     state: stateRef.current,
     getState: () => stateRef.current,
-    // Explicit refresh for anchor changes (level loads, etc)
     refreshAnchors: () => {
       webZipController.registerAnchorsFromScene();
     },
