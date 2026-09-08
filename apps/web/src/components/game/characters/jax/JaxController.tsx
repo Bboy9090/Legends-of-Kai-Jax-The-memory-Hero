@@ -12,6 +12,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useAudio } from '../../../../lib/stores/useAudio';
 import { gameplayInputManager, GameplayInputState } from '../../../../lib/input/GameplayInputState';
+import { combatActionBuffer } from '../../../../lib/input/CombatActionBuffer';
 import { DisplacementController } from './DisplacementSystem';
 import { StormAirSystem } from './StormAirSystem';
 import { AttackPhase, JaxAttackSystem, JaxAttackType } from './JaxAttackSystem';
@@ -156,7 +157,11 @@ export function useJaxController(
   useFrame((frameState, rawDelta) => {
     if (!jaxRef.current) return;
 
-    const delta = Math.min(rawDelta, 0.033);
+    // Movement remains tightly bounded for collision stability. Lifecycle timers
+    // and energy use a separate catch-up delta so low rendering FPS cannot slow
+    // combat readiness or regeneration relative to authored attack timing.
+    const delta = Math.min(Math.max(rawDelta, 0), 0.033);
+    const lifecycleDelta = Math.min(Math.max(rawDelta, 0), 0.25);
     const jax = stateRef.current;
     const input = gameplayInputManager.getState();
     const prevInput = prevInputRef.current;
@@ -166,16 +171,16 @@ export function useJaxController(
     jax.rotation.copy(jaxRef.current.rotation);
 
     jax.energy = Math.min(
-      jax.energy + COMBAT_CONFIG.energyRegen * delta,
+      jax.energy + COMBAT_CONFIG.energyRegen * lifecycleDelta,
       jax.maxEnergy
     );
 
     if (jax.invulnTimer > 0) {
-      jax.invulnTimer = Math.max(0, jax.invulnTimer - delta);
+      jax.invulnTimer = Math.max(0, jax.invulnTimer - lifecycleDelta);
     }
 
     if (jax.isDodging) {
-      jax.dodgeTimer = Math.max(0, jax.dodgeTimer - delta);
+      jax.dodgeTimer = Math.max(0, jax.dodgeTimer - lifecycleDelta);
       if (jax.dodgeTimer === 0) {
         jax.isDodging = false;
       }
@@ -188,7 +193,7 @@ export function useJaxController(
       : 0;
 
     if (jax.comboResetTimer > 0) {
-      jax.comboResetTimer = Math.max(0, jax.comboResetTimer - delta);
+      jax.comboResetTimer = Math.max(0, jax.comboResetTimer - lifecycleDelta);
       if (jax.comboResetTimer === 0) {
         jax.attackCombo = 0;
       }
@@ -328,7 +333,21 @@ export function useJaxController(
       }
     }
 
-    if (input.attackLight) {
+    // Keyboard presses can be shorter than a render frame. Consume the DOM-event
+    // buffer first, then fall back to the shared level-state rising edge for touch
+    // and gamepad paths that are still sampled by their adapters.
+    const lightPressed = combatActionBuffer.consume('attackLight') ||
+      wasJustPressed(input.attackLight, prevInput?.attackLight ?? false);
+    const heavyPressed = combatActionBuffer.consume('attackHeavy') ||
+      wasJustPressed(input.attackHeavy, prevInput?.attackHeavy ?? false);
+    const specialPressed = combatActionBuffer.consume('attackSpecial') ||
+      wasJustPressed(input.attackSpecial, prevInput?.attackSpecial ?? false);
+    const ultimatePressed = combatActionBuffer.consume('attackUltimate') ||
+      wasJustPressed(input.attackUltimate, prevInput?.attackUltimate ?? false);
+    const dodgePressed = combatActionBuffer.consume('dodge') ||
+      wasJustPressed(input.dodge, prevInput?.dodge ?? false);
+
+    if (lightPressed) {
       if (
         jax.energy >= COMBAT_CONFIG.lightAttackCost &&
         !jax.isDodging &&
@@ -342,10 +361,9 @@ export function useJaxController(
         attackSystem.startAttack('jax_light_combo', jax.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('light');
       }
-      gameplayInputManager.consumeAttackLight();
     }
 
-    if (input.attackHeavy) {
+    if (heavyPressed) {
       if (
         jax.energy >= COMBAT_CONFIG.heavyAttackCost &&
         !jax.isDodging &&
@@ -359,10 +377,9 @@ export function useJaxController(
         attackSystem.startAttack('jax_pressure_heavy', jax.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('heavy');
       }
-      gameplayInputManager.consumeAttackHeavy();
     }
 
-    if (input.attackSpecial) {
+    if (specialPressed) {
       if (
         jax.energy >= COMBAT_CONFIG.specialAttackCost &&
         !jax.isDodging &&
@@ -375,10 +392,9 @@ export function useJaxController(
         attackSystem.startAttack('jax_lightning_special', jax.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('special');
       }
-      gameplayInputManager.consumeAttackSpecial();
     }
 
-    if (input.attackUltimate) {
+    if (ultimatePressed) {
       if (
         jax.energy >= COMBAT_CONFIG.ultimateAttackCost &&
         !jax.isDodging &&
@@ -391,10 +407,9 @@ export function useJaxController(
         attackSystem.startAttack('jax_storm_ultimate', jax.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('ultimate');
       }
-      gameplayInputManager.consumeAttackUltimate();
     }
 
-    if (input.dodge) {
+    if (dodgePressed) {
       if (
         jax.energy >= DODGING_CONFIG.staminaCost &&
         !jax.isDodging &&
@@ -407,7 +422,6 @@ export function useJaxController(
         jax.attackCombo = 0;
         useAudio.getState().playDodge?.();
       }
-      gameplayInputManager.consumeDodge();
     }
 
     currentAttack = attackSystem.update(currentTime, jax.position);
