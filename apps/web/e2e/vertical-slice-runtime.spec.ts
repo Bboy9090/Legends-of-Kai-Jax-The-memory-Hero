@@ -75,9 +75,23 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
   // movement instead of introducing a test-only teleport or forced stage.
   if (hero === 'kai') {
     await page.keyboard.down('e');
-    await expect(page.getByTestId('slice-webzip')).toContainText('YES', { timeout: 1_500 });
-    await page.waitForTimeout(320);
-    await page.keyboard.up('e');
+    try {
+      await expect(page.getByTestId('slice-webzip')).toContainText('YES', { timeout: 1_500 });
+      // A partial zip leaves Kai in front of the climb wall, where plain W can
+      // repeatedly attach/detach without the traversal modifier. Hold traversal
+      // through the real 0.8 s Web Zip lifecycle so Kai reaches the first anchor
+      // beyond the wall before continuing camera-forward under controller authority.
+      await expect.poll(async () => page.getByTestId('slice-webzip').innerText(), {
+        timeout: 2_500,
+        intervals: [100, 150, 200],
+      }).toContain('NO');
+      await expect.poll(async () => (await readPosition(page))[2], {
+        timeout: 1_000,
+        intervals: [100, 150],
+      }).toBeGreaterThan(-12);
+    } finally {
+      await page.keyboard.up('e');
+    }
   } else {
     await page.keyboard.press('e');
     await expect(page.getByTestId('slice-mode')).toContainText('DISPLACEMENT', { timeout: 1_500 });
