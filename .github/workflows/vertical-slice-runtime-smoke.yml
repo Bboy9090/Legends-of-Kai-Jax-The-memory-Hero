@@ -58,11 +58,15 @@ jobs:
       - name: Install Chromium runtime
         run: node "${PW_CLI}" install --with-deps chromium
 
-      - name: Run Ashblock Heights Kai/Jax live runtime sequence
-        run: node "${PW_CLI}" test apps/web/e2e/vertical-slice-runtime.spec.ts --config=apps/web/playwright.config.ts
+      - name: Run Ashblock Heights Kai/Jax live runtime and completion chains
+        run: >-
+          node "${PW_CLI}" test
+          apps/web/e2e/vertical-slice-runtime.spec.ts
+          apps/web/e2e/ashblock-completion-runtime.spec.ts
+          --config=apps/web/playwright.config.ts
 
       - name: Upload-free evidence summary
         if: always()
         run: |
           echo "Vertical slice runtime smoke completed for ${GITHUB_SHA}"
-          echo "This verifies the Ashblock developer slice and real Kai/Jax controller paths, not final production art or manuscript chronology."
+          echo "This verifies the Ashblock developer slice, real Kai/Jax controller paths, Fang combat loop, Memory Trace, extraction, and mission completion persistence; it does not certify final production art or manuscript chronology."
