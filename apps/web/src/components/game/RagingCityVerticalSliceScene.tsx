@@ -7,11 +7,9 @@
  * - Mission stages: traversal -> encounter -> memory trace -> extraction.
  * - Fang behavior is source-safe implementation logic only; no invented rank,
  *   weapon, biology, backstory, drops, or chronology.
- * - Jax damages the Fang through JaxAttackSystem scene hitboxes.
- * - Kai uses a narrow slice combat adapter that only resolves after the real
- *   Kai controller accepts an attack input. Final Kai hitbox migration remains
- *   a separate hardening task; energy/dodge/attack lifecycle authority stays in
- *   KaiController.
+ * - Kai and Jax damage the Fang through their real scene-hitbox systems.
+ * - The scene only reconciles combat-target userData into deterministic Fang state;
+ *   it does not contain a character-specific direct-damage adapter.
  */
 
 import {
@@ -46,7 +44,6 @@ import { gameplayInputManager } from '../../lib/input/GameplayInputState';
 
 export type VerticalSliceHero = 'kai' | 'jax';
 type MissionStage = 'traversal' | 'encounter' | 'memory-trace' | 'extraction' | 'complete';
-type KaiSliceAttackType = 'light' | 'heavy' | 'special' | 'ultimate';
 
 interface ControllerDebugState {
   locomotionMode: string;
@@ -108,51 +105,6 @@ interface MissionStateRef {
   playerHealth: number;
   playerDown: boolean;
   completionRecorded: boolean;
-}
-
-const KAI_SLICE_ATTACK_CONFIG: Record<KaiSliceAttackType, {
-  damage: number;
-  radius: number;
-  minimumForwardDot: number;
-}> = {
-  light: { damage: 12, radius: 1.0, minimumForwardDot: 0.0 },
-  heavy: { damage: 35, radius: 1.5, minimumForwardDot: -0.1 },
-  special: { damage: 50, radius: 2.4, minimumForwardDot: -0.2 },
-  ultimate: { damage: 100, radius: 8.0, minimumForwardDot: -1.0 },
-};
-
-function resolveKaiSliceAttack(
-  type: KaiSliceAttackType,
-  player: THREE.Group,
-  target: FangCombatantState,
-  currentTime: number
-): boolean {
-  if (target.isDead) return false;
-
-  const config = KAI_SLICE_ATTACK_CONFIG[type];
-  const targetPosition = new THREE.Vector3(
-    target.position.x,
-    target.position.y,
-    target.position.z
-  );
-  const playerPosition = new THREE.Vector3();
-  player.getWorldPosition(playerPosition);
-
-  const offset = targetPosition.clone().sub(playerPosition);
-  offset.y = 0;
-  const distance = offset.length();
-  if (distance > config.radius) return false;
-
-  if (distance > 0.0001 && config.minimumForwardDot > -1) {
-    const facing = player.getWorldDirection(new THREE.Vector3());
-    facing.y = 0;
-    if (facing.lengthSq() < 0.0001) facing.set(0, 0, 1);
-    facing.normalize();
-    if (offset.normalize().dot(facing) < config.minimumForwardDot) return false;
-  }
-
-  damageFangCombatant(target, config.damage, currentTime);
-  return true;
 }
 
 function KaiControllerBridge({
@@ -232,8 +184,6 @@ function VerticalSliceEnvironment({
   const fangRef = useRef<THREE.Group>(null);
   const controllerDebugRef = useRef<ControllerDebugState>({ ...INITIAL_CONTROLLER_DEBUG });
   const previousInteractRef = useRef(false);
-  const previousAttackInputRef = useRef({ light: false, heavy: false, special: false, ultimate: false });
-  const pendingKaiAttackRef = useRef<{ type: KaiSliceAttackType; age: number } | null>(null);
   const perfRef = useRef({ elapsed: 0, frames: 0, fps: 0, hudElapsed: 0 });
   const [renderStage, setRenderStage] = useState<MissionStage>('traversal');
 
@@ -247,6 +197,7 @@ function VerticalSliceEnvironment({
     playerDown: false,
     completionRecorded: false,
   });
+
   const transitionStage = (next: MissionStage) => {
     const mission = stateRef.current;
     if (mission.stage === next) return;
@@ -292,7 +243,6 @@ function VerticalSliceEnvironment({
     const player = playerRef.current;
     if (!player || hero === 'INVALID') return;
 
-
     const delta = Math.min(rawDelta, 0.05);
     const currentTime = frameState.clock.elapsedTime;
     const mission = stateRef.current;
@@ -305,42 +255,12 @@ function VerticalSliceEnvironment({
     }
 
     const input = gameplayInputManager.getState();
-
-    const attackInput = {
-      light: input.attackLight,
-      heavy: input.attackHeavy,
-      special: input.attackSpecial,
-      ultimate: input.attackUltimate,
-    };
-
-    if (isKai && mission.stage === 'encounter' && !mission.playerDown) {
-      const previous = previousAttackInputRef.current;
-      const edgeType: KaiSliceAttackType | null =
-        attackInput.light && !previous.light ? 'light' :
-        attackInput.heavy && !previous.heavy ? 'heavy' :
-        attackInput.special && !previous.special ? 'special' :
-        attackInput.ultimate && !previous.ultimate ? 'ultimate' : null;
-
-      if (edgeType) {
-        pendingKaiAttackRef.current = { type: edgeType, age: 0 };
-      }
-
-      const pending = pendingKaiAttackRef.current;
-      if (pending) {
-        pending.age += delta;
-        if (controllerDebugRef.current.attacking) {
-          resolveKaiSliceAttack(pending.type, player, fangState, currentTime);
-          pendingKaiAttackRef.current = null;
-        } else if (pending.age > 0.25) {
-          // Controller rejected the input (energy/dodge/other lifecycle gate).
-          pendingKaiAttackRef.current = null;
-        }
-      }
-    }
-    previousAttackInputRef.current = attackInput;
-
     const fangObject = fangRef.current;
+
     if (mission.stage === 'encounter' && fangObject && !mission.playerDown) {
+      // Both KaiAttackSystem and JaxAttackSystem write real scene target health.
+      // This deterministic mission layer reconciles that shared scene authority
+      // into FangCombatantState; it never applies hero-specific direct damage.
       const externalHealth = typeof fangObject.userData.health === 'number'
         ? fangObject.userData.health
         : fangState.health;
@@ -447,7 +367,11 @@ function VerticalSliceEnvironment({
   return (
     <group>
       <PerformanceOptimizer />
-      <EnvironmentAmbience stage={renderStage} fangBehavior={renderMission.fangCombatant.behavior} playerHealth={renderMission.playerHealth} />
+      <EnvironmentAmbience
+        stage={renderStage}
+        fangBehavior={renderMission.fangCombatant.behavior}
+        playerHealth={renderMission.playerHealth}
+      />
       <AtmosphericEffects stage={renderStage} fangBehavior={renderMission.fangCombatant.behavior} />
 
       <mesh
@@ -517,7 +441,12 @@ function VerticalSliceEnvironment({
               <meshStandardMaterial color="#15395a" roughness={0.62} metalness={0.25} />
             </mesh>
           ))}
-          <mesh position={[-8, 2.5, -1]} castShadow receiveShadow userData={{ isCollider: true, isWall: true }}>
+          <mesh
+            position={[-8, 2.5, -1]}
+            castShadow
+            receiveShadow
+            userData={{ isCollider: true, isWall: true }}
+          >
             <boxGeometry args={[2, 5, 5]} />
             <meshStandardMaterial color="#292f3b" roughness={0.75} />
           </mesh>
@@ -575,7 +504,6 @@ function VerticalSliceEnvironment({
           );
         })}
       </group>
-
     </group>
   );
 }
@@ -600,7 +528,6 @@ function PlayerHUD({
 
   return (
     <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 sm:p-6 text-white font-sans">
-      {/* Top-left: Hero identity + Objective */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <div className="text-sm sm:text-base font-bold uppercase tracking-wide">
@@ -614,7 +541,6 @@ function PlayerHUD({
         </div>
       </div>
 
-      {/* Bottom-left: Player HP + Energy bars */}
       <div className="flex flex-col gap-4 max-w-xs">
         <div>
           <div className="text-xs font-semibold text-slate-300 mb-1">Health</div>
@@ -647,10 +573,8 @@ function PlayerHUD({
         </div>
       </div>
 
-      {/* Right side: Combat info (shown during encounter) */}
       {debug.stage === 'encounter' && (
         <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex flex-col gap-3">
-          {/* Fang HP + Behavior */}
           <div className="flex flex-col gap-1 bg-black/60 rounded-lg p-3 backdrop-blur-sm">
             <div className="text-xs font-semibold text-slate-300">Fang</div>
             <div className="text-[10px] text-slate-400 mb-1">{debug.fangBehavior}</div>
@@ -665,7 +589,6 @@ function PlayerHUD({
         </div>
       )}
 
-      {/* Memory Trace indicator */}
       {debug.stage === 'memory-trace' && (
         <div className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-purple-900/60 border border-purple-500/50 rounded-lg px-4 py-2 backdrop-blur-sm">
           <div className="text-sm font-semibold text-purple-300">
@@ -674,7 +597,6 @@ function PlayerHUD({
         </div>
       )}
 
-      {/* Extraction indicator */}
       {debug.stage === 'extraction' && (
         <div className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-green-900/60 border border-green-500/50 rounded-lg px-4 py-2 backdrop-blur-sm">
           <div className="text-sm font-semibold text-green-300">➤ Extraction Ready</div>
