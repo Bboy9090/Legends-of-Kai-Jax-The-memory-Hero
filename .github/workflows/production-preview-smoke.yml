@@ -59,7 +59,10 @@ jobs:
           node "${PW_CLI}" --version
 
       - name: Install Chromium runtime
-        run: node "${PW_CLI}" install --with-deps chromium
+        # The hosted runner already has Chromium's shared-library dependencies.
+        # Avoid apt update so an unrelated third-party repository cannot block
+        # production-preview evidence before the browser test starts.
+        run: node "${PW_CLI}" install chromium
 
       - name: Start built preview
         run: |
