@@ -170,15 +170,24 @@ async function attackAndWaitForDamage(
   return afterHealth;
 }
 
-async function waitForJaxHeavyEnvelope(page: Page) {
-  // Jax pressure heavy has a 2.0-unit radius. Fang WINDUP/RECOVERY only occurs
-  // while the combatant is already inside its 1.8-unit attack envelope, so either
-  // state is sufficient proof that the heavy is in range. This remains entirely
-  // state-driven and avoids any test-only target repositioning after knockback.
-  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
-    timeout: 8_000,
+async function waitForJaxHeavyReady(page: Page) {
+  // Pressure heavy costs 25 energy. Headless/software WebGL can render slowly,
+  // so wall-clock sleeps are not a valid readiness authority for regeneration.
+  // Wait for the controller's real energy state instead of firing an input that
+  // the controller is allowed to reject.
+  await expect.poll(async () => readNumber(page, 'slice-energy'), {
+    timeout: 10_000,
     intervals: [75, 100, 150, 200],
-  }).toMatch(/WINDUP|RECOVERY/);
+  }).toBeGreaterThanOrEqual(25);
+
+  // WINDUP is stronger than the old WINDUP|RECOVERY check: the Fang AI only
+  // enters WINDUP after confirming it is inside its authored 1.8-unit attack
+  // range, which is safely inside Jax pressure heavy's 2.0-unit hit radius.
+  // This remains fully state-driven: no target teleport or direct HP mutation.
+  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
+    timeout: 10_000,
+    intervals: [50, 75, 100, 125],
+  }).toContain('WINDUP');
 }
 
 async function defeatFang(page: Page, hero: 'kai' | 'jax') {
@@ -187,7 +196,7 @@ async function defeatFang(page: Page, hero: 'kai' | 'jax') {
   // Both heroes use their real heavy input here. Kai's slice heavy resolves for 35
   // damage through the accepted KaiController lifecycle. Jax pressure heavy resolves
   // for 15 through JaxAttackSystem and can knock the Fang outward, so Jax waits for
-  // the deterministic AI to re-enter its real attack envelope before each follow-up.
+  // both real controller energy readiness and a fresh AI-confirmed melee envelope.
   const attackKey: 'k' = 'k';
   const maxAttempts = hero === 'kai' ? 6 : 10;
   const minimumSuccessfulHits = hero === 'kai' ? 3 : 7;
@@ -198,7 +207,7 @@ async function defeatFang(page: Page, hero: 'kai' | 'jax') {
 
   for (let attempt = 0; attempt < maxAttempts && health > 0; attempt += 1) {
     if (hero === 'jax') {
-      await waitForJaxHeavyEnvelope(page);
+      await waitForJaxHeavyReady(page);
     }
 
     const nextHealth = await attackAndWaitForDamage(page, attackKey, health, settleMs);
