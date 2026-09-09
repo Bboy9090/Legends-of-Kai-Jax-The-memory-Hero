@@ -29,8 +29,6 @@ import { useRunner } from '../../lib/stores/useRunner';
 import { getFighterById } from '../../lib/characters';
 import { useKaiController } from './characters/kai/KaiController';
 import { useJaxController } from './characters/jax/JaxController';
-import { KaiCharacter } from './characters/kai/KaiCharacter';
-import { JaxCharacter } from './characters/jax/JaxCharacter';
 import { FangCombatantVisual } from './characters/fang/FangCombatantVisual';
 import { MemoryTraceVisual } from './effects/MemoryTraceVisual';
 import { ExtractionPortalVisual } from './effects/ExtractionPortalVisual';
@@ -232,10 +230,7 @@ function VerticalSliceEnvironment({
 
   const playerRef = useRef<THREE.Group>(null);
   const fangRef = useRef<THREE.Group>(null);
-  const kaiCharacterRef = useRef<THREE.Group>(null);
-  const jaxCharacterRef = useRef<THREE.Group>(null);
   const controllerDebugRef = useRef<ControllerDebugState>({ ...INITIAL_CONTROLLER_DEBUG });
-  const layerAssignmentDoneRef = useRef(false);
   const previousInteractRef = useRef(false);
   const previousAttackInputRef = useRef({ light: false, heavy: false, special: false, ultimate: false });
   const pendingKaiAttackRef = useRef<{ type: KaiSliceAttackType; age: number } | null>(null);
@@ -297,32 +292,6 @@ function VerticalSliceEnvironment({
     const player = playerRef.current;
     if (!player || hero === 'INVALID') return;
 
-    // Assign layers once after character models load
-    // Check if character models have loaded by looking for children
-    if (!layerAssignmentDoneRef.current) {
-      const kaiLoaded = isKai && kaiCharacterRef.current && kaiCharacterRef.current.children.length > 0;
-      const jaxLoaded = isJax && jaxCharacterRef.current && jaxCharacterRef.current.children.length > 0;
-      const shouldAssign = (isKai && kaiLoaded) || (isJax && jaxLoaded);
-
-      if (shouldAssign) {
-        // Assign layer 0 to proxy geometry
-        playerRef.current.traverse((obj) => {
-          obj.layers.set(0);
-        });
-        // Assign layer 1 to character models
-        if (kaiLoaded && kaiCharacterRef.current) {
-          kaiCharacterRef.current.traverse((obj) => {
-            obj.layers.set(1);
-          });
-        }
-        if (jaxLoaded && jaxCharacterRef.current) {
-          jaxCharacterRef.current.traverse((obj) => {
-            obj.layers.set(1);
-          });
-        }
-        layerAssignmentDoneRef.current = true;
-      }
-    }
 
     const delta = Math.min(rawDelta, 0.05);
     const currentTime = frameState.clock.elapsedTime;
@@ -607,9 +576,6 @@ function VerticalSliceEnvironment({
         })}
       </group>
 
-      {/* Character models on layer 1 - visual only, no collision participation */}
-      {isKai && <KaiCharacter position={[0, 0, -20]} scale={1} bodyRef={kaiCharacterRef} />}
-      {isJax && <JaxCharacter position={[0, 0, -20]} scale={1} bodyRef={jaxCharacterRef} />}
     </group>
   );
 }
