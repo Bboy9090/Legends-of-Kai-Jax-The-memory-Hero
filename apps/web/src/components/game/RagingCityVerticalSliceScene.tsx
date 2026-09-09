@@ -235,6 +235,7 @@ function VerticalSliceEnvironment({
   const kaiCharacterRef = useRef<THREE.Group>(null);
   const jaxCharacterRef = useRef<THREE.Group>(null);
   const controllerDebugRef = useRef<ControllerDebugState>({ ...INITIAL_CONTROLLER_DEBUG });
+  const layerAssignmentDoneRef = useRef(false);
   const previousInteractRef = useRef(false);
   const previousAttackInputRef = useRef({ light: false, heavy: false, special: false, ultimate: false });
   const pendingKaiAttackRef = useRef<{ type: KaiSliceAttackType; age: number } | null>(null);
@@ -282,27 +283,6 @@ function VerticalSliceEnvironment({
   }, [scene, camera]);
 
   useEffect(() => {
-    // Assign layer 0 to proxy geometry (physics/collision)
-    if (playerRef.current) {
-      playerRef.current.traverse((obj) => {
-        obj.layers.set(0);
-      });
-    }
-
-    // Assign layer 1 to character models (visual only)
-    if (isKai && kaiCharacterRef.current) {
-      kaiCharacterRef.current.traverse((obj) => {
-        obj.layers.set(1);
-      });
-    }
-    if (isJax && jaxCharacterRef.current) {
-      jaxCharacterRef.current.traverse((obj) => {
-        obj.layers.set(1);
-      });
-    }
-  }, [isKai, isJax]);
-
-  useEffect(() => {
     const fang = fangRef.current;
     if (!fang) return;
 
@@ -316,6 +296,33 @@ function VerticalSliceEnvironment({
   useFrame((frameState, rawDelta) => {
     const player = playerRef.current;
     if (!player || hero === 'INVALID') return;
+
+    // Assign layers once after character models load
+    // Check if character models have loaded by looking for children
+    if (!layerAssignmentDoneRef.current) {
+      const kaiLoaded = isKai && kaiCharacterRef.current && kaiCharacterRef.current.children.length > 0;
+      const jaxLoaded = isJax && jaxCharacterRef.current && jaxCharacterRef.current.children.length > 0;
+      const shouldAssign = (isKai && kaiLoaded) || (isJax && jaxLoaded);
+
+      if (shouldAssign) {
+        // Assign layer 0 to proxy geometry
+        playerRef.current.traverse((obj) => {
+          obj.layers.set(0);
+        });
+        // Assign layer 1 to character models
+        if (kaiLoaded && kaiCharacterRef.current) {
+          kaiCharacterRef.current.traverse((obj) => {
+            obj.layers.set(1);
+          });
+        }
+        if (jaxLoaded && jaxCharacterRef.current) {
+          jaxCharacterRef.current.traverse((obj) => {
+            obj.layers.set(1);
+          });
+        }
+        layerAssignmentDoneRef.current = true;
+      }
+    }
 
     const delta = Math.min(rawDelta, 0.05);
     const currentTime = frameState.clock.elapsedTime;
