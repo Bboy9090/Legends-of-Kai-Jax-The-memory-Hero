@@ -122,8 +122,10 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
   }
 }
 
-async function closeIntoMeleeRange(page: Page, hero: 'kai' | 'jax') {
-  // A resolved Fang hit proves the shared enemy actually reached the player.
+async function closeIntoUltimateRange(page: Page) {
+  // A resolved Fang hit proves the shared enemy really reached the controller-owned
+  // hero. RECOVERY is stable proof the Fang entered its <=1.8 attack envelope,
+  // comfortably inside Kai ultimate radius 10 and Jax ultimate radius 5.
   await expect.poll(async () => readNumber(page, 'slice-player-health'), {
     timeout: 7_000,
     intervals: [100, 150, 200, 250],
@@ -133,47 +135,44 @@ async function closeIntoMeleeRange(page: Page, hero: 'kai' | 'jax') {
     timeout: 3_000,
     intervals: [75, 100, 150],
   }).toContain('RECOVERY');
-
-  if (hero === 'jax') {
-    // Jax pressure-heavy has a 2.0-unit planar radius and no directional cone.
-    // Fang RECOVERY proves the target is already inside its <=1.8 attack envelope.
-    return;
-  }
-
-  // KaiAttackSystem's authored heavy radius is 1.2 units. Starting from Fang's
-  // <=1.8 attack envelope, 0.75 units of real forward locomotion guarantees the
-  // player reaches the heavy sphere without any test-side position mutation.
-  const start = await readPosition(page);
-  await page.keyboard.down('w');
-  try {
-    await expect.poll(async () => (await readPosition(page))[2], {
-      timeout: 8_000,
-      intervals: [75, 100, 150, 200],
-    }).toBeGreaterThan(start[2] + 0.75);
-  } finally {
-    await page.keyboard.up('w');
-  }
 }
 
-async function attackAndWaitForDamage(
+async function waitForUltimateReady(page: Page, hero: 'kai' | 'jax') {
+  const requiredEnergy = hero === 'kai' ? 80 : 75;
+  await expect.poll(async () => readNumber(page, 'slice-energy'), {
+    timeout: 12_000,
+    intervals: [100, 150, 200, 250],
+  }).toBeGreaterThanOrEqual(requiredEnergy);
+
+  // Do not synchronize on the transient 0.35s WINDUP alone: bounded AI catch-up
+  // can consume it inside one slow headless frame. Either state below proves the
+  // Fang is in the <=1.8 melee envelope before the wide-radius ultimate starts.
+  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
+    timeout: 12_000,
+    intervals: [50, 75, 100, 150],
+  }).toMatch(/WINDUP|RECOVERY/);
+}
+
+async function ultimateAndWaitForDamage(
   page: Page,
   hero: 'kai' | 'jax',
-  key: 'k',
   beforeHealth: number,
-  settleMs: number,
 ): Promise<number> {
   const beforeEnergy = await readNumber(page, 'slice-energy');
-  await page.keyboard.down(key);
+  await page.keyboard.down('i');
   try {
-    // Both full-chain routes use real pressure/heavy attacks. Energy loss proves
-    // the owning controller accepted K before the scene-hitbox authority resolves.
+    // KeyI is the canonical keyboard ultimate input. A substantial energy drop is
+    // controller-level proof that the real hero controller accepted the attack.
     await expect.poll(async () => readNumber(page, 'slice-energy'), {
       timeout: 3_000,
       intervals: [50, 75, 100, 150],
-    }).toBeLessThan(beforeEnergy - 8);
-    await page.waitForTimeout(hero === 'kai' ? 360 : 390);
+    }).toBeLessThan(beforeEnergy - 20);
+
+    // Keep the key held across the authored ACTIVE window. Both attack systems
+    // independently preserve sparse-frame crossings, so this is not a fake hit.
+    await page.waitForTimeout(hero === 'kai' ? 1_650 : 900);
   } finally {
-    await page.keyboard.up(key);
+    await page.keyboard.up('i');
   }
 
   let afterHealth = beforeHealth;
@@ -184,73 +183,26 @@ async function attackAndWaitForDamage(
     await page.waitForTimeout(100);
   }
 
-  await page.waitForTimeout(settleMs);
+  await page.waitForTimeout(hero === 'kai' ? 500 : 750);
   return afterHealth;
 }
 
-async function waitForJaxHeavyReady(page: Page) {
-  await expect.poll(async () => readNumber(page, 'slice-energy'), {
-    timeout: 10_000,
-    intervals: [100, 150, 200, 250],
-  }).toBeGreaterThanOrEqual(25);
-
-  // WINDUP lasts only 0.35s and can be fully consumed by bounded AI catch-up.
-  // Either WINDUP or RECOVERY is stable proof that Fang is inside <=1.8, which
-  // is strictly within Jax pressure-heavy's authored 2.0-unit planar hit radius.
-  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
-    timeout: 10_000,
-    intervals: [50, 75, 100, 150],
-  }).toMatch(/WINDUP|RECOVERY/);
-}
-
-async function waitForKaiHeavyReady(page: Page) {
-  await expect.poll(async () => readNumber(page, 'slice-energy'), {
-    timeout: 10_000,
-    intervals: [100, 150, 200, 250],
-  }).toBeGreaterThanOrEqual(30);
-
-  // Heavy knockback can move the Fang out of Kai's 1.2-unit hit sphere. Wait for
-  // the live <=1.8 melee envelope (WINDUP or RECOVERY), then close the exact
-  // remaining margin with controller-owned W movement before every heavy.
-  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
-    timeout: 10_000,
-    intervals: [50, 75, 100, 150],
-  }).toMatch(/WINDUP|RECOVERY/);
-
-  const start = await readPosition(page);
-  await page.keyboard.down('w');
-  try {
-    await expect.poll(async () => (await readPosition(page))[2], {
-      timeout: 8_000,
-      intervals: [75, 100, 150, 200],
-    }).toBeGreaterThan(start[2] + 0.75);
-  } finally {
-    await page.keyboard.up('w');
-  }
-}
-
 async function defeatFang(page: Page, hero: 'kai' | 'jax') {
-  await closeIntoMeleeRange(page, hero);
+  await closeIntoUltimateRange(page);
 
-  // Full-chain persistence uses deterministic no-cone heavy authority for both
-  // heroes. Jax lightning-special live-target behavior remains independently
-  // certified in jax-runtime.spec.ts, so this mission test does not duplicate it.
-  const attackKey: 'k' = 'k';
-  const maxAttempts = hero === 'kai' ? 6 : 9;
-  const minimumSuccessfulHits = hero === 'kai' ? 3 : 7;
-  const settleMs = hero === 'kai' ? 900 : 650;
+  // Full-chain responsibility is mission continuity and exactly-once persistence,
+  // not repeated narrow-melee stress. Focused runtime lanes already certify Kai
+  // heavy, Jax heavy, and Jax lightning-special live hitbox behavior. Here we keep
+  // the combat transition real while using each hero's authored wide-radius ultimate.
+  const maxAttempts = hero === 'kai' ? 2 : 5;
+  const minimumSuccessfulHits = hero === 'kai' ? 1 : 3;
 
   let successfulHits = 0;
   let health = await readNumber(page, 'slice-fang-health');
 
   for (let attempt = 0; attempt < maxAttempts && health > 0; attempt += 1) {
-    if (hero === 'jax') {
-      await waitForJaxHeavyReady(page);
-    } else {
-      await waitForKaiHeavyReady(page);
-    }
-
-    const nextHealth = await attackAndWaitForDamage(page, hero, attackKey, health, settleMs);
+    await waitForUltimateReady(page, hero);
+    const nextHealth = await ultimateAndWaitForDamage(page, hero, health);
     if (nextHealth < health) successfulHits += 1;
     health = nextHealth;
   }
