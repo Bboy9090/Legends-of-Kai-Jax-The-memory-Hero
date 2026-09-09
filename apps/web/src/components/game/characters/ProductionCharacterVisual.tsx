@@ -31,12 +31,9 @@ export function ProductionCharacterVisual({
   targetHeight = 2.35,
   onReady,
 }: ProductionCharacterVisualProps) {
-  const config = useMemo(() => getModelConfig(fighterId), [fighterId]);
-  if (!config) {
-    throw new Error(`No production model registered for story hero: ${fighterId}`);
-  }
-
+  const config = useMemo(() => getModelConfig(fighterId)!, [fighterId]);
   const { scene, animations } = useGLTF(config.path);
+
   const prepared = useMemo(() => {
     const model = SkeletonUtils.clone(scene) as THREE.Group;
     const [rotationX, rotationY, rotationZ] = config.rotation ?? [0, 0, 0];

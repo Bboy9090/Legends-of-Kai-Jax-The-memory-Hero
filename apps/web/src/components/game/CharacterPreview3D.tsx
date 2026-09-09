@@ -1,7 +1,7 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import SceneEnvironment from "./graphics/SceneEnvironment";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useRef, useState } from "react";
 import { Fighter } from "../../lib/characters";
 import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
 import { Group } from "three";
@@ -13,6 +13,7 @@ import { getQualitySettings } from "../../lib/threejs/PerformanceOptimizer";
 import { getModelPath } from "../../assets/modelRegistry";
 import {
   ProductionCharacterVisual,
+  type ProductionCharacterReadyInfo,
   type ProductionStoryHeroId,
 } from "./characters/ProductionCharacterVisual";
 
@@ -21,7 +22,10 @@ interface CharacterPreview3DProps {
   preset?: BeastPresetKind;
 }
 
-type ModelStatus = "procedural" | "loading" | "ready";
+interface ReadyModelState {
+  fighterId: ProductionStoryHeroId | null;
+  modelPath: string | null;
+}
 
 export default function CharacterPreview3D({ fighter, preset = "auto" }: CharacterPreview3DProps) {
   const bodyRef = useRef<Group>(null);
@@ -33,13 +37,20 @@ export default function CharacterPreview3D({ fighter, preset = "auto" }: Charact
   const productionHeroId: ProductionStoryHeroId | null =
     fighter.id === "kai" || fighter.id === "jax" ? fighter.id : null;
   const modelPath = productionHeroId ? getModelPath(productionHeroId) : null;
-  const [modelStatus, setModelStatus] = useState<ModelStatus>(
-    productionHeroId ? "loading" : "procedural"
-  );
+  const [readyModel, setReadyModel] = useState<ReadyModelState>({
+    fighterId: null,
+    modelPath: null,
+  });
 
-  useEffect(() => {
-    setModelStatus(productionHeroId ? "loading" : "procedural");
-  }, [productionHeroId, modelPath]);
+  const handleProductionReady = useCallback((info: ProductionCharacterReadyInfo) => {
+    setReadyModel({ fighterId: info.fighterId, modelPath: info.modelPath });
+  }, []);
+
+  const modelStatus = productionHeroId
+    ? readyModel.fighterId === productionHeroId && readyModel.modelPath === modelPath
+      ? "ready"
+      : "loading"
+    : "procedural";
 
   const renderCharacterModel = () => {
     if (productionHeroId) {
@@ -47,7 +58,7 @@ export default function CharacterPreview3D({ fighter, preset = "auto" }: Charact
         <ProductionCharacterVisual
           key={productionHeroId}
           fighterId={productionHeroId}
-          onReady={() => setModelStatus("ready")}
+          onReady={handleProductionReady}
         />
       );
     }
@@ -109,7 +120,7 @@ export default function CharacterPreview3D({ fighter, preset = "auto" }: Charact
         />
         
         <Suspense fallback={null}>
-          <group position={[0, -1, 0]}>
+          <group position={[0, productionHeroId ? -1.65 : -1, 0]}>
             {renderCharacterModel()}
           </group>
           
