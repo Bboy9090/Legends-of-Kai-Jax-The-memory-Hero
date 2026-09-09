@@ -56,7 +56,9 @@ jobs:
           node "${PW_CLI}" --version
 
       - name: Install Chromium runtime
-        run: node "${PW_CLI}" install --with-deps chromium
+        # Browser-only installation keeps the exact runtime proof independent of
+        # transient third-party apt index drift on the hosted runner image.
+        run: node "${PW_CLI}" install chromium
 
       - name: Run Ashblock Heights Kai/Jax live runtime and completion chains
         run: >-
