@@ -54,6 +54,8 @@ export class WallClimbController {
       climbVelocity: new THREE.Vector3(),
     };
     this.raycaster = new THREE.Raycaster();
+    // Only raycast against layer 0 (physics layer, excludes character models in layer 1)
+    this.raycaster.layers.set(0);
   }
 
   private detectWall(position: THREE.Vector3, direction: THREE.Vector3): THREE.Intersection<THREE.Object3D> | null {

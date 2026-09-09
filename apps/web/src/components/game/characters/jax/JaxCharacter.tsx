@@ -12,25 +12,32 @@ import { useJaxController } from './JaxController';
 import { useGLTFCharacter } from '../GLTFCharacterLoader';
 
 interface JaxCharacterProps {
-  scene: THREE.Scene;
+  scene?: THREE.Scene;
   onController?: (controller: ReturnType<typeof useJaxController>) => void;
+  bodyRef?: React.RefObject<THREE.Group>;
+  position?: [number, number, number];
+  scale?: number;
 }
 
-export function JaxCharacter({ scene, onController }: JaxCharacterProps) {
+export function JaxCharacter({ scene, onController, bodyRef, position = [0, 0, 0], scale = 1 }: JaxCharacterProps) {
   const jaxRef = useRef<THREE.Group>(null);
+  const effectiveRef = bodyRef || jaxRef;
   const [fallbackReady, setFallbackReady] = useState(false);
-  const jaxController = useJaxController(jaxRef, scene);
+  // Only initialize controller if scene is provided (for use as a standalone controller)
+  const jaxController = scene ? useJaxController(effectiveRef, scene) : null;
 
   useEffect(() => {
-    onController?.(jaxController);
+    if (jaxController) {
+      onController?.(jaxController);
+    }
   }, [jaxController, onController]);
 
   // Load production GLTF model using the correct Jax asset from registry
   const { groupRef: loaderGroupRef, isLoaded: gltfLoaded } = useGLTFCharacter({
     modelPath: '/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb',
     onLoaded: (model) => {
-      if (!jaxRef.current) return;
-      jaxRef.current.position.y = 0;
+      if (!effectiveRef.current) return;
+      effectiveRef.current.position.y = 0;
     },
     onError: (error) => {
       console.warn('Failed to load Jax GLTF model, using fallback:', error);
@@ -41,18 +48,18 @@ export function JaxCharacter({ scene, onController }: JaxCharacterProps) {
 
   // Copy loaded model from loader group to jax ref when ready
   useEffect(() => {
-    if (!jaxRef.current || !loaderGroupRef?.current || !gltfLoaded) return;
+    if (!effectiveRef.current || !loaderGroupRef?.current || !gltfLoaded) return;
 
     // Move loaded model children from loader group to jax ref
     while (loaderGroupRef.current.children.length > 0) {
       const child = loaderGroupRef.current.children[0];
-      jaxRef.current.add(child);
+      effectiveRef.current.add(child);
     }
-  }, [gltfLoaded, loaderGroupRef]);
+  }, [gltfLoaded, loaderGroupRef, effectiveRef]);
 
   // Show GLTF model if loaded, otherwise use fallback
   useEffect(() => {
-    if (!jaxRef.current) return;
+    if (!effectiveRef.current) return;
 
     if (!gltfLoaded && !fallbackReady) {
       // Model is loading, show nothing or loading state
@@ -61,9 +68,9 @@ export function JaxCharacter({ scene, onController }: JaxCharacterProps) {
 
     if (gltfLoaded) {
       // GLTF loaded successfully, remove any fallback geometry
-      const fallbackMeshes = jaxRef.current.children.filter((child) => child.name?.includes('fallback'));
+      const fallbackMeshes = effectiveRef.current.children.filter((child) => child.name?.includes('fallback'));
       fallbackMeshes.forEach((mesh) => {
-        jaxRef.current?.remove(mesh);
+        effectiveRef.current?.remove(mesh);
         if (mesh instanceof THREE.Mesh) {
           mesh.geometry.dispose();
           const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
@@ -74,7 +81,7 @@ export function JaxCharacter({ scene, onController }: JaxCharacterProps) {
     }
 
     // Fallback: use capsule geometry if GLTF failed to load
-    if (fallbackReady && jaxRef.current.children.length === 0) {
+    if (fallbackReady && effectiveRef.current.children.length === 0) {
       const bodyGeometry = new THREE.CapsuleGeometry(0.3, 1.2, 8, 8);
       const bodyMaterial = new THREE.MeshStandardMaterial({
         color: 0x4488ff,
@@ -86,7 +93,7 @@ export function JaxCharacter({ scene, onController }: JaxCharacterProps) {
       body.position.y = 0.6;
       body.castShadow = true;
       body.receiveShadow = true;
-      jaxRef.current.add(body);
+      effectiveRef.current.add(body);
 
       const auraGeometry = new THREE.SphereGeometry(0.5, 8, 8);
       const auraMaterial = new THREE.MeshBasicMaterial({
@@ -98,16 +105,16 @@ export function JaxCharacter({ scene, onController }: JaxCharacterProps) {
       aura.name = 'jax-fallback-storm-aura';
       aura.position.y = 0.6;
       aura.scale.setScalar(1.2);
-      jaxRef.current.add(aura);
+      effectiveRef.current.add(aura);
     }
-  }, [gltfLoaded, fallbackReady]);
+  }, [gltfLoaded, fallbackReady, effectiveRef]);
 
   return (
     <>
       {/* Hidden loader group - required for useGLTFCharacter hook to trigger load */}
       <group ref={loaderGroupRef} visible={false} />
       {/* Main character group - models will be moved here after loading */}
-      <group ref={jaxRef} position={[0, 0, 0]} />
+      <group ref={effectiveRef} position={position} scale={scale} />
     </>
   );
 }

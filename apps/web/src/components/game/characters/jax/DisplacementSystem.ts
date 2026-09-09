@@ -159,6 +159,9 @@ export class DisplacementController {
       0,
       distance + DISPLACEMENT_CONFIG.collisionRadius
     );
+    // Only raycast against layer 0 (physics layer, excludes character models in layer 1)
+    raycaster.layers.set(0);
+
     const colliders: THREE.Object3D[] = [];
 
     this.scene.traverse((obj) => {

@@ -29,6 +29,8 @@ import { useRunner } from '../../lib/stores/useRunner';
 import { getFighterById } from '../../lib/characters';
 import { useKaiController } from './characters/kai/KaiController';
 import { useJaxController } from './characters/jax/JaxController';
+import { KaiCharacter } from './characters/kai/KaiCharacter';
+import { JaxCharacter } from './characters/jax/JaxCharacter';
 import { FangCombatantVisual } from './characters/fang/FangCombatantVisual';
 import { MemoryTraceVisual } from './effects/MemoryTraceVisual';
 import { ExtractionPortalVisual } from './effects/ExtractionPortalVisual';
@@ -230,6 +232,8 @@ function VerticalSliceEnvironment({
 
   const playerRef = useRef<THREE.Group>(null);
   const fangRef = useRef<THREE.Group>(null);
+  const kaiCharacterRef = useRef<THREE.Group>(null);
+  const jaxCharacterRef = useRef<THREE.Group>(null);
   const controllerDebugRef = useRef<ControllerDebugState>({ ...INITIAL_CONTROLLER_DEBUG });
   const previousInteractRef = useRef(false);
   const previousAttackInputRef = useRef({ light: false, heavy: false, special: false, ultimate: false });
@@ -276,6 +280,27 @@ function VerticalSliceEnvironment({
       scene.fog = previousFog;
     };
   }, [scene, camera]);
+
+  useEffect(() => {
+    // Assign layer 0 to proxy geometry (physics/collision)
+    if (playerRef.current) {
+      playerRef.current.traverse((obj) => {
+        obj.layers.set(0);
+      });
+    }
+
+    // Assign layer 1 to character models (visual only)
+    if (isKai && kaiCharacterRef.current) {
+      kaiCharacterRef.current.traverse((obj) => {
+        obj.layers.set(1);
+      });
+    }
+    if (isJax && jaxCharacterRef.current) {
+      jaxCharacterRef.current.traverse((obj) => {
+        obj.layers.set(1);
+      });
+    }
+  }, [isKai, isJax]);
 
   useEffect(() => {
     const fang = fangRef.current;
@@ -574,6 +599,10 @@ function VerticalSliceEnvironment({
           );
         })}
       </group>
+
+      {/* Character models on layer 1 - visual only, no collision participation */}
+      {isKai && <KaiCharacter position={[0, 0, -20]} scale={1} bodyRef={kaiCharacterRef} />}
+      {isJax && <JaxCharacter position={[0, 0, -20]} scale={1} bodyRef={jaxCharacterRef} />}
     </group>
   );
 }
