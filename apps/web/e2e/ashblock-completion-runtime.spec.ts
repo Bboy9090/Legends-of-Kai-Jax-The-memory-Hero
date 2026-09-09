@@ -156,9 +156,10 @@ async function attackAndWaitForDamage(
   settleMs: number,
 ): Promise<number> {
   if (hero === 'jax') {
-    // Hold the key until the controller proves acceptance through its authored
-    // 25-energy spend. This removes render-frame input-edge races without
-    // bypassing the controller, mutating Fang HP, or granting free attacks.
+    // Hold the heavy until the controller proves acceptance through its authored
+    // energy spend, then keep real forward locomotion active across the authored
+    // 0.10-0.35 s hit window. This lets Jax follow residual Fang knockback instead
+    // of asking a stale HUD state to stand in for actual hit geometry.
     const beforeEnergy = await readNumber(page, 'slice-energy');
     await page.keyboard.down(key);
     try {
@@ -166,6 +167,13 @@ async function attackAndWaitForDamage(
         timeout: 2_500,
         intervals: [50, 75, 100, 150],
       }).toBeLessThan(beforeEnergy - 5);
+
+      await page.keyboard.down('w');
+      try {
+        await page.waitForTimeout(300);
+      } finally {
+        await page.keyboard.up('w');
+      }
     } finally {
       await page.keyboard.up(key);
     }
@@ -190,18 +198,14 @@ async function attackAndWaitForDamage(
 async function waitForJaxHeavyReady(page: Page) {
   // Pressure heavy costs 25 energy. Headless/software WebGL can render slowly,
   // so wall-clock sleeps are not a valid readiness authority for regeneration.
-  // Wait for the controller's real energy state instead of firing an input that
-  // the controller is allowed to reject.
   await expect.poll(async () => readNumber(page, 'slice-energy'), {
     timeout: 10_000,
     intervals: [75, 100, 150, 200],
   }).toBeGreaterThanOrEqual(25);
 
-  // Both WINDUP and RECOVERY are authored melee-envelope states: Fang AI only
-  // assigns them while distance is <= its 1.8-unit attackRange, safely inside
-  // Jax pressure heavy's 2.0-unit hit radius. Requiring a fresh WINDUP after
-  // energy readiness can miss the short windup window and wait on a state that
-  // already resolved; accepting either state preserves the real range proof.
+  // WINDUP/RECOVERY are both authored melee-envelope states. The actual heavy
+  // hit remains authoritative: the attack helper follows with controller-owned
+  // forward movement through the ACTIVE window instead of mutating target state.
   await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
     timeout: 8_000,
     intervals: [75, 100, 150, 200],
@@ -213,8 +217,7 @@ async function defeatFang(page: Page, hero: 'kai' | 'jax') {
 
   // Both heroes use their real heavy input here. Kai's slice heavy resolves for 35
   // damage through the accepted KaiController lifecycle. Jax pressure heavy resolves
-  // for 15 through JaxAttackSystem and can knock the Fang outward, so Jax waits for
-  // both real controller energy readiness and an AI-confirmed melee envelope.
+  // for 15 through JaxAttackSystem; follow-through uses only real locomotion.
   const attackKey: 'k' = 'k';
   const maxAttempts = hero === 'kai' ? 6 : 10;
   const minimumSuccessfulHits = hero === 'kai' ? 3 : 7;
