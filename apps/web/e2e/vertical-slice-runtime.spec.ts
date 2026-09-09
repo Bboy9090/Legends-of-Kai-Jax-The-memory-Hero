@@ -78,9 +78,7 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
     try {
       await expect(page.getByTestId('slice-webzip')).toContainText('YES', { timeout: 1_500 });
       // KaiController intentionally caps per-frame simulation delta. Headless
-      // Chromium can therefore take more wall-clock time than the nominal 0.8 s
-      // zip duration. Prove the real zip carried Kai beyond the climb wall by
-      // controller-owned position instead of racing a wall-clock completion.
+      // Chromium can therefore take more wall-clock time than the nominal zip.
       await expect.poll(async () => (await readPosition(page))[2], {
         timeout: 8_000,
         intervals: [100, 150, 200, 250],
@@ -89,8 +87,6 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
       await page.keyboard.up('e');
     }
 
-    // Releasing traversal must exit the real Web Zip state before the walking
-    // phase begins. No position or mission state is mutated by the test.
     await expect.poll(async () => page.getByTestId('slice-webzip').innerText(), {
       timeout: 2_000,
       intervals: [75, 100, 150],
@@ -103,10 +99,6 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
 
   await page.keyboard.down('w');
   try {
-    // Prove controller-owned movement crosses the actual mission threshold first.
-    // Kai's 0.033 s simulation cap means a very slow software-WebGL runner can
-    // require substantially more wall-clock time than a normal device. The guard
-    // timeout is intentionally generous; the assertion itself remains state-driven.
     await expect.poll(async () => (await readPosition(page))[2], {
       timeout: hero === 'kai' ? 20_000 : 8_000,
       intervals: [150, 200, 250, 400],
@@ -160,9 +152,6 @@ test('Ashblock Kai slice reaches the real climbable wall with Shift+W', async ({
   await page.keyboard.down('Shift');
   await page.keyboard.down('w');
   try {
-    // Slow software-WebGL runners can simulate only a handful of Kai movement
-    // frames per wall-clock second. Keep the real inputs held until the controller
-    // reports the authored wall state instead of assuming it must happen in 3 s.
     await expect.poll(async () => page.getByTestId('slice-wall').innerText(), {
       timeout: 8_000,
       intervals: [100, 150, 200, 250],
@@ -229,7 +218,7 @@ test('Ashblock Fang AI chases and damages Jax, while Jax heavy can damage the Fa
   expect(errors, `Unexpected Jax encounter errors:\n${errors.join('\n')}`).toEqual([]);
 });
 
-test('Ashblock Kai accepted heavy attack damages the same source-safe Fang combatant', async ({ page }) => {
+test('Ashblock Kai accepted heavy resolves through KaiAttackSystem scene hitboxes', async ({ page }) => {
   const errors = collectErrors(page);
   await bootSlice(page, 'kai', errors);
   await enterEncounter(page, 'kai');
@@ -239,10 +228,6 @@ test('Ashblock Kai accepted heavy attack damages the same source-safe Fang comba
     intervals: [100, 150, 200],
   }).toMatch(/CHASE|WINDUP|RECOVERY/);
 
-  // Let the first real Fang attack land. During cooldown, FangCombatantAI keeps
-  // RECOVERY authority whenever the Fang is already inside its 1.8-unit attack
-  // envelope; it does not enter CHASE just to creep from 1.8 to Kai heavy's
-  // tighter 1.5-unit radius. The player must close that final gap.
   await expect.poll(async () => readNumber(page, 'slice-player-health'), {
     timeout: 6_000,
     intervals: [100, 150, 200, 250],
@@ -253,34 +238,36 @@ test('Ashblock Kai accepted heavy attack damages the same source-safe Fang comba
     intervals: [75, 100, 150],
   }).toContain('RECOVERY');
 
-  // Close the remaining melee gap with Kai's real controller. The assertion is
-  // position-driven so slow software-WebGL runners cannot fail merely because
-  // they simulate fewer movement frames per wall-clock second.
+  // KaiAttackSystem's authored heavy radius is 1.2 units. Close farther than the
+  // retired slice adapter required, using only KaiController-owned locomotion.
   const closeStart = await readPosition(page);
   await page.keyboard.down('w');
   try {
     await expect.poll(async () => (await readPosition(page))[2], {
       timeout: 8_000,
       intervals: [75, 100, 150, 200],
-    }).toBeGreaterThan(closeStart[2] + 0.45);
+    }).toBeGreaterThan(closeStart[2] + 0.75);
   } finally {
     await page.keyboard.up('w');
   }
 
   const energyBefore = await readNumber(page, 'slice-energy');
   const fangHealthBefore = await readNumber(page, 'slice-fang-health');
-  await page.keyboard.press('k');
-
-  // Energy consumption proves KaiController accepted the heavy input; Fang HP
-  // loss proves the slice adapter resolved that accepted attack against the
-  // shared deterministic combatant after the player actually closed melee range.
-  await expect.poll(async () => readNumber(page, 'slice-energy'), {
-    timeout: 2_000,
-    intervals: [75, 100, 150],
-  }).toBeLessThan(energyBefore);
+  await page.keyboard.down('k');
+  try {
+    // Energy consumption proves KaiController accepted the input. With the direct
+    // Ashblock adapter removed, subsequent Fang HP loss can only come through the
+    // real KaiAttackSystem combat-target hitbox path.
+    await expect.poll(async () => readNumber(page, 'slice-energy'), {
+      timeout: 2_500,
+      intervals: [50, 75, 100, 150],
+    }).toBeLessThan(energyBefore);
+  } finally {
+    await page.keyboard.up('k');
+  }
 
   await expect.poll(async () => readNumber(page, 'slice-fang-health'), {
-    timeout: 2_500,
+    timeout: 3_000,
     intervals: [75, 100, 150, 200],
   }).toBeLessThan(fangHealthBefore);
 
