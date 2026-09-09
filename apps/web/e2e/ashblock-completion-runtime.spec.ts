@@ -135,9 +135,8 @@ async function closeIntoMeleeRange(page: Page, hero: 'kai' | 'jax') {
   }).toContain('RECOVERY');
 
   if (hero === 'jax') {
-    // Jax's lightning special has a 3.5-unit radius and a forward cone. The Fang
-    // is already inside its 1.8-unit attack envelope here, so do not push Jax
-    // through the target before the special.
+    // Jax pressure-heavy has a 2.0-unit planar radius and no directional cone.
+    // Fang RECOVERY proves the target is already inside its <=1.8 attack envelope.
     return;
   }
 
@@ -159,31 +158,20 @@ async function closeIntoMeleeRange(page: Page, hero: 'kai' | 'jax') {
 async function attackAndWaitForDamage(
   page: Page,
   hero: 'kai' | 'jax',
-  key: 'k' | 'l',
+  key: 'k',
   beforeHealth: number,
   settleMs: number,
 ): Promise<number> {
   const beforeEnergy = await readNumber(page, 'slice-energy');
   await page.keyboard.down(key);
   try {
-    if (hero === 'jax') {
-      // Jax lightning special costs 45. Wait for a substantial real spend rather
-      // than relying on a render-frame key edge.
-      await expect.poll(async () => readNumber(page, 'slice-energy'), {
-        timeout: 3_000,
-        intervals: [50, 75, 100, 150],
-      }).toBeLessThan(beforeEnergy - 10);
-      await page.waitForTimeout(420);
-    } else {
-      // Kai heavy costs 30. Energy loss proves KaiController accepted K; keeping
-      // K held through the 0.15-0.35 ACTIVE window prevents sparse headless frames
-      // from turning the mission proof into an input-edge race.
-      await expect.poll(async () => readNumber(page, 'slice-energy'), {
-        timeout: 3_000,
-        intervals: [50, 75, 100, 150],
-      }).toBeLessThan(beforeEnergy - 8);
-      await page.waitForTimeout(360);
-    }
+    // Both full-chain routes use real pressure/heavy attacks. Energy loss proves
+    // the owning controller accepted K before the scene-hitbox authority resolves.
+    await expect.poll(async () => readNumber(page, 'slice-energy'), {
+      timeout: 3_000,
+      intervals: [50, 75, 100, 150],
+    }).toBeLessThan(beforeEnergy - 8);
+    await page.waitForTimeout(hero === 'kai' ? 360 : 390);
   } finally {
     await page.keyboard.up(key);
   }
@@ -200,15 +188,15 @@ async function attackAndWaitForDamage(
   return afterHealth;
 }
 
-async function waitForJaxSpecialReady(page: Page) {
+async function waitForJaxHeavyReady(page: Page) {
   await expect.poll(async () => readNumber(page, 'slice-energy'), {
     timeout: 10_000,
     intervals: [100, 150, 200, 250],
-  }).toBeGreaterThanOrEqual(45);
+  }).toBeGreaterThanOrEqual(25);
 
-  // WINDUP lasts only 0.35s and can be fully consumed by bounded AI catch-up
-  // inside one slow headless render frame. Both WINDUP and RECOVERY are live
-  // in-range states: FangCombatantAI only enters either while distance <= 1.8.
+  // WINDUP lasts only 0.35s and can be fully consumed by bounded AI catch-up.
+  // Either WINDUP or RECOVERY is stable proof that Fang is inside <=1.8, which
+  // is strictly within Jax pressure-heavy's authored 2.0-unit planar hit radius.
   await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
     timeout: 10_000,
     intervals: [50, 75, 100, 150],
@@ -244,19 +232,20 @@ async function waitForKaiHeavyReady(page: Page) {
 async function defeatFang(page: Page, hero: 'kai' | 'jax') {
   await closeIntoMeleeRange(page, hero);
 
-  // Both routes now prove their real scene-hitbox authorities: Kai heavy through
-  // KaiAttackSystem, Jax lightning special through JaxAttackSystem.
-  const attackKey: 'k' | 'l' = hero === 'jax' ? 'l' : 'k';
-  const maxAttempts = hero === 'kai' ? 6 : 8;
-  const minimumSuccessfulHits = hero === 'kai' ? 3 : 4;
-  const settleMs = hero === 'kai' ? 900 : 750;
+  // Full-chain persistence uses deterministic no-cone heavy authority for both
+  // heroes. Jax lightning-special live-target behavior remains independently
+  // certified in jax-runtime.spec.ts, so this mission test does not duplicate it.
+  const attackKey: 'k' = 'k';
+  const maxAttempts = hero === 'kai' ? 6 : 9;
+  const minimumSuccessfulHits = hero === 'kai' ? 3 : 7;
+  const settleMs = hero === 'kai' ? 900 : 650;
 
   let successfulHits = 0;
   let health = await readNumber(page, 'slice-fang-health');
 
   for (let attempt = 0; attempt < maxAttempts && health > 0; attempt += 1) {
     if (hero === 'jax') {
-      await waitForJaxSpecialReady(page);
+      await waitForJaxHeavyReady(page);
     } else {
       await waitForKaiHeavyReady(page);
     }
