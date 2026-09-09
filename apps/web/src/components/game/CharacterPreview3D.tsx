@@ -93,8 +93,8 @@ export default function CharacterPreview3D({ fighter, preset = "auto" }: Charact
     >
       <Canvas
         camera={{
-          position: [0, 1.5, 4],
-          fov: 50,
+          position: [0, 1.2, 3.2],
+          fov: 55,
           near: 0.1,
           far: 1000,
         }}
@@ -104,7 +104,7 @@ export default function CharacterPreview3D({ fighter, preset = "auto" }: Charact
           gl.setPixelRatio(q.pixelRatio);
           gl.outputColorSpace = THREE.SRGBColorSpace;
           gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.2;
+          gl.toneMappingExposure = 1.6;
           gl.shadowMap.enabled = true;
           gl.shadowMap.type = q.shadowMap.type;
         }}

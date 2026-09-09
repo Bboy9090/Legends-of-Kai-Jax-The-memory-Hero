@@ -44,7 +44,7 @@ export function LegendaryLightingRig() {
       <directionalLight
         ref={keyLightRef}
         position={[5, 8, 5]}
-        intensity={0.7}
+        intensity={1.2}
         color="#ffffff"
         castShadow
         shadow-mapSize-width={2048}
@@ -56,25 +56,25 @@ export function LegendaryLightingRig() {
         shadow-camera-bottom={-10}
         shadow-bias={-0.0001}
       />
-      
+
       {/* === FILL LIGHT (soft ambient from left) === */}
       <directionalLight
         ref={fillLightRef}
         position={[-5, 3, 5]}
-        intensity={0.3}
+        intensity={0.5}
         color="#7dd3fc"
       />
-      
+
       {/* === RIM LIGHT (edge highlight from behind) === */}
       <directionalLight
         ref={rimLightRef}
         position={[0, 4, -8]}
-        intensity={0.4}
+        intensity={0.75}
         color="#fbbf24"
       />
-      
+
       {/* === AMBIENT (base illumination) === */}
-      <ambientLight intensity={0.2} color="#b4b4ff" />
+      <ambientLight intensity={0.5} color="#b4b4ff" />
       
       {/* === HEMISPHERE LIGHT (sky/ground gradient) === */}
       <hemisphereLight

@@ -370,12 +370,12 @@ export default function CinematicPostFX({
     pass.uniforms.uTint.value = acc;
 
     // default (lift blacks a touch so arenas don’t crush to black)
-    pass.uniforms.uLift.value.set(0.015, 0.015, 0.015);
-    pass.uniforms.uGamma.value.set(1.0, 1.0, 1.0);
-    pass.uniforms.uGain.value.set(1.0, 1.0, 1.0);
+    pass.uniforms.uLift.value.set(0.04, 0.04, 0.04);
+    pass.uniforms.uGamma.value.set(0.95, 0.95, 0.95);
+    pass.uniforms.uGain.value.set(1.1, 1.1, 1.1);
     pass.uniforms.uSaturation.value = 1.12;
     pass.uniforms.uContrast.value = 1.08;
-    pass.uniforms.uIntensity.value = 0.78;
+    pass.uniforms.uIntensity.value = 0.82;
     pass.uniforms.uCosmic.value = 0.0;
 
     if (grade === "ice") {
