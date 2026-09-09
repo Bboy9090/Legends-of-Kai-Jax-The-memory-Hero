@@ -87,10 +87,17 @@ test("versus mode: both fighter components mount without errors", async ({ page 
   // Verify battle scene fully loaded
   const battleData = await page.evaluate(() => {
     const battle = (window as any).useBattle?.getState?.();
+    const game = (window as any).useGame?.getState?.();
+    console.log('[Test] Battle state:', {
+      battleKeys: battle ? Object.keys(battle).slice(0, 5) : 'undefined',
+      playerFighterId: battle?.playerFighterId,
+      opponentFighterId: battle?.opponentFighterId,
+      gamePhase: game?.phase,
+    });
     return {
-      playerFighter: battle?.playerFighter,
-      opponentFighter: battle?.opponentFighter,
-      phaseRunning: (window as any).useGame?.getState?.().phase === "running",
+      playerFighter: battle?.playerFighterId,
+      opponentFighter: battle?.opponentFighterId,
+      phaseRunning: game?.phase === "playing",
     };
   });
 

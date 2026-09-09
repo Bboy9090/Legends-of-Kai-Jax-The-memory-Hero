@@ -1410,3 +1410,8 @@ export const useBattle = create<BattleState>((set, get) => ({
     }
   },
 }));
+
+// Expose for testing/debugging
+if (typeof window !== 'undefined') {
+  (window as any).useBattle = useBattle;
+}
