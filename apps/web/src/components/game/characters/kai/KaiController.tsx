@@ -12,8 +12,9 @@
  * - Energy/stamina management
  *
  * Architecture: KaiController is the sole owner of kai.position per frame.
- * Traversal systems (WallClimbController, WebZipController) are update-driven:
- * they return movement results, not write position directly.
+ * Traversal systems return movement results rather than mutating position.
+ * KaiController owns attack acceptance/energy while KaiAttackSystem owns real
+ * scene-hitbox timing, target filtering, one-hit protection, and hit resolution.
  */
 
 import { useRef, useMemo } from 'react';
@@ -23,6 +24,7 @@ import { useAudio } from '../../../../lib/stores/useAudio';
 import { gameplayInputManager, GameplayInputState } from '../../../../lib/input/GameplayInputState';
 import { WallClimbController } from './WallClimbSystem';
 import { WebZipController } from './WebZipSystem';
+import { KaiAttackSystem } from './KaiAttackSystem';
 
 type LocomotionMode = 'GROUND' | 'WALL' | 'WEB_ZIP' | 'MOMENTUM' | 'AIR';
 
@@ -72,11 +74,6 @@ const DODGING_CONFIG = {
   staminalCost: 20,
 };
 
-const WALL_CLIMB_CONFIG = {
-  detectionDistance: 1.5,
-  climbSpeed: 2.0,
-};
-
 export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: THREE.Scene) {
   const prevInputRef = useRef<GameplayInputState | null>(null);
   const stateRef = useRef<KaiControllerState>({
@@ -104,6 +101,7 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
 
   const wallClimbController = useMemo(() => new WallClimbController(scene), [scene]);
   const webZipController = useMemo(() => new WebZipController(scene), [scene]);
+  const attackSystem = useMemo(() => new KaiAttackSystem(scene), [scene]);
   const anchorsRegisteredRef = useRef(false);
 
   useFrame((frameState, rawDelta) => {
@@ -113,6 +111,7 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
     const kai = stateRef.current;
     const input = gameplayInputManager.getState();
     const prevInput = prevInputRef.current;
+    const currentTime = frameState.clock.elapsedTime;
 
     kaiRef.current.getWorldPosition(kai.position);
     kai.rotation.copy(kaiRef.current.rotation);
@@ -227,6 +226,14 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
     kaiRef.current.position.copy(finalPos);
     kai.position.copy(finalPos);
 
+    const facingDir = kaiRef.current.getWorldDirection(new THREE.Vector3());
+    facingDir.y = 0;
+    if (facingDir.lengthSq() < 0.0001) facingDir.set(0, 0, 1);
+    facingDir.normalize();
+
+    // Keep the hitbox origin current before processing the previous accepted attack.
+    attackSystem.update(currentTime, kai.position);
+
     if (wasJustPressed(input.attackLight, prevInput?.attackLight ?? false)) {
       if (kai.energy >= COMBAT_CONFIG.lightAttackCost && !kai.isDodging && !kai.isAttacking) {
         kai.attackCombo = Math.min(3, kai.attackCombo + 1);
@@ -234,6 +241,7 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
         kai.isAttacking = true;
         kai.attackTimer = COMBAT_CONFIG.lightAttackDuration;
         kai.comboResetTimer = COMBAT_CONFIG.comboTimeWindow;
+        attackSystem.startAttack('light', kai.position, facingDir, currentTime, kai.attackCombo - 1);
         useAudio.getState().playAttack?.('light');
       }
     }
@@ -245,6 +253,7 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
         kai.isAttacking = true;
         kai.attackTimer = COMBAT_CONFIG.heavyAttackDuration;
         kai.comboResetTimer = COMBAT_CONFIG.comboTimeWindow;
+        attackSystem.startAttack('heavy', kai.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('heavy');
       }
     }
@@ -255,6 +264,7 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
         kai.isAttacking = true;
         kai.attackTimer = 0.8;
         kai.comboResetTimer = 0;
+        attackSystem.startAttack('special', kai.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('special');
       }
     }
@@ -265,6 +275,7 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
         kai.isAttacking = true;
         kai.attackTimer = 1.2;
         kai.comboResetTimer = 0;
+        attackSystem.startAttack('ultimate', kai.position, facingDir, currentTime);
         useAudio.getState().playAttack?.('ultimate');
       }
     }
@@ -280,13 +291,35 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       }
     }
 
-    Object.assign(kai, { ...kai });
+    // Re-run update so an attack accepted this frame has the same position/time
+    // authority as an already-active attack, then resolve only real scene targets.
+    attackSystem.update(currentTime, kai.position);
+    attackSystem.processActiveHitboxes(currentTime, (target, damage, attack) => {
+      const health = typeof target.userData.health === 'number'
+        ? target.userData.health
+        : 100;
+      target.userData.health = Math.max(0, health - damage);
+      target.userData.lastHitBy = 'kai';
+      target.userData.lastDamage = damage;
+      target.userData.lastAttackType = attack.type;
+      target.userData.hitCount = (target.userData.hitCount ?? 0) + 1;
+
+      if (attack.knockback > 0) {
+        const velocity = target.userData.velocity instanceof THREE.Vector3
+          ? target.userData.velocity as THREE.Vector3
+          : new THREE.Vector3();
+        velocity.add(attack.direction.clone().multiplyScalar(attack.knockback));
+        target.userData.velocity = velocity;
+      }
+    });
+
     prevInputRef.current = { ...input };
   });
 
   return {
     state: stateRef.current,
     getState: () => stateRef.current,
+    getAttackSystem: () => attackSystem,
     refreshAnchors: () => {
       webZipController.registerAnchorsFromScene();
     },
