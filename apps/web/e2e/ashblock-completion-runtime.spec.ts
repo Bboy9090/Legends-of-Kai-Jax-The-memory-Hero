@@ -150,13 +150,30 @@ async function closeIntoMeleeRange(page: Page) {
 
 async function attackAndWaitForDamage(
   page: Page,
+  hero: 'kai' | 'jax',
   key: 'j' | 'k',
   beforeHealth: number,
   settleMs: number,
 ): Promise<number> {
-  await page.keyboard.down(key);
-  await page.waitForTimeout(140);
-  await page.keyboard.up(key);
+  if (hero === 'jax') {
+    // Hold the key until the controller proves acceptance through its authored
+    // 25-energy spend. This removes render-frame input-edge races without
+    // bypassing the controller, mutating Fang HP, or granting free attacks.
+    const beforeEnergy = await readNumber(page, 'slice-energy');
+    await page.keyboard.down(key);
+    try {
+      await expect.poll(async () => readNumber(page, 'slice-energy'), {
+        timeout: 2_500,
+        intervals: [50, 75, 100, 150],
+      }).toBeLessThan(beforeEnergy - 5);
+    } finally {
+      await page.keyboard.up(key);
+    }
+  } else {
+    await page.keyboard.down(key);
+    await page.waitForTimeout(140);
+    await page.keyboard.up(key);
+  }
 
   let afterHealth = beforeHealth;
   const deadline = Date.now() + 2_500;
@@ -211,7 +228,7 @@ async function defeatFang(page: Page, hero: 'kai' | 'jax') {
       await waitForJaxHeavyReady(page);
     }
 
-    const nextHealth = await attackAndWaitForDamage(page, attackKey, health, settleMs);
+    const nextHealth = await attackAndWaitForDamage(page, hero, attackKey, health, settleMs);
     if (nextHealth < health) successfulHits += 1;
     health = nextHealth;
   }
