@@ -126,9 +126,21 @@ export default function CharacterPreview3D({ fighter, preset = "auto" }: Charact
             {renderCharacterModel()}
           </group>
           
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.7, 0]} receiveShadow>
-            <planeGeometry args={[10, 10]} />
-            <shadowMaterial opacity={0.3} />
+          {/* Ground shadow plane with enhanced visibility */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.65, 0]} receiveShadow>
+            <planeGeometry args={[12, 12]} />
+            <shadowMaterial opacity={0.5} />
+          </mesh>
+
+          {/* Contact shadow disk for depth grounding */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.64, 0]}>
+            <circleGeometry args={[2.5, 32]} />
+            <meshStandardMaterial
+              color="#000000"
+              transparent
+              opacity={0.15}
+              emissive="#000000"
+            />
           </mesh>
           
           <OrbitControls 

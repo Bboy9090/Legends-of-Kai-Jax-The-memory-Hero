@@ -379,19 +379,19 @@ export default function CinematicPostFX({
     pass.uniforms.uCosmic.value = 0.0;
 
     if (grade === "ice") {
-      pass.uniforms.uLift.value.set(0.03, 0.045, 0.06);
-      pass.uniforms.uGamma.value.set(1.01, 1.02, 0.99);
-      pass.uniforms.uGain.value.set(0.98, 1.02, 1.08);
-      pass.uniforms.uSaturation.value = 1.18;
-      pass.uniforms.uContrast.value = 1.10;
-      pass.uniforms.uIntensity.value = 0.82;
+      pass.uniforms.uLift.value.set(0.035, 0.05, 0.065);
+      pass.uniforms.uGamma.value.set(1.02, 1.03, 0.98);
+      pass.uniforms.uGain.value.set(0.96, 1.04, 1.12);
+      pass.uniforms.uSaturation.value = 1.22;
+      pass.uniforms.uContrast.value = 1.12;
+      pass.uniforms.uIntensity.value = 0.88;
     } else if (grade === "ember") {
-      pass.uniforms.uLift.value.set(0.055, 0.032, 0.018);
-      pass.uniforms.uGamma.value.set(0.99, 1.01, 1.06);
-      pass.uniforms.uGain.value.set(1.10, 1.03, 0.94);
-      pass.uniforms.uSaturation.value = 1.18;
-      pass.uniforms.uContrast.value = 1.10;
-      pass.uniforms.uIntensity.value = 0.82;
+      pass.uniforms.uLift.value.set(0.06, 0.035, 0.02);
+      pass.uniforms.uGamma.value.set(0.98, 1.0, 1.07);
+      pass.uniforms.uGain.value.set(1.14, 1.06, 0.92);
+      pass.uniforms.uSaturation.value = 1.22;
+      pass.uniforms.uContrast.value = 1.12;
+      pass.uniforms.uIntensity.value = 0.88;
     } else if (grade === "cosmic") {
       pass.uniforms.uLift.value.set(0.02, 0.02, 0.03);
       pass.uniforms.uGain.value.set(1.03, 1.03, 1.03);
