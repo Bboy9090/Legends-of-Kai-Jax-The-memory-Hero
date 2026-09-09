@@ -151,23 +151,32 @@ async function closeIntoMeleeRange(page: Page) {
 async function attackAndWaitForDamage(
   page: Page,
   hero: 'kai' | 'jax',
-  key: 'i' | 'k',
+  key: 'k' | 'l',
   beforeHealth: number,
   settleMs: number,
 ): Promise<number> {
   if (hero === 'jax') {
-    // Jax's completion-chain path uses the real storm ultimate (I): 75 authored
-    // energy, 40 JaxAttackSystem damage, 5-unit radius. The separate vertical
-    // runtime smoke already stress-proves pressure heavy against this Fang. Keeping
-    // the chain proof on a wider real hitbox avoids making mission persistence
-    // depend on seven repeated 2-unit heavy-envelope samples under software WebGL.
+    // The full-chain path uses Jax's real lightning special (L): 45 authored
+    // energy, 25 JaxAttackSystem damage, 3.5-unit radius, moderate knockback.
+    // Pressure-heavy remains independently proven by vertical-slice-runtime.
+    // Hold until the controller's real energy spend proves attack acceptance.
     const beforeEnergy = await readNumber(page, 'slice-energy');
     await page.keyboard.down(key);
     try {
       await expect.poll(async () => readNumber(page, 'slice-energy'), {
         timeout: 3_000,
         intervals: [50, 75, 100, 150],
-      }).toBeLessThan(beforeEnergy - 20);
+      }).toBeLessThan(beforeEnergy - 10);
+
+      // Maintain controller-owned forward pressure through the special's ACTIVE
+      // window so residual Fang knockback cannot turn a valid melee start into a
+      // stale-range sample. No target movement or health is changed by the test.
+      await page.keyboard.down('w');
+      try {
+        await page.waitForTimeout(420);
+      } finally {
+        await page.keyboard.up('w');
+      }
     } finally {
       await page.keyboard.up(key);
     }
@@ -189,17 +198,16 @@ async function attackAndWaitForDamage(
   return afterHealth;
 }
 
-async function waitForJaxUltimateReady(page: Page) {
-  // Storm ultimate costs 75 energy. Readiness comes from the real controller HUD,
-  // never from a fixed sleep or test-side energy mutation.
+async function waitForJaxSpecialReady(page: Page) {
+  // Lightning special costs 45 energy. Readiness comes from the real controller
+  // state; no test-side energy grant or fixed regeneration assumption.
   await expect.poll(async () => readNumber(page, 'slice-energy'), {
-    timeout: 12_000,
+    timeout: 10_000,
     intervals: [100, 150, 200, 250],
-  }).toBeGreaterThanOrEqual(75);
+  }).toBeGreaterThanOrEqual(45);
 
-  // Start the wide-radius attack only after Fang AI confirms a real melee envelope.
-  // WINDUP/RECOVERY are both <= the authored 1.8 attackRange, far inside the
-  // ultimate's 5-unit hit radius and still entirely gameplay-state driven.
+  // WINDUP/RECOVERY both confirm the deterministic Fang is within its authored
+  // 1.8-unit melee range, safely inside the 3.5-unit special radius.
   await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
     timeout: 8_000,
     intervals: [75, 100, 150, 200],
@@ -209,21 +217,20 @@ async function waitForJaxUltimateReady(page: Page) {
 async function defeatFang(page: Page, hero: 'kai' | 'jax') {
   await closeIntoMeleeRange(page);
 
-  // Kai keeps its accepted heavy path. Jax's heavy hitbox remains proven by the
-  // dedicated runtime smoke; the full mission-chain proof uses Jax's real ultimate
-  // so the persistence test validates mission flow rather than repeatedly sampling
-  // the narrow pressure-heavy envelope.
-  const attackKey: 'i' | 'k' = hero === 'jax' ? 'i' : 'k';
-  const maxAttempts = hero === 'kai' ? 6 : 6;
-  const minimumSuccessfulHits = hero === 'kai' ? 3 : 3;
-  const settleMs = hero === 'kai' ? 1_000 : 1_000;
+  // Kai keeps its accepted heavy path. Jax pressure-heavy is stress-proven by
+  // the dedicated runtime smoke; the mission chain uses the real lightning
+  // special so persistence is not coupled to seven narrow repeated heavy samples.
+  const attackKey: 'k' | 'l' = hero === 'jax' ? 'l' : 'k';
+  const maxAttempts = hero === 'kai' ? 6 : 8;
+  const minimumSuccessfulHits = hero === 'kai' ? 3 : 4;
+  const settleMs = hero === 'kai' ? 1_000 : 750;
 
   let successfulHits = 0;
   let health = await readNumber(page, 'slice-fang-health');
 
   for (let attempt = 0; attempt < maxAttempts && health > 0; attempt += 1) {
     if (hero === 'jax') {
-      await waitForJaxUltimateReady(page);
+      await waitForJaxSpecialReady(page);
     }
 
     const nextHealth = await attackAndWaitForDamage(page, hero, attackKey, health, settleMs);
