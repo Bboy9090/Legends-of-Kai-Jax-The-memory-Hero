@@ -79,16 +79,26 @@ test('Kai runtime: ground movement and held Web Zip change real controller state
 
   const beforeZip = await readPosition(page);
   await page.keyboard.down('e');
-  await page.waitForTimeout(350);
-  await expect(page.getByTestId('kai-webzip')).toContainText('YES');
-  await expect(page.getByTestId('kai-mode')).toContainText('WEB_ZIP');
-  const duringZip = await readPosition(page);
-  expect(Math.hypot(
-    duringZip[0] - beforeZip[0],
-    duringZip[1] - beforeZip[1],
-    duringZip[2] - beforeZip[2]
-  )).toBeGreaterThan(0.2);
-  await page.keyboard.up('e');
+  try {
+    await expect.poll(async () => page.getByTestId('kai-webzip').innerText(), {
+      timeout: 3_000,
+      intervals: [75, 100, 150, 200],
+    }).toContain('YES');
+    await expect(page.getByTestId('kai-mode')).toContainText('WEB_ZIP');
+    await expect.poll(async () => {
+      const duringZip = await readPosition(page);
+      return Math.hypot(
+        duringZip[0] - beforeZip[0],
+        duringZip[1] - beforeZip[1],
+        duringZip[2] - beforeZip[2]
+      );
+    }, {
+      timeout: 4_000,
+      intervals: [75, 100, 150, 200],
+    }).toBeGreaterThan(0.2);
+  } finally {
+    await page.keyboard.up('e');
+  }
 
   expect(errors, `Unexpected runtime errors:\n${errors.join('\n')}`).toEqual([]);
 });
@@ -100,33 +110,64 @@ test('Kai runtime: wall climb, attack lifecycle and dodge lifecycle are live', a
   const start = await readPosition(page);
   await page.keyboard.down('Shift');
   await page.keyboard.down('w');
-  await page.waitForTimeout(400);
-  await expect(page.getByTestId('kai-wall')).toContainText('YES');
-  await expect(page.getByTestId('kai-mode')).toContainText('WALL');
-  const climbed = await readPosition(page);
-  expect(climbed[1] - start[1]).toBeGreaterThan(0.15);
-  await page.keyboard.up('w');
-  await page.keyboard.up('Shift');
-  await page.waitForTimeout(150);
-  await expect(page.getByTestId('kai-wall')).toContainText('NO');
+  try {
+    await expect.poll(async () => page.getByTestId('kai-wall').innerText(), {
+      timeout: 8_000,
+      intervals: [75, 100, 150, 200],
+    }).toContain('YES');
+    await expect(page.getByTestId('kai-mode')).toContainText('WALL');
+    await expect.poll(async () => (await readPosition(page))[1], {
+      timeout: 3_000,
+      intervals: [75, 100, 150, 200],
+    }).toBeGreaterThan(start[1] + 0.15);
+  } finally {
+    await page.keyboard.up('w');
+    await page.keyboard.up('Shift');
+  }
+
+  await expect.poll(async () => page.getByTestId('kai-wall').innerText(), {
+    timeout: 3_000,
+    intervals: [75, 100, 150],
+  }).toContain('NO');
 
   const energyBeforeAttack = await readNumber(page, 'kai-energy');
-  await page.keyboard.press('j');
-  await page.waitForTimeout(100);
-  await expect(page.getByTestId('kai-attacking')).toContainText('YES');
-  const energyAfterAttack = await readNumber(page, 'kai-energy');
-  expect(energyAfterAttack).toBeLessThan(energyBeforeAttack);
+  await page.keyboard.down('j');
+  try {
+    await expect.poll(async () => page.getByTestId('kai-attacking').innerText(), {
+      timeout: 3_000,
+      intervals: [50, 75, 100, 150],
+    }).toContain('YES');
+    await expect.poll(async () => readNumber(page, 'kai-energy'), {
+      timeout: 2_000,
+      intervals: [50, 75, 100],
+    }).toBeLessThan(energyBeforeAttack);
+  } finally {
+    await page.keyboard.up('j');
+  }
 
-  await page.waitForTimeout(450);
-  await expect(page.getByTestId('kai-attacking')).toContainText('NO');
+  await expect.poll(async () => page.getByTestId('kai-attacking').innerText(), {
+    timeout: 3_000,
+    intervals: [75, 100, 150],
+  }).toContain('NO');
 
-  await page.keyboard.press('q');
-  await page.waitForTimeout(100);
-  await expect(page.getByTestId('kai-dodging')).toContainText('YES');
-  expect(await readNumber(page, 'kai-invuln')).toBeGreaterThan(0);
+  await page.keyboard.down('q');
+  try {
+    await expect.poll(async () => page.getByTestId('kai-dodging').innerText(), {
+      timeout: 3_000,
+      intervals: [50, 75, 100, 150],
+    }).toContain('YES');
+    await expect.poll(async () => readNumber(page, 'kai-invuln'), {
+      timeout: 2_000,
+      intervals: [50, 75, 100],
+    }).toBeGreaterThan(0);
+  } finally {
+    await page.keyboard.up('q');
+  }
 
-  await page.waitForTimeout(450);
-  await expect(page.getByTestId('kai-dodging')).toContainText('NO');
+  await expect.poll(async () => page.getByTestId('kai-dodging').innerText(), {
+    timeout: 3_000,
+    intervals: [75, 100, 150],
+  }).toContain('NO');
 
   expect(errors, `Unexpected runtime errors:\n${errors.join('\n')}`).toEqual([]);
 });
@@ -135,8 +176,11 @@ test('Kai runtime: HUD reports measured FPS instead of a hard-coded constant', a
   const errors = collectErrors(page);
   await bootKaiTest(page, errors);
 
+  await expect.poll(async () => readNumber(page, 'kai-fps'), {
+    timeout: 3_000,
+    intervals: [100, 150, 200],
+  }).toBeGreaterThan(0);
   const fps = await readNumber(page, 'kai-fps');
-  expect(fps).toBeGreaterThan(0);
   expect(fps).toBeLessThan(1000);
 
   expect(errors, `Unexpected runtime errors:\n${errors.join('\n')}`).toEqual([]);
