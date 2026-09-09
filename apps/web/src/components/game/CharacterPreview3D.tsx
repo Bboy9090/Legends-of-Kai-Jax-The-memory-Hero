@@ -94,7 +94,9 @@ export default function CharacterPreview3D({ fighter, preset = "auto" }: Charact
       <Canvas
         camera={{
           position: [0, 1.5, 4],
-          fov: 50
+          fov: 50,
+          near: 0.1,
+          far: 1000,
         }}
         shadows
         onCreated={({ gl }) => {

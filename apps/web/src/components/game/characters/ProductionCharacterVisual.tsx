@@ -90,21 +90,25 @@ export function ProductionCharacterVisual({
     const meshCount = Number(prepared.userData.productionMeshCount ?? 0);
     const bounds = new THREE.Box3().setFromObject(prepared);
     const boundsSize = bounds.getSize(new THREE.Vector3());
+    const boundsCenter = bounds.getCenter(new THREE.Vector3());
 
     console.group(`[ProductionCharacterVisual] ${fighterId}`);
-    console.log('Model path:', config.path);
-    console.log('Meshes found:', meshCount);
-    console.log('Animations:', animations.length);
-    console.log('Model scale:', config.scale);
-    console.log('Model position:', config.position);
-    console.log('Model rotation:', config.rotation);
-    console.log('Bounding box:', {
-      min: { x: bounds.min.x, y: bounds.min.y, z: bounds.min.z },
-      max: { x: bounds.max.x, y: bounds.max.y, z: bounds.max.z },
-      size: { x: boundsSize.x, y: boundsSize.y, z: boundsSize.z },
-    });
+    console.log('✓ Model loaded:', config.path);
+    console.log('✓ Meshes found:', meshCount, '(rendereable geometry present)');
+    console.log('✓ Animations available:', animations.length);
+    console.log('Configuration:');
+    console.log('  - Scale:', config.scale);
+    console.log('  - Position:', config.position);
+    console.log('  - Rotation:', `${config.rotation ? config.rotation[1] + ' radians' : 'default'} (facing direction)`);
+    console.log('Scene bounds after scaling:');
+    console.log(`  - Min: (${bounds.min.x.toFixed(2)}, ${bounds.min.y.toFixed(2)}, ${bounds.min.z.toFixed(2)})`);
+    console.log(`  - Max: (${bounds.max.x.toFixed(2)}, ${bounds.max.y.toFixed(2)}, ${bounds.max.z.toFixed(2)})`);
+    console.log(`  - Size: (${boundsSize.x.toFixed(2)}, ${boundsSize.y.toFixed(2)}, ${boundsSize.z.toFixed(2)})`);
+    console.log(`  - Center: (${boundsCenter.x.toFixed(2)}, ${boundsCenter.y.toFixed(2)}, ${boundsCenter.z.toFixed(2)})`);
     if (meshCount === 0) {
-      console.warn('⚠️ NO MESHES FOUND - GLB may contain only skeleton/animations');
+      console.error('❌ NO MESHES - model will be invisible');
+    } else if (boundsSize.y < 0.1) {
+      console.warn('⚠️ TINY HEIGHT - model may be outside view');
     }
     console.groupEnd();
 
