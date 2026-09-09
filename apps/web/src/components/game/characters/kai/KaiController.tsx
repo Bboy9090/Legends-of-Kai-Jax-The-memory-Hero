@@ -107,7 +107,11 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
   useFrame((frameState, rawDelta) => {
     if (!kaiRef.current) return;
 
-    const delta = Math.min(rawDelta, 0.033);
+    // Movement stays tightly capped for traversal/collision stability, while
+    // combat readiness uses bounded lifecycle catch-up so software WebGL cannot
+    // stretch authored attack, dodge, combo, or energy timing across wall clock.
+    const delta = Math.min(Math.max(rawDelta, 0), 0.033);
+    const lifecycleDelta = Math.min(Math.max(rawDelta, 0), 0.25);
     const kai = stateRef.current;
     const input = gameplayInputManager.getState();
     const prevInput = prevInputRef.current;
@@ -116,33 +120,33 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
     kaiRef.current.getWorldPosition(kai.position);
     kai.rotation.copy(kaiRef.current.rotation);
 
-    kai.energy = Math.min(kai.energy + COMBAT_CONFIG.energyRegen * delta, kai.maxEnergy);
+    kai.energy = Math.min(
+      kai.energy + COMBAT_CONFIG.energyRegen * lifecycleDelta,
+      kai.maxEnergy
+    );
 
     if (kai.invulnTimer > 0) {
-      kai.invulnTimer -= delta;
+      kai.invulnTimer = Math.max(0, kai.invulnTimer - lifecycleDelta);
     }
 
     if (kai.isDodging) {
-      kai.dodgeTimer -= delta;
-      if (kai.dodgeTimer <= 0) {
+      kai.dodgeTimer = Math.max(0, kai.dodgeTimer - lifecycleDelta);
+      if (kai.dodgeTimer === 0) {
         kai.isDodging = false;
-        kai.dodgeTimer = 0;
       }
     }
 
     if (kai.isAttacking) {
-      kai.attackTimer -= delta;
-      if (kai.attackTimer <= 0) {
+      kai.attackTimer = Math.max(0, kai.attackTimer - lifecycleDelta);
+      if (kai.attackTimer === 0) {
         kai.isAttacking = false;
-        kai.attackTimer = 0;
       }
     }
 
     if (kai.comboResetTimer > 0) {
-      kai.comboResetTimer -= delta;
-      if (kai.comboResetTimer <= 0) {
+      kai.comboResetTimer = Math.max(0, kai.comboResetTimer - lifecycleDelta);
+      if (kai.comboResetTimer === 0) {
         kai.attackCombo = 0;
-        kai.comboResetTimer = 0;
       }
     }
 
