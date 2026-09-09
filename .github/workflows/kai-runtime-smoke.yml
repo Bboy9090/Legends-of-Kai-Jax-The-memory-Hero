@@ -56,7 +56,11 @@ jobs:
           node "${PW_CLI}" --version
 
       - name: Install Chromium runtime
-        run: node "${PW_CLI}" install --with-deps chromium
+        # Hosted runners already carry Chromium's Linux shared-library runtime.
+        # Avoid `--with-deps`: it runs apt update against unrelated third-party
+        # repos, and a transient Google Packages hash mismatch can block every
+        # gameplay test before Playwright itself even starts.
+        run: node "${PW_CLI}" install chromium
 
       - name: Run Kai live runtime sequence
         run: node "${PW_CLI}" test apps/web/e2e/kai-runtime.spec.ts --config=apps/web/playwright.config.ts
