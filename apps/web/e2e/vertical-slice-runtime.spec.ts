@@ -159,19 +159,23 @@ test('Ashblock Kai slice reaches the real climbable wall with Shift+W', async ({
   const start = await readPosition(page);
   await page.keyboard.down('Shift');
   await page.keyboard.down('w');
+  try {
+    // Slow software-WebGL runners can simulate only a handful of Kai movement
+    // frames per wall-clock second. Keep the real inputs held until the controller
+    // reports the authored wall state instead of assuming it must happen in 3 s.
+    await expect.poll(async () => page.getByTestId('slice-wall').innerText(), {
+      timeout: 8_000,
+      intervals: [100, 150, 200, 250],
+    }).toContain('YES');
 
-  await expect.poll(async () => (await page.getByTestId('slice-wall').innerText()), {
-    timeout: 3_000,
-    intervals: [100, 150, 200],
-  }).toContain('YES');
-
-  await expect.poll(async () => (await readPosition(page))[1], {
-    timeout: 2_000,
-    intervals: [75, 100, 150],
-  }).toBeGreaterThan(start[1] + 0.05);
-
-  await page.keyboard.up('w');
-  await page.keyboard.up('Shift');
+    await expect.poll(async () => (await readPosition(page))[1], {
+      timeout: 3_000,
+      intervals: [75, 100, 150, 200],
+    }).toBeGreaterThan(start[1] + 0.05);
+  } finally {
+    await page.keyboard.up('w');
+    await page.keyboard.up('Shift');
+  }
 
   expect(errors, `Unexpected Kai wall errors:\n${errors.join('\n')}`).toEqual([]);
 });
