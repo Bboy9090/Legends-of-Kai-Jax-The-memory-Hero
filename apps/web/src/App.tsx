@@ -32,6 +32,7 @@ import BootAccessibilityScreen from "./components/game/BootAccessibilityScreen";
 import StoryHubScreen from "./components/game/StoryHubScreen";
 import StoryHeroSelect from "./components/game/StoryHeroSelect";
 import MissionSelectScreen from "./components/game/MissionSelectScreen";
+import MissionBriefingScreen from "./components/game/MissionBriefingScreen";
 import CharacterAbilityScreen from "./components/game/CharacterAbilityScreen";
 import MissionCompleteScreen from "./components/game/MissionCompleteScreen";
 import DevFrameHud from "./components/game/DevFrameHud";
@@ -283,9 +284,10 @@ function App() {
           );
         })()}
 
-        {/* Legacy multiverse StoryAdventure data is quarantined. Keep this route on
-            the Bloodward-safe mission briefing until current story missions replace it. */}
-        {gameState === 'story-mode' && <MissionSelectScreen />}
+        {gameState === 'story-mode' && (() => {
+          const { activeStoryMissionId } = useRunner.getState();
+          return activeStoryMissionId?.startsWith('story_') ? <MissionBriefingScreen /> : <MissionSelectScreen />;
+        })()}
 
         {battleCanvasActive && (
           <>
