@@ -86,10 +86,32 @@ export function ProductionCharacterVisual({
   }, [actions]);
 
   useEffect(() => {
+    // Log scene graph structure for debugging visibility issues
+    const meshCount = Number(prepared.userData.productionMeshCount ?? 0);
+    const bounds = new THREE.Box3().setFromObject(prepared);
+    const boundsSize = bounds.getSize(new THREE.Vector3());
+
+    console.group(`[ProductionCharacterVisual] ${fighterId}`);
+    console.log('Model path:', config.path);
+    console.log('Meshes found:', meshCount);
+    console.log('Animations:', animations.length);
+    console.log('Model scale:', config.scale);
+    console.log('Model position:', config.position);
+    console.log('Model rotation:', config.rotation);
+    console.log('Bounding box:', {
+      min: { x: bounds.min.x, y: bounds.min.y, z: bounds.min.z },
+      max: { x: bounds.max.x, y: bounds.max.y, z: bounds.max.z },
+      size: { x: boundsSize.x, y: boundsSize.y, z: boundsSize.z },
+    });
+    if (meshCount === 0) {
+      console.warn('⚠️ NO MESHES FOUND - GLB may contain only skeleton/animations');
+    }
+    console.groupEnd();
+
     onReady?.({
       fighterId,
       modelPath: config.path,
-      meshCount: Number(prepared.userData.productionMeshCount ?? 0),
+      meshCount,
       animationCount: animations.length,
     });
   }, [animations.length, config.path, fighterId, onReady, prepared]);
