@@ -122,7 +122,7 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
   }
 }
 
-async function closeIntoMeleeRange(page: Page) {
+async function closeIntoMeleeRange(page: Page, hero: 'kai' | 'jax') {
   // A resolved Fang hit proves the shared enemy actually reached the player.
   await expect.poll(async () => readNumber(page, 'slice-player-health'), {
     timeout: 7_000,
@@ -134,8 +134,17 @@ async function closeIntoMeleeRange(page: Page) {
     intervals: [75, 100, 150],
   }).toContain('RECOVERY');
 
-  // Fang recovery owns its spacing inside attackRange. The hero closes the final
-  // gap using the real controller instead of any test-only position mutation.
+  if (hero === 'jax') {
+    // Jax's lightning special has a 3.5-unit radius and a forward cone. The Fang
+    // is already inside its 1.8-unit attack envelope here, so do not push Jax
+    // through the target before the special. Subsequent attacks synchronize on a
+    // fresh WINDUP below, which proves the Fang has returned to live melee range.
+    return;
+  }
+
+  // Kai's slice heavy has the tighter 1.5-unit radius. Fang recovery owns its
+  // spacing inside attackRange, so Kai closes the final gap with the real
+  // controller instead of any test-only position mutation.
   const start = await readPosition(page);
   await page.keyboard.down('w');
   try {
@@ -168,15 +177,11 @@ async function attackAndWaitForDamage(
         intervals: [50, 75, 100, 150],
       }).toBeLessThan(beforeEnergy - 10);
 
-      // Maintain controller-owned forward pressure through the special's ACTIVE
-      // window so residual Fang knockback cannot turn a valid melee start into a
-      // stale-range sample. No target movement or health is changed by the test.
-      await page.keyboard.down('w');
-      try {
-        await page.waitForTimeout(420);
-      } finally {
-        await page.keyboard.up('w');
-      }
+      // Stay stationary through the special's ACTIVE window. Earlier forward
+      // pressure could carry Jax through a Fang already inside 1.8 units, turning
+      // a valid range setup into a forward-cone miss. The live WINDUP gate below
+      // owns range synchronization; no target position or health is mutated here.
+      await page.waitForTimeout(420);
     } finally {
       await page.keyboard.up(key);
     }
@@ -206,16 +211,18 @@ async function waitForJaxSpecialReady(page: Page) {
     intervals: [100, 150, 200, 250],
   }).toBeGreaterThanOrEqual(45);
 
-  // WINDUP/RECOVERY both confirm the deterministic Fang is within its authored
-  // 1.8-unit melee range, safely inside the 3.5-unit special radius.
+  // Require a fresh WINDUP rather than accepting RECOVERY. WINDUP is authored
+  // only when FangCombatantAI has just confirmed distance <= 1.8 and the attack
+  // cooldown is ready, giving the 3.5-unit lightning special a live range proof
+  // immediately before input instead of relying on an older recovery snapshot.
   await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
-    timeout: 8_000,
-    intervals: [75, 100, 150, 200],
-  }).toMatch(/WINDUP|RECOVERY/);
+    timeout: 10_000,
+    intervals: [50, 75, 100, 150],
+  }).toContain('WINDUP');
 }
 
 async function defeatFang(page: Page, hero: 'kai' | 'jax') {
-  await closeIntoMeleeRange(page);
+  await closeIntoMeleeRange(page, hero);
 
   // Kai keeps its accepted heavy path. Jax pressure-heavy is stress-proven by
   // the dedicated runtime smoke; the mission chain uses the real lightning
