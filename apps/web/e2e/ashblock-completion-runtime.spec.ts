@@ -206,12 +206,13 @@ async function waitForJaxSpecialReady(page: Page) {
     intervals: [100, 150, 200, 250],
   }).toBeGreaterThanOrEqual(45);
 
-  // A fresh WINDUP is live proof that FangCombatantAI just confirmed distance
-  // <= 1.8 before the 3.5-unit lightning special begins.
+  // WINDUP lasts only 0.35s and can be fully consumed by bounded AI catch-up
+  // inside one slow headless render frame. Both WINDUP and RECOVERY are live
+  // in-range states: FangCombatantAI only enters either while distance <= 1.8.
   await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
     timeout: 10_000,
     intervals: [50, 75, 100, 150],
-  }).toContain('WINDUP');
+  }).toMatch(/WINDUP|RECOVERY/);
 }
 
 async function waitForKaiHeavyReady(page: Page) {
@@ -221,12 +222,12 @@ async function waitForKaiHeavyReady(page: Page) {
   }).toBeGreaterThanOrEqual(30);
 
   // Heavy knockback can move the Fang out of Kai's 1.2-unit hit sphere. Wait for
-  // a fresh Fang WINDUP (distance <=1.8), then close the exact remaining margin
-  // with controller-owned W movement before every heavy.
+  // the live <=1.8 melee envelope (WINDUP or RECOVERY), then close the exact
+  // remaining margin with controller-owned W movement before every heavy.
   await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
     timeout: 10_000,
     intervals: [50, 75, 100, 150],
-  }).toContain('WINDUP');
+  }).toMatch(/WINDUP|RECOVERY/);
 
   const start = await readPosition(page);
   await page.keyboard.down('w');
