@@ -137,21 +137,20 @@ async function closeIntoMeleeRange(page: Page, hero: 'kai' | 'jax') {
   if (hero === 'jax') {
     // Jax's lightning special has a 3.5-unit radius and a forward cone. The Fang
     // is already inside its 1.8-unit attack envelope here, so do not push Jax
-    // through the target before the special. Subsequent attacks synchronize on a
-    // fresh WINDUP below, which proves the Fang has returned to live melee range.
+    // through the target before the special.
     return;
   }
 
-  // Kai's slice heavy has the tighter 1.5-unit radius. Fang recovery owns its
-  // spacing inside attackRange, so Kai closes the final gap with the real
-  // controller instead of any test-only position mutation.
+  // KaiAttackSystem's authored heavy radius is 1.2 units. Starting from Fang's
+  // <=1.8 attack envelope, 0.75 units of real forward locomotion guarantees the
+  // player reaches the heavy sphere without any test-side position mutation.
   const start = await readPosition(page);
   await page.keyboard.down('w');
   try {
     await expect.poll(async () => (await readPosition(page))[2], {
       timeout: 8_000,
       intervals: [75, 100, 150, 200],
-    }).toBeGreaterThan(start[2] + 0.55);
+    }).toBeGreaterThan(start[2] + 0.75);
   } finally {
     await page.keyboard.up('w');
   }
@@ -164,30 +163,28 @@ async function attackAndWaitForDamage(
   beforeHealth: number,
   settleMs: number,
 ): Promise<number> {
-  if (hero === 'jax') {
-    // The full-chain path uses Jax's real lightning special (L): 45 authored
-    // energy, 25 JaxAttackSystem damage, 3.5-unit radius, moderate knockback.
-    // Pressure-heavy remains independently proven by vertical-slice-runtime.
-    // Hold until the controller's real energy spend proves attack acceptance.
-    const beforeEnergy = await readNumber(page, 'slice-energy');
-    await page.keyboard.down(key);
-    try {
+  const beforeEnergy = await readNumber(page, 'slice-energy');
+  await page.keyboard.down(key);
+  try {
+    if (hero === 'jax') {
+      // Jax lightning special costs 45. Wait for a substantial real spend rather
+      // than relying on a render-frame key edge.
       await expect.poll(async () => readNumber(page, 'slice-energy'), {
         timeout: 3_000,
         intervals: [50, 75, 100, 150],
       }).toBeLessThan(beforeEnergy - 10);
-
-      // Stay stationary through the special's ACTIVE window. Earlier forward
-      // pressure could carry Jax through a Fang already inside 1.8 units, turning
-      // a valid range setup into a forward-cone miss. The live WINDUP gate below
-      // owns range synchronization; no target position or health is mutated here.
       await page.waitForTimeout(420);
-    } finally {
-      await page.keyboard.up(key);
+    } else {
+      // Kai heavy costs 30. Energy loss proves KaiController accepted K; keeping
+      // K held through the 0.15-0.35 ACTIVE window prevents sparse headless frames
+      // from turning the mission proof into an input-edge race.
+      await expect.poll(async () => readNumber(page, 'slice-energy'), {
+        timeout: 3_000,
+        intervals: [50, 75, 100, 150],
+      }).toBeLessThan(beforeEnergy - 8);
+      await page.waitForTimeout(360);
     }
-  } else {
-    await page.keyboard.down(key);
-    await page.waitForTimeout(140);
+  } finally {
     await page.keyboard.up(key);
   }
 
@@ -204,33 +201,54 @@ async function attackAndWaitForDamage(
 }
 
 async function waitForJaxSpecialReady(page: Page) {
-  // Lightning special costs 45 energy. Readiness comes from the real controller
-  // state; no test-side energy grant or fixed regeneration assumption.
   await expect.poll(async () => readNumber(page, 'slice-energy'), {
     timeout: 10_000,
     intervals: [100, 150, 200, 250],
   }).toBeGreaterThanOrEqual(45);
 
-  // Require a fresh WINDUP rather than accepting RECOVERY. WINDUP is authored
-  // only when FangCombatantAI has just confirmed distance <= 1.8 and the attack
-  // cooldown is ready, giving the 3.5-unit lightning special a live range proof
-  // immediately before input instead of relying on an older recovery snapshot.
+  // A fresh WINDUP is live proof that FangCombatantAI just confirmed distance
+  // <= 1.8 before the 3.5-unit lightning special begins.
   await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
     timeout: 10_000,
     intervals: [50, 75, 100, 150],
   }).toContain('WINDUP');
 }
 
+async function waitForKaiHeavyReady(page: Page) {
+  await expect.poll(async () => readNumber(page, 'slice-energy'), {
+    timeout: 10_000,
+    intervals: [100, 150, 200, 250],
+  }).toBeGreaterThanOrEqual(30);
+
+  // Heavy knockback can move the Fang out of Kai's 1.2-unit hit sphere. Wait for
+  // a fresh Fang WINDUP (distance <=1.8), then close the exact remaining margin
+  // with controller-owned W movement before every heavy.
+  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
+    timeout: 10_000,
+    intervals: [50, 75, 100, 150],
+  }).toContain('WINDUP');
+
+  const start = await readPosition(page);
+  await page.keyboard.down('w');
+  try {
+    await expect.poll(async () => (await readPosition(page))[2], {
+      timeout: 8_000,
+      intervals: [75, 100, 150, 200],
+    }).toBeGreaterThan(start[2] + 0.75);
+  } finally {
+    await page.keyboard.up('w');
+  }
+}
+
 async function defeatFang(page: Page, hero: 'kai' | 'jax') {
   await closeIntoMeleeRange(page, hero);
 
-  // Kai keeps its accepted heavy path. Jax pressure-heavy is stress-proven by
-  // the dedicated runtime smoke; the mission chain uses the real lightning
-  // special so persistence is not coupled to seven narrow repeated heavy samples.
+  // Both routes now prove their real scene-hitbox authorities: Kai heavy through
+  // KaiAttackSystem, Jax lightning special through JaxAttackSystem.
   const attackKey: 'k' | 'l' = hero === 'jax' ? 'l' : 'k';
   const maxAttempts = hero === 'kai' ? 6 : 8;
   const minimumSuccessfulHits = hero === 'kai' ? 3 : 4;
-  const settleMs = hero === 'kai' ? 1_000 : 750;
+  const settleMs = hero === 'kai' ? 900 : 750;
 
   let successfulHits = 0;
   let health = await readNumber(page, 'slice-fang-health');
@@ -238,6 +256,8 @@ async function defeatFang(page: Page, hero: 'kai' | 'jax') {
   for (let attempt = 0; attempt < maxAttempts && health > 0; attempt += 1) {
     if (hero === 'jax') {
       await waitForJaxSpecialReady(page);
+    } else {
+      await waitForKaiHeavyReady(page);
     }
 
     const nextHealth = await attackAndWaitForDamage(page, hero, attackKey, health, settleMs);
@@ -255,7 +275,6 @@ async function defeatFang(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function activateMemoryTrace(page: Page) {
-  // Move to the neutral Memory Trace using controller-owned locomotion.
   const current = await readPosition(page);
   if (current[2] < 4.1) {
     await page.keyboard.down('w');
@@ -277,8 +296,6 @@ async function activateMemoryTrace(page: Page) {
     intervals: [75, 100, 150],
   }).toBeLessThan(2);
 
-  // F is the canonical interact input; use a held edge so slow headless frames
-  // cannot miss the interaction.
   await page.keyboard.down('f');
   try {
     await expect.poll(async () => page.getByTestId('slice-memory').innerText(), {
@@ -347,8 +364,6 @@ async function extractAndVerifyPersistence(page: Page) {
   expect(persisted.score).toBe(0);
   expect(persisted.fusion).toBe(false);
 
-  // Completion is frame-idempotent: remaining in the completed scene must not
-  // append duplicate mission records.
   await page.waitForTimeout(600);
   const stableCount = await page.evaluate((missionId) => {
     const ids = (window as any).runnerStore.getState().completedStoryMissionIds as string[];
