@@ -56,7 +56,9 @@ jobs:
           node "${PW_CLI}" --version
 
       - name: Install Chromium runtime
-        run: node "${PW_CLI}" install --with-deps chromium
+        # Hosted runners already carry Chromium's Linux shared-library runtime.
+        # Browser-only installation avoids unrelated apt repository drift.
+        run: node "${PW_CLI}" install chromium
 
       - name: Run Jax live runtime sequence
         run: node "${PW_CLI}" test apps/web/e2e/jax-runtime.spec.ts --config=apps/web/playwright.config.ts
