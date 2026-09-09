@@ -1,6 +1,6 @@
 /**
  * JAX CHARACTER
- * Storm Beast-Kin model and animation presentation.
+ * Storm Beast-Kin runtime wrapper.
  *
  * Jax is dominated by Kar-Voth (electricity/displacement) and Thryxen
  * (storm/sovereignty). Myrr'Kai's spider inheritance belongs to Kai.
@@ -8,34 +8,38 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { getModelConfig } from '../../../../assets/modelRegistry';
 import { useJaxController } from './JaxController';
 import { useGLTFCharacter } from '../GLTFCharacterLoader';
 
 interface JaxCharacterProps {
-  scene?: THREE.Scene;
+  scene: THREE.Scene;
   onController?: (controller: ReturnType<typeof useJaxController>) => void;
   bodyRef?: React.RefObject<THREE.Group>;
   position?: [number, number, number];
   scale?: number;
 }
 
-export function JaxCharacter({ scene, onController, bodyRef, position = [0, 0, 0], scale = 1 }: JaxCharacterProps) {
+export function JaxCharacter({
+  scene,
+  onController,
+  bodyRef,
+  position = [0, 0, 0],
+  scale = 1,
+}: JaxCharacterProps) {
   const jaxRef = useRef<THREE.Group>(null);
-  const effectiveRef = bodyRef || jaxRef;
+  const effectiveRef = bodyRef ?? jaxRef;
   const [fallbackReady, setFallbackReady] = useState(false);
-  // Only initialize controller if scene is provided (for use as a standalone controller)
-  const jaxController = scene ? useJaxController(effectiveRef, scene) : null;
+  const jaxController = useJaxController(effectiveRef, scene);
+  const modelConfig = getModelConfig('jax')!;
 
   useEffect(() => {
-    if (jaxController) {
-      onController?.(jaxController);
-    }
+    onController?.(jaxController);
   }, [jaxController, onController]);
 
-  // Load production GLTF model using the correct Jax asset from registry
   const { groupRef: loaderGroupRef, isLoaded: gltfLoaded } = useGLTFCharacter({
-    modelPath: '/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb',
-    onLoaded: (model) => {
+    modelPath: modelConfig.path,
+    onLoaded: () => {
       if (!effectiveRef.current) return;
       effectiveRef.current.position.y = 0;
     },
@@ -43,44 +47,38 @@ export function JaxCharacter({ scene, onController, bodyRef, position = [0, 0, 0
       console.warn('Failed to load Jax GLTF model, using fallback:', error);
       setFallbackReady(true);
     },
-    scale: 3.5,
+    scale: modelConfig.scale,
   });
 
-  // Copy loaded model from loader group to jax ref when ready
   useEffect(() => {
-    if (!effectiveRef.current || !loaderGroupRef?.current || !gltfLoaded) return;
+    if (!effectiveRef.current || !loaderGroupRef.current || !gltfLoaded) return;
 
-    // Move loaded model children from loader group to jax ref
     while (loaderGroupRef.current.children.length > 0) {
       const child = loaderGroupRef.current.children[0];
       effectiveRef.current.add(child);
     }
   }, [gltfLoaded, loaderGroupRef, effectiveRef]);
 
-  // Show GLTF model if loaded, otherwise use fallback
   useEffect(() => {
     if (!effectiveRef.current) return;
 
-    if (!gltfLoaded && !fallbackReady) {
-      // Model is loading, show nothing or loading state
-      return;
-    }
+    if (!gltfLoaded && !fallbackReady) return;
 
     if (gltfLoaded) {
-      // GLTF loaded successfully, remove any fallback geometry
-      const fallbackMeshes = effectiveRef.current.children.filter((child) => child.name?.includes('fallback'));
+      const fallbackMeshes = effectiveRef.current.children.filter((child) =>
+        child.name?.includes('fallback')
+      );
       fallbackMeshes.forEach((mesh) => {
         effectiveRef.current?.remove(mesh);
         if (mesh instanceof THREE.Mesh) {
           mesh.geometry.dispose();
           const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-          materials.forEach((m) => m.dispose());
+          materials.forEach((material) => material.dispose());
         }
       });
       return;
     }
 
-    // Fallback: use capsule geometry if GLTF failed to load
     if (fallbackReady && effectiveRef.current.children.length === 0) {
       const bodyGeometry = new THREE.CapsuleGeometry(0.3, 1.2, 8, 8);
       const bodyMaterial = new THREE.MeshStandardMaterial({
@@ -111,9 +109,7 @@ export function JaxCharacter({ scene, onController, bodyRef, position = [0, 0, 0
 
   return (
     <>
-      {/* Hidden loader group - required for useGLTFCharacter hook to trigger load */}
       <group ref={loaderGroupRef} visible={false} />
-      {/* Main character group - models will be moved here after loading */}
       <group ref={effectiveRef} position={position} scale={scale} />
     </>
   );

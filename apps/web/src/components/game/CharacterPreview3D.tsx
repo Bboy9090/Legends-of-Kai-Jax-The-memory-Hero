@@ -1,7 +1,7 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import SceneEnvironment from "./graphics/SceneEnvironment";
-import { Suspense, useRef } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Fighter } from "../../lib/characters";
 import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
 import { Group } from "three";
@@ -10,11 +10,18 @@ import * as THREE from "three";
 import CinematicPostFX from "./graphics/CinematicPostFX";
 import { LegendaryLightingRig } from "./graphics/LegendaryGraphicsSystem";
 import { getQualitySettings } from "../../lib/threejs/PerformanceOptimizer";
+import { getModelPath } from "../../assets/modelRegistry";
+import {
+  ProductionCharacterVisual,
+  type ProductionStoryHeroId,
+} from "./characters/ProductionCharacterVisual";
 
 interface CharacterPreview3DProps {
   fighter: Fighter;
   preset?: BeastPresetKind;
 }
+
+type ModelStatus = "procedural" | "loading" | "ready";
 
 export default function CharacterPreview3D({ fighter, preset = "auto" }: CharacterPreview3DProps) {
   const bodyRef = useRef<Group>(null);
@@ -23,8 +30,28 @@ export default function CharacterPreview3D({ fighter, preset = "auto" }: Charact
   const rightArmRef = useRef<Group>(null);
   const leftLegRef = useRef<Group>(null);
   const rightLegRef = useRef<Group>(null);
+  const productionHeroId: ProductionStoryHeroId | null =
+    fighter.id === "kai" || fighter.id === "jax" ? fighter.id : null;
+  const modelPath = productionHeroId ? getModelPath(productionHeroId) : null;
+  const [modelStatus, setModelStatus] = useState<ModelStatus>(
+    productionHeroId ? "loading" : "procedural"
+  );
+
+  useEffect(() => {
+    setModelStatus(productionHeroId ? "loading" : "procedural");
+  }, [productionHeroId, modelPath]);
 
   const renderCharacterModel = () => {
+    if (productionHeroId) {
+      return (
+        <ProductionCharacterVisual
+          key={productionHeroId}
+          fighterId={productionHeroId}
+          onReady={() => setModelStatus("ready")}
+        />
+      );
+    }
+
     const modelProps = {
       fighter,
       bodyRef,
@@ -45,7 +72,14 @@ export default function CharacterPreview3D({ fighter, preset = "auto" }: Charact
   };
 
   return (
-    <div className="w-full h-full">
+    <div
+      className="w-full h-full"
+      data-testid="character-preview-3d"
+      data-model-source={productionHeroId ? "production-gltf" : "procedural"}
+      data-model-status={modelStatus}
+      data-model-fighter={productionHeroId ?? fighter.id}
+      data-model-path={modelPath ?? ""}
+    >
       <Canvas
         camera={{
           position: [0, 1.5, 4],
@@ -68,7 +102,7 @@ export default function CharacterPreview3D({ fighter, preset = "auto" }: Charact
         <LegendaryLightingRig />
         <SceneEnvironment mode="sunset" />
         <CinematicPostFX
-          grade={fighter.id === "kai-jax" ? "cosmic" : fighter.id === "jaxon" ? "ice" : fighter.id === "kaison" ? "ember" : "neutral"}
+          grade={fighter.id === "kai-jax" ? "cosmic" : fighter.id === "jax" || fighter.id === "jaxon" ? "ice" : fighter.id === "kai" || fighter.id === "kaison" ? "ember" : "neutral"}
           accent={fighter.accentColor || "#00f2ff"}
           punch={fighter.id === "kai-jax" ? 0.35 : 0.18}
           center={[0.5, 0.44]}
@@ -79,7 +113,6 @@ export default function CharacterPreview3D({ fighter, preset = "auto" }: Charact
             {renderCharacterModel()}
           </group>
           
-          {/* Ground shadow plane */}
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.7, 0]} receiveShadow>
             <planeGeometry args={[10, 10]} />
             <shadowMaterial opacity={0.3} />

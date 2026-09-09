@@ -59,3 +59,37 @@ test('production preview preserves the isolated Jax runtime harness', async ({ p
   await expect(page.getByTestId('jax-debug-hud')).toBeVisible({ timeout: 15_000 });
   await expect(page.locator('canvas').first()).toBeVisible();
 });
+
+test('story hero select renders separate production Kai and Jax GLTF previews', async ({ page }) => {
+  const errors = collectErrors(page);
+  await expectBuiltRoute(page, '/', errors);
+
+  await page.evaluate(() => {
+    const runnerStore = (window as Window & {
+      runnerStore?: {
+        getState: () => {
+          setCharacter: (id: string) => void;
+          setGameState: (state: string) => void;
+        };
+      };
+    }).runnerStore;
+
+    if (!runnerStore) throw new Error('runnerStore is not available for production preview proof');
+    const state = runnerStore.getState();
+    state.setCharacter('kai');
+    state.setGameState('character-select');
+  });
+
+  const preview = page.getByTestId('character-preview-3d');
+  await expect(preview).toHaveAttribute('data-model-source', 'production-gltf', { timeout: 15_000 });
+  await expect(preview).toHaveAttribute('data-model-fighter', 'kai');
+  await expect(preview).toHaveAttribute('data-model-path', /Merged_Animations4KAI\.glb/);
+  await expect(preview).toHaveAttribute('data-model-status', 'ready', { timeout: 45_000 });
+
+  await page.locator('[data-story-hero-id="jax"]').click({ force: true });
+  await expect(preview).toHaveAttribute('data-model-fighter', 'jax', { timeout: 15_000 });
+  await expect(preview).toHaveAttribute('data-model-path', /Merged_AnimationsSHADOWSONIC JAX\.glb/);
+  await expect(preview).toHaveAttribute('data-model-status', 'ready', { timeout: 45_000 });
+
+  expect(errors, `Unexpected runtime errors while loading story hero production models:\n${errors.join('\n')}`).toEqual([]);
+});

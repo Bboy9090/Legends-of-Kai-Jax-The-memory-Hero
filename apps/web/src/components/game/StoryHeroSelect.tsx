@@ -4,6 +4,7 @@ import { ArrowLeft, Flame, Shield, Sparkles, Zap } from "lucide-react";
 import { STORY_HERO_IDS, isStoryHeroId, type StoryHeroId } from "../../game/story/storyHeroPolicy";
 import { getFighterById } from "../../lib/characters";
 import { useRunner } from "../../lib/stores/useRunner";
+import CharacterPreview3D from "./CharacterPreview3D";
 
 export { STORY_HERO_IDS, isStoryHeroId } from "../../game/story/storyHeroPolicy";
 export type { StoryHeroId } from "../../game/story/storyHeroPolicy";
@@ -131,6 +132,21 @@ export default function StoryHeroSelect() {
         </header>
 
         <main className="flex-1 w-full max-w-5xl mx-auto py-8 sm:py-12 flex flex-col justify-center">
+          {profile && (
+            <section
+              className="mb-6 sm:mb-8 overflow-hidden rounded-3xl border border-white/10 bg-black/30"
+              aria-label={`${selected.name} production character preview`}
+            >
+              <div className="relative h-64 sm:h-80">
+                <CharacterPreview3D key={selectedId} fighter={profile} />
+                <div className="pointer-events-none absolute left-4 top-4 rounded-xl border border-white/10 bg-black/60 px-3 py-2 backdrop-blur-sm">
+                  <div className="text-[9px] uppercase tracking-[0.24em] text-slate-400">Production rig preview</div>
+                  <div className="mt-1 text-sm font-black uppercase" style={{ color: accent }}>{selected.name}</div>
+                </div>
+              </div>
+            </section>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-7">
             {cards.map((hero) => {
               const active = hero.id === selectedId;
