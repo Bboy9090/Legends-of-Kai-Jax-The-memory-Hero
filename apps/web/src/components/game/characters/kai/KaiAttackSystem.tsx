@@ -1,29 +1,38 @@
 /**
  * KAI ATTACK SYSTEM
- * Combat mechanics for Kai's 4 spider limbs and venom strikes
+ * Deterministic scene-hitbox authority for Kai's four-limb / venom combat kit.
  *
  * Moves:
  * - Light: Venom jab (fast, 3-hit combo)
  * - Heavy: Venomous swipe (slow, high damage)
- * - Special: Web binding (hold enemies in place)
- * - Ultimate: Memory-Web Eruption (anchor + venom detonation)
+ * - Special: Web binding field
+ * - Ultimate: Memory-Web Eruption
  *
- * TIMING BUG FIX: Uses monotonic elapsedTime for all attack expirations
- * CANON: No tail mechanics in Kai (7+ tails belong to Kai-Jax fusion only)
+ * CANON: Kai has no tail mechanics. Tail progression belongs to Kai-Jax fusion.
  */
 
-import { useRef, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useEffect, useMemo, useRef } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
-interface AttackHitbox {
+export type KaiAttackType = 'light' | 'heavy' | 'special' | 'ultimate';
+export type KaiAttackPhase = 'IDLE' | 'STARTUP' | 'ACTIVE' | 'RECOVERY';
+
+export interface KaiAttackEvent {
+  type: KaiAttackType;
   position: THREE.Vector3;
+  direction: THREE.Vector3;
   radius: number;
   damage: number;
-  startTimeElapsed: number; // Three.js elapsedTime when attack started
+  startTimeElapsed: number;
   duration: number;
+  activeStart: number;
+  activeEnd: number;
   knockback: number;
+  comboIndex: number;
 }
+
+type AttackHitbox = KaiAttackEvent;
 
 interface KaiAttackSystemState {
   activeAttacks: AttackHitbox[];
@@ -32,7 +41,7 @@ interface KaiAttackSystemState {
   comboResetTime: number;
 }
 
-const ATTACK_TIMING = {
+const ATTACK_TIMING: Record<KaiAttackType, { startup: number; active: number; recovery: number }> = {
   light: { startup: 0.08, active: 0.12, recovery: 0.2 },
   heavy: { startup: 0.15, active: 0.2, recovery: 0.4 },
   special: { startup: 0.3, active: 0.6, recovery: 0.3 },
@@ -42,139 +51,276 @@ const ATTACK_TIMING = {
 const ATTACK_DAMAGE = {
   light: 12,
   light2: 14,
-  light3: 16, // combo finisher
+  light3: 16,
   heavy: 35,
   special: 50,
   ultimate: 100,
 };
 
-const ATTACK_RANGE = {
+const ATTACK_RANGE: Record<KaiAttackType, number> = {
   light: 0.8,
   heavy: 1.2,
   special: 2.0,
   ultimate: 10.0,
 };
 
+const ATTACK_KNOCKBACK: Record<KaiAttackType, number> = {
+  light: 5,
+  heavy: 10,
+  special: 0,
+  ultimate: 15,
+};
+
+/**
+ * Pure deterministic hitbox authority. KaiController decides whether an input is
+ * accepted and spends energy; this system decides when/where that accepted attack
+ * may hit a real scene combat target.
+ */
+export class KaiAttackSystem {
+  private currentAttack: KaiAttackEvent | null = null;
+  private expiredAttack: KaiAttackEvent | null = null;
+  private hitTargets = new Set<string>();
+  private lastHitboxSampleTime: number | null = null;
+  private comboCounter = 0;
+
+  constructor(private scene: THREE.Scene) {}
+
+  startAttack(
+    type: KaiAttackType,
+    position: THREE.Vector3,
+    direction: THREE.Vector3,
+    currentTime: number,
+    comboIndex = 0
+  ): KaiAttackEvent {
+    const timing = ATTACK_TIMING[type];
+    const safeDirection = direction.lengthSq() > 0.0001
+      ? direction.clone().normalize()
+      : new THREE.Vector3(0, 0, 1);
+
+    const normalizedComboIndex = type === 'light'
+      ? Math.min(Math.max(comboIndex, 0), 2)
+      : 0;
+    const damage = type === 'light'
+      ? normalizedComboIndex === 0
+        ? ATTACK_DAMAGE.light
+        : normalizedComboIndex === 1
+          ? ATTACK_DAMAGE.light2
+          : ATTACK_DAMAGE.light3
+      : ATTACK_DAMAGE[type];
+
+    this.currentAttack = {
+      type,
+      position: position.clone(),
+      direction: safeDirection,
+      radius: ATTACK_RANGE[type],
+      damage,
+      startTimeElapsed: currentTime,
+      duration: timing.startup + timing.active + timing.recovery,
+      activeStart: timing.startup,
+      activeEnd: timing.startup + timing.active,
+      knockback: ATTACK_KNOCKBACK[type],
+      comboIndex: normalizedComboIndex,
+    };
+
+    this.comboCounter = type === 'light' ? normalizedComboIndex + 1 : 0;
+    this.expiredAttack = null;
+    this.hitTargets.clear();
+    this.lastHitboxSampleTime = currentTime;
+    return this.currentAttack;
+  }
+
+  update(currentTime: number, position: THREE.Vector3): KaiAttackEvent | null {
+    if (!this.currentAttack) return null;
+
+    this.currentAttack.position.copy(position);
+    const elapsed = currentTime - this.currentAttack.startTimeElapsed;
+    if (elapsed > this.currentAttack.duration) {
+      // Preserve one final sparse-frame sample. A slow renderer may jump from
+      // STARTUP past ACTIVE between frames; that must not erase a legitimate hit.
+      this.expiredAttack = this.currentAttack;
+      this.currentAttack = null;
+      return null;
+    }
+
+    return this.currentAttack;
+  }
+
+  getPhase(currentTime: number): KaiAttackPhase {
+    if (!this.currentAttack) return 'IDLE';
+    const elapsed = currentTime - this.currentAttack.startTimeElapsed;
+    if (elapsed < 0 || elapsed > this.currentAttack.duration) return 'IDLE';
+    if (elapsed < this.currentAttack.activeStart) return 'STARTUP';
+    if (elapsed <= this.currentAttack.activeEnd) return 'ACTIVE';
+    return 'RECOVERY';
+  }
+
+  processActiveHitboxes(
+    currentTime: number,
+    onHit: (target: THREE.Object3D, damage: number, attack: KaiAttackEvent) => void
+  ): void {
+    const attack = this.currentAttack ?? this.expiredAttack;
+    if (!attack) return;
+
+    const previousSampleTime = this.lastHitboxSampleTime ?? currentTime;
+    const intervalStart = Math.min(previousSampleTime, currentTime);
+    const intervalEnd = Math.max(previousSampleTime, currentTime);
+    const activeWindowStart = attack.startTimeElapsed + attack.activeStart;
+    const activeWindowEnd = attack.startTimeElapsed + attack.activeEnd;
+    const crossedActiveWindow =
+      intervalEnd >= activeWindowStart && intervalStart <= activeWindowEnd;
+
+    this.lastHitboxSampleTime = currentTime;
+
+    if (crossedActiveWindow) {
+      for (const target of this.findCombatTargets(attack)) {
+        const targetId = String(target.userData.targetId ?? target.uuid);
+        if (this.hitTargets.has(targetId)) continue;
+
+        this.hitTargets.add(targetId);
+        onHit(target, attack.damage, attack);
+      }
+    }
+
+    if (this.expiredAttack === attack) {
+      this.expiredAttack = null;
+      this.hitTargets.clear();
+      this.lastHitboxSampleTime = null;
+    }
+  }
+
+  private findCombatTargets(attack: KaiAttackEvent): THREE.Object3D[] {
+    const targets: THREE.Object3D[] = [];
+
+    this.scene.traverse((object) => {
+      if (!object.userData.combatTarget) return;
+
+      const targetPosition = new THREE.Vector3();
+      object.getWorldPosition(targetPosition);
+      const offset = targetPosition.sub(attack.position);
+      offset.y = 0;
+      if (offset.length() > attack.radius) return;
+
+      targets.push(object);
+    });
+
+    return targets;
+  }
+
+  getCurrentAttack(): KaiAttackEvent | null {
+    return this.currentAttack;
+  }
+
+  getActiveHitboxes(): KaiAttackEvent[] {
+    const attack = this.currentAttack ?? this.expiredAttack;
+    return attack ? [attack] : [];
+  }
+
+  getComboCount(): number {
+    return this.comboCounter;
+  }
+
+  getConfig(type: KaiAttackType) {
+    const timing = ATTACK_TIMING[type];
+    return {
+      duration: timing.startup + timing.active + timing.recovery,
+      activeStart: timing.startup,
+      activeEnd: timing.startup + timing.active,
+      radius: ATTACK_RANGE[type],
+      knockback: ATTACK_KNOCKBACK[type],
+      damage: type === 'light' ? ATTACK_DAMAGE.light : ATTACK_DAMAGE[type],
+    };
+  }
+
+  reset(): void {
+    this.currentAttack = null;
+    this.expiredAttack = null;
+    this.hitTargets.clear();
+    this.lastHitboxSampleTime = null;
+    this.comboCounter = 0;
+  }
+}
+
+/**
+ * Compatibility hook for character scenes that use KaiAttackSystem directly.
+ * KaiController uses the same class so there is only one hitbox algorithm.
+ */
 export function useKaiAttackSystem(characterRef: React.RefObject<THREE.Group>) {
+  const { scene } = useThree();
+  const system = useMemo(() => new KaiAttackSystem(scene), [scene]);
   const stateRef = useRef<KaiAttackSystemState>({
     activeAttacks: [],
     lastAttackTime: 0,
     comboCounter: 0,
     comboResetTime: 0,
   });
-
-  // Cache of Three.js clock for consistent timing
   const clockRef = useRef({ elapsedTime: 0 });
 
-  // Initialize attack system
   useEffect(() => {
-    if (!characterRef.current) return;
+    return () => system.reset();
+  }, [system]);
 
-    // Create hitbox helper geometries (debug only)
-    if (process.env.NODE_ENV === 'development') {
-      // Hitbox visualization would go here
-    }
-  }, [characterRef]);
+  useFrame((frameState, delta) => {
+    const character = characterRef.current;
+    if (!character) return;
 
-  // Main attack tick - uses monotonic elapsedTime for all timers
-  useFrame((state, delta) => {
-    const attacks = stateRef.current;
-    clockRef.current.elapsedTime = state.clock.elapsedTime;
+    clockRef.current.elapsedTime = frameState.clock.elapsedTime;
+    const position = new THREE.Vector3();
+    character.getWorldPosition(position);
+    system.update(frameState.clock.elapsedTime, position);
+    system.processActiveHitboxes(frameState.clock.elapsedTime, (target, damage, attack) => {
+      const health = typeof target.userData.health === 'number' ? target.userData.health : 100;
+      target.userData.health = Math.max(0, health - damage);
+      target.userData.lastHitBy = 'kai';
+      target.userData.lastDamage = damage;
+      target.userData.lastAttackType = attack.type;
+      target.userData.hitCount = (target.userData.hitCount ?? 0) + 1;
 
-    // Update combo timer
-    if (attacks.comboCounter > 0) {
-      attacks.comboResetTime -= delta;
-      if (attacks.comboResetTime <= 0) {
-        attacks.comboCounter = 0;
+      if (attack.knockback > 0) {
+        const velocity = target.userData.velocity instanceof THREE.Vector3
+          ? target.userData.velocity as THREE.Vector3
+          : new THREE.Vector3();
+        velocity.add(attack.direction.clone().multiplyScalar(attack.knockback));
+        target.userData.velocity = velocity;
       }
-    }
-
-    // Update active attacks - use monotonic elapsedTime for expiration
-    attacks.activeAttacks = attacks.activeAttacks.filter((hitbox) => {
-      const elapsed = state.clock.elapsedTime - hitbox.startTimeElapsed;
-      return elapsed < hitbox.duration;
     });
+
+    const legacy = stateRef.current;
+    legacy.activeAttacks = system.getActiveHitboxes();
+    legacy.lastAttackTime = frameState.clock.elapsedTime;
+    legacy.comboCounter = system.getComboCount();
+    if (legacy.comboCounter > 0) {
+      legacy.comboResetTime = Math.max(0, legacy.comboResetTime - delta);
+    }
   });
 
-  function startLightAttack(position: THREE.Vector3, comboIndex: number = 0) {
-    const comboIndex3 = Math.min(comboIndex, 2);
-    const damage =
-      comboIndex3 === 0 ? ATTACK_DAMAGE.light :
-      comboIndex3 === 1 ? ATTACK_DAMAGE.light2 :
-      ATTACK_DAMAGE.light3;
+  const facingDirection = () => {
+    const direction = characterRef.current?.getWorldDirection(new THREE.Vector3())
+      ?? new THREE.Vector3(0, 0, 1);
+    direction.y = 0;
+    if (direction.lengthSq() < 0.0001) direction.set(0, 0, 1);
+    return direction.normalize();
+  };
 
-    const hitbox: AttackHitbox = {
-      position: position.clone(),
-      radius: ATTACK_RANGE.light,
-      damage,
-      startTimeElapsed: clockRef.current.elapsedTime,
-      duration: ATTACK_TIMING.light.startup + ATTACK_TIMING.light.active,
-      knockback: 5,
-    };
+  const now = () => clockRef.current.elapsedTime;
 
-    stateRef.current.activeAttacks.push(hitbox);
-    stateRef.current.comboCounter = comboIndex3 + 1;
-    stateRef.current.comboResetTime = 0.8; // 0.8s window for next combo
-
-    return hitbox;
+  function startLightAttack(position: THREE.Vector3, comboIndex = 0) {
+    stateRef.current.comboResetTime = 0.8;
+    return system.startAttack('light', position, facingDirection(), now(), comboIndex);
   }
 
   function startHeavyAttack(position: THREE.Vector3) {
-    const hitbox: AttackHitbox = {
-      position: position.clone(),
-      radius: ATTACK_RANGE.heavy,
-      damage: ATTACK_DAMAGE.heavy,
-      startTimeElapsed: clockRef.current.elapsedTime,
-      duration: ATTACK_TIMING.heavy.startup + ATTACK_TIMING.heavy.active,
-      knockback: 10,
-    };
-
-    stateRef.current.activeAttacks.push(hitbox);
-    stateRef.current.comboCounter = 0; // Reset combo
-
-    return hitbox;
+    stateRef.current.comboResetTime = 0;
+    return system.startAttack('heavy', position, facingDirection(), now());
   }
 
   function startSpecialAttack(position: THREE.Vector3, direction: THREE.Vector3) {
-    // Web binding special - creates a field that holds enemies
-    const hitbox: AttackHitbox = {
-      position: position.clone(),
-      radius: ATTACK_RANGE.special,
-      damage: ATTACK_DAMAGE.special,
-      startTimeElapsed: clockRef.current.elapsedTime,
-      duration: ATTACK_TIMING.special.startup + ATTACK_TIMING.special.active,
-      knockback: 0, // Web binds instead of knocking back
-    };
-
-    stateRef.current.activeAttacks.push(hitbox);
-    stateRef.current.comboCounter = 0;
-
-    return hitbox;
+    stateRef.current.comboResetTime = 0;
+    return system.startAttack('special', position, direction, now());
   }
 
   function startUltimateAttack(position: THREE.Vector3, direction: THREE.Vector3) {
-    // Memory-Web Eruption - anchor + detonation (canon: no tail mechanics on Kai)
-    const hitbox: AttackHitbox = {
-      position: position.clone(),
-      radius: ATTACK_RANGE.ultimate,
-      damage: ATTACK_DAMAGE.ultimate,
-      startTimeElapsed: clockRef.current.elapsedTime,
-      duration: ATTACK_TIMING.ultimate.startup + ATTACK_TIMING.ultimate.active,
-      knockback: 15,
-    };
-
-    stateRef.current.activeAttacks.push(hitbox);
-    stateRef.current.comboCounter = 0;
-
-    return hitbox;
-  }
-
-  function getActiveHitboxes(): AttackHitbox[] {
-    return stateRef.current.activeAttacks;
-  }
-
-  function getComboCount(): number {
-    return stateRef.current.comboCounter;
+    stateRef.current.comboResetTime = 0;
+    return system.startAttack('ultimate', position, direction, now());
   }
 
   return {
@@ -182,8 +328,9 @@ export function useKaiAttackSystem(characterRef: React.RefObject<THREE.Group>) {
     startHeavyAttack,
     startSpecialAttack,
     startUltimateAttack,
-    getActiveHitboxes,
-    getComboCount,
+    getActiveHitboxes: () => system.getActiveHitboxes(),
+    getComboCount: () => system.getComboCount(),
+    getAttackSystem: () => system,
     state: stateRef.current,
   };
 }
@@ -197,11 +344,10 @@ export function useKaiAttackSystem(characterRef: React.RefObject<THREE.Group>) {
  * - Resets on next light attack
  * - Can be triggered for venom explosion at 5 stacks (special move)
  */
-
 export interface VenomStack {
   stacks: number;
-  duration: number; // 8 seconds per stack
-  accumulatedDamage: number; // Frame-rate independent damage tracking
+  duration: number;
+  accumulatedDamage: number;
 }
 
 export function useVenomSystem(targetRef: React.RefObject<THREE.Group>) {
@@ -211,11 +357,9 @@ export function useVenomSystem(targetRef: React.RefObject<THREE.Group>) {
     accumulatedDamage: 0,
   });
 
-  // FIX: Apply venom damage delta-scaled for frame-rate independence
   useFrame((_, delta) => {
     const venom = venomRef.current;
     if (venom.stacks > 0) {
-      // Apply damage proportional to delta time (frame-rate independent)
       const damagePerSecond = venom.stacks * 2;
       venom.accumulatedDamage += damagePerSecond * delta;
 
@@ -223,9 +367,6 @@ export function useVenomSystem(targetRef: React.RefObject<THREE.Group>) {
       if (venom.duration <= 0) {
         venom.stacks = 0;
         venom.duration = 0;
-        // NOTE: Do NOT reset accumulatedDamage here!
-        // The damage is still pending consumption via getAndClearVenomDamage()
-        // It will be cleared only when explicitly retrieved or after grace period
       }
     }
   });
@@ -235,7 +376,6 @@ export function useVenomSystem(targetRef: React.RefObject<THREE.Group>) {
     venomRef.current.duration = 8;
   }
 
-  // Returns accumulated venom damage since last check (frame-rate independent)
   function getAndClearVenomDamage(): number {
     const damage = venomRef.current.accumulatedDamage;
     venomRef.current.accumulatedDamage = 0;
@@ -246,11 +386,10 @@ export function useVenomSystem(targetRef: React.RefObject<THREE.Group>) {
     const venom = venomRef.current;
     if (venom.stacks < 5) return 0;
 
-    const explosionDamage = 50 + venom.stacks * 10; // Base 50 + 10 per stack
+    const explosionDamage = 50 + venom.stacks * 10;
     venom.stacks = 0;
     venom.duration = 0;
     venom.accumulatedDamage = 0;
-
     return explosionDamage;
   }
 
