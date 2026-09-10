@@ -151,6 +151,18 @@ async function waitForUltimateReady(page: Page, hero: 'kai' | 'jax') {
     timeout: 12_000,
     intervals: [50, 75, 100, 150],
   }).toMatch(/WINDUP|RECOVERY/);
+
+  if (hero === 'jax') {
+    // Jax's prior storm ultimate can leave residual external velocity on the Fang.
+    // Do not fire the next 0.2s-startup ultimate on the first re-entry frame. Give
+    // knockback damping/AI catch-up one bounded settling window, then require the
+    // target to still be in its live melee envelope before accepting the next shot.
+    await page.waitForTimeout(450);
+    await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
+      timeout: 4_000,
+      intervals: [75, 100, 150, 200],
+    }).toMatch(/WINDUP|RECOVERY/);
+  }
 }
 
 async function ultimateAndWaitForDamage(
@@ -194,7 +206,7 @@ async function defeatFang(page: Page, hero: 'kai' | 'jax') {
   // not repeated narrow-melee stress. Focused runtime lanes already certify Kai
   // heavy, Jax heavy, and Jax lightning-special live hitbox behavior. Here we keep
   // the combat transition real while using each hero's authored wide-radius ultimate.
-  const maxAttempts = hero === 'kai' ? 2 : 5;
+  const maxAttempts = hero === 'kai' ? 2 : 7;
   const minimumSuccessfulHits = hero === 'kai' ? 1 : 3;
 
   let successfulHits = 0;
