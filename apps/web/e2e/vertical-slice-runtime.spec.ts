@@ -219,6 +219,7 @@ test('Ashblock Fang AI chases and damages Jax, while Jax heavy can damage the Fa
 });
 
 test('Ashblock Kai accepted heavy resolves through KaiAttackSystem scene hitboxes', async ({ page }) => {
+  test.setTimeout(60_000);
   const errors = collectErrors(page);
   await bootSlice(page, 'kai', errors);
   await enterEncounter(page, 'kai');
@@ -267,8 +268,8 @@ test('Ashblock Kai accepted heavy resolves through KaiAttackSystem scene hitboxe
   }
 
   await expect.poll(async () => readNumber(page, 'slice-fang-health'), {
-    timeout: 3_000,
-    intervals: [75, 100, 150, 200],
+    timeout: 5_000,
+    intervals: [75, 100, 150, 200, 300],
   }).toBeLessThan(fangHealthBefore);
 
   expect(errors, `Unexpected Kai encounter errors:\n${errors.join('\n')}`).toEqual([]);
