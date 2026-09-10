@@ -84,7 +84,9 @@ jobs:
           grep -q '"idiom" : "universal"' "${APPICON_JSON}"
           grep -q '"size" : "1024x1024"' "${APPICON_JSON}"
 
-          CAPACITOR_PRIVACY_MANIFEST="$(find apps/web/node_modules/@capacitor/ios -name PrivacyInfo.xcprivacy -print -quit)"
+          # pnpm's workspace install exposes @capacitor/ios from repository-root
+          # node_modules; the native Podfile resolves the same root location.
+          CAPACITOR_PRIVACY_MANIFEST="$(find node_modules/@capacitor/ios -name PrivacyInfo.xcprivacy -print -quit)"
           if [ -z "${CAPACITOR_PRIVACY_MANIFEST}" ]; then
             echo "Capacitor PrivacyInfo.xcprivacy is missing from the installed iOS SDK."
             exit 1
@@ -120,5 +122,7 @@ jobs:
       - name: Native preflight evidence
         if: always()
         run: |
-          echo "iOS native preflight completed for ${GITHUB_SHA}."
-          echo "This proves App Store admission metadata plus an unsigned simulator build; signed archive validation remains a separate Mac/Xcode gate."
+          EXACT_HEAD="$(git rev-parse HEAD)"
+          echo "iOS native preflight executed against exact head ${EXACT_HEAD}."
+          echo "A green job proves the enforced App Store admission metadata checks plus an unsigned simulator build."
+          echo "Signed archive validation remains a separate Mac/Xcode gate."
