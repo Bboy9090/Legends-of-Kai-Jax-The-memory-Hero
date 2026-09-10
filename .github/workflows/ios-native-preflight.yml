@@ -58,6 +58,42 @@ jobs:
           ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
         run: pnpm install --filter ./apps/web... --frozen-lockfile
 
+      - name: Validate App Store admission metadata
+        run: |
+          set -euo pipefail
+
+          INFO_PLIST="apps/web/ios/App/App/Info.plist"
+          PROJECT_FILE="apps/web/ios/App/App.xcodeproj/project.pbxproj"
+          PODFILE="apps/web/ios/App/Podfile"
+          APPICON_JSON="apps/web/ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json"
+          APPICON_PNG="apps/web/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
+
+          plutil -lint "${INFO_PLIST}"
+
+          ENCRYPTION_FLAG="$(/usr/libexec/PlistBuddy -c 'Print :ITSAppUsesNonExemptEncryption' "${INFO_PLIST}")"
+          test "${ENCRYPTION_FLAG}" = "false"
+
+          grep -q 'PRODUCT_BUNDLE_IDENTIFIER = com.bobbyblanco.legendsofkaijax;' "${PROJECT_FILE}"
+          grep -q 'IPHONEOS_DEPLOYMENT_TARGET = 15.0;' "${PROJECT_FILE}"
+          grep -q "platform :ios, '15.0'" "${PODFILE}"
+
+          ! grep -q 'armv7' "${INFO_PLIST}"
+
+          test -f "${APPICON_PNG}"
+          grep -q '"platform" : "ios"' "${APPICON_JSON}"
+          grep -q '"idiom" : "universal"' "${APPICON_JSON}"
+          grep -q '"size" : "1024x1024"' "${APPICON_JSON}"
+
+          CAPACITOR_PRIVACY_MANIFEST="$(find apps/web/node_modules/@capacitor/ios -name PrivacyInfo.xcprivacy -print -quit)"
+          if [ -z "${CAPACITOR_PRIVACY_MANIFEST}" ]; then
+            echo "Capacitor PrivacyInfo.xcprivacy is missing from the installed iOS SDK."
+            exit 1
+          fi
+          plutil -lint "${CAPACITOR_PRIVACY_MANIFEST}"
+
+          echo "App Store admission metadata checks passed."
+          echo "Capacitor privacy manifest: ${CAPACITOR_PRIVACY_MANIFEST}"
+
       - name: Build web payload
         run: pnpm -C apps/web build
 
@@ -85,4 +121,4 @@ jobs:
         if: always()
         run: |
           echo "iOS native preflight completed for ${GITHUB_SHA}."
-          echo "This proves an unsigned simulator build only; App Store archive/signing remains a separate Mac/Xcode gate."
+          echo "This proves App Store admission metadata plus an unsigned simulator build; signed archive validation remains a separate Mac/Xcode gate."
