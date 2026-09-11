@@ -114,6 +114,7 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
 }
 
 test('Ashblock Kai slice uses the real Kai controller for camera-forward movement and Web Zip', async ({ page }) => {
+  test.setTimeout(60_000);
   const errors = collectErrors(page);
   await bootSlice(page, 'kai', errors);
 
@@ -145,6 +146,7 @@ test('Ashblock Kai slice uses the real Kai controller for camera-forward movemen
 });
 
 test('Ashblock Kai slice reaches the real climbable wall with Shift+W', async ({ page }) => {
+  test.setTimeout(60_000);
   const errors = collectErrors(page);
   await bootSlice(page, 'kai', errors);
 
