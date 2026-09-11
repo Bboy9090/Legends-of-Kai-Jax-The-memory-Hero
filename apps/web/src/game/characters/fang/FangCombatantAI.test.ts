@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   FANG_COMBATANT_CONFIG,
+  FANG_COMBATANT_ARCHETYPE_CONFIG,
   applyFangKnockback,
   createFangCombatant,
   damageFangCombatant,
+  getFangCombatantConfig,
 } from './FangCombatantContract';
 import { updateFangCombatantAI } from './FangCombatantAI';
 
@@ -143,5 +145,58 @@ describe('FangCombatantAI', () => {
     expect(fang.position.x).toBeGreaterThan(beforeX);
     expect(fang.velocity.x).toBeGreaterThan(0);
     expect(fang.velocity.x).toBeLessThan(beforeVelocity);
+  });
+
+  it('keeps baseline config unchanged for existing slice behavior', () => {
+    expect(FANG_COMBATANT_ARCHETYPE_CONFIG.baseline).toEqual(FANG_COMBATANT_CONFIG);
+  });
+
+  it('Razor Scout closes distance faster than baseline under the same deterministic step', () => {
+    const baseline = createFangCombatant('fang_baseline_speed', 'baseline');
+    const scout = createFangCombatant('fang_scout_speed', 'razor-scout');
+    baseline.position.z = 10;
+    scout.position.z = 10;
+
+    updateFangCombatantAI(baseline, PLAYER, 0.05, 0);
+    updateFangCombatantAI(scout, PLAYER, 0.05, 0);
+
+    expect(scout.position.z).toBeLessThan(baseline.position.z);
+  });
+
+  it('heavy roles require larger hits to stagger than baseline', () => {
+    const baseline = createFangCombatant('fang_baseline_stagger', 'baseline');
+    const enforcer = createFangCombatant('fang_enforcer_stagger', 'enforcer');
+    const baselineThreshold = getFangCombatantConfig(baseline).staggerThreshold;
+
+    damageFangCombatant(baseline, baselineThreshold, 0);
+    damageFangCombatant(enforcer, baselineThreshold, 0);
+
+    expect(baseline.isStaggered).toBe(true);
+    expect(enforcer.isStaggered).toBe(false);
+  });
+
+  it('District Lieutenant is the most durable authored Phase 5.5 role', () => {
+    const lieutenant = createFangCombatant('fang_lieutenant', 'district-lieutenant');
+    const roleHealth = Object.values(FANG_COMBATANT_ARCHETYPE_CONFIG).map((config) => config.maxHealth);
+
+    expect(lieutenant.maxHealth).toBe(Math.max(...roleHealth));
+    expect(lieutenant.health).toBe(lieutenant.maxHealth);
+  });
+
+  it('same-role simulations remain deterministic', () => {
+    const a = createFangCombatant('fang_deterministic_a', 'chain-bruiser');
+    const b = createFangCombatant('fang_deterministic_b', 'chain-bruiser');
+    a.position.z = 7;
+    b.position.z = 7;
+
+    for (let i = 0; i < 12; i += 1) {
+      const time = i * 0.05;
+      updateFangCombatantAI(a, PLAYER, 0.05, time);
+      updateFangCombatantAI(b, PLAYER, 0.05, time);
+    }
+
+    expect(a.position).toEqual(b.position);
+    expect(a.behavior).toBe(b.behavior);
+    expect(a.attackWindupTimer).toBe(b.attackWindupTimer);
   });
 });
