@@ -1,6 +1,6 @@
 import {
-  FANG_COMBATANT_CONFIG,
   canFangCombatantAttack,
+  getFangCombatantConfig,
   markFangCombatantAttackResolved,
   updateFangCombatant,
   type FangCombatantBehavior,
@@ -28,16 +28,17 @@ function moveToward(
   target: FangVector3,
   delta: number
 ): void {
+  const config = getFangCombatantConfig(state);
   const dx = target.x - state.position.x;
   const dz = target.z - state.position.z;
   const distance = Math.hypot(dx, dz);
-  if (distance <= FANG_COMBATANT_CONFIG.stopRange || distance < 0.0001) return;
+  if (distance <= config.stopRange || distance < 0.0001) return;
 
   const maxTravel = Math.max(
     0,
     Math.min(
-      FANG_COMBATANT_CONFIG.moveSpeed * delta,
-      distance - FANG_COMBATANT_CONFIG.stopRange
+      config.moveSpeed * delta,
+      distance - config.stopRange
     )
   );
 
@@ -48,11 +49,12 @@ function moveToward(
 function applyExternalVelocity(state: FangCombatantState, delta: number): void {
   if (state.isDead) return;
 
+  const config = getFangCombatantConfig(state);
   state.position.x += state.velocity.x * delta;
   state.position.y += state.velocity.y * delta;
   state.position.z += state.velocity.z * delta;
 
-  const damping = Math.exp(-FANG_COMBATANT_CONFIG.knockbackDamping * delta);
+  const damping = Math.exp(-config.knockbackDamping * delta);
   state.velocity.x *= damping;
   state.velocity.y *= damping;
   state.velocity.z *= damping;
@@ -68,6 +70,7 @@ function stepFangCombatantAI(
   delta: number,
   currentTime: number
 ): FangAIUpdateResult {
+  const config = getFangCombatantConfig(state);
   updateFangCombatant(state, delta);
   applyExternalVelocity(state, delta);
 
@@ -98,13 +101,13 @@ function stepFangCombatantAI(
     state.attackWindupTimer = Math.max(0, state.attackWindupTimer - delta);
 
     if (state.attackWindupTimer === 0) {
-      const stillInRange = distance <= FANG_COMBATANT_CONFIG.attackRange * 1.15;
+      const stillInRange = distance <= config.attackRange * 1.15;
       markFangCombatantAttackResolved(state, currentTime);
       return {
         behavior: state.behavior,
         distanceToPlayer: distance,
         attackResolved: stillInRange,
-        attackDamage: stillInRange ? FANG_COMBATANT_CONFIG.attackDamage : 0,
+        attackDamage: stillInRange ? config.attackDamage : 0,
       };
     }
 
@@ -116,7 +119,7 @@ function stepFangCombatantAI(
     };
   }
 
-  if (distance > FANG_COMBATANT_CONFIG.aggroRange) {
+  if (distance > config.aggroRange) {
     state.behavior = 'IDLE';
     return {
       behavior: state.behavior,
@@ -126,9 +129,9 @@ function stepFangCombatantAI(
     };
   }
 
-  if (distance <= FANG_COMBATANT_CONFIG.attackRange) {
+  if (distance <= config.attackRange) {
     if (canFangCombatantAttack(state, currentTime)) {
-      state.attackWindupTimer = FANG_COMBATANT_CONFIG.attackWindup;
+      state.attackWindupTimer = config.attackWindup;
       state.behavior = 'WINDUP';
       return {
         behavior: state.behavior,
@@ -138,8 +141,6 @@ function stepFangCombatantAI(
       };
     }
 
-    // Once the Fang is already in attack range, cooldown/recovery owns the
-    // state. Do not keep creeping into the player while an attack is cooling down.
     state.behavior = 'RECOVERY';
     return {
       behavior: state.behavior,
@@ -149,7 +150,7 @@ function stepFangCombatantAI(
     };
   }
 
-  if (distance > FANG_COMBATANT_CONFIG.stopRange) {
+  if (distance > config.stopRange) {
     state.behavior = 'CHASE';
     moveToward(state, playerPosition, delta);
     distance = planarDistance(state.position, playerPosition);
@@ -181,10 +182,6 @@ export function updateFangCombatantAI(
     lastUpdateTimeByState.set(state, currentTime);
   }
 
-  // The scene intentionally caps its render-frame gameplay delta for controller
-  // stability. Presentation-heavy/headless WebGL can render well below realtime,
-  // so use elapsed simulation time as catch-up authority while retaining bounded
-  // <=50 ms AI substeps. This prevents visuals from slowing Fang pursuit/windup.
   const catchupDelta = Math.min(wallClockDelta, MAX_WALL_CLOCK_CATCHUP);
   const simulationDelta = Math.max(suppliedDelta, catchupDelta);
 
