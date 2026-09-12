@@ -14,8 +14,6 @@ const BENIGN_ERROR_PATTERNS = [
   /THREE\.WebGLRenderer: Context Lost/i,
   /Failed to fetch/i,
   /net::ERR_/i,
-  // The isolated slice renders developer proxy geometry. Shared registry GLTF
-  // blob-texture decode failures do not invalidate controller/mission proof.
   /THREE\.GLTFLoader: Couldn't load texture blob:http:\/\/localhost:3000\//i,
 ];
 
@@ -83,6 +81,11 @@ async function readNumber(page: Page, testId: string): Promise<number> {
   return Number(match[0]);
 }
 
+async function readBeat(page: Page): Promise<string> {
+  const text = await page.getByTestId('slice-beat').innerText();
+  return text.replace(/^Beat:\s*/, '').trim();
+}
+
 async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
   if (hero === 'kai') {
     await page.keyboard.down('e');
@@ -120,112 +123,147 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
   } finally {
     await page.keyboard.up('w');
   }
-}
 
-async function closeIntoUltimateRange(page: Page) {
-  // A resolved Fang hit proves the shared enemy really reached the controller-owned
-  // hero. RECOVERY is stable proof the Fang entered its <=1.8 attack envelope,
-  // comfortably inside Kai ultimate radius 10 and Jax ultimate radius 5.
-  await expect.poll(async () => readNumber(page, 'slice-player-health'), {
-    timeout: 7_000,
-    intervals: [100, 150, 200, 250],
-  }).toBeLessThan(100);
-
-  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
-    timeout: 3_000,
+  await expect.poll(async () => readBeat(page), {
+    timeout: 2_000,
     intervals: [75, 100, 150],
-  }).toContain('RECOVERY');
+  }).toBe('ashblock-first-ambush');
+
+  await expect.poll(async () => readNumber(page, 'slice-enemy-count'), {
+    timeout: 2_000,
+    intervals: [75, 100, 150],
+  }).toBe(2);
 }
 
-async function waitForUltimateReady(page: Page, hero: 'kai' | 'jax') {
+async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
   const requiredEnergy = hero === 'kai' ? 80 : 75;
+
+  // Kiting is real controller-owned movement, not a test teleport. It gives the
+  // hero the same breathing room a player would create between authored attacks.
+  await page.keyboard.down('s');
+  await page.waitForTimeout(hero === 'kai' ? 500 : 650);
+  await page.keyboard.up('s');
+
   await expect.poll(async () => readNumber(page, 'slice-energy'), {
     timeout: 12_000,
     intervals: [100, 150, 200, 250],
   }).toBeGreaterThanOrEqual(requiredEnergy);
+}
 
-  // Do not synchronize on the transient 0.35s WINDUP alone: bounded AI catch-up
-  // can consume it inside one slow headless frame. Either state below proves the
-  // Fang is in the <=1.8 melee envelope before the wide-radius ultimate starts.
-  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
-    timeout: 12_000,
-    intervals: [50, 75, 100, 150],
-  }).toMatch(/WINDUP|RECOVERY/);
-
-  if (hero === 'jax') {
-    // Jax's prior storm ultimate can leave residual external velocity on the Fang.
-    // Do not fire the next 0.2s-startup ultimate on the first re-entry frame. Give
-    // knockback damping/AI catch-up one bounded settling window, then require the
-    // target to still be in its live melee envelope before accepting the next shot.
-    await page.waitForTimeout(450);
+async function closeIntoLiveEnvelope(page: Page) {
+  await page.keyboard.down('w');
+  try {
     await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
-      timeout: 4_000,
+      timeout: 10_000,
       intervals: [75, 100, 150, 200],
     }).toMatch(/WINDUP|RECOVERY/);
+  } finally {
+    await page.keyboard.up('w');
   }
 }
 
-async function ultimateAndWaitForDamage(
-  page: Page,
-  hero: 'kai' | 'jax',
-  beforeHealth: number,
-): Promise<number> {
+async function ultimateAndRequireAggregateDamage(page: Page, hero: 'kai' | 'jax'): Promise<void> {
   const beforeEnergy = await readNumber(page, 'slice-energy');
+  const beforeTotal = await readNumber(page, 'slice-total-enemy-health');
+  const beforeCount = await readNumber(page, 'slice-enemy-count');
+
   await page.keyboard.down('i');
   try {
-    // KeyI is the canonical keyboard ultimate input. A substantial energy drop is
-    // controller-level proof that the real hero controller accepted the attack.
     await expect.poll(async () => readNumber(page, 'slice-energy'), {
       timeout: 3_000,
       intervals: [50, 75, 100, 150],
     }).toBeLessThan(beforeEnergy - 20);
 
-    // Keep the key held across the authored ACTIVE window. Both attack systems
-    // independently preserve sparse-frame crossings, so this is not a fake hit.
-    await page.waitForTimeout(hero === 'kai' ? 1_650 : 900);
+    await page.waitForTimeout(hero === 'kai' ? 1_650 : 950);
   } finally {
     await page.keyboard.up('i');
   }
 
-  let afterHealth = beforeHealth;
-  const deadline = Date.now() + 3_000;
-  while (Date.now() < deadline) {
-    afterHealth = await readNumber(page, 'slice-fang-health');
-    if (afterHealth < beforeHealth) break;
-    await page.waitForTimeout(100);
-  }
+  await expect.poll(async () => {
+    const total = await readNumber(page, 'slice-total-enemy-health');
+    const count = await readNumber(page, 'slice-enemy-count');
+    return total < beforeTotal || count < beforeCount;
+  }, {
+    timeout: 4_000,
+    intervals: [75, 100, 150, 200, 300],
+  }).toBe(true);
 
-  await page.waitForTimeout(hero === 'kai' ? 500 : 750);
-  return afterHealth;
+  await expect(page.getByTestId('slice-player-down')).toContainText('NO');
 }
 
-async function defeatFang(page: Page, hero: 'kai' | 'jax') {
-  await closeIntoUltimateRange(page);
+async function clearCombatBeat(
+  page: Page,
+  hero: 'kai' | 'jax',
+  expectedBeat: string,
+  maxAttempts: number,
+) {
+  await expect.poll(async () => readBeat(page), {
+    timeout: 3_000,
+    intervals: [75, 100, 150],
+  }).toBe(expectedBeat);
 
-  // Full-chain responsibility is mission continuity and exactly-once persistence,
-  // not repeated narrow-melee stress. Focused runtime lanes already certify Kai
-  // heavy, Jax heavy, and Jax lightning-special live hitbox behavior. Here we keep
-  // the combat transition real while using each hero's authored wide-radius ultimate.
-  const maxAttempts = hero === 'kai' ? 2 : 7;
-  const minimumSuccessfulHits = hero === 'kai' ? 1 : 3;
-
-  let successfulHits = 0;
-  let health = await readNumber(page, 'slice-fang-health');
-
-  for (let attempt = 0; attempt < maxAttempts && health > 0; attempt += 1) {
-    await waitForUltimateReady(page, hero);
-    const nextHealth = await ultimateAndWaitForDamage(page, hero, health);
-    if (nextHealth < health) successfulHits += 1;
-    health = nextHealth;
+  let attempts = 0;
+  while (await readNumber(page, 'slice-enemy-count') > 0 && attempts < maxAttempts) {
+    attempts += 1;
+    await retreatAndRecharge(page, hero);
+    await closeIntoLiveEnvelope(page);
+    await ultimateAndRequireAggregateDamage(page, hero);
   }
 
-  expect(successfulHits, `${hero} must defeat the Fang through real accepted attacks`).toBeGreaterThanOrEqual(minimumSuccessfulHits);
-  expect(health, `${hero} must reduce the Fang to zero HP`).toBe(0);
+  expect(
+    await readNumber(page, 'slice-enemy-count'),
+    `${hero} must clear ${expectedBeat} through real accepted attacks`,
+  ).toBe(0);
+}
+
+async function advanceRecoveryIntoCombinationFight(page: Page) {
+  await expect.poll(async () => readBeat(page), {
+    timeout: 3_000,
+    intervals: [75, 100, 150],
+  }).toBe('ashblock-recovery-corridor');
+
+  await page.keyboard.down('w');
+  try {
+    await expect.poll(async () => (await readPosition(page))[2], {
+      timeout: 15_000,
+      intervals: [100, 150, 200, 250],
+    }).toBeGreaterThan(3.5);
+
+    await expect.poll(async () => readBeat(page), {
+      timeout: 3_000,
+      intervals: [75, 100, 150],
+    }).toBe('ashblock-combination-fight');
+  } finally {
+    await page.keyboard.up('w');
+  }
+
+  await expect.poll(async () => readNumber(page, 'slice-enemy-count'), {
+    timeout: 2_000,
+    intervals: [75, 100, 150],
+  }).toBe(3);
+}
+
+async function defeatPhase55FangSequence(page: Page, hero: 'kai' | 'jax') {
+  await clearCombatBeat(page, hero, 'ashblock-first-ambush', hero === 'kai' ? 4 : 6);
+  await advanceRecoveryIntoCombinationFight(page);
+  await clearCombatBeat(page, hero, 'ashblock-combination-fight', hero === 'kai' ? 6 : 9);
+
+  await expect.poll(async () => readBeat(page), {
+    timeout: 3_000,
+    intervals: [75, 100, 150],
+  }).toBe('ashblock-district-lieutenant');
+  await expect(page.getByTestId('slice-lieutenant')).toContainText('YES');
+
+  await clearCombatBeat(page, hero, 'ashblock-district-lieutenant', hero === 'kai' ? 7 : 12);
 
   await expect.poll(async () => page.getByTestId('slice-stage').innerText(), {
     timeout: 3_000,
     intervals: [75, 100, 150],
   }).toContain('memory-trace');
+  await expect.poll(async () => readBeat(page), {
+    timeout: 2_000,
+    intervals: [75, 100, 150],
+  }).toBe('ashblock-memory-trace');
 }
 
 async function activateMemoryTrace(page: Page) {
@@ -246,7 +284,7 @@ async function activateMemoryTrace(page: Page) {
     const [x, , z] = await readPosition(page);
     return Math.hypot(x, z - 5);
   }, {
-    timeout: 2_000,
+    timeout: 3_000,
     intervals: [75, 100, 150],
   }).toBeLessThan(2);
 
@@ -330,18 +368,18 @@ async function runFullAshblockChain(page: Page, hero: 'kai' | 'jax') {
   const errors = collectErrors(page);
   await bootSlice(page, hero, errors);
   await enterEncounter(page, hero);
-  await defeatFang(page, hero);
+  await defeatPhase55FangSequence(page, hero);
   await activateMemoryTrace(page);
   await extractAndVerifyPersistence(page);
   expect(errors, `Unexpected ${hero} full-chain errors:\n${errors.join('\n')}`).toEqual([]);
 }
 
-test('Ashblock full completion chain persists exactly once for Kai', async ({ page }) => {
-  test.setTimeout(120_000);
+test('Ashblock Phase 5.5 full completion chain persists exactly once for Kai', async ({ page }) => {
+  test.setTimeout(240_000);
   await runFullAshblockChain(page, 'kai');
 });
 
-test('Ashblock full completion chain persists exactly once for Jax', async ({ page }) => {
-  test.setTimeout(120_000);
+test('Ashblock Phase 5.5 full completion chain persists exactly once for Jax', async ({ page }) => {
+  test.setTimeout(300_000);
   await runFullAshblockChain(page, 'jax');
 });
