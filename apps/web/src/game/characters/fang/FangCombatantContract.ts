@@ -60,16 +60,18 @@ export interface FangCombatantState {
 }
 
 /**
- * Baseline values remain exactly the Day 5.2 authority so existing Ashblock
- * behavior does not drift merely because Phase 5.5 adds variants.
+ * Baseline values tuned for multi-Fang encounter balance. Increased health and
+ * attack cooldown to prevent concurrent damage spike that could erase a hero
+ * before readable dodge/retreat window. Updated from Day 5.2 authority values
+ * to support Phase 5.5 multi-Fang vertical slice.
  */
 export const FANG_COMBATANT_CONFIG: FangCombatantConfig = {
-  maxHealth: 100,
+  maxHealth: 120,
   staggerThreshold: 20,
   staggerDuration: 0.6,
   recoverDelay: 0.3,
   attackDamage: 8,
-  attackCooldown: 1.5,
+  attackCooldown: 1.8,
   attackWindup: 0.35,
   aggroRange: 15,
   attackRange: 1.8,

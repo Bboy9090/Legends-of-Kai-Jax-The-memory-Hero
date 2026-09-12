@@ -22,6 +22,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useAudio } from '../../../../lib/stores/useAudio';
 import { gameplayInputManager, GameplayInputState } from '../../../../lib/input/GameplayInputState';
+import { combatActionBuffer } from '../../../../lib/input/CombatActionBuffer';
 import { WallClimbController } from './WallClimbSystem';
 import { WebZipController } from './WebZipSystem';
 import { KaiAttackSystem } from './KaiAttackSystem';
@@ -238,7 +239,21 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
     // Keep the hitbox origin current before processing the previous accepted attack.
     attackSystem.update(currentTime, kai.position);
 
-    if (wasJustPressed(input.attackLight, prevInput?.attackLight ?? false)) {
+    // Keyboard presses can be shorter than a render frame. Consume the DOM-event
+    // buffer first, then fall back to the shared level-state rising edge for touch
+    // and gamepad paths that are still sampled by their adapters.
+    const lightPressed = combatActionBuffer.consume('attackLight') ||
+      wasJustPressed(input.attackLight, prevInput?.attackLight ?? false);
+    const heavyPressed = combatActionBuffer.consume('attackHeavy') ||
+      wasJustPressed(input.attackHeavy, prevInput?.attackHeavy ?? false);
+    const specialPressed = combatActionBuffer.consume('attackSpecial') ||
+      wasJustPressed(input.attackSpecial, prevInput?.attackSpecial ?? false);
+    const ultimatePressed = combatActionBuffer.consume('attackUltimate') ||
+      wasJustPressed(input.attackUltimate, prevInput?.attackUltimate ?? false);
+    const dodgePressed = combatActionBuffer.consume('dodge') ||
+      wasJustPressed(input.dodge, prevInput?.dodge ?? false);
+
+    if (lightPressed) {
       if (kai.energy >= COMBAT_CONFIG.lightAttackCost && !kai.isDodging && !kai.isAttacking) {
         kai.attackCombo = Math.min(3, kai.attackCombo + 1);
         kai.energy -= COMBAT_CONFIG.lightAttackCost;
@@ -250,7 +265,7 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       }
     }
 
-    if (wasJustPressed(input.attackHeavy, prevInput?.attackHeavy ?? false)) {
+    if (heavyPressed) {
       if (kai.energy >= COMBAT_CONFIG.heavyAttackCost && !kai.isDodging && !kai.isAttacking) {
         kai.attackCombo = 0;
         kai.energy -= COMBAT_CONFIG.heavyAttackCost;
@@ -262,7 +277,7 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       }
     }
 
-    if (wasJustPressed(input.attackSpecial, prevInput?.attackSpecial ?? false)) {
+    if (specialPressed) {
       if (kai.energy >= COMBAT_CONFIG.specialAttackCost && !kai.isDodging && !kai.isAttacking) {
         kai.energy -= COMBAT_CONFIG.specialAttackCost;
         kai.isAttacking = true;
@@ -273,7 +288,7 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       }
     }
 
-    if (wasJustPressed(input.attackUltimate, prevInput?.attackUltimate ?? false)) {
+    if (ultimatePressed) {
       if (kai.energy >= 80 && !kai.isDodging && !kai.isAttacking) {
         kai.energy -= 80;
         kai.isAttacking = true;
@@ -284,7 +299,7 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       }
     }
 
-    if (wasJustPressed(input.dodge, prevInput?.dodge ?? false)) {
+    if (dodgePressed) {
       if (kai.energy >= DODGING_CONFIG.staminalCost && !kai.isDodging && !kai.isAttacking) {
         kai.isDodging = true;
         kai.dodgeTimer = DODGING_CONFIG.duration;
