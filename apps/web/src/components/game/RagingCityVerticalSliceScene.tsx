@@ -1,15 +1,14 @@
 /**
  * RAGING CITY VERTICAL SLICE SCENE
- * Day 5.2 - Ashblock Heights with real Kai/Jax controllers and Fang combat AI.
+ * Ashblock Heights with real Kai/Jax controllers and deterministic Fang combat AI.
  *
  * Architecture:
  * - Exactly one real Kai/Jax controller owns player position.
- * - Mission stages: traversal -> encounter -> memory trace -> extraction.
- * - Fang behavior is source-safe implementation logic only; no invented rank,
- *   weapon, biology, backstory, drops, or chronology.
- * - Kai and Jax damage the Fang through their real scene-hitbox systems.
- * - The scene only reconciles combat-target userData into deterministic Fang state;
- *   it does not contain a character-specific direct-damage adapter.
+ * - Phase 5.5 content order is authored by ASHBLOCK_PHASE_55_SEQUENCE.
+ * - Fang variants share the same deterministic combat contract/AI authority.
+ * - Kai and Jax damage real scene combat targets through their certified attack systems.
+ * - This scene only reconciles combat-target userData into FangCombatantState;
+ *   it never applies hero-specific direct damage.
  */
 
 import {
@@ -37,13 +36,22 @@ import {
   applyFangKnockback,
   createFangCombatant,
   damageFangCombatant,
+  type FangCombatantArchetype,
   type FangCombatantState,
 } from '../../game/characters/fang/FangCombatantContract';
 import { updateFangCombatantAI } from '../../game/characters/fang/FangCombatantAI';
 import { gameplayInputManager } from '../../lib/input/GameplayInputState';
+import {
+  ASHBLOCK_PHASE_55_SEQUENCE,
+  type AshblockPhase55Beat,
+} from '../../game/world/zones/AshblockHeights/AshblockPhase55Content';
 
 export type VerticalSliceHero = 'kai' | 'jax';
 type MissionStage = 'traversal' | 'encounter' | 'memory-trace' | 'extraction' | 'complete';
+
+const RECOVERY_GATE_Z = 3.5;
+const MEMORY_TRACE_Z = 5;
+const EXTRACTION_GATE_Z = 15;
 
 interface ControllerDebugState {
   locomotionMode: string;
@@ -59,12 +67,19 @@ interface ControllerDebugState {
 export interface VerticalSliceDebugSnapshot extends ControllerDebugState {
   hero: VerticalSliceHero | 'INVALID';
   stage: MissionStage;
+  beatId: string;
+  beatObjective: string;
   position: [number, number, number];
   playerHealth: number;
   playerDown: boolean;
+  enemyCount: number;
+  totalEnemyHealth: number;
   fangHealth: number;
+  fangMaxHealth: number;
+  fangArchetype: FangCombatantArchetype | 'none';
   fangBehavior: string;
   fangWindup: number;
+  lieutenantAlive: boolean;
   memoryTraceActivated: boolean;
   extractionUnlocked: boolean;
   fps: number;
@@ -81,16 +96,25 @@ const INITIAL_CONTROLLER_DEBUG: ControllerDebugState = {
   airCharges: null,
 };
 
+const INITIAL_BEAT = ASHBLOCK_PHASE_55_SEQUENCE[0];
+
 const INITIAL_DEBUG: VerticalSliceDebugSnapshot = {
   ...INITIAL_CONTROLLER_DEBUG,
   hero: 'INVALID',
   stage: 'traversal',
+  beatId: INITIAL_BEAT.id,
+  beatObjective: INITIAL_BEAT.objective,
   position: [0, 0, -20],
   playerHealth: 100,
   playerDown: false,
-  fangHealth: 100,
+  enemyCount: 0,
+  totalEnemyHealth: 0,
+  fangHealth: 0,
+  fangMaxHealth: 0,
+  fangArchetype: 'none',
   fangBehavior: 'IDLE',
   fangWindup: 0,
+  lieutenantAlive: false,
   memoryTraceActivated: false,
   extractionUnlocked: false,
   fps: 0,
@@ -98,13 +122,36 @@ const INITIAL_DEBUG: VerticalSliceDebugSnapshot = {
 
 interface MissionStateRef {
   stage: MissionStage;
+  beatIndex: number;
   encounterActive: boolean;
   memoryTraceActivated: boolean;
   extractionUnlocked: boolean;
-  fangCombatant: FangCombatantState;
+  combatants: FangCombatantState[];
   playerHealth: number;
   playerDown: boolean;
   completionRecorded: boolean;
+}
+
+function buildCombatantsForBeat(beat: AshblockPhase55Beat): FangCombatantState[] {
+  return beat.spawns.map((spawn) => {
+    const combatant = createFangCombatant(spawn.id, spawn.archetype);
+    combatant.position.x = spawn.position[0];
+    combatant.position.y = spawn.position[1];
+    combatant.position.z = spawn.position[2];
+    return combatant;
+  });
+}
+
+function getPrimaryCombatant(combatants: FangCombatantState[]): FangCombatantState | null {
+  return combatants.find((combatant) => !combatant.isDead)
+    ?? combatants[combatants.length - 1]
+    ?? null;
+}
+
+function getStageForBeat(beat: AshblockPhase55Beat): MissionStage {
+  if (beat.kind === 'TRAVERSAL') return 'traversal';
+  if (beat.kind === 'MEMORY_TRACE') return 'memory-trace';
+  return 'encounter';
 }
 
 function KaiControllerBridge({
@@ -181,29 +228,54 @@ function VerticalSliceEnvironment({
   const fighter = getFighterById(charId ?? '');
 
   const playerRef = useRef<THREE.Group>(null);
-  const fangRef = useRef<THREE.Group>(null);
+  const fangRefs = useRef<Map<string, THREE.Group>>(new Map());
   const controllerDebugRef = useRef<ControllerDebugState>({ ...INITIAL_CONTROLLER_DEBUG });
   const previousInteractRef = useRef(false);
   const perfRef = useRef({ elapsed: 0, frames: 0, fps: 0, hudElapsed: 0 });
   const [renderStage, setRenderStage] = useState<MissionStage>('traversal');
+  const [renderBeatIndex, setRenderBeatIndex] = useState(0);
 
   const stateRef = useRef<MissionStateRef>({
     stage: 'traversal',
+    beatIndex: 0,
     encounterActive: false,
     memoryTraceActivated: false,
     extractionUnlocked: false,
-    fangCombatant: createFangCombatant('fang_01'),
+    combatants: [],
     playerHealth: 100,
     playerDown: false,
     completionRecorded: false,
   });
 
-  const transitionStage = (next: MissionStage) => {
+  const transitionStage = useCallback((next: MissionStage) => {
     const mission = stateRef.current;
     if (mission.stage === next) return;
     mission.stage = next;
     setRenderStage(next);
-  };
+  }, []);
+
+  const transitionToBeat = useCallback((nextBeatIndex: number) => {
+    const beat = ASHBLOCK_PHASE_55_SEQUENCE[nextBeatIndex];
+    if (!beat) return;
+
+    const mission = stateRef.current;
+    mission.beatIndex = nextBeatIndex;
+    mission.combatants = buildCombatantsForBeat(beat);
+    mission.encounterActive = beat.kind === 'COMBAT' || beat.kind === 'LIEUTENANT';
+
+    const nextStage = getStageForBeat(beat);
+    mission.stage = nextStage;
+    setRenderBeatIndex(nextBeatIndex);
+    setRenderStage(nextStage);
+  }, []);
+
+  const registerFangRef = useCallback((id: string, node: THREE.Group | null) => {
+    if (node) {
+      fangRefs.current.set(id, node);
+    } else {
+      fangRefs.current.delete(id);
+    }
+  }, []);
 
   useEffect(() => {
     if (!forcedCharacter && !isKai && !isJax) {
@@ -229,15 +301,18 @@ function VerticalSliceEnvironment({
   }, [scene, camera]);
 
   useEffect(() => {
-    const fang = fangRef.current;
-    if (!fang) return;
+    for (const combatant of stateRef.current.combatants) {
+      const fang = fangRefs.current.get(combatant.id);
+      if (!fang) continue;
 
-    fang.userData.combatTarget = true;
-    fang.userData.targetId = stateRef.current.fangCombatant.id;
-    fang.userData.isLightningTarget = true;
-    fang.userData.health = stateRef.current.fangCombatant.health;
-    fang.userData.velocity = new THREE.Vector3();
-  }, [renderStage]);
+      fang.userData.combatTarget = !combatant.isDead;
+      fang.userData.targetId = combatant.id;
+      fang.userData.isLightningTarget = true;
+      fang.userData.health = combatant.health;
+      fang.userData.velocity = new THREE.Vector3();
+      fang.userData.archetype = combatant.archetype;
+    }
+  }, [renderBeatIndex]);
 
   useFrame((frameState, rawDelta) => {
     const player = playerRef.current;
@@ -247,69 +322,90 @@ function VerticalSliceEnvironment({
     const currentTime = frameState.clock.elapsedTime;
     const mission = stateRef.current;
     const playerPos = player.position;
-    const fangState = mission.fangCombatant;
 
-    if (mission.stage === 'traversal' && playerPos.z > -5) {
-      mission.encounterActive = true;
-      transitionStage('encounter');
+    let beat = ASHBLOCK_PHASE_55_SEQUENCE[mission.beatIndex];
+
+    if (beat.kind === 'TRAVERSAL' && playerPos.z > -5) {
+      transitionToBeat(mission.beatIndex + 1);
+      beat = ASHBLOCK_PHASE_55_SEQUENCE[stateRef.current.beatIndex];
     }
 
     const input = gameplayInputManager.getState();
-    const fangObject = fangRef.current;
 
-    if (mission.stage === 'encounter' && fangObject && !mission.playerDown) {
-      // Both KaiAttackSystem and JaxAttackSystem write real scene target health.
-      // This deterministic mission layer reconciles that shared scene authority
-      // into FangCombatantState; it never applies hero-specific direct damage.
-      const externalHealth = typeof fangObject.userData.health === 'number'
-        ? fangObject.userData.health
-        : fangState.health;
+    if ((beat.kind === 'COMBAT' || beat.kind === 'LIEUTENANT') && !mission.playerDown) {
+      let incomingDamage = 0;
 
-      if (externalHealth < fangState.health) {
-        damageFangCombatant(fangState, fangState.health - externalHealth, currentTime);
+      for (const fangState of mission.combatants) {
+        const fangObject = fangRefs.current.get(fangState.id);
+        if (!fangObject) continue;
+
+        const externalHealth = typeof fangObject.userData.health === 'number'
+          ? fangObject.userData.health
+          : fangState.health;
+
+        if (externalHealth < fangState.health) {
+          damageFangCombatant(fangState, fangState.health - externalHealth, currentTime);
+        }
+
+        const externalVelocity = fangObject.userData.velocity;
+        if (externalVelocity instanceof THREE.Vector3 && externalVelocity.lengthSq() > 0.0001) {
+          applyFangKnockback(fangState, {
+            x: externalVelocity.x,
+            y: externalVelocity.y,
+            z: externalVelocity.z,
+          });
+          externalVelocity.set(0, 0, 0);
+        }
+
+        const aiResult = updateFangCombatantAI(
+          fangState,
+          { x: playerPos.x, y: playerPos.y, z: playerPos.z },
+          delta,
+          currentTime
+        );
+
+        fangObject.position.set(
+          fangState.position.x,
+          Math.max(0.8, fangState.position.y + 0.3),
+          fangState.position.z
+        );
+        fangObject.visible = !fangState.isDead;
+        fangObject.userData.combatTarget = !fangState.isDead;
+        fangObject.userData.health = fangState.health;
+        fangObject.userData.isDead = fangState.isDead;
+        fangObject.userData.behavior = fangState.behavior;
+        fangObject.userData.archetype = fangState.archetype;
+
+        if (aiResult.attackResolved) {
+          incomingDamage += aiResult.attackDamage;
+        }
       }
 
-      const externalVelocity = fangObject.userData.velocity;
-      if (externalVelocity instanceof THREE.Vector3 && externalVelocity.lengthSq() > 0.0001) {
-        applyFangKnockback(fangState, {
-          x: externalVelocity.x,
-          y: externalVelocity.y,
-          z: externalVelocity.z,
-        });
-        externalVelocity.set(0, 0, 0);
-      }
-
-      const aiResult = updateFangCombatantAI(
-        fangState,
-        { x: playerPos.x, y: playerPos.y, z: playerPos.z },
-        delta,
-        currentTime
-      );
-
-      fangObject.position.set(
-        fangState.position.x,
-        Math.max(0.8, fangState.position.y + 0.3),
-        fangState.position.z
-      );
-      fangObject.userData.health = fangState.health;
-      fangObject.userData.isDead = fangState.isDead;
-      fangObject.userData.behavior = fangState.behavior;
-
-      if (aiResult.attackResolved && controllerDebugRef.current.invulnTimer <= 0) {
-        mission.playerHealth = Math.max(0, mission.playerHealth - aiResult.attackDamage);
+      if (incomingDamage > 0 && controllerDebugRef.current.invulnTimer <= 0) {
+        mission.playerHealth = Math.max(0, mission.playerHealth - incomingDamage);
         mission.playerDown = mission.playerHealth === 0;
+      }
+
+      if (mission.combatants.length > 0 && mission.combatants.every((combatant) => combatant.isDead)) {
+        mission.encounterActive = false;
+        transitionToBeat(mission.beatIndex + 1);
+        beat = ASHBLOCK_PHASE_55_SEQUENCE[stateRef.current.beatIndex];
       }
     }
 
-    if (mission.stage === 'encounter' && fangState.isDead) {
-      mission.encounterActive = false;
+    if (beat.kind === 'RECOVERY' && playerPos.z > RECOVERY_GATE_Z) {
+      transitionToBeat(mission.beatIndex + 1);
+      beat = ASHBLOCK_PHASE_55_SEQUENCE[stateRef.current.beatIndex];
+    }
+
+    if (beat.kind === 'MEMORY_TRACE' && mission.stage !== 'memory-trace' && mission.stage !== 'extraction') {
       transitionStage('memory-trace');
     }
 
     const interactEdge = input.interact && !previousInteractRef.current;
     previousInteractRef.current = input.interact;
 
-    const distToTrace = Math.hypot(playerPos.x, playerPos.z - 5);
+    const distToTrace = Math.hypot(playerPos.x, playerPos.z - MEMORY_TRACE_Z);
     if (mission.stage === 'memory-trace' && distToTrace < 2 && interactEdge) {
       mission.memoryTraceActivated = true;
     }
@@ -319,7 +415,7 @@ function VerticalSliceEnvironment({
       transitionStage('extraction');
     }
 
-    if (mission.stage === 'extraction' && playerPos.z > 15) {
+    if (mission.stage === 'extraction' && playerPos.z > EXTRACTION_GATE_Z) {
       transitionStage('complete');
       if (!mission.completionRecorded && activeStoryMissionId) {
         mission.completionRecorded = true;
@@ -344,16 +440,28 @@ function VerticalSliceEnvironment({
 
     if (perf.hudElapsed >= 0.1) {
       perf.hudElapsed = 0;
+      const livingCombatants = mission.combatants.filter((combatant) => !combatant.isDead);
+      const primary = getPrimaryCombatant(mission.combatants);
+      const totalEnemyHealth = livingCombatants.reduce((sum, combatant) => sum + combatant.health, 0);
+      const currentBeat = ASHBLOCK_PHASE_55_SEQUENCE[mission.beatIndex];
+
       onDebug({
         ...controllerDebugRef.current,
         hero,
         stage: mission.stage,
+        beatId: currentBeat.id,
+        beatObjective: currentBeat.objective,
         position: [playerPos.x, playerPos.y, playerPos.z],
         playerHealth: mission.playerHealth,
         playerDown: mission.playerDown,
-        fangHealth: fangState.health,
-        fangBehavior: fangState.behavior,
-        fangWindup: fangState.attackWindupTimer,
+        enemyCount: livingCombatants.length,
+        totalEnemyHealth,
+        fangHealth: primary?.health ?? 0,
+        fangMaxHealth: primary?.maxHealth ?? 0,
+        fangArchetype: primary?.archetype ?? 'none',
+        fangBehavior: primary?.behavior ?? 'IDLE',
+        fangWindup: primary?.attackWindupTimer ?? 0,
+        lieutenantAlive: livingCombatants.some((combatant) => combatant.archetype === 'district-lieutenant'),
         memoryTraceActivated: mission.memoryTraceActivated,
         extractionUnlocked: mission.extractionUnlocked,
         fps: perf.fps,
@@ -363,16 +471,17 @@ function VerticalSliceEnvironment({
 
   if (!fighter || hero === 'INVALID') return null;
   const renderMission = stateRef.current;
+  const primaryCombatant = getPrimaryCombatant(renderMission.combatants);
 
   return (
     <group>
       <PerformanceOptimizer />
       <EnvironmentAmbience
         stage={renderStage}
-        fangBehavior={renderMission.fangCombatant.behavior}
+        fangBehavior={primaryCombatant?.behavior ?? 'IDLE'}
         playerHealth={renderMission.playerHealth}
       />
-      <AtmosphericEffects stage={renderStage} fangBehavior={renderMission.fangCombatant.behavior} />
+      <AtmosphericEffects stage={renderStage} fangBehavior={primaryCombatant?.behavior ?? 'IDLE'} />
 
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
@@ -453,19 +562,24 @@ function VerticalSliceEnvironment({
         </>
       )}
 
-      <group
-        ref={fangRef}
-        name="fang-syndicate-combatant-proxy"
-        visible={renderMission.stage === 'encounter'}
-        userData={{
-          combatTarget: true,
-          targetId: 'fang_01',
-          isLightningTarget: true,
-          health: 100,
-        }}
-      >
-        <FangCombatantVisual state={renderMission.fangCombatant} />
-      </group>
+      {renderMission.combatants.map((combatant) => (
+        <group
+          key={combatant.id}
+          ref={(node) => registerFangRef(combatant.id, node)}
+          name={`fang-syndicate-${combatant.archetype}-${combatant.id}`}
+          position={[combatant.position.x, Math.max(0.8, combatant.position.y + 0.3), combatant.position.z]}
+          visible={!combatant.isDead}
+          userData={{
+            combatTarget: !combatant.isDead,
+            targetId: combatant.id,
+            isLightningTarget: true,
+            health: combatant.health,
+            archetype: combatant.archetype,
+          }}
+        >
+          <FangCombatantVisual state={combatant} />
+        </group>
+      ))}
 
       {renderStage === 'memory-trace' && (
         <MemoryTraceVisual isActivated={renderMission.memoryTraceActivated} />
@@ -510,21 +624,27 @@ function VerticalSliceEnvironment({
 
 function PlayerHUD({
   debug,
-  forcedCharacter,
 }: {
   debug: VerticalSliceDebugSnapshot;
-  forcedCharacter?: VerticalSliceHero;
 }) {
   const missionObjectives: Record<MissionStage, string> = {
     traversal: 'Reach the Ashblock disturbance',
-    encounter: 'Defeat the Fang Syndicate combatant',
+    encounter: 'Break through the Fang-controlled block',
     'memory-trace': 'Investigate the Memory Trace',
     extraction: 'Reach extraction',
     complete: 'Ashblock secured',
   };
 
-  const fangHealthPercent = (debug.fangHealth / 100) * 100;
+  const objective = debug.stage === 'traversal' || debug.stage === 'encounter' || debug.stage === 'memory-trace'
+    ? debug.beatObjective
+    : missionObjectives[debug.stage];
+  const fangHealthPercent = debug.fangMaxHealth > 0
+    ? (debug.fangHealth / debug.fangMaxHealth) * 100
+    : 0;
   const playerHealthPercent = (debug.playerHealth / 100) * 100;
+  const fangRoleLabel = debug.fangArchetype === 'none'
+    ? 'Fang'
+    : debug.fangArchetype.split('-').map((part) => part[0].toUpperCase() + part.slice(1)).join(' ');
 
   return (
     <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 sm:p-6 text-white font-sans">
@@ -536,8 +656,8 @@ function PlayerHUD({
             {debug.hero === 'INVALID' && '? Unknown'}
           </div>
         </div>
-        <div className="text-xs sm:text-sm text-slate-300 max-w-xs">
-          {missionObjectives[debug.stage]}
+        <div className="text-xs sm:text-sm text-slate-300 max-w-md">
+          {objective}
         </div>
       </div>
 
@@ -573,19 +693,30 @@ function PlayerHUD({
         </div>
       </div>
 
-      {debug.stage === 'encounter' && (
+      {debug.stage === 'encounter' && debug.enemyCount > 0 && (
         <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex flex-col gap-3">
-          <div className="flex flex-col gap-1 bg-black/60 rounded-lg p-3 backdrop-blur-sm">
-            <div className="text-xs font-semibold text-slate-300">Fang</div>
-            <div className="text-[10px] text-slate-400 mb-1">{debug.fangBehavior}</div>
+          <div className="flex flex-col gap-1 bg-black/60 rounded-lg p-3 backdrop-blur-sm min-w-44">
+            <div className="text-xs font-semibold text-slate-300">{fangRoleLabel}</div>
+            <div className="text-[10px] text-slate-400 mb-1">
+              {debug.fangBehavior} · {debug.enemyCount} active
+            </div>
             <div className="h-3 w-40 bg-slate-800 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-300"
                 style={{ width: `${Math.max(0, fangHealthPercent)}%` }}
               />
             </div>
-            <div className="text-xs text-slate-400 mt-1">{debug.fangHealth.toFixed(0)} / 100</div>
+            <div className="text-xs text-slate-400 mt-1">
+              {debug.fangHealth.toFixed(0)} / {debug.fangMaxHealth.toFixed(0)}
+              {debug.lieutenantAlive && ' · LIEUTENANT PRESENT'}
+            </div>
           </div>
+        </div>
+      )}
+
+      {debug.stage === 'encounter' && debug.enemyCount === 0 && (
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-slate-900/65 border border-slate-500/40 rounded-lg px-4 py-2 backdrop-blur-sm">
+          <div className="text-sm font-semibold text-slate-200">Route clear — keep moving</div>
         </div>
       )}
 
@@ -630,6 +761,8 @@ function DeveloperDiagnostics({
         <div className="mt-1.5 space-y-0.5">
           <div data-testid="slice-hero">Hero: {debug.hero.toUpperCase()}</div>
           <div data-testid="slice-stage">Stage: {debug.stage}</div>
+          <div data-testid="slice-beat">Beat: {debug.beatId}</div>
+          <div data-testid="slice-objective">Objective: {debug.beatObjective}</div>
           <div data-testid="slice-position">Pos: ({debug.position.map((value) => value.toFixed(2)).join(', ')})</div>
           <div data-testid="slice-mode">Mode: {debug.locomotionMode}</div>
           <div data-testid="slice-wall">Wall: {debug.wallCrawling ? 'YES' : 'NO'}</div>
@@ -639,9 +772,13 @@ function DeveloperDiagnostics({
           <div data-testid="slice-energy">Energy: {debug.energy.toFixed(1)}</div>
           <div data-testid="slice-player-health">Player HP: {debug.playerHealth.toFixed(0)}</div>
           <div data-testid="slice-player-down">Player Down: {debug.playerDown ? 'YES' : 'NO'}</div>
+          <div data-testid="slice-enemy-count">Enemies: {debug.enemyCount}</div>
+          <div data-testid="slice-total-enemy-health">Enemy HP Total: {debug.totalEnemyHealth.toFixed(0)}</div>
+          <div data-testid="slice-fang-role">Fang Role: {debug.fangArchetype}</div>
           <div data-testid="slice-fang-health">Fang HP: {debug.fangHealth.toFixed(0)}</div>
           <div data-testid="slice-fang-behavior">Fang: {debug.fangBehavior}</div>
           <div data-testid="slice-fang-windup">Windup: {debug.fangWindup.toFixed(2)}</div>
+          <div data-testid="slice-lieutenant">Lieutenant: {debug.lieutenantAlive ? 'YES' : 'NO'}</div>
           <div data-testid="slice-memory">Memory Trace: {debug.memoryTraceActivated ? 'COMPLETE' : 'PENDING'}</div>
           <div data-testid="slice-extraction">Extraction: {debug.extractionUnlocked ? 'OPEN' : 'LOCKED'}</div>
           <div data-testid="slice-fps">FPS: {debug.fps.toFixed(1)}</div>
@@ -674,7 +811,7 @@ export default function RagingCityVerticalSliceScene({
         </Suspense>
       </Canvas>
 
-      <PlayerHUD debug={debug} forcedCharacter={forcedCharacter} />
+      <PlayerHUD debug={debug} />
       <DeveloperDiagnostics
         debug={debug}
         isCollapsed={diagnosticsCollapsed}
