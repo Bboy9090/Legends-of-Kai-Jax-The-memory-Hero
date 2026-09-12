@@ -52,6 +52,8 @@ type MissionStage = 'traversal' | 'encounter' | 'memory-trace' | 'extraction' | 
 const RECOVERY_GATE_Z = 3.5;
 const MEMORY_TRACE_Z = 5;
 const EXTRACTION_GATE_Z = 15;
+const PLAYER_HIT_GRACE_SECONDS = 1.0;
+const RECOVERY_HEALTH_RESTORE = 30;
 
 interface ControllerDebugState {
   locomotionMode: string;
@@ -72,6 +74,7 @@ export interface VerticalSliceDebugSnapshot extends ControllerDebugState {
   position: [number, number, number];
   playerHealth: number;
   playerDown: boolean;
+  playerHitGrace: number;
   enemyCount: number;
   totalEnemyHealth: number;
   fangHealth: number;
@@ -107,6 +110,7 @@ const INITIAL_DEBUG: VerticalSliceDebugSnapshot = {
   position: [0, 0, -20],
   playerHealth: 100,
   playerDown: false,
+  playerHitGrace: 0,
   enemyCount: 0,
   totalEnemyHealth: 0,
   fangHealth: 0,
@@ -129,6 +133,7 @@ interface MissionStateRef {
   combatants: FangCombatantState[];
   playerHealth: number;
   playerDown: boolean;
+  playerHitGrace: number;
   completionRecorded: boolean;
 }
 
@@ -244,6 +249,7 @@ function VerticalSliceEnvironment({
     combatants: [],
     playerHealth: 100,
     playerDown: false,
+    playerHitGrace: 0,
     completionRecorded: false,
   });
 
@@ -262,6 +268,17 @@ function VerticalSliceEnvironment({
     mission.beatIndex = nextBeatIndex;
     mission.combatants = buildCombatantsForBeat(beat);
     mission.encounterActive = beat.kind === 'COMBAT' || beat.kind === 'LIEUTENANT';
+
+    if (mission.encounterActive) {
+      // New authored combat beats begin with one short, deterministic response
+      // window so several independent Fang AIs cannot resolve a spawn-frame pileup.
+      mission.playerHitGrace = PLAYER_HIT_GRACE_SECONDS;
+    } else if (beat.kind === 'RECOVERY') {
+      // The recovery corridor is now mechanically meaningful rather than a label:
+      // it restores a bounded amount between the opening ambush and mixed fight.
+      mission.playerHealth = Math.min(100, mission.playerHealth + RECOVERY_HEALTH_RESTORE);
+      mission.playerHitGrace = 0;
+    }
 
     const nextStage = getStageForBeat(beat);
     mission.stage = nextStage;
@@ -319,9 +336,12 @@ function VerticalSliceEnvironment({
     if (!player || hero === 'INVALID') return;
 
     const delta = Math.min(rawDelta, 0.05);
+    const lifecycleDelta = Math.min(Math.max(rawDelta, 0), 0.25);
     const currentTime = frameState.clock.elapsedTime;
     const mission = stateRef.current;
     const playerPos = player.position;
+
+    mission.playerHitGrace = Math.max(0, mission.playerHitGrace - lifecycleDelta);
 
     let beat = ASHBLOCK_PHASE_55_SEQUENCE[mission.beatIndex];
 
@@ -377,13 +397,22 @@ function VerticalSliceEnvironment({
         fangObject.userData.archetype = fangState.archetype;
 
         if (aiResult.attackResolved) {
-          incomingDamage += aiResult.attackDamage;
+          // Multiple independent AIs may resolve on the same low-FPS catch-up
+          // frame. Treat that as one readable player hit, not stacked burst damage.
+          incomingDamage = Math.max(incomingDamage, aiResult.attackDamage);
         }
       }
 
-      if (incomingDamage > 0 && controllerDebugRef.current.invulnTimer <= 0) {
+      if (
+        incomingDamage > 0
+        && controllerDebugRef.current.invulnTimer <= 0
+        && mission.playerHitGrace <= 0
+      ) {
         mission.playerHealth = Math.max(0, mission.playerHealth - incomingDamage);
         mission.playerDown = mission.playerHealth === 0;
+        if (!mission.playerDown) {
+          mission.playerHitGrace = PLAYER_HIT_GRACE_SECONDS;
+        }
       }
 
       if (mission.combatants.length > 0 && mission.combatants.every((combatant) => combatant.isDead)) {
@@ -454,6 +483,7 @@ function VerticalSliceEnvironment({
         position: [playerPos.x, playerPos.y, playerPos.z],
         playerHealth: mission.playerHealth,
         playerDown: mission.playerDown,
+        playerHitGrace: mission.playerHitGrace,
         enemyCount: livingCombatants.length,
         totalEnemyHealth,
         fangHealth: primary?.health ?? 0,
@@ -772,6 +802,7 @@ function DeveloperDiagnostics({
           <div data-testid="slice-energy">Energy: {debug.energy.toFixed(1)}</div>
           <div data-testid="slice-player-health">Player HP: {debug.playerHealth.toFixed(0)}</div>
           <div data-testid="slice-player-down">Player Down: {debug.playerDown ? 'YES' : 'NO'}</div>
+          <div data-testid="slice-player-hit-grace">Hit Grace: {debug.playerHitGrace.toFixed(2)}</div>
           <div data-testid="slice-enemy-count">Enemies: {debug.enemyCount}</div>
           <div data-testid="slice-total-enemy-health">Enemy HP Total: {debug.totalEnemyHealth.toFixed(0)}</div>
           <div data-testid="slice-fang-role">Fang Role: {debug.fangArchetype}</div>
