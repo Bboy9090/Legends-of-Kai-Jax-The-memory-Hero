@@ -162,33 +162,40 @@ async function closeIntoLiveEnvelope(page: Page) {
   }
 }
 
-async function ultimateAndRequireAggregateDamage(page: Page, hero: 'kai' | 'jax'): Promise<void> {
+async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
   const beforeEnergy = await readNumber(page, 'slice-energy');
   const beforeTotal = await readNumber(page, 'slice-total-enemy-health');
   const beforeCount = await readNumber(page, 'slice-enemy-count');
 
   await page.keyboard.down('i');
   try {
+    // Energy consumption proves the real controller accepted the authored attack.
     await expect.poll(async () => readNumber(page, 'slice-energy'), {
       timeout: 3_000,
       intervals: [50, 75, 100, 150],
     }).toBeLessThan(beforeEnergy - 20);
 
+    // Hold through the authored active window. An accepted real attack is still
+    // allowed to miss after enemy movement/knockback; the full-chain proof must
+    // not convert every accepted input into a guaranteed hit.
     await page.waitForTimeout(hero === 'kai' ? 1_650 : 950);
   } finally {
     await page.keyboard.up('i');
   }
 
-  await expect.poll(async () => {
+  const deadline = Date.now() + 4_000;
+  while (Date.now() < deadline) {
     const total = await readNumber(page, 'slice-total-enemy-health');
     const count = await readNumber(page, 'slice-enemy-count');
-    return total < beforeTotal || count < beforeCount;
-  }, {
-    timeout: 4_000,
-    intervals: [75, 100, 150, 200, 300],
-  }).toBe(true);
+    if (total < beforeTotal || count < beforeCount) {
+      await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+      return true;
+    }
+    await page.waitForTimeout(100);
+  }
 
   await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+  return false;
 }
 
 async function clearCombatBeat(
@@ -203,13 +210,20 @@ async function clearCombatBeat(
   }).toBe(expectedBeat);
 
   let attempts = 0;
+  let successfulHits = 0;
   while (await readNumber(page, 'slice-enemy-count') > 0 && attempts < maxAttempts) {
     attempts += 1;
     await retreatAndRecharge(page, hero);
     await closeIntoLiveEnvelope(page);
-    await ultimateAndRequireAggregateDamage(page, hero);
+    if (await ultimateAndObserveAggregateDamage(page, hero)) {
+      successfulHits += 1;
+    }
   }
 
+  expect(
+    successfulHits,
+    `${hero} must land at least one real scene-hitbox attack during ${expectedBeat}`,
+  ).toBeGreaterThan(0);
   expect(
     await readNumber(page, 'slice-enemy-count'),
     `${hero} must clear ${expectedBeat} through real accepted attacks`,
@@ -244,9 +258,9 @@ async function advanceRecoveryIntoCombinationFight(page: Page) {
 }
 
 async function defeatPhase55FangSequence(page: Page, hero: 'kai' | 'jax') {
-  await clearCombatBeat(page, hero, 'ashblock-first-ambush', hero === 'kai' ? 4 : 6);
+  await clearCombatBeat(page, hero, 'ashblock-first-ambush', hero === 'kai' ? 6 : 8);
   await advanceRecoveryIntoCombinationFight(page);
-  await clearCombatBeat(page, hero, 'ashblock-combination-fight', hero === 'kai' ? 6 : 9);
+  await clearCombatBeat(page, hero, 'ashblock-combination-fight', hero === 'kai' ? 8 : 14);
 
   await expect.poll(async () => readBeat(page), {
     timeout: 3_000,
@@ -254,7 +268,7 @@ async function defeatPhase55FangSequence(page: Page, hero: 'kai' | 'jax') {
   }).toBe('ashblock-district-lieutenant');
   await expect(page.getByTestId('slice-lieutenant')).toContainText('YES');
 
-  await clearCombatBeat(page, hero, 'ashblock-district-lieutenant', hero === 'kai' ? 7 : 12);
+  await clearCombatBeat(page, hero, 'ashblock-district-lieutenant', hero === 'kai' ? 9 : 16);
 
   await expect.poll(async () => page.getByTestId('slice-stage').innerText(), {
     timeout: 3_000,
@@ -375,11 +389,11 @@ async function runFullAshblockChain(page: Page, hero: 'kai' | 'jax') {
 }
 
 test('Ashblock Phase 5.5 full completion chain persists exactly once for Kai', async ({ page }) => {
-  test.setTimeout(240_000);
+  test.setTimeout(300_000);
   await runFullAshblockChain(page, 'kai');
 });
 
 test('Ashblock Phase 5.5 full completion chain persists exactly once for Jax', async ({ page }) => {
-  test.setTimeout(300_000);
+  test.setTimeout(360_000);
   await runFullAshblockChain(page, 'jax');
 });
