@@ -4,7 +4,7 @@
  * Sounds are short, punchy, and character-consistent with the Kai-Jax aesthetic.
  */
 
-export type SfxId = 'whoosh' | 'hit_light' | 'hit_heavy' | 'block' | 'shield_break' | 'grab' | 'ko' | 'boss_roar' | 'phase_transition';
+export type SfxId = 'whoosh' | 'hit_light' | 'hit_heavy' | 'block' | 'shield_break' | 'grab' | 'ko' | 'boss_roar' | 'phase_transition' | 'ambient_wind' | 'ambient_industrial' | 'ambient_metal_creak';
 
 export class AudioSystem {
   private ctx: AudioContext | null = null;
