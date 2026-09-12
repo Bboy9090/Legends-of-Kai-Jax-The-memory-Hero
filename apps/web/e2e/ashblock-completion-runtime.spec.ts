@@ -90,6 +90,30 @@ async function readBehavior(page: Page): Promise<string> {
   return (await page.getByTestId('slice-fang-behavior').innerText()).replace(/^Fang:\s*/, '').trim();
 }
 
+async function tryDefensiveDodge(page: Page): Promise<boolean> {
+  const beforeEnergy = await readNumber(page, 'slice-energy');
+  if (beforeEnergy < 18) return false;
+
+  await page.keyboard.up('q');
+  await page.waitForTimeout(100);
+  await page.keyboard.down('q');
+  let accepted = false;
+  try {
+    const deadline = Date.now() + 800;
+    while (Date.now() < deadline) {
+      if (await readNumber(page, 'slice-energy') < beforeEnergy - 5) {
+        accepted = true;
+        break;
+      }
+      await page.waitForTimeout(50);
+    }
+  } finally {
+    await page.keyboard.up('q');
+  }
+
+  return accepted;
+}
+
 async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
   if (hero === 'kai') {
     await page.keyboard.down('e');
@@ -140,11 +164,12 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
-  // Keep moving away while energy recovers. This is real controller-owned running,
-  // not a teleport, and prevents the completion harness from standing still inside
-  // several simultaneous Fang windups while waiting for the next authored attack.
+  // Spend a real dodge when available to cover the retreat from any windup that
+  // began during the previous attack. No health, position, or invulnerability is
+  // mutated by the harness; Q goes through the actual controller dodge lifecycle.
+  await tryDefensiveDodge(page);
+
   await page.keyboard.up('i');
-  await page.keyboard.up('q');
   await page.keyboard.down('Shift');
   await page.keyboard.down('s');
   try {
@@ -158,8 +183,7 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
     await page.keyboard.up('Shift');
   }
 
-  // Give the level-based Kai input path a real neutral frame before the next edge.
-  // This also keeps Jax's buffered path and the shared input state in agreement.
+  // Ensure a neutral input sample exists before the next level-based attack edge.
   await page.waitForTimeout(300);
   await expect(page.getByTestId('slice-player-down')).toContainText('NO');
 }
@@ -167,8 +191,8 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
 async function approachIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   await page.keyboard.down('w');
   try {
-    // First prove the primary Fang is actively tracking the player. We deliberately
-    // do not wait for melee WINDUP; both authored ultimates have wider real radii.
+    // Prove the primary Fang is tracking the player, but do not intentionally park
+    // in melee. Kai's and Jax's authored ultimates have 10m and 5m radii.
     await expect.poll(async () => readBehavior(page), {
       timeout: 10_000,
       intervals: [75, 100, 150, 200],
@@ -185,6 +209,16 @@ async function approachIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
     await page.keyboard.up('w');
   }
 
+  const behavior = await readBehavior(page);
+  if (behavior === 'WINDUP') {
+    const dodged = await tryDefensiveDodge(page);
+    if (dodged) {
+      // Allow the real Fang windup to resolve into the real dodge invulnerability,
+      // then let the controller leave DODGE before requesting an ultimate edge.
+      await page.waitForTimeout(425);
+    }
+  }
+
   await page.waitForTimeout(125);
 }
 
@@ -195,9 +229,8 @@ async function acceptUltimate(page: Page, hero: 'kai' | 'jax'): Promise<void> {
     intervals: [75, 100, 150, 200],
   }).toBeGreaterThanOrEqual(requiredEnergy);
 
-  // Software WebGL can skip the single frame that separates a previous key-up from
-  // the next key-down. Retry the real input edge rather than forcing controller state.
-  // Acceptance is only proven by the controller spending real authored energy.
+  // Software WebGL can skip the frame separating a previous key-up and key-down.
+  // Retry the real edge; acceptance is proven only by authored energy expenditure.
   for (let attempt = 0; attempt < 3; attempt += 1) {
     await page.keyboard.up('i');
     await page.waitForTimeout(250);
@@ -217,8 +250,6 @@ async function acceptUltimate(page: Page, hero: 'kai' | 'jax'): Promise<void> {
       }
 
       if (accepted) {
-        // Keep the real input held across the authored ACTIVE window so sparse-frame
-        // hitbox preservation, not a test shortcut, decides whether anything is hit.
         await page.waitForTimeout(hero === 'kai' ? 1_650 : 950);
         return;
       }
@@ -239,14 +270,15 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
 
   await acceptUltimate(page, hero);
 
-  // Retreat immediately after the ACTIVE window while observing the real scene.
-  // A legitimate miss is allowed; standing motionless for four seconds is not a
-  // meaningful full-slice gameplay strategy and caused multi-Fang dogpile deaths.
+  // Cover the post-attack disengage with the actual dodge system when energy allows.
+  await page.waitForTimeout(hero === 'jax' ? 125 : 50);
+  await tryDefensiveDodge(page);
+
   let hit = false;
   await page.keyboard.down('Shift');
   await page.keyboard.down('s');
   try {
-    const deadline = Date.now() + 2_750;
+    const deadline = Date.now() + 2_250;
     while (Date.now() < deadline) {
       const beat = await readBeat(page);
       const total = await readNumber(page, 'slice-total-enemy-health');
@@ -262,7 +294,7 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
     await page.keyboard.up('Shift');
   }
 
-  await page.waitForTimeout(150);
+  await page.waitForTimeout(125);
   await expect(page.getByTestId('slice-player-down')).toContainText('NO');
   return hit;
 }
