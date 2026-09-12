@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
+import { useRunner } from "../../lib/stores/useRunner";
 import { useAudio } from "../../lib/stores/useAudio";
 import { useTouchInput } from "../../lib/stores/useTouchInput";
 import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
+import { canTriggerKaiJaxFusion } from "../../game/fusion/fusionPolicy";
 import type { AttackType } from "../../game/combat/moveData";
 import {
   queueBufferedAttack,
@@ -267,7 +269,19 @@ export default function PlayerController() {
       if (consumed) attackBufferRef.current = null;
     }
 
-    if (justPressed("KeyT") || padJustPressed(6)) state.triggerTransformation();
+    if (justPressed("KeyT") || padJustPressed(6)) {
+      const runner = useRunner.getState();
+      if (canTriggerKaiJaxFusion({
+        fighterId: state.playerFighterId,
+        fusionUnlocked: runner.kaiJaxFusionUnlocked,
+        synergy: state.playerSynergy,
+        maxSynergy: state.maxSynergy,
+        transformed: state.playerTransformed,
+        battlePhase: state.battlePhase,
+      })) {
+        state.triggerTransformation();
+      }
+    }
 
     rememberInputs();
   });

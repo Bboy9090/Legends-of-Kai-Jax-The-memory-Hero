@@ -18,39 +18,65 @@ on:
       - ".github/workflows/registry-validate.yml"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: registry-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   validate-registry:
     name: Validate MODEL_REGISTRY
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          # Pull LFS-tracked GLB files if any are stored via LFS
-          lfs: true
+    timeout-minutes: 10
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+    steps:
+      - name: Materialize exact registry workspace
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git"
+          git config core.sparseCheckout true
+          git config extensions.partialClone origin
+          git sparse-checkout init --cone
+          git sparse-checkout set apps/web
+          git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin "${COMMIT_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+          test -f apps/web/src/assets/modelRegistry.ts
+          test -f apps/web/scripts/validate-registry.mjs
+          test -d apps/web/public/models
+
+      - name: Runtime identity
+        run: |
+          node --version
+          git rev-parse HEAD
+          echo "Expected head: ${{ github.event.pull_request.head.sha || github.sha }}"
 
       - name: Run registry validator
         working-directory: apps/web
-        run: node scripts/validate-registry.mjs
-
-      - name: Re-run with JSON-only output (artifact)
-        if: always()
-        working-directory: apps/web
         run: |
           set +e
-          node scripts/validate-registry.mjs > registry-report.txt 2>&1
-          echo "exit=$?" >> registry-report.txt
+          node scripts/validate-registry.mjs 2>&1 | tee /tmp/registry-report.txt
+          status=${PIPESTATUS[0]}
           set -e
+          echo "REGISTRY_VALIDATOR_EXIT=${status}" >> "${GITHUB_ENV}"
+          exit "${status}"
 
-      - name: Upload report
+      - name: Registry evidence summary
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: registry-report
-          path: apps/web/registry-report.txt
-          if-no-files-found: ignore
+        run: |
+          echo "## Registry Validation" >> "${GITHUB_STEP_SUMMARY}"
+          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo "- Head: \`${{ github.event.pull_request.head.sha || github.sha }}\`" >> "${GITHUB_STEP_SUMMARY}"
+          echo "- Validator exit: \`${REGISTRY_VALIDATOR_EXIT:-not-run}\`" >> "${GITHUB_STEP_SUMMARY}"
+          if test -f /tmp/registry-report.txt; then
+            echo "" >> "${GITHUB_STEP_SUMMARY}"
+            echo '```text' >> "${GITHUB_STEP_SUMMARY}"
+            tail -n 80 /tmp/registry-report.txt >> "${GITHUB_STEP_SUMMARY}"
+            echo '```' >> "${GITHUB_STEP_SUMMARY}"
+          fi

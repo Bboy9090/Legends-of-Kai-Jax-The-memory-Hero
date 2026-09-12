@@ -15,3 +15,8 @@ export const useGame = create<GameState>((set) => ({
   end: () => set({ phase: "ended" }),
   reset: () => set({ phase: "ready" }),
 }));
+
+// Expose for testing/debugging
+if (typeof window !== 'undefined') {
+  (window as any).useGame = useGame;
+}

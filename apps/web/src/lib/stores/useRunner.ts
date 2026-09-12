@@ -18,14 +18,16 @@ export type GameState =
   | "customization"
   | "beast-preview"
   | "adventure"
+  | "vertical-slice"
   | "controller-test"
+  | "jax-test"
   | "abilities"
   | "mission-complete"
   | "settings"
   | "codex"
   | "playing";
 
-/** Campaign node id. Order: start → districts → final boss. */
+/** Legacy campaign-node IDs kept only so old battle/session code remains typed while the route is quarantined. */
 export type CampaignNodeId =
   | "start"
   | "district-1"
@@ -42,6 +44,7 @@ interface ProfileData {
   completedStoryMissionIds: string[];
   completedRoamDistrictIds: string[];
   unlockedUpgrades: string[];
+  kaiJaxFusionUnlocked: boolean;
   lastPlayedTitle: string | null;
 }
 
@@ -51,6 +54,8 @@ interface RunnerState {
   selectedCharacter: string | null;
   activeStoryMissionId: string | null;
   trainingSession: boolean;
+  /** Inert compatibility pointer for pre-Bloodward campaign sessions. New story routes must not set it. */
+  campaignCurrentNode: CampaignNodeId | null;
   
   // Persistent Profile Management
   activeProfileIndex: number;
@@ -61,7 +66,9 @@ interface RunnerState {
   setCharacter: (id: string | null) => void;
   setTrainingSession: (v: boolean) => void;
   setActiveStoryMission: (id: string | null) => void;
+  setCampaignCurrentNode: (nodeId: CampaignNodeId | null) => void;
   addScore: (points: number) => void;
+  unlockKaiJaxFusion: () => void;
   
   // Profile Actions
   switchProfile: (index: number) => void;
@@ -73,6 +80,7 @@ interface RunnerState {
   completedStoryMissionIds: string[];
   completedRoamDistrictIds: string[];
   unlockedUpgrades: string[];
+  kaiJaxFusionUnlocked: boolean;
   setCampaignCompleted: (nodeId: CampaignNodeId) => void;
   setMissionCompleted: (missionKey: string) => void;
   setRoamDistrictCompleted: (districtKey: string) => void;
@@ -84,6 +92,7 @@ const DEFAULT_PROFILE: ProfileData = {
   completedStoryMissionIds: [],
   completedRoamDistrictIds: [],
   unlockedUpgrades: [],
+  kaiJaxFusionUnlocked: false,
   lastPlayedTitle: null,
 };
 
@@ -97,6 +106,28 @@ const CAMPAIGN_ORDER: CampaignNodeId[] = [
   "district-5",
   "final-boss",
 ];
+
+const CURRENT_PUBLIC_CHARACTER_IDS = new Set(["kai", "jax", "kai-jax", "boryn", "borax"]);
+
+function migrateSelectedCharacter(value: unknown): string | null {
+  if (value === null) return null;
+  if (value === "kaijax") return "kai-jax";
+  if (typeof value === "string" && CURRENT_PUBLIC_CHARACTER_IDS.has(value)) return value;
+  return "kai";
+}
+
+function normalizeProfile(value: unknown): ProfileData {
+  const profile = (value && typeof value === "object") ? value as Partial<ProfileData> : {};
+  return {
+    ...DEFAULT_PROFILE,
+    ...profile,
+    campaignCompletedNodes: Array.isArray(profile.campaignCompletedNodes) ? profile.campaignCompletedNodes : [],
+    completedStoryMissionIds: Array.isArray(profile.completedStoryMissionIds) ? profile.completedStoryMissionIds : [],
+    completedRoamDistrictIds: Array.isArray(profile.completedRoamDistrictIds) ? profile.completedRoamDistrictIds : [],
+    unlockedUpgrades: Array.isArray(profile.unlockedUpgrades) ? profile.unlockedUpgrades : [],
+    kaiJaxFusionUnlocked: Boolean(profile.kaiJaxFusionUnlocked),
+  };
+}
 
 export function getNextCampaignNode(id: CampaignNodeId): CampaignNodeId | null {
   const i = CAMPAIGN_ORDER.indexOf(id);
@@ -115,9 +146,10 @@ export const useRunner = create<RunnerState>()(
     (set, get) => ({
       // Runtime Initial
       gameState: "lore-hub",
-      selectedCharacter: "jaxon",
+      selectedCharacter: "kai",
       activeStoryMissionId: null,
       trainingSession: false,
+      campaignCurrentNode: null,
       
       // Profiles Initial
       activeProfileIndex: 0,
@@ -133,6 +165,7 @@ export const useRunner = create<RunnerState>()(
       completedStoryMissionIds: [],
       completedRoamDistrictIds: [],
       unlockedUpgrades: [],
+      kaiJaxFusionUnlocked: false,
 
       setGameState: (gameState) =>
         set({
@@ -142,6 +175,8 @@ export const useRunner = create<RunnerState>()(
       setTrainingSession: (trainingSession) => set({ trainingSession }),
       setCharacter: (selectedCharacter) => set({ selectedCharacter }),
       setActiveStoryMission: (activeStoryMissionId) => set({ activeStoryMissionId }),
+      // Compatibility only. Current Story Hub / Bloodward routes intentionally never call this.
+      setCampaignCurrentNode: (campaignCurrentNode) => set({ campaignCurrentNode }),
       
       addScore: (points) => {
         const { totalScore, activeProfileIndex, profiles } = get();
@@ -149,6 +184,14 @@ export const useRunner = create<RunnerState>()(
         const newProfiles = [...profiles] as [ProfileData, ProfileData, ProfileData];
         newProfiles[activeProfileIndex] = { ...newProfiles[activeProfileIndex], totalScore: newScore };
         set({ totalScore: newScore, profiles: newProfiles });
+      },
+
+      unlockKaiJaxFusion: () => {
+        const { activeProfileIndex, profiles, kaiJaxFusionUnlocked } = get();
+        if (kaiJaxFusionUnlocked) return;
+        const newProfiles = [...profiles] as [ProfileData, ProfileData, ProfileData];
+        newProfiles[activeProfileIndex] = { ...newProfiles[activeProfileIndex], kaiJaxFusionUnlocked: true };
+        set({ kaiJaxFusionUnlocked: true, profiles: newProfiles });
       },
 
       setCampaignCompleted: (nodeId) => {
@@ -196,6 +239,7 @@ export const useRunner = create<RunnerState>()(
       switchProfile: (index) => {
         const { profiles } = get();
         const targetProfile = profiles[index];
+        if (!targetProfile) return;
         set({
           activeProfileIndex: index,
           totalScore: targetProfile.totalScore,
@@ -203,6 +247,8 @@ export const useRunner = create<RunnerState>()(
           completedStoryMissionIds: targetProfile.completedStoryMissionIds || [],
           completedRoamDistrictIds: targetProfile.completedRoamDistrictIds || [],
           unlockedUpgrades: targetProfile.unlockedUpgrades,
+          kaiJaxFusionUnlocked: targetProfile.kaiJaxFusionUnlocked,
+          campaignCurrentNode: null,
         });
       },
 
@@ -218,6 +264,8 @@ export const useRunner = create<RunnerState>()(
             completedStoryMissionIds: DEFAULT_PROFILE.completedStoryMissionIds,
             completedRoamDistrictIds: DEFAULT_PROFILE.completedRoamDistrictIds,
             unlockedUpgrades: DEFAULT_PROFILE.unlockedUpgrades,
+            kaiJaxFusionUnlocked: DEFAULT_PROFILE.kaiJaxFusionUnlocked,
+            campaignCurrentNode: null,
           });
         } else {
           set({ profiles: newProfiles });
@@ -226,6 +274,37 @@ export const useRunner = create<RunnerState>()(
     }),
     {
       name: "kai-jax-save",
+      version: 2,
+      migrate: (persistedState: unknown) => {
+        const state = (persistedState && typeof persistedState === "object")
+          ? persistedState as Partial<RunnerState>
+          : {};
+        const rawProfiles = Array.isArray(state.profiles) ? state.profiles : [];
+        const profiles: [ProfileData, ProfileData, ProfileData] = [
+          normalizeProfile(rawProfiles[0]),
+          normalizeProfile(rawProfiles[1]),
+          normalizeProfile(rawProfiles[2]),
+        ];
+        const activeProfileIndex = state.activeProfileIndex === 1 || state.activeProfileIndex === 2
+          ? state.activeProfileIndex
+          : 0;
+        const activeProfile = profiles[activeProfileIndex];
+
+        return {
+          ...state,
+          activeProfileIndex,
+          profiles,
+          selectedCharacter: migrateSelectedCharacter(state.selectedCharacter),
+          totalScore: activeProfile.totalScore,
+          campaignCompletedNodes: activeProfile.campaignCompletedNodes,
+          completedStoryMissionIds: activeProfile.completedStoryMissionIds,
+          completedRoamDistrictIds: activeProfile.completedRoamDistrictIds,
+          unlockedUpgrades: activeProfile.unlockedUpgrades,
+          kaiJaxFusionUnlocked: activeProfile.kaiJaxFusionUnlocked,
+          // Never revive the old Cross Point/Rift campaign pointer from persisted data.
+          campaignCurrentNode: null,
+        } as RunnerState;
+      },
     }
   )
 );
