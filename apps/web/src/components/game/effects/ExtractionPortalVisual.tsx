@@ -141,6 +141,14 @@ export function ExtractionPortalVisual({ isUnlocked, position = [0, 0.6, 17] }: 
             depthWrite={false}
           />
         </mesh>
+        <mesh position={[0, 0.1, 0]}>
+          <boxGeometry args={[0.15, 0.25, 0.05]} />
+          <meshStandardMaterial
+            color="#dc2626"
+            emissive="#7f1d1d"
+            emissiveIntensity={0.6}
+          />
+        </mesh>
       </group>
     </group>
   );

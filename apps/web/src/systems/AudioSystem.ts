@@ -86,6 +86,15 @@ export class AudioSystem {
       case 'phase_transition':
         this.playPhaseTransition(now);
         break;
+      case 'ambient_wind':
+        this.playAmbientWind(now);
+        break;
+      case 'ambient_industrial':
+        this.playAmbientIndustrial(now);
+        break;
+      case 'ambient_metal_creak':
+        this.playAmbientMetalCreak(now);
+        break;
     }
   }
 
@@ -259,6 +268,113 @@ export class AudioSystem {
     gain.connect(this.masterGain);
     osc.start(now);
     osc.stop(now + 0.6);
+  }
+
+  /** Ambient wind through broken structures — Ashblock atmosphere */
+  private playAmbientWind(now: number): void {
+    if (!this.ctx || !this.masterGain) return;
+    const buffer = this.noiseBuffer(2.0);
+    const src = this.ctx.createBufferSource();
+    src.buffer = buffer;
+    src.loop = false;
+
+    // Low-pass filter for wind howl
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(3000, now);
+    filter.frequency.linearRampToValueAtTime(1500, now + 2.0);
+    filter.Q.value = 1;
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
+
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.masterGain);
+    src.start(now);
+    src.stop(now + 2.1);
+  }
+
+  /** Industrial ambient sound — machinery, distant impacts */
+  private playAmbientIndustrial(now: number): void {
+    if (!this.ctx || !this.masterGain) return;
+
+    // Deep industrial drone (low frequency)
+    const droneLow = this.ctx.createOscillator();
+    droneLow.type = 'sine';
+    droneLow.frequency.setValueAtTime(48, now);
+    droneLow.frequency.linearRampToValueAtTime(52, now + 1.5);
+
+    const droneGain = this.ctx.createGain();
+    droneGain.gain.setValueAtTime(0.08, now);
+    droneGain.gain.linearRampToValueAtTime(0.001, now + 1.5);
+
+    droneLow.connect(droneGain);
+    droneGain.connect(this.masterGain);
+    droneLow.start(now);
+    droneLow.stop(now + 1.6);
+
+    // Metallic clangs (sparse industrial sounds)
+    const clangs = [0.2, 0.6, 1.0];
+    clangs.forEach((offset) => {
+      const clang = this.ctx!.createOscillator();
+      clang.type = 'square';
+      clang.frequency.setValueAtTime(320 + Math.random() * 200, now + offset);
+      clang.frequency.exponentialRampToValueAtTime(80, now + offset + 0.3);
+
+      const clangGain = this.ctx!.createGain();
+      clangGain.gain.setValueAtTime(0.15, now + offset);
+      clangGain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.3);
+
+      clang.connect(clangGain);
+      clangGain.connect(this.masterGain!);
+      clang.start(now + offset);
+      clang.stop(now + offset + 0.35);
+    });
+  }
+
+  /** Metal creak — structural stress, broken architecture ambience */
+  private playAmbientMetalCreak(now: number): void {
+    if (!this.ctx || !this.masterGain) return;
+    const buffer = this.noiseBuffer(1.2);
+    const src = this.ctx.createBufferSource();
+    src.buffer = buffer;
+
+    // High-pass filter for creaky metal
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.setValueAtTime(4000, now);
+    filter.frequency.exponentialRampToValueAtTime(2000, now + 1.2);
+    filter.Q.value = 3;
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.1, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.masterGain);
+    src.start(now);
+    src.stop(now + 1.3);
+  }
+
+  /** Public method for ambient industrial audio (called by EnvironmentAmbience) */
+  playAmbientIndustrial(): void {
+    if (!this.enabled || !this.ctx) return;
+    this.play('ambient_industrial');
+  }
+
+  /** Public method for ambient wind audio */
+  playAmbientWind(): void {
+    if (!this.enabled || !this.ctx) return;
+    this.play('ambient_wind');
+  }
+
+  /** Public method for ambient metal creak audio */
+  playAmbientMetalCreak(): void {
+    if (!this.enabled || !this.ctx) return;
+    this.play('ambient_metal_creak');
   }
 
   /** Play procedural venue-themed battle synth music based on arenaId */

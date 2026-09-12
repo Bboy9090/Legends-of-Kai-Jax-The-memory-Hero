@@ -31,6 +31,7 @@ import { MemoryTraceVisual } from './effects/MemoryTraceVisual';
 import { ExtractionPortalVisual } from './effects/ExtractionPortalVisual';
 import { EnvironmentAmbience } from './effects/EnvironmentAmbience';
 import { AtmosphericEffects } from './effects/AtmosphericEffects';
+import { AshblockHeightsEnvironment } from './environments/AshblockHeightsEnvironment';
 import { PerformanceOptimizer } from './performance/PerformanceOptimizer';
 import {
   applyFangKnockback,
@@ -506,29 +507,16 @@ function VerticalSliceEnvironment({
   return (
     <group>
       <PerformanceOptimizer />
+
+      {/* Ashblock Heights environmental polish */}
+      <AshblockHeightsEnvironment stage={renderStage} />
+
       <EnvironmentAmbience
         stage={renderStage}
         fangBehavior={primaryCombatant?.behavior ?? 'IDLE'}
         playerHealth={renderMission.playerHealth}
       />
       <AtmosphericEffects stage={renderStage} fangBehavior={primaryCombatant?.behavior ?? 'IDLE'} />
-
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, -0.01, 20]}
-        receiveShadow
-        userData={{ isGround: true, isWalkable: true }}
-      >
-        <planeGeometry args={[44, 100]} />
-        <meshStandardMaterial color="#18181b" roughness={0.9} metalness={0.12} />
-      </mesh>
-
-      {[-15, 0, 15, 30, 45].map((z) => (
-        <mesh key={`street-mark-${z}`} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, z]}>
-          <planeGeometry args={[0.22, 5]} />
-          <meshStandardMaterial color="#c76b22" emissive="#7c2d12" emissiveIntensity={0.15} />
-        </mesh>
-      ))}
 
       {isKai && (
         <>
