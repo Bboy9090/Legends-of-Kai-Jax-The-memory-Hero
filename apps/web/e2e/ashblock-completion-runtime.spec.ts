@@ -185,12 +185,19 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
   const beforeCount = await readNumber(page, 'slice-enemy-count');
 
   await page.keyboard.down('i');
+  let retreating = false;
   try {
     // Energy consumption proves the real controller accepted the authored attack.
     await expect.poll(async () => readNumber(page, 'slice-energy'), {
       timeout: 3_000,
       intervals: [50, 75, 100, 150],
     }).toBeLessThan(beforeEnergy - 20);
+
+    // Begin a real controller-owned retreat as soon as the controller accepts
+    // the ultimate. Kai's authored area and Jax's storm radius remain live while
+    // the hero stops standing inside the synchronized Fang damage envelope.
+    await page.keyboard.down('s');
+    retreating = true;
 
     // Hold through the authored active window. An accepted real attack is still
     // allowed to miss after enemy movement/knockback; the full-chain proof must
@@ -203,7 +210,6 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
   // Do not leave the hero standing inside the damage envelope while observing
   // whether a legitimate attack hit or missed. Retreat through real movement.
   const deadline = Date.now() + 4_000;
-  await page.keyboard.down('s');
   try {
     while (Date.now() < deadline) {
       const total = await readNumber(page, 'slice-total-enemy-health');
@@ -215,7 +221,7 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
       await page.waitForTimeout(100);
     }
   } finally {
-    await page.keyboard.up('s');
+    if (retreating) await page.keyboard.up('s');
   }
 
   await expect(page.getByTestId('slice-player-down')).toContainText('NO');
