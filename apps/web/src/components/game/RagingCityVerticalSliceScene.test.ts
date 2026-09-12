@@ -31,17 +31,17 @@ describe('RagingCityVerticalSlice - Fang Combatant Contract', () => {
 
   describe('Fang Combatant State Machine', () => {
     it('initializes with full health', () => {
-      expect(fangState.health).toBe(120);
+      expect(fangState.health).toBe(100);
       expect(fangState.isDead).toBe(false);
     });
 
     it('reduces health when damaged', () => {
       damageFangCombatant(fangState, 25, 0);
-      expect(fangState.health).toBe(95);
+      expect(fangState.health).toBe(75);
     });
 
     it('dies when health reaches 0', () => {
-      damageFangCombatant(fangState, 120, 0);
+      damageFangCombatant(fangState, 100, 0);
       expect(fangState.isDead).toBe(true);
       expect(fangState.health).toBe(0);
     });

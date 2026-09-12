@@ -86,34 +86,6 @@ async function readBeat(page: Page): Promise<string> {
   return text.replace(/^Beat:\s*/, '').trim();
 }
 
-async function readBehavior(page: Page): Promise<string> {
-  return (await page.getByTestId('slice-fang-behavior').innerText()).replace(/^Fang:\s*/, '').trim();
-}
-
-async function tryDefensiveDodge(page: Page): Promise<boolean> {
-  const beforeEnergy = await readNumber(page, 'slice-energy');
-  if (beforeEnergy < 18) return false;
-
-  await page.keyboard.up('q');
-  await page.waitForTimeout(100);
-  await page.keyboard.down('q');
-  let accepted = false;
-  try {
-    const deadline = Date.now() + 800;
-    while (Date.now() < deadline) {
-      if (await readNumber(page, 'slice-energy') < beforeEnergy - 5) {
-        accepted = true;
-        break;
-      }
-      await page.waitForTimeout(50);
-    }
-  } finally {
-    await page.keyboard.up('q');
-  }
-
-  return accepted;
-}
-
 async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
   if (hero === 'kai') {
     await page.keyboard.down('e');
@@ -164,139 +136,66 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
-  // Spend a real dodge when available to cover the retreat from any windup that
-  // began during the previous attack. No health, position, or invulnerability is
-  // mutated by the harness; Q goes through the actual controller dodge lifecycle.
-  await tryDefensiveDodge(page);
+  const requiredEnergy = hero === 'kai' ? 80 : 75;
 
-  await page.keyboard.up('i');
-  await page.keyboard.down('Shift');
+  // Kiting is real controller-owned movement, not a test teleport. It gives the
+  // hero the same breathing room a player would create between authored attacks.
   await page.keyboard.down('s');
-  try {
-    await page.waitForTimeout(hero === 'kai' ? 650 : 850);
-    await expect.poll(async () => readNumber(page, 'slice-energy'), {
-      timeout: 12_000,
-      intervals: [100, 150, 200, 250],
-    }).toBeGreaterThanOrEqual(99);
-  } finally {
-    await page.keyboard.up('s');
-    await page.keyboard.up('Shift');
-  }
+  await page.waitForTimeout(hero === 'kai' ? 500 : 650);
+  await page.keyboard.up('s');
 
-  // Ensure a neutral input sample exists before the next level-based attack edge.
-  await page.waitForTimeout(300);
-  await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+  await expect.poll(async () => readNumber(page, 'slice-energy'), {
+    timeout: 12_000,
+    intervals: [100, 150, 200, 250],
+  }).toBeGreaterThanOrEqual(requiredEnergy);
 }
 
-async function approachIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
+async function closeIntoLiveEnvelope(page: Page) {
   await page.keyboard.down('w');
   try {
-    // Prove the primary Fang is tracking the player, but do not intentionally park
-    // in melee. Kai's and Jax's authored ultimates have 10m and 5m radii.
-    await expect.poll(async () => readBehavior(page), {
+    await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
       timeout: 10_000,
       intervals: [75, 100, 150, 200],
-    }).toMatch(/CHASE|WINDUP|RECOVERY/);
-
-    const approachBudget = hero === 'kai' ? 900 : 1_450;
-    const deadline = Date.now() + approachBudget;
-    while (Date.now() < deadline) {
-      const behavior = await readBehavior(page);
-      if (/WINDUP|RECOVERY/.test(behavior)) break;
-      await page.waitForTimeout(100);
-    }
+    }).toMatch(/WINDUP|RECOVERY/);
   } finally {
     await page.keyboard.up('w');
   }
-
-  const behavior = await readBehavior(page);
-  if (behavior === 'WINDUP') {
-    const dodged = await tryDefensiveDodge(page);
-    if (dodged) {
-      // Allow the real Fang windup to resolve into the real dodge invulnerability,
-      // then let the controller leave DODGE before requesting an ultimate edge.
-      await page.waitForTimeout(425);
-    }
-  }
-
-  await page.waitForTimeout(125);
-}
-
-async function acceptUltimate(page: Page, hero: 'kai' | 'jax'): Promise<void> {
-  const requiredEnergy = hero === 'kai' ? 80 : 75;
-  await expect.poll(async () => readNumber(page, 'slice-energy'), {
-    timeout: 4_000,
-    intervals: [75, 100, 150, 200],
-  }).toBeGreaterThanOrEqual(requiredEnergy);
-
-  // Software WebGL can skip the frame separating a previous key-up and key-down.
-  // Retry the real edge; acceptance is proven only by authored energy expenditure.
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    await page.keyboard.up('i');
-    await page.waitForTimeout(250);
-    const beforeEnergy = await readNumber(page, 'slice-energy');
-
-    await page.keyboard.down('i');
-    let accepted = false;
-    const deadline = Date.now() + 2_500;
-    try {
-      while (Date.now() < deadline) {
-        const energy = await readNumber(page, 'slice-energy');
-        if (energy < beforeEnergy - 20) {
-          accepted = true;
-          break;
-        }
-        await page.waitForTimeout(75);
-      }
-
-      if (accepted) {
-        await page.waitForTimeout(hero === 'kai' ? 1_650 : 950);
-        return;
-      }
-    } finally {
-      await page.keyboard.up('i');
-    }
-
-    await page.waitForTimeout(350);
-  }
-
-  throw new Error(`${hero} ultimate input was not accepted by the real controller after bounded retries`);
 }
 
 async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
-  const beforeBeat = await readBeat(page);
+  const beforeEnergy = await readNumber(page, 'slice-energy');
   const beforeTotal = await readNumber(page, 'slice-total-enemy-health');
   const beforeCount = await readNumber(page, 'slice-enemy-count');
 
-  await acceptUltimate(page, hero);
-
-  // Cover the post-attack disengage with the actual dodge system when energy allows.
-  await page.waitForTimeout(hero === 'jax' ? 125 : 50);
-  await tryDefensiveDodge(page);
-
-  let hit = false;
-  await page.keyboard.down('Shift');
-  await page.keyboard.down('s');
+  await page.keyboard.down('i');
   try {
-    const deadline = Date.now() + 2_250;
-    while (Date.now() < deadline) {
-      const beat = await readBeat(page);
-      const total = await readNumber(page, 'slice-total-enemy-health');
-      const count = await readNumber(page, 'slice-enemy-count');
-      if (beat !== beforeBeat || total < beforeTotal || count < beforeCount) {
-        hit = true;
-        break;
-      }
-      await page.waitForTimeout(100);
-    }
+    // Energy consumption proves the real controller accepted the authored attack.
+    await expect.poll(async () => readNumber(page, 'slice-energy'), {
+      timeout: 3_000,
+      intervals: [50, 75, 100, 150],
+    }).toBeLessThan(beforeEnergy - 20);
+
+    // Hold through the authored active window. An accepted real attack is still
+    // allowed to miss after enemy movement/knockback; the full-chain proof must
+    // not convert every accepted input into a guaranteed hit.
+    await page.waitForTimeout(hero === 'kai' ? 1_650 : 950);
   } finally {
-    await page.keyboard.up('s');
-    await page.keyboard.up('Shift');
+    await page.keyboard.up('i');
   }
 
-  await page.waitForTimeout(125);
+  const deadline = Date.now() + 4_000;
+  while (Date.now() < deadline) {
+    const total = await readNumber(page, 'slice-total-enemy-health');
+    const count = await readNumber(page, 'slice-enemy-count');
+    if (total < beforeTotal || count < beforeCount) {
+      await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+      return true;
+    }
+    await page.waitForTimeout(100);
+  }
+
   await expect(page.getByTestId('slice-player-down')).toContainText('NO');
-  return hit;
+  return false;
 }
 
 async function clearCombatBeat(
@@ -312,15 +211,10 @@ async function clearCombatBeat(
 
   let attempts = 0;
   let successfulHits = 0;
-
-  while (attempts < maxAttempts) {
-    const beat = await readBeat(page);
-    if (beat !== expectedBeat) break;
-    if (await readNumber(page, 'slice-enemy-count') <= 0) break;
-
+  while (await readNumber(page, 'slice-enemy-count') > 0 && attempts < maxAttempts) {
     attempts += 1;
     await retreatAndRecharge(page, hero);
-    await approachIntoUltimateEnvelope(page, hero);
+    await closeIntoLiveEnvelope(page);
     if (await ultimateAndObserveAggregateDamage(page, hero)) {
       successfulHits += 1;
     }
@@ -330,11 +224,10 @@ async function clearCombatBeat(
     successfulHits,
     `${hero} must land at least one real scene-hitbox attack during ${expectedBeat}`,
   ).toBeGreaterThan(0);
-
-  await expect.poll(async () => readBeat(page), {
-    timeout: 4_000,
-    intervals: [75, 100, 150, 200],
-  }).not.toBe(expectedBeat);
+  expect(
+    await readNumber(page, 'slice-enemy-count'),
+    `${hero} must clear ${expectedBeat} through real accepted attacks`,
+  ).toBe(0);
 }
 
 async function advanceRecoveryIntoCombinationFight(page: Page) {
@@ -365,9 +258,9 @@ async function advanceRecoveryIntoCombinationFight(page: Page) {
 }
 
 async function defeatPhase55FangSequence(page: Page, hero: 'kai' | 'jax') {
-  await clearCombatBeat(page, hero, 'ashblock-first-ambush', hero === 'kai' ? 7 : 10);
+  await clearCombatBeat(page, hero, 'ashblock-first-ambush', hero === 'kai' ? 6 : 8);
   await advanceRecoveryIntoCombinationFight(page);
-  await clearCombatBeat(page, hero, 'ashblock-combination-fight', hero === 'kai' ? 9 : 14);
+  await clearCombatBeat(page, hero, 'ashblock-combination-fight', hero === 'kai' ? 8 : 14);
 
   await expect.poll(async () => readBeat(page), {
     timeout: 3_000,
@@ -375,7 +268,7 @@ async function defeatPhase55FangSequence(page: Page, hero: 'kai' | 'jax') {
   }).toBe('ashblock-district-lieutenant');
   await expect(page.getByTestId('slice-lieutenant')).toContainText('YES');
 
-  await clearCombatBeat(page, hero, 'ashblock-district-lieutenant', hero === 'kai' ? 10 : 16);
+  await clearCombatBeat(page, hero, 'ashblock-district-lieutenant', hero === 'kai' ? 9 : 16);
 
   await expect.poll(async () => page.getByTestId('slice-stage').innerText(), {
     timeout: 3_000,

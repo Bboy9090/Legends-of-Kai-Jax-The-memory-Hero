@@ -7,32 +7,16 @@ interface MemoryTraceVisualProps {
   position?: [number, number, number];
 }
 
-export function MemoryTraceVisual({ isActivated, position = [0, 0.6, 4.1] }: MemoryTraceVisualProps) {
+export function MemoryTraceVisual({ isActivated, position = [0, 0.6, 5] }: MemoryTraceVisualProps) {
   const coreRef = useRef<THREE.Mesh>(null);
   const aura1Ref = useRef<THREE.Mesh>(null);
   const aura2Ref = useRef<THREE.Mesh>(null);
   const particleRef = useRef<THREE.Group>(null);
-  const fragmentsRef = useRef<THREE.Group>(null);
-  const expansionRef = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
     const elapsed = clock.getElapsedTime();
     const pulse = 0.7 + 0.3 * Math.sin(elapsed * 2.5);
     const rotationSpeed = isActivated ? 0.03 : 0.008;
-
-    // Activation wave expansion
-    if (expansionRef.current) {
-      if (isActivated) {
-        const waveProgress = (elapsed * 1.2) % 1;
-        expansionRef.current.scale.set(
-          1 + waveProgress * 3,
-          1,
-          1 + waveProgress * 3
-        );
-        const mat = expansionRef.current.material as THREE.MeshStandardMaterial;
-        mat.opacity = Math.max(0, 1 - waveProgress);
-      }
-    }
 
     if (coreRef.current) {
       coreRef.current.scale.set(pulse, pulse, pulse);
@@ -61,37 +45,10 @@ export function MemoryTraceVisual({ isActivated, position = [0, 0.6, 4.1] }: Mem
         particle.position.y += Math.sin(elapsed + idx) * 0.01;
       });
     }
-
-    // Memory fragments animation during activation
-    if (fragmentsRef.current && isActivated) {
-      fragmentsRef.current.rotation.x += 0.01;
-      fragmentsRef.current.rotation.y += 0.015;
-      fragmentsRef.current.children.forEach((fragment, idx) => {
-        const fragmentElapsed = elapsed + idx * 0.2;
-        fragment.position.y += Math.sin(fragmentElapsed * 1.5) * 0.02;
-        fragment.rotation.x += 0.015;
-        fragment.rotation.z += 0.02;
-      });
-    }
   });
 
   return (
     <group position={position}>
-      {/* Expansion shockwave when activated */}
-      {isActivated && (
-        <mesh ref={expansionRef} name="memory-trace-expansion">
-          <torusGeometry args={[2.0, 0.15, 12, 64]} />
-          <meshStandardMaterial
-            color="#c4b5fd"
-            emissive="#a78bfa"
-            emissiveIntensity={0.6}
-            transparent
-            opacity={0.8}
-            depthWrite={false}
-          />
-        </mesh>
-      )}
-
       <mesh ref={coreRef} name="memory-trace-core" castShadow>
         <sphereGeometry args={[0.6, 16, 16]} />
         <meshStandardMaterial
@@ -139,32 +96,6 @@ export function MemoryTraceVisual({ isActivated, position = [0, 0.6, 4.1] }: Mem
               />
             </mesh>
           ))}
-        </group>
-      )}
-
-      {/* Memory fragments - Fang origin/motivation visualization */}
-      {isActivated && (
-        <group ref={fragmentsRef} name="memory-fragments">
-          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
-            const angle = (i / 8) * Math.PI * 2;
-            const radius = 2.0 + Math.random() * 0.5;
-            const height = (Math.random() - 0.5) * 2;
-            return (
-              <mesh
-                key={`memory-fragment-${i}`}
-                position={[Math.cos(angle) * radius, height, Math.sin(angle) * radius]}
-              >
-                <boxGeometry args={[0.3 + Math.random() * 0.2, 0.3 + Math.random() * 0.2, 0.3 + Math.random() * 0.2]} />
-                <meshStandardMaterial
-                  color="#d8b4fe"
-                  emissive="#a78bfa"
-                  emissiveIntensity={0.6 + Math.random() * 0.4}
-                  transparent
-                  opacity={0.7}
-                />
-              </mesh>
-            );
-          })}
         </group>
       )}
     </group>

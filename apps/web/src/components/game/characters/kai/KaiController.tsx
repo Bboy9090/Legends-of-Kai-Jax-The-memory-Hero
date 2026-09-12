@@ -239,9 +239,8 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
     // Keep the hitbox origin current before processing the previous accepted attack.
     attackSystem.update(currentTime, kai.position);
 
-    // Keyboard presses can be shorter than a render frame. Consume the DOM-event
-    // buffer first, then fall back to the shared level-state rising edge for touch
-    // and gamepad paths that are still sampled by their adapters.
+    // Preserve short keyboard presses across slow render frames while retaining
+    // the shared rising-edge path used by touch and gamepad adapters.
     const lightPressed = combatActionBuffer.consume('attackLight') ||
       wasJustPressed(input.attackLight, prevInput?.attackLight ?? false);
     const heavyPressed = combatActionBuffer.consume('attackHeavy') ||

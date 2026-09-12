@@ -1,8 +1,16 @@
 # Legends of Kai-Jax: The Memory Hero
 
-A production 3D action-adventure game featuring Kai and Jax, two brothers who fuse into Kai-Jax, the Memory King. This is the official setup and reference guide for developers, testers, deployers, and release reviewers.
+A production setup and release guide for developers, testers, deployers, and
+release reviewers. This document describes what is verified to work in this
+repository today — not what's planned, aspirational, or referenced by a file
+that happens to exist.
 
-**Phase 5.5 Release:** Ashblock Heights vertical slice featuring multi-Fang combat, Kai ultimate input refinement, Jax survival balance tuning, Memory Trace system, and comprehensive environmental polish.
+Phase 1B code integration ([PR #222](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/222)) lands three verified commits:
+- Dead-code reference audit + cleanup
+- LoreHub button accessibility (touch target sizing)
+- Adventure pause menu styling (contrast, accessibility)
+
+All three commits pass local build, test, and typecheck gates. **Live Vercel deployment verification is pending** (blocked by execution-environment network policy). See [Release Status](#13-release-status).
 
 ## Contents
 
@@ -29,15 +37,9 @@ React, Three.js / React Three Fiber, and TypeScript. Two brothers, Kai and
 Jax, fuse into the Memory King, Kai-Jax, and fight through a mission-based
 campaign.
 
-**Phase 5.5 scope:** Ashblock Heights vertical slice with 15-mission campaign (3 acts × 5 missions), full input refinement (Kai ultimate, Jax survival tuning), multi-Fang combat encounters, Memory Trace system integration, and complete environmental polish. Playable end-to-end through Training Arena and Story Mode with robust save/load mechanics.
-
-**Core systems verified:**
-- Character models (Kai, Jax, 100+ roster via fusion system)
-- Combat: light/heavy/special/ultimate attacks, dodging, combo chaining
-- Memory Trace system: persistent progression tracking
-- Traversal: wall climbing, web-zipping, environmental interaction
-- Multi-enemy encounters: up to 9 simultaneous Fang combatants
-- Story progression: 15-mission campaign with act-based pacing
+**Current MVP scope:** a 15-mission vertical slice across 3 acts (5 missions
+each — verified in `apps/web/src/lib/story_missions.ts`), playable end to end
+through Training Arena and Story Mode, with a working pause/quit/save loop.
 
 **Supported targets:**
 
@@ -234,9 +236,15 @@ testing, not assumed from file presence:
   Missions share this arena/controller). Movement, light/heavy/skill
   attacks, dodge, combo chaining, auto-targeting.
 - **Input support:**
-  - **Keyboard** — WASD/arrows movement, Shift for run, Q dodge, J/X light attack, K/Z heavy attack, L/C skill, I/V ultimate, E traversal/zip, F interact, Space jump. Fully supported and verified.
-  - **Touch** — on-screen joystick (movement), ATK/HEAVY/SKILL/ULTIMATE/DODGE/Pause buttons. Implemented and tested via `AdventureTouchControls.tsx` with 44px+ WCAG-compliant touch targets.
-  - **Gamepad** — gamepad input handler present but unverified in gameplay. D-pad/stick movement and button mapping available; full device testing pending.
+  - **Keyboard** — WASD/arrows movement, J/X light attack, K/Z heavy
+    attack, L/C skill, Space dodge, Esc/P pause. Fully supported.
+  - **Touch** — on-screen joystick (movement), ATK/HEAVY/SKILL/DODGE/Pause buttons.
+    Implemented this session via `AdventureTouchControls.tsx`. Previously
+    non-functional (three disconnected touch systems existed).
+  - **Gamepad** — **not implemented.** There is no `navigator.getGamepads()`
+    integration anywhere in the codebase. A "Gamepad2Icon" exists purely as
+    a decorative SVG icon on menu buttons — its presence is not evidence of
+    gamepad support.
 - **Pause / resume / force quit** — Esc/P (keyboard) or on-screen pause button
   (touch) opens a pause overlay with Resume and "Force Quit to Hub." Pause menu
   buttons hardened with 44px minimum touch targets (Phase 1B accessibility work).
@@ -404,46 +412,31 @@ See [`docs/known-debt.md`](docs/known-debt.md) for the full, classified tracker.
 
 ## 13. Release Status
 
-**Phase 5.5 Release Scope:** ✅ **VERIFIED**
+**Code integration:** ✅ Ready
+- Three commits verified (dead-code cleanup, accessibility improvements).
+- All reference proofs passed (zero-reference audit, local build, tests, typecheck).
 
-### Code Integration
-- ✅ Kai ultimate input refinement (I/V key binding verified)
-- ✅ Jax survival tuning (balance adjustments integrated)
-- ✅ Memory Trace system (progression tracking implemented)
-- ✅ Multi-Fang combat (up to 9 simultaneous enemies)
-- ✅ Environmental polish (Ashblock Heights vertical slice)
-- ✅ Keyboard controls fully documented
-- ✅ Touch controls verified (44px WCAG targets)
+**Local release gates:** ✅ Passing
+- `pnpm install --frozen-lockfile` ✅
+- `pnpm -C apps/web build` ✅ (16.92s)
+- `pnpm -C apps/web test` ✅ (82 tests)
+- `pnpm -C apps/web typecheck` ✅
 
-### Local Release Gates
-- ✅ `pnpm install --frozen-lockfile` — dependencies locked
-- ✅ `pnpm -C apps/web build` — production bundle verified
-- ✅ `pnpm -C apps/web test` — 82 tests passing
-- ✅ `pnpm -C apps/web test:e2e` — Ashblock completion verified
-- ✅ `pnpm -C apps/web typecheck` — Phase 0 scope clean
-- ✅ `npm run validate:release` — complete validation suite
+**Local verification:** ✅ Confirmed
+- Production build output: `apps/web/dist/`
+- Main menu renders and loads on `http://localhost:4173`
 
-### Local Gameplay Verification
-- ✅ Main Menu boots and renders
-- ✅ LoreHub functional with character selection
-- ✅ Story mode launches with Kai/Jax hero selection
-- ✅ Ashblock Heights vertical slice completes end-to-end
-- ✅ Input handling: keyboard, touch, gamepad
-- ✅ Save/load persistence working
-- ✅ Memory Trace progression tracked
+**Live Vercel deployment:** ⏳ Pending
+- Deployed commits: pushed to `phase1b-production-readiness` branch
+- Live URL: `https://legends-of-kai-jax-the-memory-hero.vercel.app/`
+- Status: **Not verified in this environment** (network policy blocks external HTTPS from execution environment)
+- **Manual verification required** before declaring production-ready
 
-### Build Artifacts
-- ✅ Production bundle: `apps/web/dist/` (verified size and structure)
-- ✅ Desktop executable generation: electron-builder configured
-- ✅ Mobile builds: Capacitor iOS/Android pipelines configured
-- ✅ All build scripts tested: dev, build, preview, test:e2e
+**Release candidate status:** ❌ Not yet declared
 
-### Live Deployment Status
-- **Primary:** Vercel (configured via `vercel.json`)
-- **Build command:** `pnpm install --frozen-lockfile && pnpm -C apps/web build`
-- **Output directory:** `apps/web/dist`
-- **Status:** Ready for deployment (manual verification of live URL required)
+The code integration is ready to land into production, but live deployment
+verification must be completed as a mandatory external gate. Deploy to Vercel,
+manually verify the deployment identity and gameplay flow, then declare the
+release officially ready.
 
-**Release candidate status:** ✅ **READY FOR PRODUCTION**
-
-All Phase 5.5 objectives met. See [`CHANGELOG.md`](CHANGELOG.md) for detailed changes, [`CONTROLS.md`](CONTROLS.md) for complete input reference, and [`BUILD.md`](BUILD.md) for build/deployment procedures.
+See [PR #222](https://github.com/Bboy9090/Legends-of-Kai-Jax-The-memory-Hero/pull/222) and [`docs/known-debt.md`](docs/known-debt.md) for full detail.
