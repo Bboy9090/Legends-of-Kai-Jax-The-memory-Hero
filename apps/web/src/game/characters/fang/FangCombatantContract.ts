@@ -78,16 +78,23 @@ export const FANG_COMBATANT_CONFIG: FangCombatantConfig = {
   knockbackDamping: 7,
 };
 
+/**
+ * Phase 5.5 variants are balanced for authored multi-enemy encounters rather than
+ * one-on-one stress tests. Their identities come from movement, durability,
+ * stagger resistance, reach, and telegraph cadence; raw damage is intentionally
+ * bounded so two or three independently deterministic Fangs cannot erase a hero
+ * before the player has a readable dodge/retreat response window.
+ */
 export const FANG_COMBATANT_ARCHETYPE_CONFIG: Record<FangCombatantArchetype, FangCombatantConfig> = {
   baseline: FANG_COMBATANT_CONFIG,
   'razor-scout': {
-    maxHealth: 70,
+    maxHealth: 65,
     staggerThreshold: 16,
     staggerDuration: 0.45,
-    recoverDelay: 0.22,
-    attackDamage: 6,
-    attackCooldown: 1.05,
-    attackWindup: 0.22,
+    recoverDelay: 0.24,
+    attackDamage: 4,
+    attackCooldown: 1.45,
+    attackWindup: 0.24,
     aggroRange: 18,
     attackRange: 1.6,
     stopRange: 1.2,
@@ -95,13 +102,13 @@ export const FANG_COMBATANT_ARCHETYPE_CONFIG: Record<FangCombatantArchetype, Fan
     knockbackDamping: 8.5,
   },
   enforcer: {
-    maxHealth: 140,
+    maxHealth: 120,
     staggerThreshold: 28,
     staggerDuration: 0.5,
-    recoverDelay: 0.4,
-    attackDamage: 12,
-    attackCooldown: 1.9,
-    attackWindup: 0.55,
+    recoverDelay: 0.45,
+    attackDamage: 8,
+    attackCooldown: 2.35,
+    attackWindup: 0.58,
     aggroRange: 14,
     attackRange: 2.0,
     stopRange: 1.55,
@@ -109,13 +116,13 @@ export const FANG_COMBATANT_ARCHETYPE_CONFIG: Record<FangCombatantArchetype, Fan
     knockbackDamping: 9.5,
   },
   'chain-bruiser': {
-    maxHealth: 170,
+    maxHealth: 145,
     staggerThreshold: 32,
     staggerDuration: 0.55,
-    recoverDelay: 0.45,
-    attackDamage: 10,
-    attackCooldown: 2.2,
-    attackWindup: 0.7,
+    recoverDelay: 0.5,
+    attackDamage: 7,
+    attackCooldown: 2.7,
+    attackWindup: 0.72,
     aggroRange: 16,
     attackRange: 2.7,
     stopRange: 2.2,
@@ -123,13 +130,13 @@ export const FANG_COMBATANT_ARCHETYPE_CONFIG: Record<FangCombatantArchetype, Fan
     knockbackDamping: 10,
   },
   'district-lieutenant': {
-    maxHealth: 260,
+    maxHealth: 220,
     staggerThreshold: 35,
     staggerDuration: 0.4,
-    recoverDelay: 0.3,
-    attackDamage: 14,
-    attackCooldown: 1.45,
-    attackWindup: 0.48,
+    recoverDelay: 0.36,
+    attackDamage: 10,
+    attackCooldown: 2.0,
+    attackWindup: 0.52,
     aggroRange: 22,
     attackRange: 2.2,
     stopRange: 1.7,
