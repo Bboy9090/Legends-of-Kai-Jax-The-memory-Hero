@@ -174,7 +174,19 @@ async function closeIntoLiveEnvelope(page: Page) {
       timeout: 2_000,
       intervals: [50, 75, 100],
     }).toBeLessThan(beforeEnergy);
-    await page.waitForTimeout(450);
+
+    // Wall-clock sleeps do not prove a capped simulation advanced through the
+    // dodge lock. Retreat until full regeneration proves authored lifecycle time
+    // elapsed and creates honest spacing from the synchronized Fang volley.
+    await page.keyboard.down('s');
+    try {
+      await expect.poll(async () => readNumber(page, 'slice-energy'), {
+        timeout: 8_000,
+        intervals: [100, 150, 200, 250],
+      }).toBeGreaterThanOrEqual(100);
+    } finally {
+      await page.keyboard.up('s');
+    }
     await expect(page.getByTestId('slice-player-down')).toContainText('NO');
   }
 }
