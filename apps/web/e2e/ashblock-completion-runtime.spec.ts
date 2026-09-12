@@ -136,7 +136,9 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
-  const requiredEnergy = hero === 'kai' ? 80 : 75;
+  // A real dodge costs stamina before the ultimate. Recharge fully so the
+  // controller can accept both actions without any test-only energy bypass.
+  const requiredEnergy = 100;
 
   // Kiting is real controller-owned movement, not a test teleport. It gives the
   // hero the same breathing room a player would create between authored attacks.
@@ -159,6 +161,21 @@ async function closeIntoLiveEnvelope(page: Page) {
     }).toMatch(/WINDUP|RECOVERY/);
   } finally {
     await page.keyboard.up('w');
+  }
+
+  // Entering a live multi-Fang envelope can trigger a synchronized volley.
+  // Use the real controller dodge, wait out its authored action lock, and then
+  // attack during enemy recovery. No health, AI, or damage authority is altered.
+  const behavior = await page.getByTestId('slice-fang-behavior').innerText();
+  if (behavior.includes('WINDUP')) {
+    const beforeEnergy = await readNumber(page, 'slice-energy');
+    await page.keyboard.press('q');
+    await expect.poll(async () => readNumber(page, 'slice-energy'), {
+      timeout: 2_000,
+      intervals: [50, 75, 100],
+    }).toBeLessThan(beforeEnergy);
+    await page.waitForTimeout(450);
+    await expect(page.getByTestId('slice-player-down')).toContainText('NO');
   }
 }
 
@@ -183,15 +200,22 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
     await page.keyboard.up('i');
   }
 
+  // Do not leave the hero standing inside the damage envelope while observing
+  // whether a legitimate attack hit or missed. Retreat through real movement.
   const deadline = Date.now() + 4_000;
-  while (Date.now() < deadline) {
-    const total = await readNumber(page, 'slice-total-enemy-health');
-    const count = await readNumber(page, 'slice-enemy-count');
-    if (total < beforeTotal || count < beforeCount) {
-      await expect(page.getByTestId('slice-player-down')).toContainText('NO');
-      return true;
+  await page.keyboard.down('s');
+  try {
+    while (Date.now() < deadline) {
+      const total = await readNumber(page, 'slice-total-enemy-health');
+      const count = await readNumber(page, 'slice-enemy-count');
+      if (total < beforeTotal || count < beforeCount) {
+        await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+        return true;
+      }
+      await page.waitForTimeout(100);
     }
-    await page.waitForTimeout(100);
+  } finally {
+    await page.keyboard.up('s');
   }
 
   await expect(page.getByTestId('slice-player-down')).toContainText('NO');
