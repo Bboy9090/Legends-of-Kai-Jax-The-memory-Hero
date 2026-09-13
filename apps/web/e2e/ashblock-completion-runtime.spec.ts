@@ -231,6 +231,10 @@ async function closeIntoLiveEnvelope(page: Page) {
 }
 
 async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
+  // Allow the real controller to leave the locomotion/action lock created by
+  // closing the envelope before asserting that it can accept a combat input.
+  await page.waitForTimeout(250);
+
   const beforeEnergy = await readNumber(page, 'slice-energy');
   const beforeTotal = await readNumber(page, 'slice-total-enemy-health');
   const beforeCount = await readNumber(page, 'slice-enemy-count');
@@ -249,8 +253,14 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
     // became active, converting valid inputs into deterministic misses.
     await page.waitForTimeout(hero === 'kai' ? 1_650 : 950);
 
-    // Once the active window has elapsed, use real controller movement to leave
-    // the synchronized Fang damage envelope while observing hit or miss.
+    // Once the active window has elapsed, use the real controller dodge to
+    // survive the synchronized response, then retreat while observing hit/miss.
+    const postAttackEnergy = await readNumber(page, 'slice-energy');
+    await page.keyboard.press('q');
+    await expect.poll(async () => readNumber(page, 'slice-energy'), {
+      timeout: 2_000,
+      intervals: [50, 75, 100],
+    }).toBeLessThan(postAttackEnergy);
     await page.keyboard.down('s');
     retreating = true;
   } finally {
