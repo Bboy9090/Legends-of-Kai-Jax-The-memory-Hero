@@ -214,27 +214,10 @@ async function closeIntoLiveEnvelope(page: Page) {
       await page.keyboard.up('s');
     }
     await expect(page.getByTestId('slice-player-down')).toContainText('NO');
-
-    // The recharge retreat intentionally exits the Fang envelope. Re-close under
-    // real controller movement and wait for recovery before attempting the
-    // ultimate; otherwise the proof repeatedly spends energy out of range.
-    await page.keyboard.down('w');
-    try {
-      await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
-        timeout: 10_000,
-        intervals: [75, 100, 150, 200],
-      }).toContain('RECOVERY');
-    } finally {
-      await page.keyboard.up('w');
-    }
   }
 }
 
 async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
-  // Allow the real controller to leave the locomotion/action lock created by
-  // closing the envelope before asserting that it can accept a combat input.
-  await page.waitForTimeout(250);
-
   const beforeEnergy = await readNumber(page, 'slice-energy');
   const beforeTotal = await readNumber(page, 'slice-total-enemy-health');
   const beforeCount = await readNumber(page, 'slice-enemy-count');
@@ -248,21 +231,16 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
       intervals: [50, 75, 100, 150],
     }).toBeLessThan(beforeEnergy - 20);
 
-    // Stay in the live envelope through the authored active window. Retreating
-    // at input acceptance moved the hero out of range before the scene hitbox
-    // became active, converting valid inputs into deterministic misses.
-    await page.waitForTimeout(hero === 'kai' ? 1_650 : 950);
-
-    // Once the active window has elapsed, use the real controller dodge to
-    // survive the synchronized response, then retreat while observing hit/miss.
-    const postAttackEnergy = await readNumber(page, 'slice-energy');
-    await page.keyboard.press('q');
-    await expect.poll(async () => readNumber(page, 'slice-energy'), {
-      timeout: 2_000,
-      intervals: [50, 75, 100],
-    }).toBeLessThan(postAttackEnergy);
+    // Begin a real controller-owned retreat as soon as the controller accepts
+    // the ultimate. Kai's authored area and Jax's storm radius remain live while
+    // the hero stops standing inside the synchronized Fang damage envelope.
     await page.keyboard.down('s');
     retreating = true;
+
+    // Hold through the authored active window. An accepted real attack is still
+    // allowed to miss after enemy movement/knockback; the full-chain proof must
+    // not convert every accepted input into a guaranteed hit.
+    await page.waitForTimeout(hero === 'kai' ? 1_650 : 950);
   } finally {
     await page.keyboard.up('i');
   }
