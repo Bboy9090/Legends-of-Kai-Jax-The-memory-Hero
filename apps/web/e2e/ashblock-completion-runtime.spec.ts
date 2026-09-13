@@ -143,13 +143,17 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
   // Kiting is real controller-owned movement, not a test teleport. It gives the
   // hero the same breathing room a player would create between authored attacks.
   await page.keyboard.down('s');
-  await page.waitForTimeout(hero === 'kai' ? 500 : 650);
-  await page.keyboard.up('s');
-
-  await expect.poll(async () => readNumber(page, 'slice-energy'), {
-    timeout: 12_000,
-    intervals: [100, 150, 200, 250],
-  }).toBeGreaterThanOrEqual(requiredEnergy);
+  try {
+    // Keep creating real distance for the entire recharge window. Releasing
+    // movement after a fixed sleep left the hero stationary while Fangs closed
+    // the gap during several seconds of controller-owned energy regeneration.
+    await expect.poll(async () => readNumber(page, 'slice-energy'), {
+      timeout: 12_000,
+      intervals: [100, 150, 200, 250],
+    }).toBeGreaterThanOrEqual(requiredEnergy);
+  } finally {
+    await page.keyboard.up('s');
+  }
 }
 
 async function closeIntoLiveEnvelope(page: Page) {
