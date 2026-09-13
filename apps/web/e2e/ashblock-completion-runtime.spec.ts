@@ -86,6 +86,28 @@ async function readBeat(page: Page): Promise<string> {
   return text.replace(/^Beat:\s*/, '').trim();
 }
 
+async function logCombatSnapshot(page: Page, label: string) {
+  const [position, beat, health, energy, enemyCount, enemyHealth, behavior] = await Promise.all([
+    readPosition(page),
+    readBeat(page),
+    readNumber(page, 'slice-player-health'),
+    readNumber(page, 'slice-energy'),
+    readNumber(page, 'slice-enemy-count'),
+    readNumber(page, 'slice-total-enemy-health'),
+    page.getByTestId('slice-fang-behavior').innerText(),
+  ]);
+  console.log('[combat-proof]', JSON.stringify({
+    label,
+    beat,
+    position,
+    health,
+    energy,
+    enemyCount,
+    enemyHealth,
+    behavior,
+  }));
+}
+
 async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
   if (hero === 'kai') {
     await page.keyboard.down('e');
@@ -240,6 +262,7 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
     if (retreating) await page.keyboard.up('s');
   }
 
+  await logCombatSnapshot(page, `${hero}:ultimate-observation-timeout`);
   await expect(page.getByTestId('slice-player-down')).toContainText('NO');
   return false;
 }
