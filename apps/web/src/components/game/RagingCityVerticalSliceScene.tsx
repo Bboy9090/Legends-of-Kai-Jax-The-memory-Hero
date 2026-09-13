@@ -74,6 +74,7 @@ export interface VerticalSliceDebugSnapshot extends ControllerDebugState {
   playerDown: boolean;
   enemyCount: number;
   totalEnemyHealth: number;
+  nearestEnemyDistance: number;
   fangHealth: number;
   fangMaxHealth: number;
   fangArchetype: FangCombatantArchetype | 'none';
@@ -109,6 +110,7 @@ const INITIAL_DEBUG: VerticalSliceDebugSnapshot = {
   playerDown: false,
   enemyCount: 0,
   totalEnemyHealth: 0,
+  nearestEnemyDistance: 0,
   fangHealth: 0,
   fangMaxHealth: 0,
   fangArchetype: 'none',
@@ -443,6 +445,12 @@ function VerticalSliceEnvironment({
       const livingCombatants = mission.combatants.filter((combatant) => !combatant.isDead);
       const primary = getPrimaryCombatant(mission.combatants);
       const totalEnemyHealth = livingCombatants.reduce((sum, combatant) => sum + combatant.health, 0);
+      const nearestEnemyDistance = livingCombatants.length > 0
+        ? Math.min(...livingCombatants.map((combatant) => Math.hypot(
+          combatant.position.x - playerPos.x,
+          combatant.position.z - playerPos.z
+        )))
+        : 0;
       const currentBeat = ASHBLOCK_PHASE_55_SEQUENCE[mission.beatIndex];
 
       onDebug({
@@ -456,6 +464,7 @@ function VerticalSliceEnvironment({
         playerDown: mission.playerDown,
         enemyCount: livingCombatants.length,
         totalEnemyHealth,
+        nearestEnemyDistance,
         fangHealth: primary?.health ?? 0,
         fangMaxHealth: primary?.maxHealth ?? 0,
         fangArchetype: primary?.archetype ?? 'none',
@@ -770,10 +779,12 @@ function DeveloperDiagnostics({
           <div data-testid="slice-ground-charge">Ground Charge: {debug.groundCharges ?? 'N/A'}</div>
           <div data-testid="slice-air-charge">Air Charge: {debug.airCharges ?? 'N/A'}</div>
           <div data-testid="slice-energy">Energy: {debug.energy.toFixed(1)}</div>
+          <div data-testid="slice-attacking">Attacking: {debug.attacking ? 'YES' : 'NO'}</div>
           <div data-testid="slice-player-health">Player HP: {debug.playerHealth.toFixed(0)}</div>
           <div data-testid="slice-player-down">Player Down: {debug.playerDown ? 'YES' : 'NO'}</div>
           <div data-testid="slice-enemy-count">Enemies: {debug.enemyCount}</div>
           <div data-testid="slice-total-enemy-health">Enemy HP Total: {debug.totalEnemyHealth.toFixed(0)}</div>
+          <div data-testid="slice-nearest-enemy-distance">Nearest Enemy: {debug.nearestEnemyDistance.toFixed(2)}</div>
           <div data-testid="slice-fang-role">Fang Role: {debug.fangArchetype}</div>
           <div data-testid="slice-fang-health">Fang HP: {debug.fangHealth.toFixed(0)}</div>
           <div data-testid="slice-fang-behavior">Fang: {debug.fangBehavior}</div>

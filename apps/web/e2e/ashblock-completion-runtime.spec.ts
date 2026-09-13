@@ -158,9 +158,9 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
-  // A real dodge costs stamina before the ultimate. Recharge fully so the
-  // controller can accept both actions without any test-only energy bypass.
-  const requiredEnergy = 100;
+  // Recharge only to the real controller's authored ultimate threshold.
+  // Shortening exposed kiting time is player-authentic and changes no authority.
+  const requiredEnergy = hero === 'kai' ? 80 : 75;
 
   // Kiting is real controller-owned movement, not a test teleport. It gives the
   // hero the same breathing room a player would create between authored attacks.
@@ -178,43 +178,24 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
   }
 }
 
-async function closeIntoLiveEnvelope(page: Page) {
-  await page.keyboard.down('w');
-  try {
-    await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
-      timeout: 10_000,
-      intervals: [75, 100, 150, 200],
-    }).toMatch(/WINDUP|RECOVERY/);
-  } finally {
-    await page.keyboard.up('w');
-  }
+async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
+  const ultimateRadiusMargin = hero === 'kai' ? 9 : 4.5;
 
-  // Entering a live multi-Fang envelope can trigger a synchronized volley.
-  // Use the real controller dodge, wait out its authored action lock, and then
-  // attack during enemy recovery. No health, AI, or damage authority is altered.
-  const behavior = await page.getByTestId('slice-fang-behavior').innerText();
-  if (behavior.includes('WINDUP')) {
-    const beforeEnergy = await readNumber(page, 'slice-energy');
-    await page.keyboard.press('q');
-    await expect.poll(async () => readNumber(page, 'slice-energy'), {
-      timeout: 2_000,
-      intervals: [50, 75, 100],
-    }).toBeLessThan(beforeEnergy);
-
-    // Wall-clock sleeps do not prove a capped simulation advanced through the
-    // dodge lock. Retreat until full regeneration proves authored lifecycle time
-    // elapsed and creates honest spacing from the synchronized Fang volley.
-    await page.keyboard.down('s');
+  // Measure the real scene geometry. Fang WINDUP/RECOVERY is not an aggregate
+  // range signal and previously drove the hero into a different Fang's melee.
+  if (await readNumber(page, 'slice-nearest-enemy-distance') > ultimateRadiusMargin) {
+    await page.keyboard.down('w');
     try {
-      await expect.poll(async () => readNumber(page, 'slice-energy'), {
-        timeout: 8_000,
-        intervals: [100, 150, 200, 250],
-      }).toBeGreaterThanOrEqual(100);
+      await expect.poll(async () => readNumber(page, 'slice-nearest-enemy-distance'), {
+        timeout: 10_000,
+        intervals: [75, 100, 150, 200],
+      }).toBeLessThanOrEqual(ultimateRadiusMargin);
     } finally {
-      await page.keyboard.up('s');
+      await page.keyboard.up('w');
     }
-    await expect(page.getByTestId('slice-player-down')).toContainText('NO');
   }
+
+  await expect(page.getByTestId('slice-player-down')).toContainText('NO');
 }
 
 async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
@@ -222,47 +203,37 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
   const beforeTotal = await readNumber(page, 'slice-total-enemy-health');
   const beforeCount = await readNumber(page, 'slice-enemy-count');
 
-  await page.keyboard.down('i');
-  let retreating = false;
-  try {
-    // Energy consumption proves the real controller accepted the authored attack.
-    await expect.poll(async () => readNumber(page, 'slice-energy'), {
-      timeout: 3_000,
-      intervals: [50, 75, 100, 150],
-    }).toBeLessThan(beforeEnergy - 20);
+  await page.keyboard.press('i');
 
-    // Begin a real controller-owned retreat as soon as the controller accepts
-    // the ultimate. Kai's authored area and Jax's storm radius remain live while
-    // the hero stops standing inside the synchronized Fang damage envelope.
-    await page.keyboard.down('s');
-    retreating = true;
+  // Energy consumption proves the real controller accepted the authored attack.
+  await expect.poll(async () => readNumber(page, 'slice-energy'), {
+    timeout: 3_000,
+    intervals: [50, 75, 100, 150],
+  }).toBeLessThan(beforeEnergy - 60);
 
-    // Hold through the authored active window. An accepted real attack is still
-    // allowed to miss after enemy movement/knockback; the full-chain proof must
-    // not convert every accepted input into a guaranteed hit.
-    await page.waitForTimeout(hero === 'kai' ? 1_650 : 950);
-  } finally {
-    await page.keyboard.up('i');
-  }
+  await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
+    timeout: 2_000,
+    intervals: [50, 75, 100],
+  }).toContain('YES');
 
-  // Do not leave the hero standing inside the damage envelope while observing
-  // whether a legitimate attack hit or missed. Retreat through real movement.
-  const deadline = Date.now() + 4_000;
-  try {
-    while (Date.now() < deadline) {
-      const total = await readNumber(page, 'slice-total-enemy-health');
-      const count = await readNumber(page, 'slice-enemy-count');
-      if (total < beforeTotal || count < beforeCount) {
-        await expect(page.getByTestId('slice-player-down')).toContainText('NO');
-        return true;
-      }
-      await page.waitForTimeout(100);
+  // Both ultimate hitboxes follow the hero's current position. Hold the measured
+  // envelope through startup/active and observe the real scene hitbox directly.
+  const deadline = Date.now() + (hero === 'kai' ? 2_200 : 1_400);
+  while (Date.now() < deadline) {
+    const total = await readNumber(page, 'slice-total-enemy-health');
+    const count = await readNumber(page, 'slice-enemy-count');
+    if (total < beforeTotal || count < beforeCount) {
+      await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+      return true;
     }
-  } finally {
-    if (retreating) await page.keyboard.up('s');
+    if ((await page.getByTestId('slice-player-down').innerText()).includes('YES')) {
+      await logCombatSnapshot(page, `${hero}:player-down-during-ultimate`);
+      await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+    }
+    await page.waitForTimeout(75);
   }
 
-  await logCombatSnapshot(page, `${hero}:ultimate-observation-timeout`);
+  await logCombatSnapshot(page, `${hero}:legitimate-ultimate-miss`);
   await expect(page.getByTestId('slice-player-down')).toContainText('NO');
   return false;
 }
@@ -283,7 +254,7 @@ async function clearCombatBeat(
   while (await readNumber(page, 'slice-enemy-count') > 0 && attempts < maxAttempts) {
     attempts += 1;
     await retreatAndRecharge(page, hero);
-    await closeIntoLiveEnvelope(page);
+    await closeIntoUltimateEnvelope(page, hero);
     if (await ultimateAndObserveAggregateDamage(page, hero)) {
       successfulHits += 1;
     }
