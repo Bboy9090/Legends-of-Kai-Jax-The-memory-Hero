@@ -181,8 +181,14 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
 async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   const ultimateRadiusMargin = hero === 'kai' ? 9 : 4.5;
 
-  // Measure the real scene geometry. Fang WINDUP/RECOVERY is not an aggregate
-  // range signal and previously drove the hero into a different Fang's melee.
+  // Real gameplay survival: wait for nearest enemy to enter RECOVERY state before moving in.
+  // This avoids closing into attack envelopes of other active Fangs during multi-enemy encounters.
+  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
+    timeout: 8_000,
+    intervals: [100, 150, 200],
+  }).toContain('RECOVERY');
+
+  // Now close into ultimate range, while enemy is recovering.
   if (await readNumber(page, 'slice-nearest-enemy-distance') > ultimateRadiusMargin) {
     await page.keyboard.down('w');
     try {
@@ -203,13 +209,35 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
   const beforeTotal = await readNumber(page, 'slice-total-enemy-health');
   const beforeCount = await readNumber(page, 'slice-enemy-count');
 
+  // Wait for controller to reach a state where ultimate can be accepted.
+  // Do not fire input until these conditions are met.
+  if (hero === 'jax') {
+    // Jax must not be attacking, dodging, or down to accept ultimate.
+    await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
+      timeout: 3_000,
+      intervals: [50, 75, 100],
+    }).toContain('NO');
+
+    await expect.poll(async () => page.getByTestId('slice-dodging').innerText(), {
+      timeout: 1_000,
+      intervals: [50, 75],
+    }).toContain('NO');
+
+    await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
+      timeout: 1_000,
+      intervals: [50, 75],
+    }).toContain('NO');
+  }
+
   await page.keyboard.press('i');
 
   // Energy consumption proves the real controller accepted the authored attack.
+  // For Jax: ultimate costs 75 energy. For Kai: ultimate costs 80.
+  const expectedEnergyDrop = hero === 'kai' ? 80 : 75;
   await expect.poll(async () => readNumber(page, 'slice-energy'), {
     timeout: 3_000,
     intervals: [50, 75, 100, 150],
-  }).toBeLessThan(beforeEnergy - 60);
+  }).toBeLessThan(beforeEnergy - (expectedEnergyDrop - 5));
 
   await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
     timeout: 2_000,
