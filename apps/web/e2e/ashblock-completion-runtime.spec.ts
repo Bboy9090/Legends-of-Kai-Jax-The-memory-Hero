@@ -288,24 +288,16 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
     intervals: [50, 75, 100],
   }).toContain('NO');
 
-  // Hold the ultimate input and wait for the controller to accept it.
-  // Input acceptance is proven by: attacking state changes to YES AND energy drops.
-  // Keep input held for at least 2 frames to ensure controller samples it.
+  // The controller samples the input rising edge (transition from up to down) each frame.
+  // Deliver input as: down -> wait for frame -> hold while checking for acceptance.
+  // This ensures the rising edge is captured and the attack is committed.
   await page.keyboard.down('i');
+  await page.waitForTimeout(100);
   try {
     // Energy consumption proves the real controller accepted the authored attack.
     // For Jax: ultimate costs 75 energy. For Kai: ultimate costs 80.
     const expectedEnergyDrop = hero === 'kai' ? 80 : 75;
-    await expect.poll(async () => {
-      // Ensure input stays held while polling for acceptance
-      const currentEnergy = await readNumber(page, 'slice-energy');
-      if (currentEnergy >= beforeEnergy - (expectedEnergyDrop - 5)) {
-        // Keep waiting - energy hasn't dropped yet
-        return currentEnergy;
-      }
-      // Energy dropped - input was accepted
-      return currentEnergy;
-    }, {
+    await expect.poll(async () => readNumber(page, 'slice-energy'), {
       timeout: 4_000,
       intervals: [50, 75, 100, 150],
     }).toBeLessThan(beforeEnergy - (expectedEnergyDrop - 5));
