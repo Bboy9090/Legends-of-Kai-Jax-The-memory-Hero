@@ -290,7 +290,7 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
 
   // Hold ultimate input through multiple frame samples to ensure acceptance.
   // The controller checks input state every frame and needs sustained key-down.
-  await page.keyboard.down('i');
+  await page.keyboard.down('p');
   try {
     // Energy consumption proves the real controller accepted the authored attack.
     // For Jax: ultimate costs 75 energy. For Kai: ultimate costs 80.
@@ -311,7 +311,7 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
       intervals: [50, 75, 100],
     }).toContain('YES');
   } finally {
-    await page.keyboard.up('i');
+    await page.keyboard.up('p');
   }
 
   // Both ultimate hitboxes follow the hero's current position. Hold the measured
