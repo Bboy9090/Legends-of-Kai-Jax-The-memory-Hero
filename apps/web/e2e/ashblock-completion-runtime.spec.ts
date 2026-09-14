@@ -181,20 +181,41 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
 async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   const ultimateRadiusMargin = hero === 'kai' ? 9 : 4.5;
 
-  // Real gameplay survival: wait for a moment of safety before moving in.
-  // In multi-enemy encounters, all enemies must show non-attacking behavior.
-  // Poll both the primary target behavior AND player state for safety window.
-  await expect.poll(async () => {
-    const behaviorText = await page.getByTestId('slice-fang-behavior').innerText();
-    const downText = await page.getByTestId('slice-player-down').innerText();
-    if (!downText.includes('NO')) {
-      throw new Error('Player was hit, re-waiting for safety');
+  // Real gameplay survival: create distance and wait for a moment of safety.
+  // In multi-enemy encounters (3+ Fangs), hold backward movement while waiting
+  // to open distance and avoid overlapping attack envelopes. Then close in.
+  if (hero === 'jax') {
+    // Jax: retreat while waiting for safe window to minimize overlap damage
+    await page.keyboard.down('s');
+    try {
+      await expect.poll(async () => {
+        const behaviorText = await page.getByTestId('slice-fang-behavior').innerText();
+        const downText = await page.getByTestId('slice-player-down').innerText();
+        if (!downText.includes('NO')) {
+          throw new Error('Player was hit, re-waiting for safety');
+        }
+        return behaviorText;
+      }, {
+        timeout: 15_000,
+        intervals: [100, 150, 200, 250],
+      }).toContain('RECOVERY');
+    } finally {
+      await page.keyboard.up('s');
     }
-    return behaviorText;
-  }, {
-    timeout: 15_000,
-    intervals: [100, 150, 200, 250],
-  }).toContain('RECOVERY');
+  } else {
+    // Kai: wait in place for recovery state
+    await expect.poll(async () => {
+      const behaviorText = await page.getByTestId('slice-fang-behavior').innerText();
+      const downText = await page.getByTestId('slice-player-down').innerText();
+      if (!downText.includes('NO')) {
+        throw new Error('Player was hit, re-waiting for safety');
+      }
+      return behaviorText;
+    }, {
+      timeout: 15_000,
+      intervals: [100, 150, 200, 250],
+    }).toContain('RECOVERY');
+  }
 
   // Close into ultimate range with active evasion. Use real controller dodge/displacement
   // to thread through overlapping attack envelopes in multi-enemy scenarios.
@@ -239,7 +260,15 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
 
   // Wait for controller to reach a state where ultimate can be accepted.
   // Do not fire input until these conditions are met.
-  // Controller must not be attacking, and player must not be down.
+  // Controller must not be attacking, dodging (including web zip), and player must not be down.
+  if (hero === 'kai') {
+    // Kai must also finish web zip state to accept ultimate
+    await expect.poll(async () => page.getByTestId('slice-webzip').innerText(), {
+      timeout: 2_000,
+      intervals: [50, 75, 100],
+    }).toContain('NO');
+  }
+
   await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
     timeout: 3_000,
     intervals: [50, 75, 100],
@@ -261,16 +290,23 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
 
   // Hold the ultimate input and wait for the controller to accept it.
   // Input acceptance is proven by: attacking state changes to YES AND energy drops.
+  // Keep input held for at least 2 frames to ensure controller samples it.
   await page.keyboard.down('i');
   try {
-    // Wait for the input state to be registered with the controller's next frame sample.
-    await page.waitForTimeout(50);
-
     // Energy consumption proves the real controller accepted the authored attack.
     // For Jax: ultimate costs 75 energy. For Kai: ultimate costs 80.
     const expectedEnergyDrop = hero === 'kai' ? 80 : 75;
-    await expect.poll(async () => readNumber(page, 'slice-energy'), {
-      timeout: 3_000,
+    await expect.poll(async () => {
+      // Ensure input stays held while polling for acceptance
+      const currentEnergy = await readNumber(page, 'slice-energy');
+      if (currentEnergy >= beforeEnergy - (expectedEnergyDrop - 5)) {
+        // Keep waiting - energy hasn't dropped yet
+        return currentEnergy;
+      }
+      // Energy dropped - input was accepted
+      return currentEnergy;
+    }, {
+      timeout: 4_000,
       intervals: [50, 75, 100, 150],
     }).toBeLessThan(beforeEnergy - (expectedEnergyDrop - 5));
 
