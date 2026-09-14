@@ -247,6 +247,9 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
   // Input acceptance is proven by: attacking state changes to YES AND energy drops.
   await page.keyboard.down('i');
   try {
+    // Wait for the input state to be registered with the controller's next frame sample.
+    await page.waitForTimeout(50);
+
     // Energy consumption proves the real controller accepted the authored attack.
     // For Jax: ultimate costs 75 energy. For Kai: ultimate costs 80.
     const expectedEnergyDrop = hero === 'kai' ? 80 : 75;
