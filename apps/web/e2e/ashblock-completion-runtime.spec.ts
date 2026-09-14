@@ -181,23 +181,36 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
 async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   const ultimateRadiusMargin = hero === 'kai' ? 9 : 4.5;
 
-  // Real gameplay survival: wait for nearest enemy to enter RECOVERY state before moving in.
-  // This avoids closing into attack envelopes of other active Fangs during multi-enemy encounters.
-  // Extend timeout to 15s to ensure we find a safe window in multi-enemy scenarios.
-  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
+  // Real gameplay survival: wait for a moment of safety before moving in.
+  // In multi-enemy encounters, all enemies must show non-attacking behavior.
+  // Poll both the primary target behavior AND player state for safety window.
+  await expect.poll(async () => {
+    const behaviorText = await page.getByTestId('slice-fang-behavior').innerText();
+    const downText = await page.getByTestId('slice-player-down').innerText();
+    if (!downText.includes('NO')) {
+      throw new Error('Player was hit, re-waiting for safety');
+    }
+    return behaviorText;
+  }, {
     timeout: 15_000,
     intervals: [100, 150, 200, 250],
   }).toContain('RECOVERY');
 
-  // Verify we're not knocked down after waiting for recovery.
-  await expect(page.getByTestId('slice-player-down')).toContainText('NO');
-
-  // Now close into ultimate range, while enemy is recovering.
-  // Check distance repeatedly during approach to abort if we get hit.
+  // Close into ultimate range with active evasion. Use real controller dodge/displacement
+  // to thread through overlapping attack envelopes in multi-enemy scenarios.
+  // Keep the evasion input held throughout the approach to maintain safety.
   if (await readNumber(page, 'slice-nearest-enemy-distance') > ultimateRadiusMargin) {
     await page.keyboard.down('w');
+    // Add continuous dodging input. For Kai: web zip (hold e). For Jax: displacement (tap e repeatedly).
+    if (hero === 'kai') {
+      await page.keyboard.down('e');
+    }
     try {
       await expect.poll(async () => {
+        // Refresh dodge input for Jax each poll cycle
+        if (hero === 'jax' && Math.random() < 0.3) {
+          await page.keyboard.press('e');
+        }
         // Verify we're not knocked down during approach
         const downStatus = await page.getByTestId('slice-player-down').innerText();
         if (!downStatus.includes('NO')) {
@@ -210,6 +223,9 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
       }).toBeLessThanOrEqual(ultimateRadiusMargin);
     } finally {
       await page.keyboard.up('w');
+      if (hero === 'kai') {
+        await page.keyboard.up('e');
+      }
     }
   }
 
