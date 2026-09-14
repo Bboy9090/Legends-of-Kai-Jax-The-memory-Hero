@@ -183,16 +183,28 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
 
   // Real gameplay survival: wait for nearest enemy to enter RECOVERY state before moving in.
   // This avoids closing into attack envelopes of other active Fangs during multi-enemy encounters.
+  // Extend timeout to 15s to ensure we find a safe window in multi-enemy scenarios.
   await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
-    timeout: 8_000,
-    intervals: [100, 150, 200],
+    timeout: 15_000,
+    intervals: [100, 150, 200, 250],
   }).toContain('RECOVERY');
 
+  // Verify we're not knocked down after waiting for recovery.
+  await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+
   // Now close into ultimate range, while enemy is recovering.
+  // Check distance repeatedly during approach to abort if we get hit.
   if (await readNumber(page, 'slice-nearest-enemy-distance') > ultimateRadiusMargin) {
     await page.keyboard.down('w');
     try {
-      await expect.poll(async () => readNumber(page, 'slice-nearest-enemy-distance'), {
+      await expect.poll(async () => {
+        // Verify we're not knocked down during approach
+        const downStatus = await page.getByTestId('slice-player-down').innerText();
+        if (!downStatus.includes('NO')) {
+          throw new Error('Player knocked down during approach');
+        }
+        return readNumber(page, 'slice-nearest-enemy-distance');
+      }, {
         timeout: 10_000,
         intervals: [75, 100, 150, 200],
       }).toBeLessThanOrEqual(ultimateRadiusMargin);
@@ -211,23 +223,25 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
 
   // Wait for controller to reach a state where ultimate can be accepted.
   // Do not fire input until these conditions are met.
+  // Controller must not be attacking, and player must not be down.
+  await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
+    timeout: 3_000,
+    intervals: [50, 75, 100],
+  }).toContain('NO');
+
   if (hero === 'jax') {
-    // Jax must not be attacking, dodging, or down to accept ultimate.
-    await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
-      timeout: 3_000,
+    // Jax must also not be dodging to accept ultimate.
+    await expect.poll(async () => page.getByTestId('slice-dodging').innerText(), {
+      timeout: 2_000,
       intervals: [50, 75, 100],
     }).toContain('NO');
-
-    await expect.poll(async () => page.getByTestId('slice-dodging').innerText(), {
-      timeout: 1_000,
-      intervals: [50, 75],
-    }).toContain('NO');
-
-    await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
-      timeout: 1_000,
-      intervals: [50, 75],
-    }).toContain('NO');
   }
+
+  // Both heroes must not be down.
+  await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
+    timeout: 2_000,
+    intervals: [50, 75, 100],
+  }).toContain('NO');
 
   await page.keyboard.press('i');
 
