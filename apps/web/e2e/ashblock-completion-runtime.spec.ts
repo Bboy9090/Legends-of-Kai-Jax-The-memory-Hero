@@ -243,20 +243,25 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
     intervals: [50, 75, 100],
   }).toContain('NO');
 
-  await page.keyboard.press('i');
+  // Hold the ultimate input and wait for the controller to accept it.
+  // Input acceptance is proven by: attacking state changes to YES AND energy drops.
+  await page.keyboard.down('i');
+  try {
+    // Energy consumption proves the real controller accepted the authored attack.
+    // For Jax: ultimate costs 75 energy. For Kai: ultimate costs 80.
+    const expectedEnergyDrop = hero === 'kai' ? 80 : 75;
+    await expect.poll(async () => readNumber(page, 'slice-energy'), {
+      timeout: 3_000,
+      intervals: [50, 75, 100, 150],
+    }).toBeLessThan(beforeEnergy - (expectedEnergyDrop - 5));
 
-  // Energy consumption proves the real controller accepted the authored attack.
-  // For Jax: ultimate costs 75 energy. For Kai: ultimate costs 80.
-  const expectedEnergyDrop = hero === 'kai' ? 80 : 75;
-  await expect.poll(async () => readNumber(page, 'slice-energy'), {
-    timeout: 3_000,
-    intervals: [50, 75, 100, 150],
-  }).toBeLessThan(beforeEnergy - (expectedEnergyDrop - 5));
-
-  await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
-    timeout: 2_000,
-    intervals: [50, 75, 100],
-  }).toContain('YES');
+    await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
+      timeout: 2_000,
+      intervals: [50, 75, 100],
+    }).toContain('YES');
+  } finally {
+    await page.keyboard.up('i');
+  }
 
   // Both ultimate hitboxes follow the hero's current position. Hold the measured
   // envelope through startup/active and observe the real scene hitbox directly.

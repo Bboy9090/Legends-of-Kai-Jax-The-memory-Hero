@@ -58,6 +58,7 @@ interface ControllerDebugState {
   wallCrawling: boolean;
   webZipping: boolean;
   attacking: boolean;
+  dodging: boolean;
   invulnTimer: number;
   energy: number;
   groundCharges: number | null;
@@ -91,6 +92,7 @@ const INITIAL_CONTROLLER_DEBUG: ControllerDebugState = {
   wallCrawling: false,
   webZipping: false,
   attacking: false,
+  dodging: false,
   invulnTimer: 0,
   energy: 100,
   groundCharges: null,
@@ -173,6 +175,7 @@ function KaiControllerBridge({
       wallCrawling: state.isWallCrawling,
       webZipping: state.isWebZipping,
       attacking: state.isAttacking,
+      dodging: state.isDodging,
       invulnTimer: state.invulnTimer,
       energy: state.energy,
       groundCharges: null,
@@ -200,6 +203,7 @@ function JaxControllerBridge({
       wallCrawling: false,
       webZipping: false,
       attacking: state.isAttacking,
+      dodging: state.isDodging,
       invulnTimer: state.invulnTimer,
       energy: state.energy,
       groundCharges: state.groundDisplacementCharges,
@@ -780,6 +784,7 @@ function DeveloperDiagnostics({
           <div data-testid="slice-air-charge">Air Charge: {debug.airCharges ?? 'N/A'}</div>
           <div data-testid="slice-energy">Energy: {debug.energy.toFixed(1)}</div>
           <div data-testid="slice-attacking">Attacking: {debug.attacking ? 'YES' : 'NO'}</div>
+          <div data-testid="slice-dodging">Dodging: {debug.dodging ? 'YES' : 'NO'}</div>
           <div data-testid="slice-player-health">Player HP: {debug.playerHealth.toFixed(0)}</div>
           <div data-testid="slice-player-down">Player Down: {debug.playerDown ? 'YES' : 'NO'}</div>
           <div data-testid="slice-enemy-count">Enemies: {debug.enemyCount}</div>
