@@ -1,35 +1,49 @@
 import { useRunner } from "../../lib/stores/useRunner";
-import { FIGHTERS, getFighterById } from "../../lib/characters";
+import { getFighterById } from "../../lib/characters";
+import {
+  VERSUS_ROSTER,
+  getCombatProfileId,
+  type VersusRosterEntry,
+} from "../../lib/versusRoster";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { ArrowLeft } from "lucide-react";
+import { Card, CardContent } from "../ui/card";
+import { ArrowLeft, LockKeyhole, ShieldCheck } from "lucide-react";
+
+function factionLabel(faction: VersusRosterEntry['faction']): string {
+  switch (faction) {
+    case 'core': return 'Core Lineage';
+    case 'first-sabertooths': return 'First Sabertooths';
+    case 'bloodward-antagonist': return 'Bloodward Antagonist';
+    case 'ancient-antagonist': return 'Ancient Antagonist';
+    case 'engineered-horror': return 'Engineered Horror';
+  }
+}
 
 export default function CustomizationMenu() {
-  const { 
-    setGameState 
-  } = useRunner();
+  const setGameState = useRunner((s) => s.setGameState);
+  const fusionUnlocked = useRunner((s) => s.kaiJaxFusionUnlocked);
 
-  const categories = [
-    { name: 'Heroes', id: 'heroes' as const, color: 'from-blue-500 to-cyan-500' },
-    { name: 'Speedsters', id: 'speedsters' as const, color: 'from-yellow-500 to-orange-500' },
-    { name: 'Warriors', id: 'warriors' as const, color: 'from-green-500 to-emerald-500' },
-    { name: 'Legends', id: 'legends' as const, color: 'from-purple-500 to-pink-500' }
-  ];
-  
+  const isUnlocked = (entry: VersusRosterEntry) =>
+    entry.defaultUnlocked || (entry.id === 'kai-jax' && fusionUnlocked);
+
+  const unlockedCount = VERSUS_ROSTER.filter(isUnlocked).length;
+
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-purple-900 via-blue-900 to-cyan-900 text-white">
-      {/* Header */}
-      <div className="bg-black/40 border-b-4 border-cyan-400 p-6">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+    <div className="min-h-screen w-full bg-gradient-to-br from-[#130a22] via-[#071426] to-[#07131a] text-white overflow-y-auto">
+      <div className="bg-black/40 border-b border-cyan-400/50 p-6">
+        <div className="max-w-7xl mx-auto flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-              Fighters
+            <p className="text-[10px] uppercase tracking-[0.28em] text-amber-300 mb-1">Legends Archive</p>
+            <h1 className="text-4xl font-black bg-gradient-to-r from-amber-300 via-purple-300 to-cyan-300 bg-clip-text text-transparent">
+              Character Customization
             </h1>
-            <p className="text-gray-300 mt-1">All fighters are unlocked and ready.</p>
+            <p className="text-gray-300 mt-2 text-sm max-w-2xl">
+              Only publication-safe identities appear here. A visual source or old combat profile does not automatically make a character, costume, or form story-unlocked.
+            </p>
           </div>
           <Button
             onClick={() => setGameState('menu')}
-            className="bg-red-600 hover:bg-red-700 px-6 py-3 text-white font-bold"
+            className="bg-slate-800 hover:bg-slate-700 px-6 py-3 text-white font-bold self-start sm:self-auto"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Menu
@@ -37,85 +51,80 @@ export default function CustomizationMenu() {
         </div>
       </div>
 
-      
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 pb-8 sm:pb-24">
-        {/* Fighter Categories */}
-        {categories.map(category => {
-          const categoryFighters = FIGHTERS.filter(f => f.category === category.id);
-          
-          return (
-            <div key={category.id} className="mb-8">
-              <h2 className={`text-3xl font-bold mb-4 bg-gradient-to-r ${category.color} bg-clip-text text-transparent`}>
-                {category.name}
-              </h2>
-              
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {categoryFighters.map(fighter => {
-                  const unlocked = true;
-                  
-                  return (
-                    <Card
-                      key={fighter.id}
-                      className={`${
-                        unlocked ? 'bg-gray-800/50' : 'bg-gray-900/70 opacity-60'
-                      } border-2`}
-                      style={{ borderColor: fighter.accentColor }}
-                    >
-                      <CardContent className="p-4 text-center">
-                        <div 
-                          className="w-20 h-20 mx-auto mb-3 flex items-center justify-center shadow-lg relative"
-                          style={{ 
-                            backgroundColor: fighter.color,
-                            clipPath: 'polygon(25% 6%, 75% 6%, 96% 50%, 75% 94%, 25% 94%, 4% 50%)',
-                            boxShadow: unlocked ? `0 0 20px ${fighter.accentColor}` : 'none'
-                          }}
-                        >
-                          <div className="text-center px-2">
-                            <div className="text-[10px] font-black tracking-widest text-white/95">
-                              {fighter.name}
-                            </div>
-                            <div className="text-[9px] font-bold text-white/70">
-                              {fighter.category.toUpperCase()}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <h3 className="text-lg font-bold text-white mb-1">
-                          {fighter.displayName}
-                        </h3>
-                        
-                        <p className="text-xs text-gray-300">
-                          {fighter.description}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-        
-        {/* Progress Summary */}
-        <Card className="bg-black/40 border-4 border-yellow-400 mt-8">
-          <CardContent className="p-6">
-            <div className="text-center">
-              <h3 className="text-2xl font-bold text-yellow-300 mb-2">
-                Unlocked Fighters
-              </h3>
-              <p className="text-5xl font-bold text-white mb-4">
-                {FIGHTERS.length} / {FIGHTERS.length}
-              </p>
-              <div className="w-full bg-gray-700 rounded-full h-4 max-w-md mx-auto">
-                <div 
-                  className="bg-gradient-to-r from-green-400 via-yellow-400 to-cyan-400 h-4 rounded-full transition-all"
-                  style={{ width: `100%` }}
-                />
-              </div>
-              <p className="text-gray-300 mt-4">
-                All fighters are unlocked and ready.
-              </p>
-            </div>
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 pb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {VERSUS_ROSTER.map((entry) => {
+            const combatProfile = getFighterById(getCombatProfileId(entry));
+            const unlocked = isUnlocked(entry);
+            const profileReady = Boolean(combatProfile);
+            const accent = combatProfile?.accentColor ?? (entry.role === 'boss' ? '#a78bfa' : '#94a3b8');
+            const base = combatProfile?.color ?? '#111827';
+
+            return (
+              <Card
+                key={entry.id}
+                className={`border-2 bg-slate-950/65 ${unlocked ? '' : 'opacity-70'}`}
+                style={{ borderColor: `${accent}88` }}
+              >
+                <CardContent className="p-5">
+                  <div
+                    className="w-20 h-20 mx-auto mb-4 flex items-center justify-center rounded-2xl text-2xl font-black"
+                    style={{
+                      background: `linear-gradient(135deg, ${accent}55, ${base})`,
+                      border: `2px solid ${accent}77`,
+                      color: accent,
+                    }}
+                  >
+                    {entry.displayName.slice(0, 2).toUpperCase()}
+                  </div>
+
+                  <div className="text-center">
+                    <h2 className="text-lg font-black text-white">{entry.displayName}</h2>
+                    <p className="text-[10px] uppercase tracking-widest text-slate-400 mt-1">{factionLabel(entry.faction)}</p>
+                  </div>
+
+                  <div className="mt-4 rounded-xl border border-white/10 bg-black/25 p-3 text-xs text-slate-300 space-y-2">
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">Story state</span>
+                      <span className={unlocked ? 'text-emerald-300 font-bold' : 'text-amber-300 font-bold'}>
+                        {unlocked ? 'UNLOCKED' : 'LOCKED'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">Combat profile</span>
+                      <span className={profileReady ? 'text-cyan-300' : 'text-slate-500'}>
+                        {profileReady ? 'INTEGRATED' : 'PENDING'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-start gap-2 rounded-lg bg-white/[0.03] border border-white/5 p-3 text-[11px] leading-5 text-slate-400">
+                    {unlocked ? (
+                      <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <LockKeyhole className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                    )}
+                    <span>
+                      {entry.id === 'kai-jax' && !unlocked
+                        ? 'Kai-Jax remains story-gated. Base fusion begins with exactly three tails.'
+                        : unlocked
+                          ? 'Customization may use only approved visual variants for this identity.'
+                          : 'Unlock conditions remain controlled by story chronology and current character locks.'}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        <Card className="bg-black/40 border border-amber-400/40 mt-8">
+          <CardContent className="p-6 text-center">
+            <h3 className="text-xl font-black text-amber-300 mb-2">Publication-Safe Roster</h3>
+            <p className="text-4xl font-black text-white mb-2">{unlockedCount} / {VERSUS_ROSTER.length}</p>
+            <p className="text-sm text-slate-400">
+              Locked identities stay visible for provenance and planning, but cannot be treated as story-available until their required canon and gameplay gates close.
+            </p>
           </CardContent>
         </Card>
       </div>
