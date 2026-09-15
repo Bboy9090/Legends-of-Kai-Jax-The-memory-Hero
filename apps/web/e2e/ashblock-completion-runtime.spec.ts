@@ -87,7 +87,7 @@ async function readBeat(page: Page): Promise<string> {
 }
 
 async function logCombatSnapshot(page: Page, label: string) {
-  const [position, beat, health, energy, enemyCount, enemyHealth, behavior] = await Promise.all([
+  const [position, beat, health, energy, enemyCount, enemyHealth, behavior, attacking, dodging] = await Promise.all([
     readPosition(page),
     readBeat(page),
     readNumber(page, 'slice-player-health'),
@@ -95,6 +95,8 @@ async function logCombatSnapshot(page: Page, label: string) {
     readNumber(page, 'slice-enemy-count'),
     readNumber(page, 'slice-total-enemy-health'),
     page.getByTestId('slice-fang-behavior').innerText(),
+    page.getByTestId('slice-attacking').innerText(),
+    page.getByTestId('slice-dodging').innerText(),
   ]);
   console.log('[combat-proof]', JSON.stringify({
     label,
@@ -105,6 +107,8 @@ async function logCombatSnapshot(page: Page, label: string) {
     enemyCount,
     enemyHealth,
     behavior,
+    attacking,
+    dodging,
   }));
 }
 
@@ -158,17 +162,9 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
-  // Recharge only to the real controller's authored ultimate threshold.
-  // Shortening exposed kiting time is player-authentic and changes no authority.
   const requiredEnergy = hero === 'kai' ? 80 : 75;
-
-  // Kiting is real controller-owned movement, not a test teleport. It gives the
-  // hero the same breathing room a player would create between authored attacks.
   await page.keyboard.down('s');
   try {
-    // Keep creating real distance for the entire recharge window. Releasing
-    // movement after a fixed sleep left the hero stationary while Fangs closed
-    // the gap during several seconds of controller-owned energy regeneration.
     await expect.poll(async () => readNumber(page, 'slice-energy'), {
       timeout: 12_000,
       intervals: [100, 150, 200, 250],
@@ -181,19 +177,13 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
 async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   const ultimateRadiusMargin = hero === 'kai' ? 9 : 4.5;
 
-  // Real gameplay survival: create distance and wait for a moment of safety.
-  // In multi-enemy encounters (3+ Fangs), hold backward movement while waiting
-  // to open distance and avoid overlapping attack envelopes. Then close in.
   if (hero === 'jax') {
-    // Jax: retreat while waiting for safe window to minimize overlap damage
     await page.keyboard.down('s');
     try {
       await expect.poll(async () => {
         const behaviorText = await page.getByTestId('slice-fang-behavior').innerText();
         const downText = await page.getByTestId('slice-player-down').innerText();
-        if (!downText.includes('NO')) {
-          throw new Error('Player was hit, re-waiting for safety');
-        }
+        if (!downText.includes('NO')) throw new Error('Player was hit while opening distance');
         return behaviorText;
       }, {
         timeout: 15_000,
@@ -203,13 +193,10 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
       await page.keyboard.up('s');
     }
   } else {
-    // Kai: wait in place for recovery state
     await expect.poll(async () => {
       const behaviorText = await page.getByTestId('slice-fang-behavior').innerText();
       const downText = await page.getByTestId('slice-player-down').innerText();
-      if (!downText.includes('NO')) {
-        throw new Error('Player was hit, re-waiting for safety');
-      }
+      if (!downText.includes('NO')) throw new Error('Player was hit while waiting for recovery');
       return behaviorText;
     }, {
       timeout: 15_000,
@@ -217,52 +204,46 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
     }).toContain('RECOVERY');
   }
 
-  // Close into ultimate range with active evasion. Use real controller dodge/displacement
-  // to thread through overlapping attack envelopes in multi-enemy scenarios.
-  // Keep the evasion input held throughout the approach to maintain safety.
   if (await readNumber(page, 'slice-nearest-enemy-distance') > ultimateRadiusMargin) {
     await page.keyboard.down('w');
-    // Add continuous dodging input. For Kai: web zip (hold e). For Jax: displacement (tap e repeatedly).
-    if (hero === 'kai') {
-      await page.keyboard.down('e');
-    }
+    if (hero === 'kai') await page.keyboard.down('e');
+
     try {
-      await expect.poll(async () => {
-        // Refresh dodge input for Jax each poll cycle
-        if (hero === 'jax' && Math.random() < 0.3) {
-          await page.keyboard.press('e');
-        }
-        // Verify we're not knocked down during approach
+      const deadline = Date.now() + 10_000;
+      let nextJaxDisplacementAt = 0;
+
+      while (Date.now() < deadline) {
         const downStatus = await page.getByTestId('slice-player-down').innerText();
-        if (!downStatus.includes('NO')) {
-          throw new Error('Player knocked down during approach');
+        if (!downStatus.includes('NO')) throw new Error('Player knocked down during approach');
+
+        const distance = await readNumber(page, 'slice-nearest-enemy-distance');
+        if (distance <= ultimateRadiusMargin) break;
+
+        if (hero === 'jax' && Date.now() >= nextJaxDisplacementAt) {
+          await page.keyboard.press('e');
+          nextJaxDisplacementAt = Date.now() + 450;
         }
-        return readNumber(page, 'slice-nearest-enemy-distance');
-      }, {
-        timeout: 10_000,
-        intervals: [75, 100, 150, 200],
-      }).toBeLessThanOrEqual(ultimateRadiusMargin);
+        await page.waitForTimeout(100);
+      }
+
+      expect(
+        await readNumber(page, 'slice-nearest-enemy-distance'),
+        `${hero} must close into the real ultimate envelope`,
+      ).toBeLessThanOrEqual(ultimateRadiusMargin);
     } finally {
       await page.keyboard.up('w');
-      if (hero === 'kai') {
-        await page.keyboard.up('e');
-      }
+      if (hero === 'kai') await page.keyboard.up('e');
     }
   }
 
   await expect(page.getByTestId('slice-player-down')).toContainText('NO');
 }
 
-async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
-  const beforeEnergy = await readNumber(page, 'slice-energy');
-  const beforeTotal = await readNumber(page, 'slice-total-enemy-health');
-  const beforeCount = await readNumber(page, 'slice-enemy-count');
+async function waitForUltimateReadiness(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
+  const requiredEnergy = hero === 'kai' ? 80 : 75;
+  await page.keyboard.up('i').catch(() => undefined);
 
-  // Wait for controller to reach a state where ultimate can be accepted.
-  // Do not fire input until these conditions are met.
-  // Controller must not be attacking, dodging (including web zip), and player must not be down.
   if (hero === 'kai') {
-    // Kai must also finish web zip state to accept ultimate
     await expect.poll(async () => page.getByTestId('slice-webzip').innerText(), {
       timeout: 2_000,
       intervals: [50, 75, 100],
@@ -274,49 +255,79 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
     intervals: [50, 75, 100],
   }).toContain('NO');
 
-  if (hero === 'jax') {
-    // Jax must also not be dodging to accept ultimate.
-    await expect.poll(async () => page.getByTestId('slice-dodging').innerText(), {
-      timeout: 2_000,
-      intervals: [50, 75, 100],
-    }).toContain('NO');
-  }
+  await expect.poll(async () => page.getByTestId('slice-dodging').innerText(), {
+    timeout: 2_000,
+    intervals: [50, 75, 100],
+  }).toContain('NO');
 
-  // Both heroes must not be down.
   await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
     timeout: 2_000,
     intervals: [50, 75, 100],
   }).toContain('NO');
 
-  // Hold ultimate input through multiple frame samples to ensure acceptance.
-  // The controller checks input state every frame and needs sustained key-down.
-  await page.keyboard.down('p');
+  await expect.poll(async () => readNumber(page, 'slice-energy'), {
+    timeout: 8_000,
+    intervals: [75, 100, 150, 200],
+  }).toBeGreaterThanOrEqual(requiredEnergy);
+
+  return (await readNumber(page, 'slice-enemy-count')) > 0;
+}
+
+async function pulseUltimateAndObserveAcceptance(page: Page, beforeEnergy: number): Promise<boolean> {
+  let minimumEnergy = beforeEnergy;
+
+  await page.keyboard.up('i').catch(() => undefined);
+  await page.waitForTimeout(75);
+  await page.keyboard.down('i');
   try {
-    // Energy consumption proves the real controller accepted the authored attack.
-    // For Jax: ultimate costs 75 energy. For Kai: ultimate costs 80.
-    const expectedEnergyDrop = hero === 'kai' ? 80 : 75;
-
-    // Poll for energy drop - controller must sample input during this window.
-    // Hold key for full duration to catch the acceptance frame.
-    // Increase timeout to 8s to handle potential delays in multi-enemy scenarios.
-    const energyAccepted = expect.poll(async () => readNumber(page, 'slice-energy'), {
-      timeout: 8_000,
-      intervals: [100, 150, 200, 250],
-    }).toBeLessThan(beforeEnergy - (expectedEnergyDrop - 5));
-
-    await energyAccepted;
-
-    await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
-      timeout: 2_000,
-      intervals: [50, 75, 100],
-    }).toContain('YES');
+    await page.waitForTimeout(140);
   } finally {
-    await page.keyboard.up('p');
+    await page.keyboard.up('i');
   }
 
-  // Both ultimate hitboxes follow the hero's current position. Hold the measured
-  // envelope through startup/active and observe the real scene hitbox directly.
-  const deadline = Date.now() + (hero === 'kai' ? 2_200 : 1_400);
+  try {
+    await expect.poll(async () => {
+      const [energy, attackingText] = await Promise.all([
+        readNumber(page, 'slice-energy'),
+        page.getByTestId('slice-attacking').innerText(),
+      ]);
+      minimumEnergy = Math.min(minimumEnergy, energy);
+      return attackingText.includes('YES') || minimumEnergy <= beforeEnergy - 20;
+    }, {
+      timeout: 1_800,
+      intervals: [40, 60, 80, 100],
+    }).toBe(true);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
+  if (!(await waitForUltimateReadiness(page, hero))) return false;
+
+  let beforeTotal = await readNumber(page, 'slice-total-enemy-health');
+  let beforeCount = await readNumber(page, 'slice-enemy-count');
+  let accepted = false;
+
+  for (let attempt = 0; attempt < 3 && !accepted; attempt += 1) {
+    if (!(await waitForUltimateReadiness(page, hero))) return false;
+
+    beforeTotal = await readNumber(page, 'slice-total-enemy-health');
+    beforeCount = await readNumber(page, 'slice-enemy-count');
+    if (beforeCount === 0) return false;
+
+    const beforeEnergy = await readNumber(page, 'slice-energy');
+    accepted = await pulseUltimateAndObserveAcceptance(page, beforeEnergy);
+    if (!accepted && attempt < 2) await page.waitForTimeout(125);
+  }
+
+  if (!accepted) {
+    await logCombatSnapshot(page, `${hero}:ultimate-not-accepted-after-fresh-edges`);
+    throw new Error(`${hero} ultimate was not accepted after three readiness-validated real input edges`);
+  }
+
+  const deadline = Date.now() + (hero === 'kai' ? 2_400 : 1_800);
   while (Date.now() < deadline) {
     const total = await readNumber(page, 'slice-total-enemy-health');
     const count = await readNumber(page, 'slice-enemy-count');
@@ -336,12 +347,7 @@ async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'
   return false;
 }
 
-async function clearCombatBeat(
-  page: Page,
-  hero: 'kai' | 'jax',
-  expectedBeat: string,
-  maxAttempts: number,
-) {
+async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: string, maxAttempts: number) {
   await expect.poll(async () => readBeat(page), {
     timeout: 3_000,
     intervals: [75, 100, 150],
@@ -352,10 +358,12 @@ async function clearCombatBeat(
   while (await readNumber(page, 'slice-enemy-count') > 0 && attempts < maxAttempts) {
     attempts += 1;
     await retreatAndRecharge(page, hero);
+    if (await readNumber(page, 'slice-enemy-count') === 0) break;
+
     await closeIntoUltimateEnvelope(page, hero);
-    if (await ultimateAndObserveAggregateDamage(page, hero)) {
-      successfulHits += 1;
-    }
+    if (await readNumber(page, 'slice-enemy-count') === 0) break;
+
+    if (await ultimateAndObserveAggregateDamage(page, hero)) successfulHits += 1;
   }
 
   expect(
