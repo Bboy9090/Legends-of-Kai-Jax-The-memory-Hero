@@ -2,15 +2,16 @@
 /**
  * Strict Kai-Jax production-rig certification.
  *
- * This lane intentionally has NO canonical-anchor waiver. The fusion model is
- * production-certifiable only when its registered GLB is valid, animated, and
- * exposes the literal socket contract used by gameplay:
+ * This lane intentionally has NO nine-tail waiver. The fusion model is
+ * production-certifiable only when its registered GLB is valid, skinned,
+ * animated, has a usable humanoid body root, and exposes the literal gameplay
+ * tail contract:
  *
- *   root / spine / head / tail_01 ... tail_09
+ *   body-root-equivalent / spine / head / tail_01 ... tail_09
  *
- * The required anchors must also participate in a skin joint set so future
- * bone-socket hitboxes/attachments are driven by the animated skeleton rather
- * than by decorative scene nodes.
+ * Meshy/Mixamo humanoids commonly name the animated body root `Hips` or
+ * `Armature`; those are accepted as equivalent body roots. Tail names are NOT
+ * aliased: tail_01..tail_09 must exist literally and participate in a skin.
  */
 
 import { existsSync, readFileSync, statSync } from 'node:fs';
@@ -22,12 +23,12 @@ const APP_ROOT = resolve(__dirname, '..');
 const PUBLIC_ROOT = join(APP_ROOT, 'public');
 const REGISTRY_PATH = join(APP_ROOT, 'src', 'assets', 'modelRegistry.ts');
 const FIGHTER_ID = 'kai_jax';
-const REQUIRED_ANCHORS = [
-  'root',
-  'spine',
-  'head',
-  ...Array.from({ length: 9 }, (_, index) => `tail_${String(index + 1).padStart(2, '0')}`),
-];
+const ROOT_ALIASES = ['root', 'hips', 'armature', 'char1', 'mixamorig:hips', 'bip01'];
+const REQUIRED_BODY_ANCHORS = ['spine', 'head'];
+const REQUIRED_TAILS = Array.from(
+  { length: 9 },
+  (_, index) => `tail_${String(index + 1).padStart(2, '0')}`
+);
 
 function fail(message, evidence = {}) {
   console.error('\n=== KAI-JAX RIG CERTIFICATION: FAIL ===');
@@ -100,6 +101,14 @@ function collectNodeNames(nodes, indices) {
     .filter((name) => typeof name === 'string');
 }
 
+function firstMatchingAlias(nameIndex, aliases) {
+  for (const alias of aliases) {
+    const matches = nameIndex.get(alias.toLowerCase()) ?? [];
+    if (matches.length > 0) return { alias, indices: matches };
+  }
+  return null;
+}
+
 function certify() {
   const registryPath = registryPathFor(FIGHTER_ID);
   if (!registryPath) fail(`MODEL_REGISTRY has no ${FIGHTER_ID} path`);
@@ -133,15 +142,31 @@ function certify() {
       : `<unnamed-${index}>`
   );
 
+  const rootMatch = firstMatchingAlias(names, ROOT_ALIASES);
+  const rootJointAlias = rootMatch && jointNameSet.has(rootMatch.alias.toLowerCase())
+    ? rootMatch.alias
+    : null;
+
   const missingNodes = [];
   const missingSkinJoints = [];
   const duplicateCanonicalNames = [];
 
-  for (const anchor of REQUIRED_ANCHORS) {
+  if (!rootMatch) missingNodes.push('body-root-equivalent');
+  if (!rootJointAlias) missingSkinJoints.push('body-root-equivalent');
+  if (rootMatch && rootMatch.indices.length > 1) duplicateCanonicalNames.push(rootMatch.alias);
+
+  for (const anchor of REQUIRED_BODY_ANCHORS) {
     const matchingIndices = names.get(anchor.toLowerCase()) ?? [];
     if (matchingIndices.length === 0) missingNodes.push(anchor);
     if (matchingIndices.length > 1) duplicateCanonicalNames.push(anchor);
     if (!jointNameSet.has(anchor.toLowerCase())) missingSkinJoints.push(anchor);
+  }
+
+  for (const tail of REQUIRED_TAILS) {
+    const matchingIndices = names.get(tail) ?? [];
+    if (matchingIndices.length === 0) missingNodes.push(tail);
+    if (matchingIndices.length > 1) duplicateCanonicalNames.push(tail);
+    if (!jointNameSet.has(tail)) missingSkinJoints.push(tail);
   }
 
   const tailNodes = nodes
@@ -156,7 +181,11 @@ function certify() {
     uniqueSkinJointCount: jointIndices.size,
     animationCount: animationNames.length,
     animationNames,
-    requiredAnchors: REQUIRED_ANCHORS,
+    acceptedRootAliases: ROOT_ALIASES,
+    resolvedBodyRoot: rootMatch?.alias ?? null,
+    resolvedBodyRootIsSkinJoint: Boolean(rootJointAlias),
+    requiredBodyAnchors: REQUIRED_BODY_ANCHORS,
+    requiredNativeTails: REQUIRED_TAILS,
     missingNodes,
     missingSkinJoints,
     duplicateCanonicalNames,
@@ -169,14 +198,15 @@ function certify() {
   if (nodes.length === 0) fail('GLB contains no nodes', evidence);
   if (jointIndices.size === 0) fail('GLB contains no skin joints', evidence);
   if (animationNames.length === 0) fail('GLB contains no animation clips', evidence);
+  if (!rootJointAlias) fail('GLB has no usable animated body-root equivalent', evidence);
   if (missingNodes.length > 0) {
-    fail(`Missing canonical scene nodes: ${missingNodes.join(', ')}`, evidence);
+    fail(`Missing required production nodes: ${missingNodes.join(', ')}`, evidence);
   }
   if (missingSkinJoints.length > 0) {
-    fail(`Canonical anchors are not all animated skin joints: ${missingSkinJoints.join(', ')}`, evidence);
+    fail(`Required production anchors are not all animated skin joints: ${missingSkinJoints.join(', ')}`, evidence);
   }
   if (duplicateCanonicalNames.length > 0) {
-    fail(`Canonical anchor names are ambiguous/duplicated: ${duplicateCanonicalNames.join(', ')}`, evidence);
+    fail(`Production anchor names are ambiguous/duplicated: ${duplicateCanonicalNames.join(', ')}`, evidence);
   }
 
   console.log('\n=== KAI-JAX RIG CERTIFICATION: PASS ===');
