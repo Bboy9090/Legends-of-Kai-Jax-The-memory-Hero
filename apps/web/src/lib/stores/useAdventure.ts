@@ -60,6 +60,8 @@ export interface AdventureEnemy {
   patrolTargetX: number;
   patrolTargetZ: number;
   stunTimer: number;
+  /** Authoritative scripted boss phase when supplied by the encounter runtime. */
+  bossPhase?: 1 | 2;
 }
 
 interface AdventureState {
@@ -217,244 +219,126 @@ export const useAdventure = create<AdventureState>((set, get) => ({
   damagePlayer: (amount) => {
     const p = get().player;
     // @ts-ignore - Avoid circular dependency if useRunner is not imported yet, 
-    // but we can check the trainingSession flag via the global runner store if needed 
-    // or just pass it in. For now, let's assume we can get it.
-    const { trainingSession } = (window as any).runnerStore?.getState() || { trainingSession: false };
-    
-    if (p.invulnTimer > 0 || trainingSession) return;
-    if (p.superArmor) {
-      set((s) => ({
-        player: { ...s.player, health: Math.max(0, s.player.health - amount * 0.5) },
-      }));
-      return;
-    }
-    set((s) => ({
-      player: {
-        ...s.player,
-        health: Math.max(0, s.player.health - amount),
-        combatState: CombatState.HITSTUN,
-        hitStunTimer: 0.3,
-        isAttacking: false,
-        attackType: null,
-      },
-    }));
+    // but we can check the trainingSession flag via the global runner store if needed
+    const isTraining = typeof window !== 'undefined' && (window as any).runnerStore?.getState?.().trainingSession;
+    if (isTraining) return;
+    set((s) => ({ player: { ...s.player, health: Math.max(0, p.health - amount) } }));
   },
 
   healPlayer: (amount) =>
-    set((s) => ({
-      player: {
-        ...s.player,
-        health: Math.min(s.player.maxHealth, s.player.health + amount),
-      },
-    })),
+    set((s) => ({ player: { ...s.player, health: Math.min(s.player.maxHealth, s.player.health + amount) } })),
 
   useStamina: (amount) => {
-    const s = get();
-    const cur = s.player.stamina;
-    // @ts-ignore
-    const { trainingSession } = (window as any).runnerStore?.getState() || { trainingSession: false };
-    
-    if (trainingSession) return true; // Infinite stamina in training
-    if (cur < amount) return false;
-    set((s) => ({
-      player: {
-        ...s.player,
-        stamina: Math.max(0, s.player.stamina - amount),
-        staminaRegenDelay: STAMINA_CONFIG.regenDelay,
-      },
-    }));
+    const p = get().player;
+    if (p.stamina < amount) return false;
+    set((s) => ({ player: { ...s.player, stamina: Math.max(0, s.player.stamina - amount) } }));
     return true;
   },
 
   regenStamina: (amount) =>
-    set((s) => ({
-      player: {
-        ...s.player,
-        stamina: Math.min(s.player.maxStamina, s.player.stamina + amount),
-      },
-    })),
+    set((s) => ({ player: { ...s.player, stamina: Math.min(s.player.maxStamina, s.player.stamina + amount) } })),
 
-  setCombatState: (combatState) =>
-    set((s) => ({ player: { ...s.player, combatState } })),
+  setCombatState: (combatState) => set((s) => ({ player: { ...s.player, combatState } })),
+  setComboStep: (comboStep) => set((s) => ({ player: { ...s.player, comboStep } })),
+  setComboTimer: (comboTimer) => set((s) => ({ player: { ...s.player, comboTimer } })),
+  setDodgeTimer: (dodgeTimer) => set((s) => ({ player: { ...s.player, dodgeTimer } })),
+  setInvulnTimer: (invulnTimer) => set((s) => ({ player: { ...s.player, invulnTimer } })),
+  setHitStunTimer: (hitStunTimer) => set((s) => ({ player: { ...s.player, hitStunTimer } })),
+  setHitStopTimer: (hitStopTimer) => set((s) => ({ player: { ...s.player, hitStopTimer } })),
+  setStaminaRegenDelay: (staminaRegenDelay) => set((s) => ({ player: { ...s.player, staminaRegenDelay } })),
+  setAutoTargetId: (autoTargetId) => set((s) => ({ player: { ...s.player, autoTargetId } })),
+  setSuperArmor: (superArmor) => set((s) => ({ player: { ...s.player, superArmor } })),
 
-  setComboStep: (comboStep) =>
-    set((s) => ({ player: { ...s.player, comboStep } })),
-
-  setComboTimer: (comboTimer) =>
-    set((s) => ({ player: { ...s.player, comboTimer } })),
-
-  setDodgeTimer: (dodgeTimer) =>
-    set((s) => ({ player: { ...s.player, dodgeTimer } })),
-
-  setInvulnTimer: (invulnTimer) =>
-    set((s) => ({ player: { ...s.player, invulnTimer } })),
-
-  setHitStunTimer: (hitStunTimer) =>
-    set((s) => ({ player: { ...s.player, hitStunTimer } })),
-
-  setHitStopTimer: (hitStopTimer) =>
-    set((s) => ({ player: { ...s.player, hitStopTimer } })),
-
-  setStaminaRegenDelay: (staminaRegenDelay) =>
-    set((s) => ({ player: { ...s.player, staminaRegenDelay } })),
-
-  setAutoTargetId: (autoTargetId) =>
-    set((s) => ({ player: { ...s.player, autoTargetId } })),
-
-  setSuperArmor: (superArmor) =>
-    set((s) => ({ player: { ...s.player, superArmor } })),
-
-  triggerScreenShake: (intensity) =>
-    set((s) => ({ player: { ...s.player, screenShake: intensity } })),
-
-  triggerTimeScale: (scale, duration) => {
-    set((s) => ({ player: { ...s.player, timeScale: scale } }));
-    setTimeout(() => {
-      set((s) => ({ player: { ...s.player, timeScale: 1.0 } }));
-    }, duration * 1000);
-  },
-
+  triggerScreenShake: (intensity) => set((s) => ({ player: { ...s.player, screenShake: intensity } })),
+  triggerTimeScale: (scale, _duration) => set((s) => ({ player: { ...s.player, timeScale: scale } })),
   triggerImpactFlash: (color) => {
     set((s) => ({ player: { ...s.player, impactFlash: color } }));
-    setTimeout(() => {
-      set((s) => ({ player: { ...s.player, impactFlash: null } }));
-    }, 150);
+    setTimeout(() => set((s) => ({ player: { ...s.player, impactFlash: null } })), 150);
   },
 
   spawnEnemies: (enemies) => set({ enemies }),
+  damageEnemy: (id, amount) => set((s) => ({
+    enemies: s.enemies.map((enemy) => enemy.id === id
+      ? { ...enemy, health: Math.max(0, enemy.health - amount), isDead: enemy.health - amount <= 0 }
+      : enemy),
+  })),
+  setEnemyAggro: (id, isAggro) => set((s) => ({
+    enemies: s.enemies.map((enemy) => enemy.id === id ? { ...enemy, isAggro } : enemy),
+  })),
+  setEnemyPos: (id, posX, posY, posZ) => set((s) => ({
+    enemies: s.enemies.map((enemy) => enemy.id === id ? { ...enemy, posX, posY, posZ } : enemy),
+  })),
+  setEnemyAttacking: (id, isAttacking) => set((s) => ({
+    enemies: s.enemies.map((enemy) => enemy.id === id ? { ...enemy, isAttacking } : enemy),
+  })),
+  setEnemyAIState: (id, aiState) => set((s) => ({
+    enemies: s.enemies.map((enemy) => enemy.id === id ? { ...enemy, aiState } : enemy),
+  })),
+  setEnemyTelegraph: (id, telegraphTimer) => set((s) => ({
+    enemies: s.enemies.map((enemy) => enemy.id === id ? { ...enemy, telegraphTimer } : enemy),
+  })),
+  setEnemyStun: (id, stunTimer) => set((s) => ({
+    enemies: s.enemies.map((enemy) => enemy.id === id ? { ...enemy, stunTimer } : enemy),
+  })),
+  removeEnemy: (id) => set((s) => ({ enemies: s.enemies.filter((enemy) => enemy.id !== id) })),
 
-  damageEnemy: (id, amount) =>
-    set((s) => {
-      const enemies = s.enemies.map((e) => {
-        if (e.id !== id) return e;
-        const newHp = Math.max(0, e.health - amount);
-        return {
-          ...e,
-          health: newHp,
-          isDead: newHp <= 0,
-          aiState: (newHp <= 0 ? "idle" : newHp / e.maxHealth < 0.3 ? "retreat" : e.aiState) as EnemyAIState,
-          stunTimer: newHp > 0 ? 0.3 : 0,
-        };
-      });
-      const justKilled = s.enemies.find((e) => e.id === id && !e.isDead);
-      const newHp = justKilled ? Math.max(0, justKilled.health - amount) : 1;
-      return {
-        enemies,
-        enemiesDefeated: newHp <= 0 ? s.enemiesDefeated + 1 : s.enemiesDefeated,
-      };
-    }),
+  initAdventure: (characterId, missionId, arenaId) => set({
+    player: { ...defaultPlayer, fighterId: characterId },
+    enemies: [],
+    missionId,
+    arenaId,
+    waveCount: 0,
+    enemiesDefeated: 0,
+    isPaused: false,
+    roamDistrictId: null,
+    encounterIndex: 0,
+    districtCompleted: false,
+  }),
 
-  setEnemyAggro: (id, aggro) =>
-    set((s) => ({
-      enemies: s.enemies.map((e) =>
-        e.id === id ? { ...e, isAggro: aggro, aiState: aggro ? "chase" as EnemyAIState : "idle" as EnemyAIState } : e
-      ),
-    })),
+  startDistrictRoam: (districtId, characterId) => set((s) => ({
+    player: { ...defaultPlayer, fighterId: characterId },
+    enemies: [],
+    missionId: null,
+    arenaId: "open-world",
+    waveCount: 0,
+    enemiesDefeated: 0,
+    isPaused: false,
+    roamDistrictId: districtId,
+    roamSessionId: s.roamSessionId + 1,
+    encounterIndex: 0,
+    districtCompleted: false,
+  })),
 
-  setEnemyPos: (id, x, y, z) =>
-    set((s) => ({
-      enemies: s.enemies.map((e) =>
-        e.id === id ? { ...e, posX: x, posY: y, posZ: z } : e
-      ),
-    })),
-
-  setEnemyAttacking: (id, attacking) =>
-    set((s) => ({
-      enemies: s.enemies.map((e) =>
-        e.id === id ? { ...e, isAttacking: attacking } : e
-      ),
-    })),
-
-  setEnemyAIState: (id, aiState) =>
-    set((s) => ({
-      enemies: s.enemies.map((e) =>
-        e.id === id ? { ...e, aiState } : e
-      ),
-    })),
-
-  setEnemyTelegraph: (id, timer) =>
-    set((s) => ({
-      enemies: s.enemies.map((e) =>
-        e.id === id ? { ...e, telegraphTimer: timer } : e
-      ),
-    })),
-
-  setEnemyStun: (id, timer) =>
-    set((s) => ({
-      enemies: s.enemies.map((e) =>
-        e.id === id ? { ...e, stunTimer: timer } : e
-      ),
-    })),
-
-  removeEnemy: (id) =>
-    set((s) => ({ enemies: s.enemies.filter((e) => e.id !== id) })),
-
-  initAdventure: (characterId, missionId, arenaId) =>
-    set({
-      player: { ...defaultPlayer, fighterId: characterId },
-      enemies: [],
-      missionId,
-      arenaId,
-      waveCount: 0,
-      enemiesDefeated: 0,
-      isPaused: false,
-      roamDistrictId: null,
-      roamSessionId: 0,
-      encounterIndex: 0,
-      districtCompleted: false,
-      checkpointBetweenEncounters: true,
-    }),
-
-  startDistrictRoam: (districtId, characterId) => {
-    const sid = get().roamSessionId + 1;
-    set({
-      player: { ...defaultPlayer, fighterId: characterId },
-      enemies: [],
-      missionId: null,
-      arenaId: `roam-${districtId}`,
-      waveCount: 0,
-      enemiesDefeated: 0,
-      isPaused: false,
-      roamDistrictId: districtId,
-      roamSessionId: sid,
-      encounterIndex: 0,
-      districtCompleted: false,
-      checkpointBetweenEncounters: true,
-    });
-  },
-
-  applyDistrictCheckpoint: () => {
-    const s = get();
-    if (!s.roamDistrictId || !s.checkpointBetweenEncounters) return;
-    const p = s.player;
-    const heal = Math.round(p.maxHealth * 0.22);
-    const stam = Math.round(STAMINA_CONFIG.max * 0.35);
-    set({
-      player: {
-        ...p,
-        health: Math.min(p.maxHealth, p.health + heal),
-        stamina: Math.min(p.maxStamina, p.stamina + stam),
-        staminaRegenDelay: 0,
-      },
-    });
-    get().triggerImpactFlash("#22d3ee");
-  },
+  applyDistrictCheckpoint: () => set((s) => ({
+    player: {
+      ...s.player,
+      health: Math.min(s.player.maxHealth, s.player.health + s.player.maxHealth * 0.25),
+      stamina: s.player.maxStamina,
+      isAttacking: false,
+      attackType: null,
+      combatState: CombatState.FREE,
+      comboStep: 0,
+      comboTimer: 0,
+      invulnTimer: 0,
+      hitStunTimer: 0,
+      autoTargetId: null,
+    },
+  })),
 
   togglePause: () => set((s) => ({ isPaused: !s.isPaused })),
 
-  reset: () =>
-    set({
-      player: { ...defaultPlayer },
-      enemies: [],
-      missionId: null,
-      arenaId: "open-world",
-      waveCount: 0,
-      enemiesDefeated: 0,
-      isPaused: false,
-      roamDistrictId: null,
-      roamSessionId: 0,
-      encounterIndex: 0,
-      districtCompleted: false,
-      checkpointBetweenEncounters: true,
-    }),
+  reset: () => set((s) => ({
+    player: { ...defaultPlayer },
+    enemies: [],
+    missionId: null,
+    arenaId: "open-world",
+    waveCount: 0,
+    enemiesDefeated: 0,
+    isPaused: false,
+    roamDistrictId: null,
+    roamSessionId: s.roamSessionId + 1,
+    encounterIndex: 0,
+    districtCompleted: false,
+    checkpointBetweenEncounters: true,
+  })),
 }));
