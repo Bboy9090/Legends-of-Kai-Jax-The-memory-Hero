@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { createSemanticTailSockets } from './GLBCharacterLoader';
+import {
+  createCharacterAnimationDriver,
+  createSemanticTailSockets,
+} from './GLBCharacterLoader';
 
 describe('Kai-Jax semantic tail sockets', () => {
   it('creates exactly nine deterministic gameplay sockets when the source rig has none', () => {
@@ -60,5 +63,54 @@ describe('Kai-Jax semantic tail sockets', () => {
 
     expect(after.x - before.x).toBeCloseTo(5, 6);
     expect(after.y - before.y).toBeCloseTo(1, 6);
+  });
+});
+
+describe('GLB character animation driver', () => {
+  it('returns null when an asset exports no clips', () => {
+    const root = new THREE.Object3D();
+    expect(createCharacterAnimationDriver(root, [])).toBeNull();
+  });
+
+  it('resolves exporter clip names from semantic locomotion candidates', () => {
+    const root = new THREE.Object3D();
+    const walking = new THREE.AnimationClip('Walking', 1, []);
+    const driver = createCharacterAnimationDriver(root, [walking]);
+
+    expect(driver).not.toBeNull();
+    expect(driver?.clipNames).toEqual(['Walking']);
+    expect(driver?.play(['run', 'running', 'walk', 'walking'])).toBe('Walking');
+    expect(driver?.getActiveClipName()).toBe('Walking');
+
+    driver?.update(0.25);
+    expect(driver?.getActiveClipName()).toBe('Walking');
+
+    driver?.stop(0);
+    expect(driver?.getActiveClipName()).toBeNull();
+    driver?.dispose();
+  });
+
+  it('prefers exact normalized clip names before partial matches', () => {
+    const root = new THREE.Object3D();
+    const walkAttack = new THREE.AnimationClip('Walk_Attack', 1, []);
+    const walk = new THREE.AnimationClip('Walk', 1, []);
+    const driver = createCharacterAnimationDriver(root, [walkAttack, walk]);
+
+    expect(driver?.play(['walk'])).toBe('Walk');
+    expect(driver?.getActiveClipName()).toBe('Walk');
+    driver?.dispose();
+  });
+
+  it('does not invent an attack clip when the asset only contains walking', () => {
+    const root = new THREE.Object3D();
+    const walking = new THREE.AnimationClip('Walking', 1, []);
+    const driver = createCharacterAnimationDriver(root, [walking]);
+
+    expect(driver?.play(['walk'])).toBe('Walking');
+    expect(driver?.play(['attack', 'punch', 'strike'])).toBeNull();
+    // A caller can then stop locomotion rather than moonwalk through combat.
+    driver?.stop(0);
+    expect(driver?.getActiveClipName()).toBeNull();
+    driver?.dispose();
   });
 });
