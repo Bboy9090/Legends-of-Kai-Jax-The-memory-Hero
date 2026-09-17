@@ -145,7 +145,11 @@ export class BossEntity {
   }
 
   update(deltaTime: number): void {
-    if (this.isDead) return;
+    if (this.isDead) {
+      // Death/defeat clips still need mixer time even after combat authority stops.
+      this.rig?.animation?.update(deltaTime);
+      return;
+    }
 
     this.ai.update(deltaTime);
     this.movePlayer.update();
