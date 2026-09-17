@@ -16,6 +16,26 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export type TailSocketMode = 'native' | 'mixed' | 'semantic' | 'none';
 
+export interface CharacterAnimationPlayOptions {
+  fadeSeconds?: number;
+  loop?: boolean;
+  timeScale?: number;
+}
+
+/**
+ * Thin state-agnostic animation driver owned by a loaded GLB rig.
+ * Callers choose semantic candidates (walk/run/attack/etc.); the driver resolves
+ * them against whatever clip names the asset actually exports.
+ */
+export interface CharacterAnimationDriver {
+  readonly clipNames: string[];
+  getActiveClipName(): string | null;
+  play(candidates: string[], options?: CharacterAnimationPlayOptions): string | null;
+  stop(fadeSeconds?: number): void;
+  update(deltaSeconds: number): void;
+  dispose(): void;
+}
+
 export interface CharacterRig {
   /** Group placed in scene (use this as fighter root for combat math) */
   group: THREE.Group;
@@ -34,6 +54,8 @@ export interface CharacterRig {
   nativeTailCount: number;
   /** Number of missing tail sockets synthesized at runtime. */
   semanticTailCount: number;
+  /** Animation driver for clips embedded in the source GLB, if any. */
+  animation: CharacterAnimationDriver | null;
   /** Approximate world height (for hurtbox sizing) */
   height: number;
   /** True if real GLB loaded successfully; false if fallback box */
@@ -73,6 +95,116 @@ function findByContains(root: THREE.Object3D, fragment: string): THREE.Object3D 
     if (obj.name.toLowerCase().includes(f)) hit = obj;
   });
   return hit;
+}
+
+function normalizeClipToken(value: string): string {
+  return value.trim().toLowerCase().replace(/[\s_|:-]+/g, '');
+}
+
+/**
+ * Create a reusable mixer for a loaded GLB.
+ *
+ * Candidate resolution is intentionally tolerant of exporter names such as
+ * `Walking`, `Armature|Walking`, or `BaseLayer_Walk`, while still preferring an
+ * exact normalized-name match before substring matching.
+ */
+export function createCharacterAnimationDriver(
+  root: THREE.Object3D,
+  clips: THREE.AnimationClip[]
+): CharacterAnimationDriver | null {
+  if (clips.length === 0) return null;
+
+  const mixer = new THREE.AnimationMixer(root);
+  const records = clips.map((clip) => ({
+    clip,
+    token: normalizeClipToken(clip.name),
+    action: mixer.clipAction(clip),
+  }));
+
+  let active: (typeof records)[number] | null = null;
+  let disposed = false;
+
+  const resolve = (candidates: string[]) => {
+    const tokens = candidates
+      .map(normalizeClipToken)
+      .filter((candidate) => candidate.length > 0);
+
+    for (const token of tokens) {
+      const exact = records.find((record) => record.token === token);
+      if (exact) return exact;
+    }
+
+    for (const token of tokens) {
+      const partial = records.find(
+        (record) => record.token.includes(token) || token.includes(record.token)
+      );
+      if (partial) return partial;
+    }
+
+    return null;
+  };
+
+  return {
+    clipNames: clips.map((clip) => clip.name),
+
+    getActiveClipName() {
+      return active?.clip.name ?? null;
+    },
+
+    play(candidates, options = {}) {
+      if (disposed) return null;
+      const next = resolve(candidates);
+      if (!next) return null;
+
+      const fadeSeconds = Math.max(0, options.fadeSeconds ?? 0.18);
+      const loop = options.loop ?? true;
+      const timeScale = Number.isFinite(options.timeScale) ? options.timeScale! : 1;
+
+      if (active !== next) {
+        if (active) {
+          if (fadeSeconds > 0) active.action.fadeOut(fadeSeconds);
+          else active.action.stop();
+        }
+
+        next.action.reset();
+        next.action.enabled = true;
+        next.action.setEffectiveWeight(1);
+        next.action.setEffectiveTimeScale(timeScale);
+        next.action.clampWhenFinished = !loop;
+        next.action.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, loop ? Infinity : 1);
+        if (fadeSeconds > 0) next.action.fadeIn(fadeSeconds);
+        next.action.play();
+        active = next;
+      } else {
+        next.action.setEffectiveTimeScale(timeScale);
+        next.action.clampWhenFinished = !loop;
+        next.action.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, loop ? Infinity : 1);
+      }
+
+      return next.clip.name;
+    },
+
+    stop(fadeSeconds = 0.12) {
+      if (disposed || !active) return;
+      const previous = active;
+      active = null;
+      if (fadeSeconds > 0) previous.action.fadeOut(fadeSeconds);
+      else previous.action.stop();
+    },
+
+    update(deltaSeconds) {
+      if (disposed || !Number.isFinite(deltaSeconds) || deltaSeconds <= 0) return;
+      mixer.update(deltaSeconds);
+    },
+
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      active = null;
+      mixer.stopAllAction();
+      mixer.uncacheRoot(root);
+    },
+  };
 }
 
 /**
@@ -126,6 +258,7 @@ function buildBoxFallback(color: number, height: number = 1.8): CharacterRig {
     tailSocketMode: 'none',
     nativeTailCount: 0,
     semanticTailCount: 0,
+    animation: null,
     height,
     loaded: false,
   };
@@ -192,11 +325,13 @@ export async function loadCharacterRig(
               ? 'native'
               : 'none';
 
+    const animation = createCharacterAnimationDriver(sceneRoot, gltf.animations ?? []);
     const missingRuntimeTails = tails.filter((tail) => !tail).length;
     if (options.debug) {
       console.log(`[GLBLoader] Loaded ${url}`);
       console.log(`  root: ${root?.name || '(scene)'} | spine: ${spine?.name || 'MISSING'} | head: ${head?.name || 'MISSING'}`);
       console.log(`  source tails: ${nativeTailCount}/9 | semantic sockets: ${semanticTailCount}/9 | mode: ${tailSocketMode}`);
+      console.log(`  clips: ${animation?.clipNames.join(', ') || 'NONE'}`);
     }
 
     if (nativeTailCount < 9) {
@@ -221,6 +356,7 @@ export async function loadCharacterRig(
       tailSocketMode,
       nativeTailCount,
       semanticTailCount,
+      animation,
       height: targetHeight,
       loaded: true,
       source: url,
