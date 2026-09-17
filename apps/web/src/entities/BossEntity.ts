@@ -64,6 +64,10 @@ export class BossEntity {
       color: 0xff0000,
       targetHeight: 2.4,
       debug: true,
+      // Gameplay may use tail-authored hitboxes before the source asset receives
+      // true nine-tail deformation bones. These semantic sockets inherit the
+      // animated body root and are explicitly reported as non-native by the rig.
+      synthesizeTailSockets: true,
     });
     if (!rig.loaded) return;
     this.mesh.visible = false;
@@ -71,9 +75,12 @@ export class BossEntity {
     rig.group.position.y = 0;
     this.scene.add(rig.group);
     this.rig = rig;
-    // Hand rig to the boss's MovePlayer so socket-authored hits work
+    // Hand rig to the boss's MovePlayer so socket-authored hits work.
     this.movePlayer.setRig(rig);
-    console.log(`[BossEntity ${this.id}] Real GLB visual loaded`);
+    console.log(
+      `[BossEntity ${this.id}] Real GLB visual loaded; tail sockets=${rig.tailSocketMode} ` +
+      `(native=${rig.nativeTailCount}, semantic=${rig.semanticTailCount})`
+    );
   }
 
   async loadMove(moveId: string): Promise<void> {
@@ -107,9 +114,6 @@ export class BossEntity {
     const aiPos = this.ai.getPosition();
     this.mesh.position.copy(aiPos);
     this.hurtbox.setPosition(aiPos.x, aiPos.y, aiPos.z);
-    if (this.rig?.loaded) {
-      this.rig.group.position.set(aiPos.x, 0, aiPos.z);
-    }
     if (this.rig?.loaded) {
       this.rig.group.position.set(aiPos.x, 0, aiPos.z);
     }
@@ -162,6 +166,7 @@ export class BossEntity {
   destroy(): void {
     this.scene.remove(this.mesh);
     this.hurtbox.destroy(this.scene);
+    if (this.rig?.loaded) this.scene.remove(this.rig.group);
   }
 
   isDefeated(): boolean {
@@ -188,4 +193,3 @@ export class BossEntity {
     return this.mesh.position.clone();
   }
 }
-
