@@ -6,10 +6,20 @@
 import * as THREE from 'three';
 import { Hurtbox } from '../combat/Hurtbox';
 import { MovePlayer } from '../combat/MovePlayer';
-import { BossAI } from '../ai/BossAI';
+import { BossAI, type BossState } from '../ai/BossAI';
 import { loadCharacterRig, CHARACTER_GLB, type CharacterRig } from '../characters/GLBCharacterLoader';
 import type { MoveSpec } from '../types/MoveSpec';
 import type { AITarget } from '../ai/SimpleAI';
+
+const BOSS_ANIMATION_CANDIDATES: Record<BossState, string[]> = {
+  idle: ['idle', 'breathing', 'stand'],
+  approach: ['run', 'running', 'walk', 'walking', 'locomotion'],
+  attack: ['attack', 'punch', 'heavy', 'strike'],
+  special: ['special', 'ultimate', 'combo', 'power'],
+  enrage: ['enrage', 'rage', 'roar'],
+  hitstun: ['hitstun', 'hit', 'hurt', 'damage'],
+  dead: ['death', 'dead', 'ko', 'defeat'],
+};
 
 export class BossEntity {
   public id: string;
@@ -21,6 +31,7 @@ export class BossEntity {
   private maxHP: number;
   private isDead: boolean = false;
   private rig: CharacterRig | null = null;
+  private lastAnimationState: BossState | null = null;
 
   constructor(
     scene: THREE.Scene,
@@ -75,12 +86,40 @@ export class BossEntity {
     rig.group.position.y = 0;
     this.scene.add(rig.group);
     this.rig = rig;
+    this.lastAnimationState = null;
     // Hand rig to the boss's MovePlayer so socket-authored hits work.
     this.movePlayer.setRig(rig);
+    this.syncRigAnimation(this.ai.getState());
     console.log(
       `[BossEntity ${this.id}] Real GLB visual loaded; tail sockets=${rig.tailSocketMode} ` +
-      `(native=${rig.nativeTailCount}, semantic=${rig.semanticTailCount})`
+      `(native=${rig.nativeTailCount}, semantic=${rig.semanticTailCount}); ` +
+      `clips=${rig.animation?.clipNames.join(', ') || 'NONE'}`
     );
+  }
+
+  private syncRigAnimation(state: BossState): void {
+    const animation = this.rig?.animation;
+    if (!animation || this.lastAnimationState === state) return;
+
+    this.lastAnimationState = state;
+    const loop = state === 'idle' || state === 'approach';
+    const timeScale = state === 'approach'
+      ? this.ai.getPhase() === 'phase3'
+        ? 1.35
+        : this.ai.getPhase() === 'phase2'
+          ? 1.18
+          : 1
+      : 1;
+
+    const resolved = animation.play(BOSS_ANIMATION_CANDIDATES[state], {
+      fadeSeconds: state === 'dead' ? 0.08 : 0.16,
+      loop,
+      timeScale,
+    });
+
+    // Never let a locomotion clip keep running through an attack/hit/death state
+    // just because the current source GLB does not yet contain that richer clip.
+    if (!resolved) animation.stop(0.1);
   }
 
   async loadMove(moveId: string): Promise<void> {
@@ -116,6 +155,8 @@ export class BossEntity {
     this.hurtbox.setPosition(aiPos.x, aiPos.y, aiPos.z);
     if (this.rig?.loaded) {
       this.rig.group.position.set(aiPos.x, 0, aiPos.z);
+      this.syncRigAnimation(this.ai.getState());
+      this.rig.animation?.update(deltaTime);
     }
 
     if (this.hurtbox.getHealth() <= 0 && !this.isDead) {
@@ -156,6 +197,9 @@ export class BossEntity {
     this.isDead = true;
     console.log(`[BossEntity ${this.id}] DEFEATED — ${this.maxHP} HP cleared`);
 
+    this.lastAnimationState = null;
+    this.syncRigAnimation('dead');
+
     const mat = this.mesh.material as THREE.MeshStandardMaterial;
     mat.transparent = true;
     mat.opacity = 0.3;
@@ -166,7 +210,10 @@ export class BossEntity {
   destroy(): void {
     this.scene.remove(this.mesh);
     this.hurtbox.destroy(this.scene);
-    if (this.rig?.loaded) this.scene.remove(this.rig.group);
+    if (this.rig?.loaded) {
+      this.rig.animation?.dispose();
+      this.scene.remove(this.rig.group);
+    }
   }
 
   isDefeated(): boolean {
