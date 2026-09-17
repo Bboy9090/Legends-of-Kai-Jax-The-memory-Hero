@@ -3,7 +3,6 @@ import { useFrame } from '@react-three/fiber';
 import { useAdventure } from '../../../lib/stores/useAdventure';
 import { EncounterDirector } from '../../../game/combat/EncounterDirector';
 import { useRunner } from '../../../lib/stores/useRunner';
-import * as THREE from 'three';
 
 export function Mission1EncounterBridge() {
   const directorRef = useRef<EncounterDirector | null>(null);
@@ -41,8 +40,10 @@ export function Mission1EncounterBridge() {
 
     const runtimeEnemies = directorRef.current.getEnemies();
 
-    // Map EncounterDirector state into useAdventure store for rendering & HUD
-    useAdventure.setState((state) => ({
+    // Map EncounterDirector state into useAdventure store for rendering & HUD.
+    // bossPhase remains authoritative in EnemyStateMachine; the presentation
+    // store only mirrors it so the live HUD can render the phase transition.
+    useAdventure.setState(() => ({
       enemies: runtimeEnemies.map((e) => ({
         id: e.id,
         fighterId: e.type.toLowerCase(),
@@ -61,6 +62,7 @@ export function Mission1EncounterBridge() {
         patrolTargetX: e.position.x,
         patrolTargetZ: e.position.z,
         stunTimer: e.isStaggered ? e.stats.staggerDurationMs / 1000 : 0,
+        bossPhase: e.type === 'VOID_STALKER_PRIME' ? e.bossPhase : undefined,
       })),
     }));
 
