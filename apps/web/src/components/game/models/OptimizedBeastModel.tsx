@@ -100,11 +100,11 @@ export default function OptimizedBeastModel({
 
   // Load GLB model
   const { scene, animations } = useGLTF(modelPath, undefined, undefined, (err) => {
-    console.error('[OptimizedBeastModel] Load failed:', {
+    // Model load failure is not fatal - fallback geometry will render
+    console.warn('[OptimizedBeastModel] Model load failed, using fallback:', {
       modelPath,
       error: err?.message || String(err),
     });
-    console.warn(`Failed to load model: ${modelPath}`, err);
     setLoadError(true);
   });
 

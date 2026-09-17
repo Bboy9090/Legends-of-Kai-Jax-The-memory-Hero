@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   base: "/",
   resolve: {
+    dedupe: ["react", "react-dom"],
     extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],
     alias: {
       "@": path.resolve(__dirname, "./src"),

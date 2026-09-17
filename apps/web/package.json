@@ -14,6 +14,7 @@
     "typecheck:full": "tsc --noEmit",
     "lint": "eslint . --ext ts,tsx",
     "lint:strict": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "validate:kaijax-rig": "node scripts/validate-kaijax-rig.mjs",
     "clean": "rm -rf dist .turbo node_modules",
     "cap:sync": "cap sync",
     "cap:open": "cap open ios"

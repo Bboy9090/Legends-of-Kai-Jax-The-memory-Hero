@@ -29,7 +29,7 @@ const BEAST_WARS_FIGHTERS: Fighter[] = (COMPLETE_BEAST_ROSTER || []).map(beastTo
 
 const EXTRA_LEGENDS: Fighter[] = [
   {
-    id: "kaijax",
+    id: "kai-jax",
     name: "KaiJax",
     displayName: "KAI-JAX",
     color: "#1a1a1a",
@@ -296,6 +296,11 @@ export const FIGHTERS: Fighter[] = [...BEAST_WARS_FIGHTERS, ...EXTRA_LEGENDS];
 export const HERO_FIGHTERS = FIGHTERS.filter((f) => f.role === "hero");
 export const ENEMY_FIGHTERS = FIGHTERS.filter((f) => f.role !== "hero");
 export const ALL_FIGHTER_IDS = FIGHTERS.map((f) => f.id);
+
+export function canUseNativeUltimate(fighterId: string): boolean {
+  const normalized = fighterId.toLowerCase().replace("kaijax", "kai-jax");
+  return ["kai-jax", "kai", "jax", "boryn"].includes(normalized);
+}
 
 export function getFighterById(id: string): Fighter | null {
   return FIGHTERS.find((f) => f.id === id) ?? null;

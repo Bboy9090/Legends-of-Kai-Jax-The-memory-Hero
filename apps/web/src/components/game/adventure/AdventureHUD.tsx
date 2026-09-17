@@ -1,4 +1,4 @@
-import { useAdventure } from "../../../lib/stores/useAdventure";
+import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdventure";
 import { useRunner } from "../../../lib/stores/useRunner";
 import { useGame } from "../../../lib/stores/useGame";
 import { CombatState } from "../../../game/combat/stateEnums";
@@ -136,6 +136,57 @@ function AutoTargetIndicator({ targetId, enemies }: { targetId: string | null; e
   );
 }
 
+function BossStatusBar({ boss }: { boss: AdventureEnemy }) {
+  const maxHealth = Math.max(1, boss.maxHealth);
+  const hpPct = Math.max(0, Math.min(100, (boss.health / maxHealth) * 100));
+  const phase = boss.bossPhase ?? 1;
+  const transitioning = (boss.aiState as string) === "phase_transition";
+  const name = boss.fighterId.replace(/_/g, " ").toUpperCase();
+  const accent = phase >= 2 ? "#ef4444" : "#f59e0b";
+
+  return (
+    <div
+      data-testid="mission-boss-hud"
+      className={`absolute top-20 left-1/2 -translate-x-1/2 w-[min(620px,calc(100vw-2rem))] ${transitioning ? "animate-pulse" : ""}`}
+    >
+      <div className="rounded-xl border border-amber-400/35 bg-black/75 px-4 py-3 backdrop-blur-md shadow-[0_0_28px_rgba(245,158,11,0.16)]">
+        <div className="mb-2 flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <div className="truncate text-[10px] font-bold uppercase tracking-[0.22em] text-amber-200/70">Boss Encounter</div>
+            <div className="truncate text-sm font-black tracking-[0.12em] text-white">{name}</div>
+          </div>
+          <div
+            data-testid="mission-boss-phase"
+            className="shrink-0 rounded-full border px-3 py-1 text-xs font-black tracking-[0.16em]"
+            style={{ color: accent, borderColor: `${accent}80`, background: `${accent}18` }}
+          >
+            {transitioning ? `PHASE ${phase} AWAKENING` : `PHASE ${phase}`}
+          </div>
+        </div>
+
+        <div data-testid="mission-boss-health" className="flex items-center gap-3">
+          <div className="h-3 flex-1 overflow-hidden rounded-full border border-red-400/30 bg-slate-950">
+            <div
+              data-testid="mission-boss-health-fill"
+              className="h-full rounded-full transition-[width] duration-200"
+              style={{
+                width: `${hpPct}%`,
+                background: phase >= 2
+                  ? "linear-gradient(90deg, #ef4444, #7f1d1d)"
+                  : "linear-gradient(90deg, #f59e0b, #dc2626)",
+                boxShadow: `0 0 12px ${accent}66`,
+              }}
+            />
+          </div>
+          <span className="w-24 text-right font-mono text-xs text-slate-200">
+            {Math.ceil(boss.health)} / {Math.ceil(maxHealth)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ImpactFlash({ color }: { color: string | null }) {
   if (!color) return null;
   return (
@@ -259,6 +310,9 @@ export default function AdventureHUD() {
   const lastReward = useMissions((s) => s.lastReward);
 
   const aliveEnemies = enemies.filter((e) => !e.isDead).length;
+  const liveBoss = enemies.find(
+    (enemy) => !enemy.isDead && (enemy.tier === "boss1" || enemy.tier === "boss2"),
+  ) ?? null;
 
   if (isPaused) {
     return (
@@ -367,6 +421,8 @@ export default function AdventureHUD() {
           </div>
         </div>
       </div>
+
+      {liveBoss && <BossStatusBar boss={liveBoss} />}
 
       {districtMeta && (
         <div className="absolute top-20 left-4 max-w-xs bg-black/55 backdrop-blur-sm rounded-lg px-3 py-2 border border-cyan-500/25 pointer-events-none">
