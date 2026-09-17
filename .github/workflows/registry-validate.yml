@@ -6,6 +6,7 @@ on:
       - "apps/web/src/assets/modelRegistry.ts"
       - "apps/web/public/models/**"
       - "apps/web/scripts/validate-registry.mjs"
+      - "apps/web/scripts/validate-kaijax-rig.mjs"
       - ".github/workflows/registry-validate.yml"
   push:
     branches:
@@ -15,6 +16,7 @@ on:
       - "apps/web/src/assets/modelRegistry.ts"
       - "apps/web/public/models/**"
       - "apps/web/scripts/validate-registry.mjs"
+      - "apps/web/scripts/validate-kaijax-rig.mjs"
       - ".github/workflows/registry-validate.yml"
   workflow_dispatch:
 
@@ -27,7 +29,7 @@ concurrency:
 
 jobs:
   validate-registry:
-    name: Validate MODEL_REGISTRY
+    name: Validate MODEL_REGISTRY + Kai-Jax Rig
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -49,6 +51,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
           test -f apps/web/src/assets/modelRegistry.ts
           test -f apps/web/scripts/validate-registry.mjs
+          test -f apps/web/scripts/validate-kaijax-rig.mjs
           test -d apps/web/public/models
 
       - name: Runtime identity
@@ -67,16 +70,35 @@ jobs:
           echo "REGISTRY_VALIDATOR_EXIT=${status}" >> "${GITHUB_ENV}"
           exit "${status}"
 
-      - name: Registry evidence summary
+      - name: Strict Kai-Jax production rig certification
+        working-directory: apps/web
+        run: |
+          set +e
+          node scripts/validate-kaijax-rig.mjs 2>&1 | tee /tmp/kaijax-rig-report.txt
+          status=${PIPESTATUS[0]}
+          set -e
+          echo "KAIJAX_RIG_EXIT=${status}" >> "${GITHUB_ENV}"
+          exit "${status}"
+
+      - name: Registry and rig evidence summary
         if: always()
         run: |
-          echo "## Registry Validation" >> "${GITHUB_STEP_SUMMARY}"
+          echo "## Registry + Kai-Jax Rig Validation" >> "${GITHUB_STEP_SUMMARY}"
           echo "" >> "${GITHUB_STEP_SUMMARY}"
           echo "- Head: \`${{ github.event.pull_request.head.sha || github.sha }}\`" >> "${GITHUB_STEP_SUMMARY}"
-          echo "- Validator exit: \`${REGISTRY_VALIDATOR_EXIT:-not-run}\`" >> "${GITHUB_STEP_SUMMARY}"
+          echo "- Registry validator exit: \`${REGISTRY_VALIDATOR_EXIT:-not-run}\`" >> "${GITHUB_STEP_SUMMARY}"
+          echo "- Strict Kai-Jax rig exit: \`${KAIJAX_RIG_EXIT:-not-run}\`" >> "${GITHUB_STEP_SUMMARY}"
           if test -f /tmp/registry-report.txt; then
             echo "" >> "${GITHUB_STEP_SUMMARY}"
+            echo "### Registry" >> "${GITHUB_STEP_SUMMARY}"
             echo '```text' >> "${GITHUB_STEP_SUMMARY}"
             tail -n 80 /tmp/registry-report.txt >> "${GITHUB_STEP_SUMMARY}"
+            echo '```' >> "${GITHUB_STEP_SUMMARY}"
+          fi
+          if test -f /tmp/kaijax-rig-report.txt; then
+            echo "" >> "${GITHUB_STEP_SUMMARY}"
+            echo "### Strict Kai-Jax rig" >> "${GITHUB_STEP_SUMMARY}"
+            echo '```text' >> "${GITHUB_STEP_SUMMARY}"
+            tail -n 120 /tmp/kaijax-rig-report.txt >> "${GITHUB_STEP_SUMMARY}"
             echo '```' >> "${GITHUB_STEP_SUMMARY}"
           fi
