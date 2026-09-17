@@ -293,6 +293,14 @@ async function extractAndVerifyPersistence(page: Page) {
     await page.keyboard.up('w');
   }
 
+  // End-state presentation must be driven by the same real completed mission
+  // state proved above. This closes the UX contract without bypassing mission
+  // progression or writing completion from the overlay itself.
+  await expect(page.getByTestId('vertical-slice-endstate')).toBeVisible({ timeout: 2_000 });
+  await expect(page.getByTestId('endstate-title')).toHaveText('MISSION COMPLETE');
+  await expect(page.getByTestId('endstate-retry-btn')).toBeVisible();
+  await expect(page.getByTestId('endstate-exit-btn')).toBeVisible();
+
   await expect.poll(async () => page.evaluate((missionId) => {
     const ids = (window as any).runnerStore.getState().completedStoryMissionIds as string[];
     return ids.filter((id) => id === missionId).length;
