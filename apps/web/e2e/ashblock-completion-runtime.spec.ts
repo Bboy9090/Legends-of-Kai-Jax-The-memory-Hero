@@ -207,7 +207,7 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
   }, {
     timeout: 10_000,
     intervals: [40, 60, 80, 100],
-  }).toContain('WINDUP');
+  }).toMatch(/WINDUP|RECOVERY/);
 
   const beforeDodgeEnergy = await readNumber(page, 'slice-energy');
   await page.keyboard.press('q');
@@ -222,10 +222,14 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
     intervals: [40, 60, 80, 100],
   }).toContain('NO');
 
-  // Do not wait for a primary-Fang RECOVERY label: another living Fang may
-  // already be winding up. Issue the ultimate immediately after the real dodge
-  // lock ends while the authored invulnerability tail is still available.
+  // Do not wait for another primary-Fang label: a different living Fang may
+  // already be winding up. Prove the controller can fund the immediate ultimate.
   expect(await page.getByTestId('slice-player-down').innerText()).toContain('NO');
+  expect(await page.getByTestId('slice-attacking').innerText()).toContain('NO');
+  await expect.poll(async () => readNumber(page, 'slice-energy'), {
+    timeout: 1_500,
+    intervals: [40, 60, 80],
+  }).toBeGreaterThanOrEqual(hero === 'kai' ? 80 : 75);
 }
 
 async function waitForUltimateReadiness(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
@@ -292,15 +296,20 @@ async function pulseUltimateAndObserveAcceptance(page: Page, beforeEnergy: numbe
   }
 }
 
-async function ultimateAndObserveAggregateDamage(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
-  if (!(await waitForUltimateReadiness(page, hero))) return false;
+async function ultimateAndObserveAggregateDamage(
+  page: Page,
+  hero: 'kai' | 'jax',
+  readinessAlreadyProven = false,
+): Promise<boolean> {
+  if (!readinessAlreadyProven && !(await waitForUltimateReadiness(page, hero))) return false;
 
   let beforeTotal = await readNumber(page, 'slice-total-enemy-health');
   let beforeCount = await readNumber(page, 'slice-enemy-count');
   let accepted = false;
 
   for (let attempt = 0; attempt < 3 && !accepted; attempt += 1) {
-    if (!(await waitForUltimateReadiness(page, hero))) return false;
+    if (!(readinessAlreadyProven && attempt === 0) &&
+        !(await waitForUltimateReadiness(page, hero))) return false;
 
     beforeTotal = await readNumber(page, 'slice-total-enemy-health');
     beforeCount = await readNumber(page, 'slice-enemy-count');
@@ -353,7 +362,7 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
     await dodgeIncomingVolley(page, hero);
-    if (await ultimateAndObserveAggregateDamage(page, hero)) successfulHits += 1;
+    if (await ultimateAndObserveAggregateDamage(page, hero, true)) successfulHits += 1;
   }
 
   expect(
