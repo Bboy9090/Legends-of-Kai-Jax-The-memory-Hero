@@ -364,6 +364,9 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
     await dodgeIncomingVolley(page, hero);
+    // Dodge/AI progression can invalidate the earlier range sample. Re-prove
+    // the real ultimate envelope immediately before dispatching the input.
+    await closeIntoUltimateEnvelope(page, hero);
     if (await ultimateAndObserveAggregateDamage(page, hero, true)) successfulHits += 1;
   }
 
