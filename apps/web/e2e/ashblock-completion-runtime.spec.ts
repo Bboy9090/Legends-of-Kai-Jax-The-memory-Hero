@@ -177,64 +177,20 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
 async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   const ultimateRadiusMargin = hero === 'kai' ? 9 : 4.5;
 
-  if (hero === 'jax') {
-    await page.keyboard.down('s');
-    try {
-      await expect.poll(async () => {
-        const behaviorText = await page.getByTestId('slice-fang-behavior').innerText();
-        const downText = await page.getByTestId('slice-player-down').innerText();
-        if (!downText.includes('NO')) throw new Error('Player was hit while opening distance');
-        return behaviorText;
-      }, {
-        timeout: 15_000,
-        intervals: [100, 150, 200, 250],
-      }).toContain('RECOVERY');
-    } finally {
-      await page.keyboard.up('s');
+  // Wait for real Fang AI movement to enter the hero's larger authored attack
+  // radius. Primary-Fang RECOVERY is neither aggregate safety nor range proof,
+  // and advancing under software-WebGL lets wall-clock AI outrun the hero.
+  await expect.poll(async () => {
+    const downStatus = await page.getByTestId('slice-player-down').innerText();
+    if (!downStatus.includes('NO')) {
+      await logCombatSnapshot(page, `${hero}:player-down-before-ultimate-envelope`);
+      throw new Error('Player was knocked down before the ultimate envelope opened');
     }
-  } else {
-    await expect.poll(async () => {
-      const behaviorText = await page.getByTestId('slice-fang-behavior').innerText();
-      const downText = await page.getByTestId('slice-player-down').innerText();
-      if (!downText.includes('NO')) throw new Error('Player was hit while waiting for recovery');
-      return behaviorText;
-    }, {
-      timeout: 15_000,
-      intervals: [100, 150, 200, 250],
-    }).toContain('RECOVERY');
-  }
-
-  if (await readNumber(page, 'slice-nearest-enemy-distance') > ultimateRadiusMargin) {
-    await page.keyboard.down('w');
-    if (hero === 'kai') await page.keyboard.down('e');
-
-    try {
-      const deadline = Date.now() + 10_000;
-      let nextJaxDisplacementAt = 0;
-
-      while (Date.now() < deadline) {
-        const downStatus = await page.getByTestId('slice-player-down').innerText();
-        if (!downStatus.includes('NO')) throw new Error('Player knocked down during approach');
-
-        const distance = await readNumber(page, 'slice-nearest-enemy-distance');
-        if (distance <= ultimateRadiusMargin) break;
-
-        if (hero === 'jax' && Date.now() >= nextJaxDisplacementAt) {
-          await page.keyboard.press('e');
-          nextJaxDisplacementAt = Date.now() + 450;
-        }
-        await page.waitForTimeout(100);
-      }
-
-      expect(
-        await readNumber(page, 'slice-nearest-enemy-distance'),
-        `${hero} must close into the real ultimate envelope`,
-      ).toBeLessThanOrEqual(ultimateRadiusMargin);
-    } finally {
-      await page.keyboard.up('w');
-      if (hero === 'kai') await page.keyboard.up('e');
-    }
-  }
+    return readNumber(page, 'slice-nearest-enemy-distance');
+  }, {
+    timeout: 10_000,
+    intervals: [40, 60, 80, 100],
+  }).toBeLessThanOrEqual(ultimateRadiusMargin);
 
   await expect(page.getByTestId('slice-player-down')).toContainText('NO');
 }
