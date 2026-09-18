@@ -197,17 +197,19 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
+  // Primary-Fang behavior is not aggregate encounter state. Use measured scene
+  // geometry and dodge when the nearest living Fang enters a real melee envelope.
   await expect.poll(async () => {
     const downStatus = await page.getByTestId('slice-player-down').innerText();
     if (!downStatus.includes('NO')) {
       await logCombatSnapshot(page, `${hero}:player-down-before-dodge`);
       throw new Error('Player was knocked down before the defensive dodge');
     }
-    return page.getByTestId('slice-fang-behavior').innerText();
+    return readNumber(page, 'slice-nearest-enemy-distance');
   }, {
     timeout: 10_000,
     intervals: [40, 60, 80, 100],
-  }).toMatch(/WINDUP|RECOVERY/);
+  }).toBeLessThanOrEqual(1.5);
 
   const beforeDodgeEnergy = await readNumber(page, 'slice-energy');
   await page.keyboard.press('q');
