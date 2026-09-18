@@ -396,10 +396,36 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
     await closeIntoUltimateEnvelope(page, hero);
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
-    await dodgeIncomingVolley(page, hero);
-    // Dodge/AI progression can invalidate the earlier range sample. Re-prove
-    // the real ultimate envelope immediately before dispatching the input.
+    // Enter the attack from a real dodge and dispatch while the controller's
+    // invulnerability window is still active. Waiting for dodge animation/timer
+    // completion let multiple Fangs resolve attacks during ultimate startup.
+    const beforeDodgeEnergy = await readNumber(page, 'slice-energy');
+    await page.keyboard.press('q');
+    await expect.poll(async () => readNumber(page, 'slice-energy'), {
+      timeout: 2_000,
+      intervals: [40, 60, 80, 100],
+    }).toBeLessThan(beforeDodgeEnergy - 5);
+    await expect.poll(async () => readNumber(page, 'slice-invuln'), {
+      timeout: 1_000,
+      intervals: [20, 30, 40, 50],
+    }).toBeGreaterThan(0);
+
+    // Dodge itself can shift the range sample. Re-prove the authored envelope,
+    // then wait only for attack readiness—not for invulnerability to expire.
     await closeIntoUltimateEnvelope(page, hero);
+    await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
+      timeout: 1_000,
+      intervals: [20, 30, 40, 50],
+    }).toContain('NO');
+    await expect.poll(async () => page.getByTestId('slice-dodging').innerText(), {
+      timeout: 1_000,
+      intervals: [20, 30, 40, 50],
+    }).toContain('NO');
+    await expect.poll(async () => readNumber(page, 'slice-energy'), {
+      timeout: 1_500,
+      intervals: [30, 40, 60],
+    }).toBeGreaterThanOrEqual(hero === 'kai' ? 80 : 75);
+
     if (await ultimateAndObserveAggregateDamage(page, hero, true)) successfulHits += 1;
   }
 
