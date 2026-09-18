@@ -222,12 +222,10 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
     intervals: [40, 60, 80, 100],
   }).toContain('NO');
 
-  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
-    timeout: 3_000,
-    intervals: [40, 60, 80, 100],
-  }).toContain('RECOVERY');
-
-  await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+  // Do not wait for a primary-Fang RECOVERY label: another living Fang may
+  // already be winding up. Issue the ultimate immediately after the real dodge
+  // lock ends while the authored invulnerability tail is still available.
+  expect(await page.getByTestId('slice-player-down').innerText()).toContain('NO');
 }
 
 async function waitForUltimateReadiness(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
