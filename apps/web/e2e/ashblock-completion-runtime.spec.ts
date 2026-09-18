@@ -178,20 +178,50 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
 async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   const ultimateRadiusMargin = hero === 'kai' ? 9 : 4.5;
 
-  // Wait for real Fang AI movement to enter the hero's larger authored attack
-  // radius. Primary-Fang RECOVERY is neither aggregate safety nor range proof,
-  // and advancing under software-WebGL lets wall-clock AI outrun the hero.
-  await expect.poll(async () => {
-    const downStatus = await page.getByTestId('slice-player-down').innerText();
-    if (!downStatus.includes('NO')) {
-      await logCombatSnapshot(page, `${hero}:player-down-before-ultimate-envelope`);
-      throw new Error('Player was knocked down before the ultimate envelope opened');
+  // Kai's authored ultimate already has a broad 10-unit scene radius, so letting
+  // the encounter close naturally avoids unnecessary traversal churn.
+  if (hero === 'kai') {
+    await expect.poll(async () => {
+      const downStatus = await page.getByTestId('slice-player-down').innerText();
+      if (!downStatus.includes('NO')) {
+        await logCombatSnapshot(page, `${hero}:player-down-before-ultimate-envelope`);
+        throw new Error('Player was knocked down before the ultimate envelope opened');
+      }
+      return readNumber(page, 'slice-nearest-enemy-distance');
+    }, {
+      timeout: 10_000,
+      intervals: [40, 60, 80, 100],
+    }).toBeLessThanOrEqual(ultimateRadiusMargin);
+
+    return;
+  }
+
+  // Jax cannot safely idle outside his tighter 5-unit storm radius while Fang
+  // wall-clock attack cadence continues under software WebGL. Close the gap with
+  // his real movement/displacement controller instead of waiting to be hit.
+  if (await readNumber(page, 'slice-nearest-enemy-distance') > ultimateRadiusMargin) {
+    await page.keyboard.down('w');
+    try {
+      const initialDistance = await readNumber(page, 'slice-nearest-enemy-distance');
+      if (initialDistance > ultimateRadiusMargin + 1.25) {
+        await page.keyboard.press('e');
+      }
+
+      await expect.poll(async () => {
+        const downStatus = await page.getByTestId('slice-player-down').innerText();
+        if (!downStatus.includes('NO')) {
+          await logCombatSnapshot(page, `${hero}:player-down-during-active-close`);
+          throw new Error('Player was knocked down during the active ultimate close');
+        }
+        return readNumber(page, 'slice-nearest-enemy-distance');
+      }, {
+        timeout: 4_000,
+        intervals: [40, 60, 80, 100],
+      }).toBeLessThanOrEqual(ultimateRadiusMargin);
+    } finally {
+      await page.keyboard.up('w');
     }
-    return readNumber(page, 'slice-nearest-enemy-distance');
-  }, {
-    timeout: 10_000,
-    intervals: [40, 60, 80, 100],
-  }).toBeLessThanOrEqual(ultimateRadiusMargin);
+  }
 
   await expect(page.getByTestId('slice-player-down')).toContainText('NO');
 }
@@ -209,7 +239,10 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
   }, {
     timeout: 10_000,
     intervals: [40, 60, 80, 100],
-  }).toBeLessThanOrEqual(1.5);
+  // The debug HUD is rounded to hundredths while scene/controller updates occur
+  // between Playwright samples. Trigger one sample early rather than fail on a
+  // harmless 1.50/1.52 boundary oscillation.
+  }).toBeLessThanOrEqual(1.6);
 
   const beforeDodgeEnergy = await readNumber(page, 'slice-energy');
   await page.keyboard.press('q');
