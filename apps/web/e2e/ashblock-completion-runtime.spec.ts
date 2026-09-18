@@ -162,7 +162,8 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
-  const requiredEnergy = hero === 'kai' ? 80 : 75;
+  // Full energy funds one real defensive dodge followed by the authored ultimate.
+  const requiredEnergy = 100;
   await page.keyboard.down('s');
   try {
     await expect.poll(async () => readNumber(page, 'slice-energy'), {
@@ -191,6 +192,40 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
     timeout: 10_000,
     intervals: [40, 60, 80, 100],
   }).toBeLessThanOrEqual(ultimateRadiusMargin);
+
+  await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+}
+
+async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
+  await expect.poll(async () => {
+    const downStatus = await page.getByTestId('slice-player-down').innerText();
+    if (!downStatus.includes('NO')) {
+      await logCombatSnapshot(page, `${hero}:player-down-before-dodge`);
+      throw new Error('Player was knocked down before the defensive dodge');
+    }
+    return page.getByTestId('slice-fang-behavior').innerText();
+  }, {
+    timeout: 10_000,
+    intervals: [40, 60, 80, 100],
+  }).toContain('WINDUP');
+
+  const beforeDodgeEnergy = await readNumber(page, 'slice-energy');
+  await page.keyboard.press('q');
+
+  await expect.poll(async () => readNumber(page, 'slice-energy'), {
+    timeout: 2_000,
+    intervals: [40, 60, 80, 100],
+  }).toBeLessThan(beforeDodgeEnergy - 5);
+
+  await expect.poll(async () => page.getByTestId('slice-dodging').innerText(), {
+    timeout: 3_000,
+    intervals: [40, 60, 80, 100],
+  }).toContain('NO');
+
+  await expect.poll(async () => page.getByTestId('slice-fang-behavior').innerText(), {
+    timeout: 3_000,
+    intervals: [40, 60, 80, 100],
+  }).toContain('RECOVERY');
 
   await expect(page.getByTestId('slice-player-down')).toContainText('NO');
 }
@@ -319,6 +354,7 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
     await closeIntoUltimateEnvelope(page, hero);
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
+    await dodgeIncomingVolley(page, hero);
     if (await ultimateAndObserveAggregateDamage(page, hero)) successfulHits += 1;
   }
 
