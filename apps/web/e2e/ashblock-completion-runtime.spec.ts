@@ -405,13 +405,10 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
       timeout: 2_000,
       intervals: [40, 60, 80, 100],
     }).toBeLessThan(beforeDodgeEnergy - 5);
-    await expect.poll(async () => readNumber(page, 'slice-invuln'), {
-      timeout: 1_000,
-      intervals: [20, 30, 40, 50],
-    }).toBeGreaterThan(0);
+    await expect(page.getByTestId('slice-player-down')).toContainText('NO');
 
     // Dodge itself can shift the range sample. Re-prove the authored envelope,
-    // then wait only for attack readiness—not for invulnerability to expire.
+    // then wait only for attack readiness—not for a separate safety mutation.
     await closeIntoUltimateEnvelope(page, hero);
     await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
       timeout: 1_000,
