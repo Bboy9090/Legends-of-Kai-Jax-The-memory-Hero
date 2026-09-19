@@ -1,46 +1,46 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import '../../styles/bronx_grit.css';
 import '../../styles/legendary-effects.css';
-import { BRAND } from '../../lib/brand';
 import { useRunner } from '../../lib/stores/useRunner';
-
-
-/**
- * ⚡ LEGENDS OF KAI-JAX: THE MEMORY WARRIOR ⚡
- * ULTIMATE LEGENDARY MAIN MENU - GOD-TIER EDITION
- * 
- * Features:
- * - Split cosmic battlefield (Kaison left, Jaxon right, Kai-Jax center fusion)
- * - Animated memory shards with prismatic colors
- * - Three Memory Strand Tails visual effects
- * - God-tier particle systems
- * - Legendary text effects with gradient shimmer
- * - Controller-friendly navigation
- * - Epic transformation-ready aesthetic
- */
 
 interface MenuItem {
   id: string;
   label: string;
   sublabel?: string;
-  icon?: string;
   action: () => void;
   disabled?: boolean;
   legendary?: boolean;
 }
 
+type ShardType = 'memory' | 'ember' | 'storm';
+
+interface MemoryShard {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  delay: number;
+  type: ShardType;
+}
+
+const SHARD_COLORS: Record<ShardType, string[]> = {
+  memory: ['#a855f7', '#c084fc', '#e9d5ff'],
+  ember: ['#f97316', '#fb923c', '#fbbf24'],
+  storm: ['#06b6d4', '#38bdf8', '#7dd3fc'],
+};
+
+/**
+ * Canon-facing main menu.
+ *
+ * Visual language centers Kai (memory/web + ember), Jax (storm + displacement),
+ * and the three-tail base convergence without presenting Kai-Jax as an
+ * immediately available permanent form or inventing a separate lineage.
+ */
 const LegendaryMainMenu: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [selectedIndex, setSelectedIndex] = useState(1); // Start on New Game
-  const [memoryShards, setMemoryShards] = useState<Array<{
-    id: number;
-    x: number;
-    y: number;
-    size: number;
-    color: string;
-    delay: number;
-    type: 'velocity' | 'shield' | 'ghost';
-  }>>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [memoryShards, setMemoryShards] = useState<MemoryShard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [titleGlow, setTitleGlow] = useState(0);
   const [showProfileSelect, setShowProfileSelect] = useState(false);
@@ -51,377 +51,297 @@ const LegendaryMainMenu: React.FC = () => {
   const setGameState = useRunner((s) => s.setGameState);
   const setTrainingSession = useRunner((s) => s.setTrainingSession);
 
-  // Safety guard for hydration
-  if (!profiles || !profiles.length) {
-    return <div className="bg-[#050508] w-full h-screen flex items-center justify-center text-white/20 font-mono">HYDRATING ARCHIVE...</div>;
-  }
-
-
-  // Required Main Menu items
-  const menuItems: MenuItem[] = [
+  const menuItems = useMemo<MenuItem[]>(() => [
     {
       id: 'continue',
       label: 'CONTINUE',
-      sublabel: 'Resume last saga save',
+      sublabel: 'Resume the Raging City story hub',
       action: () => setGameState('story-hub'),
-      legendary: true
+      legendary: true,
     },
     {
       id: 'story',
       label: 'STORY HUB',
-      sublabel: 'The Raging City Campaign Map',
-      action: () => setGameState('story-hub')
+      sublabel: 'Raging City field map and chronology-safe missions',
+      action: () => setGameState('story-hub'),
     },
     {
       id: 'missions',
-      label: 'MISSIONS',
-      sublabel: 'Select active mission briefing',
-      action: () => setGameState('mission-select')
+      label: 'FIELD BRIEFINGS',
+      sublabel: 'Open the active Phase C mission briefing',
+      action: () => setGameState('mission-select'),
     },
     {
       id: 'training',
       label: 'TRAINING ARENA',
-      sublabel: 'Practice moves & combos',
+      sublabel: 'Practice movement, traversal, defense, and combat',
       action: () => {
         setTrainingSession(true);
         setGameState('adventure');
-      }
+      },
     },
     {
       id: 'versus',
       label: 'COMBAT ARENA',
-      sublabel: '1v1 Versus battle mode',
-      action: () => setGameState('versus-select')
+      sublabel: 'Chronology-safe 1v1 Archive battles',
+      action: () => setGameState('versus-select'),
     },
     {
       id: 'codex',
       label: 'LEGENDS ARCHIVE',
-      sublabel: 'Lore, Factions & Codex',
-      action: () => setGameState('lore-hub')
+      sublabel: 'Heroes, ancestors, factions, and world canon',
+      action: () => setGameState('lore-hub'),
     },
     {
       id: 'customize',
       label: 'CUSTOMIZE',
-      sublabel: 'Character outfits & variants',
-      action: () => setGameState('customization')
+      sublabel: 'Approved character outfits and variants',
+      action: () => setGameState('customization'),
+    },
+    {
+      id: 'abilities',
+      label: 'LINEAGE & ABILITIES',
+      sublabel: 'Review baseline powers and story-gated progression',
+      action: () => setGameState('abilities'),
     },
     {
       id: 'options',
       label: 'OPTIONS',
-      sublabel: 'Audio, Video & Controls',
-      action: () => setGameState('settings')
-    },
-    {
-      id: 'abilities',
-      label: 'EXTRAS & ABILITIES',
-      sublabel: 'Memory Weave skill tree',
-      action: () => setGameState('abilities')
+      sublabel: 'Audio, video, accessibility, and controls',
+      action: () => setGameState('settings'),
     },
     {
       id: 'credits',
       label: 'CREDITS',
-      sublabel: 'Development team',
-      action: () => setGameState('title')
+      sublabel: 'Project credits',
+      action: () => setGameState('title'),
     },
     {
       id: 'quit',
-      label: 'QUIT GAME',
-      sublabel: 'Exit to title screen',
-      action: () => setGameState('title')
+      label: 'TITLE SCREEN',
+      sublabel: 'Return to the title screen',
+      action: () => setGameState('title'),
     },
-  ];
+  ], [setGameState, setTrainingSession]);
 
-  // Initialize memory shards with three types
   useEffect(() => {
-    const shardTypes: Array<'velocity' | 'shield' | 'ghost'> = ['velocity', 'shield', 'ghost'];
-    const colors: Record<string, string[]> = {
-      velocity: ['#9d4edd', '#c084fc', '#a855f7'], // Purple tones - Jax Strand
-      shield: ['#00d9ff', '#22d3ee', '#06b6d4'],    // Cyan tones - Kai Strand
-      ghost: ['#7dd3fc', '#bae6fd', '#e0f2fe'],    // Light blue - Father's Strand
-    };
-
-    const shards = Array.from({ length: 30 }, (_, i) => {
-      const type = shardTypes[i % 3];
-      const typeColors = colors[type];
+    const shardTypes: ShardType[] = ['memory', 'ember', 'storm'];
+    setMemoryShards(Array.from({ length: 30 }, (_, i) => {
+      const type = shardTypes[i % shardTypes.length];
+      const colors = SHARD_COLORS[type];
       return {
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
         size: Math.random() * 12 + 4,
-        color: typeColors[Math.floor(Math.random() * typeColors.length)],
+        color: colors[Math.floor(Math.random() * colors.length)] || '#ffffff',
         delay: Math.random() * 5,
         type,
       };
-    });
-    setMemoryShards(shards);
+    }));
 
-    // Simulate loading
-    setTimeout(() => setIsLoading(false), 1500);
+    const timer = window.setTimeout(() => setIsLoading(false), 900);
+    return () => window.clearTimeout(timer);
   }, []);
 
-  // Title glow animation
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTitleGlow(prev => (prev + 0.02) % (Math.PI * 2));
-    }, 16);
-    return () => clearInterval(interval);
+    let frame = 0;
+    const tick = () => {
+      setTitleGlow((prev) => (prev + 0.02) % (Math.PI * 2));
+      frame = window.requestAnimationFrame(tick);
+    };
+    frame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
-  // Background canvas animation (split cosmic battlefield)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    let animationFrameId: number;
+    let animationFrameId = 0;
     let time = 0;
 
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
     const animate = () => {
+      const { width, height } = canvas;
       ctx.fillStyle = '#050508';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, width, height);
 
-      // === LEFT SIDE: Kaison's Domain (cool tones) ===
-      const leftGradient = ctx.createLinearGradient(0, 0, canvas.width / 2, canvas.height);
-      leftGradient.addColorStop(0, 'rgba(37, 99, 235, 0.08)');   // Blue
-      leftGradient.addColorStop(0.5, 'rgba(124, 58, 237, 0.06)'); // Purple
-      leftGradient.addColorStop(1, 'rgba(6, 182, 212, 0.04)');    // Cyan
-      ctx.fillStyle = leftGradient;
-      ctx.fillRect(0, 0, canvas.width / 2, canvas.height);
+      // Kai: memory-web and ember pressure on the left.
+      const kaiGradient = ctx.createLinearGradient(0, 0, width / 2, height);
+      kaiGradient.addColorStop(0, 'rgba(168, 85, 247, 0.10)');
+      kaiGradient.addColorStop(0.55, 'rgba(249, 115, 22, 0.07)');
+      kaiGradient.addColorStop(1, 'rgba(251, 191, 36, 0.03)');
+      ctx.fillStyle = kaiGradient;
+      ctx.fillRect(0, 0, width / 2, height);
 
-      // Kaison's web pattern
-      ctx.strokeStyle = 'rgba(255, 215, 0, 0.03)';
+      ctx.strokeStyle = 'rgba(216, 180, 254, 0.055)';
       ctx.lineWidth = 1;
-      for (let i = 0; i < 5; i++) {
-        const x = canvas.width * 0.15 + Math.sin(time * 0.0005 + i) * 50;
-        const y = canvas.height * 0.5 + Math.cos(time * 0.0007 + i) * 100;
+      for (let i = 0; i < 5; i += 1) {
+        const x = width * 0.18 + Math.sin(time * 0.0005 + i) * 45;
+        const y = height * 0.5 + Math.cos(time * 0.0007 + i) * 90;
         ctx.beginPath();
-        ctx.arc(x, y, 100 + i * 30, 0, Math.PI * 2);
+        ctx.arc(x, y, 90 + i * 28, 0, Math.PI * 2);
         ctx.stroke();
       }
 
-      // === RIGHT SIDE: Jaxon's Domain (electric tones) ===
-      const rightGradient = ctx.createLinearGradient(canvas.width / 2, 0, canvas.width, canvas.height);
-      rightGradient.addColorStop(0, 'rgba(0, 206, 209, 0.06)');   // Cyan
-      rightGradient.addColorStop(0.5, 'rgba(0, 100, 200, 0.04)'); // Electric blue
-      rightGradient.addColorStop(1, 'rgba(50, 50, 100, 0.03)');   // Dark blue
-      ctx.fillStyle = rightGradient;
-      ctx.fillRect(canvas.width / 2, 0, canvas.width / 2, canvas.height);
+      // Jax: storm and displacement pressure on the right.
+      const jaxGradient = ctx.createLinearGradient(width / 2, 0, width, height);
+      jaxGradient.addColorStop(0, 'rgba(56, 189, 248, 0.06)');
+      jaxGradient.addColorStop(0.5, 'rgba(14, 165, 233, 0.08)');
+      jaxGradient.addColorStop(1, 'rgba(30, 64, 175, 0.04)');
+      ctx.fillStyle = jaxGradient;
+      ctx.fillRect(width / 2, 0, width / 2, height);
 
-      // Jaxon's electric quills
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 8; i += 1) {
         const angle = (time * 0.001 + i * 0.5) % (Math.PI * 2);
-        const x = canvas.width * 0.85 + Math.cos(angle) * (60 + i * 10);
-        const y = canvas.height * 0.5 + Math.sin(angle) * (60 + i * 10);
-        
-        const quillGradient = ctx.createRadialGradient(x, y, 0, x, y, 30);
-        quillGradient.addColorStop(0, 'rgba(0, 255, 255, 0.3)');
-        quillGradient.addColorStop(1, 'transparent');
-        ctx.fillStyle = quillGradient;
-        ctx.fillRect(x - 30, y - 30, 60, 60);
+        const x = width * 0.82 + Math.cos(angle) * (50 + i * 9);
+        const y = height * 0.5 + Math.sin(angle) * (50 + i * 9);
+        const glow = ctx.createRadialGradient(x, y, 0, x, y, 28);
+        glow.addColorStop(0, 'rgba(56, 189, 248, 0.24)');
+        glow.addColorStop(1, 'transparent');
+        ctx.fillStyle = glow;
+        ctx.fillRect(x - 28, y - 28, 56, 56);
       }
 
-      // === CENTER: Kai-Jax Fusion Zone ===
-      const centerGradient = ctx.createRadialGradient(
-        canvas.width / 2, canvas.height / 2, 0,
-        canvas.width / 2, canvas.height / 2, 300
-      );
-      centerGradient.addColorStop(0, 'rgba(255, 215, 0, 0.15)'); // Golden core
-      centerGradient.addColorStop(0.3, 'rgba(157, 78, 237, 0.08)'); // Purple mid
-      centerGradient.addColorStop(0.6, 'rgba(0, 217, 255, 0.05)'); // Cyan outer
-      centerGradient.addColorStop(1, 'transparent');
-      ctx.fillStyle = centerGradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Center: base Kai-Jax convergence, exactly three visual strands.
+      const center = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, 300);
+      center.addColorStop(0, 'rgba(251, 191, 36, 0.14)');
+      center.addColorStop(0.35, 'rgba(168, 85, 247, 0.08)');
+      center.addColorStop(0.7, 'rgba(56, 189, 248, 0.05)');
+      center.addColorStop(1, 'transparent');
+      ctx.fillStyle = center;
+      ctx.fillRect(0, 0, width, height);
 
-      // Three Memory Strand Tails emanating from center
-      const tailColors = [
-        { color: 'rgba(157, 78, 237, 0.4)', name: 'velocity' },  // Jax Strand
-        { color: 'rgba(0, 217, 255, 0.4)', name: 'shield' },     // Kai Strand
-        { color: 'rgba(125, 211, 252, 0.3)', name: 'ghost' },    // Father's Strand
-      ];
-
-      tailColors.forEach((tail, index) => {
-        const baseAngle = (index / 3) * Math.PI * 2 + Math.PI / 2; // Start from bottom
-        for (let seg = 0; seg < 20; seg++) {
-          const wave = Math.sin(time * 0.002 + seg * 0.3 + index) * 30;
+      const strandColors = ['rgba(168,85,247,0.38)', 'rgba(249,115,22,0.34)', 'rgba(56,189,248,0.36)'];
+      strandColors.forEach((color, index) => {
+        const baseAngle = (index / 3) * Math.PI * 2 + Math.PI / 2;
+        for (let seg = 0; seg < 18; seg += 1) {
+          const wave = Math.sin(time * 0.002 + seg * 0.3 + index) * 26;
           const angle = baseAngle + wave * 0.01;
-          const distance = 80 + seg * 15;
-          const x = canvas.width / 2 + Math.sin(angle) * distance;
-          const y = canvas.height / 2 + Math.cos(angle) * distance * 0.7;
-          const size = 15 - seg * 0.5;
-          
-          const tailGradient = ctx.createRadialGradient(x, y, 0, x, y, size);
-          tailGradient.addColorStop(0, tail.color);
-          tailGradient.addColorStop(1, 'transparent');
-          ctx.fillStyle = tailGradient;
+          const distance = 75 + seg * 14;
+          const x = width / 2 + Math.sin(angle) * distance;
+          const y = height / 2 + Math.cos(angle) * distance * 0.7;
+          const size = Math.max(3, 14 - seg * 0.5);
+          const glow = ctx.createRadialGradient(x, y, 0, x, y, size);
+          glow.addColorStop(0, color);
+          glow.addColorStop(1, 'transparent');
+          ctx.fillStyle = glow;
           ctx.beginPath();
           ctx.arc(x, y, size, 0, Math.PI * 2);
           ctx.fill();
         }
       });
 
-      // Nebula drift effect
-      const nebulaX = canvas.width / 2 + Math.sin(time * 0.0003) * 100;
-      const nebulaY = canvas.height / 2 + Math.cos(time * 0.0004) * 50;
-      const nebulaGradient = ctx.createRadialGradient(
-        nebulaX, nebulaY, 0,
-        nebulaX, nebulaY, 200
-      );
-      nebulaGradient.addColorStop(0, 'rgba(157, 78, 237, 0.05)');
-      nebulaGradient.addColorStop(0.5, 'rgba(0, 217, 255, 0.03)');
-      nebulaGradient.addColorStop(1, 'transparent');
-      ctx.fillStyle = nebulaGradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Star field
-      for (let i = 0; i < 100; i++) {
-        const starX = (i * 137.508) % canvas.width;
-        const starY = (i * 73.254) % canvas.height;
-        const brightness = Math.sin(time * 0.001 + i) * 0.3 + 0.7;
-        const starSize = Math.random() < 0.1 ? 2 : 1;
-        
-        ctx.fillStyle = `rgba(255, 255, 255, ${brightness * 0.5})`;
-        ctx.beginPath();
-        ctx.arc(starX, starY, starSize, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
       time += 16;
-      animationFrameId = requestAnimationFrame(animate);
+      animationFrameId = window.requestAnimationFrame(animate);
     };
 
+    resize();
     animate();
-
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', handleResize);
-
+    window.addEventListener('resize', resize);
     return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', handleResize);
+      window.cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', resize);
     };
   }, []);
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (isLoading) return;
+  const activateItem = useCallback((index: number) => {
+    const item = menuItems[index];
+    if (item && !item.disabled) item.action();
+  }, [menuItems]);
 
-      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-        e.preventDefault();
-        setSelectedIndex(prev => {
-          let newIndex = prev - 1;
-          if (newIndex < 0) newIndex = menuItems.length - 1;
-          // Skip disabled items
-          while (menuItems[newIndex].disabled && newIndex !== prev) {
-            newIndex = newIndex - 1;
-            if (newIndex < 0) newIndex = menuItems.length - 1;
-          }
-          return newIndex;
-        });
-      } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
-        e.preventDefault();
-        setSelectedIndex(prev => {
-          let newIndex = (prev + 1) % menuItems.length;
-          // Skip disabled items
-          while (menuItems[newIndex].disabled && newIndex !== prev) {
-            newIndex = (newIndex + 1) % menuItems.length;
-          }
-          return newIndex;
-        });
-      } else if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        const item = menuItems[selectedIndex];
-        if (item && !item.disabled) {
-          item.action();
-        }
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (isLoading || showProfileSelect) return;
+      if (event.key === 'ArrowUp' || event.key.toLowerCase() === 'w') {
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev - 1 + menuItems.length) % menuItems.length);
+      } else if (event.key === 'ArrowDown' || event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev + 1) % menuItems.length);
+      } else if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        activateItem(selectedIndex);
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndex, isLoading, menuItems]);
+  }, [activateItem, isLoading, menuItems.length, selectedIndex, showProfileSelect]);
 
-  // Loading screen
+  if (!profiles || profiles.length === 0) {
+    return <div className="bg-[#050508] w-full h-screen flex items-center justify-center text-white/30 font-mono">HYDRATING ARCHIVE...</div>;
+  }
+
   if (isLoading) {
     return (
       <div className="legendary-loading">
         <div className="text-center">
-          <div className="relative">
-            <div className="legendary-loading-spinner" />
-          </div>
-          <p className="text-white/60 text-mono-small mt-8 uppercase tracking-widest animate-pulse">
-            The Archive Awakens...
-          </p>
+          <div className="relative"><div className="legendary-loading-spinner" /></div>
+          <p className="text-white/60 text-mono-small mt-8 uppercase tracking-widest animate-pulse">The Archive Awakens...</p>
         </div>
       </div>
     );
   }
 
-  const renderProfileSelect = () => (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
-      <div className="max-w-4xl w-full p-8">
-        <h3 className="text-god-tier text-3xl mb-8 text-center">SELECT MEMORY PROFILE</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {profiles.map((profile, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                switchProfile(i);
-                setShowProfileSelect(false);
-                setGameState('campaign-map');
-              }}
-              className={`group relative p-6 rounded-xl border-2 transition-all hover:scale-105 ${
-                i === activeProfileIndex ? 'border-legendary-gold bg-legendary-gold/10' : 'border-white/10 bg-white/5'
-              }`}
-            >
-              <div className="text-xs font-mono mb-2 opacity-50 uppercase">Slot 0{i + 1}</div>
-              <div className="text-2xl font-black mb-4 group-hover:text-legendary-cyan">
-                {profile.totalScore > 0 ? `LEVEL ${Math.floor(profile.totalScore / 1000) + 1}` : 'EMPTY ECHO'}
-              </div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                Nodes: {profile.campaignCompletedNodes.length} / 54
-              </div>
-              <div className="mt-4 pt-4 border-t border-white/10 text-xs text-legendary-gold opacity-0 group-hover:opacity-100 transition-opacity">
-                LOAD MEMORY →
-              </div>
-            </button>
-          ))}
-        </div>
-        <button 
-          onClick={() => setShowProfileSelect(false)}
-          className="mt-12 block mx-auto text-xs uppercase tracking-[0.4em] opacity-50 hover:opacity-100 transition-opacity"
-        >
-          [ ESCAPE TO MENU ]
-        </button>
-      </div>
-    </div>
-  );
-
+  const activeProfile = profiles[activeProfileIndex];
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#050508]">
-      {showProfileSelect && renderProfileSelect()}
-      
-      {/* Background Canvas - Split Cosmic Battlefield */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
-        style={{ zIndex: 0 }}
-      />
+      {showProfileSelect && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl">
+          <div className="max-w-4xl w-full p-8">
+            <h3 className="text-god-tier text-3xl mb-8 text-center">SELECT MEMORY PROFILE</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {profiles.map((profile, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    switchProfile(index);
+                    setShowProfileSelect(false);
+                    setGameState('story-hub');
+                  }}
+                  className={`group relative p-6 rounded-xl border-2 transition-all hover:scale-105 ${
+                    index === activeProfileIndex ? 'border-legendary-gold bg-legendary-gold/10' : 'border-white/10 bg-white/5'
+                  }`}
+                >
+                  <div className="text-xs font-mono mb-2 opacity-50 uppercase">Slot 0{index + 1}</div>
+                  <div className="text-xl font-black mb-3 group-hover:text-legendary-cyan">
+                    COMBAT SCORE {profile.totalScore.toLocaleString()}
+                  </div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    Story records: {profile.completedStoryMissionIds.length}
+                  </div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">
+                    Kai-Jax fusion: {profile.kaiJaxFusionUnlocked ? 'Story unlocked' : 'Story gated'}
+                  </div>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowProfileSelect(false)}
+              className="mt-12 block mx-auto text-xs uppercase tracking-[0.4em] opacity-50 hover:opacity-100 transition-opacity"
+            >
+              [ RETURN TO MENU ]
+            </button>
+          </div>
+        </div>
+      )}
 
-      {/* Memory Shards Overlay */}
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }} />
+
       <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
-        {memoryShards.map(shard => (
+        {memoryShards.map((shard) => (
           <div
             key={shard.id}
             className="absolute memory-shard"
+            data-shard-type={shard.type}
             style={{
               left: `${shard.x}%`,
               top: `${shard.y}%`,
@@ -436,177 +356,82 @@ const LegendaryMainMenu: React.FC = () => {
         ))}
       </div>
 
-      {/* Nebula Effect */}
       <div className="nebula-effect" style={{ zIndex: 2 }} />
 
-      {/* Main Content */}
       <div className="relative z-10 flex flex-col items-center justify-between h-full p-6 lg:p-8">
-        
-        {/* Logo - Top Center with Legendary Effects */}
-        <div className="mt-12 lg:mt-20 text-center">
-          <h1 
+        <div className="mt-10 lg:mt-16 text-center">
+          <h1
             className="text-god-tier text-5xl lg:text-7xl mb-2"
-            style={{
-              filter: `drop-shadow(0 0 ${20 + Math.sin(titleGlow) * 10}px rgba(255, 215, 0, 0.6))`,
-            }}
+            style={{ filter: `drop-shadow(0 0 ${20 + Math.sin(titleGlow) * 10}px rgba(255, 215, 0, 0.6))` }}
           >
             LEGENDS OF KAI-JAX
           </h1>
-          <h2 className="text-transformation text-2xl lg:text-4xl text-white mb-4">
-            THE MEMORY WARRIOR
-          </h2>
-          <div className="flex items-center justify-center gap-4 mt-6">
-            <div className="h-0.5 w-12 lg:w-24 bg-gradient-to-r from-transparent via-legendary-gold to-transparent" />
-            <div className="flex items-center gap-3">
-              <span className="w-2 h-2 rounded-full bg-legendary-purple animate-pulse" />
-              <span className="w-2 h-2 rounded-full bg-legendary-cyan animate-pulse" style={{ animationDelay: '0.2s' }} />
-              <span className="w-2 h-2 rounded-full bg-legendary-gold animate-pulse" style={{ animationDelay: '0.4s' }} />
-            </div>
-            <p className="text-mono-small text-legendary-gold uppercase tracking-[0.3em] text-xs lg:text-sm">
-              GODS WILL TREMBLE
-            </p>
-            <div className="flex items-center gap-3">
-              <span className="w-2 h-2 rounded-full bg-legendary-gold animate-pulse" style={{ animationDelay: '0.4s' }} />
-              <span className="w-2 h-2 rounded-full bg-legendary-cyan animate-pulse" style={{ animationDelay: '0.2s' }} />
-              <span className="w-2 h-2 rounded-full bg-legendary-purple animate-pulse" />
-            </div>
-            <div className="h-0.5 w-12 lg:w-24 bg-gradient-to-r from-transparent via-legendary-gold to-transparent" />
-          </div>
+          <h2 className="text-transformation text-2xl lg:text-4xl text-white mb-3">THE MEMORY KING</h2>
+          <p className="text-mono-small text-legendary-gold uppercase tracking-[0.3em] text-xs lg:text-sm">
+            FORGED IN THE RAGING CITY. CROWNED BY MEMORY.
+          </p>
 
-          {/* Profile Quick Switcher */}
-          <div className="mt-4 flex items-center gap-4 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-sm">
+          <div className="mt-4 flex items-center justify-center gap-4 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-sm">
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Profile:</span>
-            <button 
+            <button
               onClick={() => setShowProfileSelect(true)}
               className="text-[10px] font-bold text-cyan-400 hover:text-white transition-colors flex items-center gap-2"
             >
-              SLOT 0{activeProfileIndex + 1} • {profiles[activeProfileIndex].totalScore > 0 ? `LVL ${Math.floor(profiles[activeProfileIndex].totalScore / 1000) + 1}` : 'EMPTY'}
+              SLOT 0{activeProfileIndex + 1} • SCORE {activeProfile.totalScore.toLocaleString()}
               <span className="text-slate-600">[CHANGE]</span>
             </button>
           </div>
         </div>
 
-        {/* Menu Items - Center Vertical */}
-        <div className="flex flex-col gap-2 lg:gap-3 mb-24 lg:mb-32 w-full max-w-md">
+        <div className="flex flex-col gap-2 lg:gap-3 mb-20 lg:mb-24 w-full max-w-md overflow-y-auto max-h-[58vh] pr-1">
           {menuItems.map((item, index) => {
             const isSelected = index === selectedIndex;
-
             return (
               <button
                 key={item.id}
-                onClick={() => !item.disabled && item.action()}
-                onMouseEnter={() => !item.disabled && setSelectedIndex(index)}
+                onClick={() => activateItem(index)}
+                onMouseEnter={() => setSelectedIndex(index)}
                 disabled={item.disabled}
-                className={`
-                  relative px-6 lg:px-8 py-3 lg:py-4 text-left w-full
-                  transition-all duration-200 group
-                  ${item.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
-                `}
+                className={`relative px-6 lg:px-8 py-3 text-left w-full transition-all duration-200 ${item.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
                 style={{
                   background: isSelected
-                    ? item.legendary 
-                      ? 'linear-gradient(90deg, rgba(255, 215, 0, 0.15), rgba(0, 217, 255, 0.1))'
-                      : 'rgba(255, 255, 255, 0.05)'
-                    : 'rgba(10, 10, 15, 0.6)',
+                    ? item.legendary ? 'linear-gradient(90deg, rgba(255, 215, 0, 0.15), rgba(0, 217, 255, 0.1))' : 'rgba(255,255,255,0.05)'
+                    : 'rgba(10,10,15,0.66)',
                   border: isSelected
-                    ? item.legendary
-                      ? '2px solid rgba(255, 215, 0, 0.8)'
-                      : '2px solid rgba(0, 217, 255, 0.6)'
-                    : '2px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '4px',
-                  boxShadow: isSelected
-                    ? item.legendary
-                      ? '0 0 30px rgba(255, 215, 0, 0.3), inset 0 0 20px rgba(255, 215, 0, 0.05)'
-                      : '0 0 20px rgba(0, 217, 255, 0.2)'
-                    : 'none',
+                    ? item.legendary ? '2px solid rgba(255,215,0,0.8)' : '2px solid rgba(0,217,255,0.6)'
+                    : '2px solid rgba(255,255,255,0.1)',
+                  borderRadius: '6px',
+                  boxShadow: isSelected ? '0 0 24px rgba(0,217,255,0.14)' : 'none',
                   transform: isSelected ? 'translateX(8px)' : 'translateX(0)',
                 }}
               >
-                {/* Selection indicator */}
                 {isSelected && (
-                  <div 
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r"
-                    style={{
-                      background: item.legendary 
-                        ? 'linear-gradient(180deg, #ffd700, #00d9ff)'
-                        : '#00d9ff',
-                      boxShadow: item.legendary
-                        ? '0 0 10px rgba(255, 215, 0, 0.8)'
-                        : '0 0 10px rgba(0, 217, 255, 0.8)',
-                    }}
-                  />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r bg-legendary-cyan shadow-[0_0_10px_rgba(0,217,255,0.8)]" />
                 )}
-                
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
                   <div>
-                    <span
-                      className="text-base lg:text-lg font-bold uppercase tracking-wider"
-                      style={{
-                        color: item.legendary && isSelected ? '#ffd700' : '#ffffff',
-                        textShadow: item.legendary && isSelected
-                          ? '0 0 10px rgba(255, 215, 0, 0.5)'
-                          : '0 1px 3px rgba(0, 0, 0, 0.9)',
-                      }}
-                    >
-                      {item.label}
-                    </span>
-                    {item.sublabel && (
-                      <p className="text-xs mt-0.5 tracking-wide" style={{ color: '#cbd5e1', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
-                        {item.sublabel}
-                      </p>
-                    )}
+                    <span className="text-base lg:text-lg font-bold uppercase tracking-wider text-white">{item.label}</span>
+                    {item.sublabel && <p className="text-xs mt-0.5 tracking-wide text-slate-300">{item.sublabel}</p>}
                   </div>
-                  
-                  {isSelected && (
-                    <div 
-                      className="text-xl lg:text-2xl"
-                      style={{
-                        color: item.legendary ? '#ffd700' : '#00d9ff',
-                      }}
-                    >
-                      →
-                    </div>
-                  )}
+                  {isSelected && <div className="text-xl lg:text-2xl text-legendary-cyan">→</div>}
                 </div>
               </button>
             );
           })}
         </div>
 
-        {/* Footer */}
-        <div className="mb-6 lg:mb-8 text-center">
-          <p className="text-mono-small text-neutral-600 uppercase tracking-[0.2em] text-xs">
-            FORGED IN THE BRONX • MASTERED IN THE SILENCE
+        <div className="mb-5 text-center">
+          <p className="text-mono-small text-neutral-500 uppercase tracking-[0.2em] text-xs">
+            RAGING CITY • MEMORY • BLOODWARD
           </p>
-          <div className="flex items-center justify-center gap-6 mt-4">
-            <button 
-              onClick={() => window.open('https://legendsofkaijax.com/privacy', '_blank')}
-              className="text-neutral-500 hover:text-white transition-colors text-[10px] uppercase tracking-widest"
-            >
-              Privacy Policy
-            </button>
-            <button 
-              onClick={() => window.open('https://legendsofkaijax.com/terms', '_blank')}
-              className="text-neutral-500 hover:text-white transition-colors text-[10px] uppercase tracking-widest"
-            >
-              Terms of Service
-            </button>
-          </div>
-          <p className="text-neutral-700 text-[10px] mt-4 uppercase tracking-widest">
-            v2.0.0 — THE ULTIMATE FORM
-          </p>
+          <p className="text-neutral-700 text-[10px] mt-3 uppercase tracking-widest">Phase C gameplay build</p>
         </div>
       </div>
 
-      {/* Grit Filter Overlay */}
-      <div className="grit-filter" style={{ zIndex: 50 }} />
-
-      {/* Controls hint */}
-      <div className="absolute bottom-4 right-4 z-40">
+      <div className="grit-filter pointer-events-none" style={{ zIndex: 50 }} />
+      <div className="absolute bottom-4 right-4 z-40 hidden sm:block">
         <div className="bg-neutral-900/50 backdrop-blur-sm rounded px-3 py-1.5 border border-white/10">
-          <p className="text-neutral-500 text-xs">
-            ↑↓ Navigate • Enter Select
-          </p>
+          <p className="text-neutral-500 text-xs">↑↓ Navigate • Enter Select</p>
         </div>
       </div>
     </div>

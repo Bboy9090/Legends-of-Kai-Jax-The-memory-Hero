@@ -11,7 +11,6 @@ on:
   workflow_dispatch:
 
 concurrency:
-  # Push + PR events for the same commit share one lane instead of competing.
   group: combat-release-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
@@ -51,6 +50,8 @@ jobs:
           pnpm --version
 
       - name: Install web workspace
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
         run: pnpm install --filter ./apps/web... --frozen-lockfile
 
       - name: Canonical release certification

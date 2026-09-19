@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const CHROMIUM_PATH = '/opt/pw-browsers/chromium/chrome-linux/chrome';
+const CHROMIUM_PATH = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
 export default defineConfig({
   testDir: './e2e',
@@ -20,6 +20,7 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chromium'],
         headless: true,
+        executablePath: CHROMIUM_PATH,
         launchArgs: ['--no-sandbox', '--disable-dev-shm-usage'],
       },
     },
