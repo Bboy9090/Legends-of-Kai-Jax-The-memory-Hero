@@ -408,20 +408,11 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
     await expect(page.getByTestId('slice-player-down')).toContainText('NO');
 
     // Dodge itself can shift the range sample. Re-prove the authored envelope,
-    // then wait only for attack readiness—not for a separate safety mutation.
+    // then use the same controller-readiness authority as every fresh ultimate
+    // edge. Do not impose a second, shorter animation timeout here: under slow
+    // software-WebGL a legitimate dodge/attack lifecycle can outlive one second.
     await closeIntoUltimateEnvelope(page, hero);
-    await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
-      timeout: 1_000,
-      intervals: [20, 30, 40, 50],
-    }).toContain('NO');
-    await expect.poll(async () => page.getByTestId('slice-dodging').innerText(), {
-      timeout: 1_000,
-      intervals: [20, 30, 40, 50],
-    }).toContain('NO');
-    await expect.poll(async () => readNumber(page, 'slice-energy'), {
-      timeout: 1_500,
-      intervals: [30, 40, 60],
-    }).toBeGreaterThanOrEqual(hero === 'kai' ? 80 : 75);
+    if (!(await waitForUltimateReadiness(page, hero))) break;
 
     if (await ultimateAndObserveAggregateDamage(page, hero, true)) successfulHits += 1;
   }
