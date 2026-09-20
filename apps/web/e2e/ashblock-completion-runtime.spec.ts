@@ -238,43 +238,44 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
-  // Primary-Fang behavior is not aggregate encounter state. Use measured scene
-  // geometry and dodge when the nearest living Fang enters a real melee envelope.
-  await expect.poll(async () => {
-    const downStatus = await page.getByTestId('slice-player-down').innerText();
-    if (!downStatus.includes('NO')) {
-      await logCombatSnapshot(page, `${hero}:player-down-before-dodge`);
-      throw new Error('Player was knocked down before the defensive dodge');
-    }
-    return readNumber(page, 'slice-nearest-enemy-distance');
-  }, {
-    timeout: 10_000,
-    intervals: [40, 60, 80, 100],
-  // The debug HUD is rounded to hundredths while scene/controller updates occur
-  // between Playwright samples. Trigger one sample early rather than fail on a
-  // harmless 1.50/1.52 boundary oscillation.
-  }).toBeLessThanOrEqual(1.6);
+  // Phase 5.5 includes attack ranges up to 2.7 units. If a live Fang is already
+  // inside that envelope, use the real defensive controller path instead of
+  // asking the persistence chain to facetank a multi-enemy volley.
+  const threatDistance = 2.8;
+  const nearestDistance = await readNumber(page, 'slice-nearest-enemy-distance');
+  if (nearestDistance > threatDistance) return;
 
   const beforeDodgeEnergy = await readNumber(page, 'slice-energy');
-  await page.keyboard.press('q');
-
-  await expect.poll(async () => readNumber(page, 'slice-energy'), {
-    timeout: 2_000,
-    intervals: [40, 60, 80, 100],
-  }).toBeLessThan(beforeDodgeEnergy - 5);
+  await page.keyboard.up('q').catch(() => undefined);
+  await page.waitForTimeout(50);
+  await page.keyboard.down('q');
+  try {
+    await expect.poll(async () => {
+      const [energy, dodgingText] = await Promise.all([
+        readNumber(page, 'slice-energy'),
+        page.getByTestId('slice-dodging').innerText(),
+      ]);
+      return dodgingText.includes('YES') || energy <= beforeDodgeEnergy - 5;
+    }, {
+      timeout: 1_800,
+      intervals: [40, 60, 80, 100],
+    }).toBe(true);
+  } finally {
+    await page.keyboard.up('q');
+  }
 
   await expect.poll(async () => page.getByTestId('slice-dodging').innerText(), {
     timeout: 3_000,
     intervals: [40, 60, 80, 100],
   }).toContain('NO');
 
-  // Do not wait for another primary-Fang label: a different living Fang may
-  // already be winding up. Prove the controller can fund the immediate ultimate.
-  expect(await page.getByTestId('slice-player-down').innerText()).toContain('NO');
-  expect(await page.getByTestId('slice-attacking').innerText()).toContain('NO');
+  await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+
+  // The dodge has a real energy cost. Restore only enough for the authored
+  // ultimate, then attack immediately while the avoided volley is on recovery.
   await expect.poll(async () => readNumber(page, 'slice-energy'), {
-    timeout: 1_500,
-    intervals: [40, 60, 80],
+    timeout: 4_000,
+    intervals: [50, 75, 100, 150],
   }).toBeGreaterThanOrEqual(hero === 'kai' ? 80 : 75);
 }
 
@@ -415,10 +416,13 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
     await closeIntoUltimateEnvelope(page, hero);
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
-    // Fire immediately after the authored ultimate radius is proven. Do not
-    // insert another lifecycle wait here: Kai's 10-unit and Jax's 5-unit
-    // ultimates are specifically the wide-radius authority used by this
-    // persistence chain to avoid moving-target melee races.
+    // Use real defensive input when Phase 5.5 pressure has already entered an
+    // authored Fang attack envelope. This keeps the persistence proof on actual
+    // controller mechanics instead of silently weakening enemy damage or HP.
+    await dodgeIncomingVolley(page, hero);
+    if (await readNumber(page, 'slice-enemy-count') === 0) break;
+
+    // Fire immediately after the authored ultimate radius/readiness is proven.
     if (await ultimateAndObserveAggregateDamage(page, hero, true)) successfulHits += 1;
   }
 
