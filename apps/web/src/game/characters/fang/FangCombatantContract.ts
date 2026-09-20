@@ -174,7 +174,7 @@ export function createFangCombatant(
 export function damageFangCombatant(
   state: FangCombatantState,
   damage: number,
-  currentTime: number
+  _currentTime: number
 ): void {
   if (state.isDead || !Number.isFinite(damage) || damage <= 0) return;
 
