@@ -104,6 +104,49 @@ test('Jax runtime: movement, jump and displacement change real controller state'
   expect(errors, `Unexpected runtime errors:\n${errors.join('\n')}`).toEqual([]);
 });
 
+test('Jax runtime: dodge grants invulnerability and real evasive displacement', async ({ page }) => {
+  const errors = collectErrors(page);
+  await bootJaxTest(page, errors);
+
+  const beforeDodge = await readPosition(page);
+  const energyBeforeDodge = await readNumber(page, 'jax-energy');
+
+  await page.keyboard.down('q');
+  try {
+    await expect.poll(async () => page.getByTestId('jax-dodging').innerText(), {
+      timeout: 3_000,
+      intervals: [50, 75, 100, 150],
+    }).toContain('YES');
+    await expect.poll(async () => readNumber(page, 'jax-invuln'), {
+      timeout: 2_000,
+      intervals: [50, 75, 100],
+    }).toBeGreaterThan(0);
+    await expect.poll(async () => {
+      const duringDodge = await readPosition(page);
+      return Math.hypot(
+        duringDodge[0] - beforeDodge[0],
+        duringDodge[2] - beforeDodge[2]
+      );
+    }, {
+      timeout: 3_000,
+      intervals: [50, 75, 100, 150],
+    }).toBeGreaterThan(2.5);
+    await expect.poll(async () => readNumber(page, 'jax-energy'), {
+      timeout: 2_000,
+      intervals: [50, 75, 100],
+    }).toBeLessThan(energyBeforeDodge);
+  } finally {
+    await page.keyboard.up('q');
+  }
+
+  await expect.poll(async () => page.getByTestId('jax-dodging').innerText(), {
+    timeout: 3_000,
+    intervals: [75, 100, 150],
+  }).toContain('NO');
+
+  expect(errors, `Unexpected runtime errors:\n${errors.join('\n')}`).toEqual([]);
+});
+
 test('Jax runtime: light, pressure-heavy and lightning special affect live targets', async ({ page }) => {
   const errors = collectErrors(page);
   await bootJaxTest(page, errors);
