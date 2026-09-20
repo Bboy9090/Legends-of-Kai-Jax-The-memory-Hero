@@ -51,6 +51,7 @@ export interface FangCombatantState {
   isDead: boolean;
   isStaggered: boolean;
   staggerTimer: number;
+  combatTime: number;
   lastHitTime: number;
   lastAttackTime: number;
   attackWindupTimer: number;
@@ -160,6 +161,7 @@ export function createFangCombatant(
     isDead: false,
     isStaggered: false,
     staggerTimer: 0,
+    combatTime: 0,
     lastHitTime: -Infinity,
     lastAttackTime: -Infinity,
     attackWindupTimer: 0,
@@ -178,7 +180,9 @@ export function damageFangCombatant(
 
   const config = getFangCombatantConfig(state);
   state.health = Math.max(0, state.health - damage);
-  state.lastHitTime = currentTime;
+  // Recovery timing is simulation-owned. Wall-clock time must not make Fang
+  // cooldowns elapse faster than the hero lifecycle during sparse frames.
+  state.lastHitTime = state.combatTime;
 
   if (state.health <= 0) {
     state.isDead = true;
@@ -219,6 +223,7 @@ export function updateFangCombatant(
   }
 
   const delta = Number.isFinite(deltaTime) ? Math.max(0, deltaTime) : 0;
+  state.combatTime += delta;
 
   if (state.isStaggered) {
     state.staggerTimer = Math.max(0, state.staggerTimer - delta);
@@ -232,22 +237,22 @@ export function updateFangCombatant(
 
 export function canFangCombatantAttack(
   state: FangCombatantState,
-  currentTime: number
+  _currentTime: number
 ): boolean {
   if (state.isDead || state.isStaggered || state.attackWindupTimer > 0) return false;
 
   const config = getFangCombatantConfig(state);
-  const attackCooldownReady = currentTime - state.lastAttackTime >= config.attackCooldown;
-  const postHitRecoveryReady = currentTime - state.lastHitTime >= config.recoverDelay;
+  const attackCooldownReady = state.combatTime - state.lastAttackTime >= config.attackCooldown;
+  const postHitRecoveryReady = state.combatTime - state.lastHitTime >= config.recoverDelay;
 
   return attackCooldownReady && postHitRecoveryReady;
 }
 
 export function markFangCombatantAttackResolved(
   state: FangCombatantState,
-  currentTime: number
+  _currentTime: number
 ): void {
-  state.lastAttackTime = currentTime;
+  state.lastAttackTime = state.combatTime;
   state.attackWindupTimer = 0;
   if (!state.isDead && !state.isStaggered) {
     state.behavior = 'RECOVERY';
