@@ -168,9 +168,10 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
   // facetanking while energy rebuilds.
   const requiredEnergy = hero === 'kai' ? 80 : 75;
   const dodgeCost = hero === 'kai' ? 20 : 18;
-  const threatDistance = 2.8;
+  const threatDistance = 4.5;
   const deadline = Date.now() + 14_000;
 
+  await page.keyboard.down('Shift');
   await page.keyboard.down('s');
   try {
     while (Date.now() < deadline) {
@@ -215,65 +216,89 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
     throw new Error(`${hero} did not reach authored ultimate readiness during defensive recharge`);
   } finally {
     await page.keyboard.up('s');
+    await page.keyboard.up('Shift');
   }
 }
 
 async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
-  const ultimateRadiusMargin = hero === 'kai' ? 9 : 4.5;
+  const minimumSafeRange = hero === 'kai' ? 6.5 : 3.5;
+  const maximumAttackRange = hero === 'kai' ? 9.0 : 4.5;
 
-  // Kai's authored ultimate already has a broad 10-unit scene radius, so letting
-  // the encounter close naturally avoids unnecessary traversal churn.
-  if (hero === 'kai') {
-    await expect.poll(async () => {
-      const downStatus = await page.getByTestId('slice-player-down').innerText();
-      if (!downStatus.includes('NO')) {
-        await logCombatSnapshot(page, `${hero}:player-down-before-ultimate-envelope`);
-        throw new Error('Player was knocked down before the ultimate envelope opened');
+  // Use the authored ranged advantage instead of launching an ultimate from
+  // whatever melee distance happened to remain after recharge. The lieutenant
+  // can resolve at 2.2 * 1.15 units and the bruiser at 2.7 * 1.15, so these
+  // launch bands leave a genuine response margin without changing combat stats.
+  for (let pass = 0; pass < 3; pass += 1) {
+    const downStatus = await page.getByTestId('slice-player-down').innerText();
+    if (!downStatus.includes('NO')) {
+      await logCombatSnapshot(page, `${hero}:player-down-before-safe-ultimate-band`);
+      throw new Error('Player was knocked down before a safe ultimate launch band opened');
+    }
+
+    let distance = await readNumber(page, 'slice-nearest-enemy-distance');
+
+    if (distance < minimumSafeRange) {
+      await page.keyboard.down('Shift');
+      await page.keyboard.down('s');
+      try {
+        await expect.poll(async () => {
+          const down = await page.getByTestId('slice-player-down').innerText();
+          if (!down.includes('NO')) {
+            await logCombatSnapshot(page, `${hero}:player-down-while-opening-ultimate-space`);
+            throw new Error('Player was knocked down while opening ultimate space');
+          }
+          return readNumber(page, 'slice-nearest-enemy-distance');
+        }, {
+          timeout: 6_000,
+          intervals: [40, 60, 80, 100, 150],
+        }).toBeGreaterThanOrEqual(minimumSafeRange);
+      } finally {
+        await page.keyboard.up('s');
+        await page.keyboard.up('Shift');
       }
-      return readNumber(page, 'slice-nearest-enemy-distance');
-    }, {
-      timeout: 10_000,
-      intervals: [40, 60, 80, 100],
-    }).toBeLessThanOrEqual(ultimateRadiusMargin);
+    }
 
-    return;
-  }
+    distance = await readNumber(page, 'slice-nearest-enemy-distance');
 
-  // Jax cannot safely idle outside his tighter 5-unit storm radius while Fang
-  // wall-clock attack cadence continues under software WebGL. Close the gap with
-  // his real movement/displacement controller instead of waiting to be hit.
-  if (await readNumber(page, 'slice-nearest-enemy-distance') > ultimateRadiusMargin) {
-    await page.keyboard.down('w');
-    try {
-      const initialDistance = await readNumber(page, 'slice-nearest-enemy-distance');
-      if (initialDistance > ultimateRadiusMargin + 1.25) {
-        await page.keyboard.press('e');
-      }
-
-      await expect.poll(async () => {
-        const downStatus = await page.getByTestId('slice-player-down').innerText();
-        if (!downStatus.includes('NO')) {
-          await logCombatSnapshot(page, `${hero}:player-down-during-active-close`);
-          throw new Error('Player was knocked down during the active ultimate close');
+    if (distance > maximumAttackRange) {
+      await page.keyboard.down('w');
+      try {
+        if (hero === 'jax' && distance > maximumAttackRange + 1.25) {
+          await page.keyboard.press('e');
         }
-        return readNumber(page, 'slice-nearest-enemy-distance');
-      }, {
-        timeout: 4_000,
-        intervals: [40, 60, 80, 100],
-      }).toBeLessThanOrEqual(ultimateRadiusMargin);
-    } finally {
-      await page.keyboard.up('w');
+
+        await expect.poll(async () => {
+          const down = await page.getByTestId('slice-player-down').innerText();
+          if (!down.includes('NO')) {
+            await logCombatSnapshot(page, `${hero}:player-down-during-safe-ultimate-close`);
+            throw new Error('Player was knocked down during the safe ultimate close');
+          }
+          return readNumber(page, 'slice-nearest-enemy-distance');
+        }, {
+          timeout: hero === 'kai' ? 10_000 : 6_000,
+          intervals: [40, 60, 80, 100, 150],
+        }).toBeLessThanOrEqual(maximumAttackRange);
+      } finally {
+        await page.keyboard.up('w');
+      }
+    }
+
+    distance = await readNumber(page, 'slice-nearest-enemy-distance');
+    if (distance >= minimumSafeRange && distance <= maximumAttackRange) {
+      await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+      return;
     }
   }
 
-  await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+  await logCombatSnapshot(page, `${hero}:safe-ultimate-band-not-established`);
+  throw new Error(`${hero} could not establish a safe authored ultimate launch band`);
 }
 
 async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
-  // Phase 5.5 includes attack ranges up to 2.7 units. If a live Fang is already
-  // inside that envelope, use the real defensive controller path instead of
-  // asking the persistence chain to facetank a multi-enemy volley.
-  const threatDistance = 2.8;
+  // Phase 5.5 attack resolution can still connect at 115% of authored range,
+  // and sparse HUD publication means waiting until 2.8 units is too late to
+  // react reliably. Defend while there is still a readable response window.
+  const threatDistance = 4.5;
   const nearestDistance = await readNumber(page, 'slice-nearest-enemy-distance');
   if (nearestDistance > threatDistance) return;
 
@@ -298,6 +323,7 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
   let accepted = false;
   for (let attempt = 0; attempt < 3 && !accepted; attempt += 1) {
     const beforeDodgeEnergy = await readNumber(page, 'slice-energy');
+    const beforeDodgePosition = await readPosition(page);
     let minimumEnergy = beforeDodgeEnergy;
 
     await page.keyboard.up('q').catch(() => undefined);
@@ -311,16 +337,24 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
 
     try {
       await expect.poll(async () => {
-        const [energy, dodgingText, downText] = await Promise.all([
+        const [energy, dodgingText, downText, position] = await Promise.all([
           readNumber(page, 'slice-energy'),
           page.getByTestId('slice-dodging').innerText(),
           page.getByTestId('slice-player-down').innerText(),
+          readPosition(page),
         ]);
         if (!downText.includes('NO')) return false;
         minimumEnergy = Math.min(minimumEnergy, energy);
-        // No other action is issued inside this helper, so any observed energy
-        // decrease is sufficient durable evidence that the controller accepted Q.
-        return dodgingText.includes('YES') || minimumEnergy <= beforeDodgeEnergy - 1;
+        const dodgeDisplacement = Math.hypot(
+          position[0] - beforeDodgePosition[0],
+          position[2] - beforeDodgePosition[2]
+        );
+        // Q now has a real 3-unit evasive step. Position change is the strongest
+        // durable proof when low-FPS HUD samples miss both the short dodge flag
+        // and an energy dip that has already regenerated.
+        return dodgingText.includes('YES')
+          || minimumEnergy <= beforeDodgeEnergy - 1
+          || dodgeDisplacement >= 2.5;
       }, {
         // Diagnostics now publish on real frame time, but keep this tolerant of
         // especially slow software-WebGL frames and browser scheduling.
@@ -329,6 +363,10 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
       }).toBe(true);
       accepted = true;
     } catch {
+      if ((await page.getByTestId('slice-player-down').innerText()).includes('YES')) {
+        await logCombatSnapshot(page, `${hero}:player-down-before-dodge-acceptance`);
+        throw new Error(`${hero} was knocked down before dodge acceptance could be observed`);
+      }
       if (attempt < 2) await page.waitForTimeout(150);
     }
   }
@@ -348,6 +386,7 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
   // The dodge has a real energy cost. Rebuild it while backpedaling out of
   // pressure, then close once and fire. Do not stand inside melee range waiting
   // for the ultimate resource to return.
+  await page.keyboard.down('Shift');
   await page.keyboard.down('s');
   try {
     await expect.poll(async () => {
@@ -363,6 +402,7 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
     }).toBeGreaterThanOrEqual(ultimateCost);
   } finally {
     await page.keyboard.up('s');
+    await page.keyboard.up('Shift');
   }
 }
 
