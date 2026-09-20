@@ -16,7 +16,7 @@ export interface FangAIUpdateResult {
 }
 
 const MAX_SIM_STEP = 0.05;
-const MAX_WALL_CLOCK_CATCHUP = 0.5;
+const MAX_WALL_CLOCK_CATCHUP = 0.25;
 const lastUpdateTimeByState = new WeakMap<FangCombatantState, number>();
 
 function planarDistance(a: FangVector3, b: FangVector3): number {
@@ -74,8 +74,8 @@ function stepFangCombatantAI(
   const config = getFangCombatantConfig(state);
 
   // Keep physical motion on the same bounded render/simulation clock as the
-  // player controllers. Combat lifecycle may catch up independently so sparse
-  // frames do not stretch windups, stagger, or cooldown readiness.
+  // player controllers. Combat lifecycle may catch up independently, but never
+  // beyond the same 0.25s ceiling used by Kai/Jax lifecycle authority.
   updateFangCombatant(state, lifecycleDelta);
   applyExternalVelocity(state, movementDelta);
 
@@ -192,9 +192,9 @@ export function updateFangCombatantAI(
   const lifecycleDelta = Math.max(movementDelta, catchupDelta);
 
   // Never apply wall-clock catch-up to chase or knockback displacement. Doing so
-  // makes Fang locomotion advance by as much as 0.5 seconds on one sparse render
-  // frame while Kai/Jax locomotion remains capped near one frame step. Lifecycle
-  // catch-up is still preserved for windup/stagger timing.
+  // makes Fang locomotion advance by wall-clock time while Kai/Jax locomotion
+  // remains bounded. Lifecycle catch-up is preserved, but capped to the same
+  // 0.25s authority as the heroes so sparse frames cannot accelerate Fang combat.
   return stepFangCombatantAI(
     state,
     playerPosition,
