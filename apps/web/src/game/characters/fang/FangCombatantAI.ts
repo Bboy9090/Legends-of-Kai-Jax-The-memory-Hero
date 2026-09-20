@@ -15,7 +15,10 @@ export interface FangAIUpdateResult {
   attackDamage: number;
 }
 
-const MAX_SIM_STEP = 0.05;
+// Match Kai/Jax physical movement authority exactly. A larger Fang-only step
+// makes enemy chase/knockback advance farther per sparse render frame than the
+// player can physically move, even when authored moveSpeed values are unchanged.
+const MAX_SIM_STEP = 0.033;
 const MAX_WALL_CLOCK_CATCHUP = 0.25;
 const lastUpdateTimeByState = new WeakMap<FangCombatantState, number>();
 
