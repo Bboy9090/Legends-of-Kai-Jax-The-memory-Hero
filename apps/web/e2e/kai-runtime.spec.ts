@@ -150,6 +150,7 @@ test('Kai runtime: wall climb, attack lifecycle and dodge lifecycle are live', a
     intervals: [75, 100, 150],
   }).toContain('NO');
 
+  const beforeDodge = await readPosition(page);
   await page.keyboard.down('q');
   try {
     await expect.poll(async () => page.getByTestId('kai-dodging').innerText(), {
@@ -160,6 +161,16 @@ test('Kai runtime: wall climb, attack lifecycle and dodge lifecycle are live', a
       timeout: 2_000,
       intervals: [50, 75, 100],
     }).toBeGreaterThan(0);
+    await expect.poll(async () => {
+      const duringDodge = await readPosition(page);
+      return Math.hypot(
+        duringDodge[0] - beforeDodge[0],
+        duringDodge[2] - beforeDodge[2]
+      );
+    }, {
+      timeout: 3_000,
+      intervals: [50, 75, 100, 150],
+    }).toBeGreaterThan(2.5);
   } finally {
     await page.keyboard.up('q');
   }
