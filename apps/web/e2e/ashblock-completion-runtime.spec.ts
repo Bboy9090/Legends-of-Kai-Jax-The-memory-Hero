@@ -166,8 +166,12 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
   // A fresh Phase 5.5 wave can begin at 100 energy with several Fangs already
   // inside melee range. Keep real controller-owned backward movement active until
   // both resources and measured scene geometry establish a readable attack setup.
+  // Fang physical movement is intentionally render-step bounded, so this gate must
+  // not demand an arbitrary 6–7 unit gap while live enemies are actively chasing.
+  // 3.25 stays outside the largest authored Fang melee radius (2.7) while remaining
+  // reachable through real controller movement under sparse software-WebGL frames.
   const requiredEnergy = 100;
-  const safeRetreatDistance = hero === 'kai' ? 7 : 6;
+  const safeRetreatDistance = 3.25;
 
   await page.keyboard.down('s');
   try {
