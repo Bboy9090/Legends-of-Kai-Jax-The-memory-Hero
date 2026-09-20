@@ -163,15 +163,12 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
 
 async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
   // Full energy funds the authored ultimate, but energy alone is not a retreat.
-  // A fresh Phase 5.5 wave can begin at 100 energy with several Fangs already
-  // inside melee range. Keep real controller-owned backward movement active until
-  // both resources and measured scene geometry establish a readable attack setup.
-  // Fang physical movement is intentionally render-step bounded, so this gate must
-  // not demand an arbitrary 6–7 unit gap while live enemies are actively chasing.
-  // 3.25 stays outside the largest authored Fang melee radius (2.7) while remaining
-  // reachable through real controller movement under sparse software-WebGL frames.
+  // Prove real controller-owned backward displacement while staying alive. Do not
+  // require increasing separation from a live pursuer: the razor-scout is authored
+  // to chase at 4.4 units/s, so "outrun the Fang" is not a valid invariant.
   const requiredEnergy = 100;
-  const safeRetreatDistance = 3.25;
+  const retreatStart = await readPosition(page);
+  const requiredRetreatTravel = 0.75;
 
   await page.keyboard.down('s');
   try {
@@ -182,12 +179,16 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
         throw new Error('Player was knocked down before retreat/recharge completed');
       }
 
-      const [energy, nearestDistance] = await Promise.all([
+      const [energy, position] = await Promise.all([
         readNumber(page, 'slice-energy'),
-        readNumber(page, 'slice-nearest-enemy-distance'),
+        readPosition(page),
       ]);
+      const retreatTravel = Math.hypot(
+        position[0] - retreatStart[0],
+        position[2] - retreatStart[2],
+      );
 
-      return energy >= requiredEnergy && nearestDistance >= safeRetreatDistance;
+      return energy >= requiredEnergy && retreatTravel >= requiredRetreatTravel;
     }, {
       timeout: 12_000,
       intervals: [75, 100, 150, 200],
