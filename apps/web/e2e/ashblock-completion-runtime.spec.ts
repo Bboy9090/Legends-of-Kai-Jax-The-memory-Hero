@@ -393,27 +393,21 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
     await retreatAndRecharge(page, hero);
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
+    // Prove attack readiness while the hero is still outside the dangerous
+    // melee envelope. The Phase 5.5 mixed formation can resolve several Fang
+    // windups during any extra dodge/readiness wait once the hero has closed.
+    // Full-chain persistence only needs real controller/scene-hitbox combat;
+    // dodge timing is exercised independently and must not become a second
+    // source of mission-chain flakiness.
+    if (!(await waitForUltimateReadiness(page, hero))) break;
+
     await closeIntoUltimateEnvelope(page, hero);
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
-    // Enter the attack from a real dodge and dispatch while the controller's
-    // invulnerability window is still active. Waiting for dodge animation/timer
-    // completion let multiple Fangs resolve attacks during ultimate startup.
-    const beforeDodgeEnergy = await readNumber(page, 'slice-energy');
-    await page.keyboard.press('q');
-    await expect.poll(async () => readNumber(page, 'slice-energy'), {
-      timeout: 2_000,
-      intervals: [40, 60, 80, 100],
-    }).toBeLessThan(beforeDodgeEnergy - 5);
-    await expect(page.getByTestId('slice-player-down')).toContainText('NO');
-
-    // Dodge itself can shift the range sample. Re-prove the authored envelope,
-    // then use the same controller-readiness authority as every fresh ultimate
-    // edge. Do not impose a second, shorter animation timeout here: under slow
-    // software-WebGL a legitimate dodge/attack lifecycle can outlive one second.
-    await closeIntoUltimateEnvelope(page, hero);
-    if (!(await waitForUltimateReadiness(page, hero))) break;
-
+    // Fire immediately after the authored ultimate radius is proven. Do not
+    // insert another lifecycle wait here: Kai's 10-unit and Jax's 5-unit
+    // ultimates are specifically the wide-radius authority used by this
+    // persistence chain to avoid moving-target melee races.
     if (await ultimateAndObserveAggregateDamage(page, hero, true)) successfulHits += 1;
   }
 
