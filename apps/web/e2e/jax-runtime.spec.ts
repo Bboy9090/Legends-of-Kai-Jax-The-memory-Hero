@@ -84,9 +84,14 @@ test('Jax runtime: movement, jump and displacement change real controller state'
   const moved = await readPosition(page);
   expect(Math.abs(moved[2] - start[2]) + Math.abs(moved[0] - start[0])).toBeGreaterThan(0.2);
 
-  await page.keyboard.press('Space');
-  await page.waitForTimeout(120);
-  await expect(page.getByTestId('jax-airborne')).toContainText('YES');
+  // Hold jump until the real controller samples the rising edge. A synthetic
+  // press can complete entirely between sparse software-WebGL frames.
+  await page.keyboard.down('Space');
+  try {
+    await expect(page.getByTestId('jax-airborne')).toContainText('YES', { timeout: 5_000 });
+  } finally {
+    await page.keyboard.up('Space');
+  }
 
   await page.waitForTimeout(1_200);
   const beforeDash = await readPosition(page);
