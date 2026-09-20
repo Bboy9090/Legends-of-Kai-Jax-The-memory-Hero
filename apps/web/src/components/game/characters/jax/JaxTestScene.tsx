@@ -21,6 +21,8 @@ interface JaxDebugSnapshot {
   cooldown: number;
   attackType: string;
   attackPhase: string;
+  dodging: boolean;
+  invuln: number;
   fps: number;
   pressureHealth: number;
   pressureX: number;
@@ -38,6 +40,8 @@ const INITIAL_DEBUG: JaxDebugSnapshot = {
   cooldown: 0,
   attackType: 'none',
   attackPhase: 'IDLE',
+  dodging: false,
+  invuln: 0,
   fps: 0,
   pressureHealth: 100,
   pressureX: 1.2,
@@ -215,6 +219,8 @@ function TestEnvironment({
       cooldown: state.displacementCooldown,
       attackType: state.currentAttackType ?? 'none',
       attackPhase: state.attackPhase,
+      dodging: state.isDodging,
+      invuln: state.invulnTimer,
       fps: perf.fps,
       pressureHealth: pressureDummy?.userData.health ?? 100,
       pressureX: pressureDummy?.position.x ?? 0,
@@ -270,6 +276,8 @@ export function JaxTestScene() {
           <div data-testid="jax-air-charge">Air charge: {debug.airCharges}</div>
           <div data-testid="jax-cooldown">Cooldown: {debug.cooldown.toFixed(2)}</div>
           <div data-testid="jax-attack">Attack: {debug.attackType} / {debug.attackPhase}</div>
+          <div data-testid="jax-dodging">Dodging: {debug.dodging ? 'YES' : 'NO'}</div>
+          <div data-testid="jax-invuln">Invuln: {debug.invuln.toFixed(2)}</div>
           <div data-testid="jax-fps">FPS: {debug.fps.toFixed(1)}</div>
           <div data-testid="jax-pressure-health">Pressure dummy HP: {Math.round(debug.pressureHealth)}</div>
           <div data-testid="jax-pressure-position">
