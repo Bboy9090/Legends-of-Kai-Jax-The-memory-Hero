@@ -87,11 +87,12 @@ async function readBeat(page: Page): Promise<string> {
 }
 
 async function logCombatSnapshot(page: Page, label: string) {
-  const [position, beat, health, energy, enemyCount, enemyHealth, behavior, attacking, dodging] = await Promise.all([
+  const [position, beat, health, energy, nearestDistance, enemyCount, enemyHealth, behavior, attacking, dodging] = await Promise.all([
     readPosition(page),
     readBeat(page),
     readNumber(page, 'slice-player-health'),
     readNumber(page, 'slice-energy'),
+    readNumber(page, 'slice-nearest-enemy-distance'),
     readNumber(page, 'slice-enemy-count'),
     readNumber(page, 'slice-total-enemy-health'),
     page.getByTestId('slice-fang-behavior').innerText(),
@@ -104,6 +105,7 @@ async function logCombatSnapshot(page: Page, label: string) {
     position,
     health,
     energy,
+    nearestDistance,
     enemyCount,
     enemyHealth,
     behavior,
@@ -252,26 +254,21 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
     }
 
     if (distance > maximumAttackRange) {
-      await page.keyboard.down('w');
-      try {
-        if (hero === 'jax' && distance > maximumAttackRange + 1.25) {
-          await page.keyboard.press('e');
+      // After a real dodge the hero may be far off the enemy's X-axis. Moving
+      // camera-forward cannot guarantee radial closure. Hold position and let
+      // the already-certified Fang chase authority bring the nearest live target
+      // into the outer edge of the ultimate envelope.
+      await expect.poll(async () => {
+        const down = await page.getByTestId('slice-player-down').innerText();
+        if (!down.includes('NO')) {
+          await logCombatSnapshot(page, `${hero}:player-down-waiting-for-safe-ultimate-band`);
+          throw new Error('Player was knocked down before Fang chase entered the safe ultimate band');
         }
-
-        await expect.poll(async () => {
-          const down = await page.getByTestId('slice-player-down').innerText();
-          if (!down.includes('NO')) {
-            await logCombatSnapshot(page, `${hero}:player-down-during-safe-ultimate-close`);
-            throw new Error('Player was knocked down during the safe ultimate close');
-          }
-          return readNumber(page, 'slice-nearest-enemy-distance');
-        }, {
-          timeout: hero === 'kai' ? 10_000 : 6_000,
-          intervals: [40, 60, 80, 100, 150],
-        }).toBeLessThanOrEqual(maximumAttackRange);
-      } finally {
-        await page.keyboard.up('w');
-      }
+        return readNumber(page, 'slice-nearest-enemy-distance');
+      }, {
+        timeout: hero === 'kai' ? 12_000 : 14_000,
+        intervals: [50, 75, 100, 150, 200],
+      }).toBeLessThanOrEqual(maximumAttackRange);
     }
 
     distance = await readNumber(page, 'slice-nearest-enemy-distance');
