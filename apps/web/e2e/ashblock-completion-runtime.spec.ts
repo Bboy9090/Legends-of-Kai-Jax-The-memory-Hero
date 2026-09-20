@@ -162,14 +162,32 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
-  // Full energy funds one real defensive dodge followed by the authored ultimate.
+  // Full energy funds the authored ultimate, but energy alone is not a retreat.
+  // A fresh Phase 5.5 wave can begin at 100 energy with several Fangs already
+  // inside melee range. Keep real controller-owned backward movement active until
+  // both resources and measured scene geometry establish a readable attack setup.
   const requiredEnergy = 100;
+  const safeRetreatDistance = hero === 'kai' ? 7 : 6;
+
   await page.keyboard.down('s');
   try {
-    await expect.poll(async () => readNumber(page, 'slice-energy'), {
+    await expect.poll(async () => {
+      const downStatus = await page.getByTestId('slice-player-down').innerText();
+      if (!downStatus.includes('NO')) {
+        await logCombatSnapshot(page, `${hero}:player-down-during-retreat`);
+        throw new Error('Player was knocked down before retreat/recharge completed');
+      }
+
+      const [energy, nearestDistance] = await Promise.all([
+        readNumber(page, 'slice-energy'),
+        readNumber(page, 'slice-nearest-enemy-distance'),
+      ]);
+
+      return energy >= requiredEnergy && nearestDistance >= safeRetreatDistance;
+    }, {
       timeout: 12_000,
-      intervals: [100, 150, 200, 250],
-    }).toBeGreaterThanOrEqual(requiredEnergy);
+      intervals: [75, 100, 150, 200],
+    }).toBe(true);
   } finally {
     await page.keyboard.up('s');
   }
