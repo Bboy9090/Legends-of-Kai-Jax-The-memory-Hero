@@ -73,6 +73,7 @@ const COMBAT_CONFIG = {
 };
 
 const DODGING_CONFIG = {
+  distance: 3.0,
   duration: 0.35,
   invulnDuration: 0.4,
   staminaCost: 18,
@@ -420,6 +421,36 @@ export function useJaxController(
         jax.invulnTimer = DODGING_CONFIG.invulnDuration;
         jax.energy -= DODGING_CONFIG.staminaCost;
         jax.attackCombo = 0;
+
+        // Match the controller's dodge state with real evasive movement. Use
+        // current planar momentum when present; from neutral, evade backward
+        // from facing. Resolve the distance on acceptance so sparse frames
+        // cannot shorten a valid dodge while lifecycle timers catch up.
+        const dodgeDir = jax.velocity.clone();
+        dodgeDir.y = 0;
+        if (dodgeDir.lengthSq() < 0.0001) {
+          dodgeDir.copy(facingDir).multiplyScalar(-1);
+        } else {
+          dodgeDir.normalize();
+        }
+
+        const dodgePos = jax.position.clone().addScaledVector(
+          dodgeDir,
+          DODGING_CONFIG.distance
+        );
+        dodgePos.x = THREE.MathUtils.clamp(
+          dodgePos.x,
+          -MOVEMENT_CONFIG.boundary,
+          MOVEMENT_CONFIG.boundary
+        );
+        dodgePos.z = THREE.MathUtils.clamp(
+          dodgePos.z,
+          -MOVEMENT_CONFIG.boundary,
+          MOVEMENT_CONFIG.boundary
+        );
+        jaxRef.current.position.copy(dodgePos);
+        jax.position.copy(dodgePos);
+
         useAudio.getState().playDodge?.();
       }
     }
