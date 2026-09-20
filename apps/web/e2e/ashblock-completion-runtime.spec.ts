@@ -345,12 +345,25 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
 
   await expect(page.getByTestId('slice-player-down')).toContainText('NO');
 
-  // The dodge has a real energy cost. Restore only enough for the authored
-  // ultimate, then attack while the avoided volley is still on recovery.
-  await expect.poll(async () => readNumber(page, 'slice-energy'), {
-    timeout: 8_000,
-    intervals: [50, 75, 100, 150, 200],
-  }).toBeGreaterThanOrEqual(ultimateCost);
+  // The dodge has a real energy cost. Rebuild it while backpedaling out of
+  // pressure, then close once and fire. Do not stand inside melee range waiting
+  // for the ultimate resource to return.
+  await page.keyboard.down('s');
+  try {
+    await expect.poll(async () => {
+      const downText = await page.getByTestId('slice-player-down').innerText();
+      if (!downText.includes('NO')) {
+        await logCombatSnapshot(page, `${hero}:player-down-during-post-dodge-recharge`);
+        throw new Error('Player was knocked down during post-dodge recharge');
+      }
+      return readNumber(page, 'slice-energy');
+    }, {
+      timeout: 8_000,
+      intervals: [50, 75, 100, 150, 200],
+    }).toBeGreaterThanOrEqual(ultimateCost);
+  } finally {
+    await page.keyboard.up('s');
+  }
 }
 
 async function waitForUltimateReadiness(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
@@ -489,15 +502,9 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
     await closeIntoUltimateEnvelope(page, hero);
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
-    // Re-check defense after closing Jax's tighter storm radius (or if Kai's
-    // broad radius naturally allowed a Fang to close during readiness).
-    await dodgeIncomingVolley(page, hero);
-    if (await readNumber(page, 'slice-enemy-count') === 0) break;
-
-    // Dodge consumes energy and lifecycle time, so re-prove readiness rather
-    // than carrying a stale pre-dodge certification into the ultimate.
-    if (!(await waitForUltimateReadiness(page, hero))) break;
-
+    // The defensive window was established before closing. Fire immediately
+    // once the authored ultimate radius is reached; another dodge here would
+    // spend the resource we just rebuilt and leave Jax stationary in melee.
     if (await ultimateAndObserveAggregateDamage(page, hero, true)) successfulHits += 1;
   }
 
