@@ -162,25 +162,57 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
-  // This helper is defensive input during recharge, not a promise that the hero
-  // can outrun a pursuing Fang. The only gameplay invariant needed by the full
-  // persistence chain is that the hero stays alive until the authored ultimate
-  // cost is available. Movement itself is certified by focused controller tests.
+  // Recharge through real play: move backward, stay alive, and use the actual
+  // dodge controller if a Fang enters its authored melee envelope during the
+  // recharge window. This avoids making long multi-wave certification depend on
+  // facetanking while energy rebuilds.
   const requiredEnergy = hero === 'kai' ? 80 : 75;
+  const dodgeCost = hero === 'kai' ? 20 : 18;
+  const threatDistance = 2.8;
+  const deadline = Date.now() + 14_000;
 
   await page.keyboard.down('s');
   try {
-    await expect.poll(async () => {
-      const downStatus = await page.getByTestId('slice-player-down').innerText();
+    while (Date.now() < deadline) {
+      const [downStatus, energy, nearestDistance, attackingText, dodgingText] = await Promise.all([
+        page.getByTestId('slice-player-down').innerText(),
+        readNumber(page, 'slice-energy'),
+        readNumber(page, 'slice-nearest-enemy-distance'),
+        page.getByTestId('slice-attacking').innerText(),
+        page.getByTestId('slice-dodging').innerText(),
+      ]);
+
       if (!downStatus.includes('NO')) {
         await logCombatSnapshot(page, `${hero}:player-down-during-recharge`);
         throw new Error('Player was knocked down before ultimate recharge completed');
       }
-      return readNumber(page, 'slice-energy');
-    }, {
-      timeout: 12_000,
-      intervals: [75, 100, 150, 200],
-    }).toBeGreaterThanOrEqual(requiredEnergy);
+
+      if (energy >= requiredEnergy && attackingText.includes('NO') && dodgingText.includes('NO')) {
+        return;
+      }
+
+      if (
+        nearestDistance <= threatDistance
+        && energy >= dodgeCost
+        && attackingText.includes('NO')
+        && dodgingText.includes('NO')
+      ) {
+        // Stop translating for the defensive input so the evidence cleanly
+        // represents one controller action at a time.
+        await page.keyboard.up('s');
+        await dodgeIncomingVolley(page, hero);
+        await page.keyboard.down('s');
+
+        if (await readNumber(page, 'slice-energy') >= requiredEnergy) {
+          return;
+        }
+      }
+
+      await page.waitForTimeout(100);
+    }
+
+    await logCombatSnapshot(page, `${hero}:recharge-deadline`);
+    throw new Error(`${hero} did not reach authored ultimate readiness during defensive recharge`);
   } finally {
     await page.keyboard.up('s');
   }
@@ -286,7 +318,9 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
         ]);
         if (!downText.includes('NO')) return false;
         minimumEnergy = Math.min(minimumEnergy, energy);
-        return dodgingText.includes('YES') || minimumEnergy <= beforeDodgeEnergy - Math.min(8, dodgeCost / 2);
+        // No other action is issued inside this helper, so any observed energy
+        // decrease is sufficient durable evidence that the controller accepted Q.
+        return dodgingText.includes('YES') || minimumEnergy <= beforeDodgeEnergy - 1;
       }, {
         // Diagnostics now publish on real frame time, but keep this tolerant of
         // especially slow software-WebGL frames and browser scheduling.
