@@ -73,10 +73,15 @@ describe('RagingCityVerticalSlice - Fang Combatant Contract', () => {
       expect(fangState.isStaggered).toBe(false);
     });
 
-    it('respects attack cooldown', () => {
+    it('respects post-hit recovery on the bounded simulation clock', () => {
       damageFangCombatant(fangState, 10, 1);
       expect(canFangCombatantAttack(fangState, 1.2)).toBe(false);
-      expect(canFangCombatantAttack(fangState, 2.6)).toBe(true);
+
+      updateFangCombatant(fangState, FANG_COMBATANT_CONFIG.recoverDelay - 0.01);
+      expect(canFangCombatantAttack(fangState, 2.6)).toBe(false);
+
+      updateFangCombatant(fangState, 0.02);
+      expect(canFangCombatantAttack(fangState, 99)).toBe(true);
     });
   });
 });
