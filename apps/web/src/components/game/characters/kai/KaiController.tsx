@@ -305,6 +305,28 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
         kai.invulnTimer = DODGING_CONFIG.invulnDuration;
         kai.energy -= DODGING_CONFIG.staminalCost;
         kai.attackCombo = 0;
+
+        // A dodge must actually evade, not only toggle iframes. Preserve the
+        // player's current planar movement intent when available; from neutral,
+        // step backward from facing. Apply the authored Kai dodge distance once
+        // on acceptance so sparse render frames cannot erase the displacement.
+        const dodgeDir = kai.velocity.clone();
+        dodgeDir.y = 0;
+        if (dodgeDir.lengthSq() < 0.0001) {
+          dodgeDir.copy(facingDir).multiplyScalar(-1);
+        } else {
+          dodgeDir.normalize();
+        }
+
+        const dodgePos = kai.position.clone().addScaledVector(
+          dodgeDir,
+          DODGING_CONFIG.distance
+        );
+        dodgePos.x = THREE.MathUtils.clamp(dodgePos.x, -BOUNDARY, BOUNDARY);
+        dodgePos.z = THREE.MathUtils.clamp(dodgePos.z, -BOUNDARY, BOUNDARY);
+        kaiRef.current.position.copy(dodgePos);
+        kai.position.copy(dodgePos);
+
         useAudio.getState().playDodge?.();
       }
     }
