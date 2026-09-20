@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "policy": {
+    "defaultStatus": "unverified",
+    "releaseAllowedStatuses": ["cleared"],
+    "rule": "A runtime model is not commercially release-cleared until an explicit ledger entry has status=cleared and records a license basis plus evidence location. Filename/source hints are not licenses."
+  },
+  "assets": {
+    "/models/Meshy_AI_Meshy_Merged_Animations4KAI.glb": {
+      "role": "Kai production story hero",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Rendering certification does not establish commercial distribution rights."
+    },
+    "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONIC JAX.glb": {
+      "role": "Jax production story hero",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Do not infer rights from the asset filename or successful loading."
+    },
+    "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb": {
+      "role": "Kai-Jax fusion model",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Explicit commercial-use evidence is still required."
+    },
+    "/models/BORYN.glb": {
+      "role": "Boryn production model",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Origin/licensing evidence not found in repository audit."
+    },
+    "/models/Borax.glb": {
+      "role": "Borax production model",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Origin/licensing evidence not found in repository audit."
+    }
+  }
+}
