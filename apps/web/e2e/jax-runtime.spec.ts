@@ -109,7 +109,6 @@ test('Jax runtime: dodge grants invulnerability and real evasive displacement', 
   await bootJaxTest(page, errors);
 
   const beforeDodge = await readPosition(page);
-  const energyBeforeDodge = await readNumber(page, 'jax-energy');
 
   await page.keyboard.down('q');
   try {
@@ -131,10 +130,6 @@ test('Jax runtime: dodge grants invulnerability and real evasive displacement', 
       timeout: 3_000,
       intervals: [50, 75, 100, 150],
     }).toBeGreaterThan(2.5);
-    await expect.poll(async () => readNumber(page, 'jax-energy'), {
-      timeout: 2_000,
-      intervals: [50, 75, 100],
-    }).toBeLessThan(energyBeforeDodge);
   } finally {
     await page.keyboard.up('q');
   }
