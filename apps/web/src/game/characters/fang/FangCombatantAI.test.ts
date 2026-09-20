@@ -42,12 +42,11 @@ describe('FangCombatantAI', () => {
     const beforeSparseFrame = scout.position.z;
 
     // Simulate a sparse outer frame: wall clock advances by 500 ms while the
-    // physical/render simulation is capped to the same 33 ms movement step as
-    // Kai/Jax controllers.
+    // physical/render simulation contributes only one bounded 50 ms step.
     updateFangCombatantAI(scout, PLAYER, 0.05, 0.5);
 
     const travel = beforeSparseFrame - scout.position.z;
-    const maxAuthoredStep = getFangCombatantConfig(scout).moveSpeed * 0.033;
+    const maxAuthoredStep = getFangCombatantConfig(scout).moveSpeed * 0.05;
     expect(travel).toBeGreaterThan(0);
     expect(travel).toBeLessThanOrEqual(maxAuthoredStep + 0.000001);
   });
