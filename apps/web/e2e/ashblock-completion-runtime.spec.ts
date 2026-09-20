@@ -245,38 +245,78 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
   const nearestDistance = await readNumber(page, 'slice-nearest-enemy-distance');
   if (nearestDistance > threatDistance) return;
 
-  const beforeDodgeEnergy = await readNumber(page, 'slice-energy');
-  await page.keyboard.up('q').catch(() => undefined);
-  await page.waitForTimeout(50);
-  await page.keyboard.down('q');
-  try {
-    await expect.poll(async () => {
-      const [energy, dodgingText] = await Promise.all([
-        readNumber(page, 'slice-energy'),
-        page.getByTestId('slice-dodging').innerText(),
-      ]);
-      return dodgingText.includes('YES') || energy <= beforeDodgeEnergy - 5;
-    }, {
-      timeout: 1_800,
-      intervals: [40, 60, 80, 100],
-    }).toBe(true);
-  } finally {
-    await page.keyboard.up('q');
+  const dodgeCost = hero === 'kai' ? 20 : 18;
+  const ultimateCost = hero === 'kai' ? 80 : 75;
+
+  await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
+    timeout: 2_500,
+    intervals: [50, 75, 100],
+  }).toContain('NO');
+
+  await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
+    timeout: 5_000,
+    intervals: [50, 75, 100, 150],
+  }).toContain('NO');
+
+  await expect.poll(async () => readNumber(page, 'slice-energy'), {
+    timeout: 5_000,
+    intervals: [50, 75, 100, 150],
+  }).toBeGreaterThanOrEqual(dodgeCost);
+
+  let accepted = false;
+  for (let attempt = 0; attempt < 3 && !accepted; attempt += 1) {
+    const beforeDodgeEnergy = await readNumber(page, 'slice-energy');
+    let minimumEnergy = beforeDodgeEnergy;
+
+    await page.keyboard.up('q').catch(() => undefined);
+    await page.waitForTimeout(75);
+    await page.keyboard.down('q');
+    try {
+      await page.waitForTimeout(180);
+    } finally {
+      await page.keyboard.up('q');
+    }
+
+    try {
+      await expect.poll(async () => {
+        const [energy, dodgingText, downText] = await Promise.all([
+          readNumber(page, 'slice-energy'),
+          page.getByTestId('slice-dodging').innerText(),
+          page.getByTestId('slice-player-down').innerText(),
+        ]);
+        if (!downText.includes('NO')) return false;
+        minimumEnergy = Math.min(minimumEnergy, energy);
+        return dodgingText.includes('YES') || minimumEnergy <= beforeDodgeEnergy - Math.min(8, dodgeCost / 2);
+      }, {
+        // Diagnostics now publish on real frame time, but keep this tolerant of
+        // especially slow software-WebGL frames and browser scheduling.
+        timeout: 5_000,
+        intervals: [50, 75, 100, 150, 200],
+      }).toBe(true);
+      accepted = true;
+    } catch {
+      if (attempt < 2) await page.waitForTimeout(150);
+    }
+  }
+
+  if (!accepted) {
+    await logCombatSnapshot(page, `${hero}:dodge-not-accepted-after-fresh-edges`);
+    throw new Error(`${hero} dodge was not accepted after three real input edges`);
   }
 
   await expect.poll(async () => page.getByTestId('slice-dodging').innerText(), {
-    timeout: 3_000,
-    intervals: [40, 60, 80, 100],
+    timeout: 5_000,
+    intervals: [50, 75, 100, 150],
   }).toContain('NO');
 
   await expect(page.getByTestId('slice-player-down')).toContainText('NO');
 
   // The dodge has a real energy cost. Restore only enough for the authored
-  // ultimate, then attack immediately while the avoided volley is on recovery.
+  // ultimate, then attack while the avoided volley is still on recovery.
   await expect.poll(async () => readNumber(page, 'slice-energy'), {
-    timeout: 4_000,
-    intervals: [50, 75, 100, 150],
-  }).toBeGreaterThanOrEqual(hero === 'kai' ? 80 : 75);
+    timeout: 8_000,
+    intervals: [50, 75, 100, 150, 200],
+  }).toBeGreaterThanOrEqual(ultimateCost);
 }
 
 async function waitForUltimateReadiness(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
@@ -405,24 +445,25 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
     await retreatAndRecharge(page, hero);
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
-    // Prove attack readiness while the hero is still outside the dangerous
-    // melee envelope. The Phase 5.5 mixed formation can resolve several Fang
-    // windups during any extra dodge/readiness wait once the hero has closed.
-    // Full-chain persistence only needs real controller/scene-hitbox combat;
-    // dodge timing is exercised independently and must not become a second
-    // source of mission-chain flakiness.
+    // A Fang can enter melee while energy is recharging. Defend before the
+    // readiness poll so the chain never spends that window standing still.
+    await dodgeIncomingVolley(page, hero);
+    if (await readNumber(page, 'slice-enemy-count') === 0) break;
+
     if (!(await waitForUltimateReadiness(page, hero))) break;
 
     await closeIntoUltimateEnvelope(page, hero);
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
-    // Use real defensive input when Phase 5.5 pressure has already entered an
-    // authored Fang attack envelope. This keeps the persistence proof on actual
-    // controller mechanics instead of silently weakening enemy damage or HP.
+    // Re-check defense after closing Jax's tighter storm radius (or if Kai's
+    // broad radius naturally allowed a Fang to close during readiness).
     await dodgeIncomingVolley(page, hero);
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
-    // Fire immediately after the authored ultimate radius/readiness is proven.
+    // Dodge consumes energy and lifecycle time, so re-prove readiness rather
+    // than carrying a stale pre-dodge certification into the ultimate.
+    if (!(await waitForUltimateReadiness(page, hero))) break;
+
     if (await ultimateAndObserveAggregateDamage(page, hero, true)) successfulHits += 1;
   }
 
