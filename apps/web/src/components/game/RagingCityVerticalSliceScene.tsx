@@ -343,8 +343,9 @@ function VerticalSliceEnvironment({
     const player = playerRef.current;
     if (!player || hero === 'INVALID') return;
 
-    const delta = Math.min(Math.max(rawDelta, 0), 0.05);
-    const lifecycleDelta = Math.min(Math.max(rawDelta, 0), 0.25);
+    const wallDelta = Number.isFinite(rawDelta) ? Math.max(rawDelta, 0) : 0;
+    const delta = Math.min(wallDelta, 0.05);
+    const lifecycleDelta = Math.min(wallDelta, 0.25);
     const currentTime = frameState.clock.elapsedTime;
     const mission = stateRef.current;
     const playerPos = player.position;
@@ -466,8 +467,11 @@ function VerticalSliceEnvironment({
     camera.lookAt(playerPos.x, 1.2, playerPos.z + 5);
 
     const perf = perfRef.current;
-    perf.elapsed += delta;
-    perf.hudElapsed += delta;
+    // Diagnostics measure wall/render cadence, not the collision-capped movement
+    // step. Otherwise a 2 FPS software-WebGL run can falsely report ~20–30 FPS
+    // and delay HUD state publication for several real seconds.
+    perf.elapsed += wallDelta;
+    perf.hudElapsed += wallDelta;
     perf.frames += 1;
     if (perf.elapsed >= 0.5) {
       perf.fps = perf.frames / perf.elapsed;
