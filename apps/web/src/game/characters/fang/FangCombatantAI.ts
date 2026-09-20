@@ -67,12 +67,17 @@ function applyExternalVelocity(state: FangCombatantState, delta: number): void {
 function stepFangCombatantAI(
   state: FangCombatantState,
   playerPosition: FangVector3,
-  delta: number,
+  movementDelta: number,
+  lifecycleDelta: number,
   currentTime: number
 ): FangAIUpdateResult {
   const config = getFangCombatantConfig(state);
-  updateFangCombatant(state, delta);
-  applyExternalVelocity(state, delta);
+
+  // Keep physical motion on the same bounded render/simulation clock as the
+  // player controllers. Combat lifecycle may catch up independently so sparse
+  // frames do not stretch windups, stagger, or cooldown readiness.
+  updateFangCombatant(state, lifecycleDelta);
+  applyExternalVelocity(state, movementDelta);
 
   if (state.isDead) {
     state.behavior = 'DEAD';
@@ -98,7 +103,7 @@ function stepFangCombatantAI(
 
   if (state.attackWindupTimer > 0) {
     state.behavior = 'WINDUP';
-    state.attackWindupTimer = Math.max(0, state.attackWindupTimer - delta);
+    state.attackWindupTimer = Math.max(0, state.attackWindupTimer - lifecycleDelta);
 
     if (state.attackWindupTimer === 0) {
       const stillInRange = distance <= config.attackRange * 1.15;
@@ -152,7 +157,7 @@ function stepFangCombatantAI(
 
   if (distance > config.stopRange) {
     state.behavior = 'CHASE';
-    moveToward(state, playerPosition, delta);
+    moveToward(state, playerPosition, movementDelta);
     distance = planarDistance(state.position, playerPosition);
   } else {
     state.behavior = 'RECOVERY';
@@ -183,42 +188,18 @@ export function updateFangCombatantAI(
   }
 
   const catchupDelta = Math.min(wallClockDelta, MAX_WALL_CLOCK_CATCHUP);
-  const simulationDelta = Math.max(suppliedDelta, catchupDelta);
+  const movementDelta = Math.min(suppliedDelta, MAX_SIM_STEP);
+  const lifecycleDelta = Math.max(movementDelta, catchupDelta);
 
-  if (simulationDelta <= 0) {
-    return stepFangCombatantAI(state, playerPosition, 0, currentTime);
-  }
-
-  let remaining = simulationDelta;
-  let simulated = 0;
-  let result: FangAIUpdateResult = {
-    behavior: state.behavior,
-    distanceToPlayer: planarDistance(state.position, playerPosition),
-    attackResolved: false,
-    attackDamage: 0,
-  };
-  let attackResolved = false;
-  let attackDamage = 0;
-
-  while (remaining > 0.000001) {
-    const step = Math.min(remaining, MAX_SIM_STEP);
-    simulated += step;
-    const stepTime = Number.isFinite(currentTime)
-      ? currentTime - simulationDelta + simulated
-      : currentTime;
-
-    const stepResult = stepFangCombatantAI(state, playerPosition, step, stepTime);
-    if (stepResult.attackResolved) {
-      attackResolved = true;
-      attackDamage += stepResult.attackDamage;
-    }
-    result = stepResult;
-    remaining -= step;
-  }
-
-  return {
-    ...result,
-    attackResolved,
-    attackDamage,
-  };
+  // Never apply wall-clock catch-up to chase or knockback displacement. Doing so
+  // makes Fang locomotion advance by as much as 0.5 seconds on one sparse render
+  // frame while Kai/Jax locomotion remains capped near one frame step. Lifecycle
+  // catch-up is still preserved for windup/stagger timing.
+  return stepFangCombatantAI(
+    state,
+    playerPosition,
+    movementDelta,
+    lifecycleDelta,
+    currentTime
+  );
 }

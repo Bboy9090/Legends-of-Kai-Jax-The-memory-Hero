@@ -34,6 +34,37 @@ describe('FangCombatantAI', () => {
     expect(fang.position.z).toBeLessThan(before);
   });
 
+  it('does not apply wall-clock catch-up to chase displacement', () => {
+    const scout = createFangCombatant('fang_sparse_chase', 'razor-scout');
+    scout.position.z = 10;
+
+    updateFangCombatantAI(scout, PLAYER, 0.05, 0);
+    const beforeSparseFrame = scout.position.z;
+
+    // Simulate a sparse outer frame: wall clock advances by 500 ms while the
+    // physical/render simulation contributes only one bounded 50 ms step.
+    updateFangCombatantAI(scout, PLAYER, 0.05, 0.5);
+
+    const travel = beforeSparseFrame - scout.position.z;
+    const maxAuthoredStep = getFangCombatantConfig(scout).moveSpeed * 0.05;
+    expect(travel).toBeGreaterThan(0);
+    expect(travel).toBeLessThanOrEqual(maxAuthoredStep + 0.000001);
+  });
+
+  it('still catches up attack lifecycle on a sparse wall-clock frame', () => {
+    const fang = createFangCombatant('fang_sparse_windup');
+    fang.position.z = 1.5;
+
+    updateFangCombatantAI(fang, PLAYER, 0.016, 0);
+    expect(fang.attackWindupTimer).toBeGreaterThan(0);
+
+    const result = updateFangCombatantAI(fang, PLAYER, 0.05, 0.5);
+
+    expect(result.attackResolved).toBe(true);
+    expect(result.attackDamage).toBe(FANG_COMBATANT_CONFIG.attackDamage);
+    expect(fang.attackWindupTimer).toBe(0);
+  });
+
   it('starts a windup instead of dealing instant damage', () => {
     const fang = createFangCombatant('fang_ai_windup');
     fang.position.z = 1.5;
