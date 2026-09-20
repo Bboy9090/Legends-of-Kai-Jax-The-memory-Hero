@@ -51,18 +51,39 @@ describe('FangCombatantAI', () => {
     expect(travel).toBeLessThanOrEqual(maxAuthoredStep + 0.000001);
   });
 
-  it('still catches up attack lifecycle on a sparse wall-clock frame', () => {
+  it('catches up attack lifecycle on sparse frames without outrunning hero lifecycle', () => {
     const fang = createFangCombatant('fang_sparse_windup');
     fang.position.z = 1.5;
 
     updateFangCombatantAI(fang, PLAYER, 0.016, 0);
     expect(fang.attackWindupTimer).toBeGreaterThan(0);
 
-    const result = updateFangCombatantAI(fang, PLAYER, 0.05, 0.5);
+    const firstSparse = updateFangCombatantAI(fang, PLAYER, 0.05, 0.5);
+    expect(firstSparse.attackResolved).toBe(false);
+    expect(fang.attackWindupTimer).toBeGreaterThan(0);
 
-    expect(result.attackResolved).toBe(true);
-    expect(result.attackDamage).toBe(FANG_COMBATANT_CONFIG.attackDamage);
+    const secondSparse = updateFangCombatantAI(fang, PLAYER, 0.05, 1.0);
+    expect(secondSparse.attackResolved).toBe(true);
+    expect(secondSparse.attackDamage).toBe(FANG_COMBATANT_CONFIG.attackDamage);
     expect(fang.attackWindupTimer).toBe(0);
+  });
+
+  it('does not burn attack cooldown from raw wall-clock stalls', () => {
+    const fang = createFangCombatant('fang_sparse_cooldown');
+    fang.position.z = 1.5;
+
+    updateFangCombatantAI(fang, PLAYER, 0.016, 0);
+    let result = updateFangCombatantAI(fang, PLAYER, 0.05, 0.5);
+    result = updateFangCombatantAI(fang, PLAYER, 0.05, 1.0);
+    expect(result.attackResolved).toBe(true);
+
+    const combatTimeAfterAttack = fang.combatTime;
+    const cooldownProbe = updateFangCombatantAI(fang, PLAYER, 0.05, 10.0);
+
+    expect(fang.combatTime - combatTimeAfterAttack).toBeLessThanOrEqual(0.25);
+    expect(cooldownProbe.attackResolved).toBe(false);
+    expect(fang.attackWindupTimer).toBe(0);
+    expect(cooldownProbe.behavior).toBe('RECOVERY');
   });
 
   it('starts a windup instead of dealing instant damage', () => {
