@@ -238,27 +238,18 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
     let distance = await readNumber(page, 'slice-nearest-enemy-distance');
 
     if (distance < minimumSafeRange) {
-      await page.keyboard.down('Shift');
-      await page.keyboard.down('s');
-      try {
-        await expect.poll(async () => {
-          const down = await page.getByTestId('slice-player-down').innerText();
-          if (!down.includes('NO')) {
-            await logCombatSnapshot(page, `${hero}:player-down-while-opening-ultimate-space`);
-            throw new Error('Player was knocked down while opening ultimate space');
-          }
-          return readNumber(page, 'slice-nearest-enemy-distance');
-        }, {
-          timeout: 6_000,
-          intervals: [40, 60, 80, 100, 150],
-        }).toBeGreaterThanOrEqual(minimumSafeRange);
-      } finally {
-        await page.keyboard.up('s');
-        await page.keyboard.up('Shift');
+      // Do not infer "away" from camera-relative S alone. Q is now a proven
+      // 3-unit evasive displacement; force that real controller mechanic when
+      // residual melee pressure is too close for a safe ultimate startup.
+      await dodgeIncomingVolley(page, hero, minimumSafeRange);
+      distance = await readNumber(page, 'slice-nearest-enemy-distance');
+
+      if (distance < minimumSafeRange) {
+        // A moving Fang can partially erase the dodge before the HUD publishes.
+        // Loop and re-evaluate rather than weakening the authored safe band.
+        continue;
       }
     }
-
-    distance = await readNumber(page, 'slice-nearest-enemy-distance');
 
     if (distance > maximumAttackRange) {
       await page.keyboard.down('w');
@@ -294,13 +285,13 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   throw new Error(`${hero} could not establish a safe authored ultimate launch band`);
 }
 
-async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax') {
+async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDistance = 4.5) {
   // Phase 5.5 attack resolution can still connect at 115% of authored range,
-  // and sparse HUD publication means waiting until 2.8 units is too late to
-  // react reliably. Defend while there is still a readable response window.
-  const threatDistance = 4.5;
+  // and sparse HUD publication means waiting until contact is too late to react
+  // reliably. The default anticipatory envelope is 4.5 units; safe-range callers
+  // may request a wider trigger without changing any production combat stat.
   const nearestDistance = await readNumber(page, 'slice-nearest-enemy-distance');
-  if (nearestDistance > threatDistance) return;
+  if (nearestDistance > triggerDistance) return;
 
   const dodgeCost = hero === 'kai' ? 20 : 18;
   const ultimateCost = hero === 'kai' ? 80 : 75;
