@@ -99,12 +99,27 @@ jobs:
       - name: Build web payload
         run: pnpm -C apps/web build
 
-      - name: Sync Capacitor iOS project
-        run: pnpm -C apps/web exec cap sync ios
+      - name: Copy Capacitor iOS payload
+        # cap sync also runs CocoaPods internally. Keep web/config synchronization
+        # separate so native dependency installation has one observable owner.
+        run: pnpm -C apps/web exec cap copy ios
 
       - name: Install CocoaPods
         working-directory: apps/web/ios/App
-        run: pod install
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if pod install; then
+              exit 0
+            fi
+            if [ "${attempt}" -eq 3 ]; then
+              echo "CocoaPods install failed after 3 attempts."
+              exit 1
+            fi
+            echo "CocoaPods install attempt ${attempt} failed; clearing partial trunk state before retry."
+            rm -rf "${HOME}/.cocoapods/repos/trunk"
+            sleep $((attempt * 5))
+          done
 
       - name: Build unsigned iOS simulator target
         working-directory: apps/web/ios/App
