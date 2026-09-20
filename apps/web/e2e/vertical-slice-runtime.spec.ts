@@ -205,9 +205,17 @@ test('Ashblock Fang AI chases and damages Jax, while Jax heavy can damage the Fa
     intervals: [100, 150, 200],
   }).toMatch(/CHASE|WINDUP|RECOVERY/);
 
+  // Fang locomotion is intentionally render-step bounded. Under software WebGL,
+  // synchronize on actual scene geometry before asserting the attack lifecycle,
+  // rather than assuming Fang must cross several world units within six wall seconds.
+  await expect.poll(async () => readNumber(page, 'slice-nearest-enemy-distance'), {
+    timeout: 20_000,
+    intervals: [100, 150, 200, 250],
+  }).toBeLessThanOrEqual(1.8);
+
   await expect.poll(async () => readNumber(page, 'slice-player-health'), {
-    timeout: 6_000,
-    intervals: [150, 200, 250],
+    timeout: 10_000,
+    intervals: [100, 150, 200, 250],
   }).toBeLessThan(100);
 
   const fangHealthBefore = await readNumber(page, 'slice-fang-health');
@@ -231,8 +239,16 @@ test('Ashblock Kai accepted heavy resolves through KaiAttackSystem scene hitboxe
     intervals: [100, 150, 200],
   }).toMatch(/CHASE|WINDUP|RECOVERY/);
 
+  // Sparse headless frames can stretch wall time while Fang movement remains on
+  // the same bounded simulation clock as the hero. Prove melee geometry first,
+  // then prove the real Fang attack lifecycle damages Kai.
+  await expect.poll(async () => readNumber(page, 'slice-nearest-enemy-distance'), {
+    timeout: 20_000,
+    intervals: [100, 150, 200, 250],
+  }).toBeLessThanOrEqual(1.8);
+
   await expect.poll(async () => readNumber(page, 'slice-player-health'), {
-    timeout: 6_000,
+    timeout: 10_000,
     intervals: [100, 150, 200, 250],
   }).toBeLessThan(100);
 
