@@ -396,7 +396,7 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDista
 
 async function waitForUltimateReadiness(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
   const requiredEnergy = hero === 'kai' ? 80 : 75;
-  await page.keyboard.up('i').catch(() => undefined);
+  await page.keyboard.up('r').catch(() => undefined);
 
   if (hero === 'kai') {
     await expect.poll(async () => page.getByTestId('slice-webzip').innerText(), {
@@ -431,13 +431,13 @@ async function waitForUltimateReadiness(page: Page, hero: 'kai' | 'jax'): Promis
 async function pulseUltimateAndObserveAcceptance(page: Page, beforeEnergy: number): Promise<boolean> {
   let minimumEnergy = beforeEnergy;
 
-  await page.keyboard.up('i').catch(() => undefined);
+  await page.keyboard.up('r').catch(() => undefined);
   await page.waitForTimeout(75);
-  await page.keyboard.down('i');
+  await page.keyboard.down('r');
   try {
     await page.waitForTimeout(140);
   } finally {
-    await page.keyboard.up('i');
+    await page.keyboard.up('r');
   }
 
   try {
