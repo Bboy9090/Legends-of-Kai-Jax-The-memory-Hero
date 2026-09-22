@@ -164,11 +164,12 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function resetPositioningBeforeFinalApproach(page: Page, hero: 'kai' | 'jax') {
-  // Move far away from enemy to establish a clean distance baseline before
-  // the final positioning approach. This removes edge cases where the hero
+  // Move away from enemy to establish a clean distance baseline before
+  // the final positioning approach. Target realistic distances that account
+  // for aggressive enemy chase behavior. This removes edge cases where the hero
   // is already under melee pressure at the start of closeIntoUltimateEnvelope.
-  const targetDistance = hero === 'kai' ? 18 : 15;
-  const deadline = Date.now() + 8_000;
+  const targetDistance = hero === 'kai' ? 10.5 : 8;
+  const deadline = Date.now() + 6_000;
 
   await page.keyboard.down('Shift');
   await page.keyboard.down('s');
