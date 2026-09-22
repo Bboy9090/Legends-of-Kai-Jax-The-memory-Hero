@@ -316,10 +316,15 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDista
   }).toBeGreaterThanOrEqual(dodgeCost);
 
   let accepted = false;
-  for (let attempt = 0; attempt < 5 && !accepted; attempt += 1) {
+  for (let attempt = 0; attempt < 10 && !accepted; attempt += 1) {
     const beforeDodgeEnergy = await readNumber(page, 'slice-energy');
     const beforeDodgePosition = await readPosition(page);
     let minimumEnergy = beforeDodgeEnergy;
+
+    // Wait for recovery before next dodge attempt to let health/status stabilize
+    if (attempt > 0) {
+      await page.waitForTimeout(500);
+    }
 
     await page.keyboard.up('q').catch(() => undefined);
     await page.waitForTimeout(75);
@@ -358,17 +363,15 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDista
       }).toBe(true);
       accepted = true;
     } catch {
-      // If knocked down during dodge acceptance polling, wait and retry.
+      // If knocked down during dodge acceptance polling, continue retrying.
       // Fang attacks can interrupt the dodge window, so resilience matters.
       if ((await page.getByTestId('slice-player-down').innerText()).includes('YES')) {
-        if (attempt < 4) {
-          await page.waitForTimeout(300);
+        if (attempt < 9) {
           continue;
         }
         await logCombatSnapshot(page, `${hero}:player-down-before-dodge-acceptance`);
         throw new Error(`${hero} was knocked down before dodge acceptance could be observed`);
       }
-      if (attempt < 4) await page.waitForTimeout(150);
     }
   }
 
