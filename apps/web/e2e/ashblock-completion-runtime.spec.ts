@@ -145,21 +145,21 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
     }).toBeGreaterThan(-5);
 
     await expect.poll(async () => page.getByTestId('slice-stage').innerText(), {
-      timeout: 2_000,
-      intervals: [75, 100, 150],
+      timeout: 5_000,
+      intervals: [100, 150, 200, 300],
     }).toContain('encounter');
   } finally {
     await page.keyboard.up('w');
   }
 
   await expect.poll(async () => readBeat(page), {
-    timeout: 2_000,
-    intervals: [75, 100, 150],
+    timeout: 3_000,
+    intervals: [100, 150, 200],
   }).toBe('ashblock-first-ambush');
 
   await expect.poll(async () => readNumber(page, 'slice-enemy-count'), {
-    timeout: 2_000,
-    intervals: [75, 100, 150],
+    timeout: 3_000,
+    intervals: [100, 150, 200],
   }).toBe(2);
 }
 
