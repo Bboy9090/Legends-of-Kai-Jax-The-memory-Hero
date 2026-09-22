@@ -206,6 +206,11 @@ export class MovePlayer {
   }
 
   private applyHit(hit: HitSpec, hitPos?: THREE.Vector3): void {
+    // Do not apply damage if player is in a dodge invulnerability window
+    if (this.isDodging()) {
+      return;
+    }
+
     this.hurtbox.takeDamage(hit.dmg);
     this.hitstopFrames = this.currentMove?.hitstopOnHit ?? 0;
 
