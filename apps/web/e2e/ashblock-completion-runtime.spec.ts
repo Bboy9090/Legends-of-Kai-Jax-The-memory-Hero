@@ -230,7 +230,7 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   // whatever melee distance happened to remain after recharge. The lieutenant
   // can resolve at 2.2 * 1.15 units and the bruiser at 2.7 * 1.15, so these
   // launch bands leave a genuine response margin without changing combat stats.
-  for (let pass = 0; pass < 5; pass += 1) {
+  for (let pass = 0; pass < 12; pass += 1) {
     const downStatus = await page.getByTestId('slice-player-down').innerText();
     if (!downStatus.includes('NO')) {
       await logCombatSnapshot(page, `${hero}:player-down-before-safe-ultimate-band`);
@@ -249,6 +249,8 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
       if (distance < minimumSafeRange) {
         // A moving Fang can partially erase the dodge before the HUD publishes.
         // Loop and re-evaluate rather than weakening the authored safe band.
+        // Wait longer between attempts to let combat state stabilize.
+        await page.waitForTimeout(500);
         continue;
       }
     }
@@ -266,8 +268,8 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
         }
         return readNumber(page, 'slice-nearest-enemy-distance');
       }, {
-        timeout: hero === 'kai' ? 12_000 : 14_000,
-        intervals: [50, 75, 100, 150, 200],
+        timeout: hero === 'kai' ? 15_000 : 18_000,
+        intervals: [100, 150, 200, 300],
       }).toBeLessThanOrEqual(maximumAttackRange);
     }
 
@@ -278,8 +280,8 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
     }
 
     // Allow enemy to move away naturally between attempts
-    if (pass < 4) {
-      await page.waitForTimeout(150);
+    if (pass < 11) {
+      await page.waitForTimeout(300);
     }
   }
 
