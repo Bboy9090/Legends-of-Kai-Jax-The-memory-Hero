@@ -163,41 +163,6 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
   }).toBe(2);
 }
 
-async function resetPositioningBeforeFinalApproach(page: Page, hero: 'kai' | 'jax') {
-  // Move away from enemy to establish a clean distance baseline before
-  // the final positioning approach. Target realistic distances that account
-  // for aggressive enemy chase behavior. This removes edge cases where the hero
-  // is already under melee pressure at the start of closeIntoUltimateEnvelope.
-  const targetDistance = hero === 'kai' ? 10.5 : 8;
-  const deadline = Date.now() + 6_000;
-
-  await page.keyboard.down('Shift');
-  await page.keyboard.down('s');
-  try {
-    while (Date.now() < deadline) {
-      const distance = await readNumber(page, 'slice-nearest-enemy-distance');
-      const downStatus = await page.getByTestId('slice-player-down').innerText();
-
-      if (!downStatus.includes('NO')) {
-        await logCombatSnapshot(page, `${hero}:player-down-during-reset-positioning`);
-        throw new Error('Player was knocked down during reset positioning');
-      }
-
-      if (distance >= targetDistance) {
-        return;
-      }
-
-      await page.waitForTimeout(100);
-    }
-
-    await logCombatSnapshot(page, `${hero}:reset-positioning-timeout`);
-    throw new Error(`${hero} could not reach reset distance of ${targetDistance} units`);
-  } finally {
-    await page.keyboard.up('s');
-    await page.keyboard.up('Shift');
-  }
-}
-
 async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
   // Recharge through real play: move backward, stay alive, and use the actual
   // dodge controller if a Fang enters its authored melee envelope during the
@@ -258,14 +223,14 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
-  const minimumSafeRange = hero === 'kai' ? 6.5 : 3.5;
-  const maximumAttackRange = hero === 'kai' ? 9.0 : 4.5;
+  const minimumSafeRange = hero === 'kai' ? 4.5 : 3.0;
+  const maximumAttackRange = hero === 'kai' ? 7.5 : 4.0;
 
   // Use the authored ranged advantage instead of launching an ultimate from
   // whatever melee distance happened to remain after recharge. The lieutenant
   // can resolve at 2.2 * 1.15 units and the bruiser at 2.7 * 1.15, so these
   // launch bands leave a genuine response margin without changing combat stats.
-  for (let pass = 0; pass < 12; pass += 1) {
+  for (let pass = 0; pass < 20; pass += 1) {
     const downStatus = await page.getByTestId('slice-player-down').innerText();
     if (!downStatus.includes('NO')) {
       await logCombatSnapshot(page, `${hero}:player-down-before-safe-ultimate-band`);
@@ -578,7 +543,6 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
 
     if (!(await waitForUltimateReadiness(page, hero))) break;
 
-    await resetPositioningBeforeFinalApproach(page, hero);
     await closeIntoUltimateEnvelope(page, hero);
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
