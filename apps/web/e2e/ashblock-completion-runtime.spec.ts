@@ -321,9 +321,6 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDista
     const beforeDodgePosition = await readPosition(page);
     let minimumEnergy = beforeDodgeEnergy;
 
-    // Wait for recovery window before attempting dodge
-    await page.waitForTimeout(200);
-
     await page.keyboard.up('q').catch(() => undefined);
     await page.waitForTimeout(75);
     await page.keyboard.down('q');
