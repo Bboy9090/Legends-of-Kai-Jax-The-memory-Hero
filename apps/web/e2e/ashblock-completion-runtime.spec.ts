@@ -163,6 +163,40 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
   }).toBe(2);
 }
 
+async function resetPositioningBeforeFinalApproach(page: Page, hero: 'kai' | 'jax') {
+  // Move far away from enemy to establish a clean distance baseline before
+  // the final positioning approach. This removes edge cases where the hero
+  // is already under melee pressure at the start of closeIntoUltimateEnvelope.
+  const targetDistance = hero === 'kai' ? 18 : 15;
+  const deadline = Date.now() + 8_000;
+
+  await page.keyboard.down('Shift');
+  await page.keyboard.down('s');
+  try {
+    while (Date.now() < deadline) {
+      const distance = await readNumber(page, 'slice-nearest-enemy-distance');
+      const downStatus = await page.getByTestId('slice-player-down').innerText();
+
+      if (!downStatus.includes('NO')) {
+        await logCombatSnapshot(page, `${hero}:player-down-during-reset-positioning`);
+        throw new Error('Player was knocked down during reset positioning');
+      }
+
+      if (distance >= targetDistance) {
+        return;
+      }
+
+      await page.waitForTimeout(100);
+    }
+
+    await logCombatSnapshot(page, `${hero}:reset-positioning-timeout`);
+    throw new Error(`${hero} could not reach reset distance of ${targetDistance} units`);
+  } finally {
+    await page.keyboard.up('s');
+    await page.keyboard.up('Shift');
+  }
+}
+
 async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
   // Recharge through real play: move backward, stay alive, and use the actual
   // dodge controller if a Fang enters its authored melee envelope during the
@@ -543,6 +577,7 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
 
     if (!(await waitForUltimateReadiness(page, hero))) break;
 
+    await resetPositioningBeforeFinalApproach(page, hero);
     await closeIntoUltimateEnvelope(page, hero);
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
