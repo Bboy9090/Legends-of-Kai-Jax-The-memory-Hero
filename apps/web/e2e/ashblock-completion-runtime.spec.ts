@@ -230,7 +230,7 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   // whatever melee distance happened to remain after recharge. The lieutenant
   // can resolve at 2.2 * 1.15 units and the bruiser at 2.7 * 1.15, so these
   // launch bands leave a genuine response margin without changing combat stats.
-  for (let pass = 0; pass < 3; pass += 1) {
+  for (let pass = 0; pass < 5; pass += 1) {
     const downStatus = await page.getByTestId('slice-player-down').innerText();
     if (!downStatus.includes('NO')) {
       await logCombatSnapshot(page, `${hero}:player-down-before-safe-ultimate-band`);
@@ -275,6 +275,11 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
     if (distance >= minimumSafeRange && distance <= maximumAttackRange) {
       await expect(page.getByTestId('slice-player-down')).toContainText('NO');
       return;
+    }
+
+    // Allow enemy to move away naturally between attempts
+    if (pass < 4) {
+      await page.waitForTimeout(150);
     }
   }
 
