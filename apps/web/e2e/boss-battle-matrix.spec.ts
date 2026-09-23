@@ -138,8 +138,9 @@ test.describe('Boss Battle Encounter Matrix', () => {
     const results: Array<{ bossId: string; passed: boolean }> = [];
 
     for (const { id, bossId, name } of BOSS_MISSIONS) {
-      // Reload page before each boss to avoid renderer state degradation
-      await page.reload({ waitUntil: 'domcontentloaded' });
+      // Navigate to page before each boss to avoid renderer state degradation
+      // Using goto instead of reload to handle potential page closure
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
       await page.waitForFunction(() => Boolean((window as any).runnerStore), null, {
         timeout: 15_000,
       });

@@ -236,7 +236,12 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
     if (!downStatus.includes('NO')) {
       // Player got knocked down in the loop - attempt recovery before giving up
       if (pass < 30) {
-        await page.waitForTimeout(500);
+        // Wait for recovery animation and state to clear
+        await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
+          timeout: 3_000,
+          intervals: [100, 150, 200],
+        }).toContain('NO');
+        await page.waitForTimeout(300);
         continue;
       }
       await logCombatSnapshot(page, `${hero}:player-down-before-safe-ultimate-band`);
