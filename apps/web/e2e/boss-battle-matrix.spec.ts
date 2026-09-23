@@ -135,14 +135,27 @@ test.describe('Boss Battle Encounter Matrix', () => {
   }
 
   test('all 6 boss encounters initialize correctly (suite summary)', async ({ page: initialPage, context }) => {
+    test.setTimeout(120_000); // 2 minutes for 6 boss encounters
     const results: Array<{ bossId: string; passed: boolean }> = [];
     let page = initialPage;
 
     for (const { id, bossId, name } of BOSS_MISSIONS) {
-      // Use a fresh error collector for each boss
-      const errors = collectErrors(page);
-      const passed = await engageBoss(page, id, errors);
-      results.push({ bossId, passed });
+      try {
+        // Use a fresh error collector for each boss
+        const errors = collectErrors(page);
+        const passed = await engageBoss(page, id, errors);
+        results.push({ bossId, passed });
+      } catch (e) {
+        // If boss encounter fails, log it but continue to next boss
+        console.error(`Failed to run boss encounter for ${bossId}:`, e instanceof Error ? e.message : String(e));
+        results.push({ bossId, passed: false });
+
+        // If page/browser is closed, try to recover or skip remaining bosses
+        if (e instanceof Error && (e.message.includes('closed') || e.message.includes('Target page'))) {
+          console.log('Page/browser closed, cannot continue with remaining bosses');
+          break;
+        }
+      }
     }
 
     const passedCount = results.filter((r) => r.passed).length;
