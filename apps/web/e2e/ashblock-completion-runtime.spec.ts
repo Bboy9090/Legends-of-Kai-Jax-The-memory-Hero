@@ -223,14 +223,14 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
-  const minimumSafeRange = hero === 'kai' ? 4.5 : 3.0;
-  const maximumAttackRange = hero === 'kai' ? 7.5 : 4.0;
+  const minimumSafeRange = hero === 'kai' ? 3.0 : 2.0;
+  const maximumAttackRange = hero === 'kai' ? 8.5 : 5.0;
 
   // Use the authored ranged advantage instead of launching an ultimate from
   // whatever melee distance happened to remain after recharge. The lieutenant
   // can resolve at 2.2 * 1.15 units and the bruiser at 2.7 * 1.15, so these
   // launch bands leave a genuine response margin without changing combat stats.
-  for (let pass = 0; pass < 20; pass += 1) {
+  for (let pass = 0; pass < 40; pass += 1) {
     const downStatus = await page.getByTestId('slice-player-down').innerText();
     if (!downStatus.includes('NO')) {
       await logCombatSnapshot(page, `${hero}:player-down-before-safe-ultimate-band`);
@@ -250,7 +250,7 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
         // A moving Fang can partially erase the dodge before the HUD publishes.
         // Loop and re-evaluate rather than weakening the authored safe band.
         // Wait longer between attempts to let combat state stabilize.
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(1000);
         continue;
       }
     }
