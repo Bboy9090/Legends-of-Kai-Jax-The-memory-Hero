@@ -428,23 +428,27 @@ async function ultimateAndObserveAggregateDamage(
     throw new Error(`${hero} ultimate was not accepted after three readiness-validated real input edges`);
   }
 
-  const deadline = Date.now() + (hero === 'kai' ? 2_400 : 1_800);
+  let deadline = Date.now() + (hero === 'kai' ? 2_400 : 1_800);
   while (Date.now() < deadline) {
     const total = await readNumber(page, 'slice-total-enemy-health');
     const count = await readNumber(page, 'slice-enemy-count');
     if (total < beforeTotal || count < beforeCount) {
-      await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+      await waitForPlayerRecovery(page, hero, 'successful ultimate');
       return true;
     }
+
     if ((await page.getByTestId('slice-player-down').innerText()).includes('YES')) {
       await logCombatSnapshot(page, `${hero}:player-down-during-ultimate`);
-      await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+      const recoveryStarted = Date.now();
+      await waitForPlayerRecovery(page, hero, 'ultimate resolution');
+      deadline += Date.now() - recoveryStarted;
     }
+
     await page.waitForTimeout(75);
   }
 
   await logCombatSnapshot(page, `${hero}:legitimate-ultimate-miss`);
-  await expect(page.getByTestId('slice-player-down')).toContainText('NO');
+  await waitForPlayerRecovery(page, hero, 'ultimate miss');
   return false;
 }
 
@@ -647,25 +651,11 @@ async function runFullAshblockChain(page: Page, hero: 'kai' | 'jax') {
 }
 
 test('Ashblock Phase 5.5 full completion chain persists exactly once for Kai', async ({ page }) => {
-  // KNOWN ISSUE: Ashblock encounter combat difficulty exceeds test recovery timeouts
-  // Boss knockdown frequency/duration is too aggressive for test automation
-  // TODO: Reduce knockdown duration or boss attack frequency in game balance
-  const skipKnownIssue = process.env.SKIP_COMBAT_ISSUES === 'true';
-  if (skipKnownIssue) {
-    test.skip();
-  }
   test.setTimeout(300_000);
   await runFullAshblockChain(page, 'kai');
 });
 
 test('Ashblock Phase 5.5 full completion chain persists exactly once for Jax', async ({ page }) => {
-  // KNOWN ISSUE: Ashblock encounter combat difficulty exceeds test recovery timeouts
-  // Boss knockdown frequency/duration is too aggressive for test automation
-  // TODO: Reduce knockdown duration or boss attack frequency in game balance
-  const skipKnownIssue = process.env.SKIP_COMBAT_ISSUES === 'true';
-  if (skipKnownIssue) {
-    test.skip();
-  }
   test.setTimeout(360_000);
   await runFullAshblockChain(page, 'jax');
 });
