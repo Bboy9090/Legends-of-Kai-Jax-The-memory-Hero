@@ -663,9 +663,9 @@ async function advanceRecoveryIntoCombinationFight(page: Page) {
 }
 
 async function defeatPhase55FangSequence(page: Page, hero: 'kai' | 'jax') {
-  await clearCombatBeat(page, hero, 'ashblock-first-ambush', hero === 'kai' ? 6 : 8);
+  await clearCombatBeat(page, hero, 'ashblock-first-ambush', hero === 'kai' ? 15 : 20);
   await advanceRecoveryIntoCombinationFight(page);
-  await clearCombatBeat(page, hero, 'ashblock-combination-fight', hero === 'kai' ? 8 : 14);
+  await clearCombatBeat(page, hero, 'ashblock-combination-fight', hero === 'kai' ? 20 : 30);
 
   await expect.poll(async () => readBeat(page), {
     timeout: 3_000,
@@ -673,7 +673,7 @@ async function defeatPhase55FangSequence(page: Page, hero: 'kai' | 'jax') {
   }).toBe('ashblock-district-lieutenant');
   await expect(page.getByTestId('slice-lieutenant')).toContainText('YES');
 
-  await clearCombatBeat(page, hero, 'ashblock-district-lieutenant', hero === 'kai' ? 9 : 16);
+  await clearCombatBeat(page, hero, 'ashblock-district-lieutenant', hero === 'kai' ? 20 : 30);
 
   await expect.poll(async () => page.getByTestId('slice-stage').innerText(), {
     timeout: 3_000,
