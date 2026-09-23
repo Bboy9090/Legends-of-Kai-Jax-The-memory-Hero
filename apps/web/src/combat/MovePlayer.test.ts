@@ -130,7 +130,7 @@ describe("MovePlayer — hit resolution", () => {
     mp.update(); // frame 2 — hitbox active, collision check
 
     expect(onHit).toHaveBeenCalledTimes(1);
-    expect(hurtbox.getHealth()).toBe(92); // 100 - 8
+    expect(hurtbox.getHealth()).toBe(142); // 150 - 8
     // hitstopOnHit=4 frames, so player remains busy via hitstop branch
     expect(mp.isBusy()).toBe(true);
   });
@@ -144,7 +144,7 @@ describe("MovePlayer — hit resolution", () => {
     for (let i = 0; i < 12; i++) mp.update();
 
     expect(onHit).not.toHaveBeenCalled();
-    expect(hurtbox.getHealth()).toBe(100);
+    expect(hurtbox.getHealth()).toBe(150);
   });
 
   it("hitstop pauses move progression while frames > 0", () => {
@@ -174,7 +174,7 @@ describe("MovePlayer — shield mechanics", () => {
 
     expect(onBlock).toHaveBeenCalledTimes(1);
     expect(onHit).not.toHaveBeenCalled();
-    expect(hurtbox.getHealth()).toBe(100); // no chip
+    expect(hurtbox.getHealth()).toBe(150); // no chip
     // Move's shield_damage = 4 (per longRangeReach)
     expect(mp.getShieldHP()).toBeLessThan(100);
   });
@@ -189,7 +189,7 @@ describe("MovePlayer — shield mechanics", () => {
     mp.update(); mp.update();
 
     expect(onHit).toHaveBeenCalledTimes(1);
-    expect(hurtbox.getHealth()).toBe(88); // 100 - 12
+    expect(hurtbox.getHealth()).toBe(138); // 150 - 12
   });
 
   it("shield breaks when shieldHP drops to 0 and the hit then connects", () => {
@@ -207,7 +207,7 @@ describe("MovePlayer — shield mechanics", () => {
     expect(onShieldBreak).toHaveBeenCalledTimes(1);
     // Hit applied AFTER the break in the same collision per kernel logic.
     expect(onHit).toHaveBeenCalledTimes(1);
-    expect(hurtbox.getHealth()).toBe(93);
+    expect(hurtbox.getHealth()).toBe(143);
   });
 });
 

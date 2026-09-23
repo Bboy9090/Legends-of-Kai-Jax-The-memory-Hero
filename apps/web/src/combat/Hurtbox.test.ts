@@ -16,10 +16,10 @@ function makeScene() {
 }
 
 describe("Hurtbox kernel", () => {
-  it("initialises with full health (100/100)", () => {
+  it("initialises with full health (150/150)", () => {
     const hb = new Hurtbox(makeScene(), 0.8, 1.6);
-    expect(hb.getHealth()).toBe(100);
-    expect(hb.maxHealth).toBe(100);
+    expect(hb.getHealth()).toBe(150);
+    expect(hb.maxHealth).toBe(150);
     expect(hb.isDead()).toBe(false);
   });
 
@@ -34,16 +34,16 @@ describe("Hurtbox kernel", () => {
   it("takeDamage subtracts hp and triggers isDead at <= 0", () => {
     const hb = new Hurtbox(makeScene(), 0.8, 1.6);
     hb.takeDamage(40);
-    expect(hb.getHealth()).toBe(60);
+    expect(hb.getHealth()).toBe(110);
     expect(hb.isDead()).toBe(false);
-    hb.takeDamage(60);
+    hb.takeDamage(110);
     expect(hb.getHealth()).toBe(0);
     expect(hb.isDead()).toBe(true);
   });
 
   it("isDead is true even on overkill (negative hp)", () => {
     const hb = new Hurtbox(makeScene(), 0.8, 1.6);
-    hb.takeDamage(150);
+    hb.takeDamage(200);
     expect(hb.getHealth()).toBe(-50);
     expect(hb.isDead()).toBe(true);
   });
