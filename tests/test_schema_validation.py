@@ -47,7 +47,8 @@ def test_valid_config():
                     {
                         "id": "test_zone",
                         "name": "Test Zone",
-                        "zone_type": "safe"
+                        "zone_type": "safe",
+                        "enemy_spawn_enabled": False
                     }
                 ]
             }
@@ -88,7 +89,8 @@ def test_missing_type():
                     {
                         "id": "test_zone",
                         "name": "Test Zone",
-                        "zone_type": "safe"
+                        "zone_type": "safe",
+                        "enemy_spawn_enabled": False
                     }
                 ]
             }
@@ -129,7 +131,8 @@ def test_missing_value():
                     {
                         "id": "test_zone",
                         "name": "Test Zone",
-                        "zone_type": "safe"
+                        "zone_type": "safe",
+                        "enemy_spawn_enabled": False
                     }
                 ]
             }
@@ -172,7 +175,8 @@ def test_additional_properties():
                     {
                         "id": "test_zone",
                         "name": "Test Zone",
-                        "zone_type": "safe"
+                        "zone_type": "safe",
+                        "enemy_spawn_enabled": False
                     }
                 ]
             }
