@@ -53,6 +53,8 @@ const RECOVERY_GATE_Z = 3.5;
 const MEMORY_TRACE_Z = 5;
 const EXTRACTION_GATE_Z = 15;
 const PLAYER_HIT_GRACE_SECONDS = 1.0;
+const PLAYER_DOWN_RECOVERY_SECONDS = 2.5;
+const PLAYER_DOWN_RECOVERY_HEALTH = 35;
 const RECOVERY_HEALTH_RESTORE = 30;
 
 interface ControllerDebugState {
@@ -75,6 +77,7 @@ export interface VerticalSliceDebugSnapshot extends ControllerDebugState {
   position: [number, number, number];
   playerHealth: number;
   playerDown: boolean;
+  playerDownTimer: number;
   playerHitGrace: number;
   enemyCount: number;
   totalEnemyHealth: number;
@@ -255,6 +258,7 @@ function VerticalSliceEnvironment({
     combatants: [],
     playerHealth: 100,
     playerDown: false,
+    playerDownTimer: 0,
     playerHitGrace: 0,
     completionRecorded: false,
   });
@@ -352,6 +356,18 @@ function VerticalSliceEnvironment({
 
     mission.playerHitGrace = Math.max(0, mission.playerHitGrace - lifecycleDelta);
 
+    // "Down" is a bounded knockdown state, not permanent death. Previous code
+    // set playerDown at 0 HP but never cleared it, making mission recovery
+    // impossible and leaving the slice frozen forever after a lethal hit.
+    if (mission.playerDown) {
+      mission.playerDownTimer = Math.max(0, mission.playerDownTimer - lifecycleDelta);
+      if (mission.playerDownTimer === 0) {
+        mission.playerDown = false;
+        mission.playerHealth = Math.max(mission.playerHealth, PLAYER_DOWN_RECOVERY_HEALTH);
+        mission.playerHitGrace = PLAYER_HIT_GRACE_SECONDS;
+      }
+    }
+
     let beat = ASHBLOCK_PHASE_55_SEQUENCE[mission.beatIndex];
 
     if (beat.kind === 'TRAVERSAL' && playerPos.z > -5) {
@@ -419,7 +435,9 @@ function VerticalSliceEnvironment({
       ) {
         mission.playerHealth = Math.max(0, mission.playerHealth - incomingDamage);
         mission.playerDown = mission.playerHealth === 0;
-        if (!mission.playerDown) {
+        if (mission.playerDown) {
+          mission.playerDownTimer = PLAYER_DOWN_RECOVERY_SECONDS;
+        } else {
           mission.playerHitGrace = PLAYER_HIT_GRACE_SECONDS;
         }
       }
