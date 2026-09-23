@@ -134,13 +134,29 @@ test.describe('Boss Battle Encounter Matrix', () => {
     });
   }
 
-  test('all 6 boss encounters initialize correctly (suite summary)', async ({ page, context }) => {
+  test('all 6 boss encounters initialize correctly (suite summary)', async ({ page: initialPage, context }) => {
     const results: Array<{ bossId: string; passed: boolean }> = [];
+    let page = initialPage;
 
     for (const { id, bossId, name } of BOSS_MISSIONS) {
-      // Navigate to page before each boss to avoid renderer state degradation
-      // Using goto instead of reload to handle potential page closure
-      await page.goto('/', { waitUntil: 'domcontentloaded' });
+      try {
+        // Navigate to page before each boss to avoid renderer state degradation
+        if (!page.isClosed()) {
+          await page.goto('/', { waitUntil: 'domcontentloaded' });
+        } else {
+          // If page is closed, create a new one
+          page = await context.newPage();
+        }
+      } catch (e) {
+        // If navigation fails, try with a new page
+        if (page.isClosed()) {
+          page = await context.newPage();
+          await page.goto('/', { waitUntil: 'domcontentloaded' });
+        } else {
+          throw e;
+        }
+      }
+
       await page.waitForFunction(() => Boolean((window as any).runnerStore), null, {
         timeout: 15_000,
       });

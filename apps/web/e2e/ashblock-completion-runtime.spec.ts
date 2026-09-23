@@ -255,13 +255,17 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
       // 3-unit evasive displacement; force that real controller mechanic when
       // residual melee pressure is too close for a safe ultimate startup.
       await dodgeIncomingVolley(page, hero, minimumSafeRange);
+
+      // Wait for combat state to stabilize after dodge before checking distance
+      await page.waitForTimeout(2000);
+
       distance = await readNumber(page, 'slice-nearest-enemy-distance');
 
       if (distance < minimumSafeRange) {
         // A moving Fang can partially erase the dodge before the HUD publishes.
         // Loop and re-evaluate rather than weakening the authored safe band.
         // Wait longer between attempts to let combat state stabilize.
-        await page.waitForTimeout(1500);
+        await page.waitForTimeout(2000);
         continue;
       }
     }
