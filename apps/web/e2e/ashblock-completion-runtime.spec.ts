@@ -14,7 +14,7 @@ const BENIGN_ERROR_PATTERNS = [
   /THREE\.WebGLRenderer: Context Lost/i,
   /Failed to fetch/i,
   /net::ERR_/i,
-  /THREE\.GLTFLoader: Couldn't load texture blob:http:\/\/localhost:3000\//i,
+  /THREE\.GLTFLoader: Couldn't load texture blob:http:\/\/localhost:\d+\//i,
 ];
 
 function isBenign(text: string): boolean {
