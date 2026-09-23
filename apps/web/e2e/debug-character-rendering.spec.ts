@@ -1,6 +1,11 @@
 import { test } from '@playwright/test';
 
 test('navigate to character select and debug rendering', async ({ page }) => {
+  // Skip debug tests - these are diagnostic only
+  if (process.env.RUN_DEBUG_TESTS !== 'true') {
+    test.skip();
+    return;
+  }
   page.on('console', msg => {
     const text = msg.text();
     if (text.includes('[') || text.includes('phase') || text.includes('gameState')) {

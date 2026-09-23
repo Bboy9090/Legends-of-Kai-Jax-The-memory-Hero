@@ -1,6 +1,12 @@
 import { test } from '@playwright/test';
 
 test('inspect three.js scene content during character rendering', async ({ page }) => {
+  // Skip debug tests - these are diagnostic only
+  if (process.env.RUN_DEBUG_TESTS !== 'true') {
+    test.skip();
+    return;
+  }
+
   // Load the story hero select page
   await page.goto('http://localhost:3001/story/character-select', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(4000);

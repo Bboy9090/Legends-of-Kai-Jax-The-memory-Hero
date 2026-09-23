@@ -1,6 +1,12 @@
 import { test } from '@playwright/test';
 
 test('measure canvas and container dimensions', async ({ page }) => {
+  // Skip debug tests - these are diagnostic only
+  if (process.env.RUN_DEBUG_TESTS !== 'true') {
+    test.skip();
+    return;
+  }
+
   // Use the exact same navigation as capture-characters-v2.spec.ts
   await page.goto('http://localhost:3001', { waitUntil: 'networkidle' });
   await page.waitForTimeout(2000);

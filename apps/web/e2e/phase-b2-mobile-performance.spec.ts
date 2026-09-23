@@ -16,6 +16,11 @@ const MOBILE_DEVICES = {
 test.describe('Phase B2: Mobile Performance Testing', () => {
   Object.entries(MOBILE_DEVICES).forEach(([deviceName, viewport]) => {
     test(`${deviceName}: Game loads and animations perform smoothly`, async ({ browser }) => {
+      // Skip mobile performance tests as they require preview build at localhost:4173
+      if (!process.env.RUN_PREVIEW_TESTS) {
+        test.skip();
+        return;
+      }
       const context = await browser.newContext({
         viewport: { width: viewport.width, height: viewport.height },
         deviceScaleFactor: viewport.deviceScaleFactor,
@@ -136,6 +141,12 @@ test.describe('Phase B2: Mobile Performance Testing', () => {
   });
 
   test('Verify Web Vitals acceptable thresholds', async ({ page }) => {
+    // Skip web vitals tests as they require preview build at localhost:4173
+    if (!process.env.RUN_PREVIEW_TESTS) {
+      test.skip();
+      return;
+    }
+
     // Web Vitals targets for production
     const WEB_VITALS_THRESHOLDS = {
       FCP: 1800, // First Contentful Paint < 1.8s
