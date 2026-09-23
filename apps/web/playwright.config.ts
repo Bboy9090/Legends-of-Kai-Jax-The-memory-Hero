@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const CHROMIUM_PATH = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROMIUM_PATH = '/opt/pw-browsers/chromium';
 
 export default defineConfig({
   testDir: './e2e',
@@ -11,7 +11,7 @@ export default defineConfig({
   workers: 1,
   reporter: [['html'], ['list']],
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:5000',
     trace: 'on-first-retry',
   },
   projects: [
@@ -27,8 +27,8 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: true,
+    url: 'http://localhost:5000',
+    reuseExistingServer: false,
     timeout: 120000,
   },
 });
