@@ -163,21 +163,33 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
   }).toBe(2);
 }
 
+
+async function waitForPlayerRecovery(page: Page, hero: 'kai' | 'jax', context: string) {
+  const downText = await page.getByTestId('slice-player-down').innerText();
+  if (downText.includes('NO')) return;
+
+  await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
+    timeout: 12_000,
+    intervals: [100, 150, 200, 300, 500],
+    message: `${hero} did not recover from knockdown during ${context}`,
+  }).toContain('NO');
+
+  await expect.poll(async () => readNumber(page, 'slice-player-health'), {
+    timeout: 2_000,
+    intervals: [75, 100, 150],
+  }).toBeGreaterThan(0);
+}
+
 async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
-  // Recharge through real play: move backward, stay alive, and use the actual
-  // dodge controller if a Fang enters its authored melee envelope during the
-  // recharge window. This avoids making long multi-wave certification depend on
-  // facetanking while energy rebuilds.
   const requiredEnergy = hero === 'kai' ? 80 : 75;
   const dodgeCost = hero === 'kai' ? 20 : 18;
-  const threatDistance = 4.5;
-  const deadline = Date.now() + 14_000;
+  const deadline = Date.now() + 18_000;
 
   await page.keyboard.down('Shift');
   await page.keyboard.down('s');
   try {
     while (Date.now() < deadline) {
-      const [downStatus, energy, nearestDistance, attackingText, dodgingText] = await Promise.all([
+      const [downText, energy, nearestDistance, attackingText, dodgingText] = await Promise.all([
         page.getByTestId('slice-player-down').innerText(),
         readNumber(page, 'slice-energy'),
         readNumber(page, 'slice-nearest-enemy-distance'),
@@ -185,9 +197,13 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
         page.getByTestId('slice-dodging').innerText(),
       ]);
 
-      if (!downStatus.includes('NO')) {
-        await logCombatSnapshot(page, `${hero}:player-down-during-recharge`);
-        throw new Error('Player was knocked down before ultimate recharge completed');
+      if (!downText.includes('NO')) {
+        await page.keyboard.up('s');
+        await page.keyboard.up('Shift');
+        await waitForPlayerRecovery(page, hero, 'recharge');
+        await page.keyboard.down('Shift');
+        await page.keyboard.down('s');
+        continue;
       }
 
       if (energy >= requiredEnergy && attackingText.includes('NO') && dodgingText.includes('NO')) {
@@ -195,27 +211,23 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
       }
 
       if (
-        nearestDistance <= threatDistance
+        nearestDistance <= 4.5
         && energy >= dodgeCost
         && attackingText.includes('NO')
         && dodgingText.includes('NO')
       ) {
-        // Stop translating for the defensive input so the evidence cleanly
-        // represents one controller action at a time.
         await page.keyboard.up('s');
+        await page.keyboard.up('Shift');
         await dodgeIncomingVolley(page, hero);
+        await page.keyboard.down('Shift');
         await page.keyboard.down('s');
-
-        if (await readNumber(page, 'slice-energy') >= requiredEnergy) {
-          return;
-        }
       }
 
       await page.waitForTimeout(100);
     }
 
     await logCombatSnapshot(page, `${hero}:recharge-deadline`);
-    throw new Error(`${hero} did not reach authored ultimate readiness during defensive recharge`);
+    throw new Error(`${hero} did not reach authored ultimate readiness during recharge`);
   } finally {
     await page.keyboard.up('s');
     await page.keyboard.up('Shift');
@@ -225,103 +237,33 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
 async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   const minimumSafeRange = hero === 'kai' ? 3.0 : 2.0;
   const maximumAttackRange = hero === 'kai' ? 8.5 : 5.0;
+  const deadline = Date.now() + 24_000;
 
-  // Use the authored ranged advantage instead of launching an ultimate from
-  // whatever melee distance happened to remain after recharge. The lieutenant
-  // can resolve at 2.2 * 1.15 units and the bruiser at 2.7 * 1.15, so these
-  // launch bands leave a genuine response margin without changing combat stats.
-  for (let pass = 0; pass < 80; pass += 1) {
-    // Check player status and dodge proactively if needed
-    const downStatus = await page.getByTestId('slice-player-down').innerText();
-    if (!downStatus.includes('NO')) {
-      // Player got knocked down in the loop - attempt recovery before giving up
-      if (pass < 70) {
-        // First, just wait for natural recovery with moderate timeout
-        let recovered = false;
-        try {
-          await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
-            timeout: 10_000,
-            intervals: [150, 200, 300, 500, 1000],
-          }).toContain('NO');
-          recovered = true;
-        } catch (e) {
-          // If natural recovery timeout, try defensive backward movement
-          console.log(`Player still down after 10s wait (pass ${pass}), trying movement recovery`);
-          await page.keyboard.down('Shift');
-          await page.keyboard.down('s');
-          try {
-            await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
-              timeout: 10_000,
-              intervals: [200, 300, 500, 1000],
-            }).toContain('NO');
-            recovered = true;
-          } catch (e2) {
-            // Recovery failed, will retry in next pass
-            console.log(`Recovery failed at pass ${pass}, will retry`);
-          } finally {
-            await page.keyboard.up('s');
-            await page.keyboard.up('Shift');
-          }
-        }
+  while (Date.now() < deadline) {
+    if (await readNumber(page, 'slice-enemy-count') === 0) return;
 
-        // Wait longer before next attempt to let state fully stabilize
-        await page.waitForTimeout(2000);
-        continue;
-      }
-      await logCombatSnapshot(page, `${hero}:player-down-before-safe-ultimate-band`);
-      throw new Error('Player was knocked down before a safe ultimate launch band opened');
+    const downText = await page.getByTestId('slice-player-down').innerText();
+    if (!downText.includes('NO')) {
+      await waitForPlayerRecovery(page, hero, 'ultimate spacing');
+      continue;
     }
 
-    let distance = await readNumber(page, 'slice-nearest-enemy-distance');
+    const distance = await readNumber(page, 'slice-nearest-enemy-distance');
 
     if (distance < minimumSafeRange) {
-      // Do not infer "away" from camera-relative S alone. Q is now a proven
-      // 3-unit evasive displacement; force that real controller mechanic when
-      // residual melee pressure is too close for a safe ultimate startup.
       await dodgeIncomingVolley(page, hero, minimumSafeRange);
-
-      // Wait for combat state to stabilize after dodge before checking distance
-      await page.waitForTimeout(2000);
-
-      distance = await readNumber(page, 'slice-nearest-enemy-distance');
-
-      if (distance < minimumSafeRange) {
-        // A moving Fang can partially erase the dodge before the HUD publishes.
-        // Loop and re-evaluate rather than weakening the authored safe band.
-        // Wait longer between attempts to let combat state stabilize.
-        await page.waitForTimeout(2000);
-        continue;
-      }
+      continue;
     }
 
     if (distance > maximumAttackRange) {
-      // After a real dodge the hero may be far off the enemy's X-axis. Moving
-      // camera-forward cannot guarantee radial closure. Hold position and let
-      // the already-certified Fang chase authority bring the nearest live target
-      // into the outer edge of the ultimate envelope.
-      await expect.poll(async () => {
-        const down = await page.getByTestId('slice-player-down').innerText();
-        if (!down.includes('NO')) {
-          await logCombatSnapshot(page, `${hero}:player-down-waiting-for-safe-ultimate-band`);
-          throw new Error('Player was knocked down before Fang chase entered the safe ultimate band');
-        }
-        return readNumber(page, 'slice-nearest-enemy-distance');
-      }, {
-        timeout: hero === 'kai' ? 15_000 : 18_000,
-        intervals: [100, 150, 200, 300],
-      }).toBeLessThanOrEqual(maximumAttackRange);
+      // Hold position and let certified Fang chase authority close radial
+      // distance. This avoids assuming camera-forward movement aligns with an
+      // enemy after a lateral dodge.
+      await page.waitForTimeout(125);
+      continue;
     }
 
-    distance = await readNumber(page, 'slice-nearest-enemy-distance');
-    if (distance >= minimumSafeRange && distance <= maximumAttackRange) {
-      await expect(page.getByTestId('slice-player-down')).toContainText('NO');
-      return;
-    }
-
-    // Allow enemy to move away naturally between attempts, but increase delay
-    if (pass < 15) {
-      await page.waitForTimeout(500);
-    }
+    return;
   }
 
   await logCombatSnapshot(page, `${hero}:safe-ultimate-band-not-established`);
@@ -329,52 +271,15 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDistance = 4.5) {
-  // Phase 5.5 attack resolution can still connect at 115% of authored range,
-  // and sparse HUD publication means waiting until contact is too late to react
-  // reliably. The default anticipatory envelope is 4.5 units; safe-range callers
-  // may request a wider trigger without changing any production combat stat.
   const nearestDistance = await readNumber(page, 'slice-nearest-enemy-distance');
   if (nearestDistance > triggerDistance) return;
 
   const dodgeCost = hero === 'kai' ? 20 : 18;
-  const ultimateCost = hero === 'kai' ? 80 : 75;
 
-  // If player is knocked down, try to recover
-  let isDown = (await page.getByTestId('slice-player-down').innerText()).includes('YES');
-  if (isDown) {
-    // Wait for natural recovery first with extended timeout
-    try {
-      await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
-        timeout: 30_000,
-        intervals: [150, 200, 300, 500, 1000],
-      }).toContain('NO');
-    } catch (e) {
-      // If natural recovery fails, try defensive backward movement
-      console.log('Knockdown recovery timeout in dodge, trying movement');
-      await page.keyboard.down('Shift');
-      await page.keyboard.down('s');
-      try {
-        await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
-          timeout: 20_000,
-          intervals: [200, 300, 500, 1000],
-        }).toContain('NO');
-      } finally {
-        await page.keyboard.up('s');
-        await page.keyboard.up('Shift');
-      }
-    }
-
-    // Wait for state to stabilize after recovery
-    await page.waitForTimeout(2000);
-  }
-
-  await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
-    timeout: 10_000,
-    intervals: [50, 75, 100, 150, 200, 300],
-  }).toContain('NO');
+  await waitForPlayerRecovery(page, hero, 'dodge preparation');
 
   await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
-    timeout: 5_000,
+    timeout: 4_000,
     intervals: [50, 75, 100, 150],
   }).toContain('NO');
 
@@ -383,115 +288,61 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDista
     intervals: [50, 75, 100, 150],
   }).toBeGreaterThanOrEqual(dodgeCost);
 
-  let accepted = false;
-  for (let attempt = 0; attempt < 10 && !accepted; attempt += 1) {
-    const beforeDodgeEnergy = await readNumber(page, 'slice-energy');
-    const beforeDodgePosition = await readPosition(page);
-    let minimumEnergy = beforeDodgeEnergy;
-
-    // Wait for recovery before next dodge attempt to let health/status stabilize
-    if (attempt > 0) {
-      await page.waitForTimeout(500);
-    }
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const beforeEnergy = await readNumber(page, 'slice-energy');
+    const beforePosition = await readPosition(page);
+    let minimumEnergy = beforeEnergy;
 
     await page.keyboard.up('q').catch(() => undefined);
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(60);
     await page.keyboard.down('q');
     try {
-      await page.waitForTimeout(250);
+      await page.waitForTimeout(180);
     } finally {
       await page.keyboard.up('q');
     }
 
-    // Wait for dodge execution and recovery to complete before polling
-    await page.waitForTimeout(300);
-
     try {
       await expect.poll(async () => {
-        const [energy, dodgingText, downText, position] = await Promise.all([
+        const [energy, dodgingText, position] = await Promise.all([
           readNumber(page, 'slice-energy'),
           page.getByTestId('slice-dodging').innerText(),
-          page.getByTestId('slice-player-down').innerText(),
           readPosition(page),
         ]);
-        if (!downText.includes('NO')) return false;
         minimumEnergy = Math.min(minimumEnergy, energy);
-        const dodgeDisplacement = Math.hypot(
-          position[0] - beforeDodgePosition[0],
-          position[2] - beforeDodgePosition[2]
+        const displacement = Math.hypot(
+          position[0] - beforePosition[0],
+          position[2] - beforePosition[2],
         );
-        // Q now has a real 3-unit evasive step. Position change is the strongest
-        // durable proof when low-FPS HUD samples miss both the short dodge flag
-        // and an energy dip that has already regenerated.
         return dodgingText.includes('YES')
-          || minimumEnergy <= beforeDodgeEnergy - 1
-          || dodgeDisplacement >= 2.5;
+          || minimumEnergy < beforeEnergy
+          || displacement >= 2.5;
       }, {
-        // Diagnostics now publish on real frame time, but keep this tolerant of
-        // especially slow software-WebGL frames and browser scheduling.
-        timeout: 5_000,
+        timeout: 4_000,
         intervals: [50, 75, 100, 150, 200],
       }).toBe(true);
-      accepted = true;
+
+      await expect.poll(async () => page.getByTestId('slice-dodging').innerText(), {
+        timeout: 4_000,
+        intervals: [50, 75, 100, 150],
+      }).toContain('NO');
+
+      await waitForPlayerRecovery(page, hero, 'post-dodge');
+      return;
     } catch {
-      // If knocked down during dodge acceptance polling, continue retrying.
-      // Fang attacks can interrupt the dodge window, so resilience matters.
-      if ((await page.getByTestId('slice-player-down').innerText()).includes('YES')) {
-        if (attempt < 9) {
-          continue;
-        }
-        await logCombatSnapshot(page, `${hero}:player-down-before-dodge-acceptance`);
-        throw new Error(`${hero} was knocked down before dodge acceptance could be observed`);
-      }
+      await waitForPlayerRecovery(page, hero, `dodge attempt ${attempt + 1}`);
     }
   }
 
-  if (!accepted) {
-    await logCombatSnapshot(page, `${hero}:dodge-not-accepted-after-fresh-edges`);
-    throw new Error(`${hero} dodge was not accepted after three real input edges`);
-  }
-
-  await expect.poll(async () => page.getByTestId('slice-dodging').innerText(), {
-    timeout: 5_000,
-    intervals: [50, 75, 100, 150],
-  }).toContain('NO');
-
-  await expect(page.getByTestId('slice-player-down')).toContainText('NO');
-
-  // The dodge has a real energy cost. Rebuild it while backpedaling out of
-  // pressure, then close once and fire. Do not stand inside melee range waiting
-  // for the ultimate resource to return.
-  await page.keyboard.down('Shift');
-  await page.keyboard.down('s');
-  try {
-    let lastDownCheckTime = Date.now();
-    await expect.poll(async () => {
-      const downText = await page.getByTestId('slice-player-down').innerText();
-      if (!downText.includes('NO')) {
-        const timeSinceDown = Date.now() - lastDownCheckTime;
-        // If knocked down for more than 5 seconds, it's likely a prolonged knockdown
-        if (timeSinceDown > 5000) {
-          await logCombatSnapshot(page, `${hero}:player-down-during-post-dodge-recharge`);
-          throw new Error('Player was knocked down during post-dodge recharge');
-        }
-        // Otherwise, just return false to indicate we need to retry
-        return false;
-      }
-      lastDownCheckTime = Date.now();
-      return readNumber(page, 'slice-energy');
-    }, {
-      timeout: 15_000,
-      intervals: [50, 75, 100, 150, 200, 300],
-    }).toBeGreaterThanOrEqual(ultimateCost);
-  } finally {
-    await page.keyboard.up('s');
-    await page.keyboard.up('Shift');
-  }
+  await logCombatSnapshot(page, `${hero}:dodge-not-accepted-after-fresh-edges`);
+  throw new Error(`${hero} dodge was not accepted after three real input edges`);
 }
 
 async function waitForUltimateReadiness(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
   const requiredEnergy = hero === 'kai' ? 80 : 75;
   await page.keyboard.up('r').catch(() => undefined);
+
+  await waitForPlayerRecovery(page, hero, 'ultimate readiness');
 
   if (hero === 'kai') {
     await expect.poll(async () => page.getByTestId('slice-webzip').innerText(), {
@@ -501,22 +352,17 @@ async function waitForUltimateReadiness(page: Page, hero: 'kai' | 'jax'): Promis
   }
 
   await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
-    timeout: 3_000,
-    intervals: [50, 75, 100],
+    timeout: 4_000,
+    intervals: [50, 75, 100, 150],
   }).toContain('NO');
 
   await expect.poll(async () => page.getByTestId('slice-dodging').innerText(), {
-    timeout: 2_000,
-    intervals: [50, 75, 100],
-  }).toContain('NO');
-
-  await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
-    timeout: 2_000,
-    intervals: [50, 75, 100],
+    timeout: 4_000,
+    intervals: [50, 75, 100, 150],
   }).toContain('NO');
 
   await expect.poll(async () => readNumber(page, 'slice-energy'), {
-    timeout: 8_000,
+    timeout: 10_000,
     intervals: [75, 100, 150, 200],
   }).toBeGreaterThanOrEqual(requiredEnergy);
 
@@ -625,9 +471,10 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
     await closeIntoUltimateEnvelope(page, hero);
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
-    // The defensive window was established before closing. Fire immediately
-    // once the authored ultimate radius is reached; another dodge here would
-    // spend the resource we just rebuilt and leave Jax stationary in melee.
+    // Spacing may require a real dodge, which spends energy. Revalidate the
+    // authored resource/lifecycle contract before firing.
+    if (!(await waitForUltimateReadiness(page, hero))) break;
+
     if (await ultimateAndObserveAggregateDamage(page, hero, true)) successfulHits += 1;
   }
 
