@@ -16,7 +16,7 @@ const BENIGN_ERROR_PATTERNS = [
   // fighter registry can still initialize GLTF resources in headless Chromium.
   // Blob-texture decode failures from that non-authoritative model path do not
   // invalidate controller/mission runtime proof. Other GLTF errors stay fatal.
-  /THREE\.GLTFLoader: Couldn't load texture blob:http:\/\/localhost:3000\//i,
+  /THREE\.GLTFLoader: Couldn't load texture blob:http:\/\/localhost:\d+\//i,
 ];
 
 function isBenign(text: string): boolean {
