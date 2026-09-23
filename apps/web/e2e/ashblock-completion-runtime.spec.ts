@@ -236,22 +236,28 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
     if (!downStatus.includes('NO')) {
       // Player got knocked down in the loop - attempt recovery before giving up
       if (pass < 70) {
-        // First, just wait for natural recovery with extended timeout
+        // First, just wait for natural recovery with moderate timeout
+        let recovered = false;
         try {
           await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
-            timeout: 35_000,
-            intervals: [150, 200, 300, 500, 1000, 1500, 2000],
+            timeout: 10_000,
+            intervals: [150, 200, 300, 500, 1000],
           }).toContain('NO');
+          recovered = true;
         } catch (e) {
           // If natural recovery timeout, try defensive backward movement
-          console.log(`Player still down after 35s wait (pass ${pass}), trying movement recovery`);
+          console.log(`Player still down after 10s wait (pass ${pass}), trying movement recovery`);
           await page.keyboard.down('Shift');
           await page.keyboard.down('s');
           try {
             await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
-              timeout: 25_000,
+              timeout: 10_000,
               intervals: [200, 300, 500, 1000],
             }).toContain('NO');
+            recovered = true;
+          } catch (e2) {
+            // Recovery failed, will retry in next pass
+            console.log(`Recovery failed at pass ${pass}, will retry`);
           } finally {
             await page.keyboard.up('s');
             await page.keyboard.up('Shift');
