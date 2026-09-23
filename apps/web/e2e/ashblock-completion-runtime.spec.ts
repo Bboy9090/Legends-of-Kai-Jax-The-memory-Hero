@@ -231,8 +231,14 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   // can resolve at 2.2 * 1.15 units and the bruiser at 2.7 * 1.15, so these
   // launch bands leave a genuine response margin without changing combat stats.
   for (let pass = 0; pass < 40; pass += 1) {
+    // Check player status and dodge proactively if needed
     const downStatus = await page.getByTestId('slice-player-down').innerText();
     if (!downStatus.includes('NO')) {
+      // Player got knocked down in the loop - attempt recovery before giving up
+      if (pass < 30) {
+        await page.waitForTimeout(500);
+        continue;
+      }
       await logCombatSnapshot(page, `${hero}:player-down-before-safe-ultimate-band`);
       throw new Error('Player was knocked down before a safe ultimate launch band opened');
     }
@@ -250,7 +256,7 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
         // A moving Fang can partially erase the dodge before the HUD publishes.
         // Loop and re-evaluate rather than weakening the authored safe band.
         // Wait longer between attempts to let combat state stabilize.
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(1500);
         continue;
       }
     }
@@ -279,9 +285,9 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
       return;
     }
 
-    // Allow enemy to move away naturally between attempts
-    if (pass < 11) {
-      await page.waitForTimeout(300);
+    // Allow enemy to move away naturally between attempts, but increase delay
+    if (pass < 15) {
+      await page.waitForTimeout(500);
     }
   }
 
