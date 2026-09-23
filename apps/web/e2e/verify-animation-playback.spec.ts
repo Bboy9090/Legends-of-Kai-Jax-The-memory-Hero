@@ -14,7 +14,7 @@ test('verify skeletal animation playback via console logs', async ({ page }) => 
   });
 
   // Navigate to character select
-  await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1000);
 
   // Menu navigation

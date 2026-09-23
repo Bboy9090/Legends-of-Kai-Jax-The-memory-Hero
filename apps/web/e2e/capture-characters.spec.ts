@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('capture character models', async ({ page }) => {
   // Navigate to app
-  await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'networkidle' });
   await page.waitForTimeout(2000);
   
   // Capture main screen

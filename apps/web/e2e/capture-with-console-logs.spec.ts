@@ -9,7 +9,7 @@ test('capture characters and log console output', async ({ page }) => {
   });
   
   // Navigate
-  await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'networkidle' });
   await page.waitForTimeout(2000);
   
   // Click first button (Enter Game)

@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 
 test('final character model capture', async ({ page }) => {
   // Navigate sequence: LoreHub → menu → story-hub → character-select
-  await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'networkidle' });
   await page.waitForTimeout(1000);
   
   // Enter Game

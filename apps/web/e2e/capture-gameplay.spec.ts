@@ -1,7 +1,7 @@
 import { test } from '@playwright/test';
 
 test('capture kai in ashblock gameplay', async ({ page }) => {
-  await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'networkidle' });
   await page.waitForTimeout(2000);
   
   // Click Enter Game

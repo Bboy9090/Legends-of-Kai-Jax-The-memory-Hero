@@ -24,7 +24,7 @@ test('verify skeletal animation is advancing over time', async ({ page }) => {
     };
   });
 
-  await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1000);
 
   // Navigate to character select

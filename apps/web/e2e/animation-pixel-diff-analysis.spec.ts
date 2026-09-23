@@ -7,7 +7,7 @@ test('analyze pixel differences in animation frames for pose detection', async (
 
   console.log('\n=== ANIMATION PIXEL-LEVEL ANALYSIS ===\n');
 
-  await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1000);
 
   // Navigate to character select

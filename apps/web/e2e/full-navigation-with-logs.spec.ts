@@ -11,7 +11,7 @@ test('full navigation to character select with detailed logging', async ({ page 
   });
   
   // Navigate to menu
-  await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'networkidle' });
   await page.waitForTimeout(2000);
   console.log('Step 1: Main menu loaded');
   

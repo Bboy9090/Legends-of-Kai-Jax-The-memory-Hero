@@ -9,7 +9,7 @@ test('capture improved character lighting in story hero select', async ({ page, 
     }
   });
 
-  await page.goto('http://localhost:3000');
+  await page.goto('/');
 
   // Navigate: LoreHub → Menu → Story Hub → Character Select
   await page.waitForLoadState('networkidle');

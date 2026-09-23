@@ -11,7 +11,7 @@ test('navigate to character select via correct button sequence', async ({ page }
   });
   
   // LoreHub - start
-  await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'networkidle' });
   await page.waitForTimeout(2000);
   let buttons = await page.locator('button').allTextContents();
   console.log('LoreHub buttons:', buttons.slice(0, 5));

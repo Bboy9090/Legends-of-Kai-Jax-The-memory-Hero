@@ -5,7 +5,7 @@ test('capture animation frame sequence showing skeletal pose changes', async ({ 
   test.setTimeout(120000);
   console.log('Starting animation frame-diff proof capture...');
 
-  await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1000);
 
   // Navigate to character select

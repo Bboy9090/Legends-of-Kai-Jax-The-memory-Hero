@@ -1,7 +1,7 @@
 import { test } from '@playwright/test';
 
 test('capture final character presentation with all visual improvements', async ({ page }) => {
-  await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1000);
 
   // Navigate to character select

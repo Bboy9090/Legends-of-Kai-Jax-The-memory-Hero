@@ -1,7 +1,7 @@
 import { test } from '@playwright/test';
 
 test('capture animation frames to prove skeletal animation is advancing', async ({ page }) => {
-  await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1000);
 
   // Navigate to character select

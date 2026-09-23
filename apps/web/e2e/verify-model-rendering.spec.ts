@@ -10,7 +10,7 @@ test('verify Kai model pixels are rendering to canvas', async ({ page }) => {
   });
   
   // Navigate to character-select
-  await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'networkidle' });
   await page.waitForTimeout(1000);
   await page.locator('button').filter({ hasText: /Enter Game/i }).first().click();
   await page.waitForTimeout(1500);

@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 
 test('navigate to hero select and capture character models', async ({ page }) => {
   // Navigate to app
-  await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'networkidle' });
   await page.waitForTimeout(2000);
   
   console.log('✓ Main menu loaded');
