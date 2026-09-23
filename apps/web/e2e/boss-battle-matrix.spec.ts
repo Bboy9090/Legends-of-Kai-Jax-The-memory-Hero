@@ -134,16 +134,20 @@ test.describe('Boss Battle Encounter Matrix', () => {
     });
   }
 
-  test('all 6 boss encounters initialize correctly (suite summary)', async ({ page }) => {
-    const errors = collectErrors(page);
+  test('all 6 boss encounters initialize correctly (suite summary)', async ({ page, context }) => {
     const results: Array<{ bossId: string; passed: boolean }> = [];
 
     for (const { id, bossId, name } of BOSS_MISSIONS) {
+      // Reload page before each boss to avoid renderer state degradation
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForFunction(() => Boolean((window as any).runnerStore), null, {
+        timeout: 15_000,
+      });
+
+      // Use a fresh error collector for each boss
+      const errors = collectErrors(page);
       const passed = await engageBoss(page, id, errors);
       results.push({ bossId, passed });
-
-      // Reset errors between tests
-      errors.length = 0;
     }
 
     const passedCount = results.filter((r) => r.passed).length;
