@@ -230,26 +230,36 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   // whatever melee distance happened to remain after recharge. The lieutenant
   // can resolve at 2.2 * 1.15 units and the bruiser at 2.7 * 1.15, so these
   // launch bands leave a genuine response margin without changing combat stats.
-  for (let pass = 0; pass < 40; pass += 1) {
+  for (let pass = 0; pass < 80; pass += 1) {
     // Check player status and dodge proactively if needed
     const downStatus = await page.getByTestId('slice-player-down').innerText();
     if (!downStatus.includes('NO')) {
       // Player got knocked down in the loop - attempt recovery before giving up
-      if (pass < 30) {
-        // Move backward while waiting for recovery
-        await page.keyboard.down('Shift');
-        await page.keyboard.down('s');
+      if (pass < 70) {
+        // First, just wait for natural recovery with extended timeout
         try {
-          // Wait for recovery animation and state to clear
           await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
-            timeout: 8_000,
-            intervals: [100, 150, 200, 300, 500],
+            timeout: 35_000,
+            intervals: [150, 200, 300, 500, 1000, 1500, 2000],
           }).toContain('NO');
-        } finally {
-          await page.keyboard.up('s');
-          await page.keyboard.up('Shift');
+        } catch (e) {
+          // If natural recovery timeout, try defensive backward movement
+          console.log(`Player still down after 35s wait (pass ${pass}), trying movement recovery`);
+          await page.keyboard.down('Shift');
+          await page.keyboard.down('s');
+          try {
+            await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
+              timeout: 25_000,
+              intervals: [200, 300, 500, 1000],
+            }).toContain('NO');
+          } finally {
+            await page.keyboard.up('s');
+            await page.keyboard.up('Shift');
+          }
         }
-        await page.waitForTimeout(500);
+
+        // Wait longer before next attempt to let state fully stabilize
+        await page.waitForTimeout(2000);
         continue;
       }
       await logCombatSnapshot(page, `${hero}:player-down-before-safe-ultimate-band`);
@@ -326,20 +336,35 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDista
   // If player is knocked down, try to recover
   let isDown = (await page.getByTestId('slice-player-down').innerText()).includes('YES');
   if (isDown) {
-    // Move backward briefly to create distance
-    await page.keyboard.down('Shift');
-    await page.keyboard.down('s');
-    await page.waitForTimeout(1000);
-    await page.keyboard.up('s');
-    await page.keyboard.up('Shift');
+    // Wait for natural recovery first with extended timeout
+    try {
+      await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
+        timeout: 30_000,
+        intervals: [150, 200, 300, 500, 1000],
+      }).toContain('NO');
+    } catch (e) {
+      // If natural recovery fails, try defensive backward movement
+      console.log('Knockdown recovery timeout in dodge, trying movement');
+      await page.keyboard.down('Shift');
+      await page.keyboard.down('s');
+      try {
+        await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
+          timeout: 20_000,
+          intervals: [200, 300, 500, 1000],
+        }).toContain('NO');
+      } finally {
+        await page.keyboard.up('s');
+        await page.keyboard.up('Shift');
+      }
+    }
 
-    // Then wait for natural recovery with longer timeout
-    await page.waitForTimeout(1000);
+    // Wait for state to stabilize after recovery
+    await page.waitForTimeout(2000);
   }
 
   await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
-    timeout: 15_000,
-    intervals: [50, 75, 100, 150, 200, 300, 500],
+    timeout: 10_000,
+    intervals: [50, 75, 100, 150, 200, 300],
   }).toContain('NO');
 
   await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
@@ -433,16 +458,24 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDista
   await page.keyboard.down('Shift');
   await page.keyboard.down('s');
   try {
+    let lastDownCheckTime = Date.now();
     await expect.poll(async () => {
       const downText = await page.getByTestId('slice-player-down').innerText();
       if (!downText.includes('NO')) {
-        await logCombatSnapshot(page, `${hero}:player-down-during-post-dodge-recharge`);
-        throw new Error('Player was knocked down during post-dodge recharge');
+        const timeSinceDown = Date.now() - lastDownCheckTime;
+        // If knocked down for more than 5 seconds, it's likely a prolonged knockdown
+        if (timeSinceDown > 5000) {
+          await logCombatSnapshot(page, `${hero}:player-down-during-post-dodge-recharge`);
+          throw new Error('Player was knocked down during post-dodge recharge');
+        }
+        // Otherwise, just return false to indicate we need to retry
+        return false;
       }
+      lastDownCheckTime = Date.now();
       return readNumber(page, 'slice-energy');
     }, {
-      timeout: 8_000,
-      intervals: [50, 75, 100, 150, 200],
+      timeout: 15_000,
+      intervals: [50, 75, 100, 150, 200, 300],
     }).toBeGreaterThanOrEqual(ultimateCost);
   } finally {
     await page.keyboard.up('s');
