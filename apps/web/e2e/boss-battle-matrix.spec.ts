@@ -139,28 +139,6 @@ test.describe('Boss Battle Encounter Matrix', () => {
     let page = initialPage;
 
     for (const { id, bossId, name } of BOSS_MISSIONS) {
-      try {
-        // Navigate to page before each boss to avoid renderer state degradation
-        if (!page.isClosed()) {
-          await page.goto('/', { waitUntil: 'domcontentloaded' });
-        } else {
-          // If page is closed, create a new one
-          page = await context.newPage();
-        }
-      } catch (e) {
-        // If navigation fails, try with a new page
-        if (page.isClosed()) {
-          page = await context.newPage();
-          await page.goto('/', { waitUntil: 'domcontentloaded' });
-        } else {
-          throw e;
-        }
-      }
-
-      await page.waitForFunction(() => Boolean((window as any).runnerStore), null, {
-        timeout: 15_000,
-      });
-
       // Use a fresh error collector for each boss
       const errors = collectErrors(page);
       const passed = await engageBoss(page, id, errors);

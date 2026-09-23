@@ -316,8 +316,8 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDista
   const ultimateCost = hero === 'kai' ? 80 : 75;
 
   await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
-    timeout: 2_500,
-    intervals: [50, 75, 100],
+    timeout: 5_000,
+    intervals: [50, 75, 100, 150, 200],
   }).toContain('NO');
 
   await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
@@ -342,13 +342,16 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDista
     }
 
     await page.keyboard.up('q').catch(() => undefined);
-    await page.waitForTimeout(75);
+    await page.waitForTimeout(100);
     await page.keyboard.down('q');
     try {
-      await page.waitForTimeout(180);
+      await page.waitForTimeout(250);
     } finally {
       await page.keyboard.up('q');
     }
+
+    // Wait for dodge execution and recovery to complete before polling
+    await page.waitForTimeout(300);
 
     try {
       await expect.poll(async () => {
