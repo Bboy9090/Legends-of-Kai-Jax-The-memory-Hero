@@ -77,7 +77,6 @@ export interface VerticalSliceDebugSnapshot extends ControllerDebugState {
   position: [number, number, number];
   playerHealth: number;
   playerDown: boolean;
-  playerDownTimer: number;
   playerHitGrace: number;
   enemyCount: number;
   totalEnemyHealth: number;
@@ -140,6 +139,7 @@ interface MissionStateRef {
   combatants: FangCombatantState[];
   playerHealth: number;
   playerDown: boolean;
+  playerDownTimer: number;
   playerHitGrace: number;
   completionRecorded: boolean;
 }
