@@ -315,24 +315,24 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDista
   const dodgeCost = hero === 'kai' ? 20 : 18;
   const ultimateCost = hero === 'kai' ? 80 : 75;
 
-  // If player is knocked down, move backward while waiting for recovery
+  // If player is knocked down, try to recover
   let isDown = (await page.getByTestId('slice-player-down').innerText()).includes('YES');
   if (isDown) {
+    // Move backward briefly to create distance
     await page.keyboard.down('Shift');
     await page.keyboard.down('s');
+    await page.waitForTimeout(1000);
+    await page.keyboard.up('s');
+    await page.keyboard.up('Shift');
+
+    // Then wait for natural recovery with longer timeout
+    await page.waitForTimeout(1000);
   }
 
-  try {
-    await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
-      timeout: 10_000,
-      intervals: [50, 75, 100, 150, 200, 300],
-    }).toContain('NO');
-  } finally {
-    if (isDown) {
-      await page.keyboard.up('s');
-      await page.keyboard.up('Shift');
-    }
-  }
+  await expect.poll(async () => page.getByTestId('slice-player-down').innerText(), {
+    timeout: 15_000,
+    intervals: [50, 75, 100, 150, 200, 300, 500],
+  }).toContain('NO');
 
   await expect.poll(async () => page.getByTestId('slice-attacking').innerText(), {
     timeout: 5_000,
