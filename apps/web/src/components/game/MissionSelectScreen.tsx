@@ -39,15 +39,14 @@ export default function MissionSelectScreen() {
     return FIELD_BRIEFINGS.vertical_slice_ashblock_heights;
   }, [activeStoryMissionId]);
 
+  const isPlayableSlice = activeStoryMissionId === 'vertical_slice_ashblock_heights';
+
   const handleStartMission = () => {
-    // Route vertical slice missions to the new scene with real Kai/Jax controllers
-    // Temporary: only ashblock-heights implemented; others remain briefing-only
-    if (activeStoryMissionId === 'vertical_slice_ashblock_heights') {
-      setGameState('vertical-slice');
-    } else {
-      // Legacy missions not yet implemented
-      setGameState('adventure');
-    }
+    // Only Ashblock currently has a production-authorized playable slice.
+    // Other established locations remain briefing-only until their real scene,
+    // encounter authority and chronology-safe content are implemented.
+    if (!isPlayableSlice) return;
+    setGameState('vertical-slice');
   };
 
   return (
@@ -149,10 +148,17 @@ export default function MissionSelectScreen() {
 
             <button
               onClick={handleStartMission}
-              className="flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 via-purple-600 to-cyan-500 hover:from-amber-400 hover:to-cyan-400 rounded-2xl font-black text-white text-sm tracking-widest uppercase shadow-[0_0_30px_rgba(168,85,247,0.3)] transition-all hover:scale-105 flex-shrink-0"
+              disabled={!isPlayableSlice}
+              aria-disabled={!isPlayableSlice}
+              data-testid="mission-launch"
+              className={`flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-black text-sm tracking-widest uppercase transition-all flex-shrink-0 ${
+                isPlayableSlice
+                  ? 'bg-gradient-to-r from-amber-500 via-purple-600 to-cyan-500 hover:from-amber-400 hover:to-cyan-400 text-white shadow-[0_0_30px_rgba(168,85,247,0.3)] hover:scale-105'
+                  : 'bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed'
+              }`}
             >
               <Play className="w-5 h-5 fill-current" />
-              <span>ENTER SLICE</span>
+              <span>{isPlayableSlice ? 'ENTER SLICE' : 'BRIEFING ONLY — SLICE PENDING'}</span>
             </button>
           </div>
         </div>
