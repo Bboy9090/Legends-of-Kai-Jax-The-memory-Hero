@@ -14,8 +14,22 @@ concurrency:
 
 jobs:
   runtime:
+    name: runtime (${{ matrix.lane }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - lane: focused-controller-hitboxes
+            test_file: apps/web/e2e/vertical-slice-runtime.spec.ts
+            grep: ""
+          - lane: kai-full-chain
+            test_file: apps/web/e2e/ashblock-completion-runtime.spec.ts
+            grep: "full completion chain persists exactly once for Kai"
+          - lane: jax-full-chain
+            test_file: apps/web/e2e/ashblock-completion-runtime.spec.ts
+            grep: "full completion chain persists exactly once for Jax"
 
     steps:
       - name: Materialize exact web workspace
@@ -56,19 +70,24 @@ jobs:
           node "${PW_CLI}" --version
 
       - name: Install Chromium runtime
-        # Browser-only installation keeps the exact runtime proof independent of
-        # transient third-party apt index drift on the hosted runner image.
         run: node "${PW_CLI}" install chromium
 
-      - name: Run Ashblock Heights Kai/Jax live runtime and completion chains
-        run: >-
-          node "${PW_CLI}" test
-          apps/web/e2e/vertical-slice-runtime.spec.ts
-          apps/web/e2e/ashblock-completion-runtime.spec.ts
-          --config=apps/web/playwright.config.ts
+      - name: Run exact Ashblock certification lane
+        env:
+          TEST_FILE: ${{ matrix.test_file }}
+          TEST_GREP: ${{ matrix.grep }}
+        run: |
+          args=("${TEST_FILE}" "--config=apps/web/playwright.config.ts")
+          if [ -n "${TEST_GREP}" ]; then
+            args+=("--grep" "${TEST_GREP}")
+          fi
+          node "${PW_CLI}" test "${args[@]}"
 
       - name: Upload-free evidence summary
         if: always()
+        env:
+          LANE: ${{ matrix.lane }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          echo "Vertical slice runtime smoke completed for ${GITHUB_SHA}"
-          echo "This verifies the Ashblock developer slice, real Kai/Jax controller paths, Fang combat loop, Memory Trace, extraction, and mission completion persistence; it does not certify final production art or manuscript chronology."
+          echo "Vertical slice lane ${LANE} completed for ${COMMIT_SHA}"
+          echo "Focused controller/hitbox proof and Kai/Jax full completion chains run independently so one long authored combat path cannot consume another lane's wall-clock budget."
