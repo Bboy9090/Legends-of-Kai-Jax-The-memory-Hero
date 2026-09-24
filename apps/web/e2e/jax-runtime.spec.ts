@@ -116,10 +116,12 @@ test('Jax runtime: dodge grants invulnerability and real evasive displacement', 
       timeout: 3_000,
       intervals: [50, 75, 100, 150],
     }).toContain('YES');
-    await expect.poll(async () => readNumber(page, 'jax-invuln'), {
-      timeout: 2_000,
-      intervals: [50, 75, 100],
-    }).toBeGreaterThan(0);
+    // The iframe window is intentionally short (0.4s). The focused scene
+    // retains a sticky observation so sparse HUD sampling cannot erase proof
+    // that invulnerability actually occurred during the accepted dodge.
+    await expect(page.getByTestId('jax-dodge-invuln-observed')).toContainText('YES', {
+      timeout: 3_000,
+    });
     await expect.poll(async () => {
       const duringDodge = await readPosition(page);
       return Math.hypot(
