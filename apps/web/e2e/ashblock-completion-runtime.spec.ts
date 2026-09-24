@@ -264,18 +264,10 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
     let distance = await readNumber(page, 'slice-nearest-enemy-distance');
     if (distance <= maximumAttackRange) return;
 
-    const behavior = await page.getByTestId('slice-fang-behavior').innerText();
-    if (!behavior.includes('IDLE')) {
-      // When Fang chase is already active, allow the certified AI to close the
-      // radial gap without injecting unnecessary hero movement.
-      await page.waitForTimeout(150);
-      continue;
-    }
-
-    // A large dodge can leave the hero outside Fang aggro, where waiting for
-    // CHASE can never succeed. Find a real controller direction that measurably
-    // reduces nearest-enemy distance instead of assuming camera-forward maps to
-    // the enemy's world-space direction.
+    // A large dodge can leave the hero far off-axis. Whether Fang reports IDLE
+    // or CHASE, actively find a real controller direction that measurably
+    // reduces radial nearest-enemy distance instead of assuming camera-forward
+    // maps to the enemy's world-space direction.
     let improved = false;
     for (const key of probeKeys) {
       const before = await readNumber(page, 'slice-nearest-enemy-distance');
@@ -507,19 +499,32 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
 
   let attempts = 0;
   let successfulHits = 0;
-  while (await readNumber(page, 'slice-enemy-count') > 0 && attempts < maxAttempts) {
+  while (attempts < maxAttempts) {
+    const [beat, enemyCount] = await Promise.all([
+      readBeat(page),
+      readNumber(page, 'slice-enemy-count'),
+    ]);
+    // Beat transitions can synchronously spawn the next wave. Never let one
+    // clear helper spill into the next encounter just because enemyCount became
+    // nonzero again on the transition frame.
+    if (beat !== expectedBeat || enemyCount === 0) break;
+
     attempts += 1;
     await retreatAndRecharge(page, hero);
+    if (await readBeat(page) !== expectedBeat) break;
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
     // A Fang can enter melee while energy is recharging. Defend before the
     // readiness poll so the chain never spends that window standing still.
     await dodgeIncomingVolley(page, hero);
+    if (await readBeat(page) !== expectedBeat) break;
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
     if (!(await waitForUltimateReadiness(page, hero))) break;
+    if (await readBeat(page) !== expectedBeat) break;
 
     await closeIntoUltimateEnvelope(page, hero);
+    if (await readBeat(page) !== expectedBeat) break;
     if (await readNumber(page, 'slice-enemy-count') === 0) break;
 
     // Spacing may require a real dodge, which spends energy. Revalidate the
@@ -533,10 +538,14 @@ async function clearCombatBeat(page: Page, hero: 'kai' | 'jax', expectedBeat: st
     successfulHits,
     `${hero} must land at least one real scene-hitbox attack during ${expectedBeat}`,
   ).toBeGreaterThan(0);
+  const [finalBeat, finalEnemyCount] = await Promise.all([
+    readBeat(page),
+    readNumber(page, 'slice-enemy-count'),
+  ]);
   expect(
-    await readNumber(page, 'slice-enemy-count'),
-    `${hero} must clear ${expectedBeat} through real accepted attacks`,
-  ).toBe(0);
+    finalBeat !== expectedBeat || finalEnemyCount === 0,
+    `${hero} must clear ${expectedBeat} through real accepted attacks without spilling into the next beat`,
+  ).toBe(true);
 }
 
 async function advanceRecoveryIntoCombinationFight(page: Page) {
