@@ -23,6 +23,7 @@ interface JaxDebugSnapshot {
   attackPhase: string;
   dodging: boolean;
   invuln: number;
+  dodgeInvulnObserved: boolean;
   fps: number;
   pressureHealth: number;
   pressureX: number;
@@ -42,6 +43,7 @@ const INITIAL_DEBUG: JaxDebugSnapshot = {
   attackPhase: 'IDLE',
   dodging: false,
   invuln: 0,
+  dodgeInvulnObserved: false,
   fps: 0,
   pressureHealth: 100,
   pressureX: 1.2,
@@ -65,6 +67,7 @@ function TestEnvironment({
 }) {
   const { scene, camera } = useThree();
   const controllerRef = useRef<JaxControllerHandle | null>(null);
+  const dodgeInvulnObservedRef = useRef(false);
   const perfRef = useRef({ sampleTime: 0, frames: 0, fps: 0, hudTime: 0 });
 
   const handleController = useCallback((controller: JaxControllerHandle) => {
@@ -202,10 +205,16 @@ function TestEnvironment({
       perf.frames = 0;
     }
 
-    if (perf.hudTime < 0.1 || !controllerRef.current) return;
-    perf.hudTime = 0;
+    if (!controllerRef.current) return;
 
     const state = controllerRef.current.getState();
+    if (state.isDodging && state.invulnTimer > 0) {
+      dodgeInvulnObservedRef.current = true;
+    }
+
+    if (perf.hudTime < 0.1) return;
+    perf.hudTime = 0;
+
     const pressureDummy = scene.getObjectByName('jax-pressure-dummy');
     const lightningTarget = scene.getObjectByName('jax-lightning-target');
 
@@ -221,6 +230,7 @@ function TestEnvironment({
       attackPhase: state.attackPhase,
       dodging: state.isDodging,
       invuln: state.invulnTimer,
+      dodgeInvulnObserved: dodgeInvulnObservedRef.current,
       fps: perf.fps,
       pressureHealth: pressureDummy?.userData.health ?? 100,
       pressureX: pressureDummy?.position.x ?? 0,
@@ -278,6 +288,9 @@ export function JaxTestScene() {
           <div data-testid="jax-attack">Attack: {debug.attackType} / {debug.attackPhase}</div>
           <div data-testid="jax-dodging">Dodging: {debug.dodging ? 'YES' : 'NO'}</div>
           <div data-testid="jax-invuln">Invuln: {debug.invuln.toFixed(2)}</div>
+          <div data-testid="jax-dodge-invuln-observed">
+            Dodge invuln observed: {debug.dodgeInvulnObserved ? 'YES' : 'NO'}
+          </div>
           <div data-testid="jax-fps">FPS: {debug.fps.toFixed(1)}</div>
           <div data-testid="jax-pressure-health">Pressure dummy HP: {Math.round(debug.pressureHealth)}</div>
           <div data-testid="jax-pressure-position">
