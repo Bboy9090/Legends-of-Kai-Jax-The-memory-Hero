@@ -251,62 +251,111 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
   }
 }
 
-async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
-  const maximumAttackRange = hero === 'kai' ? 8.5 : 5.0;
-  const deadline = Date.now() + 24_000;
-  const probeKeys = ['w', 'a', 's', 'd'] as const;
+async function moveTowardWorldPoint(
+  page: Page,
+  hero: 'kai' | 'jax',
+  targetX: number,
+  targetZ: number,
+  targetRadius: number,
+  timeoutMs: number,
+  context: string,
+) {
+  const deadline = Date.now() + timeoutMs;
+  const keys = ['w', 'a', 's', 'd'] as const;
+  let preferredKey: (typeof keys)[number] | null = null;
+
+  const distanceToTarget = async () => {
+    const [x, , z] = await readPosition(page);
+    return Math.hypot(x - targetX, z - targetZ);
+  };
 
   while (Date.now() < deadline) {
-    if (await readNumber(page, 'slice-enemy-count') === 0) return;
+    await waitForPlayerRecovery(page, hero, context);
+    let distance = await distanceToTarget();
+    if (distance <= targetRadius) return;
 
-    await waitForPlayerRecovery(page, hero, 'ultimate spacing');
+    const orderedKeys = preferredKey
+      ? [preferredKey, ...keys.filter((key) => key !== preferredKey)]
+      : [...keys];
 
-    let distance = await readNumber(page, 'slice-nearest-enemy-distance');
-    if (distance <= maximumAttackRange) return;
-
-    // A large dodge can leave the hero far off-axis. Whether Fang reports IDLE
-    // or CHASE, actively find a real controller direction that measurably
-    // reduces radial nearest-enemy distance instead of assuming camera-forward
-    // maps to the enemy's world-space direction.
     let improved = false;
-    for (const key of probeKeys) {
-      const before = await readNumber(page, 'slice-nearest-enemy-distance');
+    for (const key of orderedKeys) {
+      const before = await distanceToTarget();
+
       await page.keyboard.down('Shift');
       await page.keyboard.down(key);
       try {
-        await page.waitForTimeout(260);
+        await page.waitForTimeout(preferredKey === key ? 420 : 220);
       } finally {
         await page.keyboard.up(key);
         await page.keyboard.up('Shift');
       }
 
-      await waitForPlayerRecovery(page, hero, 'ultimate approach probe');
-      distance = await readNumber(page, 'slice-nearest-enemy-distance');
-      if (distance <= maximumAttackRange) return;
+      await waitForPlayerRecovery(page, hero, context);
+      const after = await distanceToTarget();
+      if (after <= targetRadius) return;
 
-      if (distance < before - 0.15) {
+      if (after < before - 0.1) {
+        preferredKey = key;
         improved = true;
-        // Continue in the proven decreasing direction for a bounded burst.
-        await page.keyboard.down('Shift');
-        await page.keyboard.down(key);
-        try {
-          await page.waitForTimeout(500);
-        } finally {
-          await page.keyboard.up(key);
-          await page.keyboard.up('Shift');
-        }
         break;
       }
+
+      if (preferredKey === key) preferredKey = null;
     }
 
     if (!improved) {
-      // Re-sample after the probes. Fang may have entered aggro during them.
-      await page.waitForTimeout(150);
+      await page.waitForTimeout(100);
     }
   }
 
-  await logCombatSnapshot(page, `${hero}:ultimate-range-not-established`);
-  throw new Error(`${hero} could not establish the authored ultimate range`);
+  await logCombatSnapshot(page, `${hero}:${context}-world-target-not-reached`);
+  throw new Error(`${hero} could not reach ${context} world target`);
+}
+
+function combatBeatAnchor(beat: string): readonly [number, number] {
+  switch (beat) {
+    case 'ashblock-first-ambush':
+      return [0, 2.75] as const;
+    case 'ashblock-combination-fight':
+      return [0, 5.7] as const;
+    case 'ashblock-district-lieutenant':
+      return [-2.5, 8] as const;
+    default:
+      return [0, 5] as const;
+  }
+}
+
+async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
+  const maximumAttackRange = hero === 'kai' ? 8.5 : 5.0;
+  const beat = await readBeat(page);
+  const [targetX, targetZ] = combatBeatAnchor(beat);
+
+  if (await readNumber(page, 'slice-enemy-count') === 0) return;
+  await waitForPlayerRecovery(page, hero, 'ultimate spacing');
+
+  let distance = await readNumber(page, 'slice-nearest-enemy-distance');
+  if (distance <= maximumAttackRange) return;
+
+  // Navigate toward the authored encounter anchor using measured world-space
+  // progress. This avoids assuming camera-forward points toward an enemy and
+  // avoids using a moving nearest-enemy distance as the steering signal.
+  await moveTowardWorldPoint(
+    page,
+    hero,
+    targetX,
+    targetZ,
+    hero === 'kai' ? 7.0 : 4.0,
+    18_000,
+    'ultimate-approach',
+  );
+
+  if (await readNumber(page, 'slice-enemy-count') === 0) return;
+
+  await expect.poll(async () => readNumber(page, 'slice-nearest-enemy-distance'), {
+    timeout: 8_000,
+    intervals: [75, 100, 150, 200],
+  }).toBeLessThanOrEqual(maximumAttackRange);
 }
 
 async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDistance = 4.5) {
@@ -598,27 +647,18 @@ async function defeatPhase55FangSequence(page: Page, hero: 'kai' | 'jax') {
   }).toBe('ashblock-memory-trace');
 }
 
-async function activateMemoryTrace(page: Page) {
-  const current = await readPosition(page);
-  if (current[2] < 4.1) {
-    await page.keyboard.down('w');
-    try {
-      await expect.poll(async () => (await readPosition(page))[2], {
-        timeout: 15_000,
-        intervals: [100, 150, 200, 250],
-      }).toBeGreaterThan(4.1);
-    } finally {
-      await page.keyboard.up('w');
-    }
-  }
-
-  await expect.poll(async () => {
-    const [x, , z] = await readPosition(page);
-    return Math.hypot(x, z - 5);
-  }, {
-    timeout: 3_000,
-    intervals: [75, 100, 150],
-  }).toBeLessThan(2);
+async function activateMemoryTrace(page: Page, hero: 'kai' | 'jax') {
+  // Memory Trace is fixed at world-space (0, 5). Combat can finish far off-axis,
+  // so navigate by measured world distance rather than assuming W is sufficient.
+  await moveTowardWorldPoint(
+    page,
+    hero,
+    0,
+    5,
+    1.75,
+    18_000,
+    'memory-trace-approach',
+  );
 
   await page.keyboard.down('f');
   try {
@@ -701,7 +741,7 @@ async function runFullAshblockChain(page: Page, hero: 'kai' | 'jax') {
   await bootSlice(page, hero, errors);
   await enterEncounter(page, hero);
   await defeatPhase55FangSequence(page, hero);
-  await activateMemoryTrace(page);
+  await activateMemoryTrace(page, hero);
   await extractAndVerifyPersistence(page);
   expect(errors, `Unexpected ${hero} full-chain errors:\n${errors.join('\n')}`).toEqual([]);
 }
