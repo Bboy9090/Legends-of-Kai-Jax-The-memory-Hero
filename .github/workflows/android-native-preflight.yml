@@ -70,8 +70,10 @@ jobs:
       - name: Build production web payload
         run: pnpm -C apps/web build
 
-      - name: Copy Capacitor Android payload
-        run: pnpm -C apps/web exec cap copy android
+      - name: Sync Capacitor Android project
+        # Android sync regenerates capacitor.settings.gradle and the Cordova
+        # compatibility Gradle variables consumed by capacitor.build.gradle.
+        run: pnpm -C apps/web exec cap sync android
 
       - name: Build debug APK and unsigned release AAB
         working-directory: apps/web/android
