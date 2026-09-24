@@ -298,6 +298,20 @@ async function moveTowardWorldPoint(
       if (after < before - 0.1) {
         preferredKey = key;
         improved = true;
+
+        // Jax has a real, collision-aware 6-unit ground displacement. Once a
+        // movement direction is empirically proven to reduce world-target
+        // distance, use that authored traversal burst to escape long off-axis
+        // detours instead of spending many sparse frames walking.
+        if (hero === 'jax' && after - targetRadius > 4) {
+          await page.keyboard.down(key);
+          try {
+            await page.keyboard.press('e');
+            await page.waitForTimeout(450);
+          } finally {
+            await page.keyboard.up(key);
+          }
+        }
         break;
       }
 
@@ -340,15 +354,25 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   // Navigate toward the authored encounter anchor using measured world-space
   // progress. This avoids assuming camera-forward points toward an enemy and
   // avoids using a moving nearest-enemy distance as the steering signal.
-  await moveTowardWorldPoint(
-    page,
-    hero,
-    targetX,
-    targetZ,
-    hero === 'kai' ? 7.0 : 4.0,
-    18_000,
-    'ultimate-approach',
-  );
+  try {
+    await moveTowardWorldPoint(
+      page,
+      hero,
+      targetX,
+      targetZ,
+      hero === 'kai' ? 7.0 : 4.0,
+      18_000,
+      'ultimate-approach',
+    );
+  } catch (error) {
+    // The encounter anchor is a steering aid, not the attack authority. If
+    // moving toward it already brought the actual nearest live Fang inside the
+    // authored ultimate radius, the real combat condition has been satisfied.
+    if (await readNumber(page, 'slice-nearest-enemy-distance') <= maximumAttackRange) {
+      return;
+    }
+    throw error;
+  }
 
   if (await readNumber(page, 'slice-enemy-count') === 0) return;
 
