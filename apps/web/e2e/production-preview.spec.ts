@@ -93,3 +93,73 @@ test('story hero select renders separate production Kai and Jax GLTF previews', 
 
   expect(errors, `Unexpected runtime errors while loading story hero production models:\n${errors.join('\n')}`).toEqual([]);
 });
+
+
+test('Raging City Story Hub exposes only implemented Ashblock as a playable field slice', async ({ page }) => {
+  const errors = collectErrors(page);
+  await expectBuiltRoute(page, '/', errors);
+
+  await page.evaluate(() => {
+    const store = (window as any).runnerStore;
+    if (!store) throw new Error('runnerStore unavailable');
+    store.getState().setGameState('story-hub');
+  });
+
+  await expect(page.getByText('STORY HUB', { exact: true })).toBeVisible({ timeout: 10_000 });
+  for (const location of ['ASHBLOCK HEIGHTS', 'IRONVEIN WARDS', 'SKYFALL SPINES', 'STORM RONIN SANCTUM']) {
+    await expect(page.getByText(location, { exact: true }).first()).toBeVisible();
+  }
+
+  await page.getByRole('button', { name: /ASHBLOCK HEIGHTS/i }).click();
+  await page.getByRole('button', { name: 'OPEN FIELD BRIEFING' }).click();
+
+  await expect(page.getByText('FIELD BRIEFING', { exact: true })).toBeVisible();
+  await expect(page.getByTestId('mission-launch')).toBeEnabled();
+  await expect(page.getByTestId('mission-launch')).toContainText('ENTER SLICE');
+
+  const ashblockState = await page.evaluate(() => {
+    const s = (window as any).runnerStore.getState();
+    return { gameState: s.gameState, missionId: s.activeStoryMissionId };
+  });
+  expect(ashblockState).toEqual({
+    gameState: 'mission-select',
+    missionId: 'vertical_slice_ashblock_heights',
+  });
+
+  await page.getByLabel('Back to Story Hub').click();
+  await page.getByRole('button', { name: /IRONVEIN WARDS/i }).click();
+  await page.getByRole('button', { name: 'OPEN FIELD BRIEFING' }).click();
+
+  await expect(page.getByTestId('mission-launch')).toBeDisabled();
+  await expect(page.getByTestId('mission-launch')).toContainText('BRIEFING ONLY');
+  await expect(page.getByText(/ANTI-SABERTOOTH COVENANT ACTIVITY/i).first()).toBeVisible();
+
+  const ironveinState = await page.evaluate(() => {
+    const s = (window as any).runnerStore.getState();
+    return { gameState: s.gameState, missionId: s.activeStoryMissionId };
+  });
+  expect(ironveinState).toEqual({
+    gameState: 'mission-select',
+    missionId: 'vertical_slice_ironvein_wards',
+  });
+
+  expect(errors, `Unexpected Story Hub runtime errors:\n${errors.join('\n')}`).toEqual([]);
+});
+
+test('legacy campaign-map state is quarantined into the canonical Raging City Story Hub', async ({ page }) => {
+  const errors = collectErrors(page);
+  await expectBuiltRoute(page, '/', errors);
+
+  await page.evaluate(() => {
+    const store = (window as any).runnerStore;
+    if (!store) throw new Error('runnerStore unavailable');
+    store.getState().setGameState('campaign-map');
+  });
+
+  await expect(page.getByText('THE RAGING CITY WORLD MAP', { exact: true })).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText('ASHBLOCK HEIGHTS', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/Voidonus Imperion/i)).toHaveCount(0);
+  await expect(page.getByText(/Cross Point/i)).toHaveCount(0);
+
+  expect(errors, `Unexpected legacy-route quarantine errors:\n${errors.join('\n')}`).toEqual([]);
+});
