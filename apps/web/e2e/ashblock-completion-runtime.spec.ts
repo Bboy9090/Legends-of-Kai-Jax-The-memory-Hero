@@ -829,6 +829,6 @@ test('Ashblock Phase 5.5 full completion chain persists exactly once for Jax', a
   // combat iterations than Kai under software WebGL. The per-step assertions
   // remain bounded; this only prevents the global Playwright budget from
   // terminating a chain that is still making verified forward progress.
-  test.setTimeout(540_000);
+  test.setTimeout(720_000);
   await runFullAshblockChain(page, 'jax');
 });
