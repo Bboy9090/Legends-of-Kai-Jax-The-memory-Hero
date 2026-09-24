@@ -226,6 +226,23 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
       await page.waitForTimeout(100);
     }
 
+    // One final durable readiness sample closes the race where the controller
+    // becomes ready on the same sparse frame that expires the wall-clock loop.
+    const [finalDown, finalEnergy, finalAttacking, finalDodging] = await Promise.all([
+      page.getByTestId('slice-player-down').innerText(),
+      readNumber(page, 'slice-energy'),
+      page.getByTestId('slice-attacking').innerText(),
+      page.getByTestId('slice-dodging').innerText(),
+    ]);
+    if (
+      finalDown.includes('NO')
+      && finalEnergy >= requiredEnergy
+      && finalAttacking.includes('NO')
+      && finalDodging.includes('NO')
+    ) {
+      return;
+    }
+
     await logCombatSnapshot(page, `${hero}:recharge-deadline`);
     throw new Error(`${hero} did not reach authored ultimate readiness during recharge`);
   } finally {
@@ -236,19 +253,64 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
 
 async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
   const maximumAttackRange = hero === 'kai' ? 8.5 : 5.0;
-  const deadline = Date.now() + 20_000;
+  const deadline = Date.now() + 24_000;
+  const probeKeys = ['w', 'a', 's', 'd'] as const;
 
   while (Date.now() < deadline) {
     if (await readNumber(page, 'slice-enemy-count') === 0) return;
 
     await waitForPlayerRecovery(page, hero, 'ultimate spacing');
 
-    const distance = await readNumber(page, 'slice-nearest-enemy-distance');
+    let distance = await readNumber(page, 'slice-nearest-enemy-distance');
     if (distance <= maximumAttackRange) return;
 
-    // Hold position and let the already-certified Fang chase authority close
-    // radial distance. This is deterministic regardless of lateral dodge offset.
-    await page.waitForTimeout(125);
+    const behavior = await page.getByTestId('slice-fang-behavior').innerText();
+    if (!behavior.includes('IDLE')) {
+      // When Fang chase is already active, allow the certified AI to close the
+      // radial gap without injecting unnecessary hero movement.
+      await page.waitForTimeout(150);
+      continue;
+    }
+
+    // A large dodge can leave the hero outside Fang aggro, where waiting for
+    // CHASE can never succeed. Find a real controller direction that measurably
+    // reduces nearest-enemy distance instead of assuming camera-forward maps to
+    // the enemy's world-space direction.
+    let improved = false;
+    for (const key of probeKeys) {
+      const before = await readNumber(page, 'slice-nearest-enemy-distance');
+      await page.keyboard.down('Shift');
+      await page.keyboard.down(key);
+      try {
+        await page.waitForTimeout(260);
+      } finally {
+        await page.keyboard.up(key);
+        await page.keyboard.up('Shift');
+      }
+
+      await waitForPlayerRecovery(page, hero, 'ultimate approach probe');
+      distance = await readNumber(page, 'slice-nearest-enemy-distance');
+      if (distance <= maximumAttackRange) return;
+
+      if (distance < before - 0.15) {
+        improved = true;
+        // Continue in the proven decreasing direction for a bounded burst.
+        await page.keyboard.down('Shift');
+        await page.keyboard.down(key);
+        try {
+          await page.waitForTimeout(500);
+        } finally {
+          await page.keyboard.up(key);
+          await page.keyboard.up('Shift');
+        }
+        break;
+      }
+    }
+
+    if (!improved) {
+      // Re-sample after the probes. Fang may have entered aggro during them.
+      await page.waitForTimeout(150);
+    }
   }
 
   await logCombatSnapshot(page, `${hero}:ultimate-range-not-established`);
