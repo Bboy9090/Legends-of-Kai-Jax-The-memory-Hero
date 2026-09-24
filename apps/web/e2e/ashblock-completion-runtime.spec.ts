@@ -189,10 +189,11 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
   await page.keyboard.down('s');
   try {
     while (Date.now() < deadline) {
-      const [downText, energy, nearestDistance, attackingText, dodgingText] = await Promise.all([
+      const [downText, energy, nearestDistance, behaviorText, attackingText, dodgingText] = await Promise.all([
         page.getByTestId('slice-player-down').innerText(),
         readNumber(page, 'slice-energy'),
         readNumber(page, 'slice-nearest-enemy-distance'),
+        page.getByTestId('slice-fang-behavior').innerText(),
         page.getByTestId('slice-attacking').innerText(),
         page.getByTestId('slice-dodging').innerText(),
       ]);
@@ -212,6 +213,7 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
 
       if (
         nearestDistance <= 4.5
+        && behaviorText.includes('WINDUP')
         && energy >= dodgeCost
         && attackingText.includes('NO')
         && dodgingText.includes('NO')
@@ -259,6 +261,7 @@ async function moveTowardWorldPoint(
   targetRadius: number,
   timeoutMs: number,
   context: string,
+  stopWhenNearestWithin?: number,
 ) {
   const deadline = Date.now() + timeoutMs;
   const keys = ['w', 'a', 's', 'd'] as const;
@@ -271,6 +274,15 @@ async function moveTowardWorldPoint(
 
   while (Date.now() < deadline) {
     await waitForPlayerRecovery(page, hero, context);
+
+    if (
+      stopWhenNearestWithin !== undefined
+      && (await readNumber(page, 'slice-enemy-count')) > 0
+      && (await readNumber(page, 'slice-nearest-enemy-distance')) <= stopWhenNearestWithin
+    ) {
+      return;
+    }
+
     let distance = await distanceToTarget();
     if (distance <= targetRadius) return;
 
@@ -292,6 +304,15 @@ async function moveTowardWorldPoint(
       }
 
       await waitForPlayerRecovery(page, hero, context);
+
+      if (
+        stopWhenNearestWithin !== undefined
+        && (await readNumber(page, 'slice-enemy-count')) > 0
+        && (await readNumber(page, 'slice-nearest-enemy-distance')) <= stopWhenNearestWithin
+      ) {
+        return;
+      }
+
       const after = await distanceToTarget();
       if (after <= targetRadius) return;
 
@@ -310,6 +331,14 @@ async function moveTowardWorldPoint(
             await page.waitForTimeout(450);
           } finally {
             await page.keyboard.up(key);
+          }
+
+          if (
+            stopWhenNearestWithin !== undefined
+            && (await readNumber(page, 'slice-enemy-count')) > 0
+            && (await readNumber(page, 'slice-nearest-enemy-distance')) <= stopWhenNearestWithin
+          ) {
+            return;
           }
         }
         break;
@@ -363,6 +392,7 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
       hero === 'kai' ? 7.0 : 4.0,
       18_000,
       'ultimate-approach',
+      maximumAttackRange,
     );
   } catch (error) {
     // The encounter anchor is a steering aid, not the attack authority. If
@@ -383,8 +413,11 @@ async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDistance = 4.5) {
-  const nearestDistance = await readNumber(page, 'slice-nearest-enemy-distance');
-  if (nearestDistance > triggerDistance) return;
+  const [nearestDistance, behaviorText] = await Promise.all([
+    readNumber(page, 'slice-nearest-enemy-distance'),
+    page.getByTestId('slice-fang-behavior').innerText(),
+  ]);
+  if (nearestDistance > triggerDistance || !behaviorText.includes('WINDUP')) return;
 
   const dodgeCost = hero === 'kai' ? 20 : 18;
 
