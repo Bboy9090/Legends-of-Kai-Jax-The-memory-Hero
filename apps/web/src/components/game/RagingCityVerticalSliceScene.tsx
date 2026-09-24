@@ -360,7 +360,13 @@ function VerticalSliceEnvironment({
     // set playerDown at 0 HP but never cleared it, making mission recovery
     // impossible and leaving the slice frozen forever after a lethal hit.
     if (mission.playerDown) {
-      mission.playerDownTimer = Math.max(0, mission.playerDownTimer - lifecycleDelta);
+      // Knockdown recovery is an authored wall-clock duration. Using the
+      // lifecycle-capped delta made a 2.5s recovery stretch past 10–12 real
+      // seconds under software-WebGL stalls (for example at ~1 FPS), which
+      // could leave Jax visibly down long after the intended recovery window.
+      // Movement/combat simulation stays capped; only this recovery timer uses
+      // uncapped elapsed render time.
+      mission.playerDownTimer = Math.max(0, mission.playerDownTimer - wallDelta);
       if (mission.playerDownTimer === 0) {
         mission.playerDown = false;
         mission.playerHealth = Math.max(mission.playerHealth, PLAYER_DOWN_RECOVERY_HEALTH);
