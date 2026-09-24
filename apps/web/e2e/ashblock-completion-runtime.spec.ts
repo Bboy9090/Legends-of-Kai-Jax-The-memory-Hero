@@ -731,7 +731,7 @@ async function activateMemoryTrace(page: Page, hero: 'kai' | 'jax') {
   await expect(page.getByTestId('slice-stage')).toContainText('extraction');
 }
 
-async function extractAndVerifyPersistence(page: Page) {
+async function extractAndVerifyPersistence(page: Page, hero: 'kai' | 'jax') {
   const before = await page.evaluate((missionId) => {
     const state = (window as any).runnerStore.getState();
     return {
@@ -747,7 +747,23 @@ async function extractAndVerifyPersistence(page: Page) {
 
   await page.keyboard.down('w');
   try {
-    await expect.poll(async () => (await readPosition(page))[2], {
+    // Jax can reach the extraction gate with his real collision-aware ground
+    // displacement instead of spending the last seconds of the global chain
+    // slow-walking under software WebGL. Keep W held so E resolves forward.
+    if (hero === 'jax') {
+      await page.keyboard.press('e');
+    }
+
+    await expect.poll(async () => {
+      const z = (await readPosition(page))[2];
+      if (hero === 'jax' && z <= 13.5) {
+        const mode = await page.getByTestId('slice-mode').innerText();
+        if (!mode.includes('DISPLACEMENT')) {
+          await page.keyboard.press('e');
+        }
+      }
+      return z;
+    }, {
       timeout: 20_000,
       intervals: [100, 150, 200, 300],
     }).toBeGreaterThan(15);
@@ -799,7 +815,7 @@ async function runFullAshblockChain(page: Page, hero: 'kai' | 'jax') {
   await enterEncounter(page, hero);
   await defeatPhase55FangSequence(page, hero);
   await activateMemoryTrace(page, hero);
-  await extractAndVerifyPersistence(page);
+  await extractAndVerifyPersistence(page, hero);
   expect(errors, `Unexpected ${hero} full-chain errors:\n${errors.join('\n')}`).toEqual([]);
 }
 
