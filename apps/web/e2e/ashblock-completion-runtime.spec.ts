@@ -235,39 +235,24 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
 }
 
 async function closeIntoUltimateEnvelope(page: Page, hero: 'kai' | 'jax') {
-  const minimumSafeRange = hero === 'kai' ? 3.0 : 2.0;
   const maximumAttackRange = hero === 'kai' ? 8.5 : 5.0;
-  const deadline = Date.now() + 24_000;
+  const deadline = Date.now() + 20_000;
 
   while (Date.now() < deadline) {
     if (await readNumber(page, 'slice-enemy-count') === 0) return;
 
-    const downText = await page.getByTestId('slice-player-down').innerText();
-    if (!downText.includes('NO')) {
-      await waitForPlayerRecovery(page, hero, 'ultimate spacing');
-      continue;
-    }
+    await waitForPlayerRecovery(page, hero, 'ultimate spacing');
 
     const distance = await readNumber(page, 'slice-nearest-enemy-distance');
+    if (distance <= maximumAttackRange) return;
 
-    if (distance < minimumSafeRange) {
-      await dodgeIncomingVolley(page, hero, minimumSafeRange);
-      continue;
-    }
-
-    if (distance > maximumAttackRange) {
-      // Hold position and let certified Fang chase authority close radial
-      // distance. This avoids assuming camera-forward movement aligns with an
-      // enemy after a lateral dodge.
-      await page.waitForTimeout(125);
-      continue;
-    }
-
-    return;
+    // Hold position and let the already-certified Fang chase authority close
+    // radial distance. This is deterministic regardless of lateral dodge offset.
+    await page.waitForTimeout(125);
   }
 
-  await logCombatSnapshot(page, `${hero}:safe-ultimate-band-not-established`);
-  throw new Error(`${hero} could not establish a safe authored ultimate launch band`);
+  await logCombatSnapshot(page, `${hero}:ultimate-range-not-established`);
+  throw new Error(`${hero} could not establish the authored ultimate range`);
 }
 
 async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDistance = 4.5) {
@@ -340,7 +325,7 @@ async function dodgeIncomingVolley(page: Page, hero: 'kai' | 'jax', triggerDista
 
 async function waitForUltimateReadiness(page: Page, hero: 'kai' | 'jax'): Promise<boolean> {
   const requiredEnergy = hero === 'kai' ? 80 : 75;
-  await page.keyboard.up('r').catch(() => undefined);
+  await page.keyboard.up('i').catch(() => undefined);
 
   await waitForPlayerRecovery(page, hero, 'ultimate readiness');
 
@@ -372,13 +357,13 @@ async function waitForUltimateReadiness(page: Page, hero: 'kai' | 'jax'): Promis
 async function pulseUltimateAndObserveAcceptance(page: Page, beforeEnergy: number): Promise<boolean> {
   let minimumEnergy = beforeEnergy;
 
-  await page.keyboard.up('r').catch(() => undefined);
+  await page.keyboard.up('i').catch(() => undefined);
   await page.waitForTimeout(75);
-  await page.keyboard.down('r');
+  await page.keyboard.down('i');
   try {
     await page.waitForTimeout(140);
   } finally {
-    await page.keyboard.up('r');
+    await page.keyboard.up('i');
   }
 
   try {
