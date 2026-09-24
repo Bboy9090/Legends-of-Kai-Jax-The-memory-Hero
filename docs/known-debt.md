@@ -3,7 +3,7 @@
 Comprehensive tracker of all known items that are not currently verified,
 complete, or production-grade. Each item is classified by release impact.
 
-**Last updated:** 2026-08-01 (Phase 1B code integration PR #222)
+**Last updated:** 2026-09-24 (Phase C PR #249 exact-head audit)
 
 ---
 
@@ -38,23 +38,29 @@ instance. Needed for reproducibility and rollback safety.
 **Resolution:** After manual Vercel deployment, record the commit SHA that
 is actually serving production traffic.
 
-### 3. Full 15-Mission End-to-End Completion Matrix
+### 3. Current Story Hub / Mission Coverage
 
-**Status:** ⏳ Pending
+**Status:** ⏳ Partially implemented, truth boundary enforced
 
-The 15 missions are defined in `apps/web/src/lib/story_missions.ts`. Individual
-mission load/enemy-spawn/pause/quit flows are covered by Phase 1A proofs, but
-a complete end-to-end playability matrix (mission entry → mission completion
-or known blocker) has not been run.
+The old 15-mission dataset in `apps/web/src/lib/story_missions.ts` is a
+**quarantined pre-Bloodward cinematic prototype** and is not the current
+public Raging City campaign authority. `CampaignMap.tsx` intentionally routes
+legacy `campaign-map` saves/navigation into `StoryHubScreen` so that stale
+Cross Point / Rift chronology cannot present itself as current story canon.
 
-**What's covered:** Phase 1A playtest verified representative mission flow
-(load, enemy spawn, wave progression, pause, quit). Phase 1B dead-code audit
-removed unreachable mission code paths.
+**Current public Story Hub:** four established Raging City locations are
+visible as Phase C field nodes. Only `vertical_slice_ashblock_heights` has a
+production-authorized playable slice. Ironvein Wards, Skyfall Spines, and
+Storm Ronin Sanctum are briefing-only until their real scenes, encounter
+authority, and chronology-safe content are implemented.
 
-**What's not covered:** Playing all 15 missions sequentially to completion.
+**Automated proof:** production-preview coverage verifies the canonical Story
+Hub, Ashblock's playable launch path, briefing-only disabled state for
+unimplemented locations, and legacy `campaign-map` quarantine.
 
-**Resolution:** Run or document a full 15-mission completion test before
-final release.
+**Resolution:** implement and certify the remaining current-canon field slices.
+Do not revive or count the quarantined 15-mission prototype as release
+completion evidence.
 
 ### 4. Full Boss Battle Matrix
 
@@ -411,7 +417,7 @@ unclear. Not built or tested in this session.
 
 - [ ] **Live Vercel deployment verified** (manual: HTTPS, gameplay flow, asset integrity)
 - [ ] **Deployed commit SHA recorded**
-- [ ] **15-mission completion matrix run** (or documented coverage)
+- [ ] **Current-canon Story Hub coverage complete** (Ashblock certified; remaining field slices implemented/certified)
 - [ ] **Boss battle matrix run** (or documented coverage)
 - [ ] **Roster/model render matrix run** (or documented coverage)
 - [ ] **Performance baseline captured** (frame-time, latency)
@@ -420,4 +426,4 @@ unclear. Not built or tested in this session.
 - [ ] **PR #222 approved and merged**
 - [ ] **v0.1.0-mvp release notes published**
 
-**Remaining blockers before release:** Live Vercel deployment verification (manual step, not automated in this environment).
+**Remaining blockers before release:** current-canon field-slice coverage beyond Ashblock, production asset provenance/licensing, live deployment/device verification, target-platform performance evidence, and the other unchecked release-readiness items above.
