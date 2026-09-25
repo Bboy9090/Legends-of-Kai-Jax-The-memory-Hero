@@ -738,7 +738,7 @@ async function activateMemoryTrace(page: Page, hero: 'kai' | 'jax') {
     hero,
     0,
     5,
-    1.75,
+    1.95,
     18_000,
     'memory-trace-approach',
   );
