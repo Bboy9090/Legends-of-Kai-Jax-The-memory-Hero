@@ -6,6 +6,8 @@ on:
       - "apps/web/src/assets/modelRegistry.ts"
       - "apps/web/public/models/**"
       - "apps/web/scripts/validate-registry.mjs"
+      - "apps/web/scripts/validate-asset-provenance.mjs"
+      - "docs/release/ASSET_PROVENANCE_LEDGER.json"
       - ".github/workflows/registry-validate.yml"
   push:
     branches:
@@ -15,6 +17,8 @@ on:
       - "apps/web/src/assets/modelRegistry.ts"
       - "apps/web/public/models/**"
       - "apps/web/scripts/validate-registry.mjs"
+      - "apps/web/scripts/validate-asset-provenance.mjs"
+      - "docs/release/ASSET_PROVENANCE_LEDGER.json"
       - ".github/workflows/registry-validate.yml"
   workflow_dispatch:
 
@@ -43,12 +47,14 @@ jobs:
           git config core.sparseCheckout true
           git config extensions.partialClone origin
           git sparse-checkout init --cone
-          git sparse-checkout set apps/web
+          git sparse-checkout set apps/web docs/release
           git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin "${COMMIT_SHA}"
           git checkout --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
           test -f apps/web/src/assets/modelRegistry.ts
           test -f apps/web/scripts/validate-registry.mjs
+          test -f apps/web/scripts/validate-asset-provenance.mjs
+          test -f docs/release/ASSET_PROVENANCE_LEDGER.json
           test -d apps/web/public/models
 
       - name: Runtime identity
@@ -67,6 +73,11 @@ jobs:
           echo "REGISTRY_VALIDATOR_EXIT=${status}" >> "${GITHUB_ENV}"
           exit "${status}"
 
+      - name: Report asset provenance coverage
+        working-directory: apps/web
+        run: |
+          node scripts/validate-asset-provenance.mjs 2>&1 | tee /tmp/provenance-report.txt
+
       - name: Registry evidence summary
         if: always()
         run: |
@@ -74,6 +85,13 @@ jobs:
           echo "" >> "${GITHUB_STEP_SUMMARY}"
           echo "- Head: \`${{ github.event.pull_request.head.sha || github.sha }}\`" >> "${GITHUB_STEP_SUMMARY}"
           echo "- Validator exit: \`${REGISTRY_VALIDATOR_EXIT:-not-run}\`" >> "${GITHUB_STEP_SUMMARY}"
+          if test -f /tmp/provenance-report.txt; then
+            echo "" >> "${GITHUB_STEP_SUMMARY}"
+            echo "### Asset provenance coverage (report-only)" >> "${GITHUB_STEP_SUMMARY}"
+            echo '~~~text' >> "${GITHUB_STEP_SUMMARY}"
+            tail -n 100 /tmp/provenance-report.txt >> "${GITHUB_STEP_SUMMARY}"
+            echo '~~~' >> "${GITHUB_STEP_SUMMARY}"
+          fi
           if test -f /tmp/registry-report.txt; then
             echo "" >> "${GITHUB_STEP_SUMMARY}"
             echo '```text' >> "${GITHUB_STEP_SUMMARY}"
