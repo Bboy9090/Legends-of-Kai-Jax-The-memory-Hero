@@ -73,7 +73,7 @@ jobs:
           echo "REGISTRY_VALIDATOR_EXIT=${status}" >> "${GITHUB_ENV}"
           exit "${status}"
 
-      - name: Report asset provenance coverage
+      - name: Enforce asset provenance inventory coverage
         working-directory: apps/web
         run: |
           node scripts/validate-asset-provenance.mjs 2>&1 | tee /tmp/provenance-report.txt
@@ -87,7 +87,7 @@ jobs:
           echo "- Validator exit: \`${REGISTRY_VALIDATOR_EXIT:-not-run}\`" >> "${GITHUB_STEP_SUMMARY}"
           if test -f /tmp/provenance-report.txt; then
             echo "" >> "${GITHUB_STEP_SUMMARY}"
-            echo "### Asset provenance coverage (report-only)" >> "${GITHUB_STEP_SUMMARY}"
+            echo "### Asset provenance inventory coverage" >> "${GITHUB_STEP_SUMMARY}"
             echo '~~~text' >> "${GITHUB_STEP_SUMMARY}"
             tail -n 100 /tmp/provenance-report.txt >> "${GITHUB_STEP_SUMMARY}"
             echo '~~~' >> "${GITHUB_STEP_SUMMARY}"
