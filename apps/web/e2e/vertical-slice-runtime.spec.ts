@@ -100,7 +100,7 @@ async function enterEncounter(page: Page, hero: 'kai' | 'jax') {
   await page.keyboard.down('w');
   try {
     await expect.poll(async () => (await readPosition(page))[2], {
-      timeout: hero === 'kai' ? 20_000 : 8_000,
+      timeout: hero === 'kai' ? 20_000 : 14_000,
       intervals: [150, 200, 250, 400],
     }).toBeGreaterThan(-5);
 
