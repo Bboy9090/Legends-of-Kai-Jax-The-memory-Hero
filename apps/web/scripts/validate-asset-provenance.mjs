@@ -33,11 +33,34 @@ const rows = registryPaths.map((assetPath) => {
 const cleared = rows.filter((row) => row.cleared);
 const unresolved = rows.filter((row) => !row.cleared);
 const explicit = rows.filter((row) => Object.prototype.hasOwnProperty.call(explicitAssets, row.assetPath));
+const missingExplicit = rows.filter((row) => !Object.prototype.hasOwnProperty.call(explicitAssets, row.assetPath));
+const registryPathSet = new Set(registryPaths);
+const staleEntries = Object.keys(explicitAssets).filter((assetPath) => !registryPathSet.has(assetPath)).sort();
 
 console.log(`Model registry unique GLB paths: ${rows.length}`);
 console.log(`Explicit provenance entries: ${explicit.length}`);
+console.log(`Missing explicit inventory entries: ${missingExplicit.length}`);
+console.log(`Stale ledger entries: ${staleEntries.length}`);
 console.log(`Release-cleared assets: ${cleared.length}`);
 console.log(`Unresolved assets: ${unresolved.length}`);
+
+if (missingExplicit.length > 0) {
+  console.error('\nINVENTORY COVERAGE GATE: FAIL');
+  console.error('Every runtime GLB must have an explicit provenance-ledger entry, even when its commercial rights are still unverified.');
+  for (const row of missingExplicit) {
+    console.error(`- missing: ${row.assetPath}`);
+  }
+  process.exit(3);
+}
+
+if (staleEntries.length > 0) {
+  console.log('\nStale provenance-ledger entries (not referenced by MODEL_REGISTRY):');
+  for (const assetPath of staleEntries) {
+    console.log(`- stale: ${assetPath}`);
+  }
+}
+
+console.log('\nINVENTORY COVERAGE GATE: PASS');
 
 if (unresolved.length > 0) {
   console.log('\nUnresolved runtime model provenance:');
