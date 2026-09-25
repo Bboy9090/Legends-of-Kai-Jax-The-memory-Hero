@@ -185,8 +185,26 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
   const dodgeCost = hero === 'kai' ? 20 : 18;
   const deadline = Date.now() + 18_000;
 
-  await page.keyboard.down('Shift');
-  await page.keyboard.down('s');
+  const [initialEnemyCount, initialDistance] = await Promise.all([
+    readNumber(page, 'slice-enemy-count'),
+    readNumber(page, 'slice-nearest-enemy-distance'),
+  ]);
+
+  // Multi-enemy pressure still uses defensive backpedal. Once Jax has reduced
+  // the beat to one live Fang already inside/near his 5-unit radial ultimate,
+  // retreating every recharge only creates a costly re-approach loop. Hold the
+  // ground instead and use the real WINDUP-triggered dodge path for defense.
+  const shouldBackpedal = !(
+    hero === 'jax'
+    && initialEnemyCount === 1
+    && initialDistance <= 5.5
+  );
+
+  if (shouldBackpedal) {
+    await page.keyboard.down('Shift');
+    await page.keyboard.down('s');
+  }
+
   try {
     while (Date.now() < deadline) {
       const [downText, energy, nearestDistance, behaviorText, attackingText, dodgingText] = await Promise.all([
@@ -199,11 +217,15 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
       ]);
 
       if (!downText.includes('NO')) {
-        await page.keyboard.up('s');
-        await page.keyboard.up('Shift');
+        if (shouldBackpedal) {
+          await page.keyboard.up('s');
+          await page.keyboard.up('Shift');
+        }
         await waitForPlayerRecovery(page, hero, 'recharge');
-        await page.keyboard.down('Shift');
-        await page.keyboard.down('s');
+        if (shouldBackpedal) {
+          await page.keyboard.down('Shift');
+          await page.keyboard.down('s');
+        }
         continue;
       }
 
@@ -218,18 +240,20 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
         && attackingText.includes('NO')
         && dodgingText.includes('NO')
       ) {
-        await page.keyboard.up('s');
-        await page.keyboard.up('Shift');
+        if (shouldBackpedal) {
+          await page.keyboard.up('s');
+          await page.keyboard.up('Shift');
+        }
         await dodgeIncomingVolley(page, hero);
-        await page.keyboard.down('Shift');
-        await page.keyboard.down('s');
+        if (shouldBackpedal) {
+          await page.keyboard.down('Shift');
+          await page.keyboard.down('s');
+        }
       }
 
       await page.waitForTimeout(100);
     }
 
-    // One final durable readiness sample closes the race where the controller
-    // becomes ready on the same sparse frame that expires the wall-clock loop.
     const [finalDown, finalEnergy, finalAttacking, finalDodging] = await Promise.all([
       page.getByTestId('slice-player-down').innerText(),
       readNumber(page, 'slice-energy'),
@@ -248,8 +272,10 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
     await logCombatSnapshot(page, `${hero}:recharge-deadline`);
     throw new Error(`${hero} did not reach authored ultimate readiness during recharge`);
   } finally {
-    await page.keyboard.up('s');
-    await page.keyboard.up('Shift');
+    if (shouldBackpedal) {
+      await page.keyboard.up('s');
+      await page.keyboard.up('Shift');
+    }
   }
 }
 
