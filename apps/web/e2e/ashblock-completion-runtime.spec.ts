@@ -191,13 +191,13 @@ async function retreatAndRecharge(page: Page, hero: 'kai' | 'jax') {
   ]);
 
   // Multi-enemy pressure still uses defensive backpedal. Once Jax has reduced
-  // the beat to one live Fang already inside/near his 5-unit radial ultimate,
-  // retreating every recharge only creates a costly re-approach loop. Hold the
-  // ground instead and use the real WINDUP-triggered dodge path for defense.
+  // the beat to one live Fang, retreating during recharge only creates a costly
+  // re-approach loop—especially after storm knockback pushes that target away.
+  // Hold ground, let the lone Fang chase back into range, and use the real
+  // WINDUP-triggered dodge path for defense.
   const shouldBackpedal = !(
     hero === 'jax'
     && initialEnemyCount === 1
-    && initialDistance <= 5.5
   );
 
   if (shouldBackpedal) {
