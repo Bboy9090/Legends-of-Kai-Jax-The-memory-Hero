@@ -80,6 +80,9 @@ jobs:
       - name: Run production preview smoke
         run: node "${PW_CLI}" test apps/web/e2e/production-preview.spec.ts --config=apps/web/playwright.preview.config.ts
 
+      - name: Record built-preview mobile performance evidence
+        run: node "${PW_CLI}" test apps/web/e2e/phase-b2-mobile-performance.spec.ts --config=apps/web/playwright.preview.config.ts
+
       - name: Preview evidence summary
         if: always()
         run: |
