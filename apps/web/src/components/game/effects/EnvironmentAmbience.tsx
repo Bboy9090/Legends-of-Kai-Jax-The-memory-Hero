@@ -1,5 +1,5 @@
-import { useRef, useMemo } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useMemo, useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 type MissionStage = 'traversal' | 'encounter' | 'memory-trace' | 'extraction' | 'complete';
@@ -10,84 +10,88 @@ interface EnvironmentAmbienceProps {
   playerHealth: number;
 }
 
-function getAmbientColorForStage(stage: MissionStage): { ambient: THREE.ColorRepresentation; directional: THREE.ColorRepresentation } {
+function getAmbientColorForStage(stage: MissionStage): {
+  ambient: THREE.ColorRepresentation;
+  directional: THREE.ColorRepresentation;
+  hemisphere: THREE.ColorRepresentation;
+} {
   switch (stage) {
     case 'traversal':
-      return { ambient: '#dbeafe', directional: '#f8fafc' };
+      return { ambient: '#9aa9bd', directional: '#f0b66f', hemisphere: '#35445c' };
     case 'encounter':
-      return { ambient: '#f5d4d1', directional: '#ffe8e3' };
+      return { ambient: '#9a777e', directional: '#f08a63', hemisphere: '#402f46' };
     case 'memory-trace':
-      return { ambient: '#e9d5ff', directional: '#f3e8ff' };
+      return { ambient: '#8d7ab1', directional: '#d8c8ff', hemisphere: '#342d56' };
     case 'extraction':
-      return { ambient: '#dcfce7', directional: '#f0fdf4' };
+      return { ambient: '#779a91', directional: '#bce6d6', hemisphere: '#2f4e50' };
     case 'complete':
-      return { ambient: '#fef08a', directional: '#fef3c7' };
+      return { ambient: '#9e936c', directional: '#f4d794', hemisphere: '#4a4537' };
     default:
-      return { ambient: '#dbeafe', directional: '#f8fafc' };
+      return { ambient: '#9aa9bd', directional: '#f0b66f', hemisphere: '#35445c' };
   }
 }
 
 export function EnvironmentAmbience({ stage, fangBehavior, playerHealth }: EnvironmentAmbienceProps) {
-  const ambientRef = useRef<THREE.Light>(null);
-  const directionalRef = useRef<THREE.Light>(null);
-  const { camera } = useThree();
-  const cameraShakeRef = useRef({ intensity: 0 });
+  const ambientRef = useRef<THREE.AmbientLight>(null);
+  const directionalRef = useRef<THREE.DirectionalLight>(null);
+  const memoryRef = useRef<THREE.PointLight>(null);
 
   const targetColors = useMemo(() => getAmbientColorForStage(stage), [stage]);
 
   useFrame(({ clock }) => {
-    const elapsed = clock.getElapsedTime();
+    const elapsed = clock.elapsedTime;
 
     if (ambientRef.current) {
-      const light = ambientRef.current as THREE.Light;
-      if ('intensity' in light) {
-        const baseIntensity = stage === 'encounter' ? 0.65 : 0.55;
-        const pulse = stage === 'encounter' ? 0.1 * Math.sin(elapsed * 1.5) : 0;
-        const danger = playerHealth < 30 && stage === 'encounter' ? 0.1 * Math.sin(elapsed * 3) : 0;
-        light.intensity = baseIntensity + pulse + danger;
-      }
+      const encounterPulse = stage === 'encounter' ? 0.06 * Math.sin(elapsed * 1.5) : 0;
+      const dangerPulse = playerHealth < 30 && stage === 'encounter'
+        ? 0.05 * Math.sin(elapsed * 3)
+        : 0;
+      ambientRef.current.intensity = 0.48 + encounterPulse + dangerPulse;
     }
 
     if (directionalRef.current) {
-      const light = directionalRef.current as THREE.Light;
-      if ('intensity' in light) {
-        const baseIntensity = stage === 'encounter' ? 1.15 : 1.0;
-        const fangPulse = fangBehavior === 'WINDUP' ? 0.2 * Math.sin(elapsed * 4) : 0;
-        light.intensity = baseIntensity + fangPulse;
-      }
+      const windupPulse = fangBehavior === 'WINDUP' ? 0.14 * Math.sin(elapsed * 4) : 0;
+      directionalRef.current.intensity = (stage === 'encounter' ? 1.05 : 0.92) + windupPulse;
     }
 
-    if (cameraShakeRef.current.intensity > 0) {
-      const shakeX = (Math.random() - 0.5) * cameraShakeRef.current.intensity * 0.02;
-      const shakeY = (Math.random() - 0.5) * cameraShakeRef.current.intensity * 0.02;
-      camera.position.x += shakeX;
-      camera.position.y += shakeY;
-      cameraShakeRef.current.intensity *= 0.95;
+    if (memoryRef.current) {
+      const memoryActive = stage === 'memory-trace' || stage === 'extraction';
+      memoryRef.current.intensity = memoryActive
+        ? 0.62 + 0.12 * Math.sin(elapsed * 2.8)
+        : 0;
     }
   });
 
   return (
     <>
-      <ambientLight ref={ambientRef} intensity={0.55} color={targetColors.ambient} />
+      <ambientLight ref={ambientRef} intensity={0.48} color={targetColors.ambient} />
       <directionalLight
         ref={directionalRef}
         position={[12, 24, -8]}
-        intensity={1.0}
+        intensity={0.92}
         color={targetColors.directional}
         castShadow
       />
-      <hemisphereLight args={['#334155', '#050505', 0.45]} />
+      <hemisphereLight args={[targetColors.hemisphere, '#09090b', 0.4]} />
 
       {stage === 'encounter' && (
-        <pointLight position={[0, 2, 2]} intensity={0.3} color="#ff6b6b" castShadow distance={10} decay={2} />
+        <>
+          <pointLight position={[-5, 2.5, 5]} intensity={0.28} color="#4A2A7A" distance={12} decay={2} />
+          <pointLight position={[5, 2.2, 7]} intensity={0.24} color="#E4511E" distance={11} decay={2} />
+        </>
       )}
 
-      {stage === 'memory-trace' && (
-        <pointLight position={[0, 2, 5]} intensity={0.4} color="#a78bfa" castShadow distance={8} decay={2} />
-      )}
+      <pointLight
+        ref={memoryRef}
+        position={[0, 2.4, 5]}
+        intensity={0}
+        color="#a78bfa"
+        distance={14}
+        decay={2}
+      />
 
       {stage === 'extraction' && (
-        <pointLight position={[0, 1.5, 17]} intensity={0.5} color="#22c55e" castShadow distance={12} decay={2} />
+        <pointLight position={[0, 1.8, 17]} intensity={0.42} color="#6ee7b7" distance={13} decay={2} />
       )}
     </>
   );

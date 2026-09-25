@@ -31,6 +31,8 @@ import { MemoryTraceVisual } from './effects/MemoryTraceVisual';
 import { ExtractionPortalVisual } from './effects/ExtractionPortalVisual';
 import { EnvironmentAmbience } from './effects/EnvironmentAmbience';
 import { AtmosphericEffects } from './effects/AtmosphericEffects';
+import { AshblockDistrictVisual } from './effects/AshblockDistrictVisual';
+import { MemoryEchoOverlay } from './effects/MemoryEchoOverlay';
 import { PerformanceOptimizer } from './performance/PerformanceOptimizer';
 import {
   applyFangKnockback,
@@ -555,6 +557,7 @@ function VerticalSliceEnvironment({
         playerHealth={renderMission.playerHealth}
       />
       <AtmosphericEffects stage={renderStage} fangBehavior={primaryCombatant?.behavior ?? 'IDLE'} />
+      <AshblockDistrictVisual stage={renderStage} />
 
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
@@ -889,6 +892,9 @@ export default function RagingCityVerticalSliceScene({
       </Canvas>
 
       <PlayerHUD debug={debug} />
+      <MemoryEchoOverlay
+        visible={debug.memoryTraceActivated && (debug.stage === 'extraction' || debug.stage === 'complete')}
+      />
       <DeveloperDiagnostics
         debug={debug}
         isCollapsed={diagnosticsCollapsed}

@@ -755,6 +755,9 @@ async function activateMemoryTrace(page: Page, hero: 'kai' | 'jax') {
 
   await expect(page.getByTestId('slice-extraction')).toContainText('OPEN');
   await expect(page.getByTestId('slice-stage')).toContainText('extraction');
+  await expect(page.getByTestId('memory-echo-overlay')).toBeVisible();
+  await expect(page.getByTestId('memory-echo-boryn')).toContainText('Boryn');
+  await expect(page.getByTestId('memory-echo-ulgorr')).toContainText('Ulgorr');
 }
 
 async function extractAndVerifyPersistence(page: Page, hero: 'kai' | 'jax') {
