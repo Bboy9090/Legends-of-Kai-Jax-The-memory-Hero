@@ -7,6 +7,7 @@ export default defineConfig({
   base: "/",
   resolve: {
     extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],
+    dedupe: ["react", "react-dom", "@react-three/fiber"],
     alias: {
       "@": path.resolve(__dirname, "./src"),
       "@beast-kin/engine": path.resolve(__dirname, "../../packages/engine/src"),
