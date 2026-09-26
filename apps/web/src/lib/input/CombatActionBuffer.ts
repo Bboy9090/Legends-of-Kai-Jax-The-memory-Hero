@@ -42,12 +42,13 @@ export class CombatActionBuffer {
 
   private heldCodes = new Set<string>();
   private attached = false;
+  private suppressed = false;
 
   private readonly onKeyDown = (event: KeyboardEvent) => {
     const wasHeld = this.heldCodes.has(event.code);
     this.heldCodes.add(event.code);
 
-    if (event.repeat || wasHeld) return;
+    if (this.suppressed || event.repeat || wasHeld) return;
     const action = KEY_TO_ACTION[event.code];
     if (action) this.enqueue(action);
   };
@@ -91,10 +92,20 @@ export class CombatActionBuffer {
    * event/polling adapters are hardened.
    */
   enqueue(action: BufferedCombatAction): void {
+    if (this.suppressed) return;
     this.queued[action] = Math.min(
       MAX_QUEUED_PRESSES,
       this.queued[action] + 1
     );
+  }
+
+  setSuppressed(suppressed: boolean): void {
+    this.suppressed = suppressed;
+    if (suppressed) this.clear();
+  }
+
+  isSuppressed(): boolean {
+    return this.suppressed;
   }
 
   consume(action: BufferedCombatAction): boolean {
