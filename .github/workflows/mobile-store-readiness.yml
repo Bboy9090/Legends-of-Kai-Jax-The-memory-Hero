@@ -181,7 +181,7 @@ jobs:
       - name: Run production smoke and mobile performance gates
         working-directory: source
         run: |
-          pnpm -C apps/web test:e2e -- e2e/smoke.spec.ts e2e/phase-b2-mobile-performance.spec.ts
+          pnpm -C apps/web exec playwright test e2e/smoke.spec.ts e2e/phase-b2-mobile-performance.spec.ts
 
   ios-device-archive:
     name: iOS unsigned device archive
