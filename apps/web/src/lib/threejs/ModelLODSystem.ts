@@ -63,7 +63,7 @@ export function getLODModelPath(
   distance: number = 0
 ): string {
   const config = LOD_MODEL_REGISTRY[characterId];
-  if (!config) return '/models/stylized-beast.glb'; // Fallback
+  if (!config) return '/models/kai_jax_beast.glb'; // Fallback
 
   const deviceType = getDeviceType();
   const thresholds = LOD_THRESHOLDS[deviceType];
