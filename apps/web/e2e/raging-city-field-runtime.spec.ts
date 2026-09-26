@@ -1,9 +1,9 @@
 import { expect, test, type ConsoleMessage, type Page } from '@playwright/test';
 
 const MISSIONS = [
-  { id: 'vertical_slice_ironvein_wards', minFinalZ: 38 },
-  { id: 'vertical_slice_skyfall_spines', minFinalZ: 29 },
-  { id: 'vertical_slice_storm_ronin_sanctum', minFinalZ: 29 },
+  { id: 'vertical_slice_ironvein_wards', interactionZ: 41 },
+  { id: 'vertical_slice_skyfall_spines', interactionZ: 32 },
+  { id: 'vertical_slice_storm_ronin_sanctum', interactionZ: 32 },
 ] as const;
 
 const BENIGN_ERROR_PATTERNS = [
@@ -76,24 +76,24 @@ for (const mission of MISSIONS) {
     await bootField(page, mission.id);
 
     const deadline = Date.now() + 30_000;
+    const burstCutoffZ = mission.interactionZ - 10;
+
     await page.keyboard.down('w');
     try {
-      while (Date.now() < deadline) {
-        if ((await readZ(page)) >= mission.minFinalZ) break;
-
-        // Jax's authored ground displacement is the stable traversal accelerator
-        // for sparse software-WebGL CI. This remains real gameplay input: no
-        // teleporting, direct position mutation, or test-only scene hooks.
+      while (Date.now() < deadline && (await readZ(page)) < burstCutoffZ) {
+        // Jax's authored ground displacement accelerates only the long approach.
+        // Stop bursting near the target so sparse CI frames cannot jump clean
+        // through the interaction radius.
         await page.keyboard.press('e');
         await page.waitForTimeout(350);
       }
 
-      expect(await readZ(page)).toBeGreaterThanOrEqual(mission.minFinalZ);
+      await expect(page.getByTestId('field-interact-ready')).toBeVisible({
+        timeout: 15_000,
+      });
     } finally {
       await page.keyboard.up('w');
     }
-
-    await expect(page.getByTestId('field-interact-ready')).toBeVisible({ timeout: 8_000 });
     await page.keyboard.press('f');
 
     await expect.poll(async () => page.evaluate(() => {
