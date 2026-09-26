@@ -13,6 +13,7 @@ export default defineConfig({
       "@beast-kin/engine": path.resolve(__dirname, "../../packages/engine/src"),
       "@beast-kin/characters": path.resolve(__dirname, "../../packages/characters/src"),
       "@beast-kin/shared": path.resolve(__dirname, "../../packages/shared/src"),
+      "@beast-kin/ui": path.resolve(__dirname, "../../packages/ui/src"),
     },
   },
   server: {
