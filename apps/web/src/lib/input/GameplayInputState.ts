@@ -151,8 +151,9 @@ class TouchInputHandler {
   };
 
   constructor() {
-    // This will be integrated with the useTouchInput store
-    // For now, we provide the interface
+    // Touch state is fed directly by controller-specific mobile UI adapters.
+    // Adventure mode retains its separate useTouchInput path; Kai/Jax vertical
+    // slice controls write here so every device reaches the same controller API.
   }
 
   updateJoystick(x: number, y: number, active: boolean) {
