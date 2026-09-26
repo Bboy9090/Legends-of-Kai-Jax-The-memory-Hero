@@ -292,3 +292,103 @@ test('Ashblock Kai accepted heavy resolves through KaiAttackSystem scene hitboxe
 
   expect(errors, `Unexpected Kai encounter errors:\n${errors.join('\n')}`).toEqual([]);
 });
+
+
+test.describe('vertical slice native touch bridge', () => {
+  test.use({
+    hasTouch: true,
+    viewport: { width: 390, height: 844 },
+  });
+
+  test('Kai touch dodge reaches the real controller and moves the hero', async ({ page }) => {
+    const errors = collectErrors(page);
+    await bootSlice(page, 'kai', errors);
+
+    await expect(page.getByTestId('vertical-slice-touch-controls')).toBeVisible();
+    const before = await readPosition(page);
+
+    await page.getByTestId('slice-touch-dodge').tap();
+
+    await expect.poll(async () => {
+      const after = await readPosition(page);
+      return Math.hypot(after[0] - before[0], after[2] - before[2]);
+    }, {
+      timeout: 4_000,
+      intervals: [50, 75, 100, 150, 250],
+    }).toBeGreaterThan(2.5);
+
+    expect(errors, `Unexpected Kai touch errors:\n${errors.join('\n')}`).toEqual([]);
+  });
+
+  test('Jax touch traversal pulse reaches real displacement authority', async ({ page }) => {
+    const errors = collectErrors(page);
+    await bootSlice(page, 'jax', errors);
+
+    await expect(page.getByTestId('vertical-slice-touch-controls')).toBeVisible();
+    const before = await readPosition(page);
+
+    await page.getByTestId('slice-touch-traversal').tap();
+
+    await expect.poll(async () => {
+      const after = await readPosition(page);
+      return Math.hypot(after[0] - before[0], after[2] - before[2]);
+    }, {
+      timeout: 4_000,
+      intervals: [50, 75, 100, 150, 250],
+    }).toBeGreaterThan(1.0);
+
+    expect(errors, `Unexpected Jax touch errors:\n${errors.join('\n')}`).toEqual([]);
+  });
+
+  test('touch joystick drives Kai through unified GameplayInputState', async ({ page }) => {
+    const errors = collectErrors(page);
+    await bootSlice(page, 'kai', errors);
+
+    const joystick = page.getByTestId('slice-touch-joystick');
+    await expect(joystick).toBeVisible();
+    const box = await joystick.boundingBox();
+    if (!box) throw new Error('Touch joystick has no bounding box');
+
+    const before = await readPosition(page);
+    const centerX = box.x + box.width / 2;
+    const centerY = box.y + box.height / 2;
+
+    await joystick.dispatchEvent('pointerdown', {
+      pointerId: 17,
+      pointerType: 'touch',
+      isPrimary: true,
+      clientX: centerX,
+      clientY: centerY,
+      buttons: 1,
+    });
+    await joystick.dispatchEvent('pointermove', {
+      pointerId: 17,
+      pointerType: 'touch',
+      isPrimary: true,
+      clientX: centerX,
+      clientY: centerY - 40,
+      buttons: 1,
+    });
+
+    try {
+      await expect.poll(async () => {
+        const after = await readPosition(page);
+        return Math.hypot(after[0] - before[0], after[2] - before[2]);
+      }, {
+        timeout: 4_000,
+        intervals: [75, 100, 150, 250],
+      }).toBeGreaterThan(0.25);
+    } finally {
+      await joystick.dispatchEvent('pointerup', {
+        pointerId: 17,
+        pointerType: 'touch',
+        isPrimary: true,
+        clientX: centerX,
+        clientY: centerY - 40,
+        buttons: 0,
+      });
+    }
+
+    expect(errors, `Unexpected Kai joystick errors:\n${errors.join('\n')}`).toEqual([]);
+  });
+});
