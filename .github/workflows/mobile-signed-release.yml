@@ -2,12 +2,23 @@ name: Mobile Signed Release
 
 on:
   workflow_dispatch:
+    inputs:
+      platform:
+        description: "Signed artifact to build"
+        required: true
+        default: both
+        type: choice
+        options:
+          - both
+          - android
+          - ios
 
 permissions:
   contents: write
 
 jobs:
   android-signed-aab:
+    if: ${{ inputs.platform == 'both' || inputs.platform == 'android' }}
     name: Android signed Play AAB
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -85,6 +96,7 @@ jobs:
         run: rm -f release-upload.jks
 
   ios-signed-ipa:
+    if: ${{ inputs.platform == 'both' || inputs.platform == 'ios' }}
     name: iOS signed App Store IPA
     runs-on: macos-latest
     timeout-minutes: 55
