@@ -56,6 +56,13 @@ export class CombatActionBuffer {
     this.heldCodes.delete(event.code);
   };
 
+  private readonly onWindowBlur = () => {
+    // A lost-focus keyup is not guaranteed to reach the page. Drop both held
+    // state and queued presses so returning to the app cannot fire a ghost move.
+    this.heldCodes.clear();
+    this.clear();
+  };
+
   constructor(attachToWindow = true) {
     if (attachToWindow) this.attach();
   }
@@ -64,6 +71,7 @@ export class CombatActionBuffer {
     if (this.attached || typeof window === 'undefined') return;
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
+    window.addEventListener('blur', this.onWindowBlur);
     this.attached = true;
   }
 
@@ -71,6 +79,7 @@ export class CombatActionBuffer {
     if (!this.attached || typeof window === 'undefined') return;
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
+    window.removeEventListener('blur', this.onWindowBlur);
     this.attached = false;
     this.heldCodes.clear();
     this.clear();
