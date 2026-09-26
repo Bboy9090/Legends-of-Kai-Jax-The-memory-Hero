@@ -11,7 +11,7 @@ export default defineConfig({
   workers: 1,
   reporter: [['html'], ['list']],
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://127.0.0.1:4173',
     trace: 'on-first-retry',
   },
   projects: [
@@ -25,8 +25,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
+    command: 'npm run build && npm run preview -- --host 127.0.0.1 --port 4173',
+    url: 'http://127.0.0.1:4173',
     reuseExistingServer: true,
     timeout: 120000,
   },
