@@ -62,17 +62,33 @@ async function boot(page: Page): Promise<void> {
   });
 }
 
+async function enterStableState(page: Page, gameState: string): Promise<void> {
+  await page.evaluate((nextState) => {
+    const runner = (window as any).runnerStore;
+    const game = (window as any).gameStore;
+    game?.getState?.().reset?.();
+    runner.getState().setGameState(nextState);
+  }, gameState);
+
+  await page.waitForFunction(
+    (expected) => (window as any).runnerStore?.getState?.().gameState === expected,
+    gameState,
+    { timeout: 10_000 },
+  );
+
+  // The first-run cinematic is intentionally global. Wait for it to finish
+  // rather than racing a fixed timeout against React/store hydration.
+  await page.locator('text=READY?').waitFor({ state: 'detached', timeout: 10_000 }).catch(() => {});
+}
+
 test("versus: boots, navigates menus, and starts a battle without crashing", async ({ page }) => {
   const errors = collectErrors(page);
   await boot(page);
 
-  // Main menu — the intro sequence auto-completes on first non-lore screen.
-  await page.evaluate(() => (window as any).runnerStore.getState().setGameState("menu"));
-  await page.waitForTimeout(5_000); // let the ~4s GameIntro run and clear
-
-  // Versus select renders.
-  await page.evaluate(() => (window as any).runnerStore.getState().setGameState("versus-select"));
-  await expect(page.getByText("Choose Your Fighter")).toBeVisible();
+  // Enter the production selection screen through the exposed release store
+  // and wait for both store state and first-run cinematic stability.
+  await enterStableState(page, "versus-select");
+  await expect(page.getByRole("heading", { name: "Choose Your Fighter" })).toBeVisible({ timeout: 15_000 });
 
   // Start a fight and confirm the battle canvas mounts.
   // Exact match so we don't collide with the fighter cards' "Fighter" role label.
@@ -87,17 +103,16 @@ test("story: enters a real story mission and mounts the arena without crashing",
   const errors = collectErrors(page);
   await boot(page);
 
-  // Enter Act I, Mission 1 directly through the store with a real mission id.
+  // Enter Act I, Mission 1 directly through the release store with a real mission id.
   await page.evaluate(() => {
     const s = (window as any).runnerStore.getState();
     s.setCharacter("kai-jax");
     s.setActiveStoryMission("story_act1_m1");
-    s.setGameState("story-mode");
   });
-  await page.waitForTimeout(5_000); // let the ~4s GameIntro run and clear
+  await enterStableState(page, "story-mode");
 
   // Mission briefing renders the real mission title (proves the id resolved).
-  await expect(page.getByText("Awakening of the Memory Hero")).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText("Awakening of the Memory Hero", { exact: true })).toBeVisible({ timeout: 20_000 });
 
   // The adventure arena canvas mounts.
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
