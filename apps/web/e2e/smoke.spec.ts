@@ -63,7 +63,7 @@ async function boot(page: Page): Promise<void> {
   await page.waitForFunction(
     () => {
       const runner = (window as any).runnerStore;
-      return !runner?.persist?.hasHydrated || runner.persist.hasHydrated();
+      return Boolean(runner?.persist?.hasHydrated?.())
     },
     null,
     { timeout: 15_000 },
