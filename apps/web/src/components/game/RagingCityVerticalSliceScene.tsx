@@ -43,6 +43,8 @@ import {
 } from '../../game/characters/fang/FangCombatantContract';
 import { updateFangCombatantAI } from '../../game/characters/fang/FangCombatantAI';
 import { gameplayInputManager } from '../../lib/input/GameplayInputState';
+import { gameplayPulseBuffer } from '../../lib/input/GameplayPulseBuffer';
+import VerticalSliceTouchControls from './VerticalSliceTouchControls';
 import {
   ASHBLOCK_PHASE_55_SEQUENCE,
   type AshblockPhase55Beat,
@@ -466,7 +468,9 @@ function VerticalSliceEnvironment({
       transitionStage('memory-trace');
     }
 
-    const interactEdge = input.interact && !previousInteractRef.current;
+    const interactEdge =
+      gameplayPulseBuffer.consume('interact') ||
+      (input.interact && !previousInteractRef.current);
     previousInteractRef.current = input.interact;
 
     const distToTrace = Math.hypot(playerPos.x, playerPos.z - MEMORY_TRACE_Z);
@@ -895,11 +899,14 @@ export default function RagingCityVerticalSliceScene({
       <MemoryEchoOverlay
         visible={debug.memoryTraceActivated && (debug.stage === 'extraction' || debug.stage === 'complete')}
       />
-      <DeveloperDiagnostics
-        debug={debug}
-        isCollapsed={diagnosticsCollapsed}
-        setIsCollapsed={setDiagnosticsCollapsed}
-      />
+      <VerticalSliceTouchControls />
+      {forcedCharacter && (
+        <DeveloperDiagnostics
+          debug={debug}
+          isCollapsed={diagnosticsCollapsed}
+          setIsCollapsed={setDiagnosticsCollapsed}
+        />
+      )}
     </div>
   );
 }
