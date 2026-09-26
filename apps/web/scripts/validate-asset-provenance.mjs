@@ -12,7 +12,7 @@ const requireCleared = process.argv.includes('--require-cleared');
 const registrySource = fs.readFileSync(registryPath, 'utf8');
 const ledger = JSON.parse(fs.readFileSync(ledgerPath, 'utf8'));
 const registryPaths = [...new Set(
-  [...registrySource.matchAll(/\bpath:\s*["']([^"']+\.glb)["']/g)].map((match) => match[1])
+  [...registrySource.matchAll(/["']([^"']+\.glb)["']/g)].map((match) => match[1])
 )].sort();
 
 if (registryPaths.length === 0) {
