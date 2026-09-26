@@ -22,6 +22,7 @@ import LoreHub from "./components/game/LoreHub";
 import ControllerTestScene from "./components/game/ControllerTestScene";
 import { JaxTestScene } from "./components/game/characters/jax/JaxTestScene";
 import RagingCityVerticalSliceScene from "./components/game/RagingCityVerticalSliceScene";
+import RagingCityFieldScene from "./components/game/RagingCityFieldScene";
 import AdventureArena from "./components/game/adventure/AdventureArena";
 import AdventureHUD from "./components/game/adventure/AdventureHUD";
 import AdventureTouchControls from "./components/game/adventure/AdventureTouchControls";
@@ -107,7 +108,7 @@ function resolveArenaOpponentCombatId(playerPublicId: string | null | undefined)
 
 function App() {
   const { phase } = useGame();
-  const { gameState, selectedCharacter } = useRunner();
+  const { gameState, selectedCharacter, activeStoryMissionId } = useRunner();
   const battleCanvasActive =
     (phase === "playing" || phase === "ended") && gameState === "playing";
 
@@ -237,7 +238,11 @@ function App() {
         {phase === 'ready' && gameState === 'customization' && <CustomizationMenu />}
         {gameState === 'controller-test' && <ControllerTestScene />}
         {gameState === 'jax-test' && <JaxTestScene />}
-        {gameState === 'vertical-slice' && <RagingCityVerticalSliceScene />}
+        {gameState === 'vertical-slice' && (
+          activeStoryMissionId === 'vertical_slice_ashblock_heights'
+            ? <RagingCityVerticalSliceScene />
+            : <RagingCityFieldScene />
+        )}
 
         {gameState === 'adventure' && (() => {
           const charId = resolvePublicCombatId(selectedCharacter);
