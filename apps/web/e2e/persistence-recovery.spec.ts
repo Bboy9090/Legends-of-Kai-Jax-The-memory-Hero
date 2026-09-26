@@ -1,9 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 
 async function bootClean(page: Page) {
-  await page.addInitScript(() => localStorage.removeItem('kai-jax-save'));
+  // Clear persistent state exactly once. Do not install a navigation-time hook:
+  // these tests intentionally reload the page to prove the save survives.
   await page.goto('/');
   await expect(page.locator('body')).toBeVisible();
+  await page.evaluate(() => localStorage.removeItem('kai-jax-save'));
+  await page.reload();
   await page.waitForFunction(() => Boolean((window as any).runnerStore?.getState), null, {
     timeout: 15_000,
   });
