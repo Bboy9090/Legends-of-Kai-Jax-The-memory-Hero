@@ -3,7 +3,7 @@
 Comprehensive tracker of all known items that are not currently verified,
 complete, or production-grade. Each item is classified by release impact.
 
-**Last updated:** 2026-09-24 (Phase C PR #249 exact-head audit)
+**Last updated:** 2026-09-26 (Phase C PR #249 exact-head certification)
 
 ---
 
@@ -128,15 +128,19 @@ actually reachable and loadable from the live Vercel deployment.
 
 ### 8. Performance / Frame-Time Validation
 
-**Status:** ⏳ Pending
+**Status:** ⏳ Partially verified
 
-No recorded evidence of frame-time stability, input latency, or GPU utilization
-on target platforms (desktop, mobile, Vercel's infrastructure).
+Automated runtime coverage now explicitly exercises sparse/slow software-WebGL
+conditions and the live controllers cap movement simulation while allowing
+bounded lifecycle catch-up. Input buffering, knockdown recovery, Fang AI timing,
+and HUD diagnostics have all been hardened against low-FPS execution.
 
-**Known benchmarks:** None recorded.
+This is meaningful stability evidence, but it is not yet a target-device
+performance certification.
 
-**Resolution:** Run or document performance baseline before release. Do not
-make "no frame drops" or "60 FPS guaranteed" claims without recorded proof.
+**Still required:** capture real frame-time, input-latency, thermal, memory, and
+GPU evidence on representative iOS and Android hardware before making 60 FPS or
+"no frame drops" claims.
 
 ---
 
@@ -271,18 +275,27 @@ the live MVP. None are part of the build or affect release readiness.
 **Resolution:** Already addressed for Phase 0 MVP code. Archive or remove
 prototype folders in Phase 2 housekeeping if needed.
 
-### 16. Gamepad Input Not Implemented
+### 16. Gamepad Input
 
-**Status:** Known, intentional
+**Status:** ✅ Implemented and runtime-certified for the Kai/Jax vertical slice
 
-No `navigator.getGamepads()` integration exists anywhere. The codebase has
-a `Gamepad2Icon` SVG (purely decorative menu button icon), but no actual
-gamepad input handling.
+The live unified input path now includes standard browser Gamepad API support
+via `navigator.getGamepads()`. Standard-mapping movement, camera, jump,
+LB+A traversal, light/heavy/special/ultimate attacks, dodge, interact, pause,
+and menu levels are represented in `GameplayInputState`.
 
-**Current state:** Keyboard and touch input work. Gamepad not supported.
+Short gamepad button pulses are independently edge-polled and buffered so they
+survive sparse WebGL frames. Suppression during knockdown/state locks now blocks
+both level input and buffered actions, preventing latent controller commands
+from firing after recovery.
 
-**Resolution:** Low priority for MVP. Gamepad support can be added post-launch
-if needed.
+**Automated proof:** vertical-slice runtime coverage verifies Jax standard
+gamepad movement+dodge, Kai short LB+A traversal, sparse button-edge buffering,
+and suppression behavior.
+
+**Remaining work:** broader physical-controller coverage on target iOS/Android
+hardware and non-standard controller mappings remains device-validation debt,
+not an implementation gap.
 
 ### 17. Service-Worker Registration Disabled
 
@@ -421,9 +434,20 @@ unclear. Not built or tested in this session.
 - [ ] **Boss battle matrix run** (or documented coverage)
 - [ ] **Roster/model render matrix run** (or documented coverage)
 - [ ] **Performance baseline captured** (frame-time, latency)
-- [ ] **All verification gates passed:** install, build, test, typecheck
-- [ ] **Local production preview confirmed** (build output, main menu)
+- [x] **Phase C exact-head game verification gates passed:** CI, registry, Kai runtime, Jax runtime, combat certification, vertical-slice runtime, production preview, iOS native preflight, Android native preflight
+- [x] **Local/CI production preview confirmed** (build output and preview smoke)
 - [ ] **PR #222 approved and merged**
 - [ ] **v0.1.0-mvp release notes published**
 
-**Remaining blockers before release:** current-canon field-slice coverage beyond Ashblock, production asset provenance/licensing, live deployment/device verification, target-platform performance evidence, and the other unchecked release-readiness items above.
+**Remaining blockers before release:** current-canon field-slice coverage beyond Ashblock, production asset provenance/licensing, live Vercel identity/device verification, target-platform performance evidence, boss/roster coverage, and the other unchecked release-readiness items above.
+
+**Current exact-head certification note (2026-09-26):** PR #249 head
+`634fb3e54331195c3557b97b190eddb6553c4f67` passed all nine substantive
+game/release workflows: CI, Registry Validation, Kai Runtime Smoke, Jax Runtime
+Smoke, Combat Release Certification, Vertical Slice Runtime Smoke, Production
+Preview Smoke, iOS Native Preflight, and Android Native Preflight. A separate
+GitHub default CodeQL umbrella check still reports a C# analysis failure even
+though the repository currently exposes no `.cs` source files and the
+repository-owned CodeQL workflow is manual-only for JavaScript/TypeScript and
+Python. Treat that as security-scanner configuration debt, not a gameplay
+failure.
