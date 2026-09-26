@@ -10,10 +10,10 @@
   },
   "inventory": {
     "generatedFrom": "apps/web/src/assets/modelRegistry.ts",
-    "uniqueRuntimeGlbCount": 41,
-    "explicitEntryCount": 41,
+    "uniqueRuntimeGlbCount": 45,
+    "explicitEntryCount": 45,
     "releaseClearedCount": 0,
-    "unresolvedCount": 41
+    "unresolvedCount": 45
   },
   "assets": {
     "/models/BORYN.glb": {
@@ -425,6 +425,46 @@
       "acquiredAt": null,
       "status": "unverified",
       "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/kai_jax_beast.glb": {
+      "role": "Lightweight battle variant for Kai/Kai-Jax family",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Runtime battle variant newly brought under canonical registry authority; commercial distribution evidence still required."
+    },
+    "/models/kaison_beast.glb": {
+      "role": "Lightweight battle variant used by compatible legacy combat identities",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Runtime battle variant newly brought under canonical registry authority; commercial distribution evidence still required."
+    },
+    "/models/boryx_zenith_beast.glb": {
+      "role": "Lightweight battle variant used for Boryn/Borax combat rendering",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Runtime battle variant newly brought under canonical registry authority; commercial distribution evidence still required."
+    },
+    "/models/stylized-beast.glb": {
+      "role": "Canonical runtime fallback model for unregistered battle identities",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Fallback runtime GLB is now explicitly inventoried; commercial distribution evidence still required."
     }
   }
 }
