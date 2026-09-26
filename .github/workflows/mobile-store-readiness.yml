@@ -37,7 +37,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: source
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --filter ./apps/web... --frozen-lockfile
 
       - name: Test, typecheck, and build web
         working-directory: source
@@ -80,7 +80,7 @@ jobs:
       - name: Install, build, and sync Android
         working-directory: source
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --filter ./apps/web... --frozen-lockfile
           pnpm -C apps/web build
           cd apps/web
           npx cap sync android
@@ -119,7 +119,7 @@ jobs:
       - name: Install, build, and sync iOS
         working-directory: source
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --filter ./apps/web... --frozen-lockfile
           pnpm -C apps/web build
           cd apps/web
           npx cap sync ios
