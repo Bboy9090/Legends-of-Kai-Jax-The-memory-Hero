@@ -340,6 +340,65 @@ test.describe('vertical slice native touch bridge', () => {
     expect(errors, `Unexpected Jax touch errors:\n${errors.join('\n')}`).toEqual([]);
   });
 
+  test('suppressed touch input requires a fresh press after control returns', async ({ page }) => {
+    const errors = collectErrors(page);
+    await bootSlice(page, 'kai', errors);
+
+    const before = await readPosition(page);
+    await page.evaluate(async () => {
+      const input = await import('/src/lib/input/GameplayInputState.ts');
+      input.gameplayInputManager.setSuppressed(true);
+    });
+
+    await page.getByTestId('slice-touch-dodge').tap();
+
+    const joystick = page.getByTestId('slice-touch-joystick');
+    const box = await joystick.boundingBox();
+    if (!box) throw new Error('Touch joystick has no bounding box');
+
+    const centerX = box.x + box.width / 2;
+    const centerY = box.y + box.height / 2;
+    await joystick.dispatchEvent('pointerdown', {
+      pointerId: 29,
+      pointerType: 'touch',
+      isPrimary: true,
+      clientX: centerX,
+      clientY: centerY,
+      buttons: 1,
+    });
+    await joystick.dispatchEvent('pointermove', {
+      pointerId: 29,
+      pointerType: 'touch',
+      isPrimary: true,
+      clientX: centerX,
+      clientY: centerY - 40,
+      buttons: 1,
+    });
+
+    await page.waitForTimeout(100);
+    await page.evaluate(async () => {
+      const input = await import('/src/lib/input/GameplayInputState.ts');
+      input.gameplayInputManager.setSuppressed(false);
+    });
+
+    // A touch held or tapped during suppression must stay inert after recovery
+    // until the player produces a new input edge.
+    await page.waitForTimeout(350);
+    const after = await readPosition(page);
+    expect(Math.hypot(after[0] - before[0], after[2] - before[2])).toBeLessThan(0.25);
+
+    await joystick.dispatchEvent('pointerup', {
+      pointerId: 29,
+      pointerType: 'touch',
+      isPrimary: true,
+      clientX: centerX,
+      clientY: centerY - 40,
+      buttons: 0,
+    });
+
+    expect(errors, `Unexpected suppressed-touch errors:\n${errors.join('\n')}`).toEqual([]);
+  });
+
   test('touch joystick drives Kai through unified GameplayInputState', async ({ page }) => {
     const errors = collectErrors(page);
     await bootSlice(page, 'kai', errors);
