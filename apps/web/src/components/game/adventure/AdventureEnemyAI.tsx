@@ -75,7 +75,7 @@ const ENEMY_TARGET_HEIGHTS: Record<string, number> = {
 
 function EnemyMesh({ enemy }: EnemyMeshProps) {
   const config = getModelConfig(enemy.fighterId);
-  const modelPath = config?.path || "/models/stylized-beast.glb";
+  const modelPath = config?.path || "/models/kai_jax_beast.glb";
   const { scene, animations } = useGLTF(modelPath);
   const clonedScene = useMemo(() => SkeletonUtils.clone(scene), [scene]);
 

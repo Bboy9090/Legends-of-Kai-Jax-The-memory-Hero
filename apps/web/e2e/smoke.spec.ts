@@ -43,36 +43,108 @@ function isBenign(text: string): boolean {
 function collectErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on("pageerror", (e) => {
-    if (!isBenign(e.message)) errors.push(`pageerror: ${e.message}`);
+    if (!isBenign(e.message)) {
+      const entry = `pageerror: ${e.message}`;
+      errors.push(entry);
+      console.log("RELEASE_PAGE_ERROR", entry);
+    }
   });
   page.on("console", (msg: ConsoleMessage) => {
     if (msg.type() === "error" && !isBenign(msg.text())) {
-      errors.push(`console.error: ${msg.text()}`);
+      const entry = `console.error: ${msg.text()}`;
+      errors.push(entry);
+      console.log("RELEASE_CONSOLE_ERROR", entry);
     }
   });
   return errors;
 }
 
+type BootSnapshot = {
+  gameState: string | null;
+  phase: string | null;
+  hydrated: boolean;
+  persisted: string | null;
+  canvasCount: number;
+  bodyText: string;
+};
+
 /** Boot and wait for the runner store to be available. */
-async function boot(page: Page): Promise<void> {
+async function boot(page: Page): Promise<BootSnapshot> {
   await page.goto("/");
   await expect(page.locator("body")).toBeVisible();
   await page.waitForFunction(() => Boolean((window as any).runnerStore), null, {
     timeout: 15_000,
   });
+  await page.waitForFunction(
+    () => {
+      const runner = (window as any).runnerStore;
+      return Boolean(runner?.persist?.hasHydrated?.());
+    },
+    null,
+    { timeout: 15_000 },
+  );
+
+  const snapshot = await page.evaluate(() => ({
+    gameState: (window as any).runnerStore?.getState?.().gameState ?? null,
+    phase: (window as any).gameStore?.getState?.().phase ?? null,
+    hydrated: Boolean((window as any).runnerStore?.persist?.hasHydrated?.()),
+    persisted: window.localStorage.getItem("kai-jax-save"),
+    canvasCount: document.querySelectorAll("canvas").length,
+    bodyText: (document.body.innerText || "").slice(0, 1200),
+  }));
+  console.log("RELEASE_BOOT_SNAPSHOT", JSON.stringify(snapshot, null, 2));
+  await page.waitForTimeout(250);
+  return snapshot;
+}
+
+async function enterGameFromLoreHub(page: Page): Promise<void> {
+  await expect(page.getByTestId("lorehub-play-game-btn")).toBeVisible({ timeout: 15_000 });
+  await page.getByTestId("lorehub-play-game-btn").click();
+
+  // Entering the game from Lore Hub intentionally triggers the first-run intro.
+  await page.getByTestId("game-intro").waitFor({ state: "visible", timeout: 5_000 });
+  await page.getByTestId("game-intro").waitFor({ state: "detached", timeout: 10_000 });
+
+  await page.waitForFunction(
+    () => (window as any).runnerStore?.getState?.().gameState === "menu",
+    null,
+    { timeout: 10_000 },
+  );
+  await expect(page.getByRole("button", { name: /COMBAT ARENA/i })).toBeVisible({ timeout: 10_000 });
+}
+
+async function enterStableState(page: Page, gameState: string): Promise<void> {
+  await page.evaluate((nextState) => {
+    const runner = (window as any).runnerStore;
+    const game = (window as any).gameStore;
+    game?.getState?.().reset?.();
+    runner.getState().setGameState(nextState);
+  }, gameState);
+
+  await page.waitForFunction(
+    (expected) => (window as any).runnerStore?.getState?.().gameState === expected,
+    gameState,
+    { timeout: 10_000 },
+  );
+
+  // The first-run cinematic is intentionally global. Wait for it to finish
+  // rather than racing a fixed timeout against React/store hydration.
+  await page.getByTestId('game-intro').waitFor({ state: 'detached', timeout: 10_000 }).catch(() => {});
 }
 
 test("versus: boots, navigates menus, and starts a battle without crashing", async ({ page }) => {
   const errors = collectErrors(page);
   await boot(page);
 
-  // Main menu — the intro sequence auto-completes on first non-lore screen.
-  await page.evaluate(() => (window as any).runnerStore.getState().setGameState("menu"));
-  await page.waitForTimeout(5_000); // let the ~4s GameIntro run and clear
-
-  // Versus select renders.
-  await page.evaluate(() => (window as any).runnerStore.getState().setGameState("versus-select"));
-  await expect(page.getByText("Choose Your Fighter")).toBeVisible();
+  // Follow the same first-run path a player uses, then open Combat Arena.
+  await enterGameFromLoreHub(page);
+  await page.getByRole("button", { name: /COMBAT ARENA/i }).click();
+  await page.waitForFunction(
+    () => (window as any).runnerStore?.getState?.().gameState === "versus-select",
+    null,
+    { timeout: 10_000 },
+  );
+  await expect(page.getByRole("heading", { name: "Choose Your Fighter" })).toBeVisible({ timeout: 15_000 });
 
   // Start a fight and confirm the battle canvas mounts.
   // Exact match so we don't collide with the fighter cards' "Fighter" role label.
@@ -87,17 +159,22 @@ test("story: enters a real story mission and mounts the arena without crashing",
   const errors = collectErrors(page);
   await boot(page);
 
-  // Enter Act I, Mission 1 directly through the store with a real mission id.
+  // Complete the real first-run launch sequence before selecting a known story mission.
+  await enterGameFromLoreHub(page);
   await page.evaluate(() => {
     const s = (window as any).runnerStore.getState();
     s.setCharacter("kai-jax");
     s.setActiveStoryMission("story_act1_m1");
     s.setGameState("story-mode");
   });
-  await page.waitForTimeout(5_000); // let the ~4s GameIntro run and clear
+  await page.waitForFunction(
+    () => (window as any).runnerStore?.getState?.().gameState === "story-mode",
+    null,
+    { timeout: 10_000 },
+  );
 
   // Mission briefing renders the real mission title (proves the id resolved).
-  await expect(page.getByText("Awakening of the Memory Hero")).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText("Awakening of the Memory Hero", { exact: true })).toBeVisible({ timeout: 20_000 });
 
   // The adventure arena canvas mounts.
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });

@@ -15,3 +15,8 @@ export const useGame = create<GameState>((set) => ({
   end: () => set({ phase: "ended" }),
   reset: () => set({ phase: "ready" }),
 }));
+
+// Release/E2E observability: mirrors runnerStore without changing runtime behavior.
+if (typeof window !== "undefined") {
+  (window as any).gameStore = useGame;
+}

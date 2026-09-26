@@ -174,7 +174,7 @@ export function GameIntro({ onComplete }: { onComplete: () => void }) {
   if (phase === 'done') return null;
   
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black">
+    <div data-testid="game-intro" className="fixed inset-0 z-[200] flex items-center justify-center bg-black">
       {/* Logo Phase */}
       {phase === 'logo' && (
         <div className="text-center animate-[zoomIn_0.5s_ease-out]">

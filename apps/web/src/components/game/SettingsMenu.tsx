@@ -171,13 +171,13 @@ export default function SettingsMenu() {
           </p>
           <div className="flex items-center justify-center gap-6">
             <button 
-              onClick={() => window.open('https://legendsofkaijax.com/privacy', '_blank')}
+              onClick={() => window.open('/privacy.html', '_blank')}
               className="text-[10px] text-white/40 hover:text-white transition-colors uppercase tracking-widest"
             >
               Privacy Policy
             </button>
             <button 
-              onClick={() => window.open('https://legendsofkaijax.com/terms', '_blank')}
+              onClick={() => window.open('/terms.html', '_blank')}
               className="text-[10px] text-white/40 hover:text-white transition-colors uppercase tracking-widest"
             >
               Terms of Service
