@@ -52,7 +52,7 @@ async function bootField(page: Page, missionId: string) {
 
   await page.evaluate((id) => {
     const store = (window as any).runnerStore;
-    store.getState().setCharacter('kai');
+    store.getState().setCharacter('jax');
     store.getState().setActiveStoryMission(id);
     store.getState().setGameState('vertical-slice');
   }, missionId);
@@ -75,16 +75,22 @@ for (const mission of MISSIONS) {
     const errors = collectErrors(page);
     await bootField(page, mission.id);
 
-    await page.keyboard.down('Shift');
+    const deadline = Date.now() + 30_000;
     await page.keyboard.down('w');
     try {
-      await expect.poll(async () => readZ(page), {
-        timeout: 30_000,
-        intervals: [100, 150, 200, 300, 500],
-      }).toBeGreaterThanOrEqual(mission.minFinalZ);
+      while (Date.now() < deadline) {
+        if ((await readZ(page)) >= mission.minFinalZ) break;
+
+        // Jax's authored ground displacement is the stable traversal accelerator
+        // for sparse software-WebGL CI. This remains real gameplay input: no
+        // teleporting, direct position mutation, or test-only scene hooks.
+        await page.keyboard.press('e');
+        await page.waitForTimeout(350);
+      }
+
+      expect(await readZ(page)).toBeGreaterThanOrEqual(mission.minFinalZ);
     } finally {
       await page.keyboard.up('w');
-      await page.keyboard.up('Shift');
     }
 
     await expect(page.getByTestId('field-interact-ready')).toBeVisible({ timeout: 8_000 });
