@@ -44,10 +44,7 @@ const ALL_TOUCH_ACTIONS: TouchLevelAction[] = [
 const JOYSTICK_RADIUS = 44;
 
 function clearVerticalSliceTouchState() {
-  gameplayInputManager.setTouchJoystick(0, 0, false);
-  for (const action of ALL_TOUCH_ACTIONS) {
-    gameplayInputManager.setTouchAction(action, false);
-  }
+  gameplayInputManager.resetTouchInput();
   combatActionBuffer.clear();
   gameplayPulseBuffer.clear();
 }
@@ -72,8 +69,15 @@ function TouchButton({
 
   const release = (event?: ReactPointerEvent<HTMLButtonElement>) => {
     if (event && activePointerRef.current !== event.pointerId) return;
-    if (event && event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
+    if (event) {
+      try {
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+      } catch {
+        // Some embedded WebViews/synthetic test events do not expose a live
+        // pointer-capture slot. Releasing input state is still authoritative.
+      }
     }
     activePointerRef.current = null;
     setPressed(false);
@@ -84,7 +88,11 @@ function TouchButton({
     if (activePointerRef.current !== null) return;
     event.preventDefault();
     activePointerRef.current = event.pointerId;
-    event.currentTarget.setPointerCapture(event.pointerId);
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Pointer capture is an enhancement, not input authority.
+    }
     setPressed(true);
     gameplayInputManager.setTouchAction(action, true);
 
@@ -163,8 +171,14 @@ function MovementJoystick() {
 
   const release = (event?: ReactPointerEvent<HTMLDivElement>) => {
     if (event && activePointerRef.current !== event.pointerId) return;
-    if (event && event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
+    if (event) {
+      try {
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+      } catch {
+        // Keep reset behavior reliable when capture is unavailable.
+      }
     }
     activePointerRef.current = null;
     setOffset([0, 0]);
@@ -179,7 +193,11 @@ function MovementJoystick() {
         if (activePointerRef.current !== null) return;
         event.preventDefault();
         activePointerRef.current = event.pointerId;
-        event.currentTarget.setPointerCapture(event.pointerId);
+        try {
+          event.currentTarget.setPointerCapture(event.pointerId);
+        } catch {
+          // Movement still works without capture while the pointer remains here.
+        }
         update(event.clientX, event.clientY);
       }}
       onPointerMove={(event) => {
