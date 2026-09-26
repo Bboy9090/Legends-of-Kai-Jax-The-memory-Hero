@@ -43,6 +43,7 @@ import {
 } from '../../game/characters/fang/FangCombatantContract';
 import { updateFangCombatantAI } from '../../game/characters/fang/FangCombatantAI';
 import { gameplayInputManager } from '../../lib/input/GameplayInputState';
+import { combatActionBuffer } from '../../lib/input/CombatActionBuffer';
 import { gameplayPulseBuffer } from '../../lib/input/GameplayPulseBuffer';
 import VerticalSliceTouchControls from './VerticalSliceTouchControls';
 import {
@@ -886,6 +887,19 @@ export default function RagingCityVerticalSliceScene({
     (snapshot: VerticalSliceDebugSnapshot) => setDebug(snapshot),
     []
   );
+
+  useEffect(() => {
+    // Global edge buffers must start empty at the gameplay boundary. This
+    // prevents menu presses or focus-loss remnants from becoming ghost combat
+    // or traversal actions when the slice mounts.
+    combatActionBuffer.clear();
+    gameplayPulseBuffer.clear();
+
+    return () => {
+      combatActionBuffer.clear();
+      gameplayPulseBuffer.clear();
+    };
+  }, []);
 
   return (
     <div className="relative w-full h-screen bg-[#080a10]">
