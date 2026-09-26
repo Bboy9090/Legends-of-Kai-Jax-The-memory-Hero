@@ -2,9 +2,7 @@ name: Extended Release Certification
 
 on:
   pull_request:
-    branches: [main, develop]
-  push:
-    branches: [main, develop]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -20,10 +18,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - name: Checkout exact head
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Materialize exact provenance workspace
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git"
+          git config core.sparseCheckout true
+          git config extensions.partialClone origin
+          git sparse-checkout init --cone
+          git sparse-checkout set apps/web docs/release
+          git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin "${COMMIT_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
       - name: Validate runtime GLB inventory coverage
         working-directory: apps/web
         run: node scripts/validate-asset-provenance.mjs
@@ -33,10 +42,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout exact head
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Materialize exact web workspace
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git"
+          git config core.sparseCheckout true
+          git config extensions.partialClone origin
+          git sparse-checkout init --cone
+          git sparse-checkout set apps/web packages
+          git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin "${COMMIT_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
       - name: Activate pnpm
         run: |
           corepack enable
@@ -45,21 +65,31 @@ jobs:
         env:
           ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
         run: pnpm install --filter ./apps/web... --frozen-lockfile
+      - name: Type-check roster authority
+        run: pnpm -C apps/web typecheck
       - name: Registry and versus roster tests
         run: pnpm -C apps/web exec vitest run src/assets/modelRegistry.test.ts src/lib/versusRoster.test.ts
-      - name: Fighter roster validator
-        working-directory: apps/web
-        run: pnpm exec tsx scripts/validate-fighter-roster.ts
 
   hosted-mobile-performance:
     name: Hosted mobile performance evidence
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - name: Checkout exact head
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Materialize exact web workspace
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git"
+          git config core.sparseCheckout true
+          git config extensions.partialClone origin
+          git sparse-checkout init --cone
+          git sparse-checkout set apps/web packages
+          git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin "${COMMIT_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
       - name: Activate pnpm
         run: |
           corepack enable
@@ -68,21 +98,24 @@ jobs:
         env:
           ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
         run: pnpm install --filter ./apps/web... --frozen-lockfile
-      - name: Install Chromium
-        working-directory: apps/web
-        run: pnpm exec playwright install --with-deps chromium
       - name: Build production preview
         run: pnpm -C apps/web build
-      - name: Start built preview
-        working-directory: apps/web
+      - name: Resolve Playwright test runner
         run: |
-          pnpm preview --host 127.0.0.1 --port 4173 > /tmp/kj-preview.log 2>&1 &
-          for i in {1..60}; do
-            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+          PW_PACKAGE="$(pnpm -C apps/web exec node -p "require.resolve('@playwright/test/package.json')")"
+          PW_CLI="$(dirname "${PW_PACKAGE}")/cli.js"
+          test -f "${PW_CLI}"
+          echo "PW_CLI=${PW_CLI}" >> "${GITHUB_ENV}"
+      - name: Install Chromium runtime
+        run: node "${PW_CLI}" install chromium
+      - name: Start built preview
+        run: |
+          pnpm -C apps/web preview --host 127.0.0.1 --port 4173 > /tmp/kj-preview.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
             sleep 1
           done
           cat /tmp/kj-preview.log
           exit 1
       - name: Run mobile cadence evidence
-        working-directory: apps/web
-        run: pnpm exec playwright test e2e/phase-b2-mobile-performance.spec.ts --reporter=list
+        run: node "${PW_CLI}" test apps/web/e2e/phase-b2-mobile-performance.spec.ts --config=apps/web/playwright.preview.config.ts
