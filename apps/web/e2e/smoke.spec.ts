@@ -43,11 +43,17 @@ function isBenign(text: string): boolean {
 function collectErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on("pageerror", (e) => {
-    if (!isBenign(e.message)) errors.push(`pageerror: ${e.message}`);
+    if (!isBenign(e.message)) {
+      const entry = `pageerror: ${e.message}`;
+      errors.push(entry);
+      console.log("RELEASE_PAGE_ERROR", entry);
+    }
   });
   page.on("console", (msg: ConsoleMessage) => {
     if (msg.type() === "error" && !isBenign(msg.text())) {
-      errors.push(`console.error: ${msg.text()}`);
+      const entry = `console.error: ${msg.text()}`;
+      errors.push(entry);
+      console.log("RELEASE_CONSOLE_ERROR", entry);
     }
   });
   return errors;
@@ -87,6 +93,7 @@ async function boot(page: Page): Promise<BootSnapshot> {
     bodyText: (document.body.innerText || "").slice(0, 1200),
   }));
   console.log("RELEASE_BOOT_SNAPSHOT", JSON.stringify(snapshot, null, 2));
+  await page.waitForTimeout(250);
   return snapshot;
 }
 
