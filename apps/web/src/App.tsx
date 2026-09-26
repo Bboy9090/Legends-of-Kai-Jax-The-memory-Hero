@@ -112,10 +112,6 @@ function App() {
     (phase === "playing" || phase === "ended") && gameState === "playing";
 
   useEffect(() => {
-    console.log('[Blocker A Trace] App render', { phase, gameState, battleCanvasActive });
-  }, [phase, gameState, battleCanvasActive]);
-
-  useEffect(() => {
     const menuLike =
       gameState === "menu" ||
       gameState === "versus-select" ||
