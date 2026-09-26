@@ -255,8 +255,8 @@ importers:
         specifier: ^8.16.6
         version: 8.18.0(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.185.1)
       '@react-three/postprocessing':
-        specifier: ^3.0.4
-        version: 3.0.4(@react-three/fiber@8.18.0(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.185.1))(@types/three@0.185.1)(react@18.3.1)(three@0.185.1)
+        specifier: 2.19.1
+        version: 2.19.1(@react-three/fiber@8.18.0(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.185.1))(@types/three@0.185.1)(react@18.3.1)(three@0.185.1)
       '@tanstack/react-query':
         specifier: ^5.101.2
         version: 5.101.2(react@18.3.1)
@@ -1453,6 +1453,13 @@ packages:
         optional: true
       react-native:
         optional: true
+
+  '@react-three/postprocessing@2.19.1':
+    resolution: {integrity: sha512-7P25LOSToH/I6b3UipNK17IIFlX4FDUmWcaomfwu82+CzhXTOz8Fcc1ZXEZ7vFA/5Fr/2peNlXgXZJvoa+aCdA==}
+    peerDependencies:
+      '@react-three/fiber': ^8.0
+      react: ^18.0
+      three: '>= 0.138.0'
 
   '@react-three/postprocessing@3.0.4':
     resolution: {integrity: sha512-e4+F5xtudDYvhxx3y0NtWXpZbwvQ0x1zdOXWTbXMK6fFLVDd4qucN90YaaStanZGS4Bd5siQm0lGL/5ogf8iDQ==}
@@ -5965,14 +5972,16 @@ snapshots:
       - '@types/react'
       - immer
 
-  '@react-three/postprocessing@3.0.4(@react-three/fiber@8.18.0(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.185.1))(@types/three@0.185.1)(react@18.3.1)(three@0.185.1)':
+  '@react-three/postprocessing@2.19.1(@react-three/fiber@8.18.0(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.185.1))(@types/three@0.185.1)(react@18.3.1)(three@0.185.1)':
     dependencies:
       '@react-three/fiber': 8.18.0(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.185.1)
+      buffer: 6.0.3
       maath: 0.6.0(@types/three@0.185.1)(three@0.185.1)
       n8ao: 1.10.1(postprocessing@6.39.3(three@0.185.1))(three@0.185.1)
       postprocessing: 6.39.3(three@0.185.1)
       react: 18.3.1
       three: 0.185.1
+      three-stdlib: 2.36.1(three@0.185.1)
     transitivePeerDependencies:
       - '@types/three'
 
