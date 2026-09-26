@@ -220,3 +220,42 @@ jobs:
         run: pnpm install --filter ./apps/web... --frozen-lockfile
       - name: Run current-canon field contract tests
         run: pnpm -C apps/web exec vitest run src/game/world/zones/IronveinWards/IronveinFieldContent.test.ts src/game/world/zones/SkyfallSpines/SkyfallFieldContent.test.ts src/game/world/zones/StormRoninSanctum/StormRoninSanctumContent.test.ts src/mission/FieldMissionCatalog.test.ts
+
+  raging-city-field-runtime:
+    name: Raging City field runtime completion
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Materialize exact web workspace
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git"
+          git config core.sparseCheckout true
+          git config extensions.partialClone origin
+          git sparse-checkout init --cone
+          git sparse-checkout set apps/web packages
+          git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin "${COMMIT_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+      - name: Install web workspace
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+        run: pnpm install --filter ./apps/web... --frozen-lockfile
+      - name: Resolve Playwright test runner
+        run: |
+          PW_PACKAGE="$(pnpm -C apps/web exec node -p "require.resolve('@playwright/test/package.json')")"
+          PW_CLI="$(dirname "${PW_PACKAGE}")/cli.js"
+          test -f "${PW_CLI}"
+          echo "PW_CLI=${PW_CLI}" >> "${GITHUB_ENV}"
+      - name: Install Chromium runtime
+        run: node "${PW_CLI}" install chromium
+      - name: Run Raging City field runtime completion
+        run: node "${PW_CLI}" test apps/web/e2e/raging-city-field-runtime.spec.ts --config=apps/web/playwright.config.ts
