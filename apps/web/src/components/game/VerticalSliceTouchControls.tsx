@@ -29,18 +29,6 @@ const PULSE_ACTIONS: Partial<Record<TouchLevelAction, BufferedGameplayPulse>> = 
   interact: 'interact',
 };
 
-const ALL_TOUCH_ACTIONS: TouchLevelAction[] = [
-  'jump',
-  'dodge',
-  'traversal',
-  'traversalModifier',
-  'interact',
-  'attackLight',
-  'attackHeavy',
-  'attackSpecial',
-  'attackUltimate',
-];
-
 const JOYSTICK_RADIUS = 44;
 
 function clearVerticalSliceTouchState() {
@@ -105,8 +93,17 @@ function TouchButton({
     hapticFeedback(haptic);
   };
 
-  useEffect(() => () => {
-    gameplayInputManager.setTouchAction(action, false);
+  useEffect(() => {
+    const resetVisualAndInput = () => {
+      activePointerRef.current = null;
+      setPressed(false);
+      gameplayInputManager.setTouchAction(action, false);
+    };
+    window.addEventListener('blur', resetVisualAndInput);
+    return () => {
+      window.removeEventListener('blur', resetVisualAndInput);
+      resetVisualAndInput();
+    };
   }, [action]);
 
   return (
@@ -117,6 +114,7 @@ function TouchButton({
       onPointerDown={press}
       onPointerUp={release}
       onPointerCancel={release}
+      onLostPointerCapture={release}
       style={{
         width: size,
         height: size,
@@ -144,6 +142,19 @@ function MovementJoystick() {
   const baseRef = useRef<HTMLDivElement>(null);
   const activePointerRef = useRef<number | null>(null);
   const [offset, setOffset] = useState<[number, number]>([0, 0]);
+
+  useEffect(() => {
+    const resetVisualAndInput = () => {
+      activePointerRef.current = null;
+      setOffset([0, 0]);
+      gameplayInputManager.setTouchJoystick(0, 0, false);
+    };
+    window.addEventListener('blur', resetVisualAndInput);
+    return () => {
+      window.removeEventListener('blur', resetVisualAndInput);
+      resetVisualAndInput();
+    };
+  }, []);
 
   const update = (clientX: number, clientY: number) => {
     const base = baseRef.current;
@@ -207,6 +218,7 @@ function MovementJoystick() {
       }}
       onPointerUp={release}
       onPointerCancel={release}
+      onLostPointerCapture={release}
       style={{
         width: 112,
         height: 112,
