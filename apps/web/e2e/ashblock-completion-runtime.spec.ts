@@ -876,9 +876,11 @@ test('Ashblock Phase 5.5 full completion chain persists exactly once for Kai', a
 
 test('Ashblock Phase 5.5 full completion chain persists exactly once for Jax', async ({ page }) => {
   // Jax's authored 5-unit ultimate and 75-energy cycle require materially more
-  // combat iterations than Kai under software WebGL. The per-step assertions
-  // remain bounded; this only prevents the global Playwright budget from
-  // terminating a chain that is still making verified forward progress.
-  test.setTimeout(720_000);
+  // combat iterations than Kai under software WebGL. Exact-head #256 reached
+  // Memory Trace while still making verified forward progress, then exhausted
+  // the former 12-minute global budget during controller-owned navigation.
+  // Keep all per-step bounds intact and allow the complete 10-15 minute slice
+  // proof to finish without converting real combat/navigation into shortcuts.
+  test.setTimeout(900_000);
   await runFullAshblockChain(page, 'jax');
 });
