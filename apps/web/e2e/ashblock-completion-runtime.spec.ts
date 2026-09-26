@@ -319,11 +319,29 @@ async function moveTowardWorldPoint(
     let improved = false;
     for (const key of orderedKeys) {
       const before = await distanceToTarget();
+      const beforePosition = await readPosition(page);
+      const movementThreshold = preferredKey === key ? 0.15 : 0.08;
 
       await page.keyboard.down('Shift');
       await page.keyboard.down(key);
       try {
-        await page.waitForTimeout(preferredKey === key ? 420 : 220);
+        // Software-WebGL CI can render near 1 FPS. A fixed 220–420 ms hold may
+        // therefore contain no simulation frame at all and falsely teach the
+        // navigator that a useful direction made no progress. Hold only until
+        // the real controller-owned player position proves one movement sample.
+        try {
+          await expect.poll(async () => {
+            const [x, , z] = await readPosition(page);
+            return Math.hypot(x - beforePosition[0], z - beforePosition[2]);
+          }, {
+            timeout: 1_500,
+            intervals: [50, 75, 100, 150, 200, 300],
+          }).toBeGreaterThanOrEqual(movementThreshold);
+        } catch {
+          // No sampled movement in this sparse window. Release the key and let
+          // the empirical search try another direction rather than fabricating
+          // position or extending a held input indefinitely.
+        }
       } finally {
         await page.keyboard.up(key);
         await page.keyboard.up('Shift');
@@ -742,7 +760,7 @@ async function activateMemoryTrace(page: Page, hero: 'kai' | 'jax') {
     // two decimals, so retain a small safety margin without requiring the test
     // navigator to converge inside an unnecessarily tighter 1.95-unit circle.
     1.98,
-    18_000,
+    30_000,
     'memory-trace-approach',
   );
 
