@@ -1,0 +1,88 @@
+name: Extended Release Certification
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: extended-release-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  asset-inventory:
+    name: Asset inventory truth
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Validate runtime GLB inventory coverage
+        working-directory: apps/web
+        run: node scripts/validate-asset-provenance.mjs
+
+  roster-registry:
+    name: Roster and registry integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+      - name: Install web workspace
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+        run: pnpm install --filter ./apps/web... --frozen-lockfile
+      - name: Registry and versus roster tests
+        run: pnpm -C apps/web exec vitest run src/assets/modelRegistry.test.ts src/lib/versusRoster.test.ts
+      - name: Fighter roster validator
+        working-directory: apps/web
+        run: pnpm exec tsx scripts/validate-fighter-roster.ts
+
+  hosted-mobile-performance:
+    name: Hosted mobile performance evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+      - name: Install web workspace
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+        run: pnpm install --filter ./apps/web... --frozen-lockfile
+      - name: Install Chromium
+        working-directory: apps/web
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Build production preview
+        run: pnpm -C apps/web build
+      - name: Start built preview
+        working-directory: apps/web
+        run: |
+          pnpm preview --host 127.0.0.1 --port 4173 > /tmp/kj-preview.log 2>&1 &
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/kj-preview.log
+          exit 1
+      - name: Run mobile cadence evidence
+        working-directory: apps/web
+        run: pnpm exec playwright test e2e/phase-b2-mobile-performance.spec.ts --reporter=list
