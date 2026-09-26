@@ -392,3 +392,81 @@ test.describe('vertical slice native touch bridge', () => {
     expect(errors, `Unexpected Kai joystick errors:\n${errors.join('\n')}`).toEqual([]);
   });
 });
+
+
+test('Jax standard gamepad drives movement and dodge through unified input', async ({ page }) => {
+  await page.addInitScript(() => {
+    const buttons = Array.from({ length: 16 }, () => ({ pressed: false, touched: false, value: 0 }));
+    const gamepad = {
+      axes: [0, 0, 0, 0],
+      buttons,
+      connected: true,
+      id: 'Kai-Jax Automated Standard Gamepad',
+      index: 0,
+      mapping: 'standard',
+      timestamp: 0,
+      vibrationActuator: null,
+      hapticActuators: [],
+    };
+    Object.defineProperty(navigator, 'getGamepads', {
+      configurable: true,
+      value: () => [gamepad],
+    });
+    (window as any).__kjTestGamepad = gamepad;
+  });
+
+  const errors = collectErrors(page);
+  await bootSlice(page, 'jax', errors);
+
+  await page.evaluate(() => {
+    const gamepad = (window as any).__kjTestGamepad;
+    const connected = new Event('gamepadconnected');
+    Object.defineProperty(connected, 'gamepad', { value: gamepad });
+    window.dispatchEvent(connected);
+  });
+
+  const start = await readPosition(page);
+  await page.evaluate(() => {
+    (window as any).__kjTestGamepad.axes[1] = -1;
+  });
+  try {
+    await expect.poll(async () => {
+      const moved = await readPosition(page);
+      return moved[2] - start[2];
+    }, {
+      timeout: 4_000,
+      intervals: [75, 100, 150, 250],
+    }).toBeGreaterThan(0.25);
+  } finally {
+    await page.evaluate(() => {
+      (window as any).__kjTestGamepad.axes[1] = 0;
+    });
+  }
+
+  await page.waitForTimeout(250);
+  const beforeDodge = await readPosition(page);
+  await page.evaluate(() => {
+    const button = (window as any).__kjTestGamepad.buttons[1];
+    button.pressed = true;
+    button.touched = true;
+    button.value = 1;
+  });
+  try {
+    await expect.poll(async () => {
+      const after = await readPosition(page);
+      return Math.hypot(after[0] - beforeDodge[0], after[2] - beforeDodge[2]);
+    }, {
+      timeout: 4_000,
+      intervals: [50, 75, 100, 150, 250],
+    }).toBeGreaterThan(2.5);
+  } finally {
+    await page.evaluate(() => {
+      const button = (window as any).__kjTestGamepad.buttons[1];
+      button.pressed = false;
+      button.touched = false;
+      button.value = 0;
+    });
+  }
+
+  expect(errors, `Unexpected Jax gamepad errors:\n${errors.join('\n')}`).toEqual([]);
+});
