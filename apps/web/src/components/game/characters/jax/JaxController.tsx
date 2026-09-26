@@ -13,6 +13,7 @@ import * as THREE from 'three';
 import { useAudio } from '../../../../lib/stores/useAudio';
 import { gameplayInputManager, GameplayInputState } from '../../../../lib/input/GameplayInputState';
 import { combatActionBuffer } from '../../../../lib/input/CombatActionBuffer';
+import { gameplayPulseBuffer } from '../../../../lib/input/GameplayPulseBuffer';
 import { DisplacementController } from './DisplacementSystem';
 import { StormAirSystem } from './StormAirSystem';
 import { AttackPhase, JaxAttackSystem, JaxAttackType } from './JaxAttackSystem';
@@ -253,10 +254,9 @@ export function useJaxController(
     if (facingDir.lengthSq() < 0.0001) facingDir.set(0, 0, 1);
     facingDir.normalize();
 
-    const traversalEdge = wasJustPressed(
-      input.traversal,
-      prevInput?.traversal ?? false
-    );
+    const traversalEdge =
+      gameplayPulseBuffer.consume('traversal') ||
+      wasJustPressed(input.traversal, prevInput?.traversal ?? false);
 
     const displacementAim = worldMoveDir.lengthSq() > 0.0001
       ? worldMoveDir.clone().normalize()
@@ -344,7 +344,11 @@ export function useJaxController(
     jaxRef.current.position.copy(finalPos);
     jax.position.copy(finalPos);
 
-    if (wasJustPressed(input.jump, prevInput?.jump ?? false)) {
+    const jumpPressed =
+      gameplayPulseBuffer.consume('jump') ||
+      wasJustPressed(input.jump, prevInput?.jump ?? false);
+
+    if (jumpPressed) {
       if (isGrounded && !jax.isDodging) {
         jax.velocity.y = MOVEMENT_CONFIG.jumpVelocity;
         jax.isAirborne = true;
