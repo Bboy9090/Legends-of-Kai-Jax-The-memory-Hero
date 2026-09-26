@@ -70,14 +70,24 @@ export class TouchManager {
 }
 
 // Haptic feedback for mobile devices
-export function hapticFeedback(type: 'light' | 'medium' | 'heavy' = 'light') {
-  if ('vibrate' in navigator) {
-    const patterns = {
-      light: [10],
-      medium: [20],
-      heavy: [40]
-    };
-    navigator.vibrate(patterns[type]);
+export type HapticFeedbackResult = 'vibration' | 'unsupported' | 'failed';
+
+export function hapticFeedback(type: 'light' | 'medium' | 'heavy' = 'light'): HapticFeedbackResult {
+  if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') {
+    return 'unsupported';
+  }
+
+  const patterns = {
+    light: [10],
+    medium: [20],
+    heavy: [40],
+  } as const;
+
+  try {
+    return navigator.vibrate(patterns[type]) ? 'vibration' : 'unsupported';
+  } catch {
+    // Haptics must never block gameplay input or pause handling.
+    return 'failed';
   }
 }
 
