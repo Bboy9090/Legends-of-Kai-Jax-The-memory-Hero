@@ -139,7 +139,7 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            build | tee ../../../ios-release-build.log
+            build 2>&1 | tee ../../ios-release-build.log
 
       - name: Verify iOS release evidence
         working-directory: source/apps/web
