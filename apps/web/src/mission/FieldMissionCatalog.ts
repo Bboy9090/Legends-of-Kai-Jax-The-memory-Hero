@@ -3,7 +3,7 @@ import { IRONVEIN_FIELD_SEQUENCE } from '../game/world/zones/IronveinWards/Ironv
 import { SKYFALL_FIELD_SEQUENCE } from '../game/world/zones/SkyfallSpines/SkyfallFieldContent';
 import { STORM_RONIN_SANCTUM_SEQUENCE } from '../game/world/zones/StormRoninSanctum/StormRoninSanctumContent';
 
-export type FieldMissionRuntime = 'ashblock-combat' | 'briefing-only';
+export type FieldMissionRuntime = 'ashblock-combat' | 'field-traversal' | 'briefing-only';
 
 export interface FieldMissionCatalogEntry {
   id: string;
@@ -25,21 +25,21 @@ export const FIELD_MISSION_CATALOG: Record<string, FieldMissionCatalogEntry> = {
     id: 'vertical_slice_ironvein_wards',
     location: 'IRONVEIN WARDS',
     pressure: 'ANTI-SABERTOOTH COVENANT ACTIVITY',
-    runtime: 'briefing-only',
+    runtime: 'field-traversal',
     objectives: IRONVEIN_FIELD_SEQUENCE.map((beat) => beat.objective),
   },
   vertical_slice_skyfall_spines: {
     id: 'vertical_slice_skyfall_spines',
     location: 'SKYFALL SPINES',
     pressure: 'CONTESTED TERRITORY',
-    runtime: 'briefing-only',
+    runtime: 'field-traversal',
     objectives: SKYFALL_FIELD_SEQUENCE.map((beat) => beat.objective),
   },
   vertical_slice_storm_ronin_sanctum: {
     id: 'vertical_slice_storm_ronin_sanctum',
     location: 'STORM RONIN SANCTUM',
     pressure: 'RONIN LEGACY SITE',
-    runtime: 'briefing-only',
+    runtime: 'field-traversal',
     objectives: STORM_RONIN_SANCTUM_SEQUENCE.map((beat) => beat.objective),
   },
 };
