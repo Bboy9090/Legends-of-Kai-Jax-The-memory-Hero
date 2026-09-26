@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   android-signed-aab:
@@ -62,6 +62,22 @@ jobs:
           jarsigner -verify -verbose -certs "$AAB"
           sha256sum "$AAB"
           printf '%s\n' "ANDROID_SIGNED_AAB_OK ${{ github.sha }}"
+
+      - name: Persist signed AAB as private draft release asset
+        working-directory: source/apps/web/android
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          AAB="app/build/outputs/bundle/release/app-release.aab"
+          SHORT_SHA="${COMMIT_SHA:0:12}"
+          TAG="android-rc-${SHORT_SHA}"
+          cp "$AAB" "Legends-of-Kai-Jax-1.0.0-build1-${SHORT_SHA}.aab"
+          if ! gh release view "$TAG" --repo "$REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$TAG"               --repo "$REPOSITORY"               --target "$COMMIT_SHA"               --title "Android RC 1.0.0 build 1 (${SHORT_SHA})"               --notes "Signed Google Play release candidate for exact commit ${COMMIT_SHA}."               --draft
+          fi
+          gh release upload "$TAG"             "Legends-of-Kai-Jax-1.0.0-build1-${SHORT_SHA}.aab"             --repo "$REPOSITORY"             --clobber
 
       - name: Remove temporary keystore
         if: always()
@@ -173,6 +189,24 @@ jobs:
           codesign --verify --deep --strict build/LegendsOfKaiJax.xcarchive/Products/Applications/App.app
           shasum -a 256 "$IPA"
           printf '%s\n' "IOS_SIGNED_IPA_OK ${{ github.sha }}"
+
+      - name: Persist signed IPA as private draft release asset
+        working-directory: source/apps/web/ios/App
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          IPA="$(find build/export -maxdepth 1 -name '*.ipa' -print -quit)"
+          test -n "$IPA"
+          SHORT_SHA="${COMMIT_SHA:0:12}"
+          TAG="ios-rc-${SHORT_SHA}"
+          OUTPUT="Legends-of-Kai-Jax-1.0.0-build1-${SHORT_SHA}.ipa"
+          cp "$IPA" "$OUTPUT"
+          if ! gh release view "$TAG" --repo "$REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$TAG"               --repo "$REPOSITORY"               --target "$COMMIT_SHA"               --title "iOS RC 1.0.0 build 1 (${SHORT_SHA})"               --notes "Signed App Store release candidate for exact commit ${COMMIT_SHA}."               --draft
+          fi
+          gh release upload "$TAG" "$OUTPUT" --repo "$REPOSITORY" --clobber
 
       - name: Remove temporary signing material
         if: always()
