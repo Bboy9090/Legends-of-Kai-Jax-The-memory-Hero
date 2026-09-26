@@ -200,8 +200,25 @@ export function useJaxController(
       }
     }
 
-    const landingProbe = Math.max(0.35, Math.max(0, -jax.velocity.y) * delta + 0.2);
-    const ground = queryGround(jax.position, landingProbe);
+    // Probe far enough to cover the entire downward travel this frame, plus
+    // the controller's current height above the nominal walkable plane. Under
+    // sparse software-WebGL frames Jax can otherwise step just below y=0; the
+    // old sub-meter ray then starts below the floor, never reacquires it, and
+    // gravity compounds into an out-of-world fall.
+    const downwardTravel = Math.max(0, -jax.velocity.y) * delta;
+    const landingProbe = Math.max(0.35, downwardTravel + Math.max(0, jax.position.y) + 0.25);
+    let ground = queryGround(jax.position, landingProbe);
+
+    // Recovery invariant for a missed landing sample: when Jax is already
+    // below the authored floor, probe from a safe point above his current X/Z
+    // so the real scene walkable surface remains the authority. This does not
+    // invent a floor height; it reacquires the actual isGround/isWalkable mesh.
+    if (!ground.grounded && jax.position.y < -0.05 && jax.velocity.y <= 0.1) {
+      const recoveryOrigin = jax.position.clone();
+      recoveryOrigin.y = 4;
+      ground = queryGround(recoveryOrigin, 8);
+    }
+
     const isGrounded = ground.grounded && jax.velocity.y <= 0.1;
     const wasAirborne = jax.isAirborne;
     jax.isAirborne = !isGrounded;
