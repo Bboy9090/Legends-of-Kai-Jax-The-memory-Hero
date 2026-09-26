@@ -19,6 +19,7 @@ import { combatActionBuffer } from '../../lib/input/CombatActionBuffer';
 import VerticalSliceTouchControls from './VerticalSliceTouchControls';
 import {
   getFieldMission,
+  type FieldLayoutProfile,
   type FieldMissionCatalogEntry,
 } from '../../mission/FieldMissionCatalog';
 
@@ -92,6 +93,121 @@ function colorForMission(id: string): string {
   if (id.includes('skyfall')) return '#0ea5e9';
   if (id.includes('storm_ronin')) return '#f59e0b';
   return '#64748b';
+}
+
+function coursePlacement(profile: FieldLayoutProfile, index: number): [number, number, number] {
+  const z = -10 + index * 9;
+  const side = index % 2 === 0 ? -1 : 1;
+
+  switch (profile) {
+    case 'ironvein-pressure':
+      return [side * 5.5, 0.8 + (index % 2) * 0.35, z];
+    case 'skyfall-vertical':
+      return [side * 7, 1.2 + (index % 3) * 1.25, z];
+    case 'sanctum-archive':
+      return [side * 4.5, 0.55, z];
+    default:
+      return [side * 5, 1, z];
+  }
+}
+
+function DistrictLayoutGeometry({
+  profile,
+  accent,
+  count,
+}: {
+  profile: FieldLayoutProfile;
+  accent: string;
+  count: number;
+}) {
+  if (profile === 'ironvein-pressure') {
+    return (
+      <group name="ironvein-pressure-layout">
+        {Array.from({ length: count }, (_, index) => {
+          const z = -10 + index * 9;
+          return (
+            <group key={`ironvein-pressure-${index}`}>
+              {[-8.5, 8.5].map((x) => (
+                <mesh
+                  key={x}
+                  position={[x, 2.1, z]}
+                  castShadow
+                  receiveShadow
+                  userData={{ isCollider: true, isWall: true }}
+                >
+                  <boxGeometry args={[1.2, 4.2, 7]} />
+                  <meshStandardMaterial color="#27232f" roughness={0.78} metalness={0.18} />
+                </mesh>
+              ))}
+              {index === 2 && (
+                <mesh position={[0, 0.025, z]} rotation={[-Math.PI / 2, 0, 0]}>
+                  <planeGeometry args={[10, 3.2]} />
+                  <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.28} />
+                </mesh>
+              )}
+            </group>
+          );
+        })}
+      </group>
+    );
+  }
+
+  if (profile === 'skyfall-vertical') {
+    return (
+      <group name="skyfall-vertical-layout">
+        {Array.from({ length: count }, (_, index) => {
+          const z = -8 + index * 9;
+          const side = index % 2 === 0 ? -1 : 1;
+          const y = 2 + (index % 3) * 1.5;
+          return (
+            <group key={`skyfall-route-${index}`}>
+              <mesh
+                position={[side * 8.5, y, z]}
+                castShadow
+                receiveShadow
+                userData={{ isWalkable: true, isCollider: true }}
+              >
+                <boxGeometry args={[4.5, 0.8, 6]} />
+                <meshStandardMaterial color="#15374a" roughness={0.62} metalness={0.3} />
+              </mesh>
+              <mesh position={[-side * 8.5, y + 1.2, z + 2]} castShadow>
+                <boxGeometry args={[2.5, 0.5, 4]} />
+                <meshStandardMaterial color="#1e4960" roughness={0.58} metalness={0.3} />
+              </mesh>
+            </group>
+          );
+        })}
+      </group>
+    );
+  }
+
+  if (profile === 'sanctum-archive') {
+    return (
+      <group name="sanctum-archive-layout">
+        {Array.from({ length: count }, (_, index) => {
+          const z = -10 + index * 9;
+          return (
+            <group key={`sanctum-station-${index}`}>
+              <mesh position={[-8, 2, z]} castShadow>
+                <boxGeometry args={[0.45, 4, 5.5]} />
+                <meshStandardMaterial color="#3b3020" emissive={accent} emissiveIntensity={0.12} />
+              </mesh>
+              <mesh position={[8, 2, z]} castShadow>
+                <boxGeometry args={[0.45, 4, 5.5]} />
+                <meshStandardMaterial color="#3b3020" emissive={accent} emissiveIntensity={0.12} />
+              </mesh>
+              <mesh position={[0, 0.03, z]} rotation={[-Math.PI / 2, 0, 0]}>
+                <ringGeometry args={[2.2, 2.45, 32]} />
+                <meshBasicMaterial color={accent} transparent opacity={0.28} />
+              </mesh>
+            </group>
+          );
+        })}
+      </group>
+    );
+  }
+
+  return null;
 }
 
 function FieldEnvironment({
@@ -212,13 +328,18 @@ function FieldEnvironment({
         <meshStandardMaterial color="#171923" roughness={0.9} />
       </mesh>
 
+      <DistrictLayoutGeometry
+        profile={mission.layoutProfile}
+        accent={accent}
+        count={mission.objectives.length}
+      />
+
       {mission.objectives.map((objective, index) => {
-        const z = -10 + index * 9;
-        const side = index % 2 === 0 ? -1 : 1;
+        const [x, y, z] = coursePlacement(mission.layoutProfile, index);
         return (
           <group key={`${mission.id}-course-${index}`}>
             <mesh
-              position={[side * 5, 1 + (index % 3) * 0.5, z]}
+              position={[x, y, z]}
               castShadow
               receiveShadow
               userData={{ isCollider: true, isWalkable: true }}
@@ -331,6 +452,7 @@ export default function RagingCityFieldScene() {
             {debug.beatObjective}
           </div>
           <div data-testid="field-mission-id" className="sr-only">{debug.missionId}</div>
+          <div data-testid="field-layout-profile" className="sr-only">{mission.layoutProfile}</div>
           <div data-testid="field-position" className="sr-only">
             {debug.position.map((value) => value.toFixed(2)).join(',')}
           </div>
