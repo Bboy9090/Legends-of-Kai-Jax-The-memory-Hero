@@ -143,7 +143,7 @@ export default function StoryHubScreen() {
                 <span className="px-3 py-1 bg-amber-400/10 border border-amber-400/40 text-amber-300 text-[10px] font-bold tracking-widest uppercase rounded-full">
                   RAGING CITY FIELD NODE
                 </span>
-                <h2 className="text-4xl font-black italic tracking-wide uppercase mt-2">{selectedDistrict.name}</h2>
+                <h2 className="text-4xl font-black italic tracking-wide uppercase mt-2">{selectedMission.location}</h2>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-500/20 border border-rose-500/40 rounded-xl text-rose-300 font-mono text-xs font-bold self-start">
                 <ShieldAlert className="w-4 h-4" />
@@ -166,7 +166,7 @@ export default function StoryHubScreen() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-white/10 text-xs font-mono">
               <div className="p-4 bg-black/40 rounded-xl border border-white/5">
                 <span className="text-slate-500 block mb-1">CURRENT PRESSURE</span>
-                <span className="font-bold text-white uppercase">{selectedDistrict.pressure}</span>
+                <span className="font-bold text-white uppercase">{selectedMission.pressure}</span>
               </div>
               <div className="p-4 bg-black/40 rounded-xl border border-white/5">
                 <span className="text-slate-500 block mb-1">SLICE OBJECTIVE</span>
