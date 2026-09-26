@@ -15,6 +15,26 @@ describe('GameplayPulseBuffer', () => {
     expect(buffer.consume('interact')).toBe(true);
   });
 
+  it('rejects pulses while suppressed and resumes cleanly', () => {
+    const buffer = new GameplayPulseBuffer(false);
+
+    buffer.enqueue('jump');
+    expect(buffer.pending('jump')).toBe(1);
+
+    buffer.setSuppressed(true);
+    expect(buffer.pending('jump')).toBe(0);
+    expect(buffer.isSuppressed()).toBe(true);
+
+    buffer.enqueue('traversal');
+    buffer.enqueue('interact');
+    expect(buffer.pending('traversal')).toBe(0);
+    expect(buffer.pending('interact')).toBe(0);
+
+    buffer.setSuppressed(false);
+    buffer.enqueue('traversal');
+    expect(buffer.pending('traversal')).toBe(1);
+  });
+
   it('caps repeated pulses and clears deterministically', () => {
     const buffer = new GameplayPulseBuffer(false);
 
