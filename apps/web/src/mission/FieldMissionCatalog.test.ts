@@ -26,6 +26,11 @@ describe('field mission catalog', () => {
     expect(FIELD_MISSION_CATALOG.vertical_slice_ironvein_wards.runtime).toBe('field-traversal');
     expect(FIELD_MISSION_CATALOG.vertical_slice_skyfall_spines.runtime).toBe('field-traversal');
     expect(FIELD_MISSION_CATALOG.vertical_slice_storm_ronin_sanctum.runtime).toBe('field-traversal');
+
+    expect(FIELD_MISSION_CATALOG.vertical_slice_ashblock_heights.layoutProfile).toBe('ashblock-combat');
+    expect(FIELD_MISSION_CATALOG.vertical_slice_ironvein_wards.layoutProfile).toBe('ironvein-pressure');
+    expect(FIELD_MISSION_CATALOG.vertical_slice_skyfall_spines.layoutProfile).toBe('skyfall-vertical');
+    expect(FIELD_MISSION_CATALOG.vertical_slice_storm_ronin_sanctum.layoutProfile).toBe('sanctum-archive');
   });
 
   it('falls unknown ids back to the safe Ashblock briefing', () => {
