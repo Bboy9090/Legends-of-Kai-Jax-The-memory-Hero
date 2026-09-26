@@ -1,0 +1,138 @@
+name: Mobile Store Readiness
+
+on:
+  push:
+    branches:
+      - release/mobile-store-hardening-2026-09-26
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: mobile-store-readiness-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  web-cert:
+    name: Web + Capacitor source certification
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test, typecheck, and build web
+        run: |
+          pnpm -C apps/web test
+          pnpm -C apps/web typecheck
+          pnpm -C apps/web build
+
+      - name: Verify mobile identity and web output
+        run: |
+          test -s apps/web/dist/index.html
+          grep -q "com.bobbyblanco.legendsofkaijax" apps/web/capacitor.config.ts
+          grep -q "Legends of Kai-Jax" apps/web/capacitor.config.ts
+          grep -q 'applicationId "com.bobbyblanco.legendsofkaijax"' apps/web/android/app/build.gradle
+          grep -q "PRODUCT_BUNDLE_IDENTIFIER = com.bobbyblanco.legendsofkaijax;" apps/web/ios/App/App.xcodeproj/project.pbxproj
+
+  android-release:
+    name: Android release bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Activate pnpm and Java
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install, build, and sync Android
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm -C apps/web build
+          cd apps/web
+          npx cap sync android
+
+      - name: Build unsigned release AAB
+        working-directory: apps/web/android
+        run: |
+          chmod +x gradlew
+          ./gradlew bundleRelease --stacktrace
+          test -s app/build/outputs/bundle/release/app-release.aab
+
+      - name: Record Android release evidence
+        run: |
+          mkdir -p release-evidence/android
+          cp apps/web/android/app/build/outputs/bundle/release/app-release.aab release-evidence/android/
+          sha256sum release-evidence/android/app-release.aab > release-evidence/android/SHA256SUMS.txt
+          printf '%s\n' "${{ github.sha }}" > release-evidence/android/BUILD-SHA.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-release-aab-unsigned
+          path: release-evidence/android
+          if-no-files-found: error
+          retention-days: 14
+
+  ios-release-compile:
+    name: iOS Release compile
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+
+      - name: Install, build, and sync iOS
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm -C apps/web build
+          cd apps/web
+          npx cap sync ios
+
+      - name: Compile iOS Release without signing
+        working-directory: apps/web/ios/App
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build | tee ../../../ios-release-build.log
+
+      - name: Verify iOS release evidence
+        working-directory: apps/web
+        run: |
+          test -s ios-release-build.log
+          grep -q "PRODUCT_BUNDLE_IDENTIFIER = com.bobbyblanco.legendsofkaijax;" ios/App/App.xcodeproj/project.pbxproj
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-release-build-log
+          path: apps/web/ios-release-build.log
+          if-no-files-found: error
+          retention-days: 14
