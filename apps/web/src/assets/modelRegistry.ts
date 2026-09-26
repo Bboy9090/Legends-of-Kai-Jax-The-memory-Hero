@@ -48,7 +48,6 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   },
   kai_jax: {
     path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
-    battlePath: "/models/jaxon_beast.glb",
     battlePath: "/models/kai_jax_beast.glb",
     scale: 3.5,
     position: [0, 0, 0],
@@ -74,6 +73,7 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   // Standalone story Jax must never use a Kai-Jax nine-tail fusion asset.
   jax: {
     path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONIC JAX.glb",
+    battlePath: "/models/jaxon_beast.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
