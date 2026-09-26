@@ -45,12 +45,28 @@ jobs:
         env:
           BRANCH: ${{ github.ref_name }}
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Preserve the generated lock while incorporating any commits that
+          # landed during dependency resolution.
+          git pull --rebase --autostash origin "${BRANCH}"
+          pnpm install --lockfile-only
+
           if git diff --quiet -- pnpm-lock.yaml; then
             echo "Lockfile already synchronized."
             exit 0
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add pnpm-lock.yaml
           git commit -m "chore(lock): refresh patched release dependency graph"
-          git push origin "HEAD:${BRANCH}"
+
+          # One race-safe retry in case the branch moves again between commit
+          # and push.
+          if ! git push origin "HEAD:${BRANCH}"; then
+            git pull --rebase origin "${BRANCH}"
+            pnpm install --lockfile-only
+            git add pnpm-lock.yaml
+            git commit --amend --no-edit
+            git push origin "HEAD:${BRANCH}"
+          fi
