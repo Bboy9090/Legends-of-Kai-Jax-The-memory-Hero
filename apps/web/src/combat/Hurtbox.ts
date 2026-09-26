@@ -7,8 +7,8 @@ import * as THREE from 'three';
 
 export class Hurtbox {
   mesh: THREE.Mesh;
-  health: number = 100;
-  maxHealth: number = 100;
+  health: number = 150;
+  maxHealth: number = 150;
 
   constructor(scene: THREE.Scene, width: number, height: number) {
     const geo = new THREE.BoxGeometry(width, height, 1);

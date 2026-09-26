@@ -2,6 +2,8 @@ import { getAssetPath } from '../lib/assetPath';
 
 export interface GLBModelConfig {
   path: string;
+  /** Optional lightweight runtime variant used by battle/adventure renderers. */
+  battlePath?: string;
   scale: number;
   position: [number, number, number];
   rotation?: [number, number, number];
@@ -12,118 +14,111 @@ export interface GLBModelConfig {
 }
 
 /**
- * CANONICAL CONSTRAINTS — V0.1.0 MVP
+ * CANONICAL CONSTRAINTS — PHASE C
  *
- * These story and identity locks are immutable for the MVP release:
- *
- * CHARACTER IDENTITY:
- *   • Kai remains male and is Jax's older brother
- *   • Jax remains male and is Kai's younger brother
- *   • Both brothers are sapient anthropomorphic foxes with tails
+ * STORY HERO IDENTITY:
+ *   • Kai and Jax are fully nonhuman Beast-Kin brothers and remain separate story heroes.
+ *   • Kai carries Myrr'Kai + Pyraxis inheritance and retains four visible spider limbs.
+ *   • Jax carries Kar-Voth + Thryxen inheritance: storm, lightning, pressure and displacement.
  *
  * FUSION & TRANSFORMATION:
- *   • Kai-Jax is permanently and exclusively the fusion of Kai + Jax
- *   • Kai-Jax is the only nine-tail form (the Memory King system)
- *   • Kai and Jax cannot fuse with any other character
- *   • No future expansion may override this without an explicit canon rewrite approved by Bobby
- *   • Each brother's beast-hybrid forms (if any) preserve their base identity
- *
- * CORE MECHANICS:
- *   • The nine-tail system is Kai-Jax's exclusive signature power
- *   • Memory King mechanics remain tied to Kai-Jax fusion only
- *
- * These constraints are permanent canon locks, including beyond the MVP release.
- * Changes require an explicit canon rewrite approved by Bobby.
+ *   • Kai-Jax is exclusively the fusion of Kai + Jax.
+ *   • Kai-Jax begins with exactly 3 tails in the current story progression.
+ *   • Tails 4–8 require canon story milestones; the ninth tail is a late-story coronation.
+ *   • Tail progression is never purchased with score, XP, or currency.
  */
 
 /**
- * ⚡ LEGENDS OF KAI-JAX: CANONICAL MODEL REGISTRY ⚡
+ * LEGENDS OF KAI-JAX MODEL REGISTRY
  *
- * SINGLE SOURCE OF TRUTH for all GLB character and boss models.
- * All models are Meshy.ai generated originals, owned by the project.
- *
- * Scale notes:
- *   - Heroes: 3.5 (standard)
- *   - Bosses: 4.0–5.0 (imposing)
- *   - The GLBModelInner component auto-normalizes to TARGET_HEIGHT
+ * Single source of truth for runtime GLB paths. Story-facing components must resolve
+ * production model paths here instead of hardcoding /models URLs.
  */
 export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
-
   // ============================================================
-  // CORE HEROES — Meshy.ai originals with animations
+  // CORE HEROES
   // ============================================================
 
   "kai-jax": {
-    // Primary protagonist: The Memory Hero (Animated version)
     path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
+    battlePath: "/models/kai_jax_beast.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   kai_jax: {
     path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
+    battlePath: "/models/kai_jax_beast.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   kaijax: {
     path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
+    battlePath: "/models/kai_jax_beast.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
 
-  // Jaxon Swift — Shadow-sonic blitzer
+  // Legacy/prototype alias retained for compatibility.
   jaxon: {
     path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb",
-    scale: 3.5,
-    position: [0, 0, 0],
-    rotation: [0, Math.PI, 0],
-  },
-  jax: {
-    path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb",
+    battlePath: "/models/jaxon_beast.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
 
-  // Kaison Ember — Spider tactical blade
+  // Standalone story Jax must never use a Kai-Jax nine-tail fusion asset.
+  jax: {
+    path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONIC JAX.glb",
+    battlePath: "/models/jaxon_beast.glb",
+    scale: 3.5,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+
+  // Legacy/prototype alias retained for compatibility.
   kaison: {
     path: "/models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb",
+    battlePath: "/models/kaison_beast.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
+
   kai: {
     path: "/models/Meshy_AI_Meshy_Merged_Animations4KAI.glb",
+    battlePath: "/models/kai_jax_beast.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
 
-  // Silver Chronos — Ice fox time sage
   silver: {
     path: "/models/Meshy_AI_Jax_Kai_icey_fox_0219223329_texture.glb",
+    battlePath: "/models/kai_jax_beast.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
 
-  // Borax / Boryn — Lion guardian lineage
   borax: {
     path: "/models/Borax.glb",
+    battlePath: "/models/boryx_zenith_beast.glb",
     scale: 3.8,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   boryn: {
     path: "/models/BORYN.glb",
+    battlePath: "/models/boryx_zenith_beast.glb",
     scale: 3.8,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
 
-  // Lunara — Celestial moon warrior
   lunara: {
     path: "/models/lunara_solis_beast.glb",
     scale: 3.5,
@@ -131,7 +126,6 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
 
-  // Korg — Stone Warden tank
   korg: {
     path: "/models/granite_colossus.glb",
     scale: 4.2,
@@ -139,7 +133,6 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
 
-  // Puff — Void Wisp wildcard
   puff: {
     path: "/models/shadow_panther.glb",
     scale: 3.2,
@@ -147,7 +140,6 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
 
-  // Borgos — Iron Tyrant
   borgos: {
     path: "/models/Meshy_AI_Steelwolf_Exosuit_0219223344_texture.glb",
     scale: 4.0,
@@ -155,7 +147,6 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
 
-  // Volter — Lightning Beast
   volter: {
     path: "/models/Meshy_AI_Voltage_Fang_0219222028_texture.glb",
     scale: 3.5,
@@ -169,30 +160,35 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
 
   kaxon: {
     path: "/models/Meshy_AI_Character_outputLIONBORAX.glb",
+    battlePath: "/models/kaison_beast.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   "voltage-fang": {
     path: "/models/Meshy_AI_Voltage_Fang_0219222028_texture.glb",
+    battlePath: "/models/thunder_lion.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   steelwolf: {
     path: "/models/Meshy_AI_Steelwolf_Exosuit_0219223344_texture.glb",
+    battlePath: "/models/frost_wolf.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   "ashen-tiger": {
     path: "/models/Meshy_AI_Ashen_Tiger_Warrior_0219222741_texture.glb",
+    battlePath: "/models/emberwolf_warlord.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   "blazing-fox": {
     path: "/models/Meshy_AI_Blazing_Fox_Warrior_0219223318_texture.glb",
+    battlePath: "/models/phoenix_warrior.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
@@ -205,6 +201,7 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   },
   velocity: {
     path: "/models/Meshy_AI_Animation_Running_withSkinKAIJAXVARIANTSHADOIWSonic.glb",
+    battlePath: "/models/jaxon_beast.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
@@ -217,6 +214,7 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   },
   sentinel: {
     path: "/models/Meshy_AI_Jax_Stormfang_the_Arm_0219222010_texture.glb",
+    battlePath: "/models/sandstone_sentinel.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
@@ -241,6 +239,7 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   },
   apex: {
     path: "/models/SABERVILLAIN.glb",
+    battlePath: "/models/shadow_panther.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
@@ -299,15 +298,16 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
 
-  // Legacy boss IDs (keeping for backwards compat)
   malakor: {
     path: "/models/boss.glb",
+    battlePath: "/models/granite_colossus.glb",
     scale: 4.0,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   behemoth: {
     path: "/models/bosssss.glb",
+    battlePath: "/models/earth_turtle.glb",
     scale: 5.0,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
@@ -319,6 +319,7 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
 
   "hyena-scout": {
     path: "/models/hyenaratvbill.glb",
+    battlePath: "/models/shadow_panther.glb",
     scale: 3.2,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
@@ -395,9 +396,17 @@ export function getModelConfig(fighterId: string): GLBModelConfig | null {
   return null;
 }
 
+export const MODEL_FALLBACK_PATH = "/models/stylized-beast.glb";
+
 export function getModelPath(fighterId: string): string | null {
   const path = MODEL_REGISTRY[fighterId]?.path ?? null;
   return path ? getAssetPath(path) : null;
+}
+
+export function getBattleModelPath(fighterId: string): string {
+  const config = MODEL_REGISTRY[fighterId];
+  const path = config?.battlePath ?? config?.path ?? MODEL_FALLBACK_PATH;
+  return getAssetPath(path);
 }
 
 export function hasModel(fighterId: string): boolean {
@@ -405,7 +414,7 @@ export function hasModel(fighterId: string): boolean {
 }
 
 /**
- * Models preloaded at app startup for zero-latency battle entry.
- * Kai-Jax loads first since it's the default hero.
+ * Story protagonists preload first. Kai-Jax remains story-gated and is loaded
+ * only when fusion presentation is actually needed.
  */
-export const PRELOAD_MODEL_IDS = ["kai-jax", "jaxon", "kaison"] as const;
+export const PRELOAD_MODEL_IDS = ["kai", "jax"] as const;

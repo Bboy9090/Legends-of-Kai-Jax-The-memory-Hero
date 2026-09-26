@@ -3,7 +3,7 @@
 Comprehensive tracker of all known items that are not currently verified,
 complete, or production-grade. Each item is classified by release impact.
 
-**Last updated:** 2026-08-01 (Phase 1B code integration PR #222)
+**Last updated:** 2026-09-26 (Phase C PR #249 exact-head certification)
 
 ---
 
@@ -38,23 +38,37 @@ instance. Needed for reproducibility and rollback safety.
 **Resolution:** After manual Vercel deployment, record the commit SHA that
 is actually serving production traffic.
 
-### 3. Full 15-Mission End-to-End Completion Matrix
+### 3. Current Story Hub / Mission Coverage
 
-**Status:** ⏳ Pending
+**Status:** ✅ Four established Raging City field nodes playable; deeper authored encounter content remains ongoing
 
-The 15 missions are defined in `apps/web/src/lib/story_missions.ts`. Individual
-mission load/enemy-spawn/pause/quit flows are covered by Phase 1A proofs, but
-a complete end-to-end playability matrix (mission entry → mission completion
-or known blocker) has not been run.
+The old 15-mission dataset in `apps/web/src/lib/story_missions.ts` remains a
+**quarantined pre-Bloodward cinematic prototype** and is not current public
+campaign authority. `CampaignMap.tsx` still routes legacy `campaign-map`
+navigation into `StoryHubScreen`.
 
-**What's covered:** Phase 1A playtest verified representative mission flow
-(load, enemy spawn, wave progression, pause, quit). Phase 1B dead-code audit
-removed unreachable mission code paths.
+**Current public Story Hub:** Ashblock Heights, Ironvein Wards, Skyfall Spines,
+and Storm Ronin Sanctum all have launchable, completion-recording runtimes.
 
-**What's not covered:** Playing all 15 missions sequentially to completion.
+- Ashblock retains its certified Fang combat / recovery / Memory Trace chain.
+- Ironvein uses its source-safe traversal / pressure / trap / suppression /
+  recovery / Memory Trace contract.
+- Skyfall uses traversal / alternate-route / vertical-read / recovery /
+  Memory Trace mechanics.
+- Storm Ronin Sanctum uses training / archive / memory-reconstruction /
+  reflection / exit mechanics.
 
-**Resolution:** Run or document a full 15-mission completion test before
-final release.
+The three newer slices intentionally share a noncombat field runtime until
+publication-authorized encounter content is supplied. This prevents gameplay
+completion from inventing bosses, deaths, revelations, or chapter chronology.
+
+**Automated proof:** current-canon contract tests plus the exact-head
+`Raging City field runtime completion` Playwright gate certify launch,
+controller-owned traversal, interaction, completion recording, and safe exit.
+
+**Remaining work:** deepen district-specific environments and add only
+publication-authorized encounters/dialogue. Do not revive the quarantined
+15-mission prototype as release evidence.
 
 ### 4. Full Boss Battle Matrix
 
@@ -122,15 +136,19 @@ actually reachable and loadable from the live Vercel deployment.
 
 ### 8. Performance / Frame-Time Validation
 
-**Status:** ⏳ Pending
+**Status:** ⏳ Partially verified
 
-No recorded evidence of frame-time stability, input latency, or GPU utilization
-on target platforms (desktop, mobile, Vercel's infrastructure).
+Automated runtime coverage now explicitly exercises sparse/slow software-WebGL
+conditions and the live controllers cap movement simulation while allowing
+bounded lifecycle catch-up. Input buffering, knockdown recovery, Fang AI timing,
+and HUD diagnostics have all been hardened against low-FPS execution.
 
-**Known benchmarks:** None recorded.
+This is meaningful stability evidence, but it is not yet a target-device
+performance certification.
 
-**Resolution:** Run or document performance baseline before release. Do not
-make "no frame drops" or "60 FPS guaranteed" claims without recorded proof.
+**Still required:** capture real frame-time, input-latency, thermal, memory, and
+GPU evidence on representative iOS and Android hardware before making 60 FPS or
+"no frame drops" claims.
 
 ---
 
@@ -225,25 +243,27 @@ required for `v0.1.0-mvp`.
 
 ## Medium Priority
 
-### 14. Divergent Model-Loading Paths (Registry vs. Filename Guessing)
+### 14. Model-Loading Authority
 
-**Status:** Known, dual implementation
+**Status:** ✅ Main production authorities unified; residual legacy-component audit remains
 
-Character models can be loaded via two paths:
+The principal live model renderers now resolve through
+`apps/web/src/assets/modelRegistry.ts`:
 
-1. **Registry** (`apps/web/src/lib/modelRegistry.ts`) — canonical, curated list
-   of GLB files with metadata (id, name, role, stats).
-2. **Filename guessing** — fallback in some components that constructs paths
-   from character ID alone (e.g., `/models/${id}.glb`).
+- AdventureArena resolves canonical IDs through the registry.
+- BeastModelSystem no longer owns a duplicate production path table.
+- OptimizedBeastModel consumes registry-owned `battlePath` variants.
+- The canonical battle fallback is registry-owned.
+- Provenance inventory now includes production paths, battle variants, and the
+  fallback GLB rather than only primary model paths.
 
-**Issue:** If registry and filename convention drift, some characters may load
-from the wrong path, or the fallback may pick an outdated/wrong model.
+This removed the previous filename-guessing authority from the main gameplay
+render paths. The registry/provenance tests protect those contracts.
 
-**Current state:** Both paths work but are not unified. No known mismatches
-have been reported.
-
-**Resolution:** Unify model loading to always go through the registry, or
-remove the fallback path. Medium priority cleanup for Phase 2.
+**Remaining work:** continue auditing dormant/legacy presentation components
+that may still contain direct `/models/` references. Those references are
+debt only if the component is reachable and independently chooses a character
+model rather than consuming a registry-resolved asset.
 
 ### 15. Unreachable / Archived Prototype Systems in Repo
 
@@ -265,18 +285,27 @@ the live MVP. None are part of the build or affect release readiness.
 **Resolution:** Already addressed for Phase 0 MVP code. Archive or remove
 prototype folders in Phase 2 housekeeping if needed.
 
-### 16. Gamepad Input Not Implemented
+### 16. Gamepad Input
 
-**Status:** Known, intentional
+**Status:** ✅ Implemented and runtime-certified for the Kai/Jax vertical slice
 
-No `navigator.getGamepads()` integration exists anywhere. The codebase has
-a `Gamepad2Icon` SVG (purely decorative menu button icon), but no actual
-gamepad input handling.
+The live unified input path now includes standard browser Gamepad API support
+via `navigator.getGamepads()`. Standard-mapping movement, camera, jump,
+LB+A traversal, light/heavy/special/ultimate attacks, dodge, interact, pause,
+and menu levels are represented in `GameplayInputState`.
 
-**Current state:** Keyboard and touch input work. Gamepad not supported.
+Short gamepad button pulses are independently edge-polled and buffered so they
+survive sparse WebGL frames. Suppression during knockdown/state locks now blocks
+both level input and buffered actions, preventing latent controller commands
+from firing after recovery.
 
-**Resolution:** Low priority for MVP. Gamepad support can be added post-launch
-if needed.
+**Automated proof:** vertical-slice runtime coverage verifies Jax standard
+gamepad movement+dodge, Kai short LB+A traversal, sparse button-edge buffering,
+and suppression behavior.
+
+**Remaining work:** broader physical-controller coverage on target iOS/Android
+hardware and non-standard controller mappings remains device-validation debt,
+not an implementation gap.
 
 ### 17. Service-Worker Registration Disabled
 
@@ -295,19 +324,15 @@ Medium priority post-launch.
 
 ## Low Priority
 
-### 18. Root-Level Validation Scripts Broken
+### 18. Root-Level Validation Script Debt
 
-**Status:** Known
+**Status:** ✅ Resolved
 
-Two root-level scripts are declared but non-functional:
+The current root `package.json` no longer advertises the obsolete
+`validate:canon` or `validate:memory` commands that referenced missing files.
 
-- `pnpm validate:canon` → references missing `validate-canon.mjs`
-- `pnpm validate:memory` → references missing `validate-memory-layers.mjs`
-
-**Current state:** Do not exist at repo root. Silently fail if called.
-
-**Resolution:** Remove from `package.json` scripts or implement if needed.
-Low-priority cleanup.
+**Current state:** Release-facing validation commands now point only at existing
+registry, roster, combat, typecheck, lint, test, and build entry points.
 
 ### 19. Registry Debug Overlay Not Wired Up
 
@@ -348,20 +373,14 @@ multiple endings are implemented.
 **Resolution:** Narrative branching is a Phase 3+ feature. Not required for
 `v0.1.0-mvp`.
 
-### 22. Vite Alias Missing for `@beast-kin/ui`
+### 22. Vite Alias for `@beast-kin/ui`
 
-**Status:** Known, no observed impact
+**Status:** ✅ Resolved
 
-`apps/web/vite.config.ts` aliases `@beast-kin/characters`, `@beast-kin/engine`,
-and `@beast-kin/shared` to their `packages/*/src` paths, but `@beast-kin/ui`
-has no alias. Build passes without error (`pnpm -C apps/web build` verified
-this session), suggesting either nothing imports from `@beast-kin/ui` or pnpm's
-workspace symlinking works around it.
-
-**Resolution:** Low priority. Verify no imports exist from `@beast-kin/ui`, or
-add the alias for consistency.
-
----
+`apps/web/vite.config.ts` now explicitly aliases `@beast-kin/ui` to
+`../../packages/ui/src`, matching the engine, characters, and shared
+workspace aliases. Workspace resolution no longer depends on an accidental
+pnpm-only path for this package.
 
 ## Research / Prototype
 
@@ -411,13 +430,24 @@ unclear. Not built or tested in this session.
 
 - [ ] **Live Vercel deployment verified** (manual: HTTPS, gameplay flow, asset integrity)
 - [ ] **Deployed commit SHA recorded**
-- [ ] **15-mission completion matrix run** (or documented coverage)
+- [x] **Current-canon Story Hub field coverage complete** (Ashblock + Ironvein + Skyfall + Storm Ronin Sanctum launch/completion certified; deeper authored encounter content remains ongoing)
 - [ ] **Boss battle matrix run** (or documented coverage)
 - [ ] **Roster/model render matrix run** (or documented coverage)
 - [ ] **Performance baseline captured** (frame-time, latency)
-- [ ] **All verification gates passed:** install, build, test, typecheck
-- [ ] **Local production preview confirmed** (build output, main menu)
+- [x] **Phase C exact-head game verification gates passed:** CI, registry, Kai runtime, Jax runtime, combat certification, vertical-slice runtime, production preview, iOS native preflight, Android native preflight
+- [x] **Local/CI production preview confirmed** (build output and preview smoke)
 - [ ] **PR #222 approved and merged**
 - [ ] **v0.1.0-mvp release notes published**
 
-**Remaining blockers before release:** Live Vercel deployment verification (manual step, not automated in this environment).
+**Remaining blockers before release:** production asset provenance/licensing, live Vercel identity/network verification, target-platform performance evidence, native haptics/device feel proof, boss/roster depth coverage, and the other unchecked release-readiness items above.
+
+**Current exact-head certification note (2026-09-26):** PR #249 head
+`634fb3e54331195c3557b97b190eddb6553c4f67` passed all nine substantive
+game/release workflows: CI, Registry Validation, Kai Runtime Smoke, Jax Runtime
+Smoke, Combat Release Certification, Vertical Slice Runtime Smoke, Production
+Preview Smoke, iOS Native Preflight, and Android Native Preflight. A separate
+GitHub default CodeQL umbrella check still reports a C# analysis failure even
+though the repository currently exposes no `.cs` source files and the
+repository-owned CodeQL workflow is manual-only for JavaScript/TypeScript and
+Python. Treat that as security-scanner configuration debt, not a gameplay
+failure.

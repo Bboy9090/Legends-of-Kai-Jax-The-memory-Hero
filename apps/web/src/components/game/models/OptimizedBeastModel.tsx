@@ -10,38 +10,7 @@ import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { useBattle } from '../../../lib/stores/useBattle';
-import { MODEL_REGISTRY } from '../../../assets/modelRegistry';
-
-// Guaranteed-to-exist fallback if a fighter has no registered model.
-const FALLBACK_MODEL_PATH = '/models/stylized-beast.glb';
-
-// PERFORMANCE: lightweight battle models (~1.8MB) that replace the very heavy
-// 12–25MB registry models during combat. The registry models are gorgeous but
-// too large to load/render smoothly, so battles get these lean equivalents.
-// Unmapped fighters keep their registry model.
-const LIGHT_BATTLE_MODELS: Record<string, string> = {
-  'kai-jax': '/models/kai_jax_beast.glb',
-  kaijax: '/models/kai_jax_beast.glb',
-  kai_jax: '/models/kai_jax_beast.glb',
-  kai: '/models/kai_jax_beast.glb',
-  silver: '/models/kai_jax_beast.glb',
-  jaxon: '/models/jaxon_beast.glb',
-  jax: '/models/jaxon_beast.glb',
-  velocity: '/models/jaxon_beast.glb',
-  kaison: '/models/kaison_beast.glb',
-  kaxon: '/models/kaison_beast.glb',
-  'voltage-fang': '/models/thunder_lion.glb',
-  steelwolf: '/models/frost_wolf.glb',
-  'ashen-tiger': '/models/emberwolf_warlord.glb',
-  'blazing-fox': '/models/phoenix_warrior.glb',
-  sentinel: '/models/sandstone_sentinel.glb',
-  apex: '/models/shadow_panther.glb',
-  'hyena-scout': '/models/shadow_panther.glb',
-  boryn: '/models/boryx_zenith_beast.glb',
-  borax: '/models/boryx_zenith_beast.glb',
-  malakor: '/models/granite_colossus.glb',
-  behemoth: '/models/earth_turtle.glb',
-};
+import { getBattleModelPath } from '../../../assets/modelRegistry';
 
 interface OptimizedBeastModelProps {
   beast: any;
@@ -60,11 +29,7 @@ interface OptimizedBeastModelProps {
  * Get GLB model path for beast
  */
 function getBeastModelPath(beastId: string): string {
-  // Use lightweight mobile-optimized 1.8MB GLB models for fast 60FPS combat
-  if (LIGHT_BATTLE_MODELS[beastId]) return LIGHT_BATTLE_MODELS[beastId];
-  const registered = MODEL_REGISTRY[beastId]?.path;
-  if (registered) return registered;
-  return FALLBACK_MODEL_PATH;
+  return getBattleModelPath(beastId);
 }
 
 /**
@@ -100,11 +65,11 @@ export default function OptimizedBeastModel({
 
   // Load GLB model
   const { scene, animations } = useGLTF(modelPath, undefined, undefined, (err) => {
-    console.error('[OptimizedBeastModel] Load failed:', {
+    // Model load failure is not fatal - fallback geometry will render
+    console.warn('[OptimizedBeastModel] Model load failed, using fallback:', {
       modelPath,
       error: err?.message || String(err),
     });
-    console.warn(`Failed to load model: ${modelPath}`, err);
     setLoadError(true);
   });
 

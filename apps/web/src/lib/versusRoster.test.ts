@@ -2,23 +2,35 @@ import { describe, expect, it } from "vitest";
 import {
   VERSUS_ROSTER,
   VERSUS_ROSTER_IDS,
+  getCombatProfileId,
   getVersusRosterEntry,
   isDefaultUnlockedVersusFighter,
 } from "./versusRoster";
 
-describe("Fighter Select V2 canonical roster", () => {
-  it("contains the 27-entry current canonical versus roster", () => {
-    expect(VERSUS_ROSTER).toHaveLength(27);
+describe("Fighter Select V2 publication-safe roster", () => {
+  it("contains only the 12 currently publication-supported combat identities", () => {
+    expect(VERSUS_ROSTER).toHaveLength(12);
   });
 
   it("has globally unique canonical fighter ids", () => {
     expect(new Set(VERSUS_ROSTER_IDS).size).toBe(VERSUS_ROSTER_IDS.length);
   });
 
-  it("locks the five-character main lineage", () => {
+  it("contains the five core lineage identities", () => {
     expect(VERSUS_ROSTER_IDS).toEqual(
       expect.arrayContaining(["boryn", "kai", "kai-jax", "jax", "borax"]),
     );
+  });
+
+  it("keeps Kai-Jax story gated and uses an explicit legacy combat-profile bridge", () => {
+    const kaiJax = getVersusRosterEntry("kai-jax");
+    expect(kaiJax).toMatchObject({
+      faction: "core",
+      role: "hero",
+      defaultUnlocked: false,
+      combatProfileId: "kaijax",
+    });
+    expect(kaiJax && getCombatProfileId(kaiJax)).toBe("kaijax");
   });
 
   it("classifies Vharok by current Bloodward canon", () => {
@@ -29,13 +41,12 @@ describe("Fighter Select V2 canonical roster", () => {
     });
   });
 
-  it("ships the current core heroes/allies and Fracture Circle unlocked by roster policy", () => {
+  it("defaults only Kai, Jax, Boryn, and Borax to Arena availability", () => {
     const unlocked = VERSUS_ROSTER.filter((entry) => entry.defaultUnlocked);
-    expect(unlocked).toHaveLength(12);
-    expect(unlocked.every((entry) => entry.faction === "core" || entry.faction === "fracture-circle")).toBe(true);
+    expect(unlocked.map((entry) => entry.id)).toEqual(["kai", "jax", "boryn", "borax"]);
   });
 
-  it("keeps the First Sabertooths canonically present but locked pending gameplay/portrait integration", () => {
+  it("keeps the First Sabertooths present but locked pending gameplay and portrait integration", () => {
     const firstSabertooths = VERSUS_ROSTER.filter((entry) => entry.faction === "first-sabertooths");
     expect(firstSabertooths).toHaveLength(4);
     expect(firstSabertooths.every((entry) => !entry.defaultUnlocked)).toBe(true);
@@ -43,16 +54,39 @@ describe("Fighter Select V2 canonical roster", () => {
     expect(firstSabertooths.every((entry) => entry.portraitSource === "PENDING_CURRENT_CHARACTER_LOCK")).toBe(true);
   });
 
-  it("keeps Covenant identities locked by default", () => {
-    const covenant = VERSUS_ROSTER.filter((entry) => entry.faction === "covenant");
-    expect(covenant).toHaveLength(5);
-    expect(covenant.every((entry) => !entry.defaultUnlocked)).toBe(true);
+  it("keeps Ulgorr and Behemoth boss-class and locked", () => {
+    expect(getVersusRosterEntry("ulgorr")).toMatchObject({
+      faction: "ancient-antagonist",
+      role: "boss",
+      bossClass: true,
+      defaultUnlocked: false,
+    });
+    expect(getVersusRosterEntry("behemoth")).toMatchObject({
+      faction: "engineered-horror",
+      role: "boss",
+      bossClass: true,
+      defaultUnlocked: false,
+    });
   });
 
-  it("keeps engineered horrors boss-class and locked by default", () => {
-    const horrors = VERSUS_ROSTER.filter((entry) => entry.faction === "engineered-horror");
-    expect(horrors).toHaveLength(5);
-    expect(horrors.every((entry) => entry.role === "boss" && entry.bossClass && !entry.defaultUnlocked)).toBe(true);
+  it("does not auto-promote identities that the active Bloodward audit marks unverified", () => {
+    const excludedUntilVerified = [
+      "aurelion",
+      "selene",
+      "sable-nine",
+      "widow-of-the-alley",
+      "varkesh-the-grafted",
+      "sybeth-the-choir-mother",
+      "ironvein-overseer",
+      "korthyx-prime",
+      "pillar-twins",
+      "hollow-architect",
+      "fang-colossus",
+      "erasure-choir",
+    ];
+    for (const id of excludedUntilVerified) {
+      expect(VERSUS_ROSTER_IDS).not.toContain(id);
+    }
   });
 
   it("retains explicit visual or publication provenance for every roster entry", () => {
@@ -60,9 +94,8 @@ describe("Fighter Select V2 canonical roster", () => {
       expect(entry.sourceSheet.length).toBeGreaterThan(0);
       expect(entry.portraitSource.length).toBeGreaterThan(0);
 
-      if (entry.faction !== "first-sabertooths") {
-        expect(entry.sourceSheet).toMatch(/\.png$/);
-        expect(entry.portraitSource).toBe(entry.sourceSheet);
+      if (entry.portraitSource === "PENDING_CURRENT_CHARACTER_LOCK") {
+        expect(entry.defaultUnlocked).toBe(false);
       }
     }
   });

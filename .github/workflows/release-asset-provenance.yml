@@ -1,0 +1,42 @@
+name: Release Asset Provenance Gate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Materialize exact provenance workspace
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git"
+          git config core.sparseCheckout true
+          git config extensions.partialClone origin
+          git sparse-checkout init --cone
+          git sparse-checkout set apps/web docs/release
+          git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin "${COMMIT_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+          test -f apps/web/src/assets/modelRegistry.ts
+          test -f apps/web/scripts/validate-asset-provenance.mjs
+          test -f docs/release/ASSET_PROVENANCE_LEDGER.json
+
+      - name: Require commercial release clearance for every runtime GLB
+        working-directory: apps/web
+        run: node scripts/validate-asset-provenance.mjs --require-cleared
+
+      - name: Gate truth boundary
+        if: always()
+        run: |
+          echo "Release Asset Provenance Gate evaluated exact head ${GITHUB_SHA}."
+          echo "This gate is intentionally fail-closed: rendering, original-IP assertions, filenames, and historical QA notes do not substitute for explicit license basis plus evidence location."

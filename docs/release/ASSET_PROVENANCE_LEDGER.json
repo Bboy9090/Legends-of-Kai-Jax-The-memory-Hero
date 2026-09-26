@@ -1,0 +1,470 @@
+{
+  "schemaVersion": 2,
+  "policy": {
+    "defaultStatus": "unverified",
+    "releaseAllowedStatuses": [
+      "cleared"
+    ],
+    "rule": "A runtime model is not commercially release-cleared until an explicit ledger entry has status=cleared and records a license basis plus evidence location. Filename/source hints are not licenses.",
+    "inventoryRule": "Every runtime GLB path in modelRegistry.ts must have an explicit ledger entry. Inventory completeness does not imply commercial clearance."
+  },
+  "inventory": {
+    "generatedFrom": "apps/web/src/assets/modelRegistry.ts",
+    "uniqueRuntimeGlbCount": 45,
+    "explicitEntryCount": 45,
+    "releaseClearedCount": 0,
+    "unresolvedCount": 45
+  },
+  "assets": {
+    "/models/BORYN.glb": {
+      "role": "Boryn production model",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Origin/licensing evidence not found in repository audit."
+    },
+    "/models/Borax.glb": {
+      "role": "Borax production model",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Origin/licensing evidence not found in repository audit."
+    },
+    "/models/KAINJAXYN.glb": {
+      "role": "Runtime model for: voidonus-imperion",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/KAITEENFOX.glb": {
+      "role": "Runtime model for: synergy-hunter",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/Meshy_AI_Animation_Running_withSkinKAIJAXVARIANTSHADOIWSonic.glb": {
+      "role": "Runtime model for: velocity",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb": {
+      "role": "Kai-Jax fusion model",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Explicit commercial-use evidence is still required."
+    },
+    "/models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb": {
+      "role": "Runtime model for: kaison",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/Meshy_AI_Ashen_Tiger_Warrior_0219222741_texture.glb": {
+      "role": "Runtime model for: ashen-tiger",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/Meshy_AI_Blazing_Fox_Warrior_0219223318_texture.glb": {
+      "role": "Runtime model for: blazing-fox",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/Meshy_AI_Character_outputLIONBORAX.glb": {
+      "role": "Runtime model for: kaxon",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/Meshy_AI_Jax_Kai_icey_fox_0219223329_texture.glb": {
+      "role": "Runtime model for: silver",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/Meshy_AI_Jax_Stormfang_the_Arm_0219222010_texture.glb": {
+      "role": "Runtime model for: sentinel",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/Meshy_AI_Kai_sabertooth_fox_sp_0219223337_texture.glb": {
+      "role": "Runtime model for: sabertooth",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/Meshy_AI_Meshy_Merged_Animations4KAI.glb": {
+      "role": "Kai production story hero",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Rendering certification does not establish commercial distribution rights."
+    },
+    "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONIC JAX.glb": {
+      "role": "Jax production story hero",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Do not infer rights from the asset filename or successful loading."
+    },
+    "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb": {
+      "role": "Runtime model for: jaxon",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/Meshy_AI_Steelwolf_Exosuit_0219223344_texture.glb": {
+      "role": "Runtime model for: borgos, steelwolf",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/Meshy_AI_Voltage_Fang_0219222028_texture.glb": {
+      "role": "Runtime model for: volter, voltage-fang",
+      "sourceHint": "Filename indicates Meshy AI workflow",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/SABERVILLAIN.glb": {
+      "role": "Runtime model for: apex",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/boss.glb": {
+      "role": "Runtime model for: malakor",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/bosssss.glb": {
+      "role": "Runtime model for: rift-general, behemoth",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/bossssss.glb": {
+      "role": "Runtime model for: rift-general-prime",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/darjshadowkaijax.glb": {
+      "role": "Runtime model for: void-stalker",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/drone.glb": {
+      "role": "Runtime model for: rift-drone",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/earth_turtle.glb": {
+      "role": "Runtime model for: earth-turtle",
+      "sourceHint": "Registry section labels this model as Quaternius Monster Pack content",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/emberwolf_warlord.glb": {
+      "role": "Runtime model for: blaze",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/frost_wolf.glb": {
+      "role": "Runtime model for: frost-wolf",
+      "sourceHint": "Registry section labels this model as Quaternius Monster Pack content",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/granite_colossus.glb": {
+      "role": "Runtime model for: korg, granite-colossus",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/hyenaratvbill.glb": {
+      "role": "Runtime model for: hyena-scout",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/jade_serpent.glb": {
+      "role": "Runtime model for: jade-serpent",
+      "sourceHint": "Registry section labels this model as Quaternius Monster Pack content",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/jaxon_beast.glb": {
+      "role": "Runtime model for: sparky",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/lunara_solis_beast.glb": {
+      "role": "Runtime model for: lunara",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/marble_gladiator.glb": {
+      "role": "Runtime model for: marble-gladiator",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/neon-wraiths.glb": {
+      "role": "Runtime model for: neon-wraith",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/phoenix_warrior.glb": {
+      "role": "Runtime model for: solaro",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/sandstone_sentinel.glb": {
+      "role": "Runtime model for: sandstone-sentinel",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/shadow_panther.glb": {
+      "role": "Runtime model for: puff",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/spidersdrone.glb": {
+      "role": "Runtime model for: well-defiler",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/spidersnipervillain.glb": {
+      "role": "Runtime model for: rift-warden",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/thunder_lion.glb": {
+      "role": "Runtime model for: thunder-lion",
+      "sourceHint": "Registry section labels this model as Quaternius Monster Pack content",
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/voidonus_beast.glb": {
+      "role": "Runtime model for: abyss, voidonus",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Inventory entry only. Commercial distribution rights remain unverified until explicit license evidence is recorded."
+    },
+    "/models/kai_jax_beast.glb": {
+      "role": "Lightweight battle variant for Kai/Kai-Jax family",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Runtime battle variant newly brought under canonical registry authority; commercial distribution evidence still required."
+    },
+    "/models/kaison_beast.glb": {
+      "role": "Lightweight battle variant used by compatible legacy combat identities",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Runtime battle variant newly brought under canonical registry authority; commercial distribution evidence still required."
+    },
+    "/models/boryx_zenith_beast.glb": {
+      "role": "Lightweight battle variant used for Boryn/Borax combat rendering",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Runtime battle variant newly brought under canonical registry authority; commercial distribution evidence still required."
+    },
+    "/models/stylized-beast.glb": {
+      "role": "Canonical runtime fallback model for unregistered battle identities",
+      "sourceHint": null,
+      "creatorOrVendor": null,
+      "licenseBasis": null,
+      "evidenceLocation": null,
+      "acquiredAt": null,
+      "status": "unverified",
+      "notes": "Fallback runtime GLB is now explicitly inventoried; commercial distribution evidence still required."
+    }
+  }
+}

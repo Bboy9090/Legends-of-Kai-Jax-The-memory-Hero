@@ -194,12 +194,7 @@ function getSpeakerColor(speaker: string): string {
   return colors[speaker] || "#00f2ff";
 }
 
-function WaveTransition({ waveNum, total, onContinue }: { waveNum: number; total: number; onContinue: () => void }) {
-  useEffect(() => {
-    const timer = setTimeout(onContinue, 2500);
-    return () => clearTimeout(timer);
-  }, [onContinue]);
-
+function WaveTransition({ waveNum, total }: { waveNum: number; total: number }) {
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
       <div className="text-center animate-pulse">
@@ -331,9 +326,27 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
   const [success, setSuccess] = useState(false);
   const spawnedWaves = useRef(new Set<number>());
   const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const waveTransitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const missionInstanceRef = useRef(0);
 
   const initAdventure = useAdventure((s) => s.initAdventure);
   const spawnEnemies = useAdventure((s) => s.spawnEnemies);
+
+  useEffect(() => {
+    missionInstanceRef.current += 1;
+
+    return () => {
+      missionInstanceRef.current += 1;
+      if (waveTransitionTimeoutRef.current) {
+        clearTimeout(waveTransitionTimeoutRef.current);
+        waveTransitionTimeoutRef.current = null;
+      }
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current);
+        checkIntervalRef.current = null;
+      }
+    };
+  }, [missionId, characterId]);
 
   const spawnWave = useCallback((waveIndex: number) => {
     if (!mission || waveIndex >= mission.enemyWaves.length) return;
@@ -378,6 +391,10 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
 
   const startPlaying = useCallback(() => {
     if (!mission) return;
+    if (waveTransitionTimeoutRef.current) {
+      clearTimeout(waveTransitionTimeoutRef.current);
+      waveTransitionTimeoutRef.current = null;
+    }
     initAdventure(characterId, missionId, mission.arena || "cross_point_arena");
     setCurrentWave(0);
     spawnedWaves.current.clear();
@@ -404,8 +421,15 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
         if (nextWave < mission.enemyWaves.length) {
           setCurrentWave(nextWave);
           const delay = getWaveDelaySeconds(mission, nextWave);
+          const missionInstance = missionInstanceRef.current;
           setPhase("wave-transition");
-          setTimeout(() => {
+
+          if (waveTransitionTimeoutRef.current) {
+            clearTimeout(waveTransitionTimeoutRef.current);
+          }
+          waveTransitionTimeoutRef.current = setTimeout(() => {
+            waveTransitionTimeoutRef.current = null;
+            if (missionInstanceRef.current !== missionInstance) return;
             spawnWave(nextWave);
             setPhase("playing");
           }, delay * 1000);
@@ -448,7 +472,6 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
         <WaveTransition
           waveNum={currentWave + 1}
           total={mission.enemyWaves.length}
-          onContinue={() => {}}
         />
       )}
 

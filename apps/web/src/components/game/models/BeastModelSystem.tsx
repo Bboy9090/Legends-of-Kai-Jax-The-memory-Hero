@@ -20,6 +20,7 @@ import { getAnimationConfig, findAnimationClip } from '../../../lib/threejs/GLBA
 import { useAnimationStateMachine, type AnimationState } from '../../../lib/threejs/AnimationStateMachine';
 import { getDeviceType } from '../../../lib/threejs/PerformanceOptimizer';
 import { useBattle } from '../../../lib/stores/useBattle';
+import { getModelPath } from '../../../assets/modelRegistry';
 
 interface BeastModelProps {
   beast: LegendaryBeast;
@@ -34,17 +35,11 @@ interface BeastModelProps {
 }
 
 /**
- * Get GLB model path for beast
+ * Resolve beast GLBs through the canonical runtime registry.
+ * Compatibility ids remain supported by MODEL_REGISTRY aliases.
  */
 function getBeastGLBPath(beastId: string): string | null {
-  const modelMap: Record<string, string> = {
-    'kaijax': '/models/KAIJAX1.glb',
-    'borax': '/models/Borax.glb',
-    'boryn': '/models/BORYN.glb',
-    'voidonus': '/models/voidonus_beast.glb',
-  };
-  
-  return modelMap[beastId] || null;
+  return getModelPath(beastId);
 }
 
 /**
@@ -97,8 +92,6 @@ export function BeastModel3D({
   // REAL IMPLEMENTATION - Load GLB if path exists
   // Note: useGLTF must be called unconditionally, so we always try to load
   // If model doesn't exist, the component will gracefully fall back to procedural
-  const fallbackPath = '/models/characters/default/placeholder.glb';
-  const pathToLoad = glbPath || fallbackPath;
   
   // Always call useGLTF (React hook rule - must be unconditional)
   // useGLTF will handle missing files gracefully
@@ -299,18 +292,20 @@ export function KaiJaxBeastModel({
 }: Omit<BeastModelProps, 'beast'>) {
   const groupRef = useRef<Group>(null);
   const tailGroupRef = useRef<Group>(null);
-  const glbPath = '/models/characters/kai-jax/kai-jax.glb';
+  const glbPath = getModelPath('kai-jax');
   
   // Try to load GLB - REAL IMPLEMENTATION
   // useGLTF must be called unconditionally
   let gltf: any = null;
-  try {
-    gltf = useGLTF(glbPath, false); // false = don't throw error
-    if (!gltf || !gltf.scene) {
-      gltf = null; // Model not found
+  if (glbPath) {
+    try {
+      gltf = useGLTF(glbPath, false); // false = don't throw error
+      if (!gltf || !gltf.scene) {
+        gltf = null; // Model not found
+      }
+    } catch (e) {
+      gltf = null; // Fallback to procedural
     }
-  } catch (e) {
-    gltf = null; // Fallback to procedural
   }
 
   // If GLB loaded, use it
@@ -397,12 +392,13 @@ export function KaiJaxBeastModel({
   );
 }
 
-// Preload common models
+// Preload common models through the same canonical path authority.
 if (typeof window !== 'undefined') {
   try {
-    useGLTF.preload('/models/characters/kaison/kaison.glb');
-    useGLTF.preload('/models/characters/jaxon/jaxon.glb');
-    useGLTF.preload('/models/characters/kai-jax/kai-jax.glb');
+    for (const id of ['kaison', 'jaxon', 'kai-jax']) {
+      const path = getModelPath(id);
+      if (path) useGLTF.preload(path);
+    }
   } catch (e) {
     // Models not available yet
   }

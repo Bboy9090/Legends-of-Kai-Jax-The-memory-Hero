@@ -35,7 +35,11 @@ export interface MissionSchema {
 }
 
 /**
- * Example mission: Ironvein Ward - First Blood
+ * LEGACY/PROTOTYPE mission fixture.
+ *
+ * This predates the current publication-safe Story Hub contract and must not
+ * be treated as authoritative Ironvein chronology. Current-canon field slices
+ * use separate source-safe content contracts.
  */
 export const IRONVEIN_WARD_01: MissionSchema = {
   id: 'ironvein_ward_01',
@@ -107,6 +111,7 @@ export const NULL_FORGE_02: MissionSchema = {
   },
 };
 
+/** Legacy mission fixtures retained for systems tests only. Do not route current Story Hub missions here. */
 export const MISSION_LIBRARY: Record<string, MissionSchema> = {
   ironvein_ward_01: IRONVEIN_WARD_01,
   null_forge_02: NULL_FORGE_02,

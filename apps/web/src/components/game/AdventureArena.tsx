@@ -5,6 +5,7 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { useFluidCombat, COMBO_MOVES, AttackType } from '../../lib/stores/useFluidCombat';
 import { useRunner } from '../../lib/stores/useRunner';
+import { getModelPath } from '../../assets/modelRegistry';
 
 interface AdventureArenaProps {
   characterId: string;
@@ -15,36 +16,29 @@ interface AdventureArenaProps {
 const ATTACK_RANGE = 5.5;
 const WORLD_SIZE = 100;
 const HALF_WORLD = WORLD_SIZE / 2;
-const ENEMY_IDS = ['voidonus_beast', 'shadow_panther', 'frost_wolf', 'thunder_lion', 'jade_serpent'];
+const ENEMY_IDS = ['voidonus', 'puff', 'frost-wolf', 'thunder-lion', 'jade-serpent'];
 
-const CREATURE_MODEL_MAP: Record<string, string> = {
-  'kai-jax': 'kai_jax_beast',
-  'kaijax': 'kai_jax_beast',
-  'kai_jax': 'kai_jax_beast',
-  'kaison': 'kaison_beast',
-  'jaxon': 'jaxon_beast',
-  'boryx': 'boryx_zenith_beast',
-  'boryx-zenith': 'boryx_zenith_beast',
-  'lunara': 'lunara_solis_beast',
-  'lunara-solis': 'lunara_solis_beast',
-  'phoenix': 'phoenix_warrior',
-  'voidonus': 'voidonus_beast',
-  'frost': 'frost_wolf',
-  'thunder': 'thunder_lion',
-  'jade': 'jade_serpent',
-  'shadow': 'shadow_panther',
-  'earth': 'earth_turtle',
-  'boryn': 'BORYN',
-  'darkshadow': 'darjshadowkaijax',
-  'borax': 'Borax',
-  'sabervillain': 'SABERVILLAIN',
-  'kaiteenfox': 'KAITEENFOX',
-  'kainjaxyn': 'KAINJAXYN',
-  'kaijax1': 'KAIJAX1',
+const CREATURE_MODEL_ALIASES: Record<string, string> = {
+  'kaijax': 'kai-jax',
+  'kai_jax': 'kai-jax',
+  'boryx': 'boryn',
+  'boryx-zenith': 'boryn',
+  'lunara-solis': 'lunara',
+  'phoenix': 'solaro',
+  'frost': 'frost-wolf',
+  'thunder': 'thunder-lion',
+  'jade': 'jade-serpent',
+  'shadow': 'puff',
+  'earth': 'earth-turtle',
+  'darkshadow': 'void-stalker',
+  'sabervillain': 'apex',
+  'kaiteenfox': 'synergy-hunter',
+  'kainjaxyn': 'voidonus-imperion',
+  'kaijax1': 'kai-jax',
 };
 
 function resolveModelId(id: string): string {
-  return CREATURE_MODEL_MAP[id] || id;
+  return CREATURE_MODEL_ALIASES[id] || id;
 }
 
 const RESPAWN_TIME = 10;
@@ -102,9 +96,7 @@ function seededRandom(seed: number) {
   return x - Math.floor(x);
 }
 
-function GLBModel({ modelId, scale = 2.5, color = '#ff4444', action = 'idle' }: { modelId: string; scale?: number; color?: string; action?: string }) {
-  const resolved = resolveModelId(modelId);
-  const modelPath = `/models/${resolved}.glb`;
+function GLBModel({ modelPath, scale = 2.5, action = 'idle' }: { modelPath: string; scale?: number; action?: string }) {
   const groupRef = useRef<THREE.Group>(null!);
 
   const { scene, animations } = useGLTF(modelPath);
@@ -154,9 +146,16 @@ function FallbackModel({ color = '#ff4444' }: { color?: string }) {
 }
 
 function SafeGLBModel({ modelId, scale = 2.5, fallbackColor = '#ff4444', action = 'idle' }: { modelId: string; scale?: number; fallbackColor?: string; action?: string }) {
+  const canonicalId = resolveModelId(modelId);
+  const modelPath = getModelPath(canonicalId);
+
+  if (!modelPath) {
+    return <FallbackModel color={fallbackColor} />;
+  }
+
   return (
     <Suspense fallback={<FallbackModel color={fallbackColor} />}>
-      <GLBModel modelId={modelId} scale={scale} color={fallbackColor} action={action} />
+      <GLBModel modelPath={modelPath} scale={scale} action={action} />
     </Suspense>
   );
 }

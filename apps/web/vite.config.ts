@@ -6,16 +6,18 @@ export default defineConfig({
   plugins: [react()],
   base: "/",
   resolve: {
+    dedupe: ["react", "react-dom"],
     extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],
     alias: {
       "@": path.resolve(__dirname, "./src"),
       "@beast-kin/engine": path.resolve(__dirname, "../../packages/engine/src"),
       "@beast-kin/characters": path.resolve(__dirname, "../../packages/characters/src"),
       "@beast-kin/shared": path.resolve(__dirname, "../../packages/shared/src"),
+      "@beast-kin/ui": path.resolve(__dirname, "../../packages/ui/src"),
     },
   },
   server: {
-    port: 3000,
+    port: 5000,
     host: true,
   },
   build: {

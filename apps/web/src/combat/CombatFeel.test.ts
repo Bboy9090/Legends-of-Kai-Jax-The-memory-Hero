@@ -53,7 +53,7 @@ describe('combat feel layer', () => {
     player.startMove(swing());
     for (let i = 0; i < 5; i++) player.update();
     expect(onHit).toHaveBeenCalledTimes(1);
-    expect(hurtbox.getHealth()).toBe(90);
+    expect(hurtbox.getHealth()).toBe(140);
   });
 
   it('builds combo count and damage across separate move executions', () => {
@@ -73,7 +73,7 @@ describe('combat feel layer', () => {
     expect(player.startDodge(6)).toBe(true);
     player.startMove(swing());
     for (let i = 0; i < 4; i++) player.update();
-    expect(hurtbox.getHealth()).toBe(100);
+    expect(hurtbox.getHealth()).toBe(150);
   });
 
   it('applies hitstun after a clean hit', () => {

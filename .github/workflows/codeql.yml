@@ -1,27 +1,13 @@
 # CodeQL Security Analysis
 #
-# This workflow replaces the default GitHub auto-configured CodeQL scanner
-# (dynamic/github-code-scanning/codeql) which was incorrectly attempting to
-# analyze C# source that does not exist in this repository.
-#
-# This project uses:
-#   - TypeScript / JavaScript  (apps/web, frontend, packages)
-#   - Python                   (backend/)
-#
-# Language mapping used by CodeQL:
-#   "javascript-typescript" covers both .js/.ts/.jsx/.tsx files
-#   "python"                covers .py files
+# CodeQL is intentionally disabled for the current MVP lane. Keep this workflow
+# manual-only so a disabled scanner cannot create failing PR checks. Re-enable
+# push/pull_request triggers only when CodeQL is part of the release gate.
 
 name: CodeQL
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
-  # Run on a schedule to catch newly-discovered vulnerabilities in existing code.
-  schedule:
-    - cron: '0 6 * * 1'  # Every Monday at 06:00 UTC
+  workflow_dispatch:
 
 permissions:
   actions: read
@@ -30,16 +16,13 @@ permissions:
 
 jobs:
   analyze:
-    if: false  # Disabled for MVP — not requested by current maintainer
+    if: false
     name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        # Only scan languages that are actually present in this repo.
-        # Adding "csharp" here would cause the job to fail with "No source
-        # files found" because this is a TypeScript + Python project.
         language:
           - javascript-typescript
           - python
@@ -52,11 +35,8 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          # Use the default query suite for broad security coverage.
           queries: security-extended
 
-      # For javascript-typescript CodeQL can auto-build; for python it is not
-      # required.  Using autobuild keeps the workflow simple.
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
 
