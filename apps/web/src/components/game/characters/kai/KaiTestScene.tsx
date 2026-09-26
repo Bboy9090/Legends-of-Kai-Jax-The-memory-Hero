@@ -18,6 +18,7 @@ type KaiControllerHandle = ReturnType<typeof useKaiController>;
 interface KaiDebugSnapshot {
   mode: string;
   position: [number, number, number];
+  velocity: [number, number, number];
   energy: number;
   attacking: boolean;
   attackTimer: number;
@@ -31,6 +32,7 @@ interface KaiDebugSnapshot {
 const INITIAL_DEBUG: KaiDebugSnapshot = {
   mode: 'LOADING',
   position: [0, 0, 0],
+  velocity: [0, 0, 0],
   energy: 100,
   attacking: false,
   attackTimer: 0,
@@ -153,6 +155,7 @@ function KaiRuntimeEnvironment({
     onDebug({
       mode: state.locomotionMode,
       position: [state.position.x, state.position.y, state.position.z],
+      velocity: [state.velocity.x, state.velocity.y, state.velocity.z],
       energy: state.energy,
       attacking: state.isAttacking,
       attackTimer: state.attackTimer,
@@ -220,6 +223,9 @@ export default function KaiTestScene() {
           <div data-testid="kai-mode">Mode: {debug.mode}</div>
           <div data-testid="kai-position">
             Pos: ({debug.position.map((value) => value.toFixed(2)).join(', ')})
+          </div>
+          <div data-testid="kai-velocity">
+            Vel: ({debug.velocity.map((value) => value.toFixed(2)).join(', ')})
           </div>
           <div data-testid="kai-energy">Energy: {debug.energy.toFixed(1)}/100</div>
           <div data-testid="kai-attacking">Attacking: {debug.attacking ? 'YES' : 'NO'}</div>
