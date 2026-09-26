@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: combat-release-${{ github.event.pull_request.head.sha || github.sha }}
+  group: combat-release-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
