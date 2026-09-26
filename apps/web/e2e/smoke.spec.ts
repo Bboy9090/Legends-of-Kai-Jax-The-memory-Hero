@@ -53,8 +53,17 @@ function collectErrors(page: Page): string[] {
   return errors;
 }
 
+type BootSnapshot = {
+  gameState: string | null;
+  phase: string | null;
+  hydrated: boolean;
+  persisted: string | null;
+  canvasCount: number;
+  bodyText: string;
+};
+
 /** Boot and wait for the runner store to be available. */
-async function boot(page: Page): Promise<void> {
+async function boot(page: Page): Promise<BootSnapshot> {
   await page.goto("/");
   await expect(page.locator("body")).toBeVisible();
   await page.waitForFunction(() => Boolean((window as any).runnerStore), null, {
@@ -63,11 +72,22 @@ async function boot(page: Page): Promise<void> {
   await page.waitForFunction(
     () => {
       const runner = (window as any).runnerStore;
-      return Boolean(runner?.persist?.hasHydrated?.())
+      return Boolean(runner?.persist?.hasHydrated?.());
     },
     null,
     { timeout: 15_000 },
   );
+
+  const snapshot = await page.evaluate(() => ({
+    gameState: (window as any).runnerStore?.getState?.().gameState ?? null,
+    phase: (window as any).gameStore?.getState?.().phase ?? null,
+    hydrated: Boolean((window as any).runnerStore?.persist?.hasHydrated?.()),
+    persisted: window.localStorage.getItem("kai-jax-save"),
+    canvasCount: document.querySelectorAll("canvas").length,
+    bodyText: (document.body.innerText || "").slice(0, 1200),
+  }));
+  console.log("RELEASE_BOOT_SNAPSHOT", JSON.stringify(snapshot, null, 2));
+  return snapshot;
 }
 
 async function enterGameFromLoreHub(page: Page): Promise<void> {
