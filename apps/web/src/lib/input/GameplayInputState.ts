@@ -1,3 +1,6 @@
+import { combatActionBuffer } from './CombatActionBuffer';
+import { gameplayPulseBuffer } from './GameplayPulseBuffer';
+
 /**
  * UNIFIED GAMEPLAY INPUT STATE
  * Combines keyboard, touch, and controller inputs into a single interface
@@ -228,16 +231,66 @@ class TouchInputHandler {
  */
 class GamepadInputHandler {
   private gamepadIndex: number | null = null;
+  private previousButtons: boolean[] = [];
+  private edgePollTimer: number | null = null;
 
   constructor() {
     window.addEventListener('gamepadconnected', (e) => {
       console.log('Gamepad connected:', e.gamepad.id);
       this.gamepadIndex = e.gamepad.index;
+      this.syncPreviousButtons(e.gamepad);
     });
     window.addEventListener('gamepaddisconnected', () => {
       console.log('Gamepad disconnected');
       this.gamepadIndex = null;
+      this.previousButtons = [];
     });
+
+    // Browser Gamepad input is polled rather than evented per button. Poll edges
+    // independently from the render loop so short controller taps still reach
+    // the same action buffers used by keyboard/touch under sparse WebGL frames.
+    this.edgePollTimer = window.setInterval(() => this.captureBufferedEdges(), 16);
+  }
+
+  private syncPreviousButtons(gp: Gamepad) {
+    this.previousButtons = gp.buttons.map((button) => Boolean(button?.pressed));
+  }
+
+  private captureBufferedEdges() {
+    if (this.gamepadIndex === null) return;
+    const gp = navigator.getGamepads()[this.gamepadIndex];
+    if (!gp) return;
+
+    const pressed = (index: number) => Boolean(gp.buttons[index]?.pressed);
+    const rose = (index: number) => pressed(index) && !Boolean(this.previousButtons[index]);
+
+    if (rose(2)) combatActionBuffer.enqueue('attackLight');
+    if (rose(3)) combatActionBuffer.enqueue('attackHeavy');
+    if (rose(5)) combatActionBuffer.enqueue('attackSpecial');
+    if (rose(7)) combatActionBuffer.enqueue('attackUltimate');
+    if (rose(1)) combatActionBuffer.enqueue('dodge');
+
+    const aPressed = pressed(0);
+    const lbPressed = pressed(4);
+    if ((rose(0) && lbPressed) || (rose(4) && aPressed)) {
+      gameplayPulseBuffer.enqueue('traversal');
+    } else if (rose(0) && !lbPressed) {
+      gameplayPulseBuffer.enqueue('jump');
+    }
+
+    if (rose(6)) gameplayPulseBuffer.enqueue('interact');
+
+    this.syncPreviousButtons(gp);
+  }
+
+  resetEdgeState() {
+    if (this.gamepadIndex === null) {
+      this.previousButtons = [];
+      return;
+    }
+    const gp = navigator.getGamepads()[this.gamepadIndex];
+    if (gp) this.syncPreviousButtons(gp);
+    else this.previousButtons = [];
   }
 
   getState(): Partial<GameplayInputState> {
@@ -492,7 +545,12 @@ export class GameplayInputManager {
 
   setSuppressed(suppressed: boolean) {
     this.inputSuppressed = suppressed;
-    if (suppressed) this.touchHandler.reset();
+    if (suppressed) {
+      this.touchHandler.reset();
+      combatActionBuffer.clear();
+      gameplayPulseBuffer.clear();
+      this.gamepadHandler.resetEdgeState();
+    }
   }
 
   isSuppressed(): boolean {
