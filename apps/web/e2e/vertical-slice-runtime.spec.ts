@@ -544,3 +544,78 @@ test('Kai standard gamepad preserves short LB+A traversal pulse through unified 
 
   expect(errors, `Unexpected Kai gamepad traversal errors:\n${errors.join('\n')}`).toEqual([]);
 });
+
+
+test('suppressed gamepad pulses do not leak buffered actions after control returns', async ({ page }) => {
+  await page.addInitScript(() => {
+    const buttons = Array.from({ length: 16 }, () => ({ pressed: false, touched: false, value: 0 }));
+    const gamepad = {
+      axes: [0, 0, 0, 0],
+      buttons,
+      connected: true,
+      id: 'Kai-Jax Automated Standard Gamepad',
+      index: 0,
+      mapping: 'standard',
+      timestamp: 0,
+      vibrationActuator: null,
+      hapticActuators: [],
+    };
+    Object.defineProperty(navigator, 'getGamepads', {
+      configurable: true,
+      value: () => [gamepad],
+    });
+    (window as any).__kjTestGamepad = gamepad;
+  });
+
+  const errors = collectErrors(page);
+  await bootSlice(page, 'jax', errors);
+
+  await page.evaluate(() => {
+    const gamepad = (window as any).__kjTestGamepad;
+    const connected = new Event('gamepadconnected');
+    Object.defineProperty(connected, 'gamepad', { value: gamepad });
+    window.dispatchEvent(connected);
+  });
+
+  await page.evaluate(async () => {
+    const input = await import('/src/lib/input/GameplayInputState.ts');
+    input.gameplayInputManager.setSuppressed(true);
+  });
+
+  // Tap both a combat action (B=dodge) and a gameplay pulse (LT=interact)
+  // while the hero is state-locked. Neither may survive into recovery.
+  await page.evaluate(() => {
+    const gamepad = (window as any).__kjTestGamepad;
+    for (const index of [1, 6]) {
+      const button = gamepad.buttons[index];
+      button.pressed = true;
+      button.touched = true;
+      button.value = 1;
+    }
+  });
+  await page.waitForTimeout(40);
+  await page.evaluate(() => {
+    const gamepad = (window as any).__kjTestGamepad;
+    for (const index of [1, 6]) {
+      const button = gamepad.buttons[index];
+      button.pressed = false;
+      button.touched = false;
+      button.value = 0;
+    }
+  });
+  await page.waitForTimeout(40);
+
+  const pending = await page.evaluate(async () => {
+    const input = await import('/src/lib/input/GameplayInputState.ts');
+    const combat = await import('/src/lib/input/CombatActionBuffer.ts');
+    const gameplay = await import('/src/lib/input/GameplayPulseBuffer.ts');
+    input.gameplayInputManager.setSuppressed(false);
+    return {
+      dodge: combat.combatActionBuffer.pending('dodge'),
+      interact: gameplay.gameplayPulseBuffer.pending('interact'),
+    };
+  });
+
+  expect(pending).toEqual({ dodge: 0, interact: 0 });
+  expect(errors, `Unexpected suppressed-gamepad errors:\n${errors.join('\n')}`).toEqual([]);
+});
