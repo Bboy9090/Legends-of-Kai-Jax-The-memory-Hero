@@ -234,7 +234,7 @@ function FieldEnvironment({
   const beatIndexRef = useRef(0);
 
   const accent = colorForMission(mission.id);
-  const interactionZ = -4 + Math.max(0, mission.objectives.length - 1) * 9;
+  const finalInteractionZ = -10 + Math.max(0, mission.objectives.length - 1) * 9;
 
   const advanceBeat = useCallback((next: number) => {
     const clamped = Math.min(next, mission.objectives.length - 1);
@@ -268,11 +268,9 @@ function FieldEnvironment({
     const delta = Math.min(Math.max(rawDelta, 0), 0.05);
     const currentBeat = beatIndexRef.current;
     const finalBeat = currentBeat >= mission.objectives.length - 1;
-    const nextThreshold = -8 + currentBeat * 9;
-
-    if (!finalBeat && player.position.z >= nextThreshold) {
-      advanceBeat(currentBeat + 1);
-    }
+    const beatRequiresInteraction = mission.interactionBeatIndices.includes(currentBeat);
+    const beatGateZ = -10 + currentBeat * 9;
+    const traversalThreshold = -8 + currentBeat * 9;
 
     const input = gameplayInputManager.getState();
     const interactEdge =
@@ -280,14 +278,26 @@ function FieldEnvironment({
       (input.interact && !previousInteractRef.current);
     previousInteractRef.current = input.interact;
 
+    // Interaction beats are hard progression gates. Once the player reaches the
+    // authored station, movement alone cannot skip the mechanic; an explicit USE
+    // edge is required. The readiness zone intentionally remains open after
+    // crossing the station so sparse frames or traversal bursts cannot overshoot it.
     const interactReady =
-      finalBeat &&
-      Math.hypot(player.position.x, player.position.z - interactionZ) <= 3.5;
+      beatRequiresInteraction &&
+      player.position.z >= beatGateZ - 2;
 
-    if (interactReady && interactEdge && !completionRecordedRef.current) {
-      completionRecordedRef.current = true;
-      setMissionCompleted(mission.id);
-      setGameState('mission-complete');
+    if (beatRequiresInteraction) {
+      if (interactReady && interactEdge) {
+        if (finalBeat && !completionRecordedRef.current) {
+          completionRecordedRef.current = true;
+          setMissionCompleted(mission.id);
+          setGameState('mission-complete');
+        } else if (!finalBeat) {
+          advanceBeat(currentBeat + 1);
+        }
+      }
+    } else if (!finalBeat && player.position.z >= traversalThreshold) {
+      advanceBeat(currentBeat + 1);
     }
 
     const cameraTarget = new THREE.Vector3(player.position.x * 0.2, 5, player.position.z - 10);
@@ -316,7 +326,7 @@ function FieldEnvironment({
     <group>
       <ambientLight intensity={0.7} />
       <directionalLight position={[8, 16, -4]} intensity={1.2} castShadow />
-      <pointLight position={[0, 5, interactionZ]} intensity={1.4} distance={18} color={accent} />
+      <pointLight position={[0, 5, finalInteractionZ]} intensity={1.4} distance={18} color={accent} />
 
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
@@ -379,7 +389,7 @@ function FieldEnvironment({
         </mesh>
       ))}
 
-      <group position={[0, 1.2, interactionZ]}>
+      <group position={[0, 1.2, finalInteractionZ]}>
         <mesh>
           <octahedronGeometry args={[0.8, 0]} />
           <meshStandardMaterial
@@ -461,7 +471,9 @@ export default function RagingCityFieldScene() {
           </div>
           {debug.interactReady && (
             <div data-testid="field-interact-ready" className="mt-3 text-xs font-bold text-cyan-300">
-              INTERACT TO COMPLETE FIELD TRACE
+              {debug.beatIndex >= mission.objectives.length - 1
+                ? 'INTERACT TO COMPLETE FIELD TRACE'
+                : 'INTERACT TO CONFIRM FIELD BEAT'}
             </div>
           )}
         </div>
