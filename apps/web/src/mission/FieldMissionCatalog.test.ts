@@ -16,11 +16,16 @@ describe('field mission catalog', () => {
     ]);
   });
 
-  it('keeps only Ashblock runtime-playable until other scenes are certified', () => {
+  it('marks all four established field nodes runtime-playable with explicit runtime modes', () => {
     expect(isPlayableFieldMission('vertical_slice_ashblock_heights')).toBe(true);
-    expect(isPlayableFieldMission('vertical_slice_ironvein_wards')).toBe(false);
-    expect(isPlayableFieldMission('vertical_slice_skyfall_spines')).toBe(false);
-    expect(isPlayableFieldMission('vertical_slice_storm_ronin_sanctum')).toBe(false);
+    expect(isPlayableFieldMission('vertical_slice_ironvein_wards')).toBe(true);
+    expect(isPlayableFieldMission('vertical_slice_skyfall_spines')).toBe(true);
+    expect(isPlayableFieldMission('vertical_slice_storm_ronin_sanctum')).toBe(true);
+
+    expect(FIELD_MISSION_CATALOG.vertical_slice_ashblock_heights.runtime).toBe('ashblock-combat');
+    expect(FIELD_MISSION_CATALOG.vertical_slice_ironvein_wards.runtime).toBe('field-traversal');
+    expect(FIELD_MISSION_CATALOG.vertical_slice_skyfall_spines.runtime).toBe('field-traversal');
+    expect(FIELD_MISSION_CATALOG.vertical_slice_storm_ronin_sanctum.runtime).toBe('field-traversal');
   });
 
   it('falls unknown ids back to the safe Ashblock briefing', () => {
