@@ -518,6 +518,10 @@ export class GameplayInputManager {
    * Update touch input from UI elements
    */
   setTouchJoystick(x: number, y: number, active: boolean) {
+    if (this.inputSuppressed) {
+      this.touchHandler.updateJoystick(0, 0, false);
+      return;
+    }
     this.touchHandler.updateJoystick(x, y, active);
   }
 
@@ -525,6 +529,10 @@ export class GameplayInputManager {
    * Set touch camera input
    */
   setTouchCamera(x: number, y: number) {
+    if (this.inputSuppressed) {
+      this.touchHandler.updateCamera(0, 0);
+      return;
+    }
     this.touchHandler.updateCamera(x, y);
   }
 
@@ -546,6 +554,10 @@ export class GameplayInputManager {
       | 'attackUltimate',
     pressed: boolean
   ) {
+    if (this.inputSuppressed) {
+      this.touchHandler.setButtonState(action, false);
+      return;
+    }
     this.touchHandler.setButtonState(action, pressed);
   }
 
