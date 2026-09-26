@@ -314,19 +314,15 @@ Medium priority post-launch.
 
 ## Low Priority
 
-### 18. Root-Level Validation Scripts Broken
+### 18. Root-Level Validation Script Debt
 
-**Status:** Known
+**Status:** ✅ Resolved
 
-Two root-level scripts are declared but non-functional:
+The current root `package.json` no longer advertises the obsolete
+`validate:canon` or `validate:memory` commands that referenced missing files.
 
-- `pnpm validate:canon` → references missing `validate-canon.mjs`
-- `pnpm validate:memory` → references missing `validate-memory-layers.mjs`
-
-**Current state:** Do not exist at repo root. Silently fail if called.
-
-**Resolution:** Remove from `package.json` scripts or implement if needed.
-Low-priority cleanup.
+**Current state:** Release-facing validation commands now point only at existing
+registry, roster, combat, typecheck, lint, test, and build entry points.
 
 ### 19. Registry Debug Overlay Not Wired Up
 
