@@ -40,6 +40,11 @@ export class GameplayPulseBuffer {
     this.heldCodes.delete(event.code);
   };
 
+  private readonly onWindowBlur = () => {
+    this.heldCodes.clear();
+    this.clear();
+  };
+
   constructor(attachToWindow = true) {
     if (attachToWindow) this.attach();
   }
@@ -48,6 +53,7 @@ export class GameplayPulseBuffer {
     if (this.attached || typeof window === 'undefined') return;
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
+    window.addEventListener('blur', this.onWindowBlur);
     this.attached = true;
   }
 
@@ -55,6 +61,7 @@ export class GameplayPulseBuffer {
     if (!this.attached || typeof window === 'undefined') return;
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
+    window.removeEventListener('blur', this.onWindowBlur);
     this.attached = false;
     this.heldCodes.clear();
     this.clear();
