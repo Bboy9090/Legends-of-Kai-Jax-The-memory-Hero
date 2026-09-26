@@ -1,9 +1,9 @@
 import { expect, test, type ConsoleMessage, type Page } from '@playwright/test';
 
 const MISSIONS = [
-  { id: 'vertical_slice_ironvein_wards', interactionZ: 41, layout: 'ironvein-pressure' },
-  { id: 'vertical_slice_skyfall_spines', interactionZ: 32, layout: 'skyfall-vertical' },
-  { id: 'vertical_slice_storm_ronin_sanctum', interactionZ: 32, layout: 'sanctum-archive' },
+  { id: 'vertical_slice_ironvein_wards', interactionBeats: [2, 5], layout: 'ironvein-pressure' },
+  { id: 'vertical_slice_skyfall_spines', interactionBeats: [2, 4], layout: 'skyfall-vertical' },
+  { id: 'vertical_slice_storm_ronin_sanctum', interactionBeats: [1, 2, 4], layout: 'sanctum-archive' },
 ] as const;
 
 const BENIGN_ERROR_PATTERNS = [
@@ -70,45 +70,77 @@ async function readZ(page: Page): Promise<number> {
   return parts[2]!;
 }
 
+async function readBeatIndex(page: Page): Promise<number> {
+  const text = await page.getByTestId('field-beat-index').innerText();
+  const match = text.match(/Beat\s+(\d+)\s*\//i);
+  if (!match) throw new Error(`Invalid field beat label: ${text}`);
+  return Number(match[1]) - 1;
+}
+
+async function missionCompleteState(page: Page, missionId: string): Promise<boolean> {
+  return page.evaluate((id) => {
+    const s = (window as any).runnerStore?.getState?.();
+    return s?.gameState === 'mission-complete'
+      && Array.isArray(s?.completedStoryMissionIds)
+      && s.completedStoryMissionIds.includes(id);
+  }, missionId);
+}
+
 for (const mission of MISSIONS) {
   test(`${mission.id} launches, traverses, interacts, and records completion`, async ({ page }) => {
     const errors = collectErrors(page);
     await bootField(page, mission.id);
     await expect(page.getByTestId('field-layout-profile')).toHaveText(mission.layout);
 
-    const deadline = Date.now() + 30_000;
-    const burstCutoffZ = mission.interactionZ - 10;
+    const deadline = Date.now() + 35_000;
+    let interactionCursor = 0;
+    let firstGateProved = false;
 
     await page.keyboard.down('w');
     try {
-      while (Date.now() < deadline && (await readZ(page)) < burstCutoffZ) {
-        // Jax's authored ground displacement accelerates only the long approach.
-        // Stop bursting near the target so sparse CI frames cannot jump clean
-        // through the interaction radius.
-        await page.keyboard.press('e');
-        await page.waitForTimeout(350);
-      }
+      while (Date.now() < deadline && !(await missionCompleteState(page, mission.id))) {
+        if (await page.getByTestId('field-interact-ready').isVisible().catch(() => false)) {
+          const beatIndex = await readBeatIndex(page);
+          expect(beatIndex).toBe(mission.interactionBeats[interactionCursor]);
 
-      await expect(page.getByTestId('field-interact-ready')).toBeVisible({
-        timeout: 15_000,
-      });
+          if (!firstGateProved) {
+            firstGateProved = true;
+            // Movement and traversal bursts must not bypass an authored USE gate.
+            await page.keyboard.press('e');
+            await page.waitForTimeout(800);
+            expect(await readBeatIndex(page)).toBe(beatIndex);
+          }
+
+          await page.keyboard.press('f');
+          interactionCursor += 1;
+          await page.waitForTimeout(250);
+          continue;
+        }
+
+        await page.keyboard.press('e');
+        await page.waitForTimeout(300);
+      }
     } finally {
       await page.keyboard.up('w');
     }
-    await page.keyboard.press('f');
 
-    await expect.poll(async () => page.evaluate(() => {
-      const s = (window as any).runnerStore?.getState?.();
+    expect(firstGateProved).toBe(true);
+    expect(interactionCursor).toBe(mission.interactionBeats.length);
+
+    await expect.poll(async () => page.evaluate((id) => {
+      const state = (window as any).runnerStore?.getState?.();
       return {
-        gameState: s?.gameState,
-        completed: s?.completedStoryMissionIds ?? [],
+        gameState: state?.gameState,
+        completed: state?.completedStoryMissionIds ?? [],
+        expected: id,
       };
-    }), {
+    }, mission.id), {
       timeout: 8_000,
       intervals: [75, 100, 150, 250],
     }).toEqual({
       gameState: 'mission-complete',
       completed: [mission.id],
+      expected: mission.id,
     });
 
     expect(errors).toEqual([]);
@@ -125,7 +157,7 @@ test.describe('Raging City shared field touch completion', () => {
   test('Ironvein completes through touch joystick, traversal, and USE', async ({ page }) => {
     const errors = collectErrors(page);
     const missionId = 'vertical_slice_ironvein_wards';
-    const interactionZ = 41;
+    const interactionBeats = [2, 5] as const;
     await bootField(page, missionId);
 
     await expect(page.getByTestId('field-layout-profile')).toHaveText('ironvein-pressure');
@@ -155,17 +187,21 @@ test.describe('Raging City shared field touch completion', () => {
       buttons: 1,
     });
 
+    let interactionCursor = 0;
     try {
-      const deadline = Date.now() + 30_000;
-      while (Date.now() < deadline && (await readZ(page)) < interactionZ - 10) {
-        await page.getByTestId('slice-touch-traversal').tap();
-        await page.waitForTimeout(350);
-      }
+      const deadline = Date.now() + 35_000;
+      while (Date.now() < deadline && !(await missionCompleteState(page, missionId))) {
+        if (await page.getByTestId('field-interact-ready').isVisible().catch(() => false)) {
+          expect(await readBeatIndex(page)).toBe(interactionBeats[interactionCursor]);
+          await page.getByTestId('slice-touch-interact').tap();
+          interactionCursor += 1;
+          await page.waitForTimeout(250);
+          continue;
+        }
 
-      await expect.poll(async () => readZ(page), {
-        timeout: 15_000,
-        intervals: [75, 100, 150, 250],
-      }).toBeGreaterThanOrEqual(interactionZ - 3);
+        await page.getByTestId('slice-touch-traversal').tap();
+        await page.waitForTimeout(300);
+      }
     } finally {
       await joystick.dispatchEvent('pointerup', {
         pointerId: 71,
@@ -177,8 +213,7 @@ test.describe('Raging City shared field touch completion', () => {
       });
     }
 
-    await expect(page.getByTestId('field-interact-ready')).toBeVisible({ timeout: 5_000 });
-    await page.getByTestId('slice-touch-interact').tap();
+    expect(interactionCursor).toBe(interactionBeats.length);
 
     await expect.poll(async () => page.evaluate(() => {
       const state = (window as any).runnerStore?.getState?.();
