@@ -1,9 +1,9 @@
 import { expect, test, type ConsoleMessage, type Page } from '@playwright/test';
 
 const MISSIONS = [
-  { id: 'vertical_slice_ironvein_wards', interactionZ: 41 },
-  { id: 'vertical_slice_skyfall_spines', interactionZ: 32 },
-  { id: 'vertical_slice_storm_ronin_sanctum', interactionZ: 32 },
+  { id: 'vertical_slice_ironvein_wards', interactionZ: 41, layout: 'ironvein-pressure' },
+  { id: 'vertical_slice_skyfall_spines', interactionZ: 32, layout: 'skyfall-vertical' },
+  { id: 'vertical_slice_storm_ronin_sanctum', interactionZ: 32, layout: 'sanctum-archive' },
 ] as const;
 
 const BENIGN_ERROR_PATTERNS = [
@@ -74,6 +74,7 @@ for (const mission of MISSIONS) {
   test(`${mission.id} launches, traverses, interacts, and records completion`, async ({ page }) => {
     const errors = collectErrors(page);
     await bootField(page, mission.id);
+    await expect(page.getByTestId('field-layout-profile')).toHaveText(mission.layout);
 
     const deadline = Date.now() + 30_000;
     const burstCutoffZ = mission.interactionZ - 10;
