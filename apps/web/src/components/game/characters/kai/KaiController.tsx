@@ -212,8 +212,21 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       if (moveDir.lengthSq() > 1) moveDir.normalize();
 
       const targetVel = moveDir.multiplyScalar(targetSpeed);
-      kai.velocity.lerp(targetVel, Math.min(1, MOVEMENT_CONFIG.accel * delta));
-      kai.velocity.multiplyScalar(MOVEMENT_CONFIG.friction);
+      const response = kai.isMoving ? MOVEMENT_CONFIG.accel : MOVEMENT_CONFIG.decel;
+      const alpha = Math.min(1, response * delta);
+
+      // Planar speed should converge on the authored walk/run target independent
+      // of render cadence. The old fixed 0.92 multiplier ran every frame even
+      // while input was held, permanently suppressing Kai's configured speed
+      // and making the suppression FPS-dependent.
+      kai.velocity.x = THREE.MathUtils.lerp(kai.velocity.x, targetVel.x, alpha);
+      kai.velocity.z = THREE.MathUtils.lerp(kai.velocity.z, targetVel.z, alpha);
+
+      if (!kai.isMoving) {
+        const damping = Math.pow(MOVEMENT_CONFIG.friction, delta * 60);
+        kai.velocity.x *= damping;
+        kai.velocity.z *= damping;
+      }
 
       finalPos = kai.position.clone().add(kai.velocity.clone().multiplyScalar(delta));
 
