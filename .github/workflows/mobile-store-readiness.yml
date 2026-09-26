@@ -1,9 +1,6 @@
 name: Mobile Store Readiness
 
 on:
-  push:
-    branches:
-      - release/mobile-store-hardening-2026-09-26
   pull_request:
     branches:
       - main
