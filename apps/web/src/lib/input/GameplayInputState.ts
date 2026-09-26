@@ -560,10 +560,10 @@ export class GameplayInputManager {
   setSuppressed(suppressed: boolean) {
     this.inputSuppressed = suppressed;
     this.gamepadHandler.setSuppressed(suppressed);
+    combatActionBuffer.setSuppressed(suppressed);
+    gameplayPulseBuffer.setSuppressed(suppressed);
     if (suppressed) {
       this.touchHandler.reset();
-      combatActionBuffer.clear();
-      gameplayPulseBuffer.clear();
     }
   }
 
