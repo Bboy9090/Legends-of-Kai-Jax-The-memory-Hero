@@ -114,3 +114,86 @@ for (const mission of MISSIONS) {
     expect(errors).toEqual([]);
   });
 }
+
+
+test.describe('Raging City shared field touch completion', () => {
+  test.use({
+    hasTouch: true,
+    viewport: { width: 390, height: 844 },
+  });
+
+  test('Ironvein completes through touch joystick, traversal, and USE', async ({ page }) => {
+    const errors = collectErrors(page);
+    const missionId = 'vertical_slice_ironvein_wards';
+    const interactionZ = 41;
+    await bootField(page, missionId);
+
+    await expect(page.getByTestId('field-layout-profile')).toHaveText('ironvein-pressure');
+    await expect(page.getByTestId('vertical-slice-touch-controls')).toBeVisible();
+
+    const joystick = page.getByTestId('slice-touch-joystick');
+    const box = await joystick.boundingBox();
+    if (!box) throw new Error('Field touch joystick has no bounding box');
+
+    const centerX = box.x + box.width / 2;
+    const centerY = box.y + box.height / 2;
+
+    await joystick.dispatchEvent('pointerdown', {
+      pointerId: 71,
+      pointerType: 'touch',
+      isPrimary: true,
+      clientX: centerX,
+      clientY: centerY,
+      buttons: 1,
+    });
+    await joystick.dispatchEvent('pointermove', {
+      pointerId: 71,
+      pointerType: 'touch',
+      isPrimary: true,
+      clientX: centerX,
+      clientY: centerY - 40,
+      buttons: 1,
+    });
+
+    try {
+      const deadline = Date.now() + 30_000;
+      while (Date.now() < deadline && (await readZ(page)) < interactionZ - 10) {
+        await page.getByTestId('slice-touch-traversal').tap();
+        await page.waitForTimeout(350);
+      }
+
+      await expect.poll(async () => readZ(page), {
+        timeout: 15_000,
+        intervals: [75, 100, 150, 250],
+      }).toBeGreaterThanOrEqual(interactionZ - 3);
+    } finally {
+      await joystick.dispatchEvent('pointerup', {
+        pointerId: 71,
+        pointerType: 'touch',
+        isPrimary: true,
+        clientX: centerX,
+        clientY: centerY - 40,
+        buttons: 0,
+      });
+    }
+
+    await expect(page.getByTestId('field-interact-ready')).toBeVisible({ timeout: 5_000 });
+    await page.getByTestId('slice-touch-interact').tap();
+
+    await expect.poll(async () => page.evaluate(() => {
+      const state = (window as any).runnerStore?.getState?.();
+      return {
+        gameState: state?.gameState,
+        completed: state?.completedStoryMissionIds ?? [],
+      };
+    }), {
+      timeout: 8_000,
+      intervals: [75, 100, 150, 250],
+    }).toEqual({
+      gameState: 'mission-complete',
+      completed: [missionId],
+    });
+
+    expect(errors, `Unexpected Ironvein touch runtime errors:\n${errors.join('\n')}`).toEqual([]);
+  });
+});
