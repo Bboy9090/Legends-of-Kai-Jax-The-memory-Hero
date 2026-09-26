@@ -148,3 +148,86 @@ jobs:
           grep -q "com.bobbyblanco.legendsofkaijax" ios/App/App.xcodeproj/project.pbxproj
           grep -Fq "** BUILD SUCCEEDED **" ios-release-build.log
           printf '%s\n' "IOS_RELEASE_COMPILE_OK ${{ github.event.pull_request.head.sha || github.sha }}"
+
+
+  runtime-mobile-e2e:
+    name: Production mobile runtime smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact commit without reusable actions
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
+          cd source
+          git checkout --detach "${COMMIT_SHA}"
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+
+      - name: Activate pnpm and install web graph
+        working-directory: source
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          pnpm install --filter ./apps/web... --frozen-lockfile
+
+      - name: Install Chromium for release smoke
+        working-directory: source
+        run: pnpm -C apps/web exec playwright install --with-deps chromium
+
+      - name: Run production smoke and mobile performance gates
+        working-directory: source
+        run: |
+          pnpm -C apps/web test:e2e -- e2e/smoke.spec.ts e2e/phase-b2-mobile-performance.spec.ts
+
+  ios-device-archive:
+    name: iOS unsigned device archive
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact commit without reusable actions
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
+          cd source
+          git checkout --detach "${COMMIT_SHA}"
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+
+      - name: Build web and sync iOS
+        working-directory: source
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          pnpm install --filter ./apps/web... --frozen-lockfile
+          pnpm -C apps/web build
+          cd apps/web
+          npx cap sync ios
+
+      - name: Archive iphoneos Release without signing
+        working-directory: source/apps/web/ios/App
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/LegendsOfKaiJax.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            archive 2>&1 | tee ../../ios-device-archive.log
+
+      - name: Verify device archive metadata
+        working-directory: source/apps/web/ios/App
+        run: |
+          APP="build/LegendsOfKaiJax.xcarchive/Products/Applications/App.app"
+          test -d "$APP"
+          test -x "$APP/App"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Info.plist")" = "com.bobbyblanco.legendsofkaijax"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP/Info.plist")" = "1.0.0"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$APP/Info.plist")" = "1"
+          printf '%s\n' "IOS_DEVICE_ARCHIVE_OK ${{ github.event.pull_request.head.sha || github.sha }}"
