@@ -233,6 +233,7 @@ class GamepadInputHandler {
   private gamepadIndex: number | null = null;
   private previousButtons: boolean[] = [];
   private edgePollTimer: number | null = null;
+  private suppressed = false;
 
   constructor() {
     window.addEventListener('gamepadconnected', (e) => {
@@ -260,6 +261,14 @@ class GamepadInputHandler {
     if (this.gamepadIndex === null) return;
     const gp = navigator.getGamepads()[this.gamepadIndex];
     if (!gp) return;
+
+    // Suppressed hero states (knockdown, cutscene/state locks) must not queue
+    // latent actions that execute after control is restored. Keep edge history
+    // synchronized while suppressed so held buttons also cannot re-fire.
+    if (this.suppressed) {
+      this.syncPreviousButtons(gp);
+      return;
+    }
 
     const pressed = (index: number) => Boolean(gp.buttons[index]?.pressed);
     const rose = (index: number) => pressed(index) && !Boolean(this.previousButtons[index]);
@@ -291,6 +300,11 @@ class GamepadInputHandler {
     const gp = navigator.getGamepads()[this.gamepadIndex];
     if (gp) this.syncPreviousButtons(gp);
     else this.previousButtons = [];
+  }
+
+  setSuppressed(suppressed: boolean) {
+    this.suppressed = suppressed;
+    this.resetEdgeState();
   }
 
   getState(): Partial<GameplayInputState> {
@@ -545,11 +559,11 @@ export class GameplayInputManager {
 
   setSuppressed(suppressed: boolean) {
     this.inputSuppressed = suppressed;
+    this.gamepadHandler.setSuppressed(suppressed);
     if (suppressed) {
       this.touchHandler.reset();
       combatActionBuffer.clear();
       gameplayPulseBuffer.clear();
-      this.gamepadHandler.resetEdgeState();
     }
   }
 
