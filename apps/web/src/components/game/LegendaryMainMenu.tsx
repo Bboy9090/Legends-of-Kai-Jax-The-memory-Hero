@@ -6,7 +6,7 @@ import { useRunner } from '../../lib/stores/useRunner';
 
 
 /**
- * ⚡ LEGENDS OF KAI-JAX: THE MEMORY WARRIOR ⚡
+ * ⚡ LEGENDS OF KAI-JAX: THE MEMORY HERO ⚡
  * ULTIMATE LEGENDARY MAIN MENU - GOD-TIER EDITION
  * 
  * Features:
@@ -453,7 +453,7 @@ const LegendaryMainMenu: React.FC = () => {
             LEGENDS OF KAI-JAX
           </h1>
           <h2 className="text-transformation text-2xl lg:text-4xl text-white mb-4">
-            THE MEMORY WARRIOR
+            THE MEMORY HERO
           </h2>
           <div className="flex items-center justify-center gap-4 mt-6">
             <div className="h-0.5 w-12 lg:w-24 bg-gradient-to-r from-transparent via-legendary-gold to-transparent" />
