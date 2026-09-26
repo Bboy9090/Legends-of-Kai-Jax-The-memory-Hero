@@ -50,6 +50,9 @@ jobs:
         working-directory: source
         run: |
           test -s apps/web/dist/index.html
+          grep -q '"version": "1.0.0"' apps/web/package.json
+          grep -q 'versionName "1.0.0"' apps/web/android/app/build.gradle
+          grep -q 'MARKETING_VERSION = 1.0.0;' apps/web/ios/App/App.xcodeproj/project.pbxproj
           grep -q "com.bobbyblanco.legendsofkaijax" apps/web/capacitor.config.ts
           grep -q "Legends of Kai-Jax" apps/web/capacitor.config.ts
           grep -q 'applicationId "com.bobbyblanco.legendsofkaijax"' apps/web/android/app/build.gradle
