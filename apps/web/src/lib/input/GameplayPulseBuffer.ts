@@ -26,11 +26,12 @@ export class GameplayPulseBuffer {
 
   private heldCodes = new Set<string>();
   private attached = false;
+  private suppressed = false;
 
   private readonly onKeyDown = (event: KeyboardEvent) => {
     const wasHeld = this.heldCodes.has(event.code);
     this.heldCodes.add(event.code);
-    if (event.repeat || wasHeld) return;
+    if (this.suppressed || event.repeat || wasHeld) return;
 
     const pulse = KEY_TO_PULSE[event.code];
     if (pulse) this.enqueue(pulse);
@@ -68,7 +69,17 @@ export class GameplayPulseBuffer {
   }
 
   enqueue(action: BufferedGameplayPulse): void {
+    if (this.suppressed) return;
     this.queued[action] = Math.min(MAX_QUEUED_PULSES, this.queued[action] + 1);
+  }
+
+  setSuppressed(suppressed: boolean): void {
+    this.suppressed = suppressed;
+    if (suppressed) this.clear();
+  }
+
+  isSuppressed(): boolean {
+    return this.suppressed;
   }
 
   consume(action: BufferedGameplayPulse): boolean {
