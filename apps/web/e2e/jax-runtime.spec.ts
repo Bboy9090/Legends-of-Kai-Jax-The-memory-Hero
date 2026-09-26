@@ -104,6 +104,31 @@ test('Jax runtime: movement, jump and displacement change real controller state'
   expect(errors, `Unexpected runtime errors:\n${errors.join('\n')}`).toEqual([]);
 });
 
+test('Jax runtime: landing recovery never falls through the real walkable floor', async ({ page }) => {
+  const errors = collectErrors(page);
+  await bootJaxTest(page, errors);
+
+  // Exercise the real jump/air lifecycle, then give sparse rendering enough
+  // wall time to cross a landing sample. The controller must reacquire the
+  // scene's isGround/isWalkable surface instead of accumulating negative Y.
+  await page.keyboard.down('Space');
+  try {
+    await expect(page.getByTestId('jax-airborne')).toContainText('YES', { timeout: 5_000 });
+  } finally {
+    await page.keyboard.up('Space');
+  }
+
+  await expect.poll(async () => (await readPosition(page))[1], {
+    timeout: 8_000,
+    intervals: [100, 150, 250, 400],
+  }).toBeGreaterThanOrEqual(-0.05);
+
+  await page.waitForTimeout(1_500);
+  const settled = await readPosition(page);
+  expect(settled[1]).toBeGreaterThanOrEqual(-0.05);
+  expect(errors, `Unexpected runtime errors:\n${errors.join('\n')}`).toEqual([]);
+});
+
 test('Jax runtime: dodge grants invulnerability and real evasive displacement', async ({ page }) => {
   const errors = collectErrors(page);
   await bootJaxTest(page, errors);
