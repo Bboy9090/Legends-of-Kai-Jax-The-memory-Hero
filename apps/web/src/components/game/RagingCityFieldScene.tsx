@@ -325,7 +325,11 @@ export default function RagingCityFieldScene() {
           <div data-testid="field-beat-objective" className="mt-1 text-sm font-semibold">
             {debug.beatObjective}
           </div>
-          <div className="mt-2 text-[11px] text-slate-400">
+          <div data-testid="field-mission-id" className="sr-only">{debug.missionId}</div>
+          <div data-testid="field-position" className="sr-only">
+            {debug.position.map((value) => value.toFixed(2)).join(',')}
+          </div>
+          <div data-testid="field-beat-index" className="mt-2 text-[11px] text-slate-400">
             Beat {debug.beatIndex + 1} / {mission.objectives.length}
           </div>
           {debug.interactReady && (
