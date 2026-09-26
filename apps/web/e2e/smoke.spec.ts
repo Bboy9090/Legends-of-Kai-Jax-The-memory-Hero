@@ -78,7 +78,7 @@ async function enterStableState(page: Page, gameState: string): Promise<void> {
 
   // The first-run cinematic is intentionally global. Wait for it to finish
   // rather than racing a fixed timeout against React/store hydration.
-  await page.locator('text=READY?').waitFor({ state: 'detached', timeout: 10_000 }).catch(() => {});
+  await page.getByTestId('game-intro').waitFor({ state: 'detached', timeout: 10_000 }).catch(() => {});
 }
 
 test("versus: boots, navigates menus, and starts a battle without crashing", async ({ page }) => {
