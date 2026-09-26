@@ -58,6 +58,13 @@ async function readPosition(page: Page): Promise<[number, number, number]> {
   return [Number(match[1]), Number(match[2]), Number(match[3])];
 }
 
+async function readVector3(page: Page, testId: string): Promise<[number, number, number]> {
+  const text = await page.getByTestId(testId).innerText();
+  const match = text.match(/\((-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?)\)/);
+  if (!match) throw new Error(`Could not parse vector from ${testId}: ${text}`);
+  return [Number(match[1]), Number(match[2]), Number(match[3])];
+}
+
 async function readNumber(page: Page, testId: string): Promise<number> {
   const text = await page.getByTestId(testId).innerText();
   const match = text.match(/-?\d+(?:\.\d+)?/);
@@ -71,11 +78,28 @@ test('Kai runtime: ground movement and held Web Zip change real controller state
 
   const start = await readPosition(page);
   await page.keyboard.down('d');
-  await page.waitForTimeout(500);
-  await page.keyboard.up('d');
-  await page.waitForTimeout(150);
+  try {
+    await expect.poll(async () => {
+      const velocity = await readVector3(page, 'kai-velocity');
+      return Math.hypot(velocity[0], velocity[2]);
+    }, {
+      timeout: 4_000,
+      intervals: [75, 100, 150, 250],
+    }).toBeGreaterThan(4.0);
+  } finally {
+    await page.keyboard.up('d');
+  }
+
   const moved = await readPosition(page);
   expect(Math.hypot(moved[0] - start[0], moved[2] - start[2])).toBeGreaterThan(0.2);
+
+  await expect.poll(async () => {
+    const velocity = await readVector3(page, 'kai-velocity');
+    return Math.hypot(velocity[0], velocity[2]);
+  }, {
+    timeout: 3_000,
+    intervals: [75, 100, 150, 250],
+  }).toBeLessThan(0.75);
 
   const beforeZip = await readPosition(page);
   await page.keyboard.down('e');
