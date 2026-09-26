@@ -142,5 +142,5 @@ jobs:
         working-directory: source/apps/web
         run: |
           test -s ios-release-build.log
-          grep -q "PRODUCT_BUNDLE_IDENTIFIER = com.bobbyblanco.legendsofkaijax;" ios/App/App.xcodeproj/project.pbxproj
+          grep -q "com.bobbyblanco.legendsofkaijax" ios/App/App.xcodeproj/project.pbxproj\n          grep -q "\\*\\* BUILD SUCCEEDED \\*\\*" ios-release-build.log
           printf '%s\n' "IOS_RELEASE_COMPILE_OK ${{ github.event.pull_request.head.sha || github.sha }}"
