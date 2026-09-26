@@ -95,7 +95,7 @@ test('story hero select renders separate production Kai and Jax GLTF previews', 
 });
 
 
-test('Raging City Story Hub exposes only implemented Ashblock as a playable field slice', async ({ page }) => {
+test('Raging City Story Hub exposes all four certified field slices as playable', async ({ page }) => {
   const errors = collectErrors(page);
   await expectBuiltRoute(page, '/', errors);
 
@@ -106,42 +106,37 @@ test('Raging City Story Hub exposes only implemented Ashblock as a playable fiel
   });
 
   await expect(page.getByText('STORY HUB', { exact: true })).toBeVisible({ timeout: 10_000 });
-  for (const location of ['ASHBLOCK HEIGHTS', 'IRONVEIN WARDS', 'SKYFALL SPINES', 'STORM RONIN SANCTUM']) {
-    await expect(page.getByText(location, { exact: true }).first()).toBeVisible();
+
+  const nodes = [
+    { name: 'ASHBLOCK HEIGHTS', missionId: 'vertical_slice_ashblock_heights', pressure: /FANG SYNDICATE PRESSURE/i },
+    { name: 'IRONVEIN WARDS', missionId: 'vertical_slice_ironvein_wards', pressure: /ANTI-SABERTOOTH COVENANT ACTIVITY/i },
+    { name: 'SKYFALL SPINES', missionId: 'vertical_slice_skyfall_spines', pressure: /CONTESTED TERRITORY/i },
+    { name: 'STORM RONIN SANCTUM', missionId: 'vertical_slice_storm_ronin_sanctum', pressure: /RONIN LEGACY SITE/i },
+  ] as const;
+
+  for (const [index, node] of nodes.entries()) {
+    if (index > 0) {
+      await page.getByLabel('Back to Story Hub').click();
+      await expect(page.getByText('STORY HUB', { exact: true })).toBeVisible();
+    }
+
+    await page.getByRole('button', { name: new RegExp(node.name, 'i') }).click();
+    await page.getByRole('button', { name: 'OPEN FIELD BRIEFING' }).click();
+
+    await expect(page.getByText('FIELD BRIEFING', { exact: true })).toBeVisible();
+    await expect(page.getByTestId('mission-launch')).toBeEnabled();
+    await expect(page.getByTestId('mission-launch')).toContainText('ENTER SLICE');
+    await expect(page.getByText(node.pressure).first()).toBeVisible();
+
+    const state = await page.evaluate(() => {
+      const s = (window as any).runnerStore.getState();
+      return { gameState: s.gameState, missionId: s.activeStoryMissionId };
+    });
+    expect(state).toEqual({
+      gameState: 'mission-select',
+      missionId: node.missionId,
+    });
   }
-
-  await page.getByRole('button', { name: /ASHBLOCK HEIGHTS/i }).click();
-  await page.getByRole('button', { name: 'OPEN FIELD BRIEFING' }).click();
-
-  await expect(page.getByText('FIELD BRIEFING', { exact: true })).toBeVisible();
-  await expect(page.getByTestId('mission-launch')).toBeEnabled();
-  await expect(page.getByTestId('mission-launch')).toContainText('ENTER SLICE');
-
-  const ashblockState = await page.evaluate(() => {
-    const s = (window as any).runnerStore.getState();
-    return { gameState: s.gameState, missionId: s.activeStoryMissionId };
-  });
-  expect(ashblockState).toEqual({
-    gameState: 'mission-select',
-    missionId: 'vertical_slice_ashblock_heights',
-  });
-
-  await page.getByLabel('Back to Story Hub').click();
-  await page.getByRole('button', { name: /IRONVEIN WARDS/i }).click();
-  await page.getByRole('button', { name: 'OPEN FIELD BRIEFING' }).click();
-
-  await expect(page.getByTestId('mission-launch')).toBeDisabled();
-  await expect(page.getByTestId('mission-launch')).toContainText('BRIEFING ONLY');
-  await expect(page.getByText(/ANTI-SABERTOOTH COVENANT ACTIVITY/i).first()).toBeVisible();
-
-  const ironveinState = await page.evaluate(() => {
-    const s = (window as any).runnerStore.getState();
-    return { gameState: s.gameState, missionId: s.activeStoryMissionId };
-  });
-  expect(ironveinState).toEqual({
-    gameState: 'mission-select',
-    missionId: 'vertical_slice_ironvein_wards',
-  });
 
   expect(errors, `Unexpected Story Hub runtime errors:\n${errors.join('\n')}`).toEqual([]);
 });
