@@ -1,9 +1,27 @@
 import { expect, test, type ConsoleMessage, type Page } from '@playwright/test';
 
 const MISSIONS = [
-  { id: 'vertical_slice_ironvein_wards', interactionBeats: [2, 5], layout: 'ironvein-pressure' },
-  { id: 'vertical_slice_skyfall_spines', interactionBeats: [2, 4], layout: 'skyfall-vertical' },
-  { id: 'vertical_slice_storm_ronin_sanctum', interactionBeats: [1, 2, 4], layout: 'sanctum-archive' },
+  {
+    id: 'vertical_slice_ironvein_wards',
+    interactionBeats: [2, 5],
+    layout: 'ironvein-pressure',
+    location: 'IRONVEIN WARDS',
+    districtId: 'ironvein-wards',
+  },
+  {
+    id: 'vertical_slice_skyfall_spines',
+    interactionBeats: [2, 4],
+    layout: 'skyfall-vertical',
+    location: 'SKYFALL SPINES',
+    districtId: 'skyfall-spines',
+  },
+  {
+    id: 'vertical_slice_storm_ronin_sanctum',
+    interactionBeats: [1, 2, 4],
+    layout: 'sanctum-archive',
+    location: 'STORM RONIN SANCTUM',
+    districtId: 'storm-ronin-sanctum',
+  },
 ] as const;
 
 const BENIGN_ERROR_PATTERNS = [
@@ -141,6 +159,12 @@ for (const mission of MISSIONS) {
       gameState: 'mission-complete',
       completed: [mission.id],
       expected: mission.id,
+    });
+
+    await expect(page.getByTestId('mission-complete-location')).toContainText(mission.location);
+    await page.getByTestId('mission-complete-return').click();
+    await expect(page.getByTestId(`story-hub-completed-${mission.districtId}`)).toBeVisible({
+      timeout: 8_000,
     });
 
     expect(errors).toEqual([]);
