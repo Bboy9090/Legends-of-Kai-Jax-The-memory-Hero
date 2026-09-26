@@ -37,10 +37,19 @@ describe('field mission catalog', () => {
     expect(getFieldMission('not-real').id).toBe(DEFAULT_FIELD_MISSION_ID);
   });
 
-  it('provides authored objectives for every node', () => {
+  it('provides authored objectives and valid interaction gates for every node', () => {
     for (const entry of Object.values(FIELD_MISSION_CATALOG)) {
       expect(entry.objectives.length).toBeGreaterThan(0);
       expect(entry.objectives.every((objective) => objective.trim().length > 0)).toBe(true);
+      expect(entry.interactionBeatIndices.every((index) =>
+        Number.isInteger(index) && index >= 0 && index < entry.objectives.length
+      )).toBe(true);
     }
+  });
+
+  it('requires explicit interaction at the mechanics that need player acknowledgement', () => {
+    expect(FIELD_MISSION_CATALOG.vertical_slice_ironvein_wards.interactionBeatIndices).toEqual([2, 5]);
+    expect(FIELD_MISSION_CATALOG.vertical_slice_skyfall_spines.interactionBeatIndices).toEqual([2, 4]);
+    expect(FIELD_MISSION_CATALOG.vertical_slice_storm_ronin_sanctum.interactionBeatIndices).toEqual([1, 2, 4]);
   });
 });
