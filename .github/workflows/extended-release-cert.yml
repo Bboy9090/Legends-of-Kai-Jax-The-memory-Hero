@@ -219,4 +219,4 @@ jobs:
           ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
         run: pnpm install --filter ./apps/web... --frozen-lockfile
       - name: Run current-canon field contract tests
-        run: pnpm -C apps/web exec vitest run src/game/world/zones/IronveinWards/IronveinFieldContent.test.ts
+        run: pnpm -C apps/web exec vitest run src/game/world/zones/IronveinWards/IronveinFieldContent.test.ts src/game/world/zones/SkyfallSpines/SkyfallFieldContent.test.ts src/game/world/zones/StormRoninSanctum/StormRoninSanctumContent.test.ts
