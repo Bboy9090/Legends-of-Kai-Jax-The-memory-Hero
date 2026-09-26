@@ -49,7 +49,7 @@ interface ProfileData {
 }
 
 interface RunnerState {
-  // Runtime State (Reset on app launch, not per-profile)
+  // Session state resets on app launch. selectedCharacter is retained as a user preference.
   gameState: GameState;
   selectedCharacter: string | null;
   activeStoryMissionId: string | null;
@@ -274,7 +274,7 @@ export const useRunner = create<RunnerState>()(
     }),
     {
       name: "kai-jax-save",
-      version: 2,
+      version: 3,
       migrate: (persistedState: unknown) => {
         const state = (persistedState && typeof persistedState === "object")
           ? persistedState as Partial<RunnerState>
@@ -294,7 +294,12 @@ export const useRunner = create<RunnerState>()(
           ...state,
           activeProfileIndex,
           profiles,
+          // Durable preference survives schema upgrades.
           selectedCharacter: migrateSelectedCharacter(state.selectedCharacter),
+          // Transient scene/session state must never resume mid-frame after a relaunch.
+          gameState: "lore-hub",
+          activeStoryMissionId: null,
+          trainingSession: false,
           totalScore: activeProfile.totalScore,
           campaignCompletedNodes: activeProfile.campaignCompletedNodes,
           completedStoryMissionIds: activeProfile.completedStoryMissionIds,
@@ -305,6 +310,17 @@ export const useRunner = create<RunnerState>()(
           campaignCurrentNode: null,
         } as RunnerState;
       },
+      partialize: (state) => ({
+        selectedCharacter: state.selectedCharacter,
+        activeProfileIndex: state.activeProfileIndex,
+        profiles: state.profiles,
+        totalScore: state.totalScore,
+        campaignCompletedNodes: state.campaignCompletedNodes,
+        completedStoryMissionIds: state.completedStoryMissionIds,
+        completedRoamDistrictIds: state.completedRoamDistrictIds,
+        unlockedUpgrades: state.unlockedUpgrades,
+        kaiJaxFusionUnlocked: state.kaiJaxFusionUnlocked,
+      }),
     }
   )
 );
