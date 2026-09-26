@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useRunner } from '../../lib/stores/useRunner';
-import { ArrowLeft, MapPin, ChevronRight, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, MapPin, ChevronRight, ShieldAlert, CheckCircle2 } from 'lucide-react';
 
 interface DistrictInfo {
   id: string;
@@ -58,7 +58,7 @@ const DISTRICTS: DistrictInfo[] = [
 ];
 
 export default function StoryHubScreen() {
-  const { setGameState, setActiveStoryMission } = useRunner();
+  const { setGameState, setActiveStoryMission, completedStoryMissionIds } = useRunner();
   const [selectedDistrict, setSelectedDistrict] = useState<DistrictInfo>(DISTRICTS[0]);
 
   const handleEnterDistrict = (district: DistrictInfo) => {
@@ -103,6 +103,7 @@ export default function StoryHubScreen() {
           </div>
           {DISTRICTS.map((district) => {
             const isSelected = selectedDistrict.id === district.id;
+            const isCompleted = completedStoryMissionIds.includes(district.missionId);
             return (
               <button
                 key={district.id}
@@ -120,7 +121,18 @@ export default function StoryHubScreen() {
                     <p className="text-[10px] text-slate-400 font-mono uppercase">{district.pressure}</p>
                   </div>
                 </div>
-                <ChevronRight className={`w-5 h-5 transition-transform ${isSelected ? 'text-amber-400 translate-x-1' : 'text-slate-600'}`} />
+                <div className="flex items-center gap-2">
+                  {isCompleted && (
+                    <span
+                      data-testid={`story-hub-completed-${district.id}`}
+                      className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-emerald-300"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      Cleared
+                    </span>
+                  )}
+                  <ChevronRight className={`w-5 h-5 transition-transform ${isSelected ? 'text-amber-400 translate-x-1' : 'text-slate-600'}`} />
+                </div>
               </button>
             );
           })}
@@ -147,6 +159,16 @@ export default function StoryHubScreen() {
             </div>
 
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed">{selectedDistrict.description}</p>
+
+            {completedStoryMissionIds.includes(selectedDistrict.missionId) && (
+              <div
+                data-testid="story-hub-selected-complete"
+                className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs font-bold uppercase tracking-widest text-emerald-300"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Field slice completion recorded
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-white/10 text-xs font-mono">
               <div className="p-4 bg-black/40 rounded-xl border border-white/5">
