@@ -1,45 +1,17 @@
 import React, { useMemo, useState } from 'react';
 import { useRunner } from '../../lib/stores/useRunner';
 import { ArrowLeft, Target, Play, ShieldCheck, BookOpen } from 'lucide-react';
+import { getFieldMission, isPlayableFieldMission } from '../../mission/FieldMissionCatalog';
 
 type Difficulty = 'story' | 'standard' | 'hard';
-
-interface FieldBriefing {
-  location: string;
-  pressure: string;
-}
-
-const FIELD_BRIEFINGS: Record<string, FieldBriefing> = {
-  vertical_slice_ashblock_heights: {
-    location: 'ASHBLOCK HEIGHTS',
-    pressure: 'FANG SYNDICATE PRESSURE',
-  },
-  vertical_slice_ironvein_wards: {
-    location: 'IRONVEIN WARDS',
-    pressure: 'ANTI-SABERTOOTH COVENANT ACTIVITY',
-  },
-  vertical_slice_skyfall_spines: {
-    location: 'SKYFALL SPINES',
-    pressure: 'CONTESTED TERRITORY',
-  },
-  vertical_slice_storm_ronin_sanctum: {
-    location: 'STORM RONIN SANCTUM',
-    pressure: 'RONIN LEGACY SITE',
-  },
-};
 
 export default function MissionSelectScreen() {
   const { setGameState, activeStoryMissionId } = useRunner();
   const [difficulty, setDifficulty] = useState<Difficulty>('standard');
 
-  const briefing = useMemo<FieldBriefing>(() => {
-    if (activeStoryMissionId && FIELD_BRIEFINGS[activeStoryMissionId]) {
-      return FIELD_BRIEFINGS[activeStoryMissionId];
-    }
-    return FIELD_BRIEFINGS.vertical_slice_ashblock_heights;
-  }, [activeStoryMissionId]);
+  const briefing = useMemo(() => getFieldMission(activeStoryMissionId), [activeStoryMissionId]);
 
-  const isPlayableSlice = activeStoryMissionId === 'vertical_slice_ashblock_heights';
+  const isPlayableSlice = isPlayableFieldMission(activeStoryMissionId);
 
   const handleStartMission = () => {
     // Only Ashblock currently has a production-authorized playable slice.
@@ -82,7 +54,7 @@ export default function MissionSelectScreen() {
             </div>
             <h2 className="text-4xl font-black italic tracking-wide uppercase mt-2">RAGING CITY FIELD OP</h2>
             <p className="text-slate-300 text-sm mt-3 leading-7">
-              Enter {briefing.location} with the selected hero and prove the shared adventure loop: character-specific traversal, Memory Trace interaction, environmental routing, and a canon-faction encounter where the mission spawner has an approved assignment.
+              Enter {briefing.location} with the selected hero and prove only the mechanics authorized for this field node. Runtime combat, memory, traversal, or archive behavior remains constrained by the mission catalog and publication chronology.
             </p>
           </div>
 
@@ -99,22 +71,12 @@ export default function MissionSelectScreen() {
               <span>SLICE OBJECTIVES</span>
             </h3>
             <ul className="space-y-3 text-sm text-slate-200 font-medium">
-              <li className="flex items-start gap-3">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
-                <span>Traverse the district using the selected hero’s distinct movement identity.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0" />
-                <span>Locate and inspect a Memory Trace or Memory Echo interaction point.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
-                <span>Resolve only approved encounter content; do not invent a faction, boss, relic, or story reveal.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
-                <span>Return with continuity intact: wounds, knowledge, unlocks, and chronology must persist correctly.</span>
-              </li>
+              {briefing.objectives.map((objective, index) => (
+                <li key={`${briefing.id}-objective-${index}`} className="flex items-start gap-3">
+                  <span className="mt-2 w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
+                  <span>{objective}</span>
+                </li>
+              ))}
             </ul>
           </div>
 
