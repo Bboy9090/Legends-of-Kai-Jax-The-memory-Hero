@@ -13,7 +13,7 @@ import { useBattle } from '../../../lib/stores/useBattle';
 import { MODEL_REGISTRY } from '../../../assets/modelRegistry';
 
 // Guaranteed-to-exist fallback if a fighter has no registered model.
-const FALLBACK_MODEL_PATH = '/models/stylized-beast.glb';
+const FALLBACK_MODEL_PATH = '/models/kai_jax_beast.glb';
 
 // PERFORMANCE: lightweight battle models (~1.8MB) that replace the very heavy
 // 12–25MB registry models during combat. The registry models are gorgeous but
