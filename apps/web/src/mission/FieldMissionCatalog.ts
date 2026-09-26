@@ -16,6 +16,8 @@ export interface FieldMissionCatalogEntry {
   pressure: string;
   runtime: FieldMissionRuntime;
   layoutProfile: FieldLayoutProfile;
+  /** Beat indexes that require an explicit USE interaction before progression. */
+  interactionBeatIndices: readonly number[];
   objectives: readonly string[];
 }
 
@@ -26,6 +28,7 @@ export const FIELD_MISSION_CATALOG: Record<string, FieldMissionCatalogEntry> = {
     pressure: 'FANG SYNDICATE PRESSURE',
     runtime: 'ashblock-combat',
     layoutProfile: 'ashblock-combat',
+    interactionBeatIndices: [],
     objectives: ASHBLOCK_PHASE_55_SEQUENCE.map((beat) => beat.objective),
   },
   vertical_slice_ironvein_wards: {
@@ -34,6 +37,7 @@ export const FIELD_MISSION_CATALOG: Record<string, FieldMissionCatalogEntry> = {
     pressure: 'ANTI-SABERTOOTH COVENANT ACTIVITY',
     runtime: 'field-traversal',
     layoutProfile: 'ironvein-pressure',
+    interactionBeatIndices: [2, 5],
     objectives: IRONVEIN_FIELD_SEQUENCE.map((beat) => beat.objective),
   },
   vertical_slice_skyfall_spines: {
@@ -42,6 +46,7 @@ export const FIELD_MISSION_CATALOG: Record<string, FieldMissionCatalogEntry> = {
     pressure: 'CONTESTED TERRITORY',
     runtime: 'field-traversal',
     layoutProfile: 'skyfall-vertical',
+    interactionBeatIndices: [2, 4],
     objectives: SKYFALL_FIELD_SEQUENCE.map((beat) => beat.objective),
   },
   vertical_slice_storm_ronin_sanctum: {
@@ -50,6 +55,7 @@ export const FIELD_MISSION_CATALOG: Record<string, FieldMissionCatalogEntry> = {
     pressure: 'RONIN LEGACY SITE',
     runtime: 'field-traversal',
     layoutProfile: 'sanctum-archive',
+    interactionBeatIndices: [1, 2, 4],
     objectives: STORM_RONIN_SANCTUM_SEQUENCE.map((beat) => beat.objective),
   },
 };
