@@ -23,6 +23,7 @@ import * as THREE from 'three';
 import { useAudio } from '../../../../lib/stores/useAudio';
 import { gameplayInputManager, GameplayInputState } from '../../../../lib/input/GameplayInputState';
 import { combatActionBuffer } from '../../../../lib/input/CombatActionBuffer';
+import { gameplayPulseBuffer } from '../../../../lib/input/GameplayPulseBuffer';
 import { WallClimbController } from './WallClimbSystem';
 import { WebZipController } from './WebZipSystem';
 import { KaiAttackSystem } from './KaiAttackSystem';
@@ -156,15 +157,20 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       anchorsRegisteredRef.current = true;
     }
 
+    const jumpPulse = gameplayPulseBuffer.consume('jump');
+    const traversalPulse = gameplayPulseBuffer.consume('traversal');
+    const jumpInput = jumpPulse || input.jump;
+    const traversalInput = traversalPulse || input.traversal;
+
     const wallClimbResult = wallClimbController.update(delta, {
       moveX: input.moveX,
       moveY: input.moveY,
-      jump: input.jump,
+      jump: jumpInput,
       traversalModifier: input.traversalModifier,
     }, kai.position, kaiRef.current.getWorldDirection(new THREE.Vector3()));
 
     const webZipResult = webZipController.update(delta, {
-      traversal: input.traversal,
+      traversal: traversalInput,
       moveX: input.moveX,
     }, kai.position);
 
