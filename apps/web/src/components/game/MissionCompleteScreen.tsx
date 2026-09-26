@@ -28,6 +28,7 @@ export default function MissionCompleteScreen() {
             <span>FIELD OBJECTIVE COMPLETE</span>
           </div>
           <h1
+            data-testid="mission-complete-location"
             className="text-4xl sm:text-6xl font-black italic tracking-wide uppercase"
             style={{
               background: 'linear-gradient(135deg, #ffd700 0%, #f97316 45%, #a855f7 100%)',
@@ -64,6 +65,7 @@ export default function MissionCompleteScreen() {
 
         <div className="pt-2 flex justify-center">
           <button
+            data-testid="mission-complete-return"
             onClick={handleContinue}
             className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 via-purple-600 to-cyan-500 hover:from-amber-400 hover:to-cyan-400 rounded-2xl font-black text-white text-base tracking-widest uppercase shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all hover:scale-105"
           >
