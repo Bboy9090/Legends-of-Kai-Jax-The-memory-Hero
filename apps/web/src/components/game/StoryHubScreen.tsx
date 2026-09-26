@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useRunner } from '../../lib/stores/useRunner';
 import { ArrowLeft, MapPin, ChevronRight, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { getFieldMission } from '../../mission/FieldMissionCatalog';
 
 interface DistrictInfo {
   id: string;
   missionId: string;
-  name: string;
   threat: 'LOW' | 'MEDIUM' | 'HIGH' | 'EXTREME';
-  pressure: string;
   description: string;
   color: string;
 }
@@ -22,36 +21,28 @@ const DISTRICTS: DistrictInfo[] = [
   {
     id: 'ashblock-heights',
     missionId: 'vertical_slice_ashblock_heights',
-    name: 'ASHBLOCK HEIGHTS',
     threat: 'HIGH',
-    pressure: 'FANG SYNDICATE PRESSURE',
     description: 'An established Raging City district used for vertical traversal, district exploration, memory fragments, and canon-aligned faction encounters.',
     color: '#f97316',
   },
   {
     id: 'ironvein-wards',
     missionId: 'vertical_slice_ironvein_wards',
-    name: 'IRONVEIN WARDS',
     threat: 'EXTREME',
-    pressure: 'ANTI-SABERTOOTH COVENANT ACTIVITY',
     description: 'An established Raging City district where the vertical slice can exercise pressure, suppression, traps, and traversal without inventing a new faction or story event.',
     color: '#a855f7',
   },
   {
     id: 'skyfall-spines',
     missionId: 'vertical_slice_skyfall_spines',
-    name: 'SKYFALL SPINES',
     threat: 'HIGH',
-    pressure: 'CONTESTED TERRITORY',
     description: 'An established location reserved for story-controlled encounters. The gameplay slice focuses on movement, alternate routes, and environmental memory traces.',
     color: '#38bdf8',
   },
   {
     id: 'storm-ronin-sanctum',
     missionId: 'vertical_slice_storm_ronin_sanctum',
-    name: 'STORM RONIN SANCTUM',
     threat: 'MEDIUM',
-    pressure: 'RONIN LEGACY SITE',
     description: 'The established Storm Ronin sanctuary. It can host training, memory reconstruction, mentor material, and chronology-safe archive sequences where the story source permits them.',
     color: '#fbbf24',
   },
@@ -60,6 +51,7 @@ const DISTRICTS: DistrictInfo[] = [
 export default function StoryHubScreen() {
   const { setGameState, setActiveStoryMission, completedStoryMissionIds } = useRunner();
   const [selectedDistrict, setSelectedDistrict] = useState<DistrictInfo>(DISTRICTS[0]);
+  const selectedMission = getFieldMission(selectedDistrict.missionId);
 
   const handleEnterDistrict = (district: DistrictInfo) => {
     setActiveStoryMission(district.missionId);
@@ -102,6 +94,7 @@ export default function StoryHubScreen() {
             </span>
           </div>
           {DISTRICTS.map((district) => {
+            const mission = getFieldMission(district.missionId);
             const isSelected = selectedDistrict.id === district.id;
             const isCompleted = completedStoryMissionIds.includes(district.missionId);
             return (
@@ -117,8 +110,8 @@ export default function StoryHubScreen() {
                 <div className="flex items-center gap-3">
                   <MapPin className="w-5 h-5" style={{ color: district.color }} />
                   <div>
-                    <h4 className="font-black italic text-base uppercase">{district.name}</h4>
-                    <p className="text-[10px] text-slate-400 font-mono uppercase">{district.pressure}</p>
+                    <h4 className="font-black italic text-base uppercase">{mission.location}</h4>
+                    <p className="text-[10px] text-slate-400 font-mono uppercase">{mission.pressure}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -177,7 +170,7 @@ export default function StoryHubScreen() {
               </div>
               <div className="p-4 bg-black/40 rounded-xl border border-white/5">
                 <span className="text-slate-500 block mb-1">SLICE OBJECTIVE</span>
-                <span className="font-bold text-cyan-400 uppercase">TRAVERSAL + MEMORY TRACE</span>
+                <span className="font-bold text-cyan-400 uppercase">{selectedMission.objectives[0] ?? 'FIELD CONTRACT'}</span>
               </div>
             </div>
 
