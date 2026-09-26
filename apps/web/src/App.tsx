@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useState, useRef, useMemo, useEffect } from "react";
+import { Suspense, useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { KeyboardControls } from "@react-three/drei";
 import "@fontsource/inter";
 import "@fontsource/bebas-neue";
@@ -177,9 +177,9 @@ function App() {
   }, [selectedCharacter, phase, setPlayerFighter, setOpponentFighter]);
 
   // Handle intro completion
-  const handleIntroComplete = () => {
+  const handleIntroComplete = useCallback(() => {
     setShowIntro(false);
-  };
+  }, []);
 
   // Calculate screen shake transform - stable random offsets per shake intensity change
   const shakeOffsetRef = useRef({ x: 0, y: 0 });
