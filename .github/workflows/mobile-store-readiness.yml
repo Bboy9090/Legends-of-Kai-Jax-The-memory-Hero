@@ -1,0 +1,150 @@
+name: Mobile Store Readiness
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: mobile-store-readiness-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  web-cert:
+    name: Web + Capacitor source certification
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact commit without reusable actions
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
+          cd source
+          git checkout --detach "${COMMIT_SHA}"
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+
+      - name: Activate pnpm
+        working-directory: source
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+
+      - name: Install dependencies
+        working-directory: source
+        run: pnpm install --filter ./apps/web... --frozen-lockfile
+
+      - name: Test, typecheck, and build web
+        working-directory: source
+        run: |
+          pnpm -C apps/web test
+          pnpm -C apps/web typecheck
+          pnpm -C apps/web build
+
+      - name: Verify mobile identity and web output
+        working-directory: source
+        run: |
+          test -s apps/web/dist/index.html
+          grep -q '"version": "1.0.0"' apps/web/package.json
+          grep -q 'versionName "1.0.0"' apps/web/android/app/build.gradle
+          grep -q 'MARKETING_VERSION = 1.0.0;' apps/web/ios/App/App.xcodeproj/project.pbxproj
+          grep -q "com.bobbyblanco.legendsofkaijax" apps/web/capacitor.config.ts
+          grep -q "Legends of Kai-Jax" apps/web/capacitor.config.ts
+          grep -q 'applicationId "com.bobbyblanco.legendsofkaijax"' apps/web/android/app/build.gradle
+          grep -q "PRODUCT_BUNDLE_IDENTIFIER = com.bobbyblanco.legendsofkaijax;" apps/web/ios/App/App.xcodeproj/project.pbxproj
+
+  android-release:
+    name: Android release bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact commit without reusable actions
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
+          cd source
+          git checkout --detach "${COMMIT_SHA}"
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+
+      - name: Verify Java and activate pnpm
+        working-directory: source
+        run: |
+          java -version
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+
+      - name: Install, build, and sync Android
+        working-directory: source
+        run: |
+          pnpm install --filter ./apps/web... --frozen-lockfile
+          pnpm -C apps/web build
+          cd apps/web
+          npx cap sync android
+
+      - name: Build unsigned release AAB
+        working-directory: source/apps/web/android
+        run: |
+          chmod +x gradlew
+          ./gradlew bundleRelease --stacktrace
+          test -s app/build/outputs/bundle/release/app-release.aab
+          sha256sum app/build/outputs/bundle/release/app-release.aab
+          printf '%s\n' "ANDROID_RELEASE_AAB_OK ${{ github.event.pull_request.head.sha || github.sha }}"
+
+  ios-release-compile:
+    name: iOS Release compile
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout exact commit without reusable actions
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
+          cd source
+          git checkout --detach "${COMMIT_SHA}"
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+
+      - name: Activate pnpm
+        working-directory: source
+        run: |
+          xcodebuild -version
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+
+      - name: Install, build, and sync iOS
+        working-directory: source
+        run: |
+          pnpm install --filter ./apps/web... --frozen-lockfile
+          pnpm -C apps/web build
+          cd apps/web
+          npx cap sync ios
+
+      - name: Compile iOS Release without signing
+        working-directory: source/apps/web/ios/App
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build | tee ../../../ios-release-build.log
+
+      - name: Verify iOS release evidence
+        working-directory: source/apps/web
+        run: |
+          test -s ios-release-build.log
+          grep -q "com.bobbyblanco.legendsofkaijax" ios/App/App.xcodeproj/project.pbxproj
+          grep -Fq "** BUILD SUCCEEDED **" ios-release-build.log
+          printf '%s\n' "IOS_RELEASE_COMPILE_OK ${{ github.event.pull_request.head.sha || github.sha }}"
