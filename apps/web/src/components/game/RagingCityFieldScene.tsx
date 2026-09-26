@@ -112,6 +112,7 @@ function FieldEnvironment({
   const playerRef = useRef<THREE.Group>(null);
   const controllerDebugRef = useRef<ControllerDebug>({ ...INITIAL_CONTROLLER_DEBUG });
   const previousInteractRef = useRef(false);
+  const debugPublishElapsedRef = useRef(0);
   const [beatIndex, setBeatIndex] = useState(0);
   const completionRecordedRef = useRef(false);
   const beatIndexRef = useRef(0);
@@ -165,7 +166,7 @@ function FieldEnvironment({
 
     const interactReady =
       finalBeat &&
-      Math.hypot(player.position.x, player.position.z - interactionZ) <= 2.5;
+      Math.hypot(player.position.x, player.position.z - interactionZ) <= 3.5;
 
     if (interactReady && interactEdge && !completionRecordedRef.current) {
       completionRecordedRef.current = true;
@@ -177,16 +178,20 @@ function FieldEnvironment({
     camera.position.lerp(cameraTarget, Math.min(1, delta * 5));
     camera.lookAt(player.position.x, 1.2, player.position.z + 5);
 
-    onDebug({
-      hero,
-      missionId: mission.id,
-      location: mission.location,
-      beatIndex: beatIndexRef.current,
-      beatObjective: mission.objectives[beatIndexRef.current] ?? mission.objectives[0] ?? 'Advance',
-      position: [player.position.x, player.position.y, player.position.z],
-      interactReady,
-      completed: completionRecordedRef.current,
-    });
+    debugPublishElapsedRef.current += Math.max(rawDelta, 0);
+    if (debugPublishElapsedRef.current >= 0.1) {
+      debugPublishElapsedRef.current = 0;
+      onDebug({
+        hero,
+        missionId: mission.id,
+        location: mission.location,
+        beatIndex: beatIndexRef.current,
+        beatObjective: mission.objectives[beatIndexRef.current] ?? mission.objectives[0] ?? 'Advance',
+        position: [player.position.x, player.position.y, player.position.z],
+        interactReady,
+        completed: completionRecordedRef.current,
+      });
+    }
   });
 
   if (!fighter || hero === 'INVALID') return null;
