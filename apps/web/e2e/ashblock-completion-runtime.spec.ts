@@ -738,7 +738,10 @@ async function activateMemoryTrace(page: Page, hero: 'kai' | 'jax') {
     hero,
     0,
     5,
-    1.95,
+    // The production interaction uses dist < 2. HUD positions are rounded to
+    // two decimals, so retain a small safety margin without requiring the test
+    // navigator to converge inside an unnecessarily tighter 1.95-unit circle.
+    1.98,
     18_000,
     'memory-trace-approach',
   );
