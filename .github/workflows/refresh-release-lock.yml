@@ -1,0 +1,56 @@
+name: Refresh Release Lock
+
+on:
+  push:
+    branches:
+      - release/mobile-store-hardening-2026-09-26
+    paths:
+      - package.json
+      - apps/web/package.json
+      - pnpm-lock.yaml
+      - .github/workflows/refresh-release-lock.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-release-lock
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout writable release branch
+        env:
+          REPOSITORY: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone "https://x-access-token:${TOKEN}@github.com/${REPOSITORY}.git" source
+          cd source
+          git checkout "${BRANCH}"
+
+      - name: Refresh deterministic pnpm lock
+        working-directory: source
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          pnpm install --lockfile-only
+
+      - name: Commit lockfile only when changed
+        working-directory: source
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          if git diff --quiet -- pnpm-lock.yaml; then
+            echo "Lockfile already synchronized."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          git commit -m "chore(lock): refresh patched release dependency graph"
+          git push origin "HEAD:${BRANCH}"
