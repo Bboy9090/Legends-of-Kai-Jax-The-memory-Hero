@@ -46,7 +46,7 @@ jobs:
       - name: Scan tracked files for common private-key material
         working-directory: source
         run: |
-          if git grep -n -I -E 'BEGIN (RSA |EC |OPENSSH |)?PRIVATE KEY|BEGIN CERTIFICATE' -- ':!*.md' ':!*.txt'; then
+          if git grep -n -I -E 'BEGIN (RSA |EC |OPENSSH |)?PRIVATE KEY|BEGIN CERTIFICATE' -- ':!*.md' ':!*.txt' ':!.github/workflows/codeql.yml'; then
             echo "Potential private key or certificate material is tracked in the repository."
             exit 1
           fi
