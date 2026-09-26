@@ -1,6 +1,7 @@
 import React from 'react';
 import { useRunner } from '../../lib/stores/useRunner';
-import { ArrowRight, ShieldCheck } from 'lucide-react';
+import { ArrowRight, ShieldCheck, MapPin } from 'lucide-react';
+import { getFieldMission } from '../../mission/FieldMissionCatalog';
 
 /**
  * Safe temporary debrief for the Phase C field slice.
@@ -9,7 +10,8 @@ import { ArrowRight, ShieldCheck } from 'lucide-react';
  * publication-locked mission ledger is still being mapped into runtime data.
  */
 export default function MissionCompleteScreen() {
-  const { setGameState, selectedCharacter } = useRunner();
+  const { setGameState, selectedCharacter, activeStoryMissionId } = useRunner();
+  const mission = getFieldMission(activeStoryMissionId);
 
   const handleContinue = () => {
     setGameState('story-hub');
@@ -33,11 +35,16 @@ export default function MissionCompleteScreen() {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            RETURN TO RAGING CITY
+            {mission.location} COMPLETE
           </h1>
           <p className="text-sm text-slate-300 leading-relaxed max-w-xl mx-auto">
-            The current Phase C mission slice is complete. Final chapter rewards, rank rules, unlocks, and chronology consequences remain gated until the Bloodward mission ledger is wired into runtime.
+            The {mission.location} field slice is complete. The run records mechanical completion only; chapter rewards, rank rules, unlocks, and chronology consequences remain gated until the publication-locked mission ledger authorizes them.
           </p>
+        </div>
+
+        <div className="flex items-center justify-center gap-2 text-xs font-mono uppercase tracking-widest text-cyan-300">
+          <MapPin className="w-4 h-4" />
+          <span>{mission.location}</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-b border-white/10 py-6 text-xs font-mono text-left sm:text-center">
