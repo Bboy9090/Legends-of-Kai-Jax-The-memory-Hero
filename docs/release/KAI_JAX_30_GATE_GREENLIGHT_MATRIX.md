@@ -2,7 +2,7 @@
 
 **Program:** Phase C extended release hardening  
 **Branch authority:** `claude/kai-jax-consolidation-dkfv1r`  
-**Baseline certified head:** `129699fe1e37e1f5f42621fcf58068c7466030e9`  
+**Baseline certified head:** `e20c312b4983b570fde6c3f6371ca3bd95dc487e`  
 **Rule:** A gate is green only when the exact-head proof named here exists. Historical prototype content never substitutes for current Bloodward/Raging City canon.
 
 | # | Gate | Lane | Current state | Green proof |
@@ -29,11 +29,11 @@
 | 20 | Production Vercel identity | Deployment | BLOCKED-EXTERNAL | Production hostname + exact SHA + HTTPS verified |
 | 21 | Live network asset integrity | Deployment | BLOCKED-EXTERNAL | Production model/audio/texture request audit |
 | 22 | Story Hub truth boundary | Canon | GREEN | Current Raging City nodes + legacy campaign quarantine |
-| 23 | Ironvein Wards playable slice | Content | RED | Current-canon scene + encounter + runtime certification |
-| 24 | Skyfall Spines playable slice | Content | RED | Current-canon scene + traversal + memory certification |
-| 25 | Storm Ronin Sanctum playable slice | Content | RED | Current-canon scene + archive/training certification |
+| 23 | Ironvein Wards playable slice | Content | GREEN | Source-safe field contract + Raging City field runtime completion |
+| 24 | Skyfall Spines playable slice | Content | GREEN | Source-safe field contract + Raging City field runtime completion |
+| 25 | Storm Ronin Sanctum playable slice | Content | GREEN | Source-safe field contract + Raging City field runtime completion |
 | 26 | Save/checkpoint interruption recovery | Persistence | GREEN-PARTIAL | Force-quit/background/reload progress proof |
-| 27 | Audio/haptics mobile feedback | Feel | NEXT | No-crash + state-correct feedback proof on touch/native bridge |
+| 27 | Audio/haptics mobile feedback | Feel | GREEN-PARTIAL | Browser/touch vibration fallback + packaged audio integrity certified; native Capacitor haptics still absent |
 | 28 | Model-loading authority unification | Assets | GREEN-PARTIAL | Registry-only production model resolution |
 | 29 | Security scanner truth | Security | PARTIAL | Repo-owned JS/TS+Python CodeQL valid; phantom C# default scan removed/disabled externally |
 | 30 | Release candidate greenlight | Release | RED | Gates 1–29 either GREEN or explicitly external/manual with signed evidence |
@@ -52,7 +52,7 @@
 1. **Commercial asset clearance:** repository evidence currently marks runtime GLBs unverified. A filename or successful render is not a license.
 2. **Production Vercel identity/network proof:** current connected Vercel scope exposes no project listing; preview deployment status from GitHub is green, but production hostname identity is not proven here.
 3. **Target-device performance:** hosted Chromium evidence is useful but cannot substitute for real iOS/Android hardware.
-4. **Three remaining current-canon field slices:** they require actual chronology-safe content, not reactivation of the quarantined 15-mission prototype.
+4. **Native feedback + device evidence:** browser/touch feedback is certified, but native Capacitor haptics and physical-device feel/performance still require target-device implementation and proof.
 
 ## Execution policy
 
@@ -66,3 +66,12 @@ Exact head `7f6592f2d463f6958b3156134a7a6284e50a5b11` proved the Extended Releas
 Gate 26 remains GREEN-PARTIAL rather than fully complete because browser reload/profile isolation/migration are certified, while native OS background/termination restore still requires device-level proof.
 
 Gate 28 remains GREEN-PARTIAL because AdventureArena is registry-only, but other legacy render paths such as BeastModelSystem still contain hardcoded GLB authorities and require separate cleanup before full closure.
+
+
+## 2026-09-26 Raging City runtime advancement
+
+Exact head `e20c312b4983b570fde6c3f6371ca3bd95dc487e` passed the dedicated **Raging City field runtime completion** job for Ironvein Wards, Skyfall Spines, and Storm Ronin Sanctum. Each node launches a real Kai/Jax-controller runtime, advances through its publication-safe mechanics contract, reaches a deliberate interaction gate, records completion, and returns to mission-complete state without reviving quarantined prototype chronology.
+
+Ashblock remains the combat-heavy certified slice. The three newer field slices deliberately use a shared noncombat traversal/memory runtime until publication-authorized encounter content exists. Their GREEN state certifies playability and completion flow, not invented boss fights or chapter events.
+
+Production Preview Smoke on that same head failed only because its Story Hub expectation still asserted that non-Ashblock nodes were disabled. That stale assertion was corrected in the next test-only commit; it does not invalidate the successful field-runtime proof.
