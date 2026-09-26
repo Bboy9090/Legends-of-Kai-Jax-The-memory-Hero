@@ -50,6 +50,10 @@ jobs:
         working-directory: source
         run: |
           test -s apps/web/dist/index.html
+          test -s apps/web/dist/privacy.html
+          test -s apps/web/dist/terms.html
+          ! grep -q 'legendsofkaijax.com/privacy' apps/web/src/components/game/SettingsMenu.tsx
+          ! grep -q 'legendsofkaijax.com/terms' apps/web/src/components/game/SettingsMenu.tsx
           grep -q '"version": "1.0.0"' apps/web/package.json
           grep -q 'versionName "1.0.0"' apps/web/android/app/build.gradle
           grep -q 'compileSdkVersion = 36' apps/web/android/variables.gradle
