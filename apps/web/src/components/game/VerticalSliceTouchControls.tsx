@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { combatActionBuffer, type BufferedCombatAction } from '../../lib/input/CombatActionBuffer';
 import { gameplayInputManager } from '../../lib/input/GameplayInputState';
+import { gameplayPulseBuffer, type BufferedGameplayPulse } from '../../lib/input/GameplayPulseBuffer';
 import { hapticFeedback, isTouchDevice } from '../../lib/touchUtils';
 
 type TouchLevelAction =
@@ -20,6 +21,12 @@ const COMBAT_ACTIONS: Partial<Record<TouchLevelAction, BufferedCombatAction>> = 
   attackSpecial: 'attackSpecial',
   attackUltimate: 'attackUltimate',
   dodge: 'dodge',
+};
+
+const PULSE_ACTIONS: Partial<Record<TouchLevelAction, BufferedGameplayPulse>> = {
+  jump: 'jump',
+  traversal: 'traversal',
+  interact: 'interact',
 };
 
 const ALL_TOUCH_ACTIONS: TouchLevelAction[] = [
@@ -42,6 +49,7 @@ function clearVerticalSliceTouchState() {
     gameplayInputManager.setTouchAction(action, false);
   }
   combatActionBuffer.clear();
+  gameplayPulseBuffer.clear();
 }
 
 function TouchButton({
@@ -82,6 +90,10 @@ function TouchButton({
 
     const bufferedAction = COMBAT_ACTIONS[action];
     if (bufferedAction) combatActionBuffer.enqueue(bufferedAction);
+
+    const pulseAction = PULSE_ACTIONS[action];
+    if (pulseAction) gameplayPulseBuffer.enqueue(pulseAction);
+
     hapticFeedback(haptic);
   };
 
