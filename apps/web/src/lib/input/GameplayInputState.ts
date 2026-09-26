@@ -57,6 +57,13 @@ class KeyboardInputHandler {
     window.addEventListener('keyup', (e) => {
       this.keys[e.code] = false;
     });
+    window.addEventListener('blur', () => {
+      // Browsers do not guarantee keyup delivery when focus changes. Reset
+      // both current and edge history so returning to the app cannot leave
+      // movement/run/interaction stuck or suppress the next legitimate press.
+      this.keys = {};
+      this.prevKeys = {};
+    });
   }
 
   getState(): Partial<GameplayInputState> {
