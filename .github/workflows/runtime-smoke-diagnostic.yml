@@ -46,6 +46,13 @@ jobs:
           corepack prepare pnpm@9.15.9 --activate
           pnpm install --filter ./apps/web... --frozen-lockfile
 
+      - name: Verify release React renderer graph
+        working-directory: source
+        run: |
+          grep -q '"@react-three/postprocessing": "2.19.1"' apps/web/package.json
+          grep -q 'dedupe: \["react", "react-dom", "@react-three/fiber"\]' apps/web/vite.config.ts
+          pnpm -C apps/web list react react-dom @react-three/fiber @react-three/drei @react-three/postprocessing --depth 0
+
       - name: Install Chromium
         working-directory: source
         run: pnpm -C apps/web exec playwright install --with-deps chromium
