@@ -17,6 +17,7 @@ import { gameplayInputManager } from '../../lib/input/GameplayInputState';
 import { gameplayPulseBuffer } from '../../lib/input/GameplayPulseBuffer';
 import { combatActionBuffer } from '../../lib/input/CombatActionBuffer';
 import VerticalSliceTouchControls from './VerticalSliceTouchControls';
+import { hapticFeedback } from '../../lib/touchUtils';
 import {
   getFieldMission,
   type FieldLayoutProfile,
@@ -289,10 +290,12 @@ function FieldEnvironment({
     if (beatRequiresInteraction) {
       if (interactReady && interactEdge) {
         if (finalBeat && !completionRecordedRef.current) {
+          hapticFeedback('heavy');
           completionRecordedRef.current = true;
           setMissionCompleted(mission.id);
           setGameState('mission-complete');
         } else if (!finalBeat) {
+          hapticFeedback('medium');
           advanceBeat(currentBeat + 1);
         }
       }
@@ -389,18 +392,40 @@ function FieldEnvironment({
         </mesh>
       ))}
 
-      <group position={[0, 1.2, finalInteractionZ]}>
-        <mesh>
-          <octahedronGeometry args={[0.8, 0]} />
-          <meshStandardMaterial
-            color={accent}
-            emissive={accent}
-            emissiveIntensity={0.9}
-            transparent
-            opacity={0.75}
-          />
-        </mesh>
-      </group>
+      {mission.interactionBeatIndices.map((index) => {
+        const gateZ = -10 + index * 9;
+        const active = index === beatIndex;
+        const final = index >= mission.objectives.length - 1;
+        return (
+          <group
+            key={`${mission.id}-interaction-${index}`}
+            position={[0, 1.2, gateZ]}
+            name={`field-interaction-${index}`}
+          >
+            <mesh>
+              <octahedronGeometry args={[active ? 0.9 : 0.62, 0]} />
+              <meshStandardMaterial
+                color={accent}
+                emissive={accent}
+                emissiveIntensity={active ? 1.2 : 0.45}
+                transparent
+                opacity={active ? 0.9 : 0.42}
+              />
+            </mesh>
+            <pointLight
+              intensity={active ? 1.6 : 0.45}
+              distance={active ? 12 : 6}
+              color={accent}
+            />
+            {final && (
+              <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.15, 0]}>
+                <ringGeometry args={[1.6, 2, 32]} />
+                <meshBasicMaterial color={accent} transparent opacity={active ? 0.5 : 0.2} />
+              </mesh>
+            )}
+          </group>
+        );
+      })}
 
       {hero === 'kai' ? (
         <KaiBridge playerRef={playerRef} debugRef={controllerDebugRef} />
