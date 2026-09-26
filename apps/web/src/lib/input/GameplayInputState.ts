@@ -161,6 +161,9 @@ class TouchInputHandler {
     // Touch state is fed directly by controller-specific mobile UI adapters.
     // Adventure mode retains its separate useTouchInput path; Kai/Jax vertical
     // slice controls write here so every device reaches the same controller API.
+    if (typeof window !== 'undefined') {
+      window.addEventListener('blur', () => this.reset());
+    }
   }
 
   updateJoystick(x: number, y: number, active: boolean) {
@@ -177,6 +180,17 @@ class TouchInputHandler {
   // Set button state (true = pressed, false = released)
   setButtonState(button: keyof typeof this.buttonState, pressed: boolean) {
     this.buttonState[button] = pressed;
+  }
+
+  reset() {
+    this.joystickX = 0;
+    this.joystickY = 0;
+    this.joystickActive = false;
+    this.cameraX = 0;
+    this.cameraY = 0;
+    for (const key of Object.keys(this.buttonState)) {
+      this.buttonState[key] = false;
+    }
   }
 
   hasAnyInput(): boolean {
@@ -463,6 +477,14 @@ export class GameplayInputManager {
     pressed: boolean
   ) {
     this.touchHandler.setButtonState(action, pressed);
+  }
+
+  /**
+   * Clear every touch level/axis, including when a mobile WebView backgrounds
+   * without delivering the final pointerup/pointercancel event.
+   */
+  resetTouchInput() {
+    this.touchHandler.reset();
   }
 
   /**
