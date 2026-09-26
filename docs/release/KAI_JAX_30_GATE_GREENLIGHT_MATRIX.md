@@ -20,10 +20,10 @@
 | 11 | Sparse-frame input edge preservation | Input | GREEN | Keyboard/touch/gamepad edge tests |
 | 12 | Fang AI sparse-frame safety | AI | GREEN | Ashblock exact-head runtime chain |
 | 13 | Knockdown/recovery state safety | Combat | GREEN | Ashblock recovery runtime proof |
-| 14 | Asset inventory completeness | Assets | STARTED | Every runtime GLB has explicit provenance entry |
+| 14 | Asset inventory completeness | Assets | GREEN | Every runtime GLB has explicit provenance entry |
 | 15 | Commercial asset clearance | Legal/Release | BLOCKED | Every runtime GLB has license basis + evidence + cleared status |
-| 16 | Roster/registry static integrity | Roster | STARTED | Registry + versus roster + fighter validator |
-| 17 | Hosted mobile cadence evidence | Performance | STARTED | iPhone SE/12/iPad built-preview cadence test |
+| 16 | Roster/registry static integrity | Roster | GREEN | Registry + versus roster + fighter validator |
+| 17 | Hosted mobile cadence evidence | Performance | GREEN | iPhone SE/12/iPad built-preview cadence test |
 | 18 | Target-device performance | Performance | BLOCKED-EXTERNAL | Real iOS/Android frame/thermal/memory/input evidence |
 | 19 | Vercel preview deployment | Deployment | GREEN | Exact-head Vercel commit status success |
 | 20 | Production Vercel identity | Deployment | BLOCKED-EXTERNAL | Production hostname + exact SHA + HTTPS verified |
@@ -32,9 +32,9 @@
 | 23 | Ironvein Wards playable slice | Content | RED | Current-canon scene + encounter + runtime certification |
 | 24 | Skyfall Spines playable slice | Content | RED | Current-canon scene + traversal + memory certification |
 | 25 | Storm Ronin Sanctum playable slice | Content | RED | Current-canon scene + archive/training certification |
-| 26 | Save/checkpoint interruption recovery | Persistence | NEXT | Force-quit/background/reload progress proof |
+| 26 | Save/checkpoint interruption recovery | Persistence | GREEN-PARTIAL | Force-quit/background/reload progress proof |
 | 27 | Audio/haptics mobile feedback | Feel | NEXT | No-crash + state-correct feedback proof on touch/native bridge |
-| 28 | Model-loading authority unification | Assets | NEXT | Registry-only production model resolution |
+| 28 | Model-loading authority unification | Assets | GREEN-PARTIAL | Registry-only production model resolution |
 | 29 | Security scanner truth | Security | PARTIAL | Repo-owned JS/TS+Python CodeQL valid; phantom C# default scan removed/disabled externally |
 | 30 | Release candidate greenlight | Release | RED | Gates 1–29 either GREEN or explicitly external/manual with signed evidence |
 
@@ -57,3 +57,12 @@
 ## Execution policy
 
 Every new commit re-runs exact-head certification. No gate is marked green from an older SHA after behavior-affecting changes. Current-canon release gates must not depend on `story_act*` prototype missions unless those missions are explicitly re-authorized by canon.
+
+
+## 2026-09-26 advancement note
+
+Exact head `7f6592f2d463f6958b3156134a7a6284e50a5b11` proved the Extended Release Certification workflow green, including asset inventory truth, roster/registry integrity, hosted mobile performance evidence, and persistence/reload recovery. AdventureArena now resolves active runtime models through the canonical model registry instead of fabricating GLB filenames.
+
+Gate 26 remains GREEN-PARTIAL rather than fully complete because browser reload/profile isolation/migration are certified, while native OS background/termination restore still requires device-level proof.
+
+Gate 28 remains GREEN-PARTIAL because AdventureArena is registry-only, but other legacy render paths such as BeastModelSystem still contain hardcoded GLB authorities and require separate cleanup before full closure.
