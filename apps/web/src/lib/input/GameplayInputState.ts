@@ -320,6 +320,7 @@ export class GameplayInputManager {
   private keyboardHandler: KeyboardInputHandler;
   private touchHandler: TouchInputHandler;
   private gamepadHandler: GamepadInputHandler;
+  private inputSuppressed = false;
 
   constructor() {
     this.keyboardHandler = new KeyboardInputHandler();
@@ -354,6 +355,8 @@ export class GameplayInputManager {
       menu: false,
       lastActiveDevice: this._lastActiveDevice, // Start with persistent device
     };
+
+    if (this.inputSuppressed) return state;
 
     const touchState = this.touchHandler.getState();
     const keyboardState = this.keyboardHandler.getState();
@@ -485,6 +488,15 @@ export class GameplayInputManager {
    */
   resetTouchInput() {
     this.touchHandler.reset();
+  }
+
+  setSuppressed(suppressed: boolean) {
+    this.inputSuppressed = suppressed;
+    if (suppressed) this.touchHandler.reset();
+  }
+
+  isSuppressed(): boolean {
+    return this.inputSuppressed;
   }
 
   /**

@@ -116,6 +116,11 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
     const lifecycleDelta = Math.min(Math.max(rawDelta, 0), 0.25);
     const kai = stateRef.current;
     const input = gameplayInputManager.getState();
+    const inputSuppressed = gameplayInputManager.isSuppressed();
+    if (inputSuppressed) {
+      combatActionBuffer.clear();
+      gameplayPulseBuffer.clear();
+    }
     const prevInput = prevInputRef.current;
     const currentTime = frameState.clock.elapsedTime;
 
@@ -157,8 +162,8 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
       anchorsRegisteredRef.current = true;
     }
 
-    const jumpPulse = gameplayPulseBuffer.consume('jump');
-    const traversalPulse = gameplayPulseBuffer.consume('traversal');
+    const jumpPulse = !inputSuppressed && gameplayPulseBuffer.consume('jump');
+    const traversalPulse = !inputSuppressed && gameplayPulseBuffer.consume('traversal');
     const jumpInput = jumpPulse || input.jump;
     const traversalInput = traversalPulse || input.traversal;
 
@@ -260,16 +265,26 @@ export function useKaiController(kaiRef: React.RefObject<THREE.Group>, scene: TH
 
     // Preserve short keyboard presses across slow render frames while retaining
     // the shared rising-edge path used by touch and gamepad adapters.
-    const lightPressed = combatActionBuffer.consume('attackLight') ||
-      wasJustPressed(input.attackLight, prevInput?.attackLight ?? false);
-    const heavyPressed = combatActionBuffer.consume('attackHeavy') ||
-      wasJustPressed(input.attackHeavy, prevInput?.attackHeavy ?? false);
-    const specialPressed = combatActionBuffer.consume('attackSpecial') ||
-      wasJustPressed(input.attackSpecial, prevInput?.attackSpecial ?? false);
-    const ultimatePressed = combatActionBuffer.consume('attackUltimate') ||
-      wasJustPressed(input.attackUltimate, prevInput?.attackUltimate ?? false);
-    const dodgePressed = combatActionBuffer.consume('dodge') ||
-      wasJustPressed(input.dodge, prevInput?.dodge ?? false);
+    const lightPressed = !inputSuppressed && (
+      combatActionBuffer.consume('attackLight') ||
+      wasJustPressed(input.attackLight, prevInput?.attackLight ?? false)
+    );
+    const heavyPressed = !inputSuppressed && (
+      combatActionBuffer.consume('attackHeavy') ||
+      wasJustPressed(input.attackHeavy, prevInput?.attackHeavy ?? false)
+    );
+    const specialPressed = !inputSuppressed && (
+      combatActionBuffer.consume('attackSpecial') ||
+      wasJustPressed(input.attackSpecial, prevInput?.attackSpecial ?? false)
+    );
+    const ultimatePressed = !inputSuppressed && (
+      combatActionBuffer.consume('attackUltimate') ||
+      wasJustPressed(input.attackUltimate, prevInput?.attackUltimate ?? false)
+    );
+    const dodgePressed = !inputSuppressed && (
+      combatActionBuffer.consume('dodge') ||
+      wasJustPressed(input.dodge, prevInput?.dodge ?? false)
+    );
 
     if (lightPressed) {
       if (kai.energy >= COMBAT_CONFIG.lightAttackCost && !kai.isDodging && !kai.isAttacking) {

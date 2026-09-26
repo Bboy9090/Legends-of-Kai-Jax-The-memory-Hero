@@ -376,6 +376,9 @@ function VerticalSliceEnvironment({
         mission.playerDown = false;
         mission.playerHealth = Math.max(mission.playerHealth, PLAYER_DOWN_RECOVERY_HEALTH);
         mission.playerHitGrace = PLAYER_HIT_GRACE_SECONDS;
+        combatActionBuffer.clear();
+        gameplayPulseBuffer.clear();
+        gameplayInputManager.setSuppressed(false);
       }
     }
 
@@ -448,6 +451,9 @@ function VerticalSliceEnvironment({
         mission.playerDown = mission.playerHealth === 0;
         if (mission.playerDown) {
           mission.playerDownTimer = PLAYER_DOWN_RECOVERY_SECONDS;
+          combatActionBuffer.clear();
+          gameplayPulseBuffer.clear();
+          gameplayInputManager.setSuppressed(true);
         } else {
           mission.playerHitGrace = PLAYER_HIT_GRACE_SECONDS;
         }
@@ -892,10 +898,12 @@ export default function RagingCityVerticalSliceScene({
     // Global edge buffers must start empty at the gameplay boundary. This
     // prevents menu presses or focus-loss remnants from becoming ghost combat
     // or traversal actions when the slice mounts.
+    gameplayInputManager.setSuppressed(false);
     combatActionBuffer.clear();
     gameplayPulseBuffer.clear();
 
     return () => {
+      gameplayInputManager.setSuppressed(false);
       combatActionBuffer.clear();
       gameplayPulseBuffer.clear();
     };

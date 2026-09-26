@@ -166,6 +166,11 @@ export function useJaxController(
     const lifecycleDelta = Math.min(Math.max(rawDelta, 0), 0.25);
     const jax = stateRef.current;
     const input = gameplayInputManager.getState();
+    const inputSuppressed = gameplayInputManager.isSuppressed();
+    if (inputSuppressed) {
+      combatActionBuffer.clear();
+      gameplayPulseBuffer.clear();
+    }
     const prevInput = prevInputRef.current;
     const currentTime = frameState.clock.elapsedTime;
 
@@ -254,9 +259,10 @@ export function useJaxController(
     if (facingDir.lengthSq() < 0.0001) facingDir.set(0, 0, 1);
     facingDir.normalize();
 
-    const traversalEdge =
+    const traversalEdge = !inputSuppressed && (
       gameplayPulseBuffer.consume('traversal') ||
-      wasJustPressed(input.traversal, prevInput?.traversal ?? false);
+      wasJustPressed(input.traversal, prevInput?.traversal ?? false)
+    );
 
     const displacementAim = worldMoveDir.lengthSq() > 0.0001
       ? worldMoveDir.clone().normalize()
@@ -344,9 +350,10 @@ export function useJaxController(
     jaxRef.current.position.copy(finalPos);
     jax.position.copy(finalPos);
 
-    const jumpPressed =
+    const jumpPressed = !inputSuppressed && (
       gameplayPulseBuffer.consume('jump') ||
-      wasJustPressed(input.jump, prevInput?.jump ?? false);
+      wasJustPressed(input.jump, prevInput?.jump ?? false)
+    );
 
     if (jumpPressed) {
       if (isGrounded && !jax.isDodging) {
@@ -358,16 +365,26 @@ export function useJaxController(
     // Keyboard presses can be shorter than a render frame. Consume the DOM-event
     // buffer first, then fall back to the shared level-state rising edge for touch
     // and gamepad paths that are still sampled by their adapters.
-    const lightPressed = combatActionBuffer.consume('attackLight') ||
-      wasJustPressed(input.attackLight, prevInput?.attackLight ?? false);
-    const heavyPressed = combatActionBuffer.consume('attackHeavy') ||
-      wasJustPressed(input.attackHeavy, prevInput?.attackHeavy ?? false);
-    const specialPressed = combatActionBuffer.consume('attackSpecial') ||
-      wasJustPressed(input.attackSpecial, prevInput?.attackSpecial ?? false);
-    const ultimatePressed = combatActionBuffer.consume('attackUltimate') ||
-      wasJustPressed(input.attackUltimate, prevInput?.attackUltimate ?? false);
-    const dodgePressed = combatActionBuffer.consume('dodge') ||
-      wasJustPressed(input.dodge, prevInput?.dodge ?? false);
+    const lightPressed = !inputSuppressed && (
+      combatActionBuffer.consume('attackLight') ||
+      wasJustPressed(input.attackLight, prevInput?.attackLight ?? false)
+    );
+    const heavyPressed = !inputSuppressed && (
+      combatActionBuffer.consume('attackHeavy') ||
+      wasJustPressed(input.attackHeavy, prevInput?.attackHeavy ?? false)
+    );
+    const specialPressed = !inputSuppressed && (
+      combatActionBuffer.consume('attackSpecial') ||
+      wasJustPressed(input.attackSpecial, prevInput?.attackSpecial ?? false)
+    );
+    const ultimatePressed = !inputSuppressed && (
+      combatActionBuffer.consume('attackUltimate') ||
+      wasJustPressed(input.attackUltimate, prevInput?.attackUltimate ?? false)
+    );
+    const dodgePressed = !inputSuppressed && (
+      combatActionBuffer.consume('dodge') ||
+      wasJustPressed(input.dodge, prevInput?.dodge ?? false)
+    );
 
     if (lightPressed) {
       if (
