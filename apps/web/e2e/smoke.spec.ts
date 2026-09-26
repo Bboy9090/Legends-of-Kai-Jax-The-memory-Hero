@@ -60,6 +60,14 @@ async function boot(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean((window as any).runnerStore), null, {
     timeout: 15_000,
   });
+  await page.waitForFunction(
+    () => {
+      const runner = (window as any).runnerStore;
+      return !runner?.persist?.hasHydrated || runner.persist.hasHydrated();
+    },
+    null,
+    { timeout: 15_000 },
+  );
 }
 
 async function enterStableState(page: Page, gameState: string): Promise<void> {
