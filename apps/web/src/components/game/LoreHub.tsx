@@ -431,7 +431,28 @@ function CharactersSection() {
               style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${char.color}25` }}
             >
               <div className="aspect-square relative overflow-hidden" style={{ background: "rgba(0,0,0,0.4)" }}>
-                <img src={char.image} alt={char.name} onError={handleImageError} className="w-full h-full object-cover" />
+                {char.image === FALLBACK_IMAGE ? (
+                  <div
+                    className="w-full h-full flex items-center justify-center relative"
+                    style={{
+                      background: `radial-gradient(circle at 50% 35%, ${char.color}40, transparent 48%), linear-gradient(145deg, #080812, #111126)`,
+                    }}
+                    aria-label={`${char.name} character identity card`}
+                  >
+                    <div
+                      className="absolute inset-8 rounded-full blur-2xl opacity-30"
+                      style={{ background: char.color }}
+                    />
+                    <span
+                      className="relative text-6xl md:text-7xl font-black tracking-widest"
+                      style={{ color: char.color, textShadow: `0 0 28px ${char.color}66` }}
+                    >
+                      {char.name.split(/[-\s]/).map((part) => part[0]).join("").slice(0, 3)}
+                    </span>
+                  </div>
+                ) : (
+                  <img src={char.image} alt={char.name} onError={handleImageError} className="w-full h-full object-cover" />
+                )}
               </div>
               <div className="p-5">
                 <h3 className="text-xl font-black text-white mb-1">{char.name}</h3>
@@ -453,7 +474,7 @@ function CharactersSection() {
             <h3 className="text-3xl font-black text-white mb-2">CHARACTER <span className="text-red-400">ART</span></h3>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {GALLERY_IMAGES.map((img) => (
+            {GALLERY_IMAGES.filter((img) => img.url !== FALLBACK_IMAGE).map((img) => (
               <div
                 key={img.id}
                 className="rounded-xl overflow-hidden group transition-all duration-300 hover:scale-[1.02]"
