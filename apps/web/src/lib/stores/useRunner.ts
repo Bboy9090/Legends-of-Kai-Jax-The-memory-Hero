@@ -75,6 +75,7 @@ interface RunnerState {
   unlockedUpgrades: string[];
   setCampaignCompleted: (nodeId: CampaignNodeId) => void;
   setMissionCompleted: (missionKey: string) => void;
+  setLastPlayedTitle: (title: string | null) => void;
   setRoamDistrictCompleted: (districtKey: string) => void;
 }
 
@@ -248,6 +249,13 @@ export const useRunner = create<RunnerState>()(
           completedStoryMissionIds: newKeys,
           profiles: newProfiles,
         });
+      },
+
+      setLastPlayedTitle: (lastPlayedTitle) => {
+        const { activeProfileIndex, profiles } = get();
+        const newProfiles = [...profiles] as [ProfileData, ProfileData, ProfileData];
+        newProfiles[activeProfileIndex] = { ...newProfiles[activeProfileIndex], lastPlayedTitle };
+        set({ profiles: newProfiles });
       },
 
       setRoamDistrictCompleted: (districtKey) => {
