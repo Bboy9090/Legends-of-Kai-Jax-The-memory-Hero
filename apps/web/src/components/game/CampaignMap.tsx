@@ -8,13 +8,16 @@ import { BookOpen, Swords, ArrowLeft, ChevronRight, Skull } from "../ui/icons";
 export default function CampaignMap() {
   const { setGameState, selectedCharacter } = useRunner();
   const setPlayerFighter = useBattle((s) => s.setPlayerFighter);
-  const completedKeys = useMissions((s) => s.completedKeys);
+  const completedStoryMissionIds = useRunner((s) => s.completedStoryMissionIds);
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
   const [act, setAct] = useState<number>(1);
 
   const completedMissions = useMemo(
-    () => completedKeys.filter((k) => k.startsWith("story:")).map((k) => k.replace("story:", "")),
-    [completedKeys]
+    () => [...new Set(
+      completedStoryMissionIds
+        .map((id) => id.startsWith("story:") ? id.slice("story:".length) : id)
+    )],
+    [completedStoryMissionIds]
   );
 
   const missions = useMemo(() => getStoryMissionsByAct(act), [act]);
