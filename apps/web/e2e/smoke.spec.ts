@@ -23,7 +23,7 @@ const BENIGN_ERROR_PATTERNS = [
   /the play\(\) request/i,
   /sounds\/.*\.mp3/i,
   /favicon/i,
-  /Failed to load resource.*(mp3|ogg|wav)\/i,
+  /Failed to load resource.*(mp3|ogg|wav)/i,
   /WebGL.*deprecated/i,
   /SwiftShader/i,
   /Software WebGL/i,
