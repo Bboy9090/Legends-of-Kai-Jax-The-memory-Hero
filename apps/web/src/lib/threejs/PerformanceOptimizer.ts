@@ -23,6 +23,7 @@ export function setQualityPreference(value: QualityPreference): void {
   } else {
     window.localStorage.setItem(QUALITY_STORAGE_KEY, value);
   }
+  window.dispatchEvent(new CustomEvent('kai-jax-quality-change'));
 }
 
 function getEffectiveDeviceType(): 'mobile' | 'tablet' | 'desktop' {
