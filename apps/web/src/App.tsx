@@ -42,6 +42,7 @@ import { useMissions } from "./lib/stores/useMissions";
 import { useProgression } from "./lib/stores/useProgression";
 import { registerServiceWorker } from "./lib/offlineModeSystem";
 import { FIGHTERS, getFighterById } from "./lib/characters";
+import { getStoryMissionById } from "./lib/story_missions";
 import { initializeVoiceSystem, preloadVoices } from "./lib/voiceActing";
 import * as THREE from "three";
 import { getQualitySettings } from "./lib/threejs/PerformanceOptimizer";
@@ -345,6 +346,10 @@ function App() {
                     if (success) {
                       useMissions.getState().startMission("story", storyMissionId);
                       useMissions.getState().completeMission(true);
+
+                      const runner = useRunner.getState();
+                      runner.setMissionCompleted(storyMissionId);
+                      runner.setLastPlayedTitle(getStoryMissionById(storyMissionId)?.title ?? storyMissionId);
                     }
                     useRunner.getState().setGameState("campaign-map");
                   }}
