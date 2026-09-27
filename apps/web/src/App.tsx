@@ -347,9 +347,9 @@ function App() {
                       useMissions.getState().startMission("story", storyMissionId);
                       useMissions.getState().completeMission(true);
 
-                      const runner = useRunner.getState();
-                      runner.setMissionCompleted(storyMissionId);
-                      runner.setLastPlayedTitle(getStoryMissionById(storyMissionId)?.title ?? storyMissionId);
+                      useRunner.getState().setLastPlayedTitle(
+                        getStoryMissionById(storyMissionId)?.title ?? storyMissionId
+                      );
                     }
                     useRunner.getState().setGameState("campaign-map");
                   }}
