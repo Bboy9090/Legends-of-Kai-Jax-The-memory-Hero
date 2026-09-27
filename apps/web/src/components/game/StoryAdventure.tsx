@@ -22,6 +22,9 @@ const WAVE_TYPE_TO_FIGHTER_ID: Record<string, string> = {
   "void-elite": "neon-wraith",
   "void-legion": "rift-drone",
   "void-stalker-minion": "neon-wraith",
+  "void-wraith": "neon-wraith",
+  "void-brute": "void-stalker",
+  "void-god-guard": "rift-general-prime",
   "void-stalker": "void-stalker",
   "rift-general": "rift-general",
 };
