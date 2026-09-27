@@ -8,7 +8,7 @@ export default function SaveSlotScreen() {
 
   const handleSelectSlot = (index: number) => {
     switchProfile(index);
-    setGameState('story-hub');
+    setGameState('campaign-map');
   };
 
   return (
