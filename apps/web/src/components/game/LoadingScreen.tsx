@@ -14,11 +14,11 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
   const [fadeOut, setFadeOut] = useState(false);
   
   const tips = [
-    { icon: Zap, text: "Build SYNERGY by landing combos—then unleash the Memory King." },
+    { icon: Zap, text: "Build SYNERGY by landing combos—then unleash the Memory Weave." },
     { icon: Swords, text: "Chain attacks together for devastating combos!" },
-    { icon: Crown, text: "Kai‑Jax (Memory King) hits harder—control space and end rounds fast." },
+    { icon: Crown, text: "Kai‑Jax hits harder in Resonance Flow—control space and end rounds fast." },
     { icon: Star, text: "Perfect timing on attacks increases synergy gain!" },
-    { icon: Sparkles, text: "Fusion lasts 30 seconds—make every hit count." },
+    { icon: Sparkles, text: "Resonance Flow lasts 30 seconds—make every hit count." },
   ];
   
   useEffect(() => {
