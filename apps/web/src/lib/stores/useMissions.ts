@@ -410,7 +410,13 @@ export const useMissions = create<MissionsState>()(
       }
       const k = keyFor(active.source, active.id);
       const prev = get().completedKeys;
-      if (!prev.includes(k)) {
+      const runnerCompleted = useRunner.getState().completedStoryMissionIds;
+      const storyAlreadyCompleted =
+        active.source === "story" &&
+        runnerCompleted.some((id) => id === active.id || id === k);
+      const alreadyCompleted = active.source === "story" ? storyAlreadyCompleted : prev.includes(k);
+
+      if (!alreadyCompleted) {
         const reward = resolveRewards(active.source, active.id);
         const totalPoints = (reward?.xp ?? 0) + (reward?.currency ?? 0);
         if (totalPoints > 0) {
