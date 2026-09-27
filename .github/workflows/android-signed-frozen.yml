@@ -1,0 +1,88 @@
+name: Android Signed Frozen 2ff7979
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/android-signed-frozen.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  android-signed-aab:
+    name: Android signed Play AAB (frozen 2ff7979)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      FROZEN_SHA: 2ff7979402e51b54cf5e6296645d9164de2a7568
+    steps:
+      - name: Require Android signing credentials
+        run: |
+          test -n "$ANDROID_KEYSTORE_BASE64"
+          test -n "$ANDROID_KEYSTORE_PASSWORD"
+          test -n "$ANDROID_KEY_ALIAS"
+          test -n "$ANDROID_KEY_PASSWORD"
+
+      - name: Checkout frozen release commit
+        env:
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
+          cd source
+          git checkout --detach "$FROZEN_SHA"
+          test "$(git rev-parse HEAD)" = "$FROZEN_SHA"
+
+      - name: Prepare web and Android
+        working-directory: source
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          pnpm install --filter ./apps/web... --frozen-lockfile
+          pnpm -C apps/web build
+          cd apps/web
+          npx cap sync android
+
+      - name: Materialize temporary keystore
+        working-directory: source/apps/web/android
+        run: |
+          umask 077
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > release-upload.jks
+          test -s release-upload.jks
+          echo "ANDROID_KEYSTORE_PATH=$PWD/release-upload.jks" >> "$GITHUB_ENV"
+
+      - name: Build and verify signed AAB
+        working-directory: source/apps/web/android
+        run: |
+          chmod +x gradlew
+          ./gradlew clean bundleRelease --stacktrace
+          AAB="app/build/outputs/bundle/release/app-release.aab"
+          test -s "$AAB"
+          jarsigner -verify -verbose -certs "$AAB"
+          sha256sum "$AAB" | tee AAB-SHA256.txt
+          printf '%s\n' "ANDROID_SIGNED_AAB_OK $FROZEN_SHA"
+
+      - name: Persist signed AAB as private draft release asset
+        working-directory: source/apps/web/android
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          AAB="app/build/outputs/bundle/release/app-release.aab"
+          SHORT_SHA="${FROZEN_SHA:0:12}"
+          TAG="android-rc-${SHORT_SHA}"
+          OUTPUT="Legends-of-Kai-Jax-1.0.0-build1-${SHORT_SHA}.aab"
+          cp "$AAB" "$OUTPUT"
+          if ! gh release view "$TAG" --repo "$REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$TAG" --repo "$REPOSITORY" --target "$FROZEN_SHA" --title "Android RC 1.0.0 build 1 (${SHORT_SHA})" --notes "Signed Google Play release candidate for exact frozen commit ${FROZEN_SHA}." --draft
+          fi
+          gh release upload "$TAG" "$OUTPUT" AAB-SHA256.txt --repo "$REPOSITORY" --clobber
+
+      - name: Remove temporary keystore
+        if: always()
+        working-directory: source/apps/web/android
+        run: rm -f release-upload.jks
