@@ -3,6 +3,7 @@ import '../../styles/bronx_grit.css';
 import '../../styles/legendary-effects.css';
 import { BRAND } from '../../lib/brand';
 import { useRunner } from '../../lib/stores/useRunner';
+import { ALL_STORY_MISSIONS } from '../../lib/story_missions';
 
 
 /**
@@ -63,20 +64,20 @@ const LegendaryMainMenu: React.FC = () => {
       id: 'continue',
       label: 'CONTINUE',
       sublabel: 'Resume last saga save',
-      action: () => setGameState('story-hub'),
+      action: () => setGameState('campaign-map'),
       legendary: true
     },
     {
       id: 'story',
       label: 'STORY HUB',
       sublabel: 'The Raging City Campaign Map',
-      action: () => setGameState('story-hub')
+      action: () => setGameState('campaign-map')
     },
     {
       id: 'missions',
       label: 'MISSIONS',
-      sublabel: 'Select active mission briefing',
-      action: () => setGameState('mission-select')
+      sublabel: 'Browse the canonical campaign',
+      action: () => setGameState('campaign-map')
     },
     {
       id: 'training',
@@ -386,7 +387,7 @@ const LegendaryMainMenu: React.FC = () => {
                 {profile.totalScore > 0 ? `LEVEL ${Math.floor(profile.totalScore / 1000) + 1}` : 'EMPTY ECHO'}
               </div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                Nodes: {profile.campaignCompletedNodes.length} / 54
+                Story: {profile.completedStoryMissionIds.length} / {ALL_STORY_MISSIONS.length}
               </div>
               <div className="mt-4 pt-4 border-t border-white/10 text-xs text-legendary-gold opacity-0 group-hover:opacity-100 transition-opacity">
                 LOAD MEMORY →
