@@ -20,7 +20,7 @@ jobs:
       - name: Checkout source without external actions
         env:
           REPOSITORY: ${{ github.repository }}
-          SHA: ${{ github.sha }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           git clone --no-checkout "https://github.com/$REPOSITORY.git" source
           cd source
