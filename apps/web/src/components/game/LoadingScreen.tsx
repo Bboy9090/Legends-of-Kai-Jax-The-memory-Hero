@@ -14,11 +14,11 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
   const [fadeOut, setFadeOut] = useState(false);
   
   const tips = [
-    { icon: Zap, text: "Build SYNERGY by landing combos—then unleash the Memory King." },
+    { icon: Zap, text: "Build SYNERGY by landing combos—then unleash the Memory Weave." },
     { icon: Swords, text: "Chain attacks together for devastating combos!" },
-    { icon: Crown, text: "Kai‑Jax (Memory King) hits harder—control space and end rounds fast." },
+    { icon: Crown, text: "Kai‑Jax hits harder in Resonance Flow—control space and end rounds fast." },
     { icon: Star, text: "Perfect timing on attacks increases synergy gain!" },
-    { icon: Sparkles, text: "Fusion lasts 30 seconds—make every hit count." },
+    { icon: Sparkles, text: "Resonance Flow lasts 30 seconds—make every hit count." },
   ];
   
   useEffect(() => {
@@ -62,14 +62,22 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
     >
       <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 220px rgba(0,0,0,0.85)' }} />
       
-      {/* Background Images - Two sides based on assets */}
-      <div className="absolute inset-0 flex overflow-hidden opacity-40">
-        <div className="w-1/2 h-full bg-cover bg-center" style={{ backgroundImage: "url('https://replit.com/api/v1/projects/self/assets/attached_assets/IMG_2571_1769690060866.png')" }}>
-           <div className="absolute inset-0 bg-gradient-to-r from-[#FF4500]/20 to-transparent" />
-        </div>
-        <div className="w-1/2 h-full bg-cover bg-center" style={{ backgroundImage: "url('https://replit.com/api/v1/projects/self/assets/attached_assets/IMG_2571_1769690060866.png')", backgroundPosition: 'right' }}>
-           <div className="absolute inset-0 bg-gradient-to-l from-[#00CED1]/20 to-transparent" />
-        </div>
+      {/* Self-contained release background: no remote/CDN dependency. */}
+      <div className="absolute inset-0 flex overflow-hidden opacity-40" aria-hidden="true">
+        <div
+          className="w-1/2 h-full"
+          style={{
+            background:
+              "radial-gradient(circle at 30% 45%, rgba(255,69,0,0.42), transparent 42%), linear-gradient(135deg, rgba(88,28,135,0.28), transparent 65%)",
+          }}
+        />
+        <div
+          className="w-1/2 h-full"
+          style={{
+            background:
+              "radial-gradient(circle at 70% 45%, rgba(0,206,209,0.42), transparent 42%), linear-gradient(225deg, rgba(30,64,175,0.28), transparent 65%)",
+          }}
+        />
       </div>
 
       {/* Animated Particles */}

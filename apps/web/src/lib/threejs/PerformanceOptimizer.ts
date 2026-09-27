@@ -6,6 +6,34 @@
 
 import * as THREE from 'three';
 
+export type QualityPreference = 'auto' | 'low' | 'medium' | 'high';
+
+const QUALITY_STORAGE_KEY = 'kai-jax-quality';
+
+export function getQualityPreference(): QualityPreference {
+  if (typeof window === 'undefined') return 'auto';
+  const value = window.localStorage.getItem(QUALITY_STORAGE_KEY);
+  return value === 'low' || value === 'medium' || value === 'high' ? value : 'auto';
+}
+
+export function setQualityPreference(value: QualityPreference): void {
+  if (typeof window === 'undefined') return;
+  if (value === 'auto') {
+    window.localStorage.removeItem(QUALITY_STORAGE_KEY);
+  } else {
+    window.localStorage.setItem(QUALITY_STORAGE_KEY, value);
+  }
+  window.dispatchEvent(new CustomEvent('kai-jax-quality-change'));
+}
+
+function getEffectiveDeviceType(): 'mobile' | 'tablet' | 'desktop' {
+  const preference = getQualityPreference();
+  if (preference === 'low') return 'mobile';
+  if (preference === 'medium') return 'tablet';
+  if (preference === 'high') return 'desktop';
+  return getDeviceType();
+}
+
 /**
  * Detect device type for optimization
  */
@@ -20,7 +48,7 @@ export function getDeviceType(): 'mobile' | 'tablet' | 'desktop' {
  * Get optimal quality settings based on device
  */
 export function getQualitySettings() {
-  const deviceType = getDeviceType();
+  const deviceType = getEffectiveDeviceType();
   const isMobile = deviceType === 'mobile';
   const isTablet = deviceType === 'tablet';
 

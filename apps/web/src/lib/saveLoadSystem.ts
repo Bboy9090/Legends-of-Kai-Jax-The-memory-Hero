@@ -104,25 +104,43 @@ export async function saveToSlot(saveFile: GameSaveFile): Promise<boolean> {
  * Load game from a slot
  */
 export async function loadFromSlot(slot: number): Promise<GameSaveFile | null> {
+  const key = `${STORAGE_KEY_PREFIX}${slot}`;
+
   try {
-    const key = `${STORAGE_KEY_PREFIX}${slot}`;
     const serialized = localStorage.getItem(key);
 
-    if (!serialized) {
-      console.log(`No save found in slot ${slot}`);
+    if (serialized) {
+      try {
+        const parsed: GameSaveFile = JSON.parse(serialized);
+        if (validateSaveFile(parsed)) {
+          const migrated = migrateSaveFile(parsed);
+          console.log(`Loaded game from slot ${slot}`);
+          return migrated;
+        }
+        console.warn(`Primary save failed validation in slot ${slot}; attempting backup recovery`);
+      } catch (error) {
+        console.warn(`Primary save could not be parsed in slot ${slot}; attempting backup recovery`, error);
+      }
+    } else {
+      console.log(`No primary save found in slot ${slot}; checking backup`);
+    }
+
+    const backup = await loadFromIndexedDB(slot);
+    if (!backup || !validateSaveFile(backup)) {
       return null;
     }
 
-    const saveFile: GameSaveFile = JSON.parse(serialized);
+    const recovered = migrateSaveFile(backup);
 
-    // Validate save file integrity
-    if (!validateSaveFile(saveFile)) {
-      console.warn(`Save file corrupted in slot ${slot}`);
-      return null;
+    // Heal the primary copy so the next load does not depend on recovery.
+    try {
+      localStorage.setItem(key, JSON.stringify(recovered));
+    } catch (error) {
+      console.warn(`Recovered slot ${slot}, but could not heal localStorage copy`, error);
     }
 
-    console.log(`Loaded game from slot ${slot}`);
-    return saveFile;
+    console.warn(`Recovered save slot ${slot} from IndexedDB backup`);
+    return recovered;
   } catch (error) {
     console.error('Load failed:', error);
     return null;
@@ -197,6 +215,10 @@ export async function createAutoSave(saveFile: GameSaveFile): Promise<boolean> {
     const serialized = JSON.stringify(saveFile);
     localStorage.setItem(key, serialized);
 
+    // Mirror the latest autosave into IndexedDB so recovery survives a
+    // damaged or missing localStorage entry.
+    await saveAutoSaveToIndexedDB(saveFile);
+
     // Clean up old auto-saves
     await pruneAutoSaves(saveFile.characterId);
 
@@ -216,10 +238,17 @@ export async function loadAutoSave(characterId: string): Promise<GameSaveFile | 
     const key = `${AUTO_SAVE_PREFIX}${characterId}`;
     const serialized = localStorage.getItem(key);
 
-    if (!serialized) return null;
+    if (serialized) {
+      try {
+        const saveFile: GameSaveFile = JSON.parse(serialized);
+        if (validateSaveFile(saveFile)) return migrateSaveFile(saveFile);
+      } catch (error) {
+        console.warn('Primary auto-save could not be parsed; checking backup', error);
+      }
+    }
 
-    const saveFile: GameSaveFile = JSON.parse(serialized);
-    return validateSaveFile(saveFile) ? saveFile : null;
+    const backup = await loadAutoSaveFromIndexedDB(characterId);
+    return backup && validateSaveFile(backup) ? migrateSaveFile(backup) : null;
   } catch (error) {
     console.error('Load auto-save failed:', error);
     return null;
@@ -305,6 +334,69 @@ async function saveToIndexedDB(saveFile: GameSaveFile): Promise<void> {
     });
   } catch (error) {
     console.warn('IndexedDB backup failed:', error);
+  }
+}
+
+/**
+ * Helper: Load slot backup from IndexedDB
+ */
+async function loadFromIndexedDB(slot: number): Promise<GameSaveFile | null> {
+  try {
+    const db = await openSaveDB();
+    const transaction = db.transaction('saves', 'readonly');
+    const store = transaction.objectStore('saves');
+
+    return await new Promise<GameSaveFile | null>((resolve, reject) => {
+      const request = store.get(slot);
+      request.onsuccess = () => resolve(request.result ?? null);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.warn('IndexedDB recovery read failed:', error);
+    return null;
+  }
+}
+
+/**
+ * Helper: Mirror auto-save into IndexedDB
+ */
+async function saveAutoSaveToIndexedDB(saveFile: GameSaveFile): Promise<void> {
+  try {
+    const db = await openSaveDB();
+    const transaction = db.transaction('autoSaves', 'readwrite');
+    const store = transaction.objectStore('autoSaves');
+
+    await new Promise<void>((resolve, reject) => {
+      const request = store.put(saveFile);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.warn('IndexedDB auto-save backup failed:', error);
+  }
+}
+
+/**
+ * Helper: Load latest auto-save for a character from IndexedDB
+ */
+async function loadAutoSaveFromIndexedDB(characterId: string): Promise<GameSaveFile | null> {
+  try {
+    const db = await openSaveDB();
+    const transaction = db.transaction('autoSaves', 'readonly');
+    const store = transaction.objectStore('autoSaves');
+
+    const allSaves = await new Promise<GameSaveFile[]>((resolve, reject) => {
+      const request = store.getAll();
+      request.onsuccess = () => resolve(request.result ?? []);
+      request.onerror = () => reject(request.error);
+    });
+
+    return allSaves
+      .filter((save) => save.characterId === characterId)
+      .sort((a, b) => b.timestamp - a.timestamp)[0] ?? null;
+  } catch (error) {
+    console.warn('IndexedDB auto-save recovery failed:', error);
+    return null;
   }
 }
 

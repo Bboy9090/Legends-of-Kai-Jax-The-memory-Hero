@@ -42,12 +42,10 @@ import { useMissions } from "./lib/stores/useMissions";
 import { useProgression } from "./lib/stores/useProgression";
 import { registerServiceWorker } from "./lib/offlineModeSystem";
 import { FIGHTERS, getFighterById } from "./lib/characters";
+import { getStoryMissionById } from "./lib/story_missions";
 import { initializeVoiceSystem, preloadVoices } from "./lib/voiceActing";
 import * as THREE from "three";
 import { getQualitySettings } from "./lib/threejs/PerformanceOptimizer";
-
-// Compute quality settings once (device/pixel-ratio never changes mid-session)
-const QUALITY = getQualitySettings();
 
 // Define control keys for the game
 enum Controls {
@@ -86,6 +84,8 @@ const controls = [
 
 function App() {
   const { phase } = useGame();
+  const [qualityRevision, setQualityRevision] = useState(0);
+  const QUALITY = useMemo(() => getQualitySettings(), [qualityRevision]);
   const { gameState, selectedCharacter, activeStoryMissionId } = useRunner();
   const battleCanvasActive =
     (phase === "playing" || phase === "ended") && gameState === "playing";
@@ -120,6 +120,12 @@ function App() {
     isMuted
   } = useAudio();
   
+  useEffect(() => {
+    const handleQualityChange = () => setQualityRevision((value) => value + 1);
+    window.addEventListener('kai-jax-quality-change', handleQualityChange);
+    return () => window.removeEventListener('kai-jax-quality-change', handleQualityChange);
+  }, []);
+
   // ⚡ LEGENDARY INTRO SYSTEM
   const [showIntro, setShowIntro] = useState(true);
 
@@ -345,6 +351,10 @@ function App() {
                     if (success) {
                       useMissions.getState().startMission("story", storyMissionId);
                       useMissions.getState().completeMission(true);
+
+                      useRunner.getState().setLastPlayedTitle(
+                        getStoryMissionById(storyMissionId)?.title ?? storyMissionId
+                      );
                     }
                     useRunner.getState().setGameState("campaign-map");
                   }}

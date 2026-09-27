@@ -22,6 +22,9 @@ const WAVE_TYPE_TO_FIGHTER_ID: Record<string, string> = {
   "void-elite": "neon-wraith",
   "void-legion": "rift-drone",
   "void-stalker-minion": "neon-wraith",
+  "void-wraith": "neon-wraith",
+  "void-brute": "void-stalker",
+  "void-god-guard": "rift-general-prime",
   "void-stalker": "void-stalker",
   "rift-general": "rift-general",
 };
@@ -381,6 +384,15 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
     initAdventure(characterId, missionId, mission.arena || "cross_point_arena");
     setCurrentWave(0);
     spawnedWaves.current.clear();
+
+    // Narrative-only missions (for example the epilogue) must resolve
+    // without waiting for enemies that will never spawn.
+    if (mission.enemyWaves.length === 0) {
+      setSuccess(true);
+      setPhase("outro");
+      return;
+    }
+
     spawnWave(0);
     setPhase("playing");
   }, [mission, characterId, missionId, initAdventure, spawnWave]);
@@ -456,7 +468,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
         <DialogueOverlay
           lines={success ? mission.outroCutscene : [
             { speaker: "Kai-Jax", text: "No... I can't fall here. Not yet..." },
-            { speaker: "???", text: "The Memory King crumbles. How disappointing." },
+            { speaker: "???", text: "The Memory Hero crumbles. How disappointing." },
           ]}
           onComplete={() => setPhase("results")}
         />

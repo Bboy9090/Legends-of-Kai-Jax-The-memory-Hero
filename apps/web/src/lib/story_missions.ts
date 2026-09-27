@@ -178,22 +178,21 @@ export const ACT_II_STORY_MISSIONS: StoryMission[] = [
     id: 'story_act2_m7',
     actNumber: 2,
     missionNumber: 7,
-    title: 'The First Fusion: Kai-Jax Born',
-    description: 'Kaison and Jaxon reach 100% synergy. The Memory Hero is born.',
+    title: 'The Third Voice Revealed',
+    description: 'The pressure of the Rift forces Kai, Jax, and Kai-Jax into open coordination without collapsing their separate identities.',
     introCutscene: [
-      { speaker: 'Kaison', text: 'Jaxon, I can\'t hold the Rift alone!', side: 'left', emotion: 'angry' },
-      { speaker: 'Jaxon', text: 'Then don\'t! Grab my hand! Let\'s show them what speed and tactics look like together!', side: 'right', emotion: 'determined' },
-      { speaker: 'Narrator', text: 'Light erupts as two legends become one...', side: 'left' }
+      { speaker: 'Kai', text: 'Jax, stop trying to carry my side for me.', side: 'left', emotion: 'angry' },
+      { speaker: 'Jax', text: 'Then hold yours. I will hold mine.', side: 'right', emotion: 'determined' },
+      { speaker: 'Kai-Jax', text: 'And I will hold what belongs to me.', side: 'left', emotion: 'determined' }
     ],
     outroCutscene: [
-      { speaker: 'Kai-Jax', text: 'I remember... everything. The Void ends here.', side: 'left', emotion: 'determined' }
+      { speaker: 'Kai-Jax', text: 'Three voices. One body. Nobody disappears.', side: 'left', emotion: 'determined' }
     ],
-    objectives: ['Master the Fusion attacks', 'Defeat the Synergy Hunter'],
+    objectives: ['Master coordinated attacks', 'Defeat the Synergy Hunter'],
     difficulty: 6,
     arena: 'rift_frontier',
-    requiredCharacters: ['kaison', 'jaxon'],
-    unlockableCharacters: ['kai-jax'],
-    storyBeat: 'MIDPOINT: Kai-Jax is born through the first 100% synergy fusion.',
+    requiredCharacters: ['kai-jax'],
+    storyBeat: 'MIDPOINT: Kai, Jax, and Kai-Jax openly coordinate as three distinct persons sharing one body.',
     rewards: { xp: 800, currency: 600, loot: ['Synergy Core'] },
     gameplayType: 'boss',
     bossId: 'synergy-hunter',
@@ -346,7 +345,7 @@ export const ACT_III_STORY_MISSIONS: StoryMission[] = [
     difficulty: 10,
     arena: 'void_heart_citadel',
     bossId: 'voidonus-imperion',
-    storyBeat: 'GRAND FINALE: The Memory King vs The Void Emperor.',
+    storyBeat: 'GRAND FINALE: The Memory Hero faces the Void Emperor without becoming a sovereign.',
     rewards: { xp: 2500, currency: 2500, loot: ['God-Tier Soul'] },
     gameplayType: 'boss',
     enemyWaves: [{ type: 'void-god-guard', count: 3 }]
@@ -362,7 +361,7 @@ export const ACT_III_STORY_MISSIONS: StoryMission[] = [
       { speaker: 'Kai-Jax', text: 'We did it, Jaxon. We did it, Kaison.', side: 'left', emotion: 'happy' }
     ],
     outroCutscene: [
-      { speaker: 'Narrator', text: 'Legends of Kai-Jax. The saga of the Memory Warrior. End of Book I.', side: 'left' }
+      { speaker: 'Narrator', text: 'Legends of Kai-Jax. The opening mobile chapter of the Memory Hero saga.', side: 'left' }
     ],
     objectives: ['Witness the restoration'],
     difficulty: 1,

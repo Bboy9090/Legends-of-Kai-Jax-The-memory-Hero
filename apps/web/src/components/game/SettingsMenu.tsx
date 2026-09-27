@@ -2,12 +2,13 @@ import { useRunner } from "../../lib/stores/useRunner";
 import { useAudio } from "../../lib/stores/useAudio";
 import { Settings, Volume2, VolumeX, Monitor, ArrowLeft, Zap, Shield, Sparkles, Mic2 } from "lucide-react";
 import { useState } from "react";
+import { getQualityPreference, setQualityPreference, type QualityPreference } from "../../lib/threejs/PerformanceOptimizer";
 import { getVoiceVolume, setVoiceVolume, isVoiceEnabled_, setVoiceEnabled } from "../../lib/voiceActing";
 
 export default function SettingsMenu() {
   const { setGameState } = useRunner();
   const { isMuted, toggleMute } = useAudio();
-  const [quality, setQuality] = useState("high");
+  const [quality, setQuality] = useState<QualityPreference>(() => getQualityPreference());
   const [voiceVolume, setVoiceVolumeState] = useState(getVoiceVolume());
   const [voiceEnabled, setVoiceEnabledState] = useState(isVoiceEnabled_());
 
@@ -137,11 +138,14 @@ export default function SettingsMenu() {
               <Monitor className="w-5 h-5 text-gray-400" />
               <h2 className="text-lg font-bold uppercase tracking-widest text-white/80">Performance</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {['low', 'medium', 'high'].map((q) => (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {(['auto', 'low', 'medium', 'high'] as QualityPreference[]).map((q) => (
                 <button
                   key={q}
-                  onClick={() => setQuality(q)}
+                  onClick={() => {
+                    setQuality(q);
+                    setQualityPreference(q);
+                  }}
                   className={`
                     relative p-4 rounded-xl border flex flex-col items-center gap-2 transition-all
                     ${quality === q 
@@ -152,6 +156,7 @@ export default function SettingsMenu() {
                   <span className={`text-sm font-black uppercase tracking-widest ${quality === q ? 'text-blue-400' : 'text-white/40'}`}>
                     {q}
                   </span>
+                  {q === 'auto' && <Monitor className={`w-4 h-4 ${quality === q ? 'text-blue-400' : 'text-white/20'}`} />}
                   {q === 'high' && <Zap className={`w-4 h-4 ${quality === q ? 'text-blue-400' : 'text-white/20'}`} />}
                   {q === 'medium' && <Shield className={`w-4 h-4 ${quality === q ? 'text-blue-400' : 'text-white/20'}`} />}
                   {q === 'low' && <Sparkles className={`w-4 h-4 ${quality === q ? 'text-blue-400' : 'text-white/20'}`} />}
@@ -159,7 +164,7 @@ export default function SettingsMenu() {
               ))}
             </div>
             <p className="mt-4 text-xs text-white/30 text-center italic">
-              "Higher quality enables complex particle systems and emissive fur layers."
+              "Auto adapts to your device. Low, Medium, and High override the renderer immediately."
             </p>
           </section>
         </div>

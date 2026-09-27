@@ -3,6 +3,8 @@ name: Build Android APK
 on:
   push:
     branches: [ "main", "integration/clean-upgrade-stack-2026-05-20" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:
 
 permissions:
@@ -18,7 +20,7 @@ jobs:
       - name: Checkout source without external actions
         env:
           REPOSITORY: ${{ github.repository }}
-          SHA: ${{ github.sha }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           git clone --no-checkout "https://github.com/$REPOSITORY.git" source
           cd source
@@ -29,8 +31,8 @@ jobs:
         working-directory: source
         run: |
           corepack enable
-          corepack prepare pnpm@9 --activate
-          pnpm install --frozen-lockfile
+          corepack prepare pnpm@9.15.9 --activate
+          pnpm install --filter ./apps/web... --frozen-lockfile
           pnpm --dir apps/web run build
           cd apps/web
           npx cap sync android
@@ -51,6 +53,7 @@ jobs:
           printf '%s\n' "${{ github.sha }}" > release/BUILD-SHA.txt
 
       - name: Publish APK as release asset
+        if: ${{ github.event_name != 'pull_request' }}
         working-directory: source
         env:
           GH_TOKEN: ${{ github.token }}

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 
 export type GameState =
   | "boot-accessibility"
@@ -75,6 +75,7 @@ interface RunnerState {
   unlockedUpgrades: string[];
   setCampaignCompleted: (nodeId: CampaignNodeId) => void;
   setMissionCompleted: (missionKey: string) => void;
+  setLastPlayedTitle: (title: string | null) => void;
   setRoamDistrictCompleted: (districtKey: string) => void;
 }
 
@@ -86,6 +87,77 @@ const DEFAULT_PROFILE: ProfileData = {
   unlockedUpgrades: [],
   lastPlayedTitle: null,
 };
+
+const RUNNER_SAVE_VERSION = 1;
+const RUNNER_BACKUP_SUFFIX = "-backup";
+
+const runnerStorage: StateStorage = {
+  getItem: (name) => {
+    try {
+      const primary = localStorage.getItem(name);
+      if (primary) {
+        try {
+          JSON.parse(primary);
+          return primary;
+        } catch {
+          console.warn("[Save] Primary runner profile is corrupted; trying backup");
+        }
+      }
+
+      const backup = localStorage.getItem(`${name}${RUNNER_BACKUP_SUFFIX}`);
+      if (!backup) return null;
+
+      try {
+        JSON.parse(backup);
+        return backup;
+      } catch {
+        console.error("[Save] Runner profile backup is also corrupted");
+        return null;
+      }
+    } catch (error) {
+      console.error("[Save] Unable to read runner profile", error);
+      return null;
+    }
+  },
+
+  setItem: (name, value) => {
+    try {
+      const previous = localStorage.getItem(name);
+      if (previous) {
+        try {
+          JSON.parse(previous);
+          localStorage.setItem(`${name}${RUNNER_BACKUP_SUFFIX}`, previous);
+        } catch {
+          // Never preserve a known-bad primary over the last good backup.
+        }
+      }
+      localStorage.setItem(name, value);
+    } catch (error) {
+      console.error("[Save] Unable to persist runner profile", error);
+    }
+  },
+
+  removeItem: (name) => {
+    try {
+      localStorage.removeItem(name);
+      localStorage.removeItem(`${name}${RUNNER_BACKUP_SUFFIX}`);
+    } catch (error) {
+      console.error("[Save] Unable to clear runner profile", error);
+    }
+  },
+};
+
+function normalizeProfile(profile?: Partial<ProfileData>): ProfileData {
+  return {
+    totalScore: Number.isFinite(profile?.totalScore) ? Number(profile?.totalScore) : 0,
+    campaignCompletedNodes: Array.isArray(profile?.campaignCompletedNodes) ? profile!.campaignCompletedNodes! : [],
+    completedStoryMissionIds: Array.isArray(profile?.completedStoryMissionIds) ? profile!.completedStoryMissionIds! : [],
+    completedRoamDistrictIds: Array.isArray(profile?.completedRoamDistrictIds) ? profile!.completedRoamDistrictIds! : [],
+    unlockedUpgrades: Array.isArray(profile?.unlockedUpgrades) ? profile!.unlockedUpgrades! : [],
+    lastPlayedTitle: typeof profile?.lastPlayedTitle === "string" ? profile.lastPlayedTitle : null,
+  };
+}
+
 
 const CAMPAIGN_ORDER: CampaignNodeId[] = [
   "start",
@@ -179,6 +251,13 @@ export const useRunner = create<RunnerState>()(
         });
       },
 
+      setLastPlayedTitle: (lastPlayedTitle) => {
+        const { activeProfileIndex, profiles } = get();
+        const newProfiles = [...profiles] as [ProfileData, ProfileData, ProfileData];
+        newProfiles[activeProfileIndex] = { ...newProfiles[activeProfileIndex], lastPlayedTitle };
+        set({ profiles: newProfiles });
+      },
+
       setRoamDistrictCompleted: (districtKey) => {
         const { completedRoamDistrictIds, activeProfileIndex, profiles } = get();
         if (completedRoamDistrictIds.includes(districtKey)) return;
@@ -226,6 +305,38 @@ export const useRunner = create<RunnerState>()(
     }),
     {
       name: "kai-jax-save",
+      version: RUNNER_SAVE_VERSION,
+      storage: createJSONStorage(() => runnerStorage),
+      migrate: (persisted) => persisted as RunnerState,
+      merge: (persisted, current) => {
+        const saved = (persisted ?? {}) as Partial<RunnerState>;
+        const rawProfiles = Array.isArray(saved.profiles) ? saved.profiles : [];
+        const profiles = [
+          normalizeProfile(rawProfiles[0]),
+          normalizeProfile(rawProfiles[1]),
+          normalizeProfile(rawProfiles[2]),
+        ] as [ProfileData, ProfileData, ProfileData];
+
+        const activeProfileIndex =
+          typeof saved.activeProfileIndex === "number" &&
+          saved.activeProfileIndex >= 0 &&
+          saved.activeProfileIndex < profiles.length
+            ? saved.activeProfileIndex
+            : 0;
+        const active = profiles[activeProfileIndex];
+
+        return {
+          ...current,
+          ...saved,
+          profiles,
+          activeProfileIndex,
+          totalScore: active.totalScore,
+          campaignCompletedNodes: active.campaignCompletedNodes,
+          completedStoryMissionIds: active.completedStoryMissionIds,
+          completedRoamDistrictIds: active.completedRoamDistrictIds,
+          unlockedUpgrades: active.unlockedUpgrades,
+        };
+      },
     }
   )
 );

@@ -1,13 +1,14 @@
 import React from 'react';
 import { useRunner } from '../../lib/stores/useRunner';
 import { UserCheck, Trophy, ArrowLeft, RefreshCw, Play } from 'lucide-react';
+import { ALL_STORY_MISSIONS } from '../../lib/story_missions';
 
 export default function SaveSlotScreen() {
   const { profiles, activeProfileIndex, switchProfile, resetProfile, setGameState } = useRunner();
 
   const handleSelectSlot = (index: number) => {
     switchProfile(index);
-    setGameState('story-hub');
+    setGameState('campaign-map');
   };
 
   return (
@@ -35,8 +36,12 @@ export default function SaveSlotScreen() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full mx-auto my-auto py-8 z-10">
         {profiles.map((profile, idx) => {
           const isActive = activeProfileIndex === idx;
-          const completedCount = profile.completedStoryMissionIds?.length || 0;
-          const pct = Math.min(100, Math.round((completedCount / 12) * 100));
+          const completedCount = new Set(
+            (profile.completedStoryMissionIds || [])
+              .map((id) => id.startsWith('story:') ? id.slice('story:'.length) : id)
+              .filter((id) => ALL_STORY_MISSIONS.some((mission) => mission.id === id))
+          ).size;
+          const pct = Math.min(100, Math.round((completedCount / Math.max(1, ALL_STORY_MISSIONS.length)) * 100));
 
           return (
             <div

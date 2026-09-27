@@ -28,14 +28,14 @@ export default function LegendaryLoadingScreen({
   const [currentTip, setCurrentTip] = useState(0);
 
   const tips = [
-    { icon: Zap, text: 'Build SYNERGY by landing combos—then unleash the Memory King.', color: 'from-yellow-400 to-orange-500' },
+    { icon: Zap, text: 'Build SYNERGY by landing combos—then unleash the Memory Weave.', color: 'from-yellow-400 to-orange-500' },
     { icon: Swords, text: 'Chain attacks together for devastating combos!', color: 'from-red-400 to-pink-500' },
-    { icon: Crown, text: 'Kai‑Jax (Memory King) hits harder—control space and end rounds fast.', color: 'from-purple-400 to-indigo-500' },
+    { icon: Crown, text: 'Kai‑Jax hits harder in Resonance Flow—control space and end rounds fast.', color: 'from-purple-400 to-indigo-500' },
     { icon: Star, text: 'Perfect timing on attacks increases synergy gain!', color: 'from-cyan-400 to-blue-500' },
-    { icon: Sparkles, text: 'The fusion timer lasts 30 seconds - make them count!', color: 'from-green-400 to-emerald-500' },
+    { icon: Sparkles, text: 'Resonance Flow lasts 30 seconds - make it count!', color: 'from-green-400 to-emerald-500' },
     { icon: Flame, text: 'Master flawless combat - arms, feet, punches, kicks!', color: 'from-orange-400 to-red-500' },
     { icon: Shield, text: 'Taunt, smirk, and encourage during battles!', color: 'from-blue-400 to-cyan-500' },
-    { icon: Trophy, text: 'Run the Saga. Learn the beasts. Crown the Memory King.', color: 'from-amber-400 to-yellow-500' },
+    { icon: Trophy, text: 'Run the Saga. Learn the beasts. Protect the memory.', color: 'from-amber-400 to-yellow-500' },
   ];
 
   useEffect(() => {

@@ -66,7 +66,7 @@ function SynergyMeter({
       {/* Transform Ready Text */}
       {isFull && (
         <span className="mk-hud text-xs text-yellow-300 animate-pulse whitespace-nowrap">
-          FUSION READY!
+          RESONANCE READY!
         </span>
       )}
     </div>
