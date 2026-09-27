@@ -21,10 +21,19 @@ export default function CampaignMap() {
   const selected = missions.find((m) => m.id === selectedMissionId) || null;
 
   const isCompleted = (id: string) => completedMissions.includes(id);
+  const completedInAct = missions.filter((mission) => isCompleted(mission.id)).length;
+
   const isUnlocked = (m: StoryMission, index: number) => {
-    if (index === 0) return true;
-    const prev = missions[index - 1];
-    return prev ? isCompleted(prev.id) : true;
+    if (index > 0) {
+      const prev = missions[index - 1];
+      return prev ? isCompleted(prev.id) : true;
+    }
+
+    if (act === 1) return true;
+
+    const previousAct = getStoryMissionsByAct(act - 1);
+    const previousFinalMission = previousAct[previousAct.length - 1];
+    return previousFinalMission ? isCompleted(previousFinalMission.id) : false;
   };
 
   const setActiveStoryMission = useRunner((s) => s.setActiveStoryMission);
@@ -70,10 +79,10 @@ export default function CampaignMap() {
           <div className="flex-1 h-2 max-w-[240px] bg-slate-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full transition-all duration-500"
-              style={{ width: `${(completedMissions.length / missions.length) * 100}%` }}
+              style={{ width: `${missions.length ? (completedInAct / missions.length) * 100 : 0}%` }}
             />
           </div>
-          <span className="text-cyan-300 font-bold tabular-nums text-sm">{completedMissions.length} / {missions.length}</span>
+          <span className="text-cyan-300 font-bold tabular-nums text-sm">{completedInAct} / {missions.length}</span>
         </div>
 
         <div className="flex gap-2 mb-6">
