@@ -16,7 +16,7 @@ export const TRAINING_MOVES: MoveInfo[] = [
   { name: "Dash Attack", command: "Dash + J", description: "Sliding thrust that launches enemies.", stamina: 20, type: 'special' },
   { name: "Dodge", command: "Space", description: "Quick dash with i-frames.", stamina: 15, type: 'special' },
   { name: "Memory Burst", command: "L", description: "AoE energy blast. Clears surroundings.", stamina: 40, type: 'special' },
-  { name: "Ultimate: Rift End", command: "Resonance 100%", description: "Unleashes all 9 tails in a reality-warping strike.", stamina: 0, type: 'ultimate' },
+  { name: "Ultimate: Rift End", command: "Resonance 100%", description: "Channels Bloodward, Storm Current, and Memory Weave into a decisive strike.", stamina: 0, type: 'ultimate' },
 ];
 
 export default function MoveListOverlay() {
