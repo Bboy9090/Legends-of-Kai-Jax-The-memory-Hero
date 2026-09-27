@@ -80,13 +80,13 @@ export class SaveManager {
     private migrateSave(oldData: any): SaveData {
         // Migration logic for future versions
         return {
-            chapterId: oldData.chapterId || 'chapter_1',
-            checkpoint: oldData.checkpoint || 'CP_A',
-            resonance: oldData.resonance || 0,
-            health: oldData.health || 100,
+            chapterId: oldData.chapterId ?? 'chapter_1',
+            checkpoint: oldData.checkpoint ?? 'CP_A',
+            resonance: oldData.resonance ?? 0,
+            health: oldData.health ?? 100,
             position: oldData.position,
-            inventory: oldData.inventory || [],
-            timestamp: oldData.timestamp || Date.now(),
+            inventory: oldData.inventory ?? [],
+            timestamp: oldData.timestamp ?? Date.now(),
             version: this.VERSION
         };
     }
