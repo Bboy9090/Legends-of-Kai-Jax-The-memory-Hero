@@ -4,7 +4,7 @@ import { Zap, Sparkles, Star } from "lucide-react";
 import { BRAND } from "../../lib/brand";
 
 // ⚡ LEGENDARY TRANSFORMATION OVERLAY
-// This component shows the epic Kai-Jax fusion sequence!
+// This component shows the Kai-Jax three-strand resonance sequence.
 
 function TransformationParticles() {
   const [particles, setParticles] = useState<Array<{
@@ -135,10 +135,10 @@ export default function TransformationOverlay() {
           >
             <Sparkles className="w-6 h-6 text-white animate-spin" />
             <div className="text-center">
-              <span className="text-lg font-black text-white">FUSION READY!</span>
+              <span className="text-lg font-black text-white">RESONANCE READY!</span>
               <div className="flex items-center gap-2 text-sm text-yellow-100">
                 <kbd className="px-2 py-0.5 bg-black/30 rounded font-bold">T</kbd>
-                <span>to Crown the Memory King</span>
+                <span>to enter Three-Strand Flow</span>
               </div>
             </div>
             <Zap className="w-6 h-6 text-white animate-pulse" />
@@ -236,7 +236,7 @@ export default function TransformationOverlay() {
             {/* Timer Bar */}
             <div className="flex-1 w-48">
               <div className="flex justify-between text-xs font-bold mb-1">
-                <span className="text-yellow-300">KAI-JAX FUSION</span>
+                <span className="text-yellow-300">THREE-STRAND FLOW</span>
                 <span className="text-white">{Math.ceil(transformationTimeRemaining)}s</span>
               </div>
               <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -260,7 +260,7 @@ export default function TransformationOverlay() {
           {/* Warning when time is low */}
           {transformationTimeRemaining <= 5 && (
             <div className="text-center mt-2 animate-pulse">
-              <span className="text-red-400 font-bold text-sm">⚠️ FUSION ENDING SOON!</span>
+              <span className="text-red-400 font-bold text-sm">⚠️ FLOW ENDING SOON!</span>
             </div>
           )}
         </div>
