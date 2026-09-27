@@ -381,6 +381,15 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
     initAdventure(characterId, missionId, mission.arena || "cross_point_arena");
     setCurrentWave(0);
     spawnedWaves.current.clear();
+
+    // Narrative-only missions (for example the epilogue) must resolve
+    // without waiting for enemies that will never spawn.
+    if (mission.enemyWaves.length === 0) {
+      setSuccess(true);
+      setPhase("outro");
+      return;
+    }
+
     spawnWave(0);
     setPhase("playing");
   }, [mission, characterId, missionId, initAdventure, spawnWave]);
