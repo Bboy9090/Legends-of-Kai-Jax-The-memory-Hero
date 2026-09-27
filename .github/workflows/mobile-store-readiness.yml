@@ -101,8 +101,15 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew bundleRelease --stacktrace
-          test -s app/build/outputs/bundle/release/app-release.aab
-          sha256sum app/build/outputs/bundle/release/app-release.aab
+          AAB="app/build/outputs/bundle/release/app-release.aab"
+          test -s "$AAB"
+          AAB_BYTES="$(stat -c%s "$AAB")"
+          AAB_MB="$(awk -v bytes="$AAB_BYTES" 'BEGIN { printf "%.2f", bytes / 1024 / 1024 }')"
+          BASE_ASSET_COMPRESSED_BYTES="$(unzip -lv "$AAB" | awk '$8 ~ /^base\/assets\// { sum += $5 } END { print sum + 0 }')"
+          BASE_ASSET_COMPRESSED_MB="$(awk -v bytes="$BASE_ASSET_COMPRESSED_BYTES" 'BEGIN { printf "%.2f", bytes / 1024 / 1024 }')"
+          echo "ANDROID_AAB_SIZE_MB=$AAB_MB"
+          echo "ANDROID_BASE_ASSET_ZIP_SIZE_MB=$BASE_ASSET_COMPRESSED_MB"
+          sha256sum "$AAB"
           printf '%s\n' "ANDROID_RELEASE_AAB_OK ${{ github.event.pull_request.head.sha || github.sha }}"
 
   ios-release-compile:
