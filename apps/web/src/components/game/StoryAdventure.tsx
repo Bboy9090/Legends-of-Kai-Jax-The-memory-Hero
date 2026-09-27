@@ -468,7 +468,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
         <DialogueOverlay
           lines={success ? mission.outroCutscene : [
             { speaker: "Kai-Jax", text: "No... I can't fall here. Not yet..." },
-            { speaker: "???", text: "The Memory King crumbles. How disappointing." },
+            { speaker: "???", text: "The Memory Hero crumbles. How disappointing." },
           ]}
           onComplete={() => setPhase("results")}
         />
