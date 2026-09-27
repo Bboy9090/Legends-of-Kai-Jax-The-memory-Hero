@@ -47,9 +47,6 @@ import { initializeVoiceSystem, preloadVoices } from "./lib/voiceActing";
 import * as THREE from "three";
 import { getQualitySettings } from "./lib/threejs/PerformanceOptimizer";
 
-// Compute quality settings once (device/pixel-ratio never changes mid-session)
-const QUALITY = getQualitySettings();
-
 // Define control keys for the game
 enum Controls {
   jump = 'jump',
@@ -87,6 +84,8 @@ const controls = [
 
 function App() {
   const { phase } = useGame();
+  const [qualityRevision, setQualityRevision] = useState(0);
+  const QUALITY = useMemo(() => getQualitySettings(), [qualityRevision]);
   const { gameState, selectedCharacter, activeStoryMissionId } = useRunner();
   const battleCanvasActive =
     (phase === "playing" || phase === "ended") && gameState === "playing";
@@ -121,6 +120,12 @@ function App() {
     isMuted
   } = useAudio();
   
+  useEffect(() => {
+    const handleQualityChange = () => setQualityRevision((value) => value + 1);
+    window.addEventListener('kai-jax-quality-change', handleQualityChange);
+    return () => window.removeEventListener('kai-jax-quality-change', handleQualityChange);
+  }, []);
+
   // ⚡ LEGENDARY INTRO SYSTEM
   const [showIntro, setShowIntro] = useState(true);
 
