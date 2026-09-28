@@ -70,6 +70,8 @@ jobs:
           grep -q 'BlueprintIdentifier = "504EC3031FED79650016851F"' apps/web/ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme
           grep -q 'buildForArchiving = "YES"' apps/web/ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme
           grep -q 'buildConfiguration = "Release"' apps/web/ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme
+          test -x ci_scripts/ci_post_clone.sh
+          grep -q 'pnpm -C apps/web cap:sync' ci_scripts/ci_post_clone.sh
 
   android-release:
     name: Android release bundle
