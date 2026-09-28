@@ -65,6 +65,11 @@ jobs:
           grep -q "Legends of Kai-Jax" apps/web/capacitor.config.ts
           grep -q 'applicationId "com.bobbyblanco.legendsofkaijax"' apps/web/android/app/build.gradle
           grep -q "PRODUCT_BUNDLE_IDENTIFIER = com.bobbyblanco.legendsofkaijax;" apps/web/ios/App/App.xcodeproj/project.pbxproj
+          test "$(grep -c 'DEVELOPMENT_TEAM = 86NUJ8M3B8;' apps/web/ios/App/App.xcodeproj/project.pbxproj)" -ge 2
+          test -s apps/web/ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme
+          grep -q 'BlueprintIdentifier = "504EC3031FED79650016851F"' apps/web/ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme
+          grep -q 'buildForArchiving = "YES"' apps/web/ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme
+          grep -q 'buildConfiguration = "Release"' apps/web/ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme
 
   android-release:
     name: Android release bundle
