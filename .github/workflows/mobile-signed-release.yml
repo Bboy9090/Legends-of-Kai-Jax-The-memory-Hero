@@ -170,14 +170,14 @@ jobs:
           ! /usr/libexec/PlistBuddy -c 'Print :ProvisionsAllDevices' "$RUNNER_TEMP/profile.plist" >/dev/null 2>&1
 
           python3 - "$PROFILE_EXPIRATION" <<'PY'
-import datetime, sys
-raw = sys.argv[1].strip()
-expiry = datetime.datetime.strptime(raw, "%a %b %d %H:%M:%S %Z %Y").replace(tzinfo=datetime.timezone.utc)
-now = datetime.datetime.now(datetime.timezone.utc)
-if expiry <= now:
-    raise SystemExit(f"Provisioning profile expired at {expiry.isoformat()}")
-print(f"IOS_PROFILE_EXPIRATION_OK {expiry.isoformat()}")
-PY
+          import datetime, sys
+          raw = sys.argv[1].strip()
+          expiry = datetime.datetime.strptime(raw, "%a %b %d %H:%M:%S %Z %Y").replace(tzinfo=datetime.timezone.utc)
+          now = datetime.datetime.now(datetime.timezone.utc)
+          if expiry <= now:
+              raise SystemExit(f"Provisioning profile expired at {expiry.isoformat()}")
+          print(f"IOS_PROFILE_EXPIRATION_OK {expiry.isoformat()}")
+          PY
 
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security set-keychain-settings -lut 21600 "$KEYCHAIN"
