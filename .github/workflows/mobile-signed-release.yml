@@ -186,11 +186,9 @@ PY
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security list-keychains -d user -s "$KEYCHAIN"
 
-          security find-identity -v -p codesigning "$KEYCHAIN" | grep -F "Apple Distribution"
-          CERT_SHA1=$(security find-identity -v -p codesigning "$KEYCHAIN" | awk '/Apple Distribution/ {print $2; exit}')
-          test -n "$CERT_SHA1"
-          CERT_SUBJECT=$(security find-certificate -c "Apple Distribution" -p "$KEYCHAIN" | openssl x509 -noout -subject)
-          echo "$CERT_SUBJECT" | grep -F "OU=$IOS_TEAM_ID"
+          IDENTITY_LINE=$(security find-identity -v -p codesigning "$KEYCHAIN" | grep -F "Apple Distribution" | grep -F "($IOS_TEAM_ID)" | head -1)
+          test -n "$IDENTITY_LINE"
+          echo "IOS_DISTRIBUTION_IDENTITY_OK"
 
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp "$PROFILE" "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
