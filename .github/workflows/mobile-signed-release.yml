@@ -12,6 +12,11 @@ on:
           - both
           - android
           - ios
+      source_sha:
+        description: "Exact source commit to sign"
+        required: true
+        default: "2ff7979402e51b54cf5e6296645d9164de2a7568"
+        type: string
 
 permissions:
   contents: write
@@ -29,16 +34,19 @@ jobs:
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
     steps:
       - name: Require Android signing credentials
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
         run: |
           test -n "$ANDROID_KEYSTORE_BASE64"
           test -n "$ANDROID_KEYSTORE_PASSWORD"
           test -n "$ANDROID_KEY_ALIAS"
           test -n "$ANDROID_KEY_PASSWORD"
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
 
       - name: Checkout exact commit
         env:
           REPOSITORY: ${{ github.repository }}
-          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_SHA: ${{ inputs.source_sha }}
         run: |
           git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
           cd source
@@ -72,14 +80,14 @@ jobs:
           test -s "$AAB"
           jarsigner -verify -verbose -certs "$AAB"
           sha256sum "$AAB"
-          printf '%s\n' "ANDROID_SIGNED_AAB_OK ${{ github.sha }}"
+          printf '%s\n' "ANDROID_SIGNED_AAB_OK ${{ inputs.source_sha }}"
 
       - name: Persist signed AAB as private draft release asset
         working-directory: source/apps/web/android
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
-          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_SHA: ${{ inputs.source_sha }}
         run: |
           AAB="app/build/outputs/bundle/release/app-release.aab"
           SHORT_SHA="${COMMIT_SHA:0:12}"
@@ -107,16 +115,19 @@ jobs:
       IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
     steps:
       - name: Require iOS signing credentials
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
         run: |
           test -n "$IOS_P12_BASE64"
           test -n "$IOS_P12_PASSWORD"
           test -n "$IOS_PROVISIONING_PROFILE_BASE64"
           test -n "$IOS_TEAM_ID"
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
 
       - name: Checkout exact commit
         env:
           REPOSITORY: ${{ github.repository }}
-          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_SHA: ${{ inputs.source_sha }}
         run: |
           git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
           cd source
@@ -142,16 +153,44 @@ jobs:
           KEYCHAIN_PASSWORD="$(uuidgen)"
           printf '%s' "$IOS_P12_BASE64" | base64 --decode > "$CERT"
           printf '%s' "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$PROFILE"
+          security cms -D -i "$PROFILE" > "$RUNNER_TEMP/profile.plist"
+
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$RUNNER_TEMP/profile.plist")
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' "$RUNNER_TEMP/profile.plist")
+          PROFILE_TEAM=$(/usr/libexec/PlistBuddy -c 'Print :TeamIdentifier:0' "$RUNNER_TEMP/profile.plist")
+          PROFILE_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$RUNNER_TEMP/profile.plist")
+          PROFILE_GET_TASK_ALLOW=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:get-task-allow' "$RUNNER_TEMP/profile.plist" 2>/dev/null || echo false)
+          PROFILE_EXPIRATION=$(/usr/libexec/PlistBuddy -c 'Print :ExpirationDate' "$RUNNER_TEMP/profile.plist")
+          EXPECTED_APP_ID="$IOS_TEAM_ID.com.bobbyblanco.legendsofkaijax"
+
+          test "$PROFILE_TEAM" = "$IOS_TEAM_ID"
+          test "$PROFILE_APP_ID" = "$EXPECTED_APP_ID"
+          test "$PROFILE_GET_TASK_ALLOW" != "true"
+          ! /usr/libexec/PlistBuddy -c 'Print :ProvisionedDevices' "$RUNNER_TEMP/profile.plist" >/dev/null 2>&1
+          ! /usr/libexec/PlistBuddy -c 'Print :ProvisionsAllDevices' "$RUNNER_TEMP/profile.plist" >/dev/null 2>&1
+
+          python3 - "$PROFILE_EXPIRATION" <<'PY'
+import datetime, sys
+raw = sys.argv[1].strip()
+expiry = datetime.datetime.strptime(raw, "%a %b %d %H:%M:%S %Z %Y").replace(tzinfo=datetime.timezone.utc)
+now = datetime.datetime.now(datetime.timezone.utc)
+if expiry <= now:
+    raise SystemExit(f"Provisioning profile expired at {expiry.isoformat()}")
+print(f"IOS_PROFILE_EXPIRATION_OK {expiry.isoformat()}")
+PY
+
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security set-keychain-settings -lut 21600 "$KEYCHAIN"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security import "$CERT" -P "$IOS_P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security list-keychains -d user -s "$KEYCHAIN"
+
+          IDENTITY_LINE=$(security find-identity -v -p codesigning "$KEYCHAIN" | grep -F "Apple Distribution" | grep -F "($IOS_TEAM_ID)" | head -1)
+          test -n "$IDENTITY_LINE"
+          echo "IOS_DISTRIBUTION_IDENTITY_OK"
+
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          security cms -D -i "$PROFILE" > "$RUNNER_TEMP/profile.plist"
-          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$RUNNER_TEMP/profile.plist")
-          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' "$RUNNER_TEMP/profile.plist")
           cp "$PROFILE" "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
           echo "IOS_PROFILE_UUID=$PROFILE_UUID" >> "$GITHUB_ENV"
           echo "IOS_PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
@@ -200,14 +239,14 @@ jobs:
           test -s "$IPA"
           codesign --verify --deep --strict build/LegendsOfKaiJax.xcarchive/Products/Applications/App.app
           shasum -a 256 "$IPA"
-          printf '%s\n' "IOS_SIGNED_IPA_OK ${{ github.sha }}"
+          printf '%s\n' "IOS_SIGNED_IPA_OK ${{ inputs.source_sha }}"
 
       - name: Persist signed IPA as private draft release asset
         working-directory: source/apps/web/ios/App
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
-          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_SHA: ${{ inputs.source_sha }}
         run: |
           IPA="$(find build/export -maxdepth 1 -name '*.ipa' -print -quit)"
           test -n "$IPA"
