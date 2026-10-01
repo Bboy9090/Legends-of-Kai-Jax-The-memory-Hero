@@ -18,6 +18,12 @@ import {
   animateIdle,
   animateWalk,
   animatePunch,
+  animateKick,
+  animateSpecial,
+  animateUltimate,
+  animateHitReaction,
+  triggerHit,
+  resetAttackPhase,
   type LimbRefs,
   type LimbBaseRotations,
 } from '../../../lib/animationUtils';
@@ -40,6 +46,8 @@ interface OptimizedBeastModelProps {
   isAttacking?: boolean;
   isInvulnerable?: boolean;
   isMoving?: boolean;
+  isRunning?: boolean;
+  attackType?: 'light1' | 'light2' | 'light3' | 'heavy' | 'skill' | 'punch' | 'kick' | 'special' | 'ultimate' | null;
   scale?: number;
 }
 
@@ -68,6 +76,8 @@ export default function OptimizedBeastModel({
   isAttacking = false,
   isInvulnerable = false,
   isMoving = false,
+  isRunning = false,
+  attackType = null,
   scale = 2.5,
 }: OptimizedBeastModelProps) {
   const groupRef = useRef<THREE.Group>(null!);
@@ -75,6 +85,8 @@ export default function OptimizedBeastModel({
   const basesRef = useRef<LimbBaseRotations | null>(null);
   const proceduralStateRef = useRef(createAnimState());
   const activeActionRef = useRef<THREE.AnimationAction | null>(null);
+  const previousHitAnimRef = useRef(0);
+  const previousAttackRef = useRef(false);
   const modelPath = getBeastModelPath(beast.id);
 
   // DIAGNOSTIC: log model path resolution
@@ -202,6 +214,28 @@ export default function OptimizedBeastModel({
     if (mixer) mixer.update(delta);
     if (!groupRef.current) return;
 
+    const procedural = proceduralStateRef.current;
+    const t = animTime || state.clock.elapsedTime;
+
+    if (hitAnim > 0 && previousHitAnimRef.current <= 0) {
+      triggerHit(procedural);
+    }
+    previousHitAnimRef.current = hitAnim;
+
+    if (previousAttackRef.current && !isAttacking) {
+      resetAttackPhase(procedural, cloned, delta);
+      procedural.comboStep = (procedural.comboStep + 1) % 4;
+    }
+    if (!previousAttackRef.current && isAttacking) {
+      procedural.attackPhase = 0;
+    }
+    previousAttackRef.current = isAttacking;
+
+    // Hit reaction has visual priority over ordinary locomotion.
+    if (hitAnim > 0 || procedural.hitFlash > 0) {
+      animateHitReaction(cloned, procedural, delta, t);
+    }
+
     // Baked clips are preferred, but many roster GLBs do not carry a complete
     // idle/walk/attack set. Drive their real bones procedurally so locomotion
     // and combat still articulate arms, legs, hips and spine.
@@ -212,11 +246,18 @@ export default function OptimizedBeastModel({
         ? available.some(n => /walk|run|locomotion/i.test(n))
         : available.some(n => /idle|breath|stand/i.test(n));
     if (!hasStateClip && limbsRef.current && basesRef.current) {
-      const t = animTime || state.clock.elapsedTime;
       if (isAttacking) {
-        animatePunch(cloned, limbsRef.current, basesRef.current, proceduralStateRef.current, delta, t);
+        if (attackType === 'kick' || attackType === 'heavy') {
+          animateKick(cloned, limbsRef.current, basesRef.current, procedural, delta);
+        } else if (attackType === 'special' || attackType === 'skill') {
+          animateSpecial(cloned, limbsRef.current, basesRef.current, procedural, delta);
+        } else if (attackType === 'ultimate') {
+          animateUltimate(cloned, limbsRef.current, basesRef.current, procedural, delta);
+        } else {
+          animatePunch(cloned, limbsRef.current, basesRef.current, procedural, delta, t);
+        }
       } else if (isMoving) {
-        animateWalk(cloned, limbsRef.current, basesRef.current, proceduralStateRef.current, delta, false);
+        animateWalk(cloned, limbsRef.current, basesRef.current, procedural, delta, isRunning);
       } else {
         animateIdle(cloned, limbsRef.current, basesRef.current, t, delta);
       }
