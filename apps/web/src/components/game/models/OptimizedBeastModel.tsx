@@ -4,7 +4,7 @@
  * Mobile/Tablet/PC optimized Three.js character model
  */
 
-import { useRef, useMemo, useEffect, useState } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
@@ -76,7 +76,6 @@ export default function OptimizedBeastModel({
   const proceduralStateRef = useRef(createAnimState());
   const activeActionRef = useRef<THREE.AnimationAction | null>(null);
   const modelPath = getBeastModelPath(beast.id);
-  const [loadError, setLoadError] = useState(false);
 
   // DIAGNOSTIC: log model path resolution
   useEffect(() => {
@@ -90,12 +89,10 @@ export default function OptimizedBeastModel({
   // Target on-screen character height in world units (matches the arena scale).
   const TARGET_HEIGHT = 2.2;
 
-  // Load GLB model
-  const { scene, animations } = useGLTF(modelPath, undefined, undefined, (err) => {
-    console.error('[OptimizedBeastModel] Load failed:', {
-      modelPath,
-      error: err?.message || String(err),
-    });
+  // Load GLB model. Note: useGLTF's fourth argument is extendLoader, NOT an
+  // onError callback. The previous code mislabeled successful loader setup as
+  // a model load failure in release smoke tests.
+  const { scene, animations } = useGLTF(modelPath);
     console.warn(`Failed to load model: ${modelPath}`, err);
     setLoadError(true);
   });
@@ -237,16 +234,6 @@ export default function OptimizedBeastModel({
     }
   });
 
-  if (loadError) {
-    return (
-      <group ref={groupRef as any}>
-        <mesh castShadow position={[0, 0.8, 0]}>
-          <boxGeometry args={[0.6, 1.6, 0.6]} />
-          <meshStandardMaterial color={beast.color || "#4488ff"} />
-        </mesh>
-      </group>
-    );
-  }
 
   return (
     <group ref={groupRef} rotation={[0, Math.PI / 2, 0]}>
