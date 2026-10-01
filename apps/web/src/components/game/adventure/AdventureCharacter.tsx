@@ -56,6 +56,7 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
   const isMoving = useAdventure((s) => s.player.isMoving);
   const isRunning = useAdventure((s) => s.player.isRunning);
   const hitStunTimer = useAdventure((s) => s.player.hitStunTimer);
+  const attackType = useAdventure((s) => s.player.attackType);
   const invulnTimer = useAdventure((s) => s.player.invulnTimer);
   const posY = useAdventure((s) => s.player.posY);
 
@@ -89,6 +90,8 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
           beast={getFighterById(fighterId) ?? { id: fighterId, color: "#1a1a1a", accentColor }}
           isAttacking={isAttacking}
           isMoving={isMoving || isRunning}
+          isRunning={isRunning}
+          attackType={attackType}
           isInvulnerable={invulnTimer > 0}
           hitAnim={hitStunTimer > 0 ? 1 : 0}
         />
