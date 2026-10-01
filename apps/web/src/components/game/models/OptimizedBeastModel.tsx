@@ -93,10 +93,6 @@ export default function OptimizedBeastModel({
   // onError callback. The previous code mislabeled successful loader setup as
   // a model load failure in release smoke tests.
   const { scene, animations } = useGLTF(modelPath);
-    console.warn(`Failed to load model: ${modelPath}`, err);
-    setLoadError(true);
-  });
-
   // DIAGNOSTIC: log scene load success
   useEffect(() => {
     if (scene) {
