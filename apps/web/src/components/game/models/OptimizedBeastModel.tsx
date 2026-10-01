@@ -11,6 +11,16 @@ import * as THREE from 'three';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { useBattle } from '../../../lib/stores/useBattle';
 import { MODEL_REGISTRY } from '../../../assets/modelRegistry';
+import {
+  findLimbs,
+  captureBaseRotations,
+  createAnimState,
+  animateIdle,
+  animateWalk,
+  animatePunch,
+  type LimbRefs,
+  type LimbBaseRotations,
+} from '../../../lib/animationUtils';
 
 // Guaranteed-to-exist fallback if a fighter has no registered model.
 const FALLBACK_MODEL_PATH = '/models/kai_jax_beast.glb';
@@ -83,6 +93,10 @@ export default function OptimizedBeastModel({
   scale = 2.5,
 }: OptimizedBeastModelProps) {
   const groupRef = useRef<THREE.Group>(null!);
+  const limbsRef = useRef<LimbRefs | null>(null);
+  const basesRef = useRef<LimbBaseRotations | null>(null);
+  const proceduralStateRef = useRef(createAnimState());
+  const activeActionRef = useRef<THREE.AnimationAction | null>(null);
   const modelPath = getBeastModelPath(beast.id);
   const [loadError, setLoadError] = useState(false);
 
@@ -129,6 +143,9 @@ export default function OptimizedBeastModel({
       beastId: beast.id,
       childrenCount: c.children.length,
     });
+    // Never zero imported bone rotations here. Meshy/glTF bind transforms are
+    // part of the rig and must remain intact for skin deformation.
+    c.updateMatrixWorld(true);
     return c;
   }, [scene, beast.id]);
   const { actions, mixer } = useAnimations(animations, cloned);
@@ -150,6 +167,14 @@ export default function OptimizedBeastModel({
       node.position.y = -bbox.min.y * s; // feet at y=0
     }
   }, [scene, beast.id, cloned]);
+
+  // Discover the actual cloned skeleton once. This gives models without a
+  // useful baked clip a real articulated fallback instead of statue sliding.
+  useEffect(() => {
+    const limbs = findLimbs(cloned);
+    limbsRef.current = limbs;
+    basesRef.current = captureBaseRotations(limbs);
+  }, [cloned, beast.id]);
 
   // Handle animations
   useEffect(() => {
@@ -192,7 +217,12 @@ export default function OptimizedBeastModel({
         }
       });
       // Play selected animation with smooth fade-in
-      actions[match].reset().fadeIn(0.3).play();
+      const next = actions[match];
+      if (activeActionRef.current !== next) {
+        activeActionRef.current?.fadeOut(0.18);
+        next.reset().fadeIn(0.18).play();
+        activeActionRef.current = next;
+      }
     }
   }, [actions, isAttacking, isMoving, beast.id]);
 
@@ -200,6 +230,27 @@ export default function OptimizedBeastModel({
   useFrame((state, delta) => {
     if (mixer) mixer.update(delta);
     if (!groupRef.current) return;
+
+    // Baked clips are preferred, but many roster GLBs do not carry a complete
+    // idle/walk/attack set. Drive their real bones procedurally so locomotion
+    // and combat still articulate arms, legs, hips and spine.
+    const available = actions ? Object.keys(actions) : [];
+    const hasStateClip = isAttacking
+      ? available.some(n => /attack|punch|kick|slash|hit/i.test(n))
+      : isMoving
+        ? available.some(n => /walk|run|locomotion/i.test(n))
+        : available.some(n => /idle|breath|stand/i.test(n));
+    if (!hasStateClip && limbsRef.current && basesRef.current) {
+      const t = animTime || state.clock.elapsedTime;
+      if (isAttacking) {
+        animatePunch(cloned, limbsRef.current, basesRef.current, proceduralStateRef.current, delta, t);
+      } else if (isMoving) {
+        animateWalk(cloned, limbsRef.current, basesRef.current, proceduralStateRef.current, delta, false);
+      } else {
+        animateIdle(cloned, limbsRef.current, basesRef.current, t, delta);
+      }
+      cloned.updateMatrixWorld(true);
+    }
     
     // Emotion intensity adds a subtle breathing pulse around 1.0
     if (emotionIntensity > 0) {
