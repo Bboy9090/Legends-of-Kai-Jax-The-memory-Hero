@@ -174,22 +174,28 @@ export default function OptimizedBeastModel({
 
     const available = Object.keys(actions);
 
-    // Enhanced animation matching: prioritize walk over run for moving state
+    // Only play a baked clip when it semantically matches the requested
+    // state. Never use available[0]: a random idle/root-motion clip would hide
+    // the articulated procedural fallback and recreate the skating-statue bug.
     let match: string | undefined;
     if (targetAction === 'walk') {
-      // Look for walk-specific animation first, fall back to run
-      match = available.find(n => {
-        const lower = n.toLowerCase();
-        return lower.includes('walk') || lower === 'walk';
-      }) ||
-      available.find(n => n.toLowerCase().includes('run')) ||
-      available.find(n => n.toLowerCase() === 'run') ||
-      available[0];
+      match =
+        available.find(n => /walk|locomotion/i.test(n)) ||
+        available.find(n => /run/i.test(n));
+    } else if (targetAction === 'attack') {
+      const attackPattern =
+        attackType === 'kick' || attackType === 'heavy'
+          ? /kick|heavy/
+          : attackType === 'special' || attackType === 'skill'
+            ? /special|skill|slash|strike/
+            : attackType === 'ultimate'
+              ? /ultimate|super|finisher/
+              : /punch|jab|light|attack/;
+      match =
+        available.find(n => attackPattern.test(n)) ||
+        available.find(n => /attack|punch|kick|slash|strike|hit/i.test(n));
     } else {
-      // For attack/idle, use standard matching
-      match = available.find(n => n.toLowerCase() === targetAction) ||
-              available.find(n => n.toLowerCase().includes(targetAction)) ||
-              available[0];
+      match = available.find(n => /idle|breath|stand/i.test(n));
     }
 
     if (match && actions[match]) {
@@ -207,7 +213,7 @@ export default function OptimizedBeastModel({
         activeActionRef.current = next;
       }
     }
-  }, [actions, isAttacking, isMoving, beast.id]);
+  }, [actions, isAttacking, isMoving, attackType, beast.id]);
 
   // Hit animation and effects
   useFrame((state, delta) => {
