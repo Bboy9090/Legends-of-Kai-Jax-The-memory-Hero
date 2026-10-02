@@ -6,6 +6,10 @@ import {
   createAnimState,
   animateWalk,
   animatePunch,
+  animateKick,
+  animateDeath,
+  triggerHit,
+  animateHitReaction,
   hasAnyLimb,
 } from "./animationUtils";
 
@@ -41,6 +45,14 @@ describe("skeletal motion release gate", () => {
     expect(Math.abs(limbs.rightUpperLeg!.rotation.x - bases.rightUpperLeg.x)).toBeGreaterThan(0.001);
   });
 
+  it("rejects partial rigs that could recreate a skating statue", () => {
+    const root = makeHumanoid();
+    const limbs = findLimbs(root);
+    limbs.leftUpperArm = null;
+    limbs.leftArm = null;
+    expect(hasAnyLimb(limbs)).toBe(false);
+  });
+
   it("attack changes upper-body bone pose", () => {
     const root = makeHumanoid();
     const limbs = findLimbs(root);
@@ -50,5 +62,38 @@ describe("skeletal motion release gate", () => {
     const armDelta = Math.abs(limbs.rightUpperArm!.rotation.x - bases.rightUpperArm.x);
     const forearmDelta = Math.abs(limbs.rightForearm!.rotation.x - bases.rightForearm.x);
     expect(armDelta + forearmDelta).toBeGreaterThan(0.01);
+  });
+
+  it("kick changes leg bones, not only the character root", () => {
+    const root = makeHumanoid();
+    const limbs = findLimbs(root);
+    expect(hasAnyLimb(limbs)).toBe(true);
+    const bases = captureBaseRotations(limbs);
+    const state = createAnimState();
+    for (let i = 0; i < 8; i++) animateKick(root, limbs, bases, state, 1 / 60);
+    const thighDelta = Math.abs(limbs.rightUpperLeg!.rotation.x - bases.rightUpperLeg.x);
+    const shinDelta = Math.abs(limbs.rightLowerLeg!.rotation.x - bases.rightLowerLeg.x);
+    expect(thighDelta + shinDelta).toBeGreaterThan(0.01);
+  });
+
+  it("hit reaction visibly displaces the rendered body", () => {
+    const root = makeHumanoid();
+    const state = createAnimState();
+    triggerHit(state);
+    const beforeX = root.position.x;
+    animateHitReaction(root, state, 1 / 60, 0.05);
+    expect(Math.abs(root.position.x - beforeX)).toBeGreaterThan(0.0001);
+    expect(state.hitFlash).toBeGreaterThan(0);
+  });
+
+  it("death advances to a terminal fallen pose", () => {
+    const group = new THREE.Group();
+    const inner = makeHumanoid();
+    group.add(inner);
+    const state = createAnimState();
+    for (let i = 0; i < 40; i++) animateDeath(group, inner, state, 1 / 30);
+    expect(state.deathProgress).toBe(1);
+    expect(group.scale.y).toBeLessThan(0.1);
+    expect(inner.rotation.x).toBeGreaterThan(1);
   });
 });
