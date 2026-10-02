@@ -29,6 +29,10 @@ const REGISTRY_PATH = join(APP_ROOT, "src", "assets", "modelRegistry.ts");
 // is missing/unreachable/unparseable.
 const PRIMARY_FIGHTERS = ["kai", "jax", "kai-jax", "kai_jax"];
 
+// These three IDs represent the distinct production hero assets that must
+// independently prove full-body joint coverage. kai-jax/kai_jax share one GLB.
+const PRODUCTION_HERO_ASSETS = ["kai", "jax", "kai_jax"];
+
 // CANONICAL_FIGHTERS: must additionally expose the full anchor hierarchy.
 // CI fails if any of these is missing, unparseable, or lacks canonical anchors,
 // unless that fighter has one narrowly documented anchor-only deferral below.
@@ -326,7 +330,31 @@ function validate() {
     }
   }
 
-  // Rule 4: every canonical fighter must expose the full anchor hierarchy
+  // Rule 4: each distinct production hero asset must expose enough real
+  // skeleton structure to support articulated arms/legs/torso at runtime.
+  for (const id of PRODUCTION_HERO_ASSETS) {
+    const r = reports.find((x) => x.id === id);
+    if (!r || !r.parsed) {
+      failures.push(`PRODUCTION-HERO-RIG-MISSING: ${id}`);
+      continue;
+    }
+    if (!r.rig || r.rig.skins < 1 || r.rig.skinnedMeshes < 1 || r.rig.joints < 8) {
+      failures.push(
+        `PRODUCTION-HERO-RIG-TOO-SHALLOW: ${id} → skins:${r.rig?.skins ?? 0}, joints:${r.rig?.joints ?? 0}, skinnedMeshes:${r.rig?.skinnedMeshes ?? 0}`
+      );
+    }
+    if (
+      r.animation &&
+      r.animation.clips > 0 &&
+      (r.animation.animatedJoints < 4 || r.animation.rotationChannels < 4)
+    ) {
+      failures.push(
+        `PRODUCTION-HERO-ANIMATION-TOO-SHALLOW: ${id} → clips:${r.animation.clips}, animatedJoints:${r.animation.animatedJoints}, rotTracks:${r.animation.rotationChannels}`
+      );
+    }
+  }
+
+  // Rule 5: every canonical fighter must expose the full anchor hierarchy
   for (const id of CANONICAL_FIGHTERS) {
     const r = reports.find((x) => x.id === id);
     if (!r) {
