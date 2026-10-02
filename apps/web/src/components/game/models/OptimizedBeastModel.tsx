@@ -237,8 +237,30 @@ export default function OptimizedBeastModel({
     }
     previousAttackRef.current = isAttacking;
 
+    // Defensive/mobility states must visibly deform the rendered character,
+    // not exist only in the combat store.
+    if (limbsRef.current && basesRef.current && !isAttacking) {
+      const limbs = limbsRef.current;
+      const bases = basesRef.current;
+      if (locomotionState === 'dodge') {
+        cloned.rotation.z = THREE.MathUtils.lerp(cloned.rotation.z, -0.45, Math.min(1, delta * 18));
+        if (limbs.spine) limbs.spine.rotation.z = (bases.spine?.z ?? 0) - 0.3;
+      } else if (locomotionState === 'block' || locomotionState === 'parry') {
+        const guard = locomotionState === 'parry' ? 1.0 : 0.72;
+        if (limbs.leftUpperArm) limbs.leftUpperArm.rotation.x = (bases.leftUpperArm?.x ?? 0) - guard;
+        if (limbs.rightUpperArm) limbs.rightUpperArm.rotation.x = (bases.rightUpperArm?.x ?? 0) - guard;
+        if (limbs.spine) limbs.spine.rotation.x = (bases.spine?.x ?? 0) + 0.16;
+      } else if (locomotionState === 'airborne') {
+        if (limbs.leftUpperArm) limbs.leftUpperArm.rotation.z = (bases.leftUpperArm?.z ?? 0) + 0.65;
+        if (limbs.rightUpperArm) limbs.rightUpperArm.rotation.z = (bases.rightUpperArm?.z ?? 0) - 0.65;
+        if (limbs.leftUpperLeg) limbs.leftUpperLeg.rotation.x = (bases.leftUpperLeg?.x ?? 0) - 0.35;
+        if (limbs.rightUpperLeg) limbs.rightUpperLeg.rotation.x = (bases.rightUpperLeg?.x ?? 0) - 0.35;
+      }
+    }
+
     // Hit reaction has visual priority over ordinary locomotion.
-    if (hitAnim > 0 || procedural.hitFlash > 0) {
+    if (hitAnim > 0 || procedural.hitFlash > 0 || locomotionState === 'hitstun') {
+      if (locomotionState === 'hitstun' && procedural.hitFlash <= 0) triggerHit(procedural);
       animateHitReaction(cloned, procedural, delta, t);
     }
 
