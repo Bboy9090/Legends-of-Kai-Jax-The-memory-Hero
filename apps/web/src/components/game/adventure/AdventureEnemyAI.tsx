@@ -84,6 +84,8 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
   const actionsRef = useRef<Record<string, THREE.AnimationAction>>({});
   const activeActionRef = useRef<THREE.AnimationAction | null>(null);
+  const previousAttackingRef = useRef(false);
+  const previousDeadRef = useRef(false);
   const limbsRef = useRef<LimbRefs | null>(null);
   const basesRef = useRef<LimbBaseRotations | null>(null);
   const animRef = useRef<AnimState>(createAnimState());
@@ -130,11 +132,38 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
           : /idle|breath|stand/;
     const bakedName = bakedNames.find((name) => desiredPattern.test(name));
     const bakedAction = bakedName ? actionsRef.current[bakedName] : null;
-    if (bakedAction && activeActionRef.current !== bakedAction) {
-      activeActionRef.current?.fadeOut(0.12);
-      bakedAction.reset().fadeIn(0.12).play();
-      activeActionRef.current = bakedAction;
+    const attackStarted = enemy.isAttacking && !previousAttackingRef.current;
+    const deathStarted = enemy.isDead && !previousDeadRef.current;
+
+    if (!bakedAction && activeActionRef.current) {
+      activeActionRef.current.fadeOut(0.12);
+      activeActionRef.current = null;
+    } else if (bakedAction) {
+      const isTerminal = enemy.isDead;
+      const isAttack = enemy.isAttacking;
+      if (isTerminal || isAttack) {
+        bakedAction.setLoop(THREE.LoopOnce, 1);
+        bakedAction.clampWhenFinished = true;
+      } else {
+        bakedAction.setLoop(THREE.LoopRepeat, Infinity);
+        bakedAction.clampWhenFinished = false;
+      }
+
+      if (
+        activeActionRef.current !== bakedAction ||
+        (isAttack && attackStarted) ||
+        (isTerminal && deathStarted)
+      ) {
+        if (activeActionRef.current && activeActionRef.current !== bakedAction) {
+          activeActionRef.current.fadeOut(0.12);
+        }
+        bakedAction.reset().fadeIn(0.12).play();
+        activeActionRef.current = bakedAction;
+      }
     }
+
+    previousAttackingRef.current = enemy.isAttacking;
+    previousDeadRef.current = enemy.isDead;
 
     if (enemy.health < prevHealth.current) {
       triggerHit(anim);
