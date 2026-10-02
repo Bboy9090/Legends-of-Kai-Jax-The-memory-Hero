@@ -48,6 +48,7 @@ interface OptimizedBeastModelProps {
   isMoving?: boolean;
   isRunning?: boolean;
   attackType?: 'light1' | 'light2' | 'light3' | 'heavy' | 'skill' | 'punch' | 'kick' | 'special' | 'ultimate' | null;
+  locomotionState?: 'neutral' | 'dodge' | 'block' | 'parry' | 'hitstun' | 'airborne';
   scale?: number;
 }
 
@@ -78,6 +79,7 @@ export default function OptimizedBeastModel({
   isMoving = false,
   isRunning = false,
   attackType = null,
+  locomotionState = 'neutral',
   scale = 2.5,
 }: OptimizedBeastModelProps) {
   const groupRef = useRef<THREE.Group>(null!);
