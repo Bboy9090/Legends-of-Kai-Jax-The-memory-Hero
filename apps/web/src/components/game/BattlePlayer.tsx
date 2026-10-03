@@ -20,6 +20,9 @@ export default function BattlePlayer() {
     winner,
     timeScale,
     playerVelocityX,
+    playerGrounded,
+    playerDodgeTimer,
+    playerCombatState,
   } = useBattle();
   
   const meshRef = useRef<THREE.Group>(null);
@@ -267,6 +270,15 @@ export default function BattlePlayer() {
       isAttacking={playerAttacking}
       isInvulnerable={playerInvulnerable}
       isMoving={isMovingRef.current}
+      isRunning={Math.abs(playerVelocityX) > 4}
+      attackType={playerAttackType}
+      locomotionState={
+        playerDodgeTimer > 0 ? 'dodge' :
+        playerCombatState === 'PARRY_WINDOW' ? 'parry' :
+        playerCombatState === 'BLOCKING' ? 'block' :
+        playerCombatState === 'HITSTUN' || playerCombatState === 'GUARD_BROKEN' ? 'hitstun' :
+        !playerGrounded ? 'airborne' : 'neutral'
+      }
     />
   );
   

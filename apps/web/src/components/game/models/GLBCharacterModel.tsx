@@ -1,6 +1,7 @@
 import { useRef, Suspense, useState, useEffect, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useGLTF, Clone, Html } from "@react-three/drei";
+import { useGLTF, Html } from "@react-three/drei";
+import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import * as THREE from "three";
 import {
   findLimbs,
@@ -170,6 +171,7 @@ function GLBModelInner({
   const outerRef = useRef<THREE.Group>(null);
   const innerRef = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF(config.path);
+  const skinnedClone = useMemo(() => SkeletonUtils.clone(scene) as THREE.Group, [scene]);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
   const landSquash = useRef(0);
   const wasGrounded = useRef(true);
@@ -203,7 +205,7 @@ function GLBModelInner({
   // Initialize Mixer and Clips
   useEffect(() => {
     if (cloneRef.current && animations.length > 0) {
-      const mixer = new THREE.AnimationMixer(cloneRef.current);
+      const mixer = new THREE.AnimationMixer(skinnedClone);
       mixerRef.current = mixer;
       
       const actions: Record<string, THREE.AnimationAction> = {};
@@ -217,7 +219,7 @@ function GLBModelInner({
         mixerRef.current = null;
       };
     }
-  }, [animations]);
+  }, [animations, skinnedClone]);
 
   useFrame((state, delta) => {
     if (!innerRef.current || !cloneRef.current) return;
@@ -238,13 +240,9 @@ function GLBModelInner({
         mixerRef.current.update(0);
       }
       
-      // Reset all bone rotations in the clone to rest pose
-      cloneRef.current.traverse((obj) => {
-        if ((obj as THREE.Bone).isBone) {
-          obj.rotation.set(0, 0, 0);
-        }
-      });
-
+      // Preserve the imported glTF bind/rest transforms. Zeroing bone Euler
+      // rotations corrupts valid rigs and can make a correctly skinned model
+      // appear frozen or deformed.
       const visibilityStats = forceModelVisibility(cloneRef.current);
       cloneRef.current.updateMatrixWorld(true);
 
@@ -390,7 +388,7 @@ function GLBModelInner({
         scale={normalizedScale.current}
       >
         <group ref={cloneRef}>
-          <Clone object={scene} castShadow receiveShadow />
+          <primitive object={skinnedClone} />
         </group>
         <pointLight
           position={[0, 1.5, 0.5]}

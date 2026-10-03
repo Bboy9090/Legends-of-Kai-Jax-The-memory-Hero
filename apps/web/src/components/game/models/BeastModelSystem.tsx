@@ -13,6 +13,7 @@
 
 import { useRef, useMemo, useEffect } from 'react';
 import { Group, Mesh, MeshStandardMaterial, Color } from 'three';
+import { SkeletonUtils } from 'three/examples/jsm/Addons.js';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import { LegendaryBeast } from '@legends-of-kai-jax/shared';
@@ -20,6 +21,7 @@ import { getAnimationConfig, findAnimationClip } from '../../../lib/threejs/GLBA
 import { useAnimationStateMachine, type AnimationState } from '../../../lib/threejs/AnimationStateMachine';
 import { getDeviceType } from '../../../lib/threejs/PerformanceOptimizer';
 import { useBattle } from '../../../lib/stores/useBattle';
+import { getModelPath } from '../../../assets/modelRegistry';
 
 interface BeastModelProps {
   beast: LegendaryBeast;
@@ -37,14 +39,10 @@ interface BeastModelProps {
  * Get GLB model path for beast
  */
 function getBeastGLBPath(beastId: string): string | null {
-  const modelMap: Record<string, string> = {
-    'kaijax': '/models/KAIJAX1.glb',
-    'borax': '/models/Borax.glb',
-    'boryn': '/models/BORYN.glb',
-    'voidonus': '/models/voidonus_beast.glb',
-  };
-  
-  return modelMap[beastId] || null;
+  // MODEL_REGISTRY is the sole production source of character identity.
+  // Normalize the historical kaijax spelling without substituting another body.
+  const canonicalId = beastId === 'kaijax' ? 'kai-jax' : beastId;
+  return getModelPath(canonicalId);
 }
 
 /**
@@ -137,7 +135,11 @@ export function BeastModel3D({
   // Get animations - REAL IMPLEMENTATION
   // useAnimations must be called unconditionally (React hook rule)
   // Pass empty array if no animations - hook handles it gracefully
-  const animData = useAnimations(animations, groupRef);
+  const skinnedScene = useMemo(
+    () => (gltf?.scene ? SkeletonUtils.clone(gltf.scene) : null),
+    [gltf?.scene]
+  );
+  const animData = useAnimations(animations, skinnedScene ?? groupRef);
   const actions = animData.actions || {};
   const animationMixer = animData.mixer || null;
   mixer = animationMixer;
@@ -185,7 +187,7 @@ export function BeastModel3D({
 
     // Optimize GLB scene for device
     const optimizedScene = useMemo(() => {
-      const cloned = gltf.scene.clone();
+      const cloned = skinnedScene!;
       const deviceType = getDeviceType();
       
       cloned.traverse((child) => {
@@ -204,7 +206,7 @@ export function BeastModel3D({
       });
       
       return cloned;
-    }, [gltf.scene]);
+    }, [skinnedScene]);
 
     return (
       <group ref={groupRef} scale={scale}>
@@ -299,7 +301,7 @@ export function KaiJaxBeastModel({
 }: Omit<BeastModelProps, 'beast'>) {
   const groupRef = useRef<Group>(null);
   const tailGroupRef = useRef<Group>(null);
-  const glbPath = '/models/characters/kai-jax/kai-jax.glb';
+  const glbPath = getModelPath('kai-jax') ?? '/models/stylized-beast.glb';
   
   // Try to load GLB - REAL IMPLEMENTATION
   // useGLTF must be called unconditionally
@@ -316,7 +318,8 @@ export function KaiJaxBeastModel({
   // If GLB loaded, use it
   if (gltf && gltf.scene) {
     const { animations } = gltf;
-    const { actions, mixer } = useAnimations(animations, groupRef);
+    const skinnedScene = useMemo(() => SkeletonUtils.clone(gltf.scene), [gltf.scene]);
+    const { actions, mixer } = useAnimations(animations, skinnedScene);
     const { stateMachine, setState } = useAnimationStateMachine(mixer, animations, 'idle');
 
     useFrame((state, delta) => {
@@ -325,7 +328,7 @@ export function KaiJaxBeastModel({
     });
 
     const optimizedScene = useMemo(() => {
-      const cloned = gltf.scene.clone();
+      const cloned = skinnedScene;
       cloned.traverse((child) => {
         if (child instanceof Mesh) {
           child.castShadow = true;
@@ -333,7 +336,7 @@ export function KaiJaxBeastModel({
         }
       });
       return cloned;
-    }, [gltf.scene]);
+    }, [skinnedScene]);
 
     return (
       <group ref={groupRef} scale={scale}>
