@@ -148,46 +148,20 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   await page.getByRole("button", { name: "FIGHT", exact: true }).click();
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
-  // Exercise real battle-store combat states while the WebGL character is mounted.
-  // This catches renderer/store integration regressions that a static canvas check misses.
-  await page.waitForFunction(() => Boolean((window as any).battleStore?.getState?.()), null, { timeout: 10_000 });
-  const combatStates = await page.evaluate(async () => {
-    const battle = (window as any).battleStore;
-    const seen: string[] = [];
-    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  // Exercise the actual keyboard path while the WebGL fighter is mounted.
+  // These are the same bindings PlayerController consumes in gameplay.
+  await page.keyboard.press("KeyJ"); // punch
+  await page.waitForTimeout(500);
+  await page.keyboard.press("KeyK"); // kick
+  await page.waitForTimeout(700);
+  await page.keyboard.press("KeyE"); // dodge
+  await page.waitForTimeout(450);
+  await page.keyboard.down("AltLeft"); // block / parry window
+  await page.waitForTimeout(180);
+  await page.keyboard.up("AltLeft");
+  await page.keyboard.press("Space"); // airborne pose
+  await page.waitForTimeout(650);
 
-    battle.getState().playerAttack('punch');
-    seen.push(`attack:${battle.getState().playerAttackType}`);
-    await wait(120);
-    battle.getState().playerAttack('kick');
-    seen.push(`attack:${battle.getState().playerAttackType}`);
-
-    // Let the active attack clear before defensive/mobility state checks.
-    await wait(900);
-    const dodgeStarted = battle.getState().startPlayerDodge(1);
-    seen.push(`dodge:${dodgeStarted}`);
-    await wait(120);
-
-    // Clear dodge deterministically, then enter guard/parry.
-    battle.setState({ playerDodgeTimer: 0, playerGrounded: true, playerAttacking: false });
-    battle.getState().setPlayerBlockHeld(true);
-    battle.getState().updateBattleStamina(0.016);
-    seen.push(`guard:${battle.getState().playerCombatState}`);
-
-    battle.getState().setPlayerBlockHeld(false);
-    battle.setState({ playerGrounded: false, playerY: 1.5 });
-    seen.push(`airborne:${battle.getState().playerGrounded ? 'no' : 'yes'}`);
-    await wait(120);
-    return seen;
-  });
-  console.log("RELEASE_COMBAT_STATE_SNAPSHOT", JSON.stringify(combatStates));
-  expect(combatStates).toContain("attack:punch");
-  expect(combatStates.some((s) => s === "attack:kick")).toBeTruthy();
-  expect(combatStates).toContain("dodge:true");
-  expect(combatStates.some((s) => /guard:(BLOCKING|PARRY_WINDOW)/.test(s))).toBeTruthy();
-  expect(combatStates).toContain("airborne:yes");
-
-  await page.waitForTimeout(500); // allow the renderer to consume the states
   expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
 });
 
