@@ -39,11 +39,12 @@ jobs:
         working-directory: source
         run: pnpm install --filter ./apps/web... --frozen-lockfile
 
-      - name: Test, typecheck, and build web
+      - name: Test, typecheck, validate rigs, and build web
         working-directory: source
         run: |
           pnpm -C apps/web test
           pnpm -C apps/web typecheck
+          node apps/web/scripts/validate-registry.mjs
           pnpm -C apps/web build
 
       - name: Verify mobile identity and web output

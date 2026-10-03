@@ -468,8 +468,14 @@ export function captureBaseRotations(limbs: LimbRefs): LimbBaseRotations {
 
 export function hasAnyLimb(limbs: LimbRefs | null): boolean {
   if (!limbs) return false;
-  return !!(limbs.rightArm || limbs.leftArm || limbs.rightLeg || limbs.leftLeg ||
-    limbs.rightUpperArm || limbs.leftUpperArm || limbs.rightUpperLeg || limbs.leftUpperLeg);
+  const rightArm = !!(limbs.rightUpperArm || limbs.rightArm);
+  const leftArm = !!(limbs.leftUpperArm || limbs.leftArm);
+  const rightLeg = !!(limbs.rightUpperLeg || limbs.rightLeg);
+  const leftLeg = !!(limbs.leftUpperLeg || limbs.leftLeg);
+  const torso = !!(limbs.spine || limbs.torso || limbs.hips);
+  // Procedural full-body combat must never activate from one accidental bone
+  // match. Require bilateral arms + legs and a central body anchor.
+  return rightArm && leftArm && rightLeg && leftLeg && torso;
 }
 
 function setRot(obj: THREE.Object3D | null, base: THREE.Euler, x?: number, y?: number, z?: number) {

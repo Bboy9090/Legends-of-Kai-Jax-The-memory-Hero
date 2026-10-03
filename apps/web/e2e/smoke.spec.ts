@@ -148,7 +148,20 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   await page.getByRole("button", { name: "FIGHT", exact: true }).click();
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
-  await page.waitForTimeout(4_000); // let several frames run
+  // Exercise the actual keyboard path while the WebGL fighter is mounted.
+  // These are the same bindings PlayerController consumes in gameplay.
+  await page.keyboard.press("KeyJ"); // punch
+  await page.waitForTimeout(500);
+  await page.keyboard.press("KeyK"); // kick
+  await page.waitForTimeout(700);
+  await page.keyboard.press("KeyE"); // dodge
+  await page.waitForTimeout(450);
+  await page.keyboard.down("AltLeft"); // block / parry window
+  await page.waitForTimeout(180);
+  await page.keyboard.up("AltLeft");
+  await page.keyboard.press("Space"); // airborne pose
+  await page.waitForTimeout(650);
+
   expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
 });
 

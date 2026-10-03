@@ -50,7 +50,14 @@ jobs:
           mkdir -p release
           cp apps/web/android/app/build/outputs/apk/debug/app-debug.apk release/Legends-of-Kai-Jax-main.apk
           sha256sum release/Legends-of-Kai-Jax-main.apk | tee release/SHA256SUMS.txt
-          printf '%s\n' "${{ github.sha }}" > release/BUILD-SHA.txt
+          git rev-parse HEAD > release/BUILD-SHA.txt
+
+      - name: Preserve APK evidence in workflow log
+        working-directory: source
+        run: |
+          test -s release/Legends-of-Kai-Jax-main.apk
+          cat release/BUILD-SHA.txt
+          cat release/SHA256SUMS.txt
 
       - name: Publish APK as release asset
         if: ${{ github.event_name != 'pull_request' }}

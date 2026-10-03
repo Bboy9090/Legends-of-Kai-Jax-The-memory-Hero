@@ -29,6 +29,10 @@ const REGISTRY_PATH = join(APP_ROOT, "src", "assets", "modelRegistry.ts");
 // is missing/unreachable/unparseable.
 const PRIMARY_FIGHTERS = ["kai", "jax", "kai-jax", "kai_jax"];
 
+// These three IDs represent the distinct production hero assets that must
+// independently prove full-body joint coverage. kai-jax/kai_jax share one GLB.
+const PRODUCTION_HERO_ASSETS = ["kai", "jax", "kai_jax"];
+
 // CANONICAL_FIGHTERS: must additionally expose the full anchor hierarchy.
 // CI fails if any of these is missing, unparseable, or lacks canonical anchors,
 // unless that fighter has one narrowly documented anchor-only deferral below.
@@ -163,6 +167,8 @@ function validate() {
       parsed: false,
       bytes: 0,
       anchors: null,
+      rig: null,
+      animation: null,
       missing: [],
       error: null,
     };
@@ -187,8 +193,37 @@ function validate() {
       for (const t of REQUIRED_TAILS) {
         if (findAnchor(names, t)) tails++;
       }
+      const skins = Array.isArray(gltf.skins) ? gltf.skins : [];
+      const jointIndices = new Set(
+        skins.flatMap((skin) => Array.isArray(skin.joints) ? skin.joints : [])
+      );
+      const skinnedMeshes = Array.isArray(gltf.nodes)
+        ? gltf.nodes.filter((node) => Number.isInteger(node?.skin)).length
+        : 0;
+      const animations = Array.isArray(gltf.animations) ? gltf.animations : [];
+      const animatedNodeIndices = new Set();
+      let rotationChannels = 0;
+      let translationChannels = 0;
+      for (const anim of animations) {
+        for (const channel of Array.isArray(anim?.channels) ? anim.channels : []) {
+          const target = channel?.target;
+          if (Number.isInteger(target?.node)) animatedNodeIndices.add(target.node);
+          if (target?.path === "rotation") rotationChannels++;
+          if (target?.path === "translation") translationChannels++;
+        }
+      }
+      const animatedJoints = [...animatedNodeIndices].filter((i) => jointIndices.has(i)).length;
       r.parsed = true;
       r.anchors = { root, spine, head, tails, totalNodes: names.size };
+      r.rig = { skins: skins.length, joints: jointIndices.size, skinnedMeshes };
+      r.animation = {
+        clips: animations.length,
+        animatedNodes: animatedNodeIndices.size,
+        animatedJoints,
+        rotationChannels,
+        translationChannels,
+        names: animations.map((a, i) => a?.name || `clip-${i}`),
+      };
       if (!root) r.missing.push("root");
       if (!spine) r.missing.push("spine");
       if (!head) r.missing.push("head");
@@ -234,7 +269,7 @@ function validate() {
       ? `\x1b[32m✓ parsed\x1b[0m`
       : `\x1b[33m? unparsed\x1b[0m`;
     const anchorBadge = r.anchors
-      ? `[root:${r.anchors.root ? "✓" : "✗"} spine:${r.anchors.spine ? "✓" : "✗"} head:${r.anchors.head ? "✓" : "✗"} tails:${r.anchors.tails}/9 nodes:${r.anchors.totalNodes}]`
+      ? `[root:${r.anchors.root ? "✓" : "✗"} spine:${r.anchors.spine ? "✓" : "✗"} head:${r.anchors.head ? "✓" : "✗"} tails:${r.anchors.tails}/9 nodes:${r.anchors.totalNodes} skins:${r.rig?.skins ?? 0} joints:${r.rig?.joints ?? 0} clips:${r.animation?.clips ?? 0} animatedJoints:${r.animation?.animatedJoints ?? 0} rotTracks:${r.animation?.rotationChannels ?? 0}]`
       : "";
     console.log(`  ${r.id.padEnd(22)} ${status} ${anchorBadge}`);
     console.log(`  ${" ".repeat(22)} ${r.path}`);
@@ -270,7 +305,56 @@ function validate() {
     }
   }
 
-  // Rule 3: every canonical fighter must expose the full anchor hierarchy
+  // Rule 3: every primary production fighter must be genuinely skinned.
+  // A GLB merely loading is not proof of rigging.
+  for (const id of PRIMARY_FIGHTERS) {
+    const r = reports.find((x) => x.id === id);
+    if (!r || !r.parsed) continue;
+    if (!r.rig || r.rig.skins < 1 || r.rig.joints < 4 || r.rig.skinnedMeshes < 1) {
+      failures.push(
+        `PRIMARY-FIGHTER-NOT-SKINNED: ${id} → skins:${r.rig?.skins ?? 0}, joints:${r.rig?.joints ?? 0}, skinnedMeshes:${r.rig?.skinnedMeshes ?? 0}`
+      );
+    }
+    // If the asset claims baked animation, it must actually animate joints via
+    // rotation tracks. Translation-only root motion is the exact skating-statue
+    // failure this gate is designed to catch. Zero clips is allowed because the
+    // runtime now provides articulated procedural fallback on the same skeleton.
+    if (
+      r.animation &&
+      r.animation.clips > 0 &&
+      (r.animation.animatedJoints < 2 || r.animation.rotationChannels < 2)
+    ) {
+      failures.push(
+        `PRIMARY-FIGHTER-FAKE-ANIMATION: ${id} → clips:${r.animation.clips}, animatedJoints:${r.animation.animatedJoints}, rotationChannels:${r.animation.rotationChannels}, translationChannels:${r.animation.translationChannels}`
+      );
+    }
+  }
+
+  // Rule 4: each distinct production hero asset must expose enough real
+  // skeleton structure to support articulated arms/legs/torso at runtime.
+  for (const id of PRODUCTION_HERO_ASSETS) {
+    const r = reports.find((x) => x.id === id);
+    if (!r || !r.parsed) {
+      failures.push(`PRODUCTION-HERO-RIG-MISSING: ${id}`);
+      continue;
+    }
+    if (!r.rig || r.rig.skins < 1 || r.rig.skinnedMeshes < 1 || r.rig.joints < 8) {
+      failures.push(
+        `PRODUCTION-HERO-RIG-TOO-SHALLOW: ${id} → skins:${r.rig?.skins ?? 0}, joints:${r.rig?.joints ?? 0}, skinnedMeshes:${r.rig?.skinnedMeshes ?? 0}`
+      );
+    }
+    if (
+      r.animation &&
+      r.animation.clips > 0 &&
+      (r.animation.animatedJoints < 4 || r.animation.rotationChannels < 4)
+    ) {
+      failures.push(
+        `PRODUCTION-HERO-ANIMATION-TOO-SHALLOW: ${id} → clips:${r.animation.clips}, animatedJoints:${r.animation.animatedJoints}, rotTracks:${r.animation.rotationChannels}`
+      );
+    }
+  }
+
+  // Rule 5: every canonical fighter must expose the full anchor hierarchy
   for (const id of CANONICAL_FIGHTERS) {
     const r = reports.find((x) => x.id === id);
     if (!r) {
