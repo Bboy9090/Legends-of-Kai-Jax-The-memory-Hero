@@ -52,16 +52,12 @@ jobs:
           sha256sum release/Legends-of-Kai-Jax-main.apk | tee release/SHA256SUMS.txt
           git rev-parse HEAD > release/BUILD-SHA.txt
 
-      - name: Upload APK artifact for every successful build
-        uses: actions/upload-artifact@v4
-        with:
-          name: Legends-of-Kai-Jax-Android
-          path: |
-            source/release/Legends-of-Kai-Jax-main.apk
-            source/release/SHA256SUMS.txt
-            source/release/BUILD-SHA.txt
-          if-no-files-found: error
-          retention-days: 14
+      - name: Preserve APK evidence in workflow log
+        working-directory: source
+        run: |
+          test -s release/Legends-of-Kai-Jax-main.apk
+          cat release/BUILD-SHA.txt
+          cat release/SHA256SUMS.txt
 
       - name: Publish APK as release asset
         if: ${{ github.event_name != 'pull_request' }}
