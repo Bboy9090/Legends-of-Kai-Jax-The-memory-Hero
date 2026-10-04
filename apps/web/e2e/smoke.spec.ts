@@ -100,7 +100,11 @@ async function enterGameFromLoreHub(page: Page): Promise<void> {
 
   // Entering the game from Lore Hub intentionally triggers the first-run intro.
   await page.getByTestId("game-intro").waitFor({ state: "visible", timeout: 5_000 });
-  await page.getByTestId("game-intro").waitFor({ state: "detached", timeout: 10_000 });
+  await expect(page.getByTestId("game-intro-skip")).toBeVisible();
+  // Exercise the user-controlled escape path. The timed path is still guarded
+  // by the component failsafe, but release smoke must prove a player can enter.
+  await page.getByTestId("game-intro-skip").click();
+  await page.getByTestId("game-intro").waitFor({ state: "detached", timeout: 2_000 });
 
   await page.waitForFunction(
     () => (window as any).runnerStore?.getState?.().gameState === "menu",
