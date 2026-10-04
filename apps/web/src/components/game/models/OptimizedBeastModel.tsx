@@ -90,6 +90,8 @@ export default function OptimizedBeastModel({
   const previousHitAnimRef = useRef(0);
   const previousAttackRef = useRef(false);
   const modelPath = getBeastModelPath(beast.id);
+  const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
+  const companionPaths = useMemo(() => [animationPaths?.walk, animationPaths?.run, ...(animationPaths?.kick ?? []), ...(animationPaths?.punch ?? [])].filter(Boolean) as string[], [animationPaths]);
 
   // DIAGNOSTIC: log model path resolution
   useEffect(() => {
@@ -107,6 +109,20 @@ export default function OptimizedBeastModel({
   // onError callback. The previous code mislabeled successful loader setup as
   // a model load failure in release smoke tests.
   const { scene, animations } = useGLTF(modelPath);
+  const companionGLTFs = useGLTF(companionPaths) as any[];
+  const authoredAnimations = useMemo(() => {
+    const clips: THREE.AnimationClip[] = [...animations];
+    companionGLTFs.forEach((gltf, index) => {
+      const path = companionPaths[index] ?? '';
+      (gltf?.animations ?? []).forEach((clip: THREE.AnimationClip) => {
+        const semantic = /Running/i.test(path) ? 'Run' : /Walking/i.test(path) ? 'Walk' : /Kick/i.test(path) ? 'Kick' : /Punch|Jab/i.test(path) ? 'Punch' : clip.name;
+        const clone = clip.clone();
+        clone.name = `${semantic}:${clip.name || index}`;
+        clips.push(clone);
+      });
+    });
+    return clips;
+  }, [animations, companionGLTFs, companionPaths]);
   // DIAGNOSTIC: log scene load success
   useEffect(() => {
     if (scene) {
@@ -133,7 +149,7 @@ export default function OptimizedBeastModel({
     c.updateMatrixWorld(true);
     return c;
   }, [scene, beast.id]);
-  const { actions, mixer } = useAnimations(animations, cloned);
+  const { actions, mixer } = useAnimations(authoredAnimations, cloned);
 
   // Normalize the model to a consistent height and stand it on the ground.
   // Meshy exports have wildly different native scales, so a fixed scale left
@@ -171,7 +187,7 @@ export default function OptimizedBeastModel({
       targetAction = 'attack';
     } else if (isMoving) {
       // Prefer 'walk' over 'run' for natural arm movement
-      targetAction = 'walk';
+      targetAction = isRunning ? 'run' : 'walk';
     }
 
     const available = Object.keys(actions);
@@ -181,9 +197,9 @@ export default function OptimizedBeastModel({
     // the articulated procedural fallback and recreate the skating-statue bug.
     let match: string | undefined;
     if (targetAction === 'walk') {
-      match =
-        available.find(n => /walk|locomotion/i.test(n)) ||
-        available.find(n => /run/i.test(n));
+      match = available.find(n => /walk|locomotion/i.test(n));
+    } else if (targetAction === 'run') {
+      match = available.find(n => /run|sprint/i.test(n));
     } else if (targetAction === 'attack') {
       const attackPattern =
         attackType === 'kick' || attackType === 'heavy'
@@ -215,7 +231,7 @@ export default function OptimizedBeastModel({
         activeActionRef.current = next;
       }
     }
-  }, [actions, isAttacking, isMoving, attackType, beast.id]);
+  }, [actions, isAttacking, isMoving, isRunning, attackType, beast.id]);
 
   // Hit animation and effects
   useFrame((state, delta) => {
@@ -273,7 +289,7 @@ export default function OptimizedBeastModel({
     const hasStateClip = isAttacking
       ? available.some(n => /attack|punch|kick|slash|hit/i.test(n))
       : isMoving
-        ? available.some(n => /walk|run|locomotion/i.test(n))
+        ? (isRunning ? available.some(n => /run|sprint/i.test(n)) : available.some(n => /walk|locomotion/i.test(n)))
         : available.some(n => /idle|breath|stand/i.test(n));
     if (!hasStateClip && limbsRef.current && basesRef.current) {
       if (isAttacking) {
