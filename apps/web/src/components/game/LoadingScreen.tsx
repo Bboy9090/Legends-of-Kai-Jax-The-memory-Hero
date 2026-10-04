@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Zap, Sparkles, Swords, Crown, Star } from "lucide-react";
 import { BRAND } from "../../lib/brand";
 
@@ -165,24 +165,46 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
 // ⚡ GAME INTRO SEQUENCE
 export function GameIntro({ onComplete }: { onComplete: () => void }) {
   const [phase, setPhase] = useState<'logo' | 'tagline' | 'ready' | 'done'>('logo');
+  const completedRef = useRef(false);
+  const complete = useCallback(() => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+    setPhase('done');
+    onComplete();
+  }, [onComplete]);
   
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase('tagline'), 1500),
-      setTimeout(() => setPhase('ready'), 3000),
-      setTimeout(() => {
-        setPhase('done');
-        onComplete();
-      }, 4000),
+      window.setTimeout(() => setPhase('tagline'), 1500),
+      window.setTimeout(() => setPhase('ready'), 3000),
+      window.setTimeout(complete, 4000),
+      // A full-screen intro must never be capable of trapping the player.
+      window.setTimeout(complete, 8000),
     ];
+    const skip = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' || event.key === 'Escape' || event.key === ' ') complete();
+    };
+    window.addEventListener('keydown', skip);
     
-    return () => timers.forEach(clearTimeout);
-  }, [onComplete]);
+    return () => {
+      timers.forEach(window.clearTimeout);
+      window.removeEventListener('keydown', skip);
+    };
+  }, [complete]);
   
   if (phase === 'done') return null;
   
   return (
     <div data-testid="game-intro" className="fixed inset-0 z-[200] flex items-center justify-center bg-black">
+      <button
+        type="button"
+        data-testid="game-intro-skip"
+        onClick={complete}
+        className="absolute right-5 top-5 z-20 min-h-11 rounded-lg border border-white/30 bg-black/60 px-5 py-3 text-sm font-black tracking-widest text-white hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+        aria-label="Skip intro and enter game"
+      >
+        SKIP · ENTER GAME
+      </button>
       {/* Logo Phase */}
       {phase === 'logo' && (
         <div className="text-center animate-[zoomIn_0.5s_ease-out]">
