@@ -1,256 +1,92 @@
-import { useState, useEffect } from "react";
-import { Zap, Sparkles, Swords, Crown, Star } from "lucide-react";
-import { BRAND } from "../../lib/brand";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-interface LoadingScreenProps {
-  onComplete: () => void;
-  duration?: number;
-}
+const INTRO_SEEN_KEY = "kai-jax-cinematic-intro-v1";
 
-// ⚡ LEGENDARY LOADING SCREEN
-export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingScreenProps) {
-  const [progress, setProgress] = useState(0);
-  const [currentTip, setCurrentTip] = useState(0);
-  const [fadeOut, setFadeOut] = useState(false);
-  
-  const tips = [
-    { icon: Zap, text: "Build SYNERGY by landing combos—then unleash the Memory Weave." },
-    { icon: Swords, text: "Chain attacks together for devastating combos!" },
-    { icon: Crown, text: "Kai‑Jax hits harder in Resonance Flow—control space and end rounds fast." },
-    { icon: Star, text: "Perfect timing on attacks increases synergy gain!" },
-    { icon: Sparkles, text: "Resonance Flow lasts 30 seconds—make every hit count." },
-  ];
-  
-  useEffect(() => {
-    const startTime = Date.now();
-    
-    const progressInterval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const newProgress = Math.min(100, (elapsed / duration) * 100);
-      setProgress(newProgress);
-      
-      if (newProgress >= 100) {
-        clearInterval(progressInterval);
-        setFadeOut(true);
-        setTimeout(onComplete, 500);
-      }
-    }, 16);
-    
-    const tipInterval = setInterval(() => {
-      setCurrentTip(prev => (prev + 1) % tips.length);
-    }, 2000);
-    
-    return () => {
-      clearInterval(progressInterval);
-      clearInterval(tipInterval);
-    };
-  }, [duration, onComplete, tips.length]);
-  
-  const currentTipData = tips[currentTip] ?? tips[0]!;
-  const CurrentTipIcon = currentTipData.icon;
-  
-  return (
-    <div 
-      className={`
-        fixed inset-0 z-[200] flex flex-col items-center justify-center
-        transition-opacity duration-500
-        ${fadeOut ? 'opacity-0' : 'opacity-100'}
-      `}
-      style={{
-        background: 'linear-gradient(to bottom, #0a0a1a, #1a0a2e)',
-      }}
-    >
-      <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 220px rgba(0,0,0,0.85)' }} />
-      
-      {/* Self-contained release background: no remote/CDN dependency. */}
-      <div className="absolute inset-0 flex overflow-hidden opacity-40" aria-hidden="true">
-        <div
-          className="w-1/2 h-full"
-          style={{
-            background:
-              "radial-gradient(circle at 30% 45%, rgba(255,69,0,0.42), transparent 42%), linear-gradient(135deg, rgba(88,28,135,0.28), transparent 65%)",
-          }}
-        />
-        <div
-          className="w-1/2 h-full"
-          style={{
-            background:
-              "radial-gradient(circle at 70% 45%, rgba(0,206,209,0.42), transparent 42%), linear-gradient(225deg, rgba(30,64,175,0.28), transparent 65%)",
-          }}
-        />
-      </div>
-
-      {/* Animated Particles */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(30)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              width: Math.random() * 4 + 2,
-              height: Math.random() * 4 + 2,
-              backgroundColor: ['#FFD700', '#00FFFF', '#A855F7', '#FF6B6B'][Math.floor(Math.random() * 4)],
-              opacity: Math.random() * 0.5 + 0.2,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${Math.random() * 3 + 2}s`,
-            }}
-          />
-        ))}
-      </div>
-      
-      {/* Loading Bar Center - Ouroboros Progress Style */}
-      <div className="relative z-10 w-full max-w-2xl px-12 mt-auto mb-20">
-        <div className="flex justify-between items-end mb-2">
-           <span className="text-cyan-400 font-black tracking-tighter text-sm uppercase">Ouroboros Progress</span>
-           <span className="text-yellow-400 font-black text-xl">{Math.round(progress)}%</span>
-        </div>
-        <div className="h-4 bg-black/60 rounded-full overflow-hidden border border-white/10 p-0.5 backdrop-blur-md">
-          <div 
-            className="h-full bg-gradient-to-r from-orange-600 via-purple-500 to-cyan-400 rounded-full transition-all duration-100 relative"
-            style={{ 
-              width: `${progress}%`,
-              boxShadow: '0 0 20px rgba(0, 255, 255, 0.4)',
-            }}
-          >
-            <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.2)_75%,transparent_75%,transparent)] bg-[length:20px_20px] animate-[shimmer_2s_linear_infinite]" />
-          </div>
-        </div>
-      </div>
-      
-      {/* Logo/Titles */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-        <div className="flex gap-12 items-center justify-center mb-8">
-           <div className="text-orange-500 font-black text-4xl tracking-tighter opacity-80 uppercase">The Shield's Warmth</div>
-           <div className="text-cyan-400 font-black text-4xl tracking-tighter opacity-80 uppercase">The Mentor's Vigil</div>
-        </div>
-      </div>
-
-      
-      {/* Tip Display */}
-      <div className="relative z-10 max-w-md text-center">
-        <div 
-          className="flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10"
-          key={currentTip}
-          style={{ animation: 'fadeIn 0.5s ease-out' }}
-        >
-          <CurrentTipIcon className="w-6 h-6 text-yellow-400 flex-shrink-0" />
-          <p className="text-gray-300 text-sm sm:text-base">{currentTipData.text}</p>
-        </div>
-      </div>
-      
-      {/* Character Silhouettes */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-end gap-8 opacity-30">
-        <div className="text-6xl transform -scale-x-100">🐺</div>
-        <div className="text-8xl">👑</div>
-        <div className="text-6xl">🦊</div>
-      </div>
-      
-      <style>{`
-        @keyframes gradient-shift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-// ⚡ GAME INTRO SEQUENCE
 export function GameIntro({ onComplete }: { onComplete: () => void }) {
-  const [phase, setPhase] = useState<'logo' | 'tagline' | 'ready' | 'done'>('logo');
-  
-  useEffect(() => {
-    const timers = [
-      setTimeout(() => setPhase('tagline'), 1500),
-      setTimeout(() => setPhase('ready'), 3000),
-      setTimeout(() => {
-        setPhase('done');
-        onComplete();
-      }, 4000),
-    ];
-    
-    return () => timers.forEach(clearTimeout);
+  const [phase, setPhase] = useState<"bloodline" | "fracture" | "hero" | "title" | "done">("bloodline");
+  const completed = useRef(false);
+
+  const finish = useCallback(() => {
+    if (completed.current) return;
+    completed.current = true;
+    try { localStorage.setItem(INTRO_SEEN_KEY, "1"); } catch {}
+    setPhase("done");
+    onComplete();
   }, [onComplete]);
-  
-  if (phase === 'done') return null;
-  
+
+  useEffect(() => {
+    let returning = false;
+    try { returning = localStorage.getItem(INTRO_SEEN_KEY) === "1"; } catch {}
+    if (returning) {
+      const short = window.setTimeout(finish, 1400);
+      return () => window.clearTimeout(short);
+    }
+
+    const timers = [
+      window.setTimeout(() => setPhase("fracture"), 1900),
+      window.setTimeout(() => setPhase("hero"), 3900),
+      window.setTimeout(() => setPhase("title"), 6000),
+      window.setTimeout(finish, 8200),
+      window.setTimeout(finish, 11000),
+    ];
+    const skip = (event: KeyboardEvent) => {
+      if (["Enter", "Escape", " "].includes(event.key)) finish();
+    };
+    window.addEventListener("keydown", skip);
+    return () => {
+      timers.forEach(window.clearTimeout);
+      window.removeEventListener("keydown", skip);
+    };
+  }, [finish]);
+
+  if (phase === "done") return null;
+
+  const image =
+    phase === "bloodline" ? "/brand/kai-and-jax-before-merge.png" :
+    phase === "fracture" ? "/images/lore/brothers-fusion.png" :
+    phase === "hero" ? "/images/lore/hero-kaijax.png" :
+    "/brand/kai-jax-vs-architect.png";
+
   return (
-    <div data-testid="game-intro" className="fixed inset-0 z-[200] flex items-center justify-center bg-black">
-      {/* Logo Phase */}
-      {phase === 'logo' && (
-        <div className="text-center animate-[zoomIn_0.5s_ease-out]">
-          <h1 
-            className="text-7xl sm:text-8xl md:text-9xl font-black"
-            style={{
-              background: 'linear-gradient(135deg, #FFD700, #FF6B6B)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(0 0 50px rgba(255,215,0,0.8))',
-            }}
-          >
-            LEGENDS
-          </h1>
-          <h1 
-            className="text-5xl sm:text-6xl md:text-7xl font-black -mt-4"
-            style={{
-              background: 'linear-gradient(135deg, #00FFFF, #A855F7)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(0 0 40px rgba(0,255,255,0.6))',
-            }}
-          >
-            OF KAI-JAX
-          </h1>
-        </div>
-      )}
-      
-      {/* Tagline Phase */}
-      {phase === 'tagline' && (
-        <div className="text-center animate-[fadeIn_0.5s_ease-out]">
-          <p className="text-2xl sm:text-3xl text-amber-400 font-bold mb-4 tracking-widest uppercase">
-            Welcome to The Raging City
-          </p>
-          <p 
-            className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text"
-            style={{
-              background: 'linear-gradient(90deg, #f43f5e, #a855f7, #00f2ff)',
-              WebkitBackgroundClip: 'text',
-            }}
-          >
-            THE MEMORY HERO RISES
-          </p>
-        </div>
-      )}
-      
-      {/* Ready Phase */}
-      {phase === 'ready' && (
-        <div className="text-center animate-[zoomIn_0.3s_ease-out]">
-          <h1 
-            className="text-8xl sm:text-9xl font-black text-white animate-pulse"
-            style={{ textShadow: '0 0 60px rgba(255,255,255,0.8)' }}
-          >
-            READY?
-          </h1>
-        </div>
-      )}
-      
-      <style>{`
-        @keyframes zoomIn {
-          from { transform: scale(0.5); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-      `}</style>
+    <div data-testid="game-intro" className="fixed inset-0 z-[200] overflow-hidden bg-[#020308] text-white">
+      <div className="absolute inset-0 bg-cover bg-center transition-all duration-1000" style={{ backgroundImage: `url("${image}")`, transform: phase === "hero" ? "scale(1.03)" : "scale(1.08)" }} />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,3,8,.96)_0%,rgba(2,3,8,.38)_48%,rgba(2,3,8,.86)_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,transparent_0%,rgba(2,3,8,.12)_38%,rgba(2,3,8,.92)_100%)]" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/70 to-transparent" />
+
+      <button type="button" data-testid="game-intro-skip" onClick={finish} className="absolute right-5 top-5 z-20 rounded-full border border-white/25 bg-black/55 px-5 py-3 text-xs font-black tracking-[.24em] backdrop-blur-md hover:border-cyan-300/80">
+        SKIP
+      </button>
+
+      <div className="absolute bottom-[12%] left-[7%] z-10 max-w-3xl">
+        <p className="mb-3 text-xs font-black tracking-[.45em] text-cyan-300/90">THE RAGING CITY SAGA</p>
+        {phase === "bloodline" && <>
+          <h1 className="font-['Bebas_Neue'] text-5xl sm:text-7xl md:text-8xl leading-[.86]">TWO VOICES.<br/>ONE BLOODLINE.</h1>
+          <p className="mt-5 max-w-xl text-sm sm:text-base text-slate-200/80">Before the city knew the Memory Hero, there were brothers carrying a legacy bigger than either of them.</p>
+        </>}
+        {phase === "fracture" && <>
+          <h1 className="font-['Bebas_Neue'] text-5xl sm:text-7xl md:text-8xl leading-[.86]">MEMORY<br/><span className="text-amber-300">BECAME POWER.</span></h1>
+          <p className="mt-5 max-w-xl text-sm sm:text-base text-slate-200/80">Kai. Jax. Kai-Jax. One body. Three identities learning to move without becoming divided.</p>
+        </>}
+        {phase === "hero" && <>
+          <h1 className="font-['Bebas_Neue'] text-6xl sm:text-8xl md:text-9xl leading-[.82]">THE MEMORY<br/><span className="text-cyan-300">HERO RISES.</span></h1>
+          <p className="mt-5 max-w-xl text-sm sm:text-base text-slate-200/80">The streets remember every wound. The blood remembers every name.</p>
+        </>}
+        {phase === "title" && <>
+          <p className="text-lg font-black tracking-[.5em] text-amber-300">BOBBY BLANCO PRESENTS</p>
+          <h1 className="mt-2 font-['Bebas_Neue'] text-6xl sm:text-8xl md:text-9xl leading-[.82]">LEGENDS OF<br/><span className="text-cyan-300">KAI-JAX</span></h1>
+          <p className="mt-4 text-sm font-bold tracking-[.35em] text-white/70">THE MEMORY HERO</p>
+        </>}
+      </div>
+      <div className="absolute bottom-5 right-6 text-[10px] font-bold tracking-[.25em] text-white/45">ENTER / SPACE / TAP SKIP</div>
     </div>
   );
+}
+
+export default function LoadingScreen({ onComplete, duration = 1200 }: { onComplete: () => void; duration?: number }) {
+  useEffect(() => {
+    const timer = window.setTimeout(onComplete, duration);
+    return () => window.clearTimeout(timer);
+  }, [duration, onComplete]);
+  return <div className="fixed inset-0 z-[190] grid place-items-center bg-[#020308] text-white"><div className="text-center"><p className="font-['Bebas_Neue'] text-4xl tracking-[.18em]">MEMORY AWAKENING</p><div className="mx-auto mt-5 h-px w-52 overflow-hidden bg-white/10"><div className="h-full w-full origin-left animate-pulse bg-cyan-300"/></div></div></div>;
 }
