@@ -89,6 +89,8 @@ export default function OptimizedBeastModel({
   const activeActionRef = useRef<THREE.AnimationAction | null>(null);
   const previousHitAnimRef = useRef(0);
   const previousAttackRef = useRef(false);
+  const deformationProbeRef = useRef<THREE.SkinnedMesh | null>(null);
+  const deformationVertexRef = useRef<number>(0);
   const modelPath = getBeastModelPath(beast.id);
 
   // DIAGNOSTIC: log model path resolution
@@ -159,6 +161,15 @@ export default function OptimizedBeastModel({
     const limbs = findLimbs(cloned);
     limbsRef.current = limbs;
     basesRef.current = captureBaseRotations(limbs);
+    let probe: THREE.SkinnedMesh | null = null;
+    cloned.traverse((node) => {
+      if (!probe && (node as THREE.SkinnedMesh).isSkinnedMesh) probe = node as THREE.SkinnedMesh;
+    });
+    deformationProbeRef.current = probe;
+    if (probe) {
+      const positions = probe.geometry.getAttribute('position');
+      deformationVertexRef.current = Math.max(0, Math.floor(positions.count * 0.37));
+    }
   }, [cloned, beast.id]);
 
   // Handle animations
@@ -298,6 +309,20 @@ export default function OptimizedBeastModel({
     if (emotionIntensity > 0) {
       const pulse = 1 + Math.sin(state.clock.elapsedTime * 4) * 0.03 * emotionIntensity;
       groupRef.current.scale.setScalar(pulse);
+    }
+
+    if (import.meta.env.VITE_RELEASE_DIAGNOSTICS === '1') {
+      const probe = deformationProbeRef.current;
+      if (probe) {
+        probe.skeleton.update();
+        const position = probe.geometry.getAttribute('position') as THREE.BufferAttribute;
+        const local = new THREE.Vector3().fromBufferAttribute(position, deformationVertexRef.current);
+        probe.applyBoneTransform(deformationVertexRef.current, local);
+        const rootInverse = new THREE.Matrix4().copy(groupRef.current.matrixWorld).invert();
+        const relative = probe.localToWorld(local.clone()).applyMatrix4(rootInverse);
+        const diagnostics = ((window as any).__KAI_JAX_SKIN_DEFORMATION__ ||= {});
+        diagnostics[beast.id] = { x: relative.x, y: relative.y, z: relative.z, attackType, locomotionState, isAttacking, sampledAt: performance.now() };
+      }
     }
   });
 
