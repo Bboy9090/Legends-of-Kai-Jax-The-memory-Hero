@@ -1,97 +1,38 @@
-import React, { useEffect } from 'react';
-import { useRunner } from '../../lib/stores/useRunner';
-import { useAudio } from '../../lib/stores/useAudio';
-import { Settings, UserCheck, Play } from 'lucide-react';
+import { useEffect } from "react";
+import { Settings } from "lucide-react";
+import { useRunner } from "../../lib/stores/useRunner";
+import { useAudio } from "../../lib/stores/useAudio";
 
 export default function TitleScreen() {
-  const { setGameState } = useRunner();
+  const setGameState = useRunner((s) => s.setGameState);
   const { playVictory } = useAudio();
-
-  const handleStart = () => {
-    playVictory();
-    setGameState('menu');
-  };
+  const start = () => { playVictory(); setGameState("menu"); };
 
   useEffect(() => {
-    const handleKeyDown = () => handleStart();
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    const key = (e: KeyboardEvent) => {
+      if (["Tab", "Shift", "Control", "Alt", "Meta"].includes(e.key)) return;
+      start();
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
   }, []);
 
   return (
-    <div 
-      onClick={handleStart}
-      className="fixed inset-0 z-50 flex flex-col justify-between p-8 bg-cover bg-center cursor-pointer select-none"
-      style={{
-        backgroundImage: 'radial-gradient(circle at center, rgba(10,10,26,0.5) 0%, rgba(5,5,16,0.95) 100%), url("/models/ruined_city_bg.jpg")',
-        backgroundColor: '#050510'
-      }}
-    >
-      {/* Top Header */}
-      <div className="flex justify-between items-center z-10">
-        <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span className="text-[10px] font-mono tracking-widest text-slate-300">VER. 1.0.0 | BUILD 2026.08.03</span>
-        </div>
-        <button 
-          onClick={(e) => { e.stopPropagation(); setGameState('settings'); }}
-          className="p-3 bg-white/5 hover:bg-white/15 backdrop-blur-md rounded-2xl border border-white/10 text-slate-300 hover:text-white transition-all"
-        >
-          <Settings className="w-5 h-5" />
+    <div data-testid="new-title-screen" onClick={start} className="fixed inset-0 z-50 cursor-pointer select-none overflow-hidden bg-[#020308] text-white">
+      <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage:'url("/images/lore/kaijax-shadow.png")'}} />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,3,8,.96)_0%,rgba(2,3,8,.46)_48%,rgba(2,3,8,.82)_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_45%,transparent_0%,rgba(2,3,8,.16)_38%,rgba(2,3,8,.92)_100%)]" />
+      <button aria-label="Settings" onClick={(e)=>{e.stopPropagation();setGameState("settings");}} className="absolute right-5 top-5 z-20 rounded-full border border-white/20 bg-black/40 p-3 backdrop-blur-md hover:border-cyan-300"><Settings className="h-5 w-5"/></button>
+      <div className="absolute bottom-[14%] left-[7%] z-10 max-w-4xl">
+        <p className="mb-4 text-xs font-black tracking-[.48em] text-amber-300">BOBBY BLANCO PRESENTS</p>
+        <h1 className="font-['Bebas_Neue'] text-7xl sm:text-8xl md:text-[9rem] leading-[.76] tracking-[-.02em]">LEGENDS OF<br/><span className="text-cyan-300">KAI-JAX</span></h1>
+        <p className="mt-5 text-sm sm:text-base font-black tracking-[.42em] text-white/70">THE MEMORY HERO</p>
+        <button data-testid="title-enter" className="mt-10 border-l-2 border-amber-300 bg-black/35 px-6 py-4 text-left backdrop-blur-sm transition hover:bg-white/10">
+          <span className="block text-xs font-black tracking-[.35em] text-amber-300">ENTER THE RAGING CITY</span>
+          <span className="mt-1 block text-sm text-white/55">Press any button or tap to begin</span>
         </button>
       </div>
-
-      {/* Center Branding */}
-      <div className="flex flex-col items-center text-center my-auto z-10 space-y-4">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-bold tracking-[0.3em] uppercase backdrop-blur-md">
-          <span>Raging City Saga</span>
-        </div>
-
-        <h1 
-          className="text-6xl sm:text-8xl md:text-9xl font-black italic tracking-tighter uppercase"
-          style={{
-            background: 'linear-gradient(135deg, #ffffff 0%, #ffd700 40%, #f97316 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.8))'
-          }}
-        >
-          LEGENDS OF
-        </h1>
-
-        <h2 
-          className="text-5xl sm:text-7xl md:text-8xl font-black italic tracking-tighter uppercase -mt-4 sm:-mt-6"
-          style={{
-            background: 'linear-gradient(135deg, #00f2ff 0%, #a855f7 60%, #ffffff 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0 0 40px rgba(168,85,247,0.6))'
-          }}
-        >
-          KAI-JAX
-        </h2>
-
-        <p className="text-amber-400/90 text-sm sm:text-lg font-medium tracking-[0.25em] uppercase max-w-md pt-2">
-          Forged in the Raging City. Crowned by Memory.
-        </p>
-
-        {/* Prompt Button */}
-        <div className="pt-12">
-          <div className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 via-purple-600 to-cyan-500 rounded-2xl font-black text-white text-lg tracking-widest uppercase shadow-[0_0_50px_rgba(168,85,247,0.5)] animate-pulse hover:scale-105 transition-all">
-            <Play className="w-5 h-5 fill-current" />
-            <span>PRESS ANY BUTTON TO BEGIN</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer info */}
-      <div className="flex justify-between items-end z-10 text-[11px] text-slate-400 font-mono">
-        <div>FACTION: FANG SYNDICATE vs COVENANT</div>
-        <div className="flex items-center gap-1">
-          <UserCheck className="w-3.5 h-3.5 text-cyan-400" />
-          <span>PROFILE 1: ACTIVE</span>
-        </div>
-      </div>
+      <div className="absolute bottom-5 right-6 text-[10px] font-bold tracking-[.28em] text-white/35">MEMORY IS NEVER GONE</div>
     </div>
   );
 }
