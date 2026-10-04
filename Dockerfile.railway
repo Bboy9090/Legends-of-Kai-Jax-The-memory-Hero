@@ -1,0 +1,34 @@
+FROM node:24-bookworm-slim AS build
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json apps/web/package.json
+COPY packages/characters/package.json packages/characters/package.json
+COPY packages/engine/package.json packages/engine/package.json
+COPY packages/shared/package.json packages/shared/package.json
+COPY packages/ui/package.json packages/ui/package.json
+
+RUN pnpm install --filter ./apps/web... --frozen-lockfile
+
+COPY apps/web apps/web
+COPY packages/characters packages/characters
+COPY packages/engine packages/engine
+COPY packages/shared packages/shared
+COPY packages/ui packages/ui
+
+RUN pnpm --filter @beast-kin/shared build \
+ && pnpm --filter @beast-kin/engine build \
+ && pnpm --filter @beast-kin/characters build \
+ && pnpm --filter @beast-kin/ui build \
+ && pnpm --dir apps/web build
+
+FROM node:24-bookworm-slim AS runtime
+ENV NODE_ENV=production
+WORKDIR /app
+RUN npm install -g serve@14.2.6
+COPY --from=build /app/apps/web/dist ./dist
+EXPOSE 3000
+CMD ["sh","-c","serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"]
