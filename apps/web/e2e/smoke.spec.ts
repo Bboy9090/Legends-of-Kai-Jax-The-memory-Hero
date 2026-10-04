@@ -148,12 +148,33 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   await page.getByRole("button", { name: "FIGHT", exact: true }).click();
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
+  await page.waitForFunction(() => {
+    const probes = (window as any).__KAI_JAX_SKIN_DEFORMATION__;
+    return probes && Object.keys(probes).length > 0;
+  }, null, { timeout: 20_000 });
+  const readProbe = () => page.evaluate(() => {
+    const probes = (window as any).__KAI_JAX_SKIN_DEFORMATION__ || {};
+    const key = Object.keys(probes)[0];
+    return key ? { key, ...probes[key] } : null;
+  });
+  const idleProbe = await readProbe();
+  expect(idleProbe).not.toBeNull();
+
   // Exercise the actual keyboard path while the WebGL fighter is mounted.
   // These are the same bindings PlayerController consumes in gameplay.
   await page.keyboard.press("KeyJ"); // punch
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(120);
+  const punchProbe = await readProbe();
+  await page.waitForTimeout(380);
   await page.keyboard.press("KeyK"); // kick
-  await page.waitForTimeout(700);
+  await page.waitForTimeout(160);
+  const kickProbe = await readProbe();
+  await page.waitForTimeout(540);
+
+  const displacement = (a: any, b: any) =>
+    a && b ? Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z) : 0;
+  expect(displacement(idleProbe, punchProbe), "punch must deform a skinned vertex relative to the fighter root").toBeGreaterThan(0.001);
+  expect(displacement(punchProbe, kickProbe), "kick must produce a distinct skinned deformation from punch").toBeGreaterThan(0.001);
   await page.keyboard.press("KeyE"); // dodge
   await page.waitForTimeout(450);
   await page.keyboard.down("AltLeft"); // block / parry window
