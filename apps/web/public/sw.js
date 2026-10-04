@@ -4,7 +4,7 @@
  * duplicated into Cache Storage.
  */
 
-const CACHE = 'kai-jax-shell-v2';
+const CACHE = 'kai-jax-shell-v3';
 const CACHE_URLS = [
   '/',
   '/index.html',
@@ -59,26 +59,37 @@ function shouldCache(request, response) {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
+  // Online navigations are network-first. A cache-first index page can pin
+  // returning players to an obsolete release forever, even after a successful
+  // production deployment. The cached shell is only the offline fallback.
+  if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (shouldCache(event.request, response)) {
+            const copy = response.clone();
+            event.waitUntil(caches.open(CACHE).then((cache) => cache.put(event.request, copy)));
+          }
+          return response;
+        })
+        .catch(async () => {
+          return (await caches.match(event.request)) ||
+            (await caches.match('/index.html')) ||
+            Response.error();
+        })
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(async (cached) => {
       if (cached) return cached;
-
-      try {
-        const response = await fetch(event.request);
-        if (shouldCache(event.request, response)) {
-          const copy = response.clone();
-          event.waitUntil(
-            caches.open(CACHE).then((cache) => cache.put(event.request, copy))
-          );
-        }
-        return response;
-      } catch (error) {
-        if (event.request.destination === 'document') {
-          const fallback = await caches.match('/index.html');
-          if (fallback) return fallback;
-        }
-        throw error;
+      const response = await fetch(event.request);
+      if (shouldCache(event.request, response)) {
+        const copy = response.clone();
+        event.waitUntil(caches.open(CACHE).then((cache) => cache.put(event.request, copy)));
       }
+      return response;
     })
   );
 });
