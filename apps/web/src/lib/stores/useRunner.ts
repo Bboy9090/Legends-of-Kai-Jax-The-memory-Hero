@@ -186,7 +186,7 @@ export const useRunner = create<RunnerState>()(
   persist(
     (set, get) => ({
       // Runtime Initial
-      gameState: "lore-hub",
+      gameState: "title",
       selectedCharacter: "jaxon",
       activeStoryMissionId: null,
       trainingSession: false,
