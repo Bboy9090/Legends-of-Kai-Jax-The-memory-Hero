@@ -94,20 +94,15 @@ async function boot(page: Page): Promise<BootSnapshot> {
   return snapshot;
 }
 
-async function enterGameFromLoreHub(page: Page): Promise<void> {
-  await expect(page.getByTestId("lorehub-play-game-btn")).toBeVisible({ timeout: 15_000 });
-  await page.getByTestId("lorehub-play-game-btn").click();
-
-  // Entering the game from Lore Hub intentionally triggers the first-run intro.
-  await page.getByTestId("game-intro").waitFor({ state: "visible", timeout: 5_000 });
-  await page.getByTestId("game-intro").waitFor({ state: "detached", timeout: 10_000 });
-
-  await page.waitForFunction(
-    () => (window as any).runnerStore?.getState?.().gameState === "menu",
-    null,
-    { timeout: 10_000 },
-  );
-  await expect(page.getByRole("button", { name: /COMBAT ARENA/i })).toBeVisible({ timeout: 10_000 });
+async function enterGameFromOpening(page: Page): Promise<void> {
+  await expect(page.getByTestId("game-intro")).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByTestId("game-intro-skip")).toBeVisible();
+  await page.getByTestId("game-intro-skip").click();
+  await expect(page.getByTestId("new-title-screen")).toBeVisible({ timeout: 5_000 });
+  await page.getByTestId("title-enter").click();
+  await page.waitForFunction(() => (window as any).runnerStore?.getState?.().gameState === "menu", null, { timeout: 5_000 });
+  await expect(page.getByTestId("new-main-menu")).toBeVisible();
+  await expect(page.getByTestId("main-menu-combat")).toBeVisible();
 }
 
 async function enterStableState(page: Page, gameState: string): Promise<void> {
@@ -134,8 +129,8 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   await boot(page);
 
   // Follow the same first-run path a player uses, then open Combat Arena.
-  await enterGameFromLoreHub(page);
-  await page.getByRole("button", { name: /COMBAT ARENA/i }).click();
+  await enterGameFromOpening(page);
+  await page.getByTestId("main-menu-combat").click();
   await page.waitForFunction(
     () => (window as any).runnerStore?.getState?.().gameState === "versus-select",
     null,
