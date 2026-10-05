@@ -203,12 +203,12 @@ export default function OptimizedBeastModel({
     } else if (targetAction === 'attack') {
       const attackPattern =
         attackType === 'kick' || attackType === 'heavy'
-          ? /kick|heavy/
+          ? /kick|heavy/i
           : attackType === 'special' || attackType === 'skill'
-            ? /special|skill|slash|strike/
+            ? /special|skill|slash|strike/i
             : attackType === 'ultimate'
-              ? /ultimate|super|finisher/
-              : /punch|jab|light|attack/;
+              ? /ultimate|super|finisher/i
+              : /punch|jab|light|attack/i;
       match =
         available.find(n => attackPattern.test(n)) ||
         available.find(n => /attack|punch|kick|slash|strike|hit/i.test(n));
