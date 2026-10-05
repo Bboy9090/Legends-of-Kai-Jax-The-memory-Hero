@@ -229,6 +229,18 @@ export default function OptimizedBeastModel({
         activeActionRef.current?.fadeOut(0.18);
         next.reset().fadeIn(0.18).play();
         activeActionRef.current = next;
+        if (typeof window !== 'undefined') {
+          const w = window as any;
+          w.__KAI_JAX_ANIMATION_PROBE__ ??= {};
+          w.__KAI_JAX_ANIMATION_PROBE__[beast.id] = {
+            requested: targetAction,
+            attackType: isAttacking ? attackType : null,
+            selectedClip: match ?? null,
+            authored: Boolean(match),
+            availableClips: available,
+            timestamp: performance.now(),
+          };
+        }
       }
     }
   }, [actions, isAttacking, isMoving, isRunning, attackType, beast.id]);
