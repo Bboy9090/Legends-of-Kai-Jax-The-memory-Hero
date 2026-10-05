@@ -167,7 +167,15 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   await page.keyboard.press("KeyJ"); // punch
   await page.waitForTimeout(500);
   await page.keyboard.press("KeyK"); // kick
-  await page.waitForTimeout(700);
+  await page.waitForTimeout(180);
+  const kickProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
+  console.log("LIVE_ANIMATION_KICK_PROBE", JSON.stringify(kickProbe));
+  const kickEntries = Object.values(kickProbe ?? {}) as any[];
+  const kaiJaxKick = kickEntries.find((p: any) => p?.requested === "attack" && p?.attackType === "kick");
+  if (kaiJaxKick?.availableClips?.some((n: string) => /kick/i.test(n))) {
+    expect(kaiJaxKick?.selectedClip).toMatch(/kick/i);
+  }
+  await page.waitForTimeout(520);
   await page.keyboard.press("KeyE"); // dodge
   await page.waitForTimeout(450);
   await page.keyboard.down("AltLeft"); // block / parry window
