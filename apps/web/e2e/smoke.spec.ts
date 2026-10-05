@@ -148,6 +148,20 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   await page.getByRole("button", { name: "FIGHT", exact: true }).click();
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
+  // Certify locomotion against the clip actually selected by the mounted fighter.
+  await page.keyboard.down("ArrowRight");
+  await page.waitForTimeout(350);
+  const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
+  console.log("LIVE_ANIMATION_WALK_PROBE", JSON.stringify(walkProbe));
+  expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
+  await page.keyboard.down("ShiftLeft");
+  await page.waitForTimeout(350);
+  const runProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
+  console.log("LIVE_ANIMATION_RUN_PROBE", JSON.stringify(runProbe));
+  expect(Object.values(runProbe ?? {}).some((p: any) => p?.requested === "run" && /run/i.test(p?.selectedClip ?? ""))).toBeTruthy();
+  await page.keyboard.up("ShiftLeft");
+  await page.keyboard.up("ArrowRight");
+
   // Exercise the actual keyboard path while the WebGL fighter is mounted.
   // These are the same bindings PlayerController consumes in gameplay.
   await page.keyboard.press("KeyJ"); // punch
