@@ -40,18 +40,39 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   "kai-jax": {
     // Primary protagonist: The Memory Hero (Animated version)
     path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
+    animationPaths: {
+      run: "/models/Meshy_AI_Animation_Running_withSkin9TAILSKAIJAX.glb",
+      kick: [
+        "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb",
+        "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb",
+      ],
+    },
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   kai_jax: {
     path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
+    animationPaths: {
+      run: "/models/Meshy_AI_Animation_Running_withSkin9TAILSKAIJAX.glb",
+      kick: [
+        "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb",
+        "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb",
+      ],
+    },
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   kaijax: {
     path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
+    animationPaths: {
+      run: "/models/Meshy_AI_Animation_Running_withSkin9TAILSKAIJAX.glb",
+      kick: [
+        "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb",
+        "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb",
+      ],
+    },
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
