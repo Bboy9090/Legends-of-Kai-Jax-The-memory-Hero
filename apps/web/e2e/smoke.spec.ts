@@ -130,6 +130,7 @@ async function enterStableState(page: Page, gameState: string): Promise<void> {
 }
 
 test("versus: boots, navigates menus, and starts a battle without crashing", async ({ page }) => {
+  test.setTimeout(90_000);
   const errors = collectErrors(page);
   await boot(page);
 
@@ -143,19 +144,23 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   );
   await expect(page.getByRole("heading", { name: "Choose Your Fighter" })).toBeVisible({ timeout: 15_000 });
 
+  await page.getByRole("button", { name: /^Kai,.*playable/ }).click();
+
   // Start a fight and confirm the battle canvas mounts.
   // Exact match so we don't collide with the fighter cards' "Fighter" role label.
   await page.getByRole("button", { name: "FIGHT", exact: true }).click();
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
+  await page.waitForFunction(() => Boolean((window as any).__KAI_JAX_ANIMATION_PROBE__?.kai), null, { timeout: 20_000 });
+
   // Certify locomotion against the clip actually selected by the mounted fighter.
   await page.keyboard.down("ArrowRight");
-  await page.waitForTimeout(350);
+  await page.waitForFunction(() => (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai?.requested === "walk", null, { timeout: 15_000 });
   const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_WALK_PROBE", JSON.stringify(walkProbe));
   expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
   await page.keyboard.down("ShiftLeft");
-  await page.waitForTimeout(350);
+  await page.waitForFunction(() => (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai?.requested === "run", null, { timeout: 15_000 });
   const runProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_RUN_PROBE", JSON.stringify(runProbe));
   expect(Object.values(runProbe ?? {}).some((p: any) => p?.requested === "run" && /run/i.test(p?.selectedClip ?? ""))).toBeTruthy();

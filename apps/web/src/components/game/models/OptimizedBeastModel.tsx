@@ -149,7 +149,7 @@ export default function OptimizedBeastModel({
     c.updateMatrixWorld(true);
     return c;
   }, [scene, beast.id]);
-  const { actions, mixer } = useAnimations(authoredAnimations, cloned);
+  const { actions } = useAnimations(authoredAnimations, cloned);
 
   // Normalize the model to a consistent height and stand it on the ground.
   // Meshy exports have wildly different native scales, so a fixed scale left
@@ -216,6 +216,19 @@ export default function OptimizedBeastModel({
       match = available.find(n => /idle|breath|stand/i.test(n));
     }
 
+    if (typeof window !== 'undefined') {
+      const w = window as any;
+      w.__KAI_JAX_ANIMATION_PROBE__ ??= {};
+      w.__KAI_JAX_ANIMATION_PROBE__[beast.id] = {
+        requested: targetAction,
+        attackType: isAttacking ? attackType : null,
+        selectedClip: match ?? null,
+        authored: Boolean(match),
+        availableClips: available,
+        timestamp: performance.now(),
+      };
+    }
+
     if (match && actions[match]) {
       // Stop all other actions with smooth crossfade
       Object.values(actions).forEach(a => {
@@ -229,25 +242,13 @@ export default function OptimizedBeastModel({
         activeActionRef.current?.fadeOut(0.18);
         next.reset().fadeIn(0.18).play();
         activeActionRef.current = next;
-        if (typeof window !== 'undefined') {
-          const w = window as any;
-          w.__KAI_JAX_ANIMATION_PROBE__ ??= {};
-          w.__KAI_JAX_ANIMATION_PROBE__[beast.id] = {
-            requested: targetAction,
-            attackType: isAttacking ? attackType : null,
-            selectedClip: match ?? null,
-            authored: Boolean(match),
-            availableClips: available,
-            timestamp: performance.now(),
-          };
-        }
       }
     }
   }, [actions, isAttacking, isMoving, isRunning, attackType, beast.id]);
 
   // Hit animation and effects
   useFrame((state, delta) => {
-    if (mixer) mixer.update(delta);
+    // useAnimations advances its mixer once per frame.
     if (!groupRef.current) return;
 
     const procedural = proceduralStateRef.current;
