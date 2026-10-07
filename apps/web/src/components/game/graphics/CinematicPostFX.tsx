@@ -3,6 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { AfterimagePass } from "three/examples/jsm/postprocessing/AfterimagePass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
@@ -333,6 +334,8 @@ export default function CinematicPostFX({
       } else {
         sharpenRef.current = null;
       }
+      // Convert the linear composer output using the renderer's tone mapping and color space.
+      composer.addPass(new OutputPass());
     } catch (err) {
       // If postFX fails (device/driver differences), fall back to default R3F rendering
       failedRef.current = true;
@@ -443,9 +446,13 @@ export default function CinematicPostFX({
   }, [size.height, size.width]);
 
   useFrame((_, delta) => {
-    if (failedRef.current) return;
     const composer = composerRef.current;
-    if (!composer) return;
+    // Priority 1 takes over R3F rendering, including when effects are unavailable.
+    if (!enabled || failedRef.current || !composer) {
+      gl.setRenderTarget(null);
+      gl.render(scene, camera);
+      return;
+    }
     try {
       gl.autoClear = true;
       const pass = gradePassRef.current;
@@ -513,6 +520,8 @@ export default function CinematicPostFX({
     } catch (err) {
       failedRef.current = true;
       console.warn("[CinematicPostFX] disabled due to runtime error", err);
+      gl.setRenderTarget(null);
+      gl.render(scene, camera);
     }
   }, 1);
 
