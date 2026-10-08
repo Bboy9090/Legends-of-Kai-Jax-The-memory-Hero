@@ -1,13 +1,63 @@
-# Kai gameplay visual review — 2026-10-07
+# Kai gameplay visual review — updated 2026-10-08
 
-Release status: NOT visually qualified. PR #282 remains Draft.
+Release status: NOT fully visually qualified. PR #285 remains Draft.
 
-At commit 3f9d8a9db2e36bc67c082aa5888bb73576a4f84b all seven hosted PR workflows passed. The Mac selected separate authored Walk and Run clips. The local unit suite passed 227 tests in 34 files with one worker. The production dependency audit passes its high/critical threshold; 12 lower-severity findings remain.
+## Current runtime authority
 
-Captured battles at 1280×800 and 640×400 show an excessively dark scene, a small Kai silhouette relative to opponents, and crowded touch controls. Opponent.tsx uses AnatomicalBeastModel rather than the canonical GLB renderer. These frames do not qualify planted feet, attack contact, or camera framing.
+Current head: `18e56c9c76bcf865020a2febdfc243bec5c1a306`.
 
-The capture sequence ran too slowly to establish attack timing. Punch/kick samples were idle by the time frames were obtained; they are not attack evidence. Kai's loaded authored clips contain base, Walk, and Run, but no authored Punch or Kick.
+Runtime Smoke Diagnostic #97 passes the real versus training path and the real story path on the same head.
 
-The cinematic composer lacked its final tone-mapping/color-space OutputPass. Its priority-one callback suppresses automatic R3F rendering; disabled, absent, or failed effects must explicitly draw the base scene. Temporarily omitting effects showed base geometry but presentation remained unqualified. The diagnostic omission was restored.
+Live animation probes from that hosted run prove:
 
-Remaining: canonical fighter/opponent models and consistent scale; readable lighting and camera; compatible authored attacks; a polished Enforcer encounter; approved title/menu/Raging City path; desktop and mobile visual certification. Do not treat automated success as visual release approval.
+- Walk requested `walk` and selected authored `Walk:Armature|walking_man|baselayer`.
+- Run requested `run` and selected authored `Run:Armature|running|baselayer`.
+- Kick entered live `attack` state with `attackType: "kick"` and selected authored `Kick:Armature|Lunge_Spin_Kick|baselayer`.
+- Kai's available authored clips also include `Kick:Armature|Step_in_High_Kick|baselayer`.
+- Punch does not cross-fallback into an authored Kick clip; when no compatible authored Punch exists, the articulated procedural attack fallback remains authoritative.
+
+The authored Kick exports and Spider Kai base/Walk/Run assets use the same 26-node skeleton naming/order, removing the prior rig-compatibility concern.
+
+## Low-FPS / hitch repair
+
+The visual-certification run exposed a real gameplay issue rather than a test-only failure.
+
+A fresh attack input was previously queued and then aged by the full render-frame delta before its first consumption attempt. On slow headless WebGL frames, the 0.2 second attack buffer could expire immediately. After that was fixed, the next run proved the attack was consumed but could still start and finish between renders because battle simulation advanced by the entire multi-second hitch.
+
+Current repairs:
+
+- Keyboard key-down edges are buffered until a simulation frame can consume them.
+- A newly queued attack gets one consumption attempt before its buffer lifetime decays.
+- PlayerController clamps simulation delta to 50 ms.
+- BattleScene clamps the authoritative battle tick to 50 ms.
+- BattlePlayer clamps procedural attack-phase timing to 50 ms.
+- OptimizedBeastModel clamps procedural combat animation updates to 50 ms.
+- Training battles keep the opponent passive so move certification is deterministic while using the same BattlePlayer, PlayerController, model, and arena stack.
+
+This aligns the previously unbounded battle consumers with the existing 50 ms hitch clamp already used by BattleCamera, OpponentAI, ParticleManager, and Adventure combat.
+
+## Superseded blockers
+
+The 2026-10-07 review is no longer authoritative for the following claims:
+
+- Opponents no longer use the older anatomical placeholder renderer; `Opponent.tsx` now renders through `OptimizedBeastModel`.
+- Kai is no longer limited to base/Walk/Run authored clips; compatible authored Kick clips are loaded and selected live.
+- Desktop no longer displays the full mobile control overlay by default; `MobileControls` returns nothing unless touch/coarse-pointer capability is detected.
+- Fixed-time attack sampling is no longer used for certification; the smoke path waits for live animation-state evidence.
+
+## What is still NOT certified
+
+Passing automation does not by itself approve final presentation.
+
+Fresh rendered evidence is still required for:
+
+- planted feet and root-motion presentation during Walk/Run,
+- authored Kick pose quality and contact framing,
+- procedural Punch pose quality,
+- readable lighting/contrast at desktop and mobile sizes,
+- player/opponent scale and camera framing,
+- Enforcer encounter presentation,
+- approved title/menu/Raging City path,
+- final desktop and mobile visual review.
+
+Do not promote PR #285 from Draft solely because Runtime Smoke passes. Runtime animation selection is now proven; final visual presentation still needs explicit rendered review.
