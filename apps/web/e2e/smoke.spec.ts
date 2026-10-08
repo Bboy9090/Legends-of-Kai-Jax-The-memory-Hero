@@ -146,9 +146,10 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
 
   await page.getByRole("button", { name: /^Kai,.*playable/ }).click();
 
-  // Start a fight and confirm the battle canvas mounts.
-  // Exact match so we don't collide with the fighter cards' "Fighter" role label.
-  await page.getByRole("button", { name: "FIGHT", exact: true }).click();
+  // Start the real training battle for deterministic move certification.
+  // Training uses the same battle renderer/controller but keeps the opponent passive,
+  // so authored attack proof is not contaminated by random AI hitstun.
+  await page.getByRole("button", { name: "Training", exact: true }).click();
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
   await page.waitForFunction(() => Boolean((window as any).__KAI_JAX_ANIMATION_PROBE__?.kai), null, { timeout: 20_000 });
