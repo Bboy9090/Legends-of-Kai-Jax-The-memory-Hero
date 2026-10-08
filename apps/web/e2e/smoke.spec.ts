@@ -169,7 +169,7 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
 
   // Exercise the actual keyboard path while the WebGL fighter is mounted.
   // These are the same bindings PlayerController consumes in gameplay.
-  await page.keyboard.press("KeyJ"); // punch
+  await page.keyboard.down("KeyJ"); // punch
   await page.waitForFunction(
     () => {
       const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
@@ -178,6 +178,7 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
     null,
     { timeout: 5_000 },
   );
+  await page.keyboard.up("KeyJ");
   const punchProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai);
   expect(punchProbe?.selectedClip ?? "").not.toMatch(/kick/i);
   await page.waitForFunction(
@@ -186,7 +187,7 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
     { timeout: 5_000 },
   );
 
-  await page.keyboard.press("KeyK"); // kick
+  await page.keyboard.down("KeyK"); // kick
   await page.waitForFunction(
     () => {
       const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
@@ -197,6 +198,7 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
     null,
     { timeout: 5_000 },
   );
+  await page.keyboard.up("KeyK");
   const kickProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_KICK_PROBE", JSON.stringify(kickProbe));
   const kaiJaxKick = kickProbe?.kai;
