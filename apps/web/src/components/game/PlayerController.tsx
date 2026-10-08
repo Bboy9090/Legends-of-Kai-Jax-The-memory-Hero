@@ -3,7 +3,6 @@ import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useAudio } from "../../lib/stores/useAudio";
 import { useTouchInput } from "../../lib/stores/useTouchInput";
-import { useRunner } from "../../lib/stores/useRunner";
 import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
 import type { AttackType } from "../../game/combat/moveData";
 import {
@@ -51,9 +50,6 @@ export default function PlayerController() {
   const prevKeysRef = useRef<Record<string, boolean>>({});
   const prevPadButtonsRef = useRef<boolean[]>([]);
   const attackBufferRef = useRef<BufferedAttack | null>(null);
-  const trainingSession = useRunner((s) => s.trainingSession);
-  const lastQueuedAttackRef = useRef<AttackType | null>(null);
-  const lastConsumedAttackRef = useRef<AttackType | null>(null);
 
   useEffect(() => {
     const keys = keysRef.current;
@@ -137,7 +133,6 @@ export default function PlayerController() {
     else if (justPressed("KeyR") || padJustPressed(7) || touchAttacks.includes("ultimate")) queuedAttack = "ultimate";
 
     if (queuedAttack) {
-      lastQueuedAttackRef.current = queuedAttack;
       attackBufferRef.current = queueBufferedAttack(queuedAttack);
     } else {
       // A fresh input must get one real consumption attempt before its short
@@ -290,40 +285,7 @@ export default function PlayerController() {
         consumed = after.playerAttacking && after.playerAttackType === buffered.type;
       }
 
-      if (consumed) {
-        lastConsumedAttackRef.current = buffered.type;
-        attackBufferRef.current = null;
-      }
-    }
-
-    if (typeof window !== "undefined") {
-      const current = useBattle.getState();
-      (window as any).__KAI_JAX_INPUT_PROBE__ = {
-        pendingKeyEdges: Array.from(pendingKeyEdgesRef.current),
-        heldKeys: {
-          KeyJ: Boolean(keys["KeyJ"]),
-          KeyK: Boolean(keys["KeyK"]),
-        },
-        lastQueuedAttack: lastQueuedAttackRef.current,
-        lastConsumedAttack: lastConsumedAttackRef.current,
-        bufferedAttack: attackBufferRef.current
-          ? {
-              type: attackBufferRef.current.type,
-              remainingSec: attackBufferRef.current.remainingSec,
-              ageSec: attackBufferRef.current.ageSec,
-            }
-          : null,
-        battlePhase: current.battlePhase,
-        playerAttacking: current.playerAttacking,
-        playerAttackType: current.playerAttackType,
-        playerStamina: current.playerStamina,
-        playerDodgeTimer: current.playerDodgeTimer,
-        playerHitStunTimer: current.playerHitStunTimer,
-        guardBreakTimer: current.guardBreakTimer,
-        playerBlockHeld: current.playerBlockHeld,
-        trainingSession,
-        timestamp: performance.now(),
-      };
+      if (consumed) attackBufferRef.current = null;
     }
 
     if (justPressed("KeyT") || padJustPressed(6)) state.triggerTransformation();
