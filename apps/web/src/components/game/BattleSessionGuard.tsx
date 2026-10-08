@@ -33,8 +33,8 @@ export default function BattleSessionGuard() {
   const prevRef = useRef({
     playerHealth: 100,
     opponentHealth: 100,
-    playerX: -5,
-    opponentX: 5,
+    playerX: -3.25,
+    opponentX: 3.25,
   });
 
   useEffect(() => {

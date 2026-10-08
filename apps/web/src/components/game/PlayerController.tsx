@@ -38,6 +38,13 @@ function firstConnectedGamepad(): Gamepad | null {
 }
 
 export default function PlayerController() {
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const w = window as typeof window & { __KAI_JAX_TOUCH_PROBE__?: { queueAttack: (type: string) => void } };
+    w.__KAI_JAX_TOUCH_PROBE__ = { queueAttack: (type: string) => useTouchInput.getState().queueAttack(type) };
+    return () => { delete w.__KAI_JAX_TOUCH_PROBE__; };
+  }, []);
+
   const keysRef = useRef<Record<string, boolean>>({});
   const prevKeysRef = useRef<Record<string, boolean>>({});
   const prevPadButtonsRef = useRef<boolean[]>([]);

@@ -104,6 +104,10 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     animationPaths: {
       walk: "/models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb",
       run: "/models/Meshy_AI_Animation_Running_withSkinSPiDERKAIJAX9TIALS.glb",
+      kick: [
+        "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb",
+        "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb",
+      ],
     },
     scale: 3.5,
     position: [0, 0, 0],
