@@ -7,6 +7,7 @@ import { getPortraitPath } from "../../data/characterDesigns";
 import MoveSetTooltip from "./MoveSetTooltip";
 import { getMoveSet } from "../../lib/combatAbilities";
 import { useState, useEffect, useRef } from "react";
+import { isTouchDevice } from "../../lib/touchUtils";
 import { Zap, RotateCcw, Home, Star, Sparkles, CheckCircle2, XCircle, Target, ChevronRight } from "../ui/icons";
 
 // ⚡ LEGENDARY SYNERGY METER
@@ -837,6 +838,10 @@ export default function BattleUI() {
   } = useRunner();
   const playerFighter = getFighterById(playerFighterId);
   const opponentFighter = getFighterById(opponentFighterId);
+  const [touchCapable, setTouchCapable] = useState(false);
+  useEffect(() => {
+    setTouchCapable(isTouchDevice() || window.matchMedia('(pointer: coarse)').matches);
+  }, []);
   
   // Get actual synergy and combo from battle store
   const {
@@ -1060,7 +1065,7 @@ export default function BattleUI() {
       {activeMission && <MissionHUD />}
       
       {/* Controls Guide */}
-      {battlePhase === 'fighting' && (
+      {battlePhase === 'fighting' && !touchCapable && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex justify-center px-2 w-full max-w-2xl">
           <div className="bg-black/75 backdrop-blur-md rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 border border-cyan-400/40 shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
             <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 text-white text-xs sm:text-sm">
