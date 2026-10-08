@@ -248,7 +248,10 @@ export default function OptimizedBeastModel({
   }, [actions, isAttacking, isMoving, isRunning, attackType, beast.id]);
 
   // Hit animation and effects
-  useFrame((state, delta) => {
+  useFrame((state, rawDelta) => {
+    // Keep procedural combat motion aligned with the rest of the battle
+    // simulation during long render hitches.
+    const delta = Math.min(rawDelta, 0.05);
     // useAnimations advances its mixer once per frame.
     if (!groupRef.current) return;
 

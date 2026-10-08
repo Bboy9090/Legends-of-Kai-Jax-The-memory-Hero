@@ -76,8 +76,9 @@ export default function BattleScene() {
     return () => clearTimeout(timer);
   }, []);
 
-  useFrame((_state, delta) => {
+  useFrame((_state, rawDelta) => {
     if (battlePhase === 'fighting') {
+      const delta = Math.min(rawDelta, 0.05);
       updateRoundTimer(delta);
       const comboIntensity = Math.min(1, (comboCount + (maxCombo > 0 ? maxCombo * 0.2 : 0)) / 8);
       const healthIntensity = 1 - Math.min(playerHealth, opponentHealth) / maxHealth;

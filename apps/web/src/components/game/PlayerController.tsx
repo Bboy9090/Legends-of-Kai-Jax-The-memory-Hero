@@ -125,7 +125,7 @@ export default function PlayerController() {
     const blockHeld = !!(keys["AltLeft"] || keys["AltRight"] || padPressed(4));
     useBattle.getState().setPlayerBlockHeld(blockHeld);
 
-    const delta = rawDelta * state.timeScale;
+    const delta = Math.min(rawDelta, 0.05) * state.timeScale;
 
     const touch = useTouchInput.getState();
     const touchAttacks = touch.consumeAttacks();

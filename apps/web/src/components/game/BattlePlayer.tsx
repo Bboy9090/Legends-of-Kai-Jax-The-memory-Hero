@@ -48,9 +48,10 @@ export default function BattlePlayer() {
   const fighter = getFighterById(playerFighterId);
   
   // PlayerController is the sole gameplay authority; this component renders its state.
-  useFrame((_state, delta) => {
-    // Apply slow-motion time scale
-    const scaledDelta = delta * timeScale;
+  useFrame((_state, rawDelta) => {
+    // Match the battle simulation's hitch clamp so a long render frame cannot
+    // skip an entire attack phase before it is presented.
+    const scaledDelta = Math.min(rawDelta, 0.05) * timeScale;
     
     if (battlePhase !== 'fighting') {
       // Victory/defeat pose
