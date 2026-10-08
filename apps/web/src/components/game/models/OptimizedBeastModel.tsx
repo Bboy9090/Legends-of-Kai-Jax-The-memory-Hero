@@ -209,9 +209,10 @@ export default function OptimizedBeastModel({
             : attackType === 'ultimate'
               ? /ultimate|super|finisher/i
               : /punch|jab|light|attack/i;
-      match =
-        available.find(n => attackPattern.test(n)) ||
-        available.find(n => /attack|punch|kick|slash|strike|hit/i.test(n));
+      // Never cross-fallback between attack families. If Kai has authored
+      // Kick clips but no authored Punch clip, a punch must use the articulated
+      // procedural fallback instead of incorrectly playing a kick animation.
+      match = available.find(n => attackPattern.test(n));
     } else {
       match = available.find(n => /idle|breath|stand/i.test(n));
     }
@@ -299,8 +300,16 @@ export default function OptimizedBeastModel({
     // idle/walk/attack set. Drive their real bones procedurally so locomotion
     // and combat still articulate arms, legs, hips and spine.
     const available = actions ? Object.keys(actions) : [];
+    const authoredAttackPattern =
+      attackType === 'kick' || attackType === 'heavy'
+        ? /kick|heavy/i
+        : attackType === 'special' || attackType === 'skill'
+          ? /special|skill|slash|strike/i
+          : attackType === 'ultimate'
+            ? /ultimate|super|finisher/i
+            : /punch|jab|light|attack/i;
     const hasStateClip = isAttacking
-      ? available.some(n => /attack|punch|kick|slash|hit/i.test(n))
+      ? available.some(n => authoredAttackPattern.test(n))
       : isMoving
         ? (isRunning ? available.some(n => /run|sprint/i.test(n)) : available.some(n => /walk|locomotion/i.test(n)))
         : available.some(n => /idle|breath|stand/i.test(n));
