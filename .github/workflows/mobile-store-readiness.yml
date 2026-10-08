@@ -199,10 +199,13 @@ jobs:
         working-directory: source
         run: pnpm -C apps/web exec playwright install --with-deps chromium
 
-      - name: Run production smoke and mobile performance gates
+      - name: Run production smoke gate
         working-directory: source
-        run: |
-          pnpm -C apps/web exec playwright test e2e/smoke.spec.ts e2e/phase-b2-mobile-performance.spec.ts
+        run: pnpm -C apps/web exec playwright test e2e/smoke.spec.ts --workers=1
+
+      - name: Run mobile performance gate
+        working-directory: source
+        run: pnpm -C apps/web exec playwright test e2e/phase-b2-mobile-performance.spec.ts --workers=1
 
   ios-device-archive:
     name: iOS unsigned device archive
