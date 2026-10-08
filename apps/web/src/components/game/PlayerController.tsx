@@ -46,6 +46,7 @@ export default function PlayerController() {
   }, []);
 
   const keysRef = useRef<Record<string, boolean>>({});
+  const pendingKeyEdgesRef = useRef<Set<string>>(new Set());
   const prevKeysRef = useRef<Record<string, boolean>>({});
   const prevPadButtonsRef = useRef<boolean[]>([]);
   const attackBufferRef = useRef<BufferedAttack | null>(null);
@@ -53,6 +54,7 @@ export default function PlayerController() {
   useEffect(() => {
     const keys = keysRef.current;
     const handleDown = (e: KeyboardEvent) => {
+      if (!keys[e.code]) pendingKeyEdgesRef.current.add(e.code);
       keys[e.code] = true;
     };
     const handleUp = (e: KeyboardEvent) => {
@@ -60,6 +62,7 @@ export default function PlayerController() {
     };
     const clearHeldInput = () => {
       Object.keys(keys).forEach((key) => { keys[key] = false; });
+      pendingKeyEdgesRef.current.clear();
       prevKeysRef.current = {};
       prevPadButtonsRef.current = [];
       attackBufferRef.current = null;
@@ -96,12 +99,16 @@ export default function PlayerController() {
 
   useFrame((_, rawDelta) => {
     const state = useBattle.getState();
-    if (state.battlePhase !== "fighting" && state.battlePhase !== "transforming") return;
+    if (state.battlePhase !== "fighting" && state.battlePhase !== "transforming") {
+      pendingKeyEdgesRef.current.clear();
+      return;
+    }
+    // Preserve pending key-down edges across hit-stop so a real press cannot
+    // disappear before the next simulation frame is allowed to buffer it.
     if (state.hitStop > 0) return;
 
     const keys = keysRef.current;
-    const prev = prevKeysRef.current;
-    const justPressed = (code: string) => keys[code] && !prev[code];
+    const justPressed = (code: string) => pendingKeyEdgesRef.current.has(code);
 
     const pad = firstConnectedGamepad();
     const padPressed = (index: number) => !!pad?.buttons[index]?.pressed;
@@ -129,6 +136,7 @@ export default function PlayerController() {
     attackBufferRef.current = tickBufferedAttack(attackBufferRef.current, delta);
 
     const rememberInputs = () => {
+      pendingKeyEdgesRef.current.clear();
       prevKeysRef.current = { ...keys };
       prevPadButtonsRef.current = pad ? pad.buttons.map((button) => button.pressed) : [];
     };
