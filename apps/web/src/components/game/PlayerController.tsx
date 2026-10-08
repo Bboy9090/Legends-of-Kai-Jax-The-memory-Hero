@@ -139,8 +139,12 @@ export default function PlayerController() {
     if (queuedAttack) {
       lastQueuedAttackRef.current = queuedAttack;
       attackBufferRef.current = queueBufferedAttack(queuedAttack);
+    } else {
+      // A fresh input must get one real consumption attempt before its short
+      // buffer lifetime starts decaying. Slow WebGL/low-FPS frames can exceed
+      // the buffer window; ticking on the creation frame drops valid presses.
+      attackBufferRef.current = tickBufferedAttack(attackBufferRef.current, delta);
     }
-    attackBufferRef.current = tickBufferedAttack(attackBufferRef.current, delta);
 
     const rememberInputs = () => {
       pendingKeyEdgesRef.current.clear();
