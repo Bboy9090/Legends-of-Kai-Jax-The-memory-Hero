@@ -60,3 +60,12 @@ jobs:
       - name: Run release smoke only
         working-directory: source
         run: pnpm -C apps/web exec playwright test e2e/smoke.spec.ts
+
+      - name: Upload authored kick proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kai-authored-kick-proof-${{ github.event.pull_request.head.sha || github.sha }}
+          path: source/apps/web/test-results/**/kai-authored-kick.png
+          if-no-files-found: error
+          retention-days: 14

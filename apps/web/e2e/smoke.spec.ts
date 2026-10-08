@@ -129,7 +129,7 @@ async function enterStableState(page: Page, gameState: string): Promise<void> {
   await page.getByTestId('game-intro').waitFor({ state: 'detached', timeout: 10_000 }).catch(() => {});
 }
 
-test("versus: boots, navigates menus, and starts a battle without crashing", async ({ page }) => {
+test("versus: boots, navigates menus, and starts a battle without crashing", async ({ page }, testInfo) => {
   test.setTimeout(90_000);
   const errors = collectErrors(page);
   await boot(page);
@@ -172,14 +172,27 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   await page.keyboard.press("KeyJ"); // punch
   await page.waitForTimeout(500);
   await page.keyboard.press("KeyK"); // kick
-  await page.waitForTimeout(180);
+  await page.waitForFunction(
+    () => {
+      const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
+      return probe?.requested === "attack"
+        && probe?.attackType === "kick"
+        && /kick/i.test(probe?.selectedClip ?? "");
+    },
+    null,
+    { timeout: 5_000 },
+  );
   const kickProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_KICK_PROBE", JSON.stringify(kickProbe));
-  const kickEntries = Object.values(kickProbe ?? {}) as any[];
-  const kaiJaxKick = kickEntries.find((p: any) => p?.requested === "attack" && p?.attackType === "kick");
-  if (kaiJaxKick?.availableClips?.some((n: string) => /kick/i.test(n))) {
-    expect(kaiJaxKick?.selectedClip).toMatch(/kick/i);
-  }
+  const kaiJaxKick = kickProbe?.kai;
+  expect(kaiJaxKick?.requested).toBe("attack");
+  expect(kaiJaxKick?.attackType).toBe("kick");
+  expect(kaiJaxKick?.authored).toBe(true);
+  expect(kaiJaxKick?.selectedClip).toMatch(/kick/i);
+  await page.screenshot({
+    path: testInfo.outputPath("kai-authored-kick.png"),
+    animations: "disabled",
+  });
   await page.waitForTimeout(520);
   await page.keyboard.press("KeyE"); // dodge
   await page.waitForTimeout(450);
