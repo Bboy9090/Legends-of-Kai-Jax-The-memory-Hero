@@ -4,19 +4,17 @@ Release status: NOT fully visually qualified. PR #285 remains Draft.
 
 ## Current runtime authority
 
-Current head: `18e56c9c76bcf865020a2febdfc243bec5c1a306`.
+Current certification branch includes commit `6f7294ed0c003d294abff6841dbb57b0fe7d4335`, which removes procedural Punch recovery from the authored-Kick smoke prerequisite.
 
-Runtime Smoke Diagnostic #97 passes the real versus training path and the real story path on the same head.
-
-Live animation probes from that hosted run prove:
+Verified hosted evidence before that commit:
 
 - Walk requested `walk` and selected authored `Walk:Armature|walking_man|baselayer`.
 - Run requested `run` and selected authored `Run:Armature|running|baselayer`.
-- Kick entered live `attack` state with `attackType: "kick"` and selected authored `Kick:Armature|Lunge_Spin_Kick|baselayer`.
-- Kai's available authored clips also include `Kick:Armature|Step_in_High_Kick|baselayer`.
-- Punch does not cross-fallback into an authored Kick clip; when no compatible authored Punch exists, the articulated procedural attack fallback remains authoritative.
+- Kai's available authored clip inventory includes `Kick:Armature|Lunge_Spin_Kick|baselayer` and `Kick:Armature|Step_in_High_Kick|baselayer`.
+- The authored Kick exports and Spider Kai base/Walk/Run assets use the same 26-node skeleton naming/order.
+- Runtime Smoke #100 did **not** certify Kick: it timed out waiting for the preceding procedural Punch to leave attack state before the Kick step was reached.
 
-The authored Kick exports and Spider Kai base/Walk/Run assets use the same 26-node skeleton naming/order, removing the prior rig-compatibility concern.
+The current smoke path now targets authored Kick directly from a deterministic training battle. Do not claim live authored-Kick certification until a hosted run on or after `6f7294e` passes and logs `attackType: "kick"` with a selected authored Kick clip.
 
 ## Low-FPS / hitch repair
 
