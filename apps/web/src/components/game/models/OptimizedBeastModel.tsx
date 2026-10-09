@@ -598,8 +598,10 @@ export default function OptimizedBeastModel({
     // Keep procedural combat motion aligned with the rest of the battle
     // simulation during long render hitches.
     const delta = Math.min(rawDelta, 0.05);
-    // useAnimations advances its mixer once per frame.
-    if (!groupRef.current) return;
+    // useAnimations advances its mixer once per frame. Rig deformation and
+    // procedural fallback must not depend on the optional presentation wrapper
+    // ref being assigned; the cloned skinned model is the animation authority.
+    const visualGroup = groupRef.current;
 
     const procedural = proceduralStateRef.current;
     const t = animTime || state.clock.elapsedTime;
@@ -749,9 +751,9 @@ export default function OptimizedBeastModel({
     }
     
     // Emotion intensity adds a subtle breathing pulse around 1.0
-    if (emotionIntensity > 0) {
+    if (emotionIntensity > 0 && visualGroup) {
       const pulse = 1 + Math.sin(state.clock.elapsedTime * 4) * 0.03 * emotionIntensity;
-      groupRef.current.scale.setScalar(pulse);
+      visualGroup.scale.setScalar(pulse);
     }
   });
 
