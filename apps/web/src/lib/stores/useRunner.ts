@@ -119,6 +119,10 @@ const RUNNER_BACKUP_SUFFIX = "-backup";
 
 const runnerStorage: StateStorage = {
   getItem: (name) => {
+    if (typeof localStorage === "undefined") {
+      updateStorageStatus("unavailable");
+      return null;
+    }
     try {
       const primary = localStorage.getItem(name);
       updateStorageStatus("persistent");
@@ -149,6 +153,10 @@ const runnerStorage: StateStorage = {
   },
 
   setItem: (name, value) => {
+    if (typeof localStorage === "undefined") {
+      updateStorageStatus("unavailable");
+      return;
+    }
     try {
       const previous = localStorage.getItem(name);
       if (previous) {
@@ -168,6 +176,10 @@ const runnerStorage: StateStorage = {
   },
 
   removeItem: (name) => {
+    if (typeof localStorage === "undefined") {
+      updateStorageStatus("unavailable");
+      return;
+    }
     try {
       localStorage.removeItem(name);
       localStorage.removeItem(`${name}${RUNNER_BACKUP_SUFFIX}`);
