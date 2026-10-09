@@ -279,7 +279,7 @@ function LegendaryHealthBar({
           {/* Fighter Avatar — design-driven portrait when available */}
           <div 
             className={`
-              relative w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 
+              relative w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10
               rounded-full flex items-center justify-center overflow-hidden
               font-black text-base sm:text-lg md:text-xl text-white
               flex-shrink-0 border-2 border-white/30
@@ -331,7 +331,7 @@ function LegendaryHealthBar({
         {/* Health Bar */}
         <div 
           className={`
-            relative h-4 sm:h-5 md:h-6 
+            relative h-3.5 sm:h-4 md:h-5
             bg-gray-800/90 rounded-full overflow-hidden 
             border border-white/25 shadow-[inset_0_2px_6px_rgba(0,0,0,0.5)]
             ${isCritical ? 'shadow-[0_0_20px_rgba(239,68,68,0.9)_inset]' : ''}
@@ -387,7 +387,7 @@ function LegendaryTimer({ time }: { time: number }) {
       className={`
         relative bg-gradient-to-b from-gray-900/90 to-black/90 backdrop-blur-md 
         rounded-xl p-1.5 sm:p-2.5 
-        min-w-[58px] sm:min-w-[78px]
+        min-w-[54px] sm:min-w-[68px]
         border-3 
         transition-all duration-300
         ${isUrgent 
@@ -402,7 +402,7 @@ function LegendaryTimer({ time }: { time: number }) {
       <div className="text-center">
         <div 
           className={`
-            text-2xl sm:text-3xl md:text-4xl font-black 
+            text-2xl sm:text-3xl font-black
             ${isUrgent ? 'text-red-400 animate-bounce' : isCritical ? 'text-orange-400' : 'text-white'}
           `}
           style={{

@@ -395,9 +395,6 @@ function App() {
                   <BattleScene />
                 </Suspense>
               </Canvas>
-              <div className="absolute bottom-4 left-0 right-0 text-center text-slate-400 text-sm pointer-events-none hidden md:block">
-                ← → move · Space jump · J punch · K kick · L special · Q/E dodge · Alt block · R ultimate · T transform
-              </div>
             </div>
             
             {/* ⚡ LEGENDARY UI OVERLAYS */}
