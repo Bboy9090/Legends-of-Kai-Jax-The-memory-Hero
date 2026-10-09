@@ -39,7 +39,7 @@ export default function TitleScreen() {
 
       <header className="relative z-10 flex items-center justify-between px-6 py-5 sm:px-10">
         <div className="kj-vision-panel px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-[var(--kj-muted)]">
-          VER. <span data-testid="title-release-metadata">{releaseVersion} | BUILD {releaseSha}</span>
+          <span data-testid="title-release-metadata">VER. {releaseVersion} | BUILD {releaseSha}</span>
         </div>
         <div className="flex gap-2">
           <button
