@@ -32,7 +32,7 @@ interface MenuItem {
 
 const LegendaryMainMenu: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [selectedIndex, setSelectedIndex] = useState(1); // Start on New Game
+  const [selectedIndex, setSelectedIndex] = useState(0); // Continue is the primary Raging City path
   const [memoryShards, setMemoryShards] = useState<Array<{
     id: number;
     x: number;
@@ -64,7 +64,7 @@ const LegendaryMainMenu: React.FC = () => {
       id: 'continue',
       label: 'CONTINUE',
       sublabel: 'Resume last saga save',
-      action: () => setGameState('campaign-map'),
+      action: () => setGameState('story-hub'),
       legendary: true
     },
     {
@@ -376,7 +376,7 @@ const LegendaryMainMenu: React.FC = () => {
               onClick={() => {
                 switchProfile(i);
                 setShowProfileSelect(false);
-                setGameState('campaign-map');
+                setGameState('story-hub');
               }}
               className={`group relative p-6 rounded-xl border-2 transition-all hover:scale-105 ${
                 i === activeProfileIndex ? 'border-legendary-gold bg-legendary-gold/10' : 'border-white/10 bg-white/5'
