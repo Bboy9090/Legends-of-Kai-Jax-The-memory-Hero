@@ -306,6 +306,42 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
 });
 
+test("fusion rig: Kai-Jax visibly articulates instead of translating as a statue", async ({ page }) => {
+  test.setTimeout(180_000);
+  const errors = collectErrors(page);
+  await page.addInitScript(() => {
+    (window as any).__KAI_JAX_CERTIFICATION__ = true;
+  });
+  await boot(page);
+  await enterGameFromLoreHub(page);
+
+  await page.getByRole("button", { name: /COMBAT ARENA/i }).click();
+  await page.waitForFunction(
+    () => (window as any).runnerStore?.getState?.().gameState === "versus-select",
+    null,
+    { timeout: 10_000 },
+  );
+
+  await page.getByRole("button", { name: /^Kai-Jax,.*playable/ }).click();
+  await page.getByRole("button", { name: "Training", exact: true }).click();
+  await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
+
+  await page.keyboard.down("ArrowRight");
+  try {
+    await page.waitForFunction(() => {
+      const probes = Object.values((window as any).__KAI_JAX_DEFORMATION_PROBE__ ?? {}) as any[];
+      return probes.some((probe) => probe?.requested === "walk" && probe?.moving === true);
+    }, null, { timeout: 30_000 });
+  } finally {
+    await page.keyboard.up("ArrowRight");
+  }
+
+  const deformation = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__);
+  console.log("LIVE_FUSION_DEFORMATION_PROBE", JSON.stringify(deformation));
+  expect(Object.values(deformation ?? {}).some((probe: any) => probe?.requested === "walk" && probe?.moving === true)).toBeTruthy();
+  expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
+});
+
 test("story: enters a real story mission and mounts the arena without crashing", async ({ page }) => {
   const errors = collectErrors(page);
   await boot(page);
