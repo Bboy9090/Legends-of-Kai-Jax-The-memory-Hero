@@ -217,6 +217,7 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
       animation: (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai ?? null,
       deformation: (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai ?? null,
       rig: (window as any).__KAI_JAX_RIG_PROBE__?.kai ?? null,
+      frame: (window as any).__KAI_JAX_FRAME_PROBE__?.kai ?? null,
       companion: (window as any).__KAI_JAX_COMPANION_PROBE__ ?? null,
     }));
     console.log("LIVE_KAI_SKIN_TIMEOUT_DIAGNOSTIC", JSON.stringify(diagnostic));
@@ -374,6 +375,7 @@ test("fusion rig: Kai-Jax visibly articulates instead of translating as a statue
       velocityX: (window as any).battleStore?.getState?.().playerVelocityX ?? null,
       animation: (window as any).__KAI_JAX_ANIMATION_PROBE__ ?? null,
       deformation: (window as any).__KAI_JAX_DEFORMATION_PROBE__ ?? null,
+      frame: (window as any).__KAI_JAX_FRAME_PROBE__ ?? null,
       companion: (window as any).__KAI_JAX_COMPANION_PROBE__ ?? null,
     }));
     console.log("LIVE_FUSION_TIMEOUT_DIAGNOSTIC", JSON.stringify(diagnostic));
