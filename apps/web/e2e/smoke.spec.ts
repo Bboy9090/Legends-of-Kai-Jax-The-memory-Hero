@@ -194,6 +194,11 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
     null,
     { timeout: 15_000 },
   );
+  await page.waitForFunction(
+    () => (window as any).battleStore?.getState?.().battlePhase === "fighting",
+    null,
+    { timeout: 15_000 },
+  );
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
   await page.waitForFunction(() => Boolean((window as any).__KAI_JAX_ANIMATION_PROBE__?.kai), null, { timeout: 20_000 });
@@ -361,6 +366,11 @@ test("fusion rig: Kai-Jax visibly articulates instead of translating as a statue
     null,
     { timeout: 15_000 },
   );
+  await page.waitForFunction(
+    () => (window as any).battleStore?.getState?.().battlePhase === "fighting",
+    null,
+    { timeout: 15_000 },
+  );
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
   await page.keyboard.down("ArrowRight");
@@ -372,6 +382,7 @@ test("fusion rig: Kai-Jax visibly articulates instead of translating as a statue
   } catch (error) {
     const diagnostic = await page.evaluate(() => ({
       fighter: (window as any).battleStore?.getState?.().playerFighterId ?? null,
+      battlePhase: (window as any).battleStore?.getState?.().battlePhase ?? null,
       velocityX: (window as any).battleStore?.getState?.().playerVelocityX ?? null,
       animation: (window as any).__KAI_JAX_ANIMATION_PROBE__ ?? null,
       deformation: (window as any).__KAI_JAX_DEFORMATION_PROBE__ ?? null,
