@@ -93,17 +93,30 @@ export default function OptimizedBeastModel({
   const animationSelectionAttackRef = useRef(false);
   const kickVariantRef = useRef(0);
   const [companionAnimations, setCompanionAnimations] = useState<THREE.AnimationClip[]>([]);
+  const loadedCompanionPathsRef = useRef(new Set<string>());
+  const loadingCompanionPathsRef = useRef(new Set<string>());
   const modelPath = getBeastModelPath(beast.id);
   const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
-  const companionPaths = useMemo(
-    () => [
-      animationPaths?.walk,
-      animationPaths?.run,
-      ...(animationPaths?.kick ?? []),
-      ...(animationPaths?.punch ?? []),
-    ].filter(Boolean) as string[],
-    [animationPaths],
-  );
+  const requestedCompanionPaths = useMemo(() => {
+    const paths: string[] = [];
+
+    // Locomotion is requested on demand. Attack companions are heavier and are
+    // not downloaded until that attack family is actually used.
+    if (isMoving) {
+      if (isRunning && animationPaths?.run) paths.push(animationPaths.run);
+      else if (!isRunning && animationPaths?.walk) paths.push(animationPaths.walk);
+    }
+
+    if (isAttacking) {
+      if ((attackType === 'kick' || attackType === 'heavy') && animationPaths?.kick) {
+        paths.push(...animationPaths.kick);
+      } else if ((attackType === 'punch' || attackType === 'light1' || attackType === 'light2' || attackType === 'light3') && animationPaths?.punch) {
+        paths.push(...animationPaths.punch);
+      }
+    }
+
+    return [...new Set(paths)];
+  }, [animationPaths, attackType, isAttacking, isMoving, isRunning]);
 
   // DIAGNOSTIC: log model path resolution
   useEffect(() => {
@@ -129,17 +142,12 @@ export default function OptimizedBeastModel({
   // a model load failure in release smoke tests.
   const { scene, animations } = useGLTF(modelPath);
 
-  // Companion files are complete GLBs, not animation-only payloads. Do not put
-  // them in useGLTF/useLoader's render-critical cache: that made battle startup
-  // wait on ~100 MB of duplicate meshes/textures and kept those resources alive.
-  // Load them after the base fighter mounts, extract only clips, then dispose the
-  // companion scene graph so the renderer retains animation data rather than
-  // duplicate character bodies.
+  // Companion files are complete GLBs, not animation-only payloads. Keep them
+  // out of useGLTF/useLoader's render-critical cache. Requested clips load on
+  // demand, publish progressively, and their duplicate mesh/material/texture
+  // payloads are disposed as soon as animation clips are extracted.
   useEffect(() => {
-    if (companionPaths.length === 0) {
-      setCompanionAnimations([]);
-      return;
-    }
+    if (requestedCompanionPaths.length === 0) return;
 
     let cancelled = false;
     const loader = new GLTFLoader();
@@ -157,44 +165,60 @@ export default function OptimizedBeastModel({
       });
     };
 
-    const loadCompanions = async () => {
-      const extracted: THREE.AnimationClip[] = [];
-      for (let index = 0; index < companionPaths.length; index += 1) {
-        if (cancelled) return;
-        const path = companionPaths[index];
-        try {
-          const gltf = await loader.loadAsync(path);
+    requestedCompanionPaths.forEach((path) => {
+      if (
+        loadedCompanionPathsRef.current.has(path) ||
+        loadingCompanionPathsRef.current.has(path)
+      ) {
+        return;
+      }
+
+      loadingCompanionPathsRef.current.add(path);
+      void loader.loadAsync(path)
+        .then((gltf) => {
+          if (cancelled) {
+            disposeCompanionScene(gltf.scene);
+            return;
+          }
+
           const semantic =
             /Running/i.test(path) ? 'Run'
             : /Walking/i.test(path) ? 'Walk'
             : /Kick/i.test(path) ? 'Kick'
             : /Punch|Jab/i.test(path) ? 'Punch'
             : 'Companion';
-          (gltf.animations ?? []).forEach((clip, clipIndex) => {
+
+          const extracted = (gltf.animations ?? []).map((clip, clipIndex) => {
             const clone = clip.clone();
-            clone.name = `${semantic}:${clip.name || clipIndex}:${index}`;
-            extracted.push(clone);
+            clone.name = `${semantic}:${clip.name || clipIndex}:${path.split('/').pop() || clipIndex}`;
+            return clone;
           });
+
+          loadedCompanionPathsRef.current.add(path);
+          loadingCompanionPathsRef.current.delete(path);
           disposeCompanionScene(gltf.scene);
-        } catch (error) {
+
+          if (extracted.length > 0) {
+            // Publish each source immediately instead of waiting for every
+            // optional companion to finish. This lets authored locomotion
+            // become available as soon as its own file is ready.
+            setCompanionAnimations((current) => [...current, ...extracted]);
+          }
+        })
+        .catch((error) => {
+          loadingCompanionPathsRef.current.delete(path);
           console.warn('[OptimizedBeastModel] Optional companion animation failed to load', {
             beastId: beast.id,
             path,
             error,
           });
-        }
-      }
-      if (!cancelled) setCompanionAnimations(extracted);
-    };
+        });
+    });
 
-    // Yield one turn so the canonical base fighter can render before optional
-    // animation companions begin downloading/parsing.
-    const timer = window.setTimeout(() => { void loadCompanions(); }, 0);
     return () => {
       cancelled = true;
-      window.clearTimeout(timer);
     };
-  }, [beast.id, companionPaths]);
+  }, [beast.id, requestedCompanionPaths]);
 
   const authoredAnimations = useMemo(
     () => [...animations, ...companionAnimations],
