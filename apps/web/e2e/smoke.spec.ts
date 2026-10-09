@@ -173,7 +173,7 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
     null,
     { timeout: 10_000 },
   );
-  await expect(page.getByRole("heading", { name: "Choose Your Fighter" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("heading", { name: "Character Select" })).toBeVisible({ timeout: 15_000 });
 
   await page.getByRole("button", { name: /^Kai,.*playable/ }).click();
 
@@ -324,7 +324,9 @@ test("fusion rig: Kai-Jax visibly articulates instead of translating as a statue
     { timeout: 10_000 },
   );
 
-  await page.getByRole("button", { name: /^Kai-Jax,.*playable/ }).click();
+  const fusionCard = page.getByRole("button", { name: /^Kai-Jax,.*playable/ });
+  await fusionCard.click();
+  await expect(fusionCard).toHaveAttribute("aria-pressed", "true", { timeout: 10_000 });
   await page.getByRole("button", { name: "Training", exact: true }).click();
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
@@ -334,6 +336,16 @@ test("fusion rig: Kai-Jax visibly articulates instead of translating as a statue
       const probes = Object.values((window as any).__KAI_JAX_DEFORMATION_PROBE__ ?? {}) as any[];
       return probes.some((probe) => probe?.requested === "walk" && probe?.moving === true);
     }, null, { timeout: 30_000 });
+  } catch (error) {
+    const diagnostic = await page.evaluate(() => ({
+      fighter: (window as any).battleStore?.getState?.().playerFighterId ?? null,
+      velocityX: (window as any).battleStore?.getState?.().playerVelocityX ?? null,
+      animation: (window as any).__KAI_JAX_ANIMATION_PROBE__ ?? null,
+      deformation: (window as any).__KAI_JAX_DEFORMATION_PROBE__ ?? null,
+      companion: (window as any).__KAI_JAX_COMPANION_PROBE__ ?? null,
+    }));
+    console.log("LIVE_FUSION_TIMEOUT_DIAGNOSTIC", JSON.stringify(diagnostic));
+    throw error;
   } finally {
     await page.keyboard.up("ArrowRight");
   }
