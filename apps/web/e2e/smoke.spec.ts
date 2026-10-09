@@ -321,18 +321,18 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
         path: testInfo.outputPath("kai-authored-kick-640x400.png"),
         timeout: 15_000,
       });
-      console.log("KAI_AUTHORED_KICK_SCREENSHOT", "captured-640x400");
+      console.log("KAI_KICK_MOTION_SCREENSHOT", "captured-640x400");
     } catch (canvasError) {
-      console.log("KAI_AUTHORED_KICK_CANVAS_SCREENSHOT", "capture-unavailable", String(canvasError));
+      console.log("KAI_KICK_MOTION_CANVAS_SCREENSHOT", "capture-unavailable", String(canvasError));
       try {
         await page.screenshot({
           path: testInfo.outputPath("kai-authored-kick-fallback.png"),
           animations: "disabled",
           timeout: 15_000,
         });
-        console.log("KAI_AUTHORED_KICK_SCREENSHOT", "captured-fallback-page");
+        console.log("KAI_KICK_MOTION_SCREENSHOT", "captured-fallback-page");
       } catch (pageError) {
-        console.log("KAI_AUTHORED_KICK_PAGE_SCREENSHOT", "capture-unavailable", String(pageError));
+        console.log("KAI_KICK_MOTION_PAGE_SCREENSHOT", "capture-unavailable", String(pageError));
         const cdp = await page.context().newCDPSession(page);
         const shot = await cdp.send("Page.captureScreenshot", {
           format: "png",
@@ -344,11 +344,11 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
           testInfo.outputPath("kai-authored-kick-cdp-fallback.png"),
           Buffer.from(shot.data, "base64"),
         );
-        console.log("KAI_AUTHORED_KICK_SCREENSHOT", "captured-cdp-fallback");
+        console.log("KAI_KICK_MOTION_SCREENSHOT", "captured-cdp-fallback");
       }
     }
   } catch (error) {
-    console.log("KAI_AUTHORED_KICK_SCREENSHOT", "capture-unavailable", String(error));
+    console.log("KAI_KICK_MOTION_SCREENSHOT", "capture-unavailable", String(error));
   }
 
   expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
@@ -447,7 +447,7 @@ test("story shell: Raging City hub routes through playable legend selection", as
     null,
     { timeout: 10_000 },
   );
-  await expect(page.getByRole("heading", { name: "Choose Your Legend" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("heading", { name: "Character Select" })).toBeVisible({ timeout: 15_000 });
 
   await page.getByRole("button", { name: /JAX/i }).filter({ hasNotText: /KAI-JAX/i }).first().click();
   await page.getByTestId("legend-select-confirm").click();
