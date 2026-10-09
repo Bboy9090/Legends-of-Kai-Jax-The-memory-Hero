@@ -199,6 +199,12 @@ export default function VersusCharacterSelect() {
     setCharacter(playerId);
     setPlayerFighter(playerId);
     setOpponentFighter(opponentId);
+
+    // Input authority must become live when the player commits to the match,
+    // not several seconds later when a slow GLB/Suspense tree finally mounts.
+    // BattleScene keeps its defensive start guard, but this removes the
+    // visible-HUD / inactive-controller gap on software WebGL and mobile.
+    useBattle.getState().startBattle();
     start();
     setGameState("playing");
   }, [selectedEntry, selectedPlayable, selectedProfile, playableEntries, resetPhase, setTrainingSession, setCharacter, setPlayerFighter, setOpponentFighter, start, setGameState]);
