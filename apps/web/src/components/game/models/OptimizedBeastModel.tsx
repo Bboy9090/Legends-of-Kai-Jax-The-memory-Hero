@@ -101,11 +101,14 @@ export default function OptimizedBeastModel({
   const requestedCompanionPaths = useMemo(() => {
     const paths: string[] = [];
 
-    // Warm authored Walk after the canonical fighter mounts; keep Run/Kick
-    // demand-loaded so large donor GLBs never block the first battle render.
-    if (beast.id === 'kai' && animationPaths?.walk) {
-      paths.push(animationPaths.walk);
-    } else if (beast.id !== 'kai' && isMoving && !isRunning && animationPaths?.walk) {
+    // Keep donor GLBs off the render-critical path. For Kai, warm only the
+    // highest-value first-use assets in the background: ordinary Walk and the
+    // primary Kick. Sprint and alternate Kick remain lazy.
+    if (beast.id === 'kai') {
+      if (animationPaths?.walk) paths.push(animationPaths.walk);
+      const primaryKick = animationPaths?.kick?.[0];
+      if (primaryKick) paths.push(primaryKick);
+    } else if (isMoving && !isRunning && animationPaths?.walk) {
       paths.push(animationPaths.walk);
     }
 
@@ -115,7 +118,10 @@ export default function OptimizedBeastModel({
 
     if (isAttacking) {
       if ((attackType === 'kick' || attackType === 'heavy') && animationPaths?.kick) {
-        paths.push(...animationPaths.kick);
+        const lazyKickPaths = beast.id === 'kai'
+          ? animationPaths.kick.slice(1)
+          : animationPaths.kick;
+        paths.push(...lazyKickPaths);
       } else if (
         (attackType === 'punch' || attackType === 'light1' || attackType === 'light2' || attackType === 'light3') &&
         animationPaths?.punch
