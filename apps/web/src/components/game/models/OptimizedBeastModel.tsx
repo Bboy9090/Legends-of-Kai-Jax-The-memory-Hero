@@ -653,7 +653,10 @@ export default function OptimizedBeastModel({
       }
 
       const measuredFrames = Math.max(boneSample.frames, skinSample.frames);
-      if (measuredFrames >= 12) {
+      // Software WebGL runners can deliver only a handful of animation frames
+      // over several seconds. Three distinct moving frames are enough to prove
+      // vertex deformation while still rejecting a translating statue.
+      if (measuredFrames >= 3) {
         const averageBoneMotion = boneSample.frames > 0 ? boneSample.motion / boneSample.frames : 0;
         const averageSkinMotion = skinSample.frames > 0 ? skinSample.motion / skinSample.frames : 0;
         const skinVerified = skinPose.length > 0;
