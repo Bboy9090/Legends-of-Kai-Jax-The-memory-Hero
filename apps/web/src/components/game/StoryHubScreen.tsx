@@ -41,7 +41,7 @@ export default function StoryHubScreen() {
 
   const handleEnterDistrict = () => {
     setActiveStoryMission('story_act1_m1');
-    setGameState('mission-select');
+    setGameState('character-select');
   };
 
   return (
