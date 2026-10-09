@@ -396,7 +396,7 @@ test("story shell: Raging City hub routes through playable legend selection", as
   await boot(page);
   await enterGameFromLaunch(page);
 
-  await page.getByRole("button", { name: /^STORY$/i }).click();
+  await page.getByRole("button", { name: /^STORY\b/i }).click();
   await page.waitForFunction(
     () => (window as any).runnerStore?.getState?.().gameState === "story-hub",
     null,
