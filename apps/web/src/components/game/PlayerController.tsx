@@ -53,9 +53,20 @@ export default function PlayerController() {
 
   useEffect(() => {
     const keys = keysRef.current;
+    const recordCertificationProbe = (event: string, extra: Record<string, unknown> = {}) => {
+      const w = window as any;
+      if (!w.__KAI_JAX_CERTIFICATION__) return;
+      w.__KAI_JAX_INPUT_PROBE__ ??= [];
+      w.__KAI_JAX_INPUT_PROBE__.push({
+        event,
+        at: performance.now(),
+        ...extra,
+      });
+    };
     const handleDown = (e: KeyboardEvent) => {
       if (!keys[e.code]) pendingKeyEdgesRef.current.add(e.code);
       keys[e.code] = true;
+      if (e.code === "KeyK") recordCertificationProbe("keydown", { code: e.code });
     };
     const handleUp = (e: KeyboardEvent) => {
       keys[e.code] = false;
@@ -134,6 +145,22 @@ export default function PlayerController() {
 
     if (queuedAttack) {
       attackBufferRef.current = queueBufferedAttack(queuedAttack);
+      if ((window as any).__KAI_JAX_CERTIFICATION__) {
+        const w = window as any;
+        w.__KAI_JAX_INPUT_PROBE__ ??= [];
+        w.__KAI_JAX_INPUT_PROBE__.push({
+          event: "buffered",
+          at: performance.now(),
+          attack: queuedAttack,
+          battlePhase: state.battlePhase,
+          playerAttacking: state.playerAttacking,
+          playerDodgeTimer: state.playerDodgeTimer,
+          guardBreakTimer: state.guardBreakTimer,
+          playerHitStunTimer: state.playerHitStunTimer,
+          playerStamina: state.playerStamina,
+          playerGrounded: state.playerGrounded,
+        });
+      }
     } else {
       // A fresh input must get one real consumption attempt before its short
       // buffer lifetime starts decaying. Slow WebGL/low-FPS frames can exceed
@@ -283,6 +310,23 @@ export default function PlayerController() {
         fresh.playerAttack(buffered.type);
         const after = useBattle.getState();
         consumed = after.playerAttacking && after.playerAttackType === buffered.type;
+        if ((window as any).__KAI_JAX_CERTIFICATION__) {
+          const w = window as any;
+          w.__KAI_JAX_INPUT_PROBE__ ??= [];
+          w.__KAI_JAX_INPUT_PROBE__.push({
+            event: consumed ? "consumed" : "rejected",
+            at: performance.now(),
+            attack: buffered.type,
+            battlePhase: after.battlePhase,
+            playerAttacking: after.playerAttacking,
+            playerAttackType: after.playerAttackType,
+            playerDodgeTimer: after.playerDodgeTimer,
+            guardBreakTimer: after.guardBreakTimer,
+            playerHitStunTimer: after.playerHitStunTimer,
+            playerStamina: after.playerStamina,
+            playerGrounded: after.playerGrounded,
+          });
+        }
       }
 
       if (consumed) attackBufferRef.current = null;
