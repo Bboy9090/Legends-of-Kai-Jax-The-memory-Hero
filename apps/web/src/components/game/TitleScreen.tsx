@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useRunner } from '../../lib/stores/useRunner';
 import { useAudio } from '../../lib/stores/useAudio';
 import { Settings, UserCheck, Play } from 'lucide-react';
+import { BRAND } from '../../lib/brand';
 
 export default function TitleScreen() {
   const { setGameState } = useRunner();
@@ -13,15 +14,22 @@ export default function TitleScreen() {
   };
 
   useEffect(() => {
-    const handleKeyDown = () => handleStart();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      handleStart();
+    };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const releaseVersion = import.meta.env.VITE_RELEASE_VERSION || 'dev';
+  const releaseSha = (import.meta.env.VITE_RELEASE_SHA || 'local').slice(0, 7);
+
   return (
     <div 
-      onClick={handleStart}
-      className="fixed inset-0 z-50 flex flex-col justify-between p-8 bg-cover bg-center cursor-pointer select-none"
+      data-testid="title-screen"
+      className="fixed inset-0 z-50 flex flex-col justify-between p-8 bg-cover bg-center select-none"
       style={{
         backgroundImage: 'radial-gradient(circle at center, rgba(10,10,26,0.5) 0%, rgba(5,5,16,0.95) 100%), url("/models/ruined_city_bg.jpg")',
         backgroundColor: '#050510'
@@ -31,7 +39,9 @@ export default function TitleScreen() {
       <div className="flex justify-between items-center z-10">
         <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span className="text-[10px] font-mono tracking-widest text-slate-300">VER. 1.0.0 | BUILD 2026.08.03</span>
+          <span data-testid="title-release-metadata" className="text-[10px] font-mono tracking-widest text-slate-300">
+            VER. {releaseVersion} | BUILD {releaseSha}
+          </span>
         </div>
         <button 
           onClick={(e) => { e.stopPropagation(); setGameState('settings'); }}
@@ -56,7 +66,7 @@ export default function TitleScreen() {
             filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.8))'
           }}
         >
-          LEGENDS OF
+          {BRAND.title.replace('KAI-JAX', '').trim()}
         </h1>
 
         <h2 
@@ -72,15 +82,21 @@ export default function TitleScreen() {
         </h2>
 
         <p className="text-amber-400/90 text-sm sm:text-lg font-medium tracking-[0.25em] uppercase max-w-md pt-2">
-          Forged in the Raging City. Crowned by Memory.
+          {BRAND.shortTagline}
         </p>
 
         {/* Prompt Button */}
         <div className="pt-12">
-          <div className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 via-purple-600 to-cyan-500 rounded-2xl font-black text-white text-lg tracking-widest uppercase shadow-[0_0_50px_rgba(168,85,247,0.5)] animate-pulse hover:scale-105 transition-all">
-            <Play className="w-5 h-5 fill-current" />
-            <span>PRESS ANY BUTTON TO BEGIN</span>
-          </div>
+          <button
+            type="button"
+            data-testid="title-begin-button"
+            onClick={handleStart}
+            className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 via-purple-600 to-cyan-500 rounded-2xl font-black text-white text-lg tracking-widest uppercase shadow-[0_0_50px_rgba(168,85,247,0.5)] animate-pulse hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300/80 transition-all"
+            aria-label="Begin Legends of Kai-Jax"
+          >
+            <Play className="w-5 h-5 fill-current" aria-hidden="true" />
+            <span>PRESS ENTER / SPACE TO BEGIN</span>
+          </button>
         </div>
       </div>
 
