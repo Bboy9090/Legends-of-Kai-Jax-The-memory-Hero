@@ -460,7 +460,12 @@ export default function OptimizedBeastModel({
   const sampleVisibleSkinPose = () => {
     const values: number[] = [];
     const point = new THREE.Vector3();
+    const updatedSkeletons = new Set<THREE.Skeleton>();
     for (const sample of skinSampleRef.current) {
+      if (!updatedSkeletons.has(sample.mesh.skeleton)) {
+        sample.mesh.skeleton.update();
+        updatedSkeletons.add(sample.mesh.skeleton);
+      }
       point.copy(sample.base);
       sample.mesh.applyBoneTransform(sample.vertexIndex, point);
       values.push(point.x, point.y, point.z);
