@@ -359,13 +359,13 @@ export default function OptimizedBeastModel({
             return clone;
           }
 
-          const material = new THREE.MeshLambertMaterial({
+          // Compact/mobile uses an unlit material so the rigged hero keeps its
+          // exact textured silhouette without paying per-pixel PBR or dynamic
+          // lighting cost. The desktop path above remains unchanged.
+          const material = new THREE.MeshBasicMaterial({
             name: source.name,
-            color: source.color?.clone?.() ?? new THREE.Color('#ffffff'),
-            map: source.map ?? null,
-            emissive: source.emissive?.clone?.() ?? new THREE.Color('#000000'),
-            emissiveMap: source.emissiveMap ?? null,
-            emissiveIntensity: Math.min(source.emissiveIntensity ?? 1, 1.25),
+            color: source.map ? new THREE.Color('#ffffff') : source.color?.clone?.() ?? new THREE.Color('#ffffff'),
+            map: source.map ?? source.emissiveMap ?? null,
             transparent: source.transparent,
             opacity: source.opacity,
             alphaTest: source.alphaTest,
@@ -373,6 +373,7 @@ export default function OptimizedBeastModel({
             depthWrite: source.depthWrite,
             depthTest: source.depthTest,
             vertexColors: source.vertexColors,
+            fog: true,
           });
           material.needsUpdate = true;
           return material;
