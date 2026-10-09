@@ -59,7 +59,10 @@ export function getQualitySettings() {
     // Render internally below device pixel density on compact screens. The
     // UI remains CSS-resolution crisp while the 3D layer sheds the expensive
     // fill-rate cost of dense fur/armor models.
-    pixelRatio: Math.min(window.devicePixelRatio, isMobile ? 0.75 : isTablet ? 1.0 : 1.5),
+    pixelRatio: Math.min(
+      window.devicePixelRatio,
+      isMobile ? 0.5 : isTablet ? 0.42 : 1.5,
+    ),
     antialias: deviceType === 'desktop',
     shadowMap: {
       // Dynamic shadow maps are one of the largest GPU costs in the adventure
