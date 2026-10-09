@@ -64,7 +64,7 @@ export const ARENA_REGISTRY: Record<string, ArenaConfig> = {
   },
   bronx_streets: {
     id: 'bronx_streets',
-    displayName: 'Ruined Bronx Streets',
+    displayName: 'Ruined Raging City Streets',
     biome: 'urban',
     lighting: {
       intensity: 0.8,
