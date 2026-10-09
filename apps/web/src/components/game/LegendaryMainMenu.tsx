@@ -29,6 +29,7 @@ interface MenuItem {
 
 const LegendaryMainMenu: React.FC = () => {
   const [selectedIndex, setSelectedIndex] = useState(0); // Continue is the primary Raging City path
+  const compactMenu = typeof window !== 'undefined' && window.innerWidth < 1024;
   const [memoryShards, setMemoryShards] = useState<Array<{
     id: number;
     x: number;
@@ -209,8 +210,30 @@ const LegendaryMainMenu: React.FC = () => {
     <div className="kj-vision-shell kj-vision-city-vignette relative h-screen w-full overflow-hidden">
       {showProfileSelect && renderProfileSelect()}
       
+      {!compactMenu && (
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-[2] w-[58%] overflow-hidden" aria-hidden="true">
+          <img
+            src="/images/lore/hero-kaijax.png"
+            alt=""
+            className="absolute bottom-[-8%] right-[3%] h-[100%] w-[74%] object-cover object-[center_28%] opacity-88 mix-blend-screen [mask-image:linear-gradient(to_left,black_58%,transparent_100%)]"
+            decoding="async"
+          />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_42%,rgba(157,78,221,.16),transparent_28%),linear-gradient(90deg,rgba(2,3,7,.92),rgba(2,3,7,.08)_50%,rgba(2,3,7,.3))]" />
+          <div className="kj-vision-panel absolute bottom-[8%] right-[4%] w-[min(360px,32vw)] p-4 text-left">
+            <div className="text-[9px] uppercase tracking-[0.28em] text-[#a58a61]">Chapter I · Ashblock Heights</div>
+            <div className="mt-2 text-base uppercase tracking-[0.12em] text-[#efe3cc]">The City Bites Back</div>
+            <div className="mt-1 text-[10px] uppercase tracking-[0.16em] text-purple-300/80">Current Form · Kai-Jax</div>
+            <div className="mt-3 flex items-center gap-3 text-[9px] uppercase tracking-[0.16em] text-[#817666]">
+              <span className="text-[#c69b55]">Memory King</span>
+              <span>•</span>
+              <span>Raging City</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
-      <div className="relative z-10 flex h-full max-w-[760px] flex-col items-start justify-between p-6 sm:p-8 lg:p-12">
+      <div className="relative z-10 flex h-full w-full max-w-[760px] flex-col items-start justify-between p-6 sm:p-8 lg:w-[46%] lg:min-w-[650px] lg:p-12">
         
         {/* Logo - Top Center with Legendary Effects */}
         <div className="mt-8 text-left lg:mt-10">
@@ -222,7 +245,7 @@ const LegendaryMainMenu: React.FC = () => {
           <h2 className="text-transformation text-2xl lg:text-4xl text-white mb-4">
             THE MEMORY KING
           </h2>
-          <div className="flex items-center justify-center gap-4 mt-6">
+          <div className="flex max-w-[680px] items-center gap-3 mt-6">
             <div className="h-0.5 w-12 lg:w-24 bg-gradient-to-r from-transparent via-legendary-gold to-transparent" />
             <div className="flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-legendary-purple animate-pulse" />
@@ -232,12 +255,12 @@ const LegendaryMainMenu: React.FC = () => {
             <p className="text-mono-small text-legendary-gold uppercase tracking-[0.3em] text-xs lg:text-sm">
               FORGED IN THE RAGING CITY. CROWNED BY MEMORY.
             </p>
-            <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-legendary-gold animate-pulse" style={{ animationDelay: '0.4s' }} />
               <span className="w-2 h-2 rounded-full bg-legendary-cyan animate-pulse" style={{ animationDelay: '0.2s' }} />
               <span className="w-2 h-2 rounded-full bg-legendary-purple animate-pulse" />
             </div>
-            <div className="h-0.5 w-12 lg:w-24 bg-gradient-to-r from-transparent via-legendary-gold to-transparent" />
+            <div className="hidden h-0.5 w-12 bg-gradient-to-r from-transparent via-legendary-gold to-transparent sm:block lg:w-24" />
           </div>
 
           {/* Profile Quick Switcher */}
