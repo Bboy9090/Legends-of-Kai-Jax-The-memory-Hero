@@ -69,7 +69,7 @@ const LegendaryMainMenu: React.FC = () => {
     },
     {
       id: 'story',
-      label: 'STORY HUB',
+      label: 'STORY',
       sublabel: 'The Raging City Campaign Map',
       action: () => setGameState('story-hub')
     },
@@ -81,7 +81,7 @@ const LegendaryMainMenu: React.FC = () => {
     },
     {
       id: 'training',
-      label: 'TRAINING ARENA',
+      label: 'TRAINING',
       sublabel: 'Practice moves & combos',
       action: () => {
         setTrainingSession(true);
@@ -114,7 +114,7 @@ const LegendaryMainMenu: React.FC = () => {
     },
     {
       id: 'abilities',
-      label: 'EXTRAS & ABILITIES',
+      label: 'EXTRAS',
       sublabel: 'Memory Weave skill tree',
       action: () => setGameState('abilities')
     },
@@ -126,7 +126,7 @@ const LegendaryMainMenu: React.FC = () => {
     },
     {
       id: 'quit',
-      label: 'QUIT GAME',
+      label: 'EXIT GAME',
       sublabel: 'Exit to title screen',
       action: () => setGameState('title')
     },
@@ -454,7 +454,7 @@ const LegendaryMainMenu: React.FC = () => {
             LEGENDS OF KAI-JAX
           </h1>
           <h2 className="text-transformation text-2xl lg:text-4xl text-white mb-4">
-            THE MEMORY HERO
+            THE MEMORY KING
           </h2>
           <div className="flex items-center justify-center gap-4 mt-6">
             <div className="h-0.5 w-12 lg:w-24 bg-gradient-to-r from-transparent via-legendary-gold to-transparent" />
