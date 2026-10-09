@@ -25,6 +25,13 @@ function TitleHeroStage() {
       aria-hidden="true"
       data-testid="title-live-hero-stage"
     >
+      <img
+        src="/brand/kai-and-jax-before-merge.png"
+        alt=""
+        className="absolute inset-y-[3%] right-[-2%] h-[96%] w-[92%] object-cover object-center opacity-30 mix-blend-screen [mask-image:linear-gradient(to_left,black_58%,rgba(0,0,0,.72)_76%,transparent_100%)]"
+        decoding="async"
+        aria-hidden="true"
+      />
       <Canvas
         shadows
         camera={{ position: [0, 1.45, 7.4], fov: 36 }}
