@@ -458,6 +458,11 @@ export default function OptimizedBeastModel({
   };
 
   const sampleVisibleSkinPose = () => {
+    // AnimationMixer updates local bone transforms inside the frame loop. The
+    // renderer refreshes matrixWorld later, so force that refresh before
+    // sampling skinned vertices or the deformation probe can read stale poses.
+    cloned.updateMatrixWorld(true);
+
     const values: number[] = [];
     const point = new THREE.Vector3();
     const updatedSkeletons = new Set<THREE.Skeleton>();
