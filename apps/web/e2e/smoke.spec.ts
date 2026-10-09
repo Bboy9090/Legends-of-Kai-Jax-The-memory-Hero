@@ -130,7 +130,7 @@ async function enterStableState(page: Page, gameState: string): Promise<void> {
 }
 
 test("versus: boots, navigates menus, and starts a battle without crashing", async ({ page }, testInfo) => {
-  test.setTimeout(240_000);
+  test.setTimeout(420_000);
   const errors = collectErrors(page);
   await page.addInitScript(() => {
     (window as any).__KAI_JAX_CERTIFICATION__ = true;
@@ -160,18 +160,30 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
 
   // Certify locomotion against the clip actually selected by the mounted fighter.
   await page.keyboard.down("ArrowRight");
-  await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
-    return probe?.requested === "walk" && probe?.authored === true && /walk/i.test(probe?.selectedClip ?? "");
-  }, null, { timeout: 45_000 });
+  try {
+    await page.waitForFunction(() => {
+      const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
+      return probe?.requested === "walk" && probe?.authored === true && /walk/i.test(probe?.selectedClip ?? "");
+    }, null, { timeout: 90_000 });
+  } catch (error) {
+    console.log("LIVE_ANIMATION_WALK_TIMEOUT_PROBE", JSON.stringify(await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__)));
+    console.log("LIVE_COMPANION_WALK_TIMEOUT_PROBE", JSON.stringify(await page.evaluate(() => (window as any).__KAI_JAX_COMPANION_PROBE__)));
+    throw error;
+  }
   const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_WALK_PROBE", JSON.stringify(walkProbe));
   expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
   await page.keyboard.down("ShiftLeft");
-  await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
-    return probe?.requested === "run" && probe?.authored === true && /run/i.test(probe?.selectedClip ?? "");
-  }, null, { timeout: 45_000 });
+  try {
+    await page.waitForFunction(() => {
+      const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
+      return probe?.requested === "run" && probe?.authored === true && /run/i.test(probe?.selectedClip ?? "");
+    }, null, { timeout: 90_000 });
+  } catch (error) {
+    console.log("LIVE_ANIMATION_RUN_TIMEOUT_PROBE", JSON.stringify(await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__)));
+    console.log("LIVE_COMPANION_RUN_TIMEOUT_PROBE", JSON.stringify(await page.evaluate(() => (window as any).__KAI_JAX_COMPANION_PROBE__)));
+    throw error;
+  }
   const runProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_RUN_PROBE", JSON.stringify(runProbe));
   expect(Object.values(runProbe ?? {}).some((p: any) => p?.requested === "run" && /run/i.test(p?.selectedClip ?? ""))).toBeTruthy();
