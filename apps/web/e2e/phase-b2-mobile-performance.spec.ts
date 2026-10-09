@@ -37,8 +37,29 @@ test.describe('Phase B2: Mobile Performance Testing', () => {
       // Navigate to game
       await page.goto(`${PREVIEW_URL}`, { waitUntil: 'networkidle' });
 
-      // Wait for Three.js canvas to render
-      await page.waitForSelector('canvas', { timeout: 10000 });
+      // Follow the real production launch path. The title screen now contains
+      // a live decorative Three.js hero stage, so "first canvas on the page"
+      // is not sufficient proof that gameplay has mounted.
+      await page.getByTestId('game-intro').waitFor({ state: 'detached', timeout: 20000 }).catch(() => {});
+      await page.getByTestId('title-screen').waitFor({ state: 'visible', timeout: 15000 });
+      await page.getByRole('button', { name: 'Begin Legends of Kai-Jax' }).click();
+
+      await page.waitForFunction(
+        () => (window as any).runnerStore?.getState?.().gameState === 'menu',
+        null,
+        { timeout: 10000 },
+      );
+
+      const trainingButton = page.getByRole('button', { name: /TRAINING/i }).first();
+      await expect(trainingButton).toBeVisible({ timeout: 10000 });
+      await trainingButton.click();
+
+      await page.waitForFunction(
+        () => (window as any).runnerStore?.getState?.().gameState === 'adventure',
+        null,
+        { timeout: 15000 },
+      );
+      await page.waitForSelector('canvas', { timeout: 15000 });
 
       // Get baseline performance metrics
       const metrics = await page.evaluate(() => {
@@ -54,13 +75,7 @@ test.describe('Phase B2: Mobile Performance Testing', () => {
       expect(metrics?.domContentLoaded).toBeLessThan(5000); // DOMContentLoaded < 5s
       expect(metrics?.loadComplete).toBeLessThan(8000); // Load complete < 8s
 
-      // Start Training Mode
-      const startButton = page.locator('button:has-text("Training")').first();
-      if (await startButton.isVisible()) {
-        await startButton.click({ timeout: 5000 });
-      }
-
-      // Wait for game to initialize
+      // Let the gameplay arena settle after route transition and model mount.
       await page.waitForTimeout(2000);
 
       // Verify canvas is active and rendering
@@ -73,16 +88,22 @@ test.describe('Phase B2: Mobile Performance Testing', () => {
 
       expect(canvasVisible).toBe(true);
 
-      // Capture animation frames to verify smoothness
-      const frameTimes: number[] = [];
-      let lastFrameTime = performance.now();
-
-      for (let i = 0; i < 60; i++) {
-        await page.waitForTimeout(16); // ~60fps
-        const currentTime = performance.now();
-        frameTimes.push(currentTime - lastFrameTime);
-        lastFrameTime = currentTime;
-      }
+      // Measure browser render cadence with requestAnimationFrame. Measuring
+      // Playwright-side waitForTimeout scheduling adds runner/IPC latency and
+      // does not represent the game's actual frame cadence.
+      const frameTimes = await page.evaluate(async () => {
+        return await new Promise<number[]>((resolve) => {
+          const samples: number[] = [];
+          let last = performance.now();
+          const step = (now: number) => {
+            samples.push(now - last);
+            last = now;
+            if (samples.length >= 60) resolve(samples.slice(1));
+            else requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        });
+      });
 
       // Calculate frame timing statistics
       const avgFrameTime = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
@@ -93,27 +114,19 @@ test.describe('Phase B2: Mobile Performance Testing', () => {
       expect(fps).toBeGreaterThan(30);
       expect(maxFrameTime).toBeLessThan(50);
 
-      // Test character movement (click on arena to move)
-      const canvas = page.locator('canvas').first();
-      const box = await canvas.boundingBox();
+      // Exercise the mounted arena through its real movement controller.
+      // Pointer clicks are not a locomotion contract and can be intercepted by
+      // HUD layers; keyboard input deterministically exercises the controller.
+      const beforeX = await page.evaluate(() => (window as any).adventureStore?.getState?.().player?.position?.[0] ?? null);
+      await page.keyboard.down('ArrowRight');
+      await page.waitForTimeout(500);
+      await page.keyboard.up('ArrowRight');
+      const afterX = await page.evaluate(() => (window as any).adventureStore?.getState?.().player?.position?.[0] ?? null);
 
-      if (box) {
-        // Click on arena to trigger movement
-        await page.click(`canvas`, {
-          position: { x: Math.floor(box.width * 0.7), y: Math.floor(box.height * 0.5) },
-        });
-
-        // Wait for animation state to update
-        await page.waitForTimeout(500);
-
-        // Verify character is in moving state
-        const isMoving = await page.evaluate(() => {
-          const store = (window as any).__battleStore;
-          return store ? store.player?.isMoving : false;
-        });
-
-        // isMoving may be true or false depending on timing, but shouldn't error
-        expect(isMoving).toBeDefined();
+      // Store globals differ between arena implementations, so null is allowed;
+      // when exposed, movement must not regress backwards under right input.
+      if (typeof beforeX === 'number' && typeof afterX === 'number') {
+        expect(afterX).toBeGreaterThanOrEqual(beforeX);
       }
 
       // Document results
