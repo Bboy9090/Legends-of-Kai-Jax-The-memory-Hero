@@ -496,7 +496,7 @@ export default function OptimizedBeastModel({
     // Measure actual arm/leg/spine quaternion changes. If an authored clip is
     // bound incorrectly and the visible skeleton remains static, fail over to
     // the articulated procedural rig instead of letting the fighter skate.
-    if ((isMoving || isAttacking) && activeActionRef.current && !forceProceduralRef.current) {
+    if (isMoving || isAttacking) {
       const pose = sampleRigPose();
       if (pose.length > 0) {
         const sample = deformationSampleRef.current;
@@ -510,6 +510,7 @@ export default function OptimizedBeastModel({
         if (sample.frames >= 12) {
           const averageMotion = sample.motion / sample.frames;
           const moving = averageMotion > 0.0015;
+          const source = activeActionRef.current && !forceProceduralRef.current ? 'authored' : 'procedural';
           if (typeof window !== 'undefined') {
             const w = window as any;
             w.__KAI_JAX_DEFORMATION_PROBE__ ??= {};
@@ -517,11 +518,12 @@ export default function OptimizedBeastModel({
               requested: isAttacking ? attackType ?? 'attack' : isRunning ? 'run' : 'walk',
               moving,
               averageMotion,
-              forcedProcedural: !moving,
+              source,
+              forcedProcedural: forceProceduralRef.current,
               timestamp: performance.now(),
             };
           }
-          if (!moving) {
+          if (!moving && activeActionRef.current && !forceProceduralRef.current) {
             forceProceduralRef.current = true;
             activeActionRef.current.stop();
             activeActionRef.current = null;
