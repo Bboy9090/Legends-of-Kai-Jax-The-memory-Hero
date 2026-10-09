@@ -97,9 +97,12 @@ test('E2E-006: Gold Slice real-runtime accelerated player path', async ({ page }
   const errors = collectErrors(page);
 
   await page.addInitScript(() => {
+    const clearedKey = '__kj_gold_slice_storage_cleared__';
+    if (sessionStorage.getItem(clearedKey) === '1') return;
     localStorage.removeItem('kai-jax-save');
     localStorage.removeItem('kai-jax-save-backup');
     localStorage.removeItem('MK_MISSIONS_V1');
+    sessionStorage.setItem(clearedKey, '1');
   });
 
   await boot(page);
