@@ -23,8 +23,16 @@ const DISTRICTS: DistrictInfo[] = [
 ];
 
 export default function StoryHubScreen() {
-  const { setGameState, setActiveStoryMission } = useRunner();
+  const {
+    setGameState,
+    setActiveStoryMission,
+    selectedCharacter,
+    setCharacter,
+    totalScore,
+    activeProfileIndex,
+  } = useRunner();
   const [selectedDistrict, setSelectedDistrict] = useState(DISTRICTS[0]);
+  const profileLevel = Math.max(1, Math.floor(totalScore / 1000) + 1);
 
   const routes = useMemo(() => DISTRICTS.slice(0, -1).map((district, index) => ({
     from: district,
@@ -52,9 +60,15 @@ export default function StoryHubScreen() {
           </div>
         </div>
         <div className="hidden items-center gap-4 text-[10px] uppercase tracking-[0.22em] text-[#a79372] md:flex">
-          <span>Ronin Lv. 47</span>
-          <span className="h-1.5 w-28 overflow-hidden rounded-full bg-black/70"><span className="block h-full w-[72%] bg-purple-500" /></span>
-          <span>24,850</span>
+          <span>Profile 0{activeProfileIndex + 1}</span>
+          <span>Lv. {profileLevel}</span>
+          <span className="h-1.5 w-28 overflow-hidden rounded-full bg-black/70">
+            <span
+              className="block h-full bg-purple-500"
+              style={{ width: `${Math.min(100, totalScore % 1000 / 10)}%` }}
+            />
+          </span>
+          <span>{totalScore.toLocaleString()} Memory Score</span>
         </div>
       </header>
 
@@ -133,15 +147,36 @@ export default function StoryHubScreen() {
             <div className="text-center text-[10px] uppercase tracking-[0.3em] text-[#a48c65]">Your Legends</div>
             <div className="mt-4 grid grid-cols-3 gap-2">
               {[
-                ['KAI', '#c76cff'],
-                ['JAX', '#5aaeff'],
-                ['KAI-JAX', '#efc76d'],
-              ].map(([name, color]) => (
-                <button key={name} className="border border-[#735c39]/55 bg-black/45 p-2 text-center">
-                  <div className="mx-auto mb-2 h-14 w-10 border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,.08),rgba(0,0,0,.6))]" style={{ boxShadow: `inset 0 0 18px ${color}33` }} />
-                  <div className="text-[9px] tracking-[0.12em]" style={{ color }}>{name}</div>
-                </button>
-              ))}
+                ['kai', 'KAI', '#c76cff', 'MEMORY-WEB HEIR'],
+                ['jax', 'JAX', '#5aaeff', 'STORM FANG'],
+                ['kai-jax', 'KAI-JAX', '#efc76d', 'FUSION HERO'],
+              ].map(([id, name, color, subtitle]) => {
+                const active = selectedCharacter === id
+                  || (id === 'kai-jax' && ['kaijax', 'kai_jax'].includes(selectedCharacter ?? ''));
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setCharacter(id)}
+                    aria-pressed={active}
+                    className="border bg-black/45 p-2 text-center transition hover:-translate-y-0.5"
+                    style={{
+                      borderColor: active ? color : 'rgba(115,92,57,.55)',
+                      boxShadow: active ? `0 0 20px ${color}33` : 'none',
+                    }}
+                  >
+                    <div
+                      className="mx-auto mb-2 grid h-14 w-10 place-items-center border bg-[linear-gradient(180deg,rgba(255,255,255,.08),rgba(0,0,0,.6))] text-lg"
+                      style={{ borderColor: `${color}66`, boxShadow: `inset 0 0 18px ${color}33`, color }}
+                      aria-hidden="true"
+                    >
+                      ✦
+                    </div>
+                    <div className="text-[9px] tracking-[0.12em]" style={{ color }}>{name}</div>
+                    <div className="mt-1 text-[7px] tracking-[0.08em] text-[#817768]">{subtitle}</div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
