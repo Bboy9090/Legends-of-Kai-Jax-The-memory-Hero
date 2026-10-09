@@ -20,34 +20,39 @@ const SCRIPTED_ENCOUNTER_CLEAR_DELAY_SEC = 0.9;
 
 function ArenaGround({ config }: { config: ArenaConfig }) {
   const { biome, ground } = config;
+  const compact = getQualitySettings().deviceType !== "desktop";
 
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
         <planeGeometry args={[VISUAL_ARENA_SIZE, VISUAL_ARENA_SIZE]} />
-        <meshStandardMaterial
-          color={ground.color}
-          roughness={biome === "nature" ? 0.9 : 0.4}
-          metalness={biome === "tech" || biome === "void" ? 0.6 : 0.1}
-        />
+        {compact ? (
+          <meshBasicMaterial color={ground.color} />
+        ) : (
+          <meshStandardMaterial
+            color={ground.color}
+            roughness={biome === "nature" ? 0.9 : 0.4}
+            metalness={biome === "tech" || biome === "void" ? 0.6 : 0.1}
+          />
+        )}
       </mesh>
 
       {biome === "urban" && (
         <>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
             <planeGeometry args={[72, 72]} />
-            <meshStandardMaterial color="#090b10" roughness={0.34} metalness={0.42} />
+            {compact ? <meshBasicMaterial color="#090b10" /> : <meshStandardMaterial color="#090b10" roughness={0.34} metalness={0.42} />}
           </mesh>
           {[-20, 0, 20].map((z, i) => (
             <mesh key={`lane-${i}`} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, z]}>
               <planeGeometry args={[68, 0.35]} />
-              <meshStandardMaterial color="#c69b55" emissive="#7b5524" emissiveIntensity={0.22} roughness={0.52} metalness={0.28} />
+              {compact ? <meshBasicMaterial color="#8f6a34" /> : <meshStandardMaterial color="#c69b55" emissive="#7b5524" emissiveIntensity={0.22} roughness={0.52} metalness={0.28} />}
             </mesh>
           ))}
           {[-29, 29].map((x, i) => (
             <mesh key={`curb-${i}`} position={[x, 0.12, 0]}>
               <boxGeometry args={[2.4, 0.24, 70]} />
-              <meshStandardMaterial color="#171922" roughness={0.52} metalness={0.58} />
+              {compact ? <meshBasicMaterial color="#171922" /> : <meshStandardMaterial color="#171922" roughness={0.52} metalness={0.58} />}
             </mesh>
           ))}
         </>
@@ -187,7 +192,7 @@ function ArenaEnvironment({ config }: { config: ArenaConfig }) {
             <group key={`bldg-${i}`} position={[b.x, b.h / 2, b.z]}>
               <mesh castShadow receiveShadow>
                 <boxGeometry args={[b.w, b.h, b.d]} />
-                <meshStandardMaterial color={b.c} roughness={0.8} />
+                {compact ? <meshBasicMaterial color={b.c} /> : <meshStandardMaterial color={b.c} roughness={0.8} />}
               </mesh>
               {!compact && [-b.w / 4, b.w / 4].map((wx, j) =>
                 [5, 11, 17].map((wy, k) => (
@@ -247,18 +252,26 @@ function ArenaEnvironment({ config }: { config: ArenaConfig }) {
 function ArenaLighting({ config }: { config: ArenaConfig }) {
   const { lighting } = config;
   const compact = getQualitySettings().deviceType !== "desktop";
+
+  if (compact) {
+    // Compact arena materials are intentionally unlit. Keep one very cheap
+    // ambient source for any legacy/third-party mesh that still uses a lit
+    // material, but remove the directional shadow/light pass entirely.
+    return <ambientLight intensity={0.7} color={lighting.ambientColor} />;
+  }
+
   return (
     <group>
-      <ambientLight intensity={compact ? 1.0 : 0.72} color={lighting.ambientColor} />
+      <ambientLight intensity={0.72} color={lighting.ambientColor} />
       <directionalLight
         position={[10, 24, 10]}
-        intensity={compact ? 1.1 : Math.min(2.2, lighting.intensity)}
+        intensity={Math.min(2.2, lighting.intensity)}
         color={lighting.color}
-        castShadow={!compact}
-        shadow-mapSize-width={compact ? 256 : 768}
-        shadow-mapSize-height={compact ? 256 : 768}
+        castShadow
+        shadow-mapSize-width={768}
+        shadow-mapSize-height={768}
       />
-      {!compact && <hemisphereLight args={[lighting.color, "#000000", 0.55]} />}
+      <hemisphereLight args={[lighting.color, "#000000", 0.55]} />
     </group>
   );
 }
