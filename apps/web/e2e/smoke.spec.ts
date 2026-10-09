@@ -130,7 +130,7 @@ async function enterStableState(page: Page, gameState: string): Promise<void> {
 }
 
 test("versus: boots, navigates menus, and starts a battle without crashing", async ({ page }, testInfo) => {
-  test.setTimeout(150_000);
+  test.setTimeout(240_000);
   const errors = collectErrors(page);
   await page.addInitScript(() => {
     (window as any).__KAI_JAX_CERTIFICATION__ = true;
@@ -160,12 +160,18 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
 
   // Certify locomotion against the clip actually selected by the mounted fighter.
   await page.keyboard.down("ArrowRight");
-  await page.waitForFunction(() => (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai?.requested === "walk", null, { timeout: 15_000 });
+  await page.waitForFunction(() => {
+    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
+    return probe?.requested === "walk" && probe?.authored === true && /walk/i.test(probe?.selectedClip ?? "");
+  }, null, { timeout: 45_000 });
   const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_WALK_PROBE", JSON.stringify(walkProbe));
   expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
   await page.keyboard.down("ShiftLeft");
-  await page.waitForFunction(() => (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai?.requested === "run", null, { timeout: 15_000 });
+  await page.waitForFunction(() => {
+    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
+    return probe?.requested === "run" && probe?.authored === true && /run/i.test(probe?.selectedClip ?? "");
+  }, null, { timeout: 45_000 });
   const runProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_RUN_PROBE", JSON.stringify(runProbe));
   expect(Object.values(runProbe ?? {}).some((p: any) => p?.requested === "run" && /run/i.test(p?.selectedClip ?? ""))).toBeTruthy();
@@ -185,13 +191,15 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
           && /kick/i.test(probe?.selectedClip ?? "");
       },
       null,
-      { timeout: 15_000 },
+      { timeout: 60_000 },
     );
   } catch (error) {
     const inputProbe = await page.evaluate(() => (window as any).__KAI_JAX_INPUT_PROBE__);
     const animationProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
+    const companionProbe = await page.evaluate(() => (window as any).__KAI_JAX_COMPANION_PROBE__);
     console.log("LIVE_INPUT_KICK_PROBE", JSON.stringify(inputProbe));
     console.log("LIVE_ANIMATION_KICK_TIMEOUT_PROBE", JSON.stringify(animationProbe));
+    console.log("LIVE_COMPANION_LOAD_TIMEOUT_PROBE", JSON.stringify(companionProbe));
     throw error;
   } finally {
     await page.keyboard.up("KeyK");
