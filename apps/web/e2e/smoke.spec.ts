@@ -129,6 +129,33 @@ async function enterStableState(page: Page, gameState: string): Promise<void> {
   await page.getByTestId('game-intro').waitFor({ state: 'detached', timeout: 10_000 }).catch(() => {});
 }
 
+test("presentation: title shell exposes release metadata and an accessible begin action", async ({ page }) => {
+  test.setTimeout(60_000);
+  const errors = collectErrors(page);
+  await boot(page);
+  await enterStableState(page, "title");
+
+  await expect(page.getByTestId("title-screen")).toBeVisible({ timeout: 10_000 });
+  const metadata = page.getByTestId("title-release-metadata");
+  await expect(metadata).toBeVisible();
+  await expect(metadata).toContainText(/VER\.\s+\S+\s+\|\s+BUILD\s+\S+/);
+  await expect(metadata).not.toContainText("2026.08.03");
+
+  const begin = page.getByRole("button", { name: "Begin Legends of Kai-Jax" });
+  await expect(begin).toBeVisible();
+  await begin.focus();
+  await expect(begin).toBeFocused();
+  await begin.click();
+
+  await page.waitForFunction(
+    () => (window as any).runnerStore?.getState?.().gameState === "menu",
+    null,
+    { timeout: 10_000 },
+  );
+  await expect(page.getByRole("button", { name: /COMBAT ARENA/i })).toBeVisible({ timeout: 10_000 });
+  expect(errors).toEqual([]);
+});
+
 test("versus: boots, navigates menus, and starts a battle without crashing", async ({ page }, testInfo) => {
   test.setTimeout(240_000);
   const errors = collectErrors(page);
