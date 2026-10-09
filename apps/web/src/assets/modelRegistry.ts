@@ -23,8 +23,10 @@ export interface GLBModelConfig {
 /**
  * ⚡ LEGENDS OF KAI-JAX: CANONICAL MODEL REGISTRY ⚡
  *
- * SINGLE SOURCE OF TRUTH for all GLB character and boss models.
- * All models are Meshy.ai generated originals, owned by the project.
+ * SINGLE SOURCE OF TRUTH for runtime GLB character, enemy, and boss paths.
+ * Asset provenance is tracked separately: this registry intentionally makes no
+ * blanket ownership claim because the active library includes both project-made
+ * assets and third-party assets that require their own license evidence.
  *
  * Scale notes:
  *   - Heroes: 3.5 (standard)
