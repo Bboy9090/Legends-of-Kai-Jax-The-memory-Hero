@@ -29,12 +29,12 @@ export function LegendaryLightingRig() {
     
     // Subtle key light animation (breathing effect)
     if (keyLightRef.current) {
-      keyLightRef.current.intensity = 2.0 + Math.sin(time * 0.5) * 0.08;
+      keyLightRef.current.intensity = 2.25 + Math.sin(time * 0.5) * 0.08;
     }
     
     // Fill light flicker (adds drama)
     if (fillLightRef.current) {
-      fillLightRef.current.intensity = 0.65 + Math.random() * 0.04;
+      fillLightRef.current.intensity = 0.78 + Math.random() * 0.04;
     }
   });
   
@@ -69,12 +69,12 @@ export function LegendaryLightingRig() {
       <directionalLight
         ref={rimLightRef}
         position={[0, 4, -8]}
-        intensity={0.4}
+        intensity={0.65}
         color="#fbbf24"
       />
       
       {/* === AMBIENT (base illumination) === */}
-      <ambientLight intensity={0.55} color="#c8d4ff" />
+      <ambientLight intensity={0.62} color="#c8d4ff" />
       
       {/* === HEMISPHERE LIGHT (sky/ground gradient) === */}
       <hemisphereLight
