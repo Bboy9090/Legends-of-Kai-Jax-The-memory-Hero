@@ -90,17 +90,25 @@ async function boot(page: Page): Promise<BootSnapshot> {
     bodyText: (document.body.innerText || "").slice(0, 1200),
   }));
   console.log("RELEASE_BOOT_SNAPSHOT", JSON.stringify(snapshot, null, 2));
+  expect(snapshot.gameState).toBe("title");
   await page.waitForTimeout(250);
   return snapshot;
 }
 
-async function enterGameFromLoreHub(page: Page): Promise<void> {
-  await expect(page.getByTestId("lorehub-play-game-btn")).toBeVisible({ timeout: 15_000 });
-  await page.getByTestId("lorehub-play-game-btn").click();
+async function enterGameFromLaunch(page: Page): Promise<void> {
+  // Production launch authority: cinematic intro -> Memory King title -> menu.
+  await page.getByTestId("game-intro").waitFor({ state: "visible", timeout: 10_000 }).catch(() => {});
+  await page.getByTestId("game-intro").waitFor({ state: "detached", timeout: 20_000 }).catch(() => {});
 
-  // Entering the game from Lore Hub intentionally triggers the first-run intro.
-  await page.getByTestId("game-intro").waitFor({ state: "visible", timeout: 5_000 });
-  await page.getByTestId("game-intro").waitFor({ state: "detached", timeout: 10_000 });
+  await page.waitForFunction(
+    () => (window as any).runnerStore?.getState?.().gameState === "title",
+    null,
+    { timeout: 10_000 },
+  );
+  await expect(page.getByTestId("title-screen")).toBeVisible({ timeout: 20_000 });
+  const begin = page.getByRole("button", { name: "Begin Legends of Kai-Jax" });
+  await expect(begin).toBeVisible({ timeout: 20_000 });
+  await begin.click();
 
   await page.waitForFunction(
     () => (window as any).runnerStore?.getState?.().gameState === "menu",
@@ -165,8 +173,8 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   });
   await boot(page);
 
-  // Follow the same first-run path a player uses, then open Combat Arena.
-  await enterGameFromLoreHub(page);
+  // Follow the real cinematic/title/menu launch path, then open Combat Arena.
+  await enterGameFromLaunch(page);
   await page.getByRole("button", { name: /COMBAT ARENA/i }).click();
   await page.waitForFunction(
     () => (window as any).runnerStore?.getState?.().gameState === "versus-select",
@@ -318,7 +326,7 @@ test("fusion rig: Kai-Jax visibly articulates instead of translating as a statue
     (window as any).__KAI_JAX_CERTIFICATION__ = true;
   });
   await boot(page);
-  await enterGameFromLoreHub(page);
+  await enterGameFromLaunch(page);
 
   await page.getByRole("button", { name: /COMBAT ARENA/i }).click();
   await page.waitForFunction(
@@ -365,8 +373,8 @@ test("story: enters a real story mission and mounts the arena without crashing",
   const errors = collectErrors(page);
   await boot(page);
 
-  // Complete the real first-run launch sequence before selecting a known story mission.
-  await enterGameFromLoreHub(page);
+  // Complete the real cinematic/title/menu launch before selecting a known story mission.
+  await enterGameFromLaunch(page);
   await page.evaluate(() => {
     const s = (window as any).runnerStore.getState();
     s.setCharacter("kai-jax");
