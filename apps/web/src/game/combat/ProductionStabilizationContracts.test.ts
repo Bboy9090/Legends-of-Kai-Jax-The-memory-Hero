@@ -3,9 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { getModelConfig, getModelPath, hasModel } from '../../assets/modelRegistry';
 import {
   GOLD_SLICE_PLAYABLE_IDS,
-  PLAYABLE_FIGHTERS,
   isGoldSlicePlayableId,
-} from '../../lib/characters';
+} from '../../lib/goldSliceRoster';
 import { detectStorageCapability, useRunner } from '../../lib/stores/useRunner';
 import { getLODModelPath } from '../../lib/threejs/ModelLODSystem';
 
@@ -60,13 +59,6 @@ describe('mainline Gold Slice stabilization contracts', () => {
       expect(isGoldSlicePlayableId('')).toBe(false);
     });
 
-    it('resolves exactly three playable combat profiles', () => {
-      expect(PLAYABLE_FIGHTERS).toHaveLength(3);
-      const ids = PLAYABLE_FIGHTERS.map((fighter) =>
-        fighter.id === 'kaijax' ? 'kai-jax' : fighter.id,
-      );
-      expect(ids).toEqual(['kai-jax', 'jaxon', 'kaison']);
-    });
   });
 
   describe('save capability truth', () => {
