@@ -253,11 +253,11 @@ function LegendaryHealthBar({
     >
       <div
         className={`
-          relative bg-gradient-to-b from-gray-900/95 to-black/95 backdrop-blur-md
-          rounded-xl p-1.5 sm:p-2
-          border-2
+          kj-vision-hud relative bg-[linear-gradient(180deg,rgba(12,12,17,.94),rgba(3,4,7,.96))] backdrop-blur-md
+          p-2 sm:p-2.5
+          border
           transition-all duration-300
-          shadow-[0_4px_24px_rgba(0,0,0,0.5)]
+          shadow-[0_10px_30px_rgba(0,0,0,0.48)]
           ${isCritical
             ? 'border-red-500 shadow-[0_0_40px_rgba(239,68,68,0.8)] animate-pulse'
             : isLow
@@ -332,8 +332,8 @@ function LegendaryHealthBar({
         <div
           className={`
             relative h-3.5 sm:h-4 md:h-5
-            bg-gray-800/90 rounded-full overflow-hidden
-            border border-white/25 shadow-[inset_0_2px_6px_rgba(0,0,0,0.5)]
+            bg-black/80 overflow-hidden
+            border border-[#6f5a38]/70 shadow-[inset_0_2px_8px_rgba(0,0,0,0.72)]
             ${isCritical ? 'shadow-[0_0_20px_rgba(239,68,68,0.9)_inset]' : ''}
           `}
         >
@@ -385,10 +385,10 @@ function LegendaryTimer({ time }: { time: number }) {
   return (
     <div
       className={`
-        relative bg-gradient-to-b from-gray-900/90 to-black/90 backdrop-blur-md
-        rounded-xl p-1.5 sm:p-2.5
+        kj-vision-hud relative bg-[linear-gradient(180deg,rgba(13,12,16,.94),rgba(2,3,6,.96))] backdrop-blur-md
+        p-1.5 sm:p-2.5
         min-w-[54px] sm:min-w-[68px]
-        border-3
+        border
         transition-all duration-300
         ${isUrgent
           ? 'border-red-500 shadow-[0_0_50px_rgba(239,68,68,1)] animate-pulse'
@@ -422,7 +422,7 @@ function LegendaryTimer({ time }: { time: number }) {
 
       {/* Urgency Ring */}
       {isUrgent && (
-        <div className="absolute inset-0 rounded-xl border-2 border-red-400 animate-ping opacity-50" />
+        <div className="absolute inset-0 border border-red-400 animate-ping opacity-50" />
       )}
     </div>
   );
@@ -568,12 +568,12 @@ function MissionHUD() {
     ) : null;
 
   return (
-    <div className="absolute top-24 left-3 sm:left-6 pointer-events-none w-[280px] sm:w-[340px] z-40">
+    <div className="absolute top-24 right-3 sm:right-6 pointer-events-none w-[280px] sm:w-[340px] z-40">
       {banner}
-      <div className="bg-black/55 backdrop-blur-md rounded-xl border border-cyan-400/30 shadow-[0_0_30px_rgba(34,211,238,0.10)] p-3">
+      <div className="kj-vision-hud bg-black/70 backdrop-blur-md border border-[#8a6d3f]/70 shadow-[0_14px_34px_rgba(0,0,0,.45)] p-3">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="min-w-0">
-            <div className="mk-hud text-xs text-cyan-300/90 flex items-center gap-2">
+            <div className="mk-hud text-[10px] uppercase tracking-[0.24em] text-[#c69b55] flex items-center gap-2">
               <Target className="w-3.5 h-3.5" />
               ACTIVE MISSION
             </div>
@@ -859,7 +859,7 @@ export default function BattleUI() {
 
   // Ultimate is usable when the meter is full and the fighter can channel it
   // (native ultimate roster or currently transformed) — mirrors useBattle gate.
-  const hasNativeUltimate = ["kai-jax", "kai", "jax", "boryn"].includes(playerFighterId);
+  const hasNativeUltimate = ["kai-jax", "kaijax", "kai_jax", "kai", "jax", "boryn"].includes(playerFighterId);
   const canUseUltimate = playerTransformed || hasNativeUltimate;
 
   // Transient "ULTIMATE READY" banner on the moment the meter fills.
@@ -941,7 +941,7 @@ export default function BattleUI() {
 
       {/* Top HUD */}
       <div className="absolute top-0 left-0 right-0 p-2 sm:p-3">
-        <div className="kj-vision-hud mx-auto max-w-5xl px-2 py-2 sm:px-3">
+        <div className="mx-auto max-w-5xl px-1 py-1 sm:px-2">
           {trainingSession && (
             <div className="text-center mb-1 pointer-events-none">
               <span className="inline-block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-full border border-emerald-500/40 bg-emerald-950/50 text-emerald-200/95">
@@ -1011,7 +1011,7 @@ export default function BattleUI() {
         <button
           type="button"
           onClick={() => setShowMoves(true)}
-          className="kj-vision-button absolute top-20 right-4 z-20 min-h-[44px] pointer-events-auto px-4 py-2 text-xs"
+          className="kj-vision-button absolute bottom-24 right-4 z-20 min-h-[42px] pointer-events-auto px-4 py-2 text-[10px]"
         >
           Moves
         </button>
@@ -1030,19 +1030,19 @@ export default function BattleUI() {
           <div className="kj-vision-hud px-3 py-2">
             <div className="flex justify-between items-center gap-2 mb-1">
               <span className="mk-hud text-[10px] sm:text-xs text-slate-400 uppercase tracking-wider">Stamina</span>
-              <span className="text-[10px] sm:text-xs text-cyan-200/90 font-mono">
+              <span className="text-[10px] sm:text-xs text-[#d9c29a] font-mono">
                 {Math.round(playerStamina)} / {maxPlayerStamina}
               </span>
             </div>
-            <div className="h-2 rounded-full bg-gray-800/90 overflow-hidden border border-white/10">
+            <div className="h-2 bg-black/80 overflow-hidden border border-[#6f5a38]/65">
               <div
-                className="h-full rounded-full transition-[width] duration-100"
+                className="h-full transition-[width] duration-100"
                 style={{
                   width: `${Math.max(0, Math.min(100, (playerStamina / Math.max(1, maxPlayerStamina)) * 100))}%`,
                   background:
                     playerStamina < 18
                       ? "linear-gradient(90deg, #ef4444, #f97316)"
-                      : "linear-gradient(90deg, #22d3ee, #3b82f6)",
+                      : "linear-gradient(90deg, #c69b55, #9d4edd)",
                 }}
               />
             </div>
@@ -1067,7 +1067,7 @@ export default function BattleUI() {
       {/* Controls Guide */}
       {battlePhase === 'fighting' && !touchCapable && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex justify-center px-2 w-full max-w-2xl">
-          <div className="kj-vision-hud px-3 py-2 sm:px-4 sm:py-2.5">
+          <div className="kj-vision-hud px-3 py-1.5 sm:px-4 sm:py-2 opacity-90">
             <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 text-white text-xs sm:text-sm">
               <div className="flex items-center gap-1.5">
                 <kbd className="bg-white/25 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">←→</kbd>
