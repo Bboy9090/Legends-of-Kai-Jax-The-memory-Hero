@@ -132,6 +132,10 @@ async function enterStableState(page: Page, gameState: string): Promise<void> {
 test("versus: boots, navigates menus, and starts a battle without crashing", async ({ page }, testInfo) => {
   test.setTimeout(90_000);
   const errors = collectErrors(page);
+  await page.addInitScript(() => {
+    (window as any).__KAI_JAX_CERTIFICATION__ = true;
+    (window as any).__KAI_JAX_INPUT_PROBE__ = [];
+  });
   await boot(page);
 
   // Follow the same first-run path a player uses, then open Combat Arena.
@@ -172,17 +176,26 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   // Kick is the authored-attack certification target. Procedural Punch pose
   // quality remains a separate visual-review item and must not gate this proof.
   await page.keyboard.down("KeyK"); // kick
-  await page.waitForFunction(
-    () => {
-      const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
-      return probe?.requested === "attack"
-        && probe?.attackType === "kick"
-        && /kick/i.test(probe?.selectedClip ?? "");
-    },
-    null,
-    { timeout: 5_000 },
-  );
-  await page.keyboard.up("KeyK");
+  try {
+    await page.waitForFunction(
+      () => {
+        const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
+        return probe?.requested === "attack"
+          && probe?.attackType === "kick"
+          && /kick/i.test(probe?.selectedClip ?? "");
+      },
+      null,
+      { timeout: 5_000 },
+    );
+  } catch (error) {
+    const inputProbe = await page.evaluate(() => (window as any).__KAI_JAX_INPUT_PROBE__);
+    const animationProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
+    console.log("LIVE_INPUT_KICK_PROBE", JSON.stringify(inputProbe));
+    console.log("LIVE_ANIMATION_KICK_TIMEOUT_PROBE", JSON.stringify(animationProbe));
+    throw error;
+  } finally {
+    await page.keyboard.up("KeyK");
+  }
   const kickProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_KICK_PROBE", JSON.stringify(kickProbe));
   const kaiJaxKick = kickProbe?.kai;
