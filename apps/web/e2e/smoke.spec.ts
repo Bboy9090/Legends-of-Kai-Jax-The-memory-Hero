@@ -189,6 +189,11 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   // Training uses the same battle renderer/controller but keeps the opponent passive,
   // so authored attack proof is not contaminated by random AI hitstun.
   await page.getByRole("button", { name: "Training", exact: true }).click();
+  await page.waitForFunction(
+    () => (window as any).runnerStore?.getState?.().gameState === "playing",
+    null,
+    { timeout: 15_000 },
+  );
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
   await page.waitForFunction(() => Boolean((window as any).__KAI_JAX_ANIMATION_PROBE__?.kai), null, { timeout: 20_000 });
@@ -202,10 +207,21 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_WALK_PROBE", JSON.stringify(walkProbe));
   expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
-  await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai;
-    return probe?.requested === "walk" && probe?.moving === true && probe?.skinVerified === true;
-  }, null, { timeout: 20_000 });
+  try {
+    await page.waitForFunction(() => {
+      const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai;
+      return probe?.requested === "walk" && probe?.moving === true && probe?.skinVerified === true;
+    }, null, { timeout: 20_000 });
+  } catch (error) {
+    const diagnostic = await page.evaluate(() => ({
+      animation: (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai ?? null,
+      deformation: (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai ?? null,
+      rig: (window as any).__KAI_JAX_RIG_PROBE__?.kai ?? null,
+      companion: (window as any).__KAI_JAX_COMPANION_PROBE__ ?? null,
+    }));
+    console.log("LIVE_KAI_SKIN_TIMEOUT_DIAGNOSTIC", JSON.stringify(diagnostic));
+    throw error;
+  }
   const walkDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai);
   console.log("LIVE_DEFORMATION_WALK_PROBE", JSON.stringify(walkDeform));
   expect(walkDeform?.moving).toBe(true);
@@ -339,6 +355,11 @@ test("fusion rig: Kai-Jax visibly articulates instead of translating as a statue
   await fusionCard.click();
   await expect(fusionCard).toHaveAttribute("aria-pressed", "true", { timeout: 10_000 });
   await page.getByRole("button", { name: "Training", exact: true }).click();
+  await page.waitForFunction(
+    () => (window as any).runnerStore?.getState?.().gameState === "playing",
+    null,
+    { timeout: 15_000 },
+  );
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
   await page.keyboard.down("ArrowRight");
