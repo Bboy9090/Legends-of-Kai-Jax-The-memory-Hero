@@ -12,6 +12,7 @@ import AdventureSessionGuard from "./AdventureSessionGuard";
 import AdventureEnemyAI from "./AdventureEnemyAI";
 import Mission1EncounterBridge from "./Mission1EncounterBridge";
 import * as THREE from "three";
+import { getQualitySettings } from "../../../lib/threejs/PerformanceOptimizer";
 
 const VISUAL_ARENA_SIZE = 76;
 const VISUAL_ARENA_HALF = VISUAL_ARENA_SIZE / 2;
@@ -19,34 +20,39 @@ const SCRIPTED_ENCOUNTER_CLEAR_DELAY_SEC = 0.9;
 
 function ArenaGround({ config }: { config: ArenaConfig }) {
   const { biome, ground } = config;
+  const compact = getQualitySettings().deviceType !== "desktop";
 
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
         <planeGeometry args={[VISUAL_ARENA_SIZE, VISUAL_ARENA_SIZE]} />
-        <meshStandardMaterial
-          color={ground.color}
-          roughness={biome === "nature" ? 0.9 : 0.4}
-          metalness={biome === "tech" || biome === "void" ? 0.6 : 0.1}
-        />
+        {compact ? (
+          <meshBasicMaterial color={ground.color} />
+        ) : (
+          <meshStandardMaterial
+            color={ground.color}
+            roughness={biome === "nature" ? 0.9 : 0.4}
+            metalness={biome === "tech" || biome === "void" ? 0.6 : 0.1}
+          />
+        )}
       </mesh>
 
       {biome === "urban" && (
         <>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
             <planeGeometry args={[72, 72]} />
-            <meshStandardMaterial color="#141419" roughness={0.88} metalness={0.15} />
+            {compact ? <meshBasicMaterial color="#090b10" /> : <meshStandardMaterial color="#090b10" roughness={0.34} metalness={0.42} />}
           </mesh>
           {[-20, 0, 20].map((z, i) => (
             <mesh key={`lane-${i}`} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, z]}>
               <planeGeometry args={[68, 0.35]} />
-              <meshStandardMaterial color="#d97706" emissive="#b45309" emissiveIntensity={0.14} roughness={0.9} />
+              {compact ? <meshBasicMaterial color="#8f6a34" /> : <meshStandardMaterial color="#c69b55" emissive="#7b5524" emissiveIntensity={0.22} roughness={0.52} metalness={0.28} />}
             </mesh>
           ))}
           {[-29, 29].map((x, i) => (
             <mesh key={`curb-${i}`} position={[x, 0.12, 0]}>
               <boxGeometry args={[2.4, 0.24, 70]} />
-              <meshStandardMaterial color="#334155" roughness={0.7} />
+              {compact ? <meshBasicMaterial color="#171922" /> : <meshStandardMaterial color="#171922" roughness={0.52} metalness={0.58} />}
             </mesh>
           ))}
         </>
@@ -138,9 +144,10 @@ function ArenaGround({ config }: { config: ArenaConfig }) {
 
 function ArenaEnvironment({ config }: { config: ArenaConfig }) {
   const { biome, lighting } = config;
+  const compact = getQualitySettings().deviceType !== "desktop";
 
   const pillars = useMemo(() => {
-    const count = biome === "void" || biome === "tech" ? 6 : 4;
+    const count = compact ? 0 : biome === "void" || biome === "tech" ? 6 : 4;
     return Array.from({ length: count }, (_, i) => {
       const angle = (i / count) * Math.PI * 2;
       const r = biome === "mystic" ? 35 : 34;
@@ -151,7 +158,7 @@ function ArenaEnvironment({ config }: { config: ArenaConfig }) {
         color: i % 2 === 0 ? lighting.color : lighting.ambientColor,
       };
     });
-  }, [biome, lighting]);
+  }, [biome, compact, lighting]);
 
   return (
     <group>
@@ -177,21 +184,21 @@ function ArenaEnvironment({ config }: { config: ArenaConfig }) {
       {biome === "urban" && (
         <>
           {[
-            { x: -33, z: -25, w: 12, h: 22, d: 14, c: "#1e1e24" },
-            { x: 33, z: -24, w: 13, h: 24, d: 14, c: "#262024" },
-            { x: -33, z: 24, w: 14, h: 20, d: 13, c: "#1b2028" },
-            { x: 33, z: 24, w: 12, h: 23, d: 14, c: "#221c22" },
+            { x: -33, z: -25, w: 12, h: 22, d: 14, c: "#11131a" },
+            { x: 33, z: -24, w: 13, h: 24, d: 14, c: "#171219" },
+            { x: -33, z: 24, w: 14, h: 20, d: 13, c: "#101722" },
+            { x: 33, z: 24, w: 12, h: 23, d: 14, c: "#171116" },
           ].map((b, i) => (
             <group key={`bldg-${i}`} position={[b.x, b.h / 2, b.z]}>
               <mesh castShadow receiveShadow>
                 <boxGeometry args={[b.w, b.h, b.d]} />
-                <meshStandardMaterial color={b.c} roughness={0.8} />
+                {compact ? <meshBasicMaterial color={b.c} /> : <meshStandardMaterial color={b.c} roughness={0.8} />}
               </mesh>
-              {[-b.w / 4, b.w / 4].map((wx, j) =>
+              {!compact && [-b.w / 4, b.w / 4].map((wx, j) =>
                 [5, 11, 17].map((wy, k) => (
                   <mesh key={`win-${j}-${k}`} position={[wx, wy - b.h / 2, b.d / 2 + 0.06]}>
                     <planeGeometry args={[1.8, 2.4]} />
-                    <meshBasicMaterial color={k % 2 === 0 ? "#fbbf24" : "#475569"} />
+                    <meshBasicMaterial color={k % 3 === 0 ? "#d86535" : k % 3 === 1 ? "#9d4edd" : "#55b7ff"} transparent opacity={0.72} />
                   </mesh>
                 )),
               )}
@@ -200,10 +207,10 @@ function ArenaEnvironment({ config }: { config: ArenaConfig }) {
           <group position={[0, 14, -34]}>
             <mesh>
               <planeGeometry args={[12, 4]} />
-              <meshBasicMaterial color="#e11d48" />
+              <meshBasicMaterial color="#9d4edd" transparent opacity={0.62} />
             </mesh>
           </group>
-          {[-20, 20].map((x, i) =>
+          {!compact && [-20, 20].map((x, i) =>
             [-16, 16].map((z, j) => (
               <group key={`lamp-${i}-${j}`} position={[x, 0, z]}>
                 <mesh position={[0, 3.5, 0]}>
@@ -212,7 +219,7 @@ function ArenaEnvironment({ config }: { config: ArenaConfig }) {
                 </mesh>
                 <mesh position={[0, 7.2, 0]}>
                   <sphereGeometry args={[0.3, 10, 10]} />
-                  <meshBasicMaterial color="#ffb703" />
+                  <meshBasicMaterial color={i === 0 ? "#d86535" : "#c69b55"} />
                 </mesh>
               </group>
             )),
@@ -244,6 +251,15 @@ function ArenaEnvironment({ config }: { config: ArenaConfig }) {
 
 function ArenaLighting({ config }: { config: ArenaConfig }) {
   const { lighting } = config;
+  const compact = getQualitySettings().deviceType !== "desktop";
+
+  if (compact) {
+    // Compact arena materials are intentionally unlit. Keep one very cheap
+    // ambient source for any legacy/third-party mesh that still uses a lit
+    // material, but remove the directional shadow/light pass entirely.
+    return <ambientLight intensity={0.7} color={lighting.ambientColor} />;
+  }
+
   return (
     <group>
       <ambientLight intensity={0.72} color={lighting.ambientColor} />

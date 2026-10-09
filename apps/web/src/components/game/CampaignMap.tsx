@@ -52,24 +52,24 @@ export default function CampaignMap() {
 
   return (
     <div
-      className="h-screen w-full p-6 overflow-auto text-white"
+      className="kj-vision-shell kj-vision-city-vignette h-screen w-full overflow-auto p-6 text-white"
       style={{
-        background: "linear-gradient(160deg, #0a0a1a 0%, #1a0a2e 50%, #0d0d1a 100%)",
+        backgroundColor: "#05070b",
         paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))"
       }}
     >
       <div className="max-w-3xl mx-auto">
         <button
           onClick={() => setGameState("menu")}
-          className="mb-6 px-4 py-2.5 rounded-xl border-2 border-slate-600 bg-slate-900/60 text-slate-300 hover:border-cyan-400/60 hover:bg-slate-800/60 transition-all flex items-center gap-2"
+          className="kj-vision-button mb-6 flex items-center gap-2 px-4 py-2.5"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Menu
         </button>
 
         <div className="text-center mb-8">
-          <p className="text-amber-300/80 text-xs font-semibold tracking-[0.3em] uppercase mb-1">Story Mode</p>
-          <h1 className="text-4xl font-black bg-gradient-to-r from-amber-300 via-cyan-300 to-purple-300 bg-clip-text text-transparent mb-2">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.32em] text-[#a88e65]">Story Mode</p>
+          <h1 className="kj-vision-title mb-2 text-4xl font-black">
             Legends of Kai-Jax Campaign
           </h1>
           <p className="text-slate-400 text-sm">
@@ -95,8 +95,8 @@ export default function CampaignMap() {
               onClick={() => { setAct(a); setSelectedMissionId(null); }}
               className={`px-4 py-2 rounded-xl border-2 font-bold transition-all ${
                 act === a
-                  ? "bg-amber-500/20 border-amber-300 shadow-[0_0_18px_rgba(253,230,138,0.25)]"
-                  : "bg-slate-900/60 border-slate-700 hover:border-amber-400/40"
+                  ? "kj-vision-button text-[#f0cf87] border-[#f0cf87]"
+                  : "kj-vision-button text-[#9d927f]"
               }`}
             >
               ACT {a}
@@ -118,12 +118,12 @@ export default function CampaignMap() {
                 disabled={!unlocked}
                 className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
                   isSelected
-                    ? "bg-purple-500/20 border-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.25)]"
+                    ? "kj-vision-panel border-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.20)]"
                     : completed
-                      ? "bg-green-900/25 border-green-500/50"
+                      ? "kj-vision-panel border-emerald-500/50"
                       : unlocked
-                        ? "bg-slate-800/60 border-slate-600 hover:border-cyan-400/60 hover:bg-slate-700/60"
-                        : "bg-slate-900/40 border-slate-700 text-slate-500 cursor-not-allowed opacity-50"
+                        ? "kj-vision-panel hover:border-[#c69b55]"
+                        : "kj-vision-panel text-slate-500 cursor-not-allowed opacity-50"
                 }`}
               >
                 <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-slate-800 border border-slate-600">
@@ -155,7 +155,7 @@ export default function CampaignMap() {
         </div>
 
         {selected && (
-          <div className="bg-slate-900/80 border-2 border-purple-400/50 rounded-2xl p-6 shadow-[0_0_30px_rgba(168,85,247,0.15)] mb-6">
+          <div className="kj-vision-panel mb-6 p-6">
             <div className="flex items-center gap-2 mb-1">
               <BookOpen className="w-5 h-5 text-purple-300" />
               <h2 className="text-xl font-bold text-purple-200">{selected.title}</h2>
@@ -203,7 +203,7 @@ export default function CampaignMap() {
 
             <button
               onClick={() => launchMission(selected.id)}
-              className="w-full min-h-[44px] py-4 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-lg transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+              className="kj-vision-button flex min-h-[44px] w-full items-center justify-center gap-2 py-4 text-lg font-bold"
             >
               <Swords className="w-5 h-5" />
               Begin Mission

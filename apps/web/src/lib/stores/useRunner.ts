@@ -186,8 +186,8 @@ export const useRunner = create<RunnerState>()(
   persist(
     (set, get) => ({
       // Runtime Initial
-      gameState: "lore-hub",
-      selectedCharacter: "jaxon",
+      gameState: "title",
+      selectedCharacter: "kai-jax",
       activeStoryMissionId: null,
       trainingSession: false,
       
@@ -308,6 +308,10 @@ export const useRunner = create<RunnerState>()(
       version: RUNNER_SAVE_VERSION,
       storage: createJSONStorage(() => runnerStorage),
       migrate: (persisted) => persisted as RunnerState,
+      partialize: (state) => ({
+        activeProfileIndex: state.activeProfileIndex,
+        profiles: state.profiles,
+      }),
       merge: (persisted, current) => {
         const saved = (persisted ?? {}) as Partial<RunnerState>;
         const rawProfiles = Array.isArray(saved.profiles) ? saved.profiles : [];
@@ -325,9 +329,11 @@ export const useRunner = create<RunnerState>()(
             : 0;
         const active = profiles[activeProfileIndex];
 
+        // Screen/runtime state intentionally resets every app launch. Persisted
+        // saves carry profile progression only; an old saved gameState must
+        // never bypass the cinematic intro -> title -> main-menu launch path.
         return {
           ...current,
-          ...saved,
           profiles,
           activeProfileIndex,
           totalScore: active.totalScore,
@@ -335,6 +341,10 @@ export const useRunner = create<RunnerState>()(
           completedStoryMissionIds: active.completedStoryMissionIds,
           completedRoamDistrictIds: active.completedRoamDistrictIds,
           unlockedUpgrades: active.unlockedUpgrades,
+          gameState: "title",
+          selectedCharacter: "kai-jax",
+          activeStoryMissionId: null,
+          trainingSession: false,
         };
       },
     }

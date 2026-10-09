@@ -105,8 +105,8 @@ function Joystick() {
       style={{
         width: 112,
         height: 112,
-        background: "rgba(255,255,255,0.08)",
-        border: `2px solid rgba(255,255,255,${active ? 0.5 : 0.25})`,
+        background: "radial-gradient(circle, rgba(25,18,31,0.78), rgba(2,3,6,0.52))",
+        border: `2px solid rgba(198,155,85,${active ? 0.8 : 0.42})`,
         WebkitUserSelect: "none",
         WebkitTouchCallout: "none",
       }}
@@ -117,8 +117,8 @@ function Joystick() {
         style={{
           width: 52,
           height: 52,
-          background: `rgba(0,217,255,${active ? 0.55 : 0.35})`,
-          border: "2px solid rgba(0,217,255,0.8)",
+          background: `rgba(157,78,221,${active ? 0.68 : 0.42})`,
+          border: "2px solid rgba(240,207,135,0.82)",
           transition: active ? "none" : "transform 120ms ease-out",
         }}
       />
@@ -195,8 +195,8 @@ function TouchButton({
         background: color,
         opacity: pressed ? 0.75 : 0.92,
         transform: pressed ? "scale(0.93)" : "scale(1)",
-        border: "3px solid rgba(255,255,255,0.35)",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.4)",
+        border: "2px solid rgba(198,155,85,0.72)",
+        boxShadow: "0 0 0 3px rgba(0,0,0,.28), 0 4px 18px rgba(0,0,0,.55), inset 0 0 18px rgba(255,255,255,.06)",
         transition: "transform 80ms ease-out, opacity 80ms ease-out",
         WebkitUserSelect: "none",
         WebkitTouchCallout: "none",
@@ -287,23 +287,23 @@ export default function AdventureTouchControls() {
       >
         <TouchButton
           action="attack"
-          label="ATK"
+          label="STRIKE"
           size={68}
-          color="rgba(220,38,38,0.85)"
+          color="radial-gradient(circle at 35% 30%, rgba(240,207,135,.42), rgba(88,49,18,.92))"
           style={{ position: "absolute", right: 0, bottom: 0 }}
         />
         <TouchButton
           action="heavy"
           label="HEAVY"
           size={58}
-          color="rgba(234,88,12,0.85)"
+          color="radial-gradient(circle at 35% 30%, rgba(216,101,53,.5), rgba(69,25,15,.92))"
           style={{ position: "absolute", right: 78, bottom: 6 }}
         />
         <TouchButton
           action="skill"
-          label="SKILL"
+          label="MEMORY"
           size={54}
-          color="rgba(168,85,247,0.85)"
+          color="radial-gradient(circle at 35% 30%, rgba(208,124,255,.55), rgba(50,18,72,.94))"
           style={{ position: "absolute", right: 8, bottom: 92 }}
         />
         <TouchButton
@@ -311,7 +311,7 @@ export default function AdventureTouchControls() {
           label="DODGE"
           size={54}
           haptic="medium"
-          color="rgba(34,197,94,0.85)"
+          color="radial-gradient(circle at 35% 30%, rgba(85,183,255,.45), rgba(15,43,72,.92))"
           style={{ position: "absolute", right: 100, bottom: 92 }}
         />
       </div>

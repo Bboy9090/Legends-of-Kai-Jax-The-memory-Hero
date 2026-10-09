@@ -4,6 +4,7 @@ import { useAdventure } from "../../../lib/stores/useAdventure";
 import OptimizedBeastModel from "../models/OptimizedBeastModel";
 import { getFighterById } from "../../../lib/characters";
 import * as THREE from "three";
+import { getQualitySettings } from "../../../lib/threejs/PerformanceOptimizer";
 
 interface Props {
   fighterId: string;
@@ -18,6 +19,7 @@ interface Props {
 function PlayerLocator({ accentColor }: { accentColor: string }) {
   const ringRef = useRef<THREE.Mesh>(null);
   const arrowRef = useRef<THREE.Mesh>(null);
+  const compact = getQualitySettings().deviceType !== "desktop";
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
@@ -32,9 +34,9 @@ function PlayerLocator({ accentColor }: { accentColor: string }) {
 
   return (
     <group name="player-locator">
-      <pointLight position={[0, 2.2, 1.2]} intensity={1.4} distance={7} color="#ffffff" />
+      {!compact && <pointLight position={[0, 2.2, 1.2]} intensity={1.4} distance={7} color="#ffffff" />}
       <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
-        <ringGeometry args={[0.55, 0.72, 40]} />
+        <ringGeometry args={[0.55, 0.72, compact ? 16 : 40]} />
         <meshBasicMaterial color={accentColor} transparent opacity={0.75} side={THREE.DoubleSide} depthWrite={false} />
       </mesh>
       <mesh ref={arrowRef} position={[0, 2.7, 0]} rotation={[Math.PI, 0, 0]}>
@@ -59,6 +61,8 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
   const attackType = useAdventure((s) => s.player.attackType);
   const invulnTimer = useAdventure((s) => s.player.invulnTimer);
   const posY = useAdventure((s) => s.player.posY);
+  const velocityX = useAdventure((s) => s.player.velocityX);
+  const velocityZ = useAdventure((s) => s.player.velocityZ);
 
   const yOffset = useRef(0);
 
@@ -91,6 +95,7 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
           isAttacking={isAttacking}
           isMoving={isMoving || isRunning}
           isRunning={isRunning}
+          locomotionSpeed={Math.hypot(velocityX, velocityZ)}
           attackType={attackType}
           isInvulnerable={invulnTimer > 0}
           hitAnim={hitStunTimer > 0 ? 1 : 0}

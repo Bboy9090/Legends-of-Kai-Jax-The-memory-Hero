@@ -58,6 +58,6 @@ export function getFusionTailForLineage(fighterId: string): TailAbilityDefinitio
   if (fighterId === "jaxon" || fighterId === "jax" || fighterId === "kaison" || fighterId === "kai") {
     return FUSION_KAI_JAX_TAIL;
   }
-  if (fighterId === "kai-jax") return FUSION_KAI_JAX_TAIL;
+  if (fighterId === "kai-jax" || fighterId === "kaijax" || fighterId === "kai_jax") return FUSION_KAI_JAX_TAIL;
   return null;
 }

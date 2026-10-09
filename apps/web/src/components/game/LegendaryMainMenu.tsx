@@ -1,23 +1,20 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../../styles/bronx_grit.css';
 import '../../styles/legendary-effects.css';
-import { BRAND } from '../../lib/brand';
 import { useRunner } from '../../lib/stores/useRunner';
 import { ALL_STORY_MISSIONS } from '../../lib/story_missions';
 
 
 /**
- * ⚡ LEGENDS OF KAI-JAX: THE MEMORY HERO ⚡
- * ULTIMATE LEGENDARY MAIN MENU - GOD-TIER EDITION
- * 
- * Features:
- * - Split cosmic battlefield (Kaison left, Jaxon right, Kai-Jax center fusion)
- * - Animated memory shards with prismatic colors
- * - Three Memory Strand Tails visual effects
- * - God-tier particle systems
- * - Legendary text effects with gradient shimmer
- * - Controller-friendly navigation
- * - Epic transformation-ready aesthetic
+ * ⚡ LEGENDS OF KAI-JAX: THE MEMORY KING ⚡
+ * MEMORY KING / RAGING CITY MAIN MENU
+ *
+ * Production goals:
+ * - cinematic city-first composition
+ * - ornate gold / violet interface hierarchy
+ * - controller, keyboard and pointer navigation
+ * - real profile/save behavior preserved
+ * - no fake loading delay or decorative prototype canvas competing with the approved visual direction
  */
 
 interface MenuItem {
@@ -31,8 +28,8 @@ interface MenuItem {
 }
 
 const LegendaryMainMenu: React.FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [selectedIndex, setSelectedIndex] = useState(1); // Start on New Game
+  const [selectedIndex, setSelectedIndex] = useState(0); // Continue is the primary Raging City path
+  const compactMenu = typeof window !== 'undefined' && window.innerWidth < 1024;
   const [memoryShards, setMemoryShards] = useState<Array<{
     id: number;
     x: number;
@@ -42,8 +39,6 @@ const LegendaryMainMenu: React.FC = () => {
     delay: number;
     type: 'velocity' | 'shield' | 'ghost';
   }>>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [titleGlow, setTitleGlow] = useState(0);
   const [showProfileSelect, setShowProfileSelect] = useState(false);
 
   const profiles = useRunner((s) => s.profiles);
@@ -64,14 +59,14 @@ const LegendaryMainMenu: React.FC = () => {
       id: 'continue',
       label: 'CONTINUE',
       sublabel: 'Resume last saga save',
-      action: () => setGameState('campaign-map'),
+      action: () => setGameState('story-hub'),
       legendary: true
     },
     {
       id: 'story',
-      label: 'STORY HUB',
+      label: 'STORY',
       sublabel: 'The Raging City Campaign Map',
-      action: () => setGameState('campaign-map')
+      action: () => setGameState('story-hub')
     },
     {
       id: 'missions',
@@ -81,7 +76,7 @@ const LegendaryMainMenu: React.FC = () => {
     },
     {
       id: 'training',
-      label: 'TRAINING ARENA',
+      label: 'TRAINING',
       sublabel: 'Practice moves & combos',
       action: () => {
         setTrainingSession(true);
@@ -114,7 +109,7 @@ const LegendaryMainMenu: React.FC = () => {
     },
     {
       id: 'abilities',
-      label: 'EXTRAS & ABILITIES',
+      label: 'EXTRAS',
       sublabel: 'Memory Weave skill tree',
       action: () => setGameState('abilities')
     },
@@ -126,194 +121,15 @@ const LegendaryMainMenu: React.FC = () => {
     },
     {
       id: 'quit',
-      label: 'QUIT GAME',
+      label: 'EXIT GAME',
       sublabel: 'Exit to title screen',
       action: () => setGameState('title')
     },
   ];
 
-  // Initialize memory shards with three types
-  useEffect(() => {
-    const shardTypes: Array<'velocity' | 'shield' | 'ghost'> = ['velocity', 'shield', 'ghost'];
-    const colors: Record<string, string[]> = {
-      velocity: ['#9d4edd', '#c084fc', '#a855f7'], // Purple tones - Jax Strand
-      shield: ['#00d9ff', '#22d3ee', '#06b6d4'],    // Cyan tones - Kai Strand
-      ghost: ['#7dd3fc', '#bae6fd', '#e0f2fe'],    // Light blue - Father's Strand
-    };
-
-    const shards = Array.from({ length: 30 }, (_, i) => {
-      const type = shardTypes[i % 3];
-      const typeColors = colors[type];
-      return {
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 12 + 4,
-        color: typeColors[Math.floor(Math.random() * typeColors.length)],
-        delay: Math.random() * 5,
-        type,
-      };
-    });
-    setMemoryShards(shards);
-
-    // Simulate loading
-    setTimeout(() => setIsLoading(false), 1500);
-  }, []);
-
-  // Title glow animation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTitleGlow(prev => (prev + 0.02) % (Math.PI * 2));
-    }, 16);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Background canvas animation (split cosmic battlefield)
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    let animationFrameId: number;
-    let time = 0;
-
-    const animate = () => {
-      ctx.fillStyle = '#050508';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // === LEFT SIDE: Kaison's Domain (cool tones) ===
-      const leftGradient = ctx.createLinearGradient(0, 0, canvas.width / 2, canvas.height);
-      leftGradient.addColorStop(0, 'rgba(37, 99, 235, 0.08)');   // Blue
-      leftGradient.addColorStop(0.5, 'rgba(124, 58, 237, 0.06)'); // Purple
-      leftGradient.addColorStop(1, 'rgba(6, 182, 212, 0.04)');    // Cyan
-      ctx.fillStyle = leftGradient;
-      ctx.fillRect(0, 0, canvas.width / 2, canvas.height);
-
-      // Kaison's web pattern
-      ctx.strokeStyle = 'rgba(255, 215, 0, 0.03)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 5; i++) {
-        const x = canvas.width * 0.15 + Math.sin(time * 0.0005 + i) * 50;
-        const y = canvas.height * 0.5 + Math.cos(time * 0.0007 + i) * 100;
-        ctx.beginPath();
-        ctx.arc(x, y, 100 + i * 30, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-
-      // === RIGHT SIDE: Jaxon's Domain (electric tones) ===
-      const rightGradient = ctx.createLinearGradient(canvas.width / 2, 0, canvas.width, canvas.height);
-      rightGradient.addColorStop(0, 'rgba(0, 206, 209, 0.06)');   // Cyan
-      rightGradient.addColorStop(0.5, 'rgba(0, 100, 200, 0.04)'); // Electric blue
-      rightGradient.addColorStop(1, 'rgba(50, 50, 100, 0.03)');   // Dark blue
-      ctx.fillStyle = rightGradient;
-      ctx.fillRect(canvas.width / 2, 0, canvas.width / 2, canvas.height);
-
-      // Jaxon's electric quills
-      for (let i = 0; i < 8; i++) {
-        const angle = (time * 0.001 + i * 0.5) % (Math.PI * 2);
-        const x = canvas.width * 0.85 + Math.cos(angle) * (60 + i * 10);
-        const y = canvas.height * 0.5 + Math.sin(angle) * (60 + i * 10);
-        
-        const quillGradient = ctx.createRadialGradient(x, y, 0, x, y, 30);
-        quillGradient.addColorStop(0, 'rgba(0, 255, 255, 0.3)');
-        quillGradient.addColorStop(1, 'transparent');
-        ctx.fillStyle = quillGradient;
-        ctx.fillRect(x - 30, y - 30, 60, 60);
-      }
-
-      // === CENTER: Kai-Jax Fusion Zone ===
-      const centerGradient = ctx.createRadialGradient(
-        canvas.width / 2, canvas.height / 2, 0,
-        canvas.width / 2, canvas.height / 2, 300
-      );
-      centerGradient.addColorStop(0, 'rgba(255, 215, 0, 0.15)'); // Golden core
-      centerGradient.addColorStop(0.3, 'rgba(157, 78, 237, 0.08)'); // Purple mid
-      centerGradient.addColorStop(0.6, 'rgba(0, 217, 255, 0.05)'); // Cyan outer
-      centerGradient.addColorStop(1, 'transparent');
-      ctx.fillStyle = centerGradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Three Memory Strand Tails emanating from center
-      const tailColors = [
-        { color: 'rgba(157, 78, 237, 0.4)', name: 'velocity' },  // Jax Strand
-        { color: 'rgba(0, 217, 255, 0.4)', name: 'shield' },     // Kai Strand
-        { color: 'rgba(125, 211, 252, 0.3)', name: 'ghost' },    // Father's Strand
-      ];
-
-      tailColors.forEach((tail, index) => {
-        const baseAngle = (index / 3) * Math.PI * 2 + Math.PI / 2; // Start from bottom
-        for (let seg = 0; seg < 20; seg++) {
-          const wave = Math.sin(time * 0.002 + seg * 0.3 + index) * 30;
-          const angle = baseAngle + wave * 0.01;
-          const distance = 80 + seg * 15;
-          const x = canvas.width / 2 + Math.sin(angle) * distance;
-          const y = canvas.height / 2 + Math.cos(angle) * distance * 0.7;
-          const size = 15 - seg * 0.5;
-          
-          const tailGradient = ctx.createRadialGradient(x, y, 0, x, y, size);
-          tailGradient.addColorStop(0, tail.color);
-          tailGradient.addColorStop(1, 'transparent');
-          ctx.fillStyle = tailGradient;
-          ctx.beginPath();
-          ctx.arc(x, y, size, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      });
-
-      // Nebula drift effect
-      const nebulaX = canvas.width / 2 + Math.sin(time * 0.0003) * 100;
-      const nebulaY = canvas.height / 2 + Math.cos(time * 0.0004) * 50;
-      const nebulaGradient = ctx.createRadialGradient(
-        nebulaX, nebulaY, 0,
-        nebulaX, nebulaY, 200
-      );
-      nebulaGradient.addColorStop(0, 'rgba(157, 78, 237, 0.05)');
-      nebulaGradient.addColorStop(0.5, 'rgba(0, 217, 255, 0.03)');
-      nebulaGradient.addColorStop(1, 'transparent');
-      ctx.fillStyle = nebulaGradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Star field
-      for (let i = 0; i < 100; i++) {
-        const starX = (i * 137.508) % canvas.width;
-        const starY = (i * 73.254) % canvas.height;
-        const brightness = Math.sin(time * 0.001 + i) * 0.3 + 0.7;
-        const starSize = Math.random() < 0.1 ? 2 : 1;
-        
-        ctx.fillStyle = `rgba(255, 255, 255, ${brightness * 0.5})`;
-        ctx.beginPath();
-        ctx.arc(starX, starY, starSize, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      time += 16;
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isLoading) return;
-
       if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
         e.preventDefault();
         setSelectedIndex(prev => {
@@ -347,23 +163,7 @@ const LegendaryMainMenu: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndex, isLoading, menuItems]);
-
-  // Loading screen
-  if (isLoading) {
-    return (
-      <div className="legendary-loading">
-        <div className="text-center">
-          <div className="relative">
-            <div className="legendary-loading-spinner" />
-          </div>
-          <p className="text-white/60 text-mono-small mt-8 uppercase tracking-widest animate-pulse">
-            The Archive Awakens...
-          </p>
-        </div>
-      </div>
-    );
-  }
+  }, [selectedIndex, menuItems]);
 
   const renderProfileSelect = () => (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
@@ -376,7 +176,7 @@ const LegendaryMainMenu: React.FC = () => {
               onClick={() => {
                 switchProfile(i);
                 setShowProfileSelect(false);
-                setGameState('campaign-map');
+                setGameState('story-hub');
               }}
               className={`group relative p-6 rounded-xl border-2 transition-all hover:scale-105 ${
                 i === activeProfileIndex ? 'border-legendary-gold bg-legendary-gold/10' : 'border-white/10 bg-white/5'
@@ -407,56 +207,45 @@ const LegendaryMainMenu: React.FC = () => {
 
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#050508]">
+    <div className="kj-vision-shell kj-vision-city-vignette relative h-screen w-full overflow-hidden">
       {showProfileSelect && renderProfileSelect()}
       
-      {/* Background Canvas - Split Cosmic Battlefield */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
-        style={{ zIndex: 0 }}
-      />
-
-      {/* Memory Shards Overlay */}
-      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
-        {memoryShards.map(shard => (
-          <div
-            key={shard.id}
-            className="absolute memory-shard"
-            style={{
-              left: `${shard.x}%`,
-              top: `${shard.y}%`,
-              width: `${shard.size}px`,
-              height: `${shard.size}px`,
-              background: `radial-gradient(circle, ${shard.color} 0%, transparent 70%)`,
-              boxShadow: `0 0 ${shard.size * 2}px ${shard.color}`,
-              animationDelay: `${shard.delay}s`,
-              transform: `rotate(${shard.delay * 45}deg)`,
-            }}
+      {!compactMenu && (
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-[2] w-[58%] overflow-hidden" aria-hidden="true">
+          <img
+            src="/images/lore/hero-kaijax.png"
+            alt=""
+            className="absolute bottom-[-8%] right-[3%] h-[100%] w-[74%] object-cover object-[center_28%] opacity-88 mix-blend-screen [mask-image:linear-gradient(to_left,black_58%,transparent_100%)]"
+            decoding="async"
           />
-        ))}
-      </div>
-
-      {/* Nebula Effect */}
-      <div className="nebula-effect" style={{ zIndex: 2 }} />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_42%,rgba(157,78,221,.16),transparent_28%),linear-gradient(90deg,rgba(2,3,7,.92),rgba(2,3,7,.08)_50%,rgba(2,3,7,.3))]" />
+          <div className="kj-vision-panel absolute bottom-[8%] right-[4%] w-[min(360px,32vw)] p-4 text-left">
+            <div className="text-[9px] uppercase tracking-[0.28em] text-[#a58a61]">Chapter I · Ashblock Heights</div>
+            <div className="mt-2 text-base uppercase tracking-[0.12em] text-[#efe3cc]">The City Bites Back</div>
+            <div className="mt-1 text-[10px] uppercase tracking-[0.16em] text-purple-300/80">Current Form · Kai-Jax</div>
+            <div className="mt-3 flex items-center gap-3 text-[9px] uppercase tracking-[0.16em] text-[#817666]">
+              <span className="text-[#c69b55]">Memory King</span>
+              <span>•</span>
+              <span>Raging City</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-between h-full p-6 lg:p-8">
+      <div className="relative z-10 flex h-full w-full max-w-[760px] flex-col items-start justify-between p-6 sm:p-8 lg:w-[46%] lg:min-w-[650px] lg:p-12">
         
         {/* Logo - Top Center with Legendary Effects */}
-        <div className="mt-12 lg:mt-20 text-center">
+        <div className="mt-8 text-left lg:mt-10">
           <h1 
-            className="text-god-tier text-5xl lg:text-7xl mb-2"
-            style={{
-              filter: `drop-shadow(0 0 ${20 + Math.sin(titleGlow) * 10}px rgba(255, 215, 0, 0.6))`,
-            }}
+            className="kj-vision-title mb-2 text-4xl sm:text-5xl lg:text-7xl"
           >
             LEGENDS OF KAI-JAX
           </h1>
           <h2 className="text-transformation text-2xl lg:text-4xl text-white mb-4">
-            THE MEMORY HERO
+            THE MEMORY KING
           </h2>
-          <div className="flex items-center justify-center gap-4 mt-6">
+          <div className="flex max-w-[680px] items-center gap-3 mt-6">
             <div className="h-0.5 w-12 lg:w-24 bg-gradient-to-r from-transparent via-legendary-gold to-transparent" />
             <div className="flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-legendary-purple animate-pulse" />
@@ -464,18 +253,18 @@ const LegendaryMainMenu: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-legendary-gold animate-pulse" style={{ animationDelay: '0.4s' }} />
             </div>
             <p className="text-mono-small text-legendary-gold uppercase tracking-[0.3em] text-xs lg:text-sm">
-              GODS WILL TREMBLE
+              FORGED IN THE RAGING CITY. CROWNED BY MEMORY.
             </p>
-            <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-legendary-gold animate-pulse" style={{ animationDelay: '0.4s' }} />
               <span className="w-2 h-2 rounded-full bg-legendary-cyan animate-pulse" style={{ animationDelay: '0.2s' }} />
               <span className="w-2 h-2 rounded-full bg-legendary-purple animate-pulse" />
             </div>
-            <div className="h-0.5 w-12 lg:w-24 bg-gradient-to-r from-transparent via-legendary-gold to-transparent" />
+            <div className="hidden h-0.5 w-12 bg-gradient-to-r from-transparent via-legendary-gold to-transparent sm:block lg:w-24" />
           </div>
 
           {/* Profile Quick Switcher */}
-          <div className="mt-4 flex items-center gap-4 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-sm">
+          <div className="kj-vision-panel mt-4 inline-flex items-center gap-4 px-4 py-2">
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Profile:</span>
             <button 
               onClick={() => setShowProfileSelect(true)}
@@ -488,7 +277,7 @@ const LegendaryMainMenu: React.FC = () => {
         </div>
 
         {/* Menu Items - Center Vertical */}
-        <div className="flex flex-col gap-2 lg:gap-3 mb-24 lg:mb-32 w-full max-w-md">
+        <div className="kj-vision-panel mb-10 flex w-full max-w-md flex-col gap-1 p-2 lg:mb-16">
           {menuItems.map((item, index) => {
             const isSelected = index === selectedIndex;
 
@@ -498,30 +287,8 @@ const LegendaryMainMenu: React.FC = () => {
                 onClick={() => !item.disabled && item.action()}
                 onMouseEnter={() => !item.disabled && setSelectedIndex(index)}
                 disabled={item.disabled}
-                className={`
-                  relative px-6 lg:px-8 py-3 lg:py-4 text-left w-full
-                  transition-all duration-200 group
-                  ${item.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
-                `}
-                style={{
-                  background: isSelected
-                    ? item.legendary 
-                      ? 'linear-gradient(90deg, rgba(255, 215, 0, 0.15), rgba(0, 217, 255, 0.1))'
-                      : 'rgba(255, 255, 255, 0.05)'
-                    : 'rgba(10, 10, 15, 0.6)',
-                  border: isSelected
-                    ? item.legendary
-                      ? '2px solid rgba(255, 215, 0, 0.8)'
-                      : '2px solid rgba(0, 217, 255, 0.6)'
-                    : '2px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '4px',
-                  boxShadow: isSelected
-                    ? item.legendary
-                      ? '0 0 30px rgba(255, 215, 0, 0.3), inset 0 0 20px rgba(255, 215, 0, 0.05)'
-                      : '0 0 20px rgba(0, 217, 255, 0.2)'
-                    : 'none',
-                  transform: isSelected ? 'translateX(8px)' : 'translateX(0)',
-                }}
+                className={`kj-vision-button relative w-full px-5 py-3 text-left group ${item.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                data-active={isSelected}
               >
                 {/* Selection indicator */}
                 {isSelected && (
@@ -577,7 +344,7 @@ const LegendaryMainMenu: React.FC = () => {
         {/* Footer */}
         <div className="mb-6 lg:mb-8 text-center">
           <p className="text-mono-small text-neutral-600 uppercase tracking-[0.2em] text-xs">
-            FORGED IN THE BRONX • MASTERED IN THE SILENCE
+            WE TAKE. WE HOLD. WE HUNT. THIS IS OUR CITY.
           </p>
           <div className="flex items-center justify-center gap-6 mt-4">
             <button 
@@ -594,7 +361,7 @@ const LegendaryMainMenu: React.FC = () => {
             </button>
           </div>
           <p className="text-neutral-700 text-[10px] mt-4 uppercase tracking-widest">
-            v2.0.0 — THE ULTIMATE FORM
+            THE MEMORY KING — RELEASE VISION
           </p>
         </div>
       </div>

@@ -30,9 +30,10 @@ export default function AdventureCamera() {
   const reduceMotion = useAccessibility((s) => s.reduceMotion);
   const targetRef = useRef(new THREE.Vector3());
   const idealLookRef = useRef(new THREE.Vector3());
-  const smoothDistRef = useRef(CAM_DIST + 1.5);
-  const smoothHeightRef = useRef(CAM_HEIGHT + 0.5);
-  const posRef = useRef(new THREE.Vector3(0, CAM_HEIGHT + 0.5, CAM_DIST + 1.5));
+  const smoothDistRef = useRef(CAM_DIST);
+  const smoothHeightRef = useRef(CAM_HEIGHT);
+  const headingRef = useRef(Math.PI);
+  const posRef = useRef(new THREE.Vector3(0, CAM_HEIGHT, CAM_DIST));
   const frameRef = useRef(0);
 
   useFrame((state, rawDelta) => {
@@ -59,29 +60,42 @@ export default function AdventureCamera() {
       combatState: player.combatState,
     });
 
-    // Player-first framing. Targets influence the look point, but never enough
-    // to drag the player's own character off-screen.
+    // Over-the-shoulder framing: exploration follows the character's facing
+    // direction; combat blends toward the active/nearest target. This makes the
+    // street read like an action RPG instead of a fixed-axis diorama.
     let focusEnemy = null as (typeof autoTarget) | null;
     if (mode === "lockOn" && autoTarget) focusEnemy = autoTarget;
     else if (mode === "combat" && nearest && nearest.d2 < 18 * 18) focusEnemy = nearest.e;
 
-    let enemyBlend = 0;
-    if (focusEnemy) enemyBlend = mode === "lockOn" ? 0.28 : 0.2;
+    let desiredHeading = player.rotY;
+    if (focusEnemy) {
+      desiredHeading = Math.atan2(
+        focusEnemy.posX - player.posX,
+        focusEnemy.posZ - player.posZ,
+      );
+    }
+    let headingDelta = desiredHeading - headingRef.current;
+    while (headingDelta > Math.PI) headingDelta -= Math.PI * 2;
+    while (headingDelta < -Math.PI) headingDelta += Math.PI * 2;
+    const headingK = 1 - Math.exp(-(mode === "exploration" ? 7.5 : 9) * delta);
+    headingRef.current += headingDelta * headingK;
 
-    const lookX = focusEnemy
-      ? THREE.MathUtils.lerp(player.posX, focusEnemy.posX, enemyBlend)
-      : player.posX;
-    const lookZ = focusEnemy
-      ? THREE.MathUtils.lerp(player.posZ, focusEnemy.posZ, enemyBlend)
-      : player.posZ;
-    const lookY = player.posY + (mode === "exploration" ? 1.35 : 1.2);
+    const forwardX = Math.sin(headingRef.current);
+    const forwardZ = Math.cos(headingRef.current);
+    const lookAhead = mode === "exploration" ? 2.4 : 1.5;
+    const baseLookX = player.posX + forwardX * lookAhead;
+    const baseLookZ = player.posZ + forwardZ * lookAhead;
+    const enemyBlend = focusEnemy ? (mode === "lockOn" ? 0.34 : 0.24) : 0;
+    const lookX = focusEnemy ? THREE.MathUtils.lerp(baseLookX, focusEnemy.posX, enemyBlend) : baseLookX;
+    const lookZ = focusEnemy ? THREE.MathUtils.lerp(baseLookZ, focusEnemy.posZ, enemyBlend) : baseLookZ;
+    const lookY = player.posY + (mode === "exploration" ? 1.45 : 1.25);
 
     idealLookRef.current.set(lookX, lookY, lookZ);
     const lookK = 1 - Math.exp(-Math.max(4, LOOK_SMOOTH) * delta);
     targetRef.current.lerp(idealLookRef.current, lookK);
 
-    let dynamicDist = CAM_DIST + 1.5;
-    let dynamicHeight = CAM_HEIGHT + 0.5;
+    let dynamicDist = CAM_DIST;
+    let dynamicHeight = CAM_HEIGHT;
 
     const nearbyCount = aliveEnemies.filter((e) => {
       const dx = player.posX - e.posX;
@@ -124,19 +138,23 @@ export default function AdventureCamera() {
       modeK,
     );
 
-    // Fixed world-axis follow keeps movement controls predictable and prevents
-    // character rotation from whipping the camera sideways.
+    const cameraForwardX = Math.sin(headingRef.current);
+    const cameraForwardZ = Math.cos(headingRef.current);
+    const cameraRightX = Math.cos(headingRef.current);
+    const cameraRightZ = -Math.sin(headingRef.current);
+    const shoulder = mode === "exploration" ? 0.55 : 0.8;
+
     const idealPos = new THREE.Vector3(
-      player.posX,
+      player.posX - cameraForwardX * smoothDistRef.current + cameraRightX * shoulder,
       player.posY + smoothHeightRef.current,
-      player.posZ + smoothDistRef.current,
+      player.posZ - cameraForwardZ * smoothDistRef.current + cameraRightZ * shoulder,
     );
 
     const cameraK = 1 - Math.exp(-Math.max(3.5, CAM_LERP * 0.8) * delta);
     posRef.current.lerp(idealPos, cameraK);
 
     if ("fov" in camera && typeof camera.fov === "number") {
-      const targetFov = mode === "exploration" ? 50 : 52;
+      const targetFov = mode === "exploration" ? 47 : mode === "lockOn" ? 50 : 49;
       camera.fov = THREE.MathUtils.lerp(
         camera.fov,
         targetFov,

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Zap, Sparkles, Swords, Crown, Star } from "lucide-react";
-import { BRAND } from "../../lib/brand";
 
 interface LoadingScreenProps {
   onComplete: () => void;
@@ -164,91 +163,96 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
 
 // ⚡ GAME INTRO SEQUENCE
 export function GameIntro({ onComplete }: { onComplete: () => void }) {
-  const [phase, setPhase] = useState<'logo' | 'tagline' | 'ready' | 'done'>('logo');
-  
+  const [phase, setPhase] = useState<'crest' | 'city' | 'ready' | 'done'>('crest');
+  const compactIntro = typeof window !== 'undefined' && window.innerWidth < 1024;
+
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase('tagline'), 1500),
-      setTimeout(() => setPhase('ready'), 3000),
-      setTimeout(() => {
+      window.setTimeout(() => setPhase('city'), 1200),
+      window.setTimeout(() => setPhase('ready'), 2600),
+      window.setTimeout(() => {
         setPhase('done');
         onComplete();
-      }, 4000),
+      }, 3900),
     ];
-    
-    return () => timers.forEach(clearTimeout);
+    return () => timers.forEach(window.clearTimeout);
   }, [onComplete]);
-  
+
+  useEffect(() => {
+    const skip = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Escape') return;
+      event.preventDefault();
+      setPhase('done');
+      onComplete();
+    };
+    window.addEventListener('keydown', skip);
+    return () => window.removeEventListener('keydown', skip);
+  }, [onComplete]);
+
   if (phase === 'done') return null;
-  
+
   return (
-    <div data-testid="game-intro" className="fixed inset-0 z-[200] flex items-center justify-center bg-black">
-      {/* Logo Phase */}
-      {phase === 'logo' && (
-        <div className="text-center animate-[zoomIn_0.5s_ease-out]">
-          <h1 
-            className="text-7xl sm:text-8xl md:text-9xl font-black"
-            style={{
-              background: 'linear-gradient(135deg, #FFD700, #FF6B6B)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(0 0 50px rgba(255,215,0,0.8))',
-            }}
-          >
-            LEGENDS
-          </h1>
-          <h1 
-            className="text-5xl sm:text-6xl md:text-7xl font-black -mt-4"
-            style={{
-              background: 'linear-gradient(135deg, #00FFFF, #A855F7)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(0 0 40px rgba(0,255,255,0.6))',
-            }}
-          >
-            OF KAI-JAX
-          </h1>
+    <div
+      data-testid="game-intro"
+      className="kj-vision-shell fixed inset-0 z-[200] overflow-hidden bg-[linear-gradient(rgba(2,3,7,.38),rgba(2,3,7,.76)),url('/models/ruined_city_bg.jpg')] bg-cover bg-center"
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_28%,rgba(157,78,221,.20),transparent_26%),linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.18)_64%,rgba(0,0,0,.48))]" />
+
+      {!compactIntro && phase !== 'crest' && (
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-[56%] overflow-hidden" aria-hidden="true">
+          <img
+            src="/brand/kai-and-jax-before-merge.png"
+            alt=""
+            className="absolute bottom-[-8%] right-[-4%] h-[108%] w-[92%] object-cover object-center opacity-70 [mask-image:linear-gradient(to_left,black_60%,transparent_100%)]"
+            decoding="async"
+          />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_64%_38%,rgba(157,78,221,.16),transparent_26%)]" />
         </div>
       )}
-      
-      {/* Tagline Phase */}
-      {phase === 'tagline' && (
-        <div className="text-center animate-[fadeIn_0.5s_ease-out]">
-          <p className="text-2xl sm:text-3xl text-amber-400 font-bold mb-4 tracking-widest uppercase">
-            Welcome to The Raging City
-          </p>
-          <p 
-            className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text"
-            style={{
-              background: 'linear-gradient(90deg, #f43f5e, #a855f7, #00f2ff)',
-              WebkitBackgroundClip: 'text',
-            }}
-          >
-            THE MEMORY HERO RISES
-          </p>
-        </div>
-      )}
-      
-      {/* Ready Phase */}
-      {phase === 'ready' && (
-        <div className="text-center animate-[zoomIn_0.3s_ease-out]">
-          <h1 
-            className="text-8xl sm:text-9xl font-black text-white animate-pulse"
-            style={{ textShadow: '0 0 60px rgba(255,255,255,0.8)' }}
-          >
-            READY?
-          </h1>
-        </div>
-      )}
-      
+
+      <div className="relative z-10 flex h-full items-center justify-center px-8 text-center">
+        {phase === 'crest' && (
+          <div className="animate-[zoomIn_.6s_ease-out]">
+            <div className="mb-4 text-4xl text-[#c69b55]">✦</div>
+            <div className="text-xs uppercase tracking-[0.62em] text-[#a88d62]">Legends of</div>
+            <h1 className="kj-vision-title mt-3 text-[clamp(62px,10vw,150px)] font-black leading-none">
+              KAI<span className="text-purple-400">✦</span>JAX
+            </h1>
+            <div className="kj-vision-divider mx-auto mt-6 max-w-2xl" />
+          </div>
+        )}
+
+        {phase === 'city' && (
+          <div className="max-w-4xl animate-[fadeIn_.6s_ease-out] lg:mr-[34vw] lg:text-left">
+            <p className="text-xs uppercase tracking-[0.55em] text-[#a88d62]">The Raging City</p>
+            <h2 className="kj-vision-subtitle mt-5 text-[clamp(28px,4vw,58px)]">The Memory King</h2>
+            <p className="mx-auto mt-7 max-w-2xl text-base leading-8 tracking-[0.12em] text-[#d4c2a0] sm:text-lg lg:mx-0">
+              Forged in the Raging City. Crowned by Memory.
+            </p>
+          </div>
+        )}
+
+        {phase === 'ready' && (
+          <div className="animate-[zoomIn_.35s_ease-out] lg:mr-[34vw] lg:text-left">
+            <p className="text-xs uppercase tracking-[0.42em] text-[#9e8967]">Memory wakes. The city remembers.</p>
+            <h2 className="kj-vision-title mt-5 text-[clamp(42px,7vw,92px)]">Enter The City</h2>
+            <div className="mt-8 text-[10px] uppercase tracking-[0.32em] text-purple-300/80">Press Enter / Space to skip</div>
+          </div>
+        )}
+      </div>
+
+      <div className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 text-[9px] uppercase tracking-[0.34em] text-[#756a58]">
+        We take. We hold. We hunt.
+      </div>
+
       <style>{`
         @keyframes zoomIn {
-          from { transform: scale(0.5); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
+          from { transform: scale(.82); opacity: 0; filter: blur(10px); }
+          to { transform: scale(1); opacity: 1; filter: blur(0); }
         }
         @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>

@@ -64,6 +64,11 @@ import {
 const ARENA_X_MIN = MOVEMENT_TUNING.battle.arenaXMin;
 const ARENA_X_MAX = MOVEMENT_TUNING.battle.arenaXMax;
 
+const KAI_JAX_IDS = new Set(["kai-jax", "kaijax", "kai_jax"]);
+function isKaiJaxId(fighterId: string): boolean {
+  return KAI_JAX_IDS.has(fighterId);
+}
+
 function getEffectiveMaxComboTimer(): number {
   return useRunner.getState().unlockedUpgrades.includes("comboWindow")
     ? UPGRADED_MAX_COMBO_TIMER_SEC
@@ -637,7 +642,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     if (playerAttacking || (battlePhase !== 'fighting' && battlePhase !== 'transforming')) return;
 
     const { playerFighterId, playerOverdrive, maxOverdrive } = get();
-    const hasNativeUltimate = ['kai-jax', 'kai', 'jax', 'boryn'].includes(playerFighterId);
+    const hasNativeUltimate = isKaiJaxId(playerFighterId) || ['kai', 'jax', 'boryn'].includes(playerFighterId);
     const canUltimate = playerOverdrive >= maxOverdrive && (playerTransformed || hasNativeUltimate);
     if (type === 'ultimate' && !canUltimate) return;
 
@@ -1020,7 +1025,7 @@ export const useBattle = create<BattleState>((set, get) => ({
   // ⚡ LEGENDARY SYNERGY SYSTEM (Resonance for Jaxon/Kaison -> Kai-Jax)
   addSynergy: (amount) => {
     const { playerSynergy, maxSynergy, playerTransformed, playerFighterId } = get();
-    if (playerTransformed || playerFighterId === 'kai-jax') return; // Can't build synergy while transformed or already fused
+    if (playerTransformed || isKaiJaxId(playerFighterId)) return; // Can't build synergy while transformed or already fused
     
     const newSynergy = Math.min(maxSynergy, playerSynergy + amount);
     set({ playerSynergy: newSynergy });
@@ -1042,7 +1047,7 @@ export const useBattle = create<BattleState>((set, get) => ({
 
     // Jaxon/Kaison -> Kai-Jax fusion requires 50% Resonance
     const fusionThreshold = FUSION_SYNERGY_THRESHOLD;
-    if (playerTransformed || playerFighterId === 'kai-jax') return;
+    if (playerTransformed || isKaiJaxId(playerFighterId)) return;
     if ((playerFighterId === 'jaxon' || playerFighterId === 'kaison') && playerSynergy < fusionThreshold) return;
     
     // Enter transformation phase (60-frame hit-stop for core integration)
@@ -1093,9 +1098,9 @@ export const useBattle = create<BattleState>((set, get) => ({
     const { playerFighterId, playerPreFusionFighterId } = get();
     
     // Revert to pre-fusion fighter (jaxon or kaison)
-    const revertTo = playerFighterId === 'kai-jax' && playerPreFusionFighterId
+    const revertTo = isKaiJaxId(playerFighterId) && playerPreFusionFighterId
       ? playerPreFusionFighterId
-      : playerFighterId === 'kai-jax' ? 'jaxon' : playerFighterId;
+      : isKaiJaxId(playerFighterId) ? 'jaxon' : playerFighterId;
     set({
       playerTransformed: false,
       transformationTimeRemaining: 0,
@@ -1432,3 +1437,10 @@ export const useBattle = create<BattleState>((set, get) => ({
     }
   },
 }));
+
+
+// Certification/debug bridge for runtime smoke. Keeps the battle store
+// inspectable without affecting gameplay authority.
+if (typeof window !== 'undefined') {
+  (window as any).battleStore = useBattle;
+}

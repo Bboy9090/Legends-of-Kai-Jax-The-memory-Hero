@@ -4,6 +4,26 @@ import { useAudio } from '../../lib/stores/useAudio';
 import { Settings, UserCheck, Play } from 'lucide-react';
 import { BRAND } from '../../lib/brand';
 
+function TitleHeroStage() {
+  return (
+    <div
+      className="pointer-events-none absolute bottom-0 right-0 top-[7%] z-[4] hidden w-[58%] min-w-[560px] overflow-hidden lg:block"
+      aria-hidden="true"
+      data-testid="title-cinematic-hero-stage"
+    >
+      <img
+        src="/brand/kai-and-jax-before-merge.png"
+        alt=""
+        className="absolute inset-y-[2%] right-[-1%] h-[98%] w-[94%] object-cover object-center opacity-70 [mask-image:linear-gradient(to_left,black_60%,rgba(0,0,0,.92)_76%,transparent_100%)]"
+        decoding="async"
+        aria-hidden="true"
+      />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_68%_40%,rgba(157,78,221,.12),transparent_28%),linear-gradient(90deg,transparent_0%,rgba(2,3,7,.02)_54%,rgba(2,3,7,.16)_100%)]" />
+      <div className="absolute inset-x-[8%] bottom-[6%] h-24 rounded-[50%] bg-purple-500/10 blur-3xl" />
+    </div>
+  );
+}
+
 export default function TitleScreen() {
   const { setGameState } = useRunner();
   const { playVictory } = useAudio();
@@ -27,87 +47,89 @@ export default function TitleScreen() {
   const releaseSha = (import.meta.env.VITE_RELEASE_SHA || 'local').slice(0, 7);
 
   return (
-    <div 
+    <div
       data-testid="title-screen"
-      className="fixed inset-0 z-50 flex flex-col justify-between p-8 bg-cover bg-center select-none"
-      style={{
-        backgroundImage: 'radial-gradient(circle at center, rgba(10,10,26,0.5) 0%, rgba(5,5,16,0.95) 100%), url("/models/ruined_city_bg.jpg")',
-        backgroundColor: '#050510'
-      }}
+      className="kj-vision-shell kj-vision-city-vignette fixed inset-0 z-50 overflow-hidden select-none"
     >
-      {/* Top Header */}
-      <div className="flex justify-between items-center z-10">
-        <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span data-testid="title-release-metadata" className="text-[10px] font-mono tracking-widest text-slate-300">
-            VER. {releaseVersion} | BUILD {releaseSha}
-          </span>
-        </div>
-        <button 
-          onClick={(e) => { e.stopPropagation(); setGameState('settings'); }}
-          className="p-3 bg-white/5 hover:bg-white/15 backdrop-blur-md rounded-2xl border border-white/10 text-slate-300 hover:text-white transition-all"
-        >
-          <Settings className="w-5 h-5" />
-        </button>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_73%_22%,rgba(128,58,180,.20),transparent_24%),linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.54))]" />
+      <div className="absolute right-[9%] top-[12%] h-[56vh] w-[36vw] min-w-[320px] rounded-full bg-[radial-gradient(circle,rgba(185,112,255,.18),rgba(78,24,118,.04)_45%,transparent_72%)] blur-[1px]" />
+      <div className="absolute right-[12%] top-[5%] h-[42vh] w-[34vw] rounded-full border border-purple-300/[0.035] bg-[radial-gradient(circle,rgba(196,150,255,.11),rgba(84,39,130,.025)_48%,transparent_72%)] shadow-[0_0_120px_rgba(157,78,221,.09)]" aria-hidden />
+      <div className="absolute right-[22%] top-[4%] text-[min(20vw,240px)] leading-none text-purple-200/[0.055] drop-shadow-[0_0_45px_rgba(168,85,247,.18)]" aria-hidden>
+        ✦
       </div>
 
-      {/* Center Branding */}
-      <div className="flex flex-col items-center text-center my-auto z-10 space-y-4">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-bold tracking-[0.3em] uppercase backdrop-blur-md">
-          <span>Raging City Saga</span>
+      <TitleHeroStage />
+
+      <header className="relative z-10 flex items-center justify-between px-6 py-5 sm:px-10">
+        <div className="kj-vision-panel px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-[var(--kj-muted)]">
+          <span data-testid="title-release-metadata">VER. {releaseVersion} | BUILD {releaseSha}</span>
         </div>
-
-        <h1 
-          className="text-6xl sm:text-8xl md:text-9xl font-black italic tracking-tighter uppercase"
-          style={{
-            background: 'linear-gradient(135deg, #ffffff 0%, #ffd700 40%, #f97316 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.8))'
-          }}
-        >
-          {BRAND.title.replace('KAI-JAX', '').trim()}
-        </h1>
-
-        <h2 
-          className="text-5xl sm:text-7xl md:text-8xl font-black italic tracking-tighter uppercase -mt-4 sm:-mt-6"
-          style={{
-            background: 'linear-gradient(135deg, #00f2ff 0%, #a855f7 60%, #ffffff 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0 0 40px rgba(168,85,247,0.6))'
-          }}
-        >
-          KAI-JAX
-        </h2>
-
-        <p className="text-amber-400/90 text-sm sm:text-lg font-medium tracking-[0.25em] uppercase max-w-md pt-2">
-          {BRAND.shortTagline}
-        </p>
-
-        {/* Prompt Button */}
-        <div className="pt-12">
+        <div className="flex gap-2">
           <button
-            type="button"
-            data-testid="title-begin-button"
-            onClick={handleStart}
-            className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 via-purple-600 to-cyan-500 rounded-2xl font-black text-white text-lg tracking-widest uppercase shadow-[0_0_50px_rgba(168,85,247,0.5)] animate-pulse hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300/80 transition-all"
-            aria-label="Begin Legends of Kai-Jax"
+            onClick={() => setGameState('settings')}
+            className="kj-vision-button flex items-center gap-2 px-4 py-2 text-xs"
+            aria-label="Open settings"
           >
-            <Play className="w-5 h-5 fill-current" aria-hidden="true" />
-            <span>PRESS ENTER / SPACE TO BEGIN</span>
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">Settings</span>
+          </button>
+          <button
+            onClick={() => setGameState('save-slots')}
+            className="kj-vision-button flex items-center gap-2 px-4 py-2 text-xs"
+            aria-label="Switch profile"
+          >
+            <UserCheck className="h-4 w-4" />
+            <span className="hidden sm:inline">Profile</span>
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* Footer info */}
-      <div className="flex justify-between items-end z-10 text-[11px] text-slate-400 font-mono">
-        <div>FACTION: FANG SYNDICATE vs COVENANT</div>
-        <div className="flex items-center gap-1">
-          <UserCheck className="w-3.5 h-3.5 text-cyan-400" />
-          <span>PROFILE 1: ACTIVE</span>
-        </div>
-      </div>
+      <main className="relative z-10 flex h-[calc(100vh-112px)] items-center px-7 sm:px-12 md:px-[7vw]">
+        <section className="max-w-[660px] -translate-y-[3vh] md:max-w-[48vw]">
+          <div className="mb-4 flex items-center gap-3 text-[11px] uppercase tracking-[0.48em] text-[var(--kj-gold)]">
+            <span className="h-px w-16 bg-[var(--kj-gold-dim)]" />
+            Legends of
+          </div>
+
+          <h1
+            className="kj-vision-title text-[clamp(68px,10vw,160px)] font-black leading-[0.78]"
+            style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+          >
+            KAI<span className="text-purple-400 drop-shadow-[0_0_16px_rgba(192,132,252,.9)]">✦</span>JAX
+          </h1>
+
+          <div className="kj-vision-divider my-5 max-w-xl" />
+
+          <h2 className="kj-vision-subtitle text-[clamp(18px,2.4vw,36px)]">
+            The Memory King
+          </h2>
+
+          <p className="mt-7 max-w-xl text-sm tracking-[0.12em] text-[#d4bd91] sm:text-base">
+            {BRAND.shortTagline}
+          </p>
+
+          <div className="mt-10 max-w-xl">
+            <button
+              type="button"
+              data-testid="title-begin-button"
+              onClick={handleStart}
+              className="kj-vision-button group flex w-full items-center justify-between px-6 py-4 text-sm sm:text-base"
+              aria-label="Begin Legends of Kai-Jax"
+            >
+              <span className="flex items-center gap-3">
+                <Play className="h-4 w-4 fill-current text-purple-300" aria-hidden />
+                Enter the Raging City
+              </span>
+              <span className="text-[10px] tracking-[0.24em] text-[#9f9180]">ENTER / SPACE</span>
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <footer className="absolute bottom-4 left-6 right-6 z-10 flex items-end justify-between text-[10px] uppercase tracking-[0.2em] text-[#8e8578] sm:left-10 sm:right-10">
+        <span>Memory is currency. Blood remembers.</span>
+        <span>Raging City Saga</span>
+      </footer>
     </div>
   );
 }

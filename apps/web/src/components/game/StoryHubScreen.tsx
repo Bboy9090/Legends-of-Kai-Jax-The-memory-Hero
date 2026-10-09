@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useRunner } from '../../lib/stores/useRunner';
-import { ArrowLeft, MapPin, Shield, Zap, ChevronRight, Skull } from 'lucide-react';
+import { ArrowLeft, LockKeyhole, MapPin, Shield, Skull, Sparkles, Zap } from 'lucide-react';
 
 interface DistrictInfo {
   id: string;
@@ -9,160 +9,193 @@ interface DistrictInfo {
   faction: string;
   description: string;
   color: string;
+  x: number;
+  y: number;
+  reward: string;
 }
 
 const DISTRICTS: DistrictInfo[] = [
-  {
-    id: 'ashblock-heights',
-    name: 'ASHBLOCK HEIGHTS',
-    threat: 'HIGH',
-    faction: 'FANG SYNDICATE',
-    description: 'Rooftop territory ruled by Syndicate Enforcers and heavy war machines.',
-    color: '#f43f5e'
-  },
-  {
-    id: 'ironclaw-foundries',
-    name: 'IRONCLAW FOUNDRIES',
-    threat: 'EXTREME',
-    faction: 'ANTI-SABERTOOTH COVENANT',
-    description: 'Industrial forge district where memory essence is harvested by ironworks.',
-    color: '#a855f7'
-  },
-  {
-    id: 'beast-kin-market',
-    name: 'BEAST-KIN MARKET',
-    threat: 'MEDIUM',
-    faction: 'INDEPENDENT REFUGEES',
-    description: 'Bustling alley market under threat of Covenant raids and street shakedowns.',
-    color: '#38bdf8'
-  },
-  {
-    id: 'memory-archive',
-    name: 'MEMORY ARCHIVE',
-    threat: 'EXTREME',
-    faction: 'STORM RONIN COVEN',
-    description: 'Ancient sacred vault keeping the lost Sabertooth God lineage scrolls.',
-    color: '#ffd700'
-  }
+  { id: 'ashblock-heights', name: 'ASHBLOCK HEIGHTS', threat: 'HIGH', faction: 'FANG SYNDICATE', description: 'Rooftop territory ruled by Syndicate Enforcers and heavy war machines.', color: '#f6b94b', x: 26, y: 35, reward: 'Memory Fragment' },
+  { id: 'ironvein-wards', name: 'IRONVEIN WARDS', threat: 'HIGH', faction: 'ANTI-SABERTOOTH COVENANT', description: 'Foundry wards where memory essence is cut, catalogued, and weaponized.', color: '#73b7ff', x: 52, y: 42, reward: 'Covenant Intel' },
+  { id: 'skyfall-spines', name: 'SKYFALL SPINES', threat: 'EXTREME', faction: 'MEMORY CULT', description: 'Vertical shrine district wrapped around the city’s living lightning spine.', color: '#d46cff', x: 75, y: 48, reward: 'Royal Memory' },
+  { id: 'sector-7', name: 'SECTOR-7', threat: 'MEDIUM', faction: 'INDEPENDENTS', description: 'Refugee lanes, old tech, and hidden routes beneath the syndicate grid.', color: '#55e6c1', x: 67, y: 72, reward: 'Safehouse Key' },
+  { id: 'storm-ronin-sanctum', name: 'STORM RONIN SANCTUM', threat: 'HIGH', faction: 'RONIN ORDER', description: 'A memory shrine hidden below the old city, guarded by ancestral trials.', color: '#d8d8d8', x: 39, y: 71, reward: 'Storm Seal' },
 ];
 
 export default function StoryHubScreen() {
-  const { setGameState, setActiveStoryMission } = useRunner();
-  const [selectedDistrict, setSelectedDistrict] = useState<DistrictInfo>(DISTRICTS[0]);
+  const {
+    setGameState,
+    setActiveStoryMission,
+    selectedCharacter,
+    setCharacter,
+    totalScore,
+    activeProfileIndex,
+  } = useRunner();
+  const [selectedDistrict, setSelectedDistrict] = useState(DISTRICTS[0]);
+  const profileLevel = Math.max(1, Math.floor(totalScore / 1000) + 1);
 
-  const handleEnterDistrict = (districtId: string) => {
+  const routes = useMemo(() => DISTRICTS.slice(0, -1).map((district, index) => ({
+    from: district,
+    to: DISTRICTS[index + 1],
+  })), []);
+
+  const handleEnterDistrict = () => {
     setActiveStoryMission('story_act1_m1');
-    setGameState('mission-select');
+    setGameState('character-select');
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#050510] text-white flex flex-col justify-between p-6 sm:p-12 overflow-y-auto font-sans">
-      {/* Background City Image Overlay */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none"
-        style={{ backgroundImage: 'url("/models/ruined_city_bg.jpg")' }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#050510] via-transparent to-[#050510] pointer-events-none" />
+    <div className="kj-vision-shell fixed inset-0 z-50 overflow-hidden">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(2,3,7,.25),rgba(2,3,7,.62)),url('/models/ruined_city_bg.jpg')] bg-cover bg-center" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_52%_38%,rgba(154,72,220,.13),transparent_26%),linear-gradient(90deg,rgba(3,4,8,.72),transparent_26%,transparent_72%,rgba(3,4,8,.78))]" />
 
-      {/* Header */}
-      <div className="flex items-center justify-between z-10 border-b border-white/10 pb-6">
+      <header className="relative z-10 mx-5 mt-4 flex items-center justify-between border-b border-[#7d6136]/55 px-4 pb-4">
         <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setGameState('menu')}
-            className="p-3 bg-white/5 hover:bg-white/15 border border-white/10 rounded-2xl transition-all group"
-          >
-            <ArrowLeft className="w-5 h-5 text-slate-300 group-hover:-translate-x-1 transition-transform" />
+          <button onClick={() => setGameState('menu')} className="kj-vision-button p-3" aria-label="Back to main menu">
+            <ArrowLeft className="h-4 w-4" />
           </button>
           <div>
-            <h1 className="text-3xl font-black italic tracking-wider uppercase">STORY HUB</h1>
-            <p className="text-xs text-amber-400 font-mono tracking-widest uppercase">THE RAGING CITY WORLD MAP</p>
+            <div className="text-[10px] uppercase tracking-[0.42em] text-[#9c8764]">Legends of Kai-Jax</div>
+            <h1 className="kj-vision-title mt-1 text-2xl sm:text-4xl">Story Hub — The Raging City</h1>
           </div>
         </div>
-        <button
-          onClick={() => setGameState('character-select')}
-          className="px-6 py-3 bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/40 rounded-2xl font-bold text-xs tracking-widest uppercase transition-all"
-        >
-          CHANGE HERO
-        </button>
-      </div>
+        <div className="hidden items-center gap-4 text-[10px] uppercase tracking-[0.22em] text-[#a79372] md:flex">
+          <span>Profile 0{activeProfileIndex + 1}</span>
+          <span>Lv. {profileLevel}</span>
+          <span className="h-1.5 w-28 overflow-hidden rounded-full bg-black/70">
+            <span
+              className="block h-full bg-purple-500"
+              style={{ width: `${Math.min(100, totalScore % 1000 / 10)}%` }}
+            />
+          </span>
+          <span>{totalScore.toLocaleString()} Memory Score</span>
+        </div>
+      </header>
 
-      {/* Main Map View */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl w-full mx-auto my-auto py-6 z-10">
-        {/* District Selector List */}
-        <div className="space-y-4">
-          <h3 className="text-xs font-mono tracking-widest text-slate-400 uppercase">ACTIVE CITY DISTRICTS</h3>
-          {DISTRICTS.map((d) => {
-            const isSelected = selectedDistrict.id === d.id;
+      <main className="relative z-10 grid h-[calc(100vh-96px)] grid-cols-1 gap-4 p-5 lg:grid-cols-[320px_1fr_280px]">
+        <aside className="kj-vision-panel flex flex-col overflow-hidden p-4">
+          <div className="mb-4 border border-[#8b6e3d]/45 bg-black/45 p-3">
+            <div className="text-[10px] uppercase tracking-[0.28em] text-[#ab976f]">Selected District</div>
+            <h2 className="mt-2 text-2xl uppercase tracking-[0.12em] text-[#efcf91]">{selectedDistrict.name}</h2>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.25em] text-[#8d806d]">Main Quest</div>
+              <div className="mt-1 text-lg uppercase tracking-[0.08em] text-white">The City Bites Back</div>
+              <p className="mt-2 text-sm leading-6 text-[#bbb0a0]">{selectedDistrict.description}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="kj-vision-hud p-3"><div className="text-[#8f816d]">Threat</div><div className="mt-1 text-rose-300">{selectedDistrict.threat}</div></div>
+              <div className="kj-vision-hud p-3"><div className="text-[#8f816d]">Faction</div><div className="mt-1 truncate text-purple-300">{selectedDistrict.faction}</div></div>
+            </div>
+
+            <div>
+              <div className="mb-2 text-[10px] uppercase tracking-[0.25em] text-[#8d806d]">Rewards</div>
+              {['Memory Fragment', 'Tail XP', selectedDistrict.reward].map((reward, index) => (
+                <div key={reward} className="flex items-center gap-2 border-t border-white/5 py-2 text-sm text-[#d6c9b5]">
+                  {index === 0 ? <Sparkles className="h-4 w-4 text-purple-300" /> : index === 1 ? <Zap className="h-4 w-4 text-blue-300" /> : <Shield className="h-4 w-4 text-amber-300" />}
+                  {reward}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button onClick={handleEnterDistrict} className="kj-vision-button mt-auto px-4 py-3 text-xs">
+            View Quest Details
+          </button>
+        </aside>
+
+        <section className="relative overflow-hidden border border-[#7b5f34]/55 bg-black/25">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(157,78,221,.08),transparent_58%)]" />
+
+          <svg className="absolute inset-0 h-full w-full opacity-75" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+            {routes.map(({ from, to }) => (
+              <line key={from.id} x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke={from.color} strokeWidth="0.35" strokeDasharray="1 1.6" />
+            ))}
+          </svg>
+
+          {DISTRICTS.map((district) => {
+            const active = district.id === selectedDistrict.id;
             return (
               <button
-                key={d.id}
-                onClick={() => setSelectedDistrict(d)}
-                className={`w-full text-left p-5 rounded-2xl border transition-all duration-300 backdrop-blur-md flex items-center justify-between ${
-                  isSelected 
-                    ? 'bg-white/10 border-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.3)] translate-x-2' 
-                    : 'bg-white/5 border-white/10 hover:border-white/30'
-                }`}
+                key={district.id}
+                onClick={() => setSelectedDistrict(district)}
+                data-active={active}
+                className="kj-vision-node absolute min-w-[150px] -translate-x-1/2 -translate-y-1/2 px-3 py-2 text-left transition hover:scale-105"
+                style={{ left: `${district.x}%`, top: `${district.y}%`, color: district.color }}
               >
-                <div className="flex items-center gap-3">
-                  <MapPin className="w-5 h-5" style={{ color: d.color }} />
+                <div className="flex items-center gap-2">
+                  <span className="grid h-7 w-7 place-items-center rotate-45 border border-current bg-black/70"><MapPin className="h-3.5 w-3.5 -rotate-45" /></span>
                   <div>
-                    <h4 className="font-black italic text-base uppercase">{d.name}</h4>
-                    <p className="text-[11px] text-slate-400 font-mono">{d.faction}</p>
+                    <div className="text-[10px] uppercase tracking-[0.18em]">{district.name}</div>
+                    <div className="mt-1 text-[9px] text-[#8f877b]">{district.threat}</div>
                   </div>
                 </div>
-                <ChevronRight className={`w-5 h-5 transition-transform ${isSelected ? 'text-amber-400 translate-x-1' : 'text-slate-600'}`} />
               </button>
             );
           })}
-        </div>
 
-        {/* Selected District Intel Preview */}
-        <div className="lg:col-span-2 flex flex-col justify-between p-8 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-xl relative overflow-hidden">
-          <div 
-            className="absolute top-0 right-0 w-80 h-80 rounded-full blur-[140px] pointer-events-none opacity-20"
-            style={{ backgroundColor: selectedDistrict.color }}
-          />
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-[0.35em] text-[#a78c61]">
+            We take. We hold. We hunt. This is our city.
+          </div>
+        </section>
 
-          <div className="space-y-6 z-10">
-            <div className="flex justify-between items-start">
-              <div>
-                <span className="px-3 py-1 bg-amber-400/10 border border-amber-400/40 text-amber-300 text-[10px] font-bold tracking-widest uppercase rounded-full">
-                  TARGET DISTRICT
-                </span>
-                <h2 className="text-4xl font-black italic tracking-wide uppercase mt-2">{selectedDistrict.name}</h2>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-500/20 border border-rose-500/40 rounded-xl text-rose-300 font-mono text-xs font-bold">
-                <Skull className="w-4 h-4" />
-                <span>THREAT: {selectedDistrict.threat}</span>
-              </div>
-            </div>
-
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              {selectedDistrict.description}
-            </p>
-
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10 text-xs font-mono">
-              <div className="p-4 bg-black/40 rounded-xl border border-white/5">
-                <span className="text-slate-500 block mb-1">DOMINANT FACTION</span>
-                <span className="font-bold text-white uppercase">{selectedDistrict.faction}</span>
-              </div>
-              <div className="p-4 bg-black/40 rounded-xl border border-white/5">
-                <span className="text-slate-500 block mb-1">KEY OBJECTIVE</span>
-                <span className="font-bold text-cyan-400 uppercase">RECLAIM MEMORY SCROLLS</span>
-              </div>
+        <aside className="flex flex-col gap-4">
+          <div className="kj-vision-panel p-4">
+            <div className="text-center text-[10px] uppercase tracking-[0.3em] text-[#a48c65]">Your Legends</div>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {[
+                ['kai', 'KAI', '#c76cff', 'MEMORY-WEB HEIR', '/brand/kai-and-jax-before-merge.png', '30% center'],
+                ['jax', 'JAX', '#5aaeff', 'STORM FANG', '/brand/kai-and-jax-before-merge.png', '72% center'],
+                ['kai-jax', 'KAI-JAX', '#efc76d', 'FUSION HERO', '/images/lore/hero-kaijax.png', 'center 24%'],
+              ].map(([id, name, color, subtitle, image, imagePosition]) => {
+                const active = selectedCharacter === id
+                  || (id === 'kai-jax' && ['kaijax', 'kai_jax'].includes(selectedCharacter ?? ''));
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setCharacter(id)}
+                    aria-pressed={active}
+                    className="border bg-black/45 p-2 text-center transition hover:-translate-y-0.5"
+                    style={{
+                      borderColor: active ? color : 'rgba(115,92,57,.55)',
+                      boxShadow: active ? `0 0 20px ${color}33` : 'none',
+                    }}
+                  >
+                    <div
+                      className="mx-auto mb-2 h-20 w-full overflow-hidden border bg-black/60"
+                      style={{
+                        borderColor: `${color}66`,
+                        boxShadow: `inset 0 0 18px ${color}33`,
+                        backgroundImage: `linear-gradient(180deg,transparent 35%,rgba(2,3,7,.82)),url('${image}')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: imagePosition,
+                      }}
+                      aria-hidden="true"
+                    />
+                    <div className="text-[9px] tracking-[0.12em]" style={{ color }}>{name}</div>
+                    <div className="mt-1 text-[7px] tracking-[0.08em] text-[#817768]">{subtitle}</div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="pt-8 z-10 flex justify-end">
-            <button
-              onClick={() => handleEnterDistrict(selectedDistrict.id)}
-              className="px-8 py-4 bg-gradient-to-r from-amber-500 to-purple-600 hover:from-amber-400 hover:to-purple-500 font-black text-sm tracking-widest uppercase rounded-2xl transition-all shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:scale-105"
-            >
-              DEPLOY TO DISTRICT
-            </button>
+          <div className="kj-vision-panel flex-1 p-4">
+            <div className="text-[10px] uppercase tracking-[0.28em] text-[#a48c65]">Map Legend</div>
+            <div className="mt-4 space-y-3 text-xs text-[#cfc1aa]">
+              <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-blue-300" /> Side Missions</div>
+              <div className="flex items-center gap-2"><Skull className="h-4 w-4 text-rose-400" /> Boss Missions</div>
+              <div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-purple-300" /> Memory Sites</div>
+              <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-emerald-300" /> Safe Houses</div>
+              <div className="flex items-center gap-2"><LockKeyhole className="h-4 w-4 text-[#927c59]" /> Locked Path</div>
+            </div>
           </div>
-        </div>
-      </div>
+        </aside>
+      </main>
     </div>
   );
 }
