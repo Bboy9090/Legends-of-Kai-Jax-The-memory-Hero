@@ -7,7 +7,7 @@ import { ALL_STORY_MISSIONS } from '../../lib/story_missions';
 
 
 /**
- * ⚡ LEGENDS OF KAI-JAX: THE MEMORY HERO ⚡
+ * ⚡ LEGENDS OF KAI-JAX: THE MEMORY KING ⚡
  * ULTIMATE LEGENDARY MAIN MENU - GOD-TIER EDITION
  * 
  * Features:
@@ -407,13 +407,13 @@ const LegendaryMainMenu: React.FC = () => {
 
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#050508]">
+    <div className="kj-vision-shell kj-vision-city-vignette relative h-screen w-full overflow-hidden">
       {showProfileSelect && renderProfileSelect()}
       
       {/* Background Canvas - Split Cosmic Battlefield */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 h-full w-full opacity-25 mix-blend-screen"
         style={{ zIndex: 0 }}
       />
 
@@ -441,12 +441,12 @@ const LegendaryMainMenu: React.FC = () => {
       <div className="nebula-effect" style={{ zIndex: 2 }} />
 
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-between h-full p-6 lg:p-8">
+      <div className="relative z-10 flex h-full max-w-[760px] flex-col items-start justify-between p-6 sm:p-8 lg:p-12">
         
         {/* Logo - Top Center with Legendary Effects */}
-        <div className="mt-12 lg:mt-20 text-center">
+        <div className="mt-8 text-left lg:mt-10">
           <h1 
-            className="text-god-tier text-5xl lg:text-7xl mb-2"
+            className="kj-vision-title mb-2 text-4xl sm:text-5xl lg:text-7xl"
             style={{
               filter: `drop-shadow(0 0 ${20 + Math.sin(titleGlow) * 10}px rgba(255, 215, 0, 0.6))`,
             }}
@@ -464,7 +464,7 @@ const LegendaryMainMenu: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-legendary-gold animate-pulse" style={{ animationDelay: '0.4s' }} />
             </div>
             <p className="text-mono-small text-legendary-gold uppercase tracking-[0.3em] text-xs lg:text-sm">
-              GODS WILL TREMBLE
+              FORGED IN THE RAGING CITY. CROWNED BY MEMORY.
             </p>
             <div className="flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-legendary-gold animate-pulse" style={{ animationDelay: '0.4s' }} />
@@ -475,7 +475,7 @@ const LegendaryMainMenu: React.FC = () => {
           </div>
 
           {/* Profile Quick Switcher */}
-          <div className="mt-4 flex items-center gap-4 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-sm">
+          <div className="kj-vision-panel mt-4 inline-flex items-center gap-4 px-4 py-2">
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Profile:</span>
             <button 
               onClick={() => setShowProfileSelect(true)}
@@ -488,7 +488,7 @@ const LegendaryMainMenu: React.FC = () => {
         </div>
 
         {/* Menu Items - Center Vertical */}
-        <div className="flex flex-col gap-2 lg:gap-3 mb-24 lg:mb-32 w-full max-w-md">
+        <div className="kj-vision-panel mb-10 flex w-full max-w-md flex-col gap-1 p-2 lg:mb-16">
           {menuItems.map((item, index) => {
             const isSelected = index === selectedIndex;
 
@@ -498,30 +498,8 @@ const LegendaryMainMenu: React.FC = () => {
                 onClick={() => !item.disabled && item.action()}
                 onMouseEnter={() => !item.disabled && setSelectedIndex(index)}
                 disabled={item.disabled}
-                className={`
-                  relative px-6 lg:px-8 py-3 lg:py-4 text-left w-full
-                  transition-all duration-200 group
-                  ${item.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
-                `}
-                style={{
-                  background: isSelected
-                    ? item.legendary 
-                      ? 'linear-gradient(90deg, rgba(255, 215, 0, 0.15), rgba(0, 217, 255, 0.1))'
-                      : 'rgba(255, 255, 255, 0.05)'
-                    : 'rgba(10, 10, 15, 0.6)',
-                  border: isSelected
-                    ? item.legendary
-                      ? '2px solid rgba(255, 215, 0, 0.8)'
-                      : '2px solid rgba(0, 217, 255, 0.6)'
-                    : '2px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '4px',
-                  boxShadow: isSelected
-                    ? item.legendary
-                      ? '0 0 30px rgba(255, 215, 0, 0.3), inset 0 0 20px rgba(255, 215, 0, 0.05)'
-                      : '0 0 20px rgba(0, 217, 255, 0.2)'
-                    : 'none',
-                  transform: isSelected ? 'translateX(8px)' : 'translateX(0)',
-                }}
+                className={`kj-vision-button relative w-full px-5 py-3 text-left group ${item.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                data-active={isSelected}
               >
                 {/* Selection indicator */}
                 {isSelected && (
@@ -577,7 +555,7 @@ const LegendaryMainMenu: React.FC = () => {
         {/* Footer */}
         <div className="mb-6 lg:mb-8 text-center">
           <p className="text-mono-small text-neutral-600 uppercase tracking-[0.2em] text-xs">
-            FORGED IN THE BRONX • MASTERED IN THE SILENCE
+            WE TAKE. WE HOLD. WE HUNT. THIS IS OUR CITY.
           </p>
           <div className="flex items-center justify-center gap-6 mt-4">
             <button 
@@ -594,7 +572,7 @@ const LegendaryMainMenu: React.FC = () => {
             </button>
           </div>
           <p className="text-neutral-700 text-[10px] mt-4 uppercase tracking-widest">
-            v2.0.0 — THE ULTIMATE FORM
+            THE MEMORY KING — RELEASE VISION
           </p>
         </div>
       </div>
