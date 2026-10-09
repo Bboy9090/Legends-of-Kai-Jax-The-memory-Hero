@@ -102,8 +102,15 @@ export default function OptimizedBeastModel({
     });
   }, [modelPath, beast.id, beast.color]);
 
-  // Target on-screen character height in world units (matches the arena scale).
-  const TARGET_HEIGHT = 2.2;
+  // Target on-screen character height in world units. Keep heroes assertive in
+  // the frame while preventing oversized boss exports from swallowing the versus read.
+  const TARGET_HEIGHT = beast.id === 'kai'
+    ? 2.45
+    : beast.id === 'granite-colossus'
+      ? 2.32
+      : beast.role === 'boss'
+        ? 2.42
+        : 2.3;
 
   // Load GLB model. Note: useGLTF's fourth argument is extendLoader, NOT an
   // onError callback. The previous code mislabeled successful loader setup as
