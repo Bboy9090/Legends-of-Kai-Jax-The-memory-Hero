@@ -18,7 +18,7 @@ export default function MissionSelectScreen() {
       {/* Header */}
       <div className="relative z-10 flex items-center justify-between border-b border-[#735a35]/60 pb-6">
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={() => setGameState('story-hub')}
             className="kj-vision-button p-3 group"
           >
@@ -74,8 +74,8 @@ export default function MissionSelectScreen() {
                 key={d}
                 onClick={() => setDifficulty(d)}
                 className={`py-3 px-4 rounded-xl border text-xs font-black tracking-widest uppercase transition-all ${
-                  difficulty === d 
-                    ? 'text-[#f0cf87] border-[#f0cf87]' 
+                  difficulty === d
+                    ? 'text-[#f0cf87] border-[#f0cf87]'
                     : 'text-[#9c9180]'
                 }`}
               >
