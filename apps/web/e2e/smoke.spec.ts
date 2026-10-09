@@ -390,6 +390,39 @@ test("fusion rig: Kai-Jax visibly articulates instead of translating as a statue
   expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
 });
 
+test("story shell: Raging City hub routes through playable legend selection", async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await boot(page);
+  await enterGameFromLaunch(page);
+
+  await page.getByRole("button", { name: /^STORY$/i }).click();
+  await page.waitForFunction(
+    () => (window as any).runnerStore?.getState?.().gameState === "story-hub",
+    null,
+    { timeout: 10_000 },
+  );
+  await expect(page.getByRole("heading", { name: /Story Hub.*Raging City/i })).toBeVisible({ timeout: 15_000 });
+
+  await page.getByRole("button", { name: /View Quest Details/i }).click();
+  await page.waitForFunction(
+    () => (window as any).runnerStore?.getState?.().gameState === "character-select",
+    null,
+    { timeout: 10_000 },
+  );
+  await expect(page.getByRole("heading", { name: "Choose Your Legend" })).toBeVisible({ timeout: 15_000 });
+
+  await page.getByRole("button", { name: /JAX/i }).filter({ hasNotText: /KAI-JAX/i }).first().click();
+  await page.getByTestId("legend-select-confirm").click();
+
+  await page.waitForFunction(
+    () => (window as any).runnerStore?.getState?.().gameState === "mission-select",
+    null,
+    { timeout: 10_000 },
+  );
+  expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
+});
+
 test("story: enters a real story mission and mounts the arena without crashing", async ({ page }) => {
   const errors = collectErrors(page);
   await boot(page);
