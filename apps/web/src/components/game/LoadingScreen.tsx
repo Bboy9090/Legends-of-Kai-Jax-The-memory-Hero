@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Zap, Sparkles, Swords, Crown, Star } from "lucide-react";
-import { BRAND } from "../../lib/brand";
 
 interface LoadingScreenProps {
   onComplete: () => void;
