@@ -97,6 +97,14 @@ export default function PlayerController() {
     window.addEventListener("gamepadconnected", handlePadChange);
     window.addEventListener("gamepaddisconnected", handlePadChange);
     document.addEventListener("visibilitychange", handleVisibility);
+
+    if ((window as any).__KAI_JAX_CERTIFICATION__) {
+      (window as any).__KAI_JAX_CONTROLLER_READY__ = {
+        mounted: true,
+        timestamp: performance.now(),
+      };
+    }
+
     return () => {
       window.removeEventListener("keydown", handleDown);
       window.removeEventListener("keyup", handleUp);
@@ -105,6 +113,12 @@ export default function PlayerController() {
       window.removeEventListener("gamepaddisconnected", handlePadChange);
       document.removeEventListener("visibilitychange", handleVisibility);
       clearHeldInput();
+      if ((window as any).__KAI_JAX_CERTIFICATION__) {
+        (window as any).__KAI_JAX_CONTROLLER_READY__ = {
+          mounted: false,
+          timestamp: performance.now(),
+        };
+      }
     };
   }, []);
 
