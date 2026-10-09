@@ -1,61 +1,32 @@
-# Kai gameplay visual review — updated 2026-10-08
+# Kai gameplay visual review — updated 2026-10-09
 
-Release status: NOT fully visually qualified. PR #285 remains Draft.
+Release status: RUNTIME MOTION CERTIFIED; FINAL VISUAL PRESENTATION NOT YET QUALIFIED. PR #285 remains Draft.
 
-## Current runtime authority
+At commit c60f92221dd70078f8fcb1548634549e5165b1c2 all seven hosted PR workflows passed: CI, Security Baseline, Combat Release Certification, Registry Validation, Runtime Smoke Diagnostic, Mobile Store Readiness, and Build Android APK.
 
-Current certification branch includes commit `6f7294ed0c003d294abff6841dbb57b0fe7d4335`, which removes procedural Punch recovery from the authored-Kick smoke prerequisite.
+The successful Runtime Smoke run used the real Combat Arena training path with Kai mounted in WebGL and a passive training opponent so random AI hitstun could not contaminate motion certification. The live animation probe proved the renderer selected:
 
-Verified hosted evidence before that commit:
+- Walk: `Walk:Armature|walking_man|baselayer` — authored
+- Run: `Run:Armature|running|baselayer` — authored
+- Kick: `Kick:Armature|Lunge_Spin_Kick|baselayer` — authored
 
-- Walk requested `walk` and selected authored `Walk:Armature|walking_man|baselayer`.
-- Run requested `run` and selected authored `Run:Armature|running|baselayer`.
-- Kai's available authored clip inventory includes `Kick:Armature|Lunge_Spin_Kick|baselayer` and `Kick:Armature|Step_in_High_Kick|baselayer`.
-- The authored Kick exports and Spider Kai base/Walk/Run assets use the same 26-node skeleton naming/order.
-- Runtime Smoke #100 did **not** certify Kick: it timed out waiting for the preceding procedural Punch to leave attack state before the Kick step was reached.
+The same mounted fighter exposed both authored Kick clips as available:
+`Kick:Armature|Lunge_Spin_Kick|baselayer` and
+`Kick:Armature|Step_in_High_Kick|baselayer`.
 
-The current smoke path now targets authored Kick directly from a deterministic training battle. Do not claim live authored-Kick certification until a hosted run on or after `6f7294e` passes and logs `attackType: "kick"` with a selected authored Kick clip.
+The Spider Kai base, Walk, Run, and the two Kick GLBs use the same 26-node skeleton naming/order. This removes the earlier rig-compatibility concern. Attack selection is now semantic: a Punch cannot silently cross-fallback to a Kick clip. Where an authored attack family is absent, the articulated procedural fallback remains responsible for that attack family.
 
-## Low-FPS / hitch repair
+Keyboard attack edges are buffered across render/hit-stop frames so a real input is not lost merely because the first sampled WebGL frame is temporarily unable to consume it. Runtime certification now waits for deterministic combat state rather than relying on fixed sleeps.
 
-The visual-certification run exposed a real gameplay issue rather than a test-only failure.
+The previous review statement that Kai had no authored Kick is superseded. Authored Kick is now loaded and selected successfully in the hosted runtime path.
 
-A fresh attack input was previously queued and then aged by the full render-frame delta before its first consumption attempt. On slow headless WebGL frames, the 0.2 second attack buffer could expire immediately. After that was fixed, the next run proved the attack was consumed but could still start and finish between renders because battle simulation advanced by the entire multi-second hitch.
+The hosted software-WebGL runner could not finish `page.screenshot()` within the 15-second capture window even though the live authored-Kick probe passed. Therefore the screenshot timeout is not treated as failure of the runtime animation proof. It also means final presentation review remains intentionally open.
 
-Current repairs:
+Remaining visual-release work:
 
-- Keyboard key-down edges are buffered until a simulation frame can consume them.
-- A newly queued attack gets one consumption attempt before its buffer lifetime decays.
-- PlayerController clamps simulation delta to 50 ms.
-- BattleScene clamps the authoritative battle tick to 50 ms.
-- BattlePlayer clamps procedural attack-phase timing to 50 ms.
-- OptimizedBeastModel clamps procedural combat animation updates to 50 ms.
-- Training battles keep the opponent passive so move certification is deterministic while using the same BattlePlayer, PlayerController, model, and arena stack.
+- Obtain rendered desktop and mobile review captures on a hardware-accelerated environment.
+- Confirm planted feet, silhouette readability, attack contact framing, lighting, camera distance, and opponent scale in those rendered captures.
+- Review the polished Enforcer encounter and approved title/menu/Raging City presentation path.
+- Keep PR #285 Draft until those presentation checks are visually approved.
 
-This aligns the previously unbounded battle consumers with the existing 50 ms hitch clamp already used by BattleCamera, OpponentAI, ParticleManager, and Adventure combat.
-
-## Superseded blockers
-
-The 2026-10-07 review is no longer authoritative for the following claims:
-
-- Opponents no longer use the older anatomical placeholder renderer; `Opponent.tsx` now renders through `OptimizedBeastModel`.
-- Kai is no longer limited to base/Walk/Run authored clips; compatible authored Kick clips are loaded and selected live.
-- Desktop no longer displays the full mobile control overlay by default; `MobileControls` returns nothing unless touch/coarse-pointer capability is detected.
-- Fixed-time attack sampling is no longer used for certification; the smoke path waits for live animation-state evidence.
-
-## What is still NOT certified
-
-Passing automation does not by itself approve final presentation.
-
-Fresh rendered evidence is still required for:
-
-- planted feet and root-motion presentation during Walk/Run,
-- authored Kick pose quality and contact framing,
-- procedural Punch pose quality,
-- readable lighting/contrast at desktop and mobile sizes,
-- player/opponent scale and camera framing,
-- Enforcer encounter presentation,
-- approved title/menu/Raging City path,
-- final desktop and mobile visual review.
-
-Do not promote PR #285 from Draft solely because Runtime Smoke passes. Runtime animation selection is now proven; final visual presentation still needs explicit rendered review.
+Do not equate green automation with final art-direction approval. Runtime motion selection is certified at c60f922; presentation certification is still a separate gate.
