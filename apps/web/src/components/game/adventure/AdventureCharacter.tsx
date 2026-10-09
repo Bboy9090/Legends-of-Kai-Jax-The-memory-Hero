@@ -59,6 +59,8 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
   const attackType = useAdventure((s) => s.player.attackType);
   const invulnTimer = useAdventure((s) => s.player.invulnTimer);
   const posY = useAdventure((s) => s.player.posY);
+  const velocityX = useAdventure((s) => s.player.velocityX);
+  const velocityZ = useAdventure((s) => s.player.velocityZ);
 
   const yOffset = useRef(0);
 
@@ -91,6 +93,7 @@ export default function AdventureCharacter({ fighterId, accentColor }: Props) {
           isAttacking={isAttacking}
           isMoving={isMoving || isRunning}
           isRunning={isRunning}
+          locomotionSpeed={Math.hypot(velocityX, velocityZ)}
           attackType={attackType}
           isInvulnerable={invulnTimer > 0}
           hitAnim={hitStunTimer > 0 ? 1 : 0}
