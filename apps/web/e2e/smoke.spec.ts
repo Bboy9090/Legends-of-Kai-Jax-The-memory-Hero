@@ -191,8 +191,19 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   await page.keyboard.up("ArrowRight");
 
   // Exercise the actual keyboard path while the WebGL fighter is mounted.
-  // Kick is the authored-attack certification target. Procedural Punch pose
-  // quality remains a separate visual-review item and must not gate this proof.
+  // Kick is the authored-attack certification target. The primary authored Kick
+  // donor is background-warmed after mount; wait for that donor to be ready
+  // before issuing KeyK so the test certifies authored selection rather than
+  // measuring raw network/download time inside a short combat attack window.
+  await page.waitForFunction(() => {
+    const probe = (window as any).__KAI_JAX_COMPANION_PROBE__ ?? {};
+    return Object.entries(probe).some(([path, state]: any) =>
+      /Lunge_Spin_Kick/i.test(path) && state?.status === "loaded" && state?.clipCount > 0
+    );
+  }, null, { timeout: 120_000 });
+  console.log("LIVE_COMPANION_PRIMARY_KICK_READY", JSON.stringify(
+    await page.evaluate(() => (window as any).__KAI_JAX_COMPANION_PROBE__)
+  ));
   await page.keyboard.down("KeyK"); // kick
   try {
     await page.waitForFunction(
