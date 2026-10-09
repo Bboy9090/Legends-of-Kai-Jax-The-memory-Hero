@@ -164,6 +164,7 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
 // ⚡ GAME INTRO SEQUENCE
 export function GameIntro({ onComplete }: { onComplete: () => void }) {
   const [phase, setPhase] = useState<'crest' | 'city' | 'ready' | 'done'>('crest');
+  const compactIntro = typeof window !== 'undefined' && window.innerWidth < 1024;
 
   useEffect(() => {
     const timers = [
@@ -195,7 +196,19 @@ export function GameIntro({ onComplete }: { onComplete: () => void }) {
       data-testid="game-intro"
       className="kj-vision-shell fixed inset-0 z-[200] overflow-hidden bg-[linear-gradient(rgba(2,3,7,.38),rgba(2,3,7,.76)),url('/models/ruined_city_bg.jpg')] bg-cover bg-center"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_28%,rgba(157,78,221,.20),transparent_26%),linear-gradient(90deg,rgba(0,0,0,.7),transparent_58%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_28%,rgba(157,78,221,.20),transparent_26%),linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.18)_64%,rgba(0,0,0,.48))]" />
+
+      {!compactIntro && phase !== 'crest' && (
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-[56%] overflow-hidden" aria-hidden="true">
+          <img
+            src="/brand/kai-and-jax-before-merge.png"
+            alt=""
+            className="absolute bottom-[-8%] right-[-4%] h-[108%] w-[92%] object-cover object-center opacity-70 [mask-image:linear-gradient(to_left,black_60%,transparent_100%)]"
+            decoding="async"
+          />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_64%_38%,rgba(157,78,221,.16),transparent_26%)]" />
+        </div>
+      )}
 
       <div className="relative z-10 flex h-full items-center justify-center px-8 text-center">
         {phase === 'crest' && (
@@ -210,17 +223,17 @@ export function GameIntro({ onComplete }: { onComplete: () => void }) {
         )}
 
         {phase === 'city' && (
-          <div className="max-w-4xl animate-[fadeIn_.6s_ease-out]">
+          <div className="max-w-4xl animate-[fadeIn_.6s_ease-out] lg:mr-[34vw] lg:text-left">
             <p className="text-xs uppercase tracking-[0.55em] text-[#a88d62]">The Raging City</p>
             <h2 className="kj-vision-subtitle mt-5 text-[clamp(28px,4vw,58px)]">The Memory King</h2>
-            <p className="mx-auto mt-7 max-w-2xl text-base leading-8 tracking-[0.12em] text-[#d4c2a0] sm:text-lg">
+            <p className="mx-auto mt-7 max-w-2xl text-base leading-8 tracking-[0.12em] text-[#d4c2a0] sm:text-lg lg:mx-0">
               Forged in the Raging City. Crowned by Memory.
             </p>
           </div>
         )}
 
         {phase === 'ready' && (
-          <div className="animate-[zoomIn_.35s_ease-out]">
+          <div className="animate-[zoomIn_.35s_ease-out] lg:mr-[34vw] lg:text-left">
             <p className="text-xs uppercase tracking-[0.42em] text-[#9e8967]">Memory wakes. The city remembers.</p>
             <h2 className="kj-vision-title mt-5 text-[clamp(42px,7vw,92px)]">Enter The City</h2>
             <div className="mt-8 text-[10px] uppercase tracking-[0.32em] text-purple-300/80">Press Enter / Space to skip</div>
