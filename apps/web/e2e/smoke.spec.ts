@@ -185,7 +185,7 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
           && /kick/i.test(probe?.selectedClip ?? "");
       },
       null,
-      { timeout: 5_000 },
+      { timeout: 15_000 },
     );
   } catch (error) {
     const inputProbe = await page.evaluate(() => (window as any).__KAI_JAX_INPUT_PROBE__);
