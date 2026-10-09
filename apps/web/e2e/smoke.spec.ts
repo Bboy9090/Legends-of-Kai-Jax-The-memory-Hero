@@ -228,8 +228,7 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
       () => {
         const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
         return probe?.requested === "attack"
-          && probe?.attackType === "kick"
-          && /kick/i.test(probe?.selectedClip ?? "");
+          && probe?.attackType === "kick";
       },
       null,
       { timeout: 60_000 },
@@ -247,11 +246,14 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   }
   const kickProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_KICK_PROBE", JSON.stringify(kickProbe));
-  const kaiJaxKick = kickProbe?.kai;
-  expect(kaiJaxKick?.requested).toBe("attack");
-  expect(kaiJaxKick?.attackType).toBe("kick");
-  expect(kaiJaxKick?.authored).toBe(true);
-  expect(kaiJaxKick?.selectedClip).toMatch(/kick/i);
+  const kaiKick = kickProbe?.kai;
+  expect(kaiKick?.requested).toBe("attack");
+  expect(kaiKick?.attackType).toBe("kick");
+
+  // Spider-Kai currently has no compatible authored kick donor. The prior
+  // 9-tail donor shared bone names but not the bind/rest skeleton, so release
+  // correctness is visible articulation rather than a misleading clip-name
+  // check. When a compatible Spider-Kai kick is added, this may become authored.
   await page.waitForFunction(() => {
     const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai;
     return probe?.requested === "kick" && probe?.moving === true;
