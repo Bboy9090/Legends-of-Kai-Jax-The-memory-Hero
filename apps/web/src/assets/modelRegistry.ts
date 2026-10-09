@@ -78,7 +78,7 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
 
-  // Jaxon Swift — Shadow-sonic blitzer
+  // Jaxon Swift — Shadow Speed Blitzer
   jaxon: {
     path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb",
     scale: 3.5,
@@ -330,6 +330,24 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   // ENEMIES
   // ============================================================
 
+  "memory-wisp": {
+    path: "/models/shadow_panther.glb",
+    scale: 3.2,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+  "corruption-brute": {
+    path: "/models/granite_colossus.glb",
+    scale: 4.5,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
+  "void-stalker-prime": {
+    path: "/models/darjshadowkaijax.glb",
+    scale: 4.2,
+    position: [0, 0, 0],
+    rotation: [0, Math.PI, 0],
+  },
   "hyena-scout": {
     path: "/models/hyenaratvbill.glb",
     scale: 3.2,
@@ -397,24 +415,37 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   },
 };
 
+const MODEL_ID_ALIASES: Readonly<Record<string, string>> = Object.freeze({
+  kaijax: "kai-jax",
+  wisp: "memory-wisp",
+  brute: "corruption-brute",
+  "brute-enemy": "corruption-brute",
+  "void-brute": "corruption-brute",
+  drone: "rift-drone",
+});
+
+export function normalizeModelId(modelId: string): string {
+  const normalized = (modelId ?? "").trim().toLowerCase().replace(/_/g, "-");
+  return MODEL_ID_ALIASES[normalized] ?? normalized;
+}
+
 export function getModelConfig(fighterId: string): GLBModelConfig | null {
-  const config = MODEL_REGISTRY[fighterId] ?? null;
-  if (config) {
-    return {
-      ...config,
-      path: getAssetPath(config.path),
-    };
-  }
-  return null;
+  if (!fighterId) return null;
+  const config = MODEL_REGISTRY[normalizeModelId(fighterId)] ?? null;
+  return config
+    ? {
+        ...config,
+        path: getAssetPath(config.path),
+      }
+    : null;
 }
 
 export function getModelPath(fighterId: string): string | null {
-  const path = MODEL_REGISTRY[fighterId]?.path ?? null;
-  return path ? getAssetPath(path) : null;
+  return getModelConfig(fighterId)?.path ?? null;
 }
 
 export function hasModel(fighterId: string): boolean {
-  return fighterId in MODEL_REGISTRY;
+  return Boolean(fighterId) && normalizeModelId(fighterId) in MODEL_REGISTRY;
 }
 
 /**
