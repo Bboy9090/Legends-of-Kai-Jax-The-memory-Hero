@@ -763,40 +763,52 @@ export function animateKick(
   if (!limbs || !bases) return;
 
   if (combo === 0) {
-    setRot(sp(limbs), bSp(limbs, bases), -0.1 * swing, undefined, undefined);
-    setRot(hp(limbs), bHp(limbs, bases), -swing * 0.05, undefined, undefined);
-    setRot(rUL(limbs), bRUL(limbs, bases), -1.4 * snap, undefined, undefined);
-    setRot(rLL(limbs), bRLL(limbs, bases), 0.5 * (1 - snap), undefined, undefined);
-    setRot(rFt(limbs), bRFt(limbs, bases), -0.5 * snap, undefined, undefined);
-    lerpRot(lUL(limbs), bLUL(limbs, bases), 0.15, undefined, undefined, 8, delta);
-    lerpRot(lLL(limbs), bLLL(limbs, bases), 0.2, undefined, undefined, 8, delta);
-    inner.position.z = snap * 0.1;
+    // Driving front kick: chamber the knee, counter-rotate the torso, then
+    // extend through the hip while the support leg visibly loads the weight.
+    setRot(sp(limbs), bSp(limbs, bases), -0.22 * swing, -0.16 * swing, 0.08 * swing);
+    setRot(hp(limbs), bHp(limbs, bases), -0.12 * swing, 0.2 * swing, -0.06 * swing);
+    setRot(rUL(limbs), bRUL(limbs, bases), -1.72 * snap, 0.14 * swing, 0.08 * swing);
+    setRot(rLL(limbs), bRLL(limbs, bases), 0.92 * (1 - snap), undefined, undefined);
+    setRot(rFt(limbs), bRFt(limbs, bases), -0.62 * snap, undefined, 0.08 * swing);
+    lerpRot(lUL(limbs), bLUL(limbs, bases), 0.34, -0.08 * swing, -0.08, 11, delta);
+    lerpRot(lLL(limbs), bLLL(limbs, bases), 0.38, undefined, undefined, 11, delta);
+    inner.position.y = swing * 0.07;
+    inner.position.z = snap * 0.18;
+    inner.rotation.y = -swing * 0.08;
   } else if (combo === 1) {
-    setRot(sp(limbs), bSp(limbs, bases), 0.05, swing * 0.3, swing * 0.1);
-    setRot(hp(limbs), bHp(limbs, bases), undefined, swing * 0.4, swing * 0.1);
-    setRot(rUL(limbs), bRUL(limbs, bases), -0.5, swing * 1.2 * snap, 0.8 * snap);
-    setRot(rLL(limbs), bRLL(limbs, bases), 0.4 * (1 - snap), undefined, undefined);
-    setRot(rFt(limbs), bRFt(limbs, bases), -0.3 * snap, undefined, swing * 0.2);
-    lerpRot(lUL(limbs), bLUL(limbs, bases), 0.2, undefined, -0.1, 8, delta);
-    lerpRot(lLL(limbs), bLLL(limbs, bases), 0.3, undefined, undefined, 8, delta);
-    inner.position.y = swing * 0.05;
+    // Roundhouse: hip rotation leads, shoulders counter, kicking leg whips
+    // across the body and the planted leg remains flexed rather than frozen.
+    setRot(sp(limbs), bSp(limbs, bases), 0.08 * swing, swing * 0.58, swing * 0.14);
+    setRot(hp(limbs), bHp(limbs, bases), -0.06 * swing, swing * 0.78, swing * 0.16);
+    setRot(rUL(limbs), bRUL(limbs, bases), -0.62, swing * 1.48 * snap, 1.02 * snap);
+    setRot(rLL(limbs), bRLL(limbs, bases), 0.66 * (1 - snap), -0.12 * swing, undefined);
+    setRot(rFt(limbs), bRFt(limbs, bases), -0.42 * snap, undefined, swing * 0.34);
+    lerpRot(lUL(limbs), bLUL(limbs, bases), 0.38, -0.18 * swing, -0.18, 11, delta);
+    lerpRot(lLL(limbs), bLLL(limbs, bases), 0.44, undefined, undefined, 11, delta);
+    inner.position.y = swing * 0.09;
+    inner.rotation.y = swing * 0.16;
   } else {
-    setRot(sp(limbs), bSp(limbs, bases), -0.15 * swing, undefined, -swing * 0.05);
-    setRot(hp(limbs), bHp(limbs, bases), -swing * 0.1, undefined, undefined);
-    setRot(rUL(limbs), bRUL(limbs, bases), -1.8 * snap, undefined, undefined);
-    setRot(rLL(limbs), bRLL(limbs, bases), 0.3, undefined, undefined);
-    setRot(rFt(limbs), bRFt(limbs, bases), -0.6 * snap, undefined, undefined);
-    lerpRot(lUL(limbs), bLUL(limbs, bases), 0.15, undefined, undefined, 8, delta);
-    lerpRot(lLL(limbs), bLLL(limbs, bases), 0.25, undefined, undefined, 8, delta);
-    inner.position.y = swing * 0.12;
+    // Rising power kick: deeper support-leg compression and larger torso recoil
+    // make the lift read through the whole body instead of only the thigh.
+    setRot(sp(limbs), bSp(limbs, bases), -0.3 * swing, 0.08 * swing, -swing * 0.1);
+    setRot(hp(limbs), bHp(limbs, bases), -swing * 0.2, -0.08 * swing, 0.05 * swing);
+    setRot(rUL(limbs), bRUL(limbs, bases), -2.0 * snap, 0.08 * swing, 0.04 * swing);
+    setRot(rLL(limbs), bRLL(limbs, bases), 0.48 * (1 - snap), undefined, undefined);
+    setRot(rFt(limbs), bRFt(limbs, bases), -0.72 * snap, undefined, undefined);
+    lerpRot(lUL(limbs), bLUL(limbs, bases), 0.42, undefined, -0.12, 11, delta);
+    lerpRot(lLL(limbs), bLLL(limbs, bases), 0.5, undefined, undefined, 11, delta);
+    inner.position.y = swing * 0.18;
+    inner.position.z = snap * 0.1;
   }
 
-  lerpRot(rUA(limbs), bUA(limbs, bases), -1.0, undefined, 0.4 + swing * 0.2, 8, delta);
-  lerpRot(rFA(limbs), bFA(limbs, bases), -0.8, undefined, undefined, 8, delta);
-  lerpRot(lUA(limbs), bLUA(limbs, bases), -1.1, undefined, -0.4 - swing * 0.15, 8, delta);
-  lerpRot(lFA(limbs), bLFA(limbs, bases), -0.9, undefined, undefined, 8, delta);
+  // Arms counterbalance the leg/hip impulse so the silhouette reads as a
+  // coordinated martial motion rather than independent limb posing.
+  lerpRot(rUA(limbs), bUA(limbs, bases), -1.24 + swing * 0.16, undefined, 0.58 + swing * 0.32, 11, delta);
+  lerpRot(rFA(limbs), bFA(limbs, bases), -1.05 + swing * 0.18, undefined, 0.12 * swing, 11, delta);
+  lerpRot(lUA(limbs), bLUA(limbs, bases), -1.3 + swing * 0.12, undefined, -0.58 - swing * 0.26, 11, delta);
+  lerpRot(lFA(limbs), bLFA(limbs, bases), -1.02 + swing * 0.14, undefined, -0.1 * swing, 11, delta);
 
-  setRot(hd(limbs), bHd(limbs, bases), swing * 0.06, combo === 1 ? swing * 0.1 : 0, undefined);
+  setRot(hd(limbs), bHd(limbs, bases), swing * 0.08, combo === 1 ? -swing * 0.18 : swing * 0.05, undefined);
 }
 
 export function animateSpecial(
