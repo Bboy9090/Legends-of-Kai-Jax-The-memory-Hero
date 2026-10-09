@@ -390,7 +390,14 @@ export default function OptimizedBeastModel({
 
       const targetIndices = new Set<number>();
       mesh.skeleton.bones.forEach((bone, index) => {
-        if (targetBones.has(bone)) targetIndices.add(index);
+        let cursor: THREE.Object3D | null = bone;
+        while (cursor) {
+          if (targetBones.has(cursor as THREE.Bone)) {
+            targetIndices.add(index);
+            break;
+          }
+          cursor = cursor.parent;
+        }
       });
       if (targetIndices.size === 0) return;
 
