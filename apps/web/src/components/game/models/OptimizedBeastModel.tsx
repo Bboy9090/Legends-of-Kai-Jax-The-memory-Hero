@@ -98,35 +98,34 @@ export default function OptimizedBeastModel({
   const mountedRef = useRef(true);
   const modelPath = getBeastModelPath(beast.id);
   const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
-  const criticalCompanionPaths = useMemo(() => {
-    if (beast.id !== 'kai') return [] as string[];
-    return [
-      animationPaths?.walk,
-      animationPaths?.run,
-      ...(animationPaths?.kick ?? []),
-    ].filter(Boolean) as string[];
-  }, [animationPaths, beast.id]);
-
-  // Kai is the release-critical hero. Warm his authored locomotion and kick
-  // clips before interaction so first input never races the network. The
-  // source GLBs are used only as animation donors; duplicate render payloads
-  // are disposed after clip extraction below.
-  const criticalCompanionGLTFs = useGLTF(criticalCompanionPaths) as any[];
-
   const requestedCompanionPaths = useMemo(() => {
     const paths: string[] = [];
 
-    // Non-Kai locomotion and optional attack families remain lazy.
-    if (beast.id !== 'kai' && isMoving) {
-      if (isRunning && animationPaths?.run) paths.push(animationPaths.run);
-      else if (!isRunning && animationPaths?.walk) paths.push(animationPaths.walk);
+    // Keep donor GLBs off the render-critical path. For Kai, warm only the
+    // highest-value first-use assets in the background: ordinary Walk and the
+    // primary Kick. Sprint and alternate Kick remain lazy.
+    if (beast.id === 'kai') {
+      if (animationPaths?.walk) paths.push(animationPaths.walk);
+      const primaryKick = animationPaths?.kick?.[0];
+      if (primaryKick) paths.push(primaryKick);
+    } else if (isMoving && !isRunning && animationPaths?.walk) {
+      paths.push(animationPaths.walk);
+    }
+
+    if (isMoving && isRunning && animationPaths?.run) {
+      paths.push(animationPaths.run);
     }
 
     if (isAttacking) {
-      const kickIsAlreadyCritical = beast.id === 'kai';
-      if (!kickIsAlreadyCritical && (attackType === 'kick' || attackType === 'heavy') && animationPaths?.kick) {
-        paths.push(...animationPaths.kick);
-      } else if ((attackType === 'punch' || attackType === 'light1' || attackType === 'light2' || attackType === 'light3') && animationPaths?.punch) {
+      if ((attackType === 'kick' || attackType === 'heavy') && animationPaths?.kick) {
+        const lazyKickPaths = beast.id === 'kai'
+          ? animationPaths.kick.slice(1)
+          : animationPaths.kick;
+        paths.push(...lazyKickPaths);
+      } else if (
+        (attackType === 'punch' || attackType === 'light1' || attackType === 'light2' || attackType === 'light3') &&
+        animationPaths?.punch
+      ) {
         paths.push(...animationPaths.punch);
       }
     }
@@ -263,43 +262,9 @@ export default function OptimizedBeastModel({
 
   }, [beast.id, requestedCompanionPaths]);
 
-  const criticalAnimations = useMemo(() => {
-    const clips: THREE.AnimationClip[] = [];
-    criticalCompanionGLTFs.forEach((gltf, index) => {
-      const path = criticalCompanionPaths[index] ?? '';
-      const semantic =
-        /Running/i.test(path) ? 'Run'
-        : /Walking/i.test(path) ? 'Walk'
-        : /Kick/i.test(path) ? 'Kick'
-        : /Punch|Jab/i.test(path) ? 'Punch'
-        : 'Companion';
-      (gltf?.animations ?? []).forEach((clip: THREE.AnimationClip, clipIndex: number) => {
-        const clone = clip.clone();
-        clone.name = `${semantic}:${clip.name || clipIndex}:${path.split('/').pop() || clipIndex}`;
-        clips.push(clone);
-      });
-    });
-    return clips;
-  }, [criticalCompanionGLTFs, criticalCompanionPaths]);
-
-  useEffect(() => {
-    criticalCompanionGLTFs.forEach((gltf) => {
-      gltf?.scene?.traverse?.((obj: any) => {
-        obj.geometry?.dispose?.();
-        const materials = Array.isArray(obj.material) ? obj.material : obj.material ? [obj.material] : [];
-        materials.forEach((material: any) => {
-          Object.values(material).forEach((value: any) => {
-            if (value?.isTexture) value.dispose?.();
-          });
-          material.dispose?.();
-        });
-      });
-    });
-  }, [criticalCompanionGLTFs]);
-
   const authoredAnimations = useMemo(
-    () => [...animations, ...criticalAnimations, ...companionAnimations],
-    [animations, criticalAnimations, companionAnimations],
+    () => [...animations, ...companionAnimations],
+    [animations, companionAnimations],
   );
   // DIAGNOSTIC: log scene load success
   useEffect(() => {

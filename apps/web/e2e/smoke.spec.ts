@@ -157,7 +157,7 @@ test("presentation: title shell exposes release metadata and an accessible begin
 });
 
 test("versus: boots, navigates menus, and starts a battle without crashing", async ({ page }, testInfo) => {
-  test.setTimeout(240_000);
+  test.setTimeout(420_000);
   const errors = collectErrors(page);
   await page.addInitScript(() => {
     (window as any).__KAI_JAX_CERTIFICATION__ = true;
@@ -187,18 +187,30 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
 
   // Certify locomotion against the clip actually selected by the mounted fighter.
   await page.keyboard.down("ArrowRight");
-  await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
-    return probe?.requested === "walk" && probe?.authored === true && /walk/i.test(probe?.selectedClip ?? "");
-  }, null, { timeout: 45_000 });
+  try {
+    await page.waitForFunction(() => {
+      const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
+      return probe?.requested === "walk" && probe?.authored === true && /walk/i.test(probe?.selectedClip ?? "");
+    }, null, { timeout: 90_000 });
+  } catch (error) {
+    console.log("LIVE_ANIMATION_WALK_TIMEOUT_PROBE", JSON.stringify(await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__)));
+    console.log("LIVE_COMPANION_WALK_TIMEOUT_PROBE", JSON.stringify(await page.evaluate(() => (window as any).__KAI_JAX_COMPANION_PROBE__)));
+    throw error;
+  }
   const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_WALK_PROBE", JSON.stringify(walkProbe));
   expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
   await page.keyboard.down("ShiftLeft");
-  await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
-    return probe?.requested === "run" && probe?.authored === true && /run/i.test(probe?.selectedClip ?? "");
-  }, null, { timeout: 45_000 });
+  try {
+    await page.waitForFunction(() => {
+      const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
+      return probe?.requested === "run" && probe?.authored === true && /run/i.test(probe?.selectedClip ?? "");
+    }, null, { timeout: 90_000 });
+  } catch (error) {
+    console.log("LIVE_ANIMATION_RUN_TIMEOUT_PROBE", JSON.stringify(await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__)));
+    console.log("LIVE_COMPANION_RUN_TIMEOUT_PROBE", JSON.stringify(await page.evaluate(() => (window as any).__KAI_JAX_COMPANION_PROBE__)));
+    throw error;
+  }
   const runProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_RUN_PROBE", JSON.stringify(runProbe));
   expect(Object.values(runProbe ?? {}).some((p: any) => p?.requested === "run" && /run/i.test(p?.selectedClip ?? ""))).toBeTruthy();
@@ -206,8 +218,19 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   await page.keyboard.up("ArrowRight");
 
   // Exercise the actual keyboard path while the WebGL fighter is mounted.
-  // Kick is the authored-attack certification target. Procedural Punch pose
-  // quality remains a separate visual-review item and must not gate this proof.
+  // Kick is the authored-attack certification target. The primary authored Kick
+  // donor is background-warmed after mount; wait for that donor to be ready
+  // before issuing KeyK so the test certifies authored selection rather than
+  // measuring raw network/download time inside a short combat attack window.
+  await page.waitForFunction(() => {
+    const probe = (window as any).__KAI_JAX_COMPANION_PROBE__ ?? {};
+    return Object.entries(probe).some(([path, state]: any) =>
+      /Lunge_Spin_Kick/i.test(path) && state?.status === "loaded" && state?.clipCount > 0
+    );
+  }, null, { timeout: 120_000 });
+  console.log("LIVE_COMPANION_PRIMARY_KICK_READY", JSON.stringify(
+    await page.evaluate(() => (window as any).__KAI_JAX_COMPANION_PROBE__)
+  ));
   await page.keyboard.down("KeyK"); // kick
   try {
     await page.waitForFunction(
