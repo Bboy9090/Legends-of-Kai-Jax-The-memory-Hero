@@ -147,10 +147,10 @@ export default function StoryHubScreen() {
             <div className="text-center text-[10px] uppercase tracking-[0.3em] text-[#a48c65]">Your Legends</div>
             <div className="mt-4 grid grid-cols-3 gap-2">
               {[
-                ['kai', 'KAI', '#c76cff', 'MEMORY-WEB HEIR'],
-                ['jax', 'JAX', '#5aaeff', 'STORM FANG'],
-                ['kai-jax', 'KAI-JAX', '#efc76d', 'FUSION HERO'],
-              ].map(([id, name, color, subtitle]) => {
+                ['kai', 'KAI', '#c76cff', 'MEMORY-WEB HEIR', '/brand/kai-and-jax-before-merge.png', '30% center'],
+                ['jax', 'JAX', '#5aaeff', 'STORM FANG', '/brand/kai-and-jax-before-merge.png', '72% center'],
+                ['kai-jax', 'KAI-JAX', '#efc76d', 'FUSION HERO', '/images/lore/hero-kaijax.png', 'center 24%'],
+              ].map(([id, name, color, subtitle, image, imagePosition]) => {
                 const active = selectedCharacter === id
                   || (id === 'kai-jax' && ['kaijax', 'kai_jax'].includes(selectedCharacter ?? ''));
                 return (
@@ -166,12 +166,16 @@ export default function StoryHubScreen() {
                     }}
                   >
                     <div
-                      className="mx-auto mb-2 grid h-14 w-10 place-items-center border bg-[linear-gradient(180deg,rgba(255,255,255,.08),rgba(0,0,0,.6))] text-lg"
-                      style={{ borderColor: `${color}66`, boxShadow: `inset 0 0 18px ${color}33`, color }}
+                      className="mx-auto mb-2 h-20 w-full overflow-hidden border bg-black/60"
+                      style={{
+                        borderColor: `${color}66`,
+                        boxShadow: `inset 0 0 18px ${color}33`,
+                        backgroundImage: `linear-gradient(180deg,transparent 35%,rgba(2,3,7,.82)),url('${image}')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: imagePosition,
+                      }}
                       aria-hidden="true"
-                    >
-                      ✦
-                    </div>
+                    />
                     <div className="text-[9px] tracking-[0.12em]" style={{ color }}>{name}</div>
                     <div className="mt-1 text-[7px] tracking-[0.08em] text-[#817768]">{subtitle}</div>
                   </button>
