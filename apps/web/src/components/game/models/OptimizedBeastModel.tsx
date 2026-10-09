@@ -96,6 +96,8 @@ export default function OptimizedBeastModel({
   const loadedCompanionPathsRef = useRef(new Set<string>());
   const loadingCompanionPathsRef = useRef(new Set<string>());
   const mountedRef = useRef(true);
+  const deformationSampleRef = useRef<{ frames: number; motion: number; last: number[] | null }>({ frames: 0, motion: 0, last: null });
+  const forceProceduralRef = useRef(false);
   const modelPath = getBeastModelPath(beast.id);
   const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
   const criticalCompanionPaths = useMemo(() => {
@@ -355,6 +357,24 @@ export default function OptimizedBeastModel({
     basesRef.current = captureBaseRotations(limbs);
   }, [cloned, beast.id]);
 
+  const sampleRigPose = () => {
+    const limbs = limbsRef.current;
+    if (!limbs) return [] as number[];
+    const nodes = [
+      limbs.leftUpperArm,
+      limbs.rightUpperArm,
+      limbs.leftUpperLeg,
+      limbs.rightUpperLeg,
+      limbs.spine,
+    ].filter(Boolean) as THREE.Object3D[];
+    return nodes.flatMap((node) => [
+      node.quaternion.x,
+      node.quaternion.y,
+      node.quaternion.z,
+      node.quaternion.w,
+    ]);
+  };
+
   // Handle animations
   useEffect(() => {
     if (!actions || Object.keys(actions).length === 0) return;
@@ -455,6 +475,10 @@ export default function OptimizedBeastModel({
     }
 
     animationSelectionAttackRef.current = isAttacking;
+    if (!isMoving && !isAttacking) {
+      forceProceduralRef.current = false;
+      deformationSampleRef.current = { frames: 0, motion: 0, last: null };
+    }
   }, [actions, isAttacking, isMoving, isRunning, attackType, beast.id]);
 
   // Hit animation and effects
@@ -467,6 +491,45 @@ export default function OptimizedBeastModel({
 
     const procedural = proceduralStateRef.current;
     const t = animTime || state.clock.elapsedTime;
+
+    // A selected AnimationAction is not proof that the visible rig is moving.
+    // Measure actual arm/leg/spine quaternion changes. If an authored clip is
+    // bound incorrectly and the visible skeleton remains static, fail over to
+    // the articulated procedural rig instead of letting the fighter skate.
+    if ((isMoving || isAttacking) && activeActionRef.current && !forceProceduralRef.current) {
+      const pose = sampleRigPose();
+      if (pose.length > 0) {
+        const sample = deformationSampleRef.current;
+        if (sample.last && sample.last.length === pose.length) {
+          let deltaSum = 0;
+          for (let i = 0; i < pose.length; i += 1) deltaSum += Math.abs(pose[i] - sample.last[i]);
+          sample.motion += deltaSum;
+        }
+        sample.last = pose;
+        sample.frames += 1;
+        if (sample.frames >= 12) {
+          const averageMotion = sample.motion / sample.frames;
+          const moving = averageMotion > 0.0015;
+          if (typeof window !== 'undefined') {
+            const w = window as any;
+            w.__KAI_JAX_DEFORMATION_PROBE__ ??= {};
+            w.__KAI_JAX_DEFORMATION_PROBE__[beast.id] = {
+              requested: isAttacking ? attackType ?? 'attack' : isRunning ? 'run' : 'walk',
+              moving,
+              averageMotion,
+              forcedProcedural: !moving,
+              timestamp: performance.now(),
+            };
+          }
+          if (!moving) {
+            forceProceduralRef.current = true;
+            activeActionRef.current.stop();
+            activeActionRef.current = null;
+          }
+          deformationSampleRef.current = { frames: 0, motion: 0, last: pose };
+        }
+      }
+    }
 
     if (hitAnim > 0 && previousHitAnimRef.current <= 0) {
       triggerHit(procedural);
@@ -526,7 +589,7 @@ export default function OptimizedBeastModel({
       : isMoving
         ? (isRunning ? available.some(n => /run|sprint/i.test(n)) : available.some(n => /walk|locomotion/i.test(n)))
         : available.some(n => /idle|breath|stand/i.test(n));
-    if (!hasStateClip && limbsRef.current && basesRef.current) {
+    if ((!hasStateClip || forceProceduralRef.current) && limbsRef.current && basesRef.current) {
       if (isAttacking) {
         if (attackType === 'kick' || attackType === 'heavy') {
           animateKick(cloned, limbsRef.current, basesRef.current, procedural, delta);
