@@ -1432,3 +1432,10 @@ export const useBattle = create<BattleState>((set, get) => ({
     }
   },
 }));
+
+
+// Certification/debug bridge for runtime smoke. Keeps the battle store
+// inspectable without affecting gameplay authority.
+if (typeof window !== 'undefined') {
+  (window as any).battleStore = useBattle;
+}
