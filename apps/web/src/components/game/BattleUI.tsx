@@ -254,7 +254,7 @@ function LegendaryHealthBar({
       <div 
         className={`
           relative bg-gradient-to-b from-gray-900/95 to-black/95 backdrop-blur-md 
-          rounded-xl p-2 sm:p-3 
+          rounded-xl p-1.5 sm:p-2 
           border-2 
           transition-all duration-300
           shadow-[0_4px_24px_rgba(0,0,0,0.5)]
@@ -279,9 +279,9 @@ function LegendaryHealthBar({
           {/* Fighter Avatar — design-driven portrait when available */}
           <div 
             className={`
-              relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 
+              relative w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 
               rounded-full flex items-center justify-center overflow-hidden
-              font-black text-lg sm:text-xl md:text-2xl text-white
+              font-black text-base sm:text-lg md:text-xl text-white
               flex-shrink-0 border-2 border-white/30
               ${isCritical ? 'animate-pulse' : ''}
             `}
@@ -309,7 +309,7 @@ function LegendaryHealthBar({
           {/* Fighter Name & Wins */}
           <div className={`min-w-0 ${side === 'right' ? 'text-right' : ''}`}>
             <h3 
-              className="text-white font-bold text-sm sm:text-base md:text-lg truncate"
+              className="text-white font-bold text-xs sm:text-sm md:text-base truncate"
               style={{ textShadow: `0 0 10px ${fighter.accentColor}` }}
             >
               {fighter.displayName}
@@ -331,7 +331,7 @@ function LegendaryHealthBar({
         {/* Health Bar */}
         <div 
           className={`
-            relative h-5 sm:h-6 md:h-8 
+            relative h-4 sm:h-5 md:h-6 
             bg-gray-800/90 rounded-full overflow-hidden 
             border border-white/25 shadow-[inset_0_2px_6px_rgba(0,0,0,0.5)]
             ${isCritical ? 'shadow-[0_0_20px_rgba(239,68,68,0.9)_inset]' : ''}
@@ -359,7 +359,7 @@ function LegendaryHealthBar({
           
           {/* Health Text */}
           <div 
-            className="absolute inset-0 flex items-center justify-center text-white font-black text-sm sm:text-base md:text-lg"
+            className="absolute inset-0 flex items-center justify-center text-white font-black text-xs sm:text-sm md:text-base"
             style={{ 
               textShadow: '0 1px 2px rgba(0,0,0,1), 0 0 8px rgba(0,0,0,0.8), 0 0 2px rgba(255,255,255,0.3)' 
             }}
@@ -369,7 +369,7 @@ function LegendaryHealthBar({
         </div>
         
         {/* Synergy Meter */}
-        <div className={`mt-2 ${side === 'right' ? 'flex justify-end' : ''}`}>
+        <div className={`mt-1 ${side === 'right' ? 'flex justify-end' : ''}`}>
           <SynergyMeter value={synergy} fighterColor={fighter.color} side={side} />
         </div>
       </div>
@@ -386,8 +386,8 @@ function LegendaryTimer({ time }: { time: number }) {
     <div 
       className={`
         relative bg-gradient-to-b from-gray-900/90 to-black/90 backdrop-blur-md 
-        rounded-xl p-2 sm:p-4 
-        min-w-[70px] sm:min-w-[100px]
+        rounded-xl p-1.5 sm:p-2.5 
+        min-w-[58px] sm:min-w-[78px]
         border-3 
         transition-all duration-300
         ${isUrgent 
@@ -402,7 +402,7 @@ function LegendaryTimer({ time }: { time: number }) {
       <div className="text-center">
         <div 
           className={`
-            text-3xl sm:text-4xl md:text-5xl font-black 
+            text-2xl sm:text-3xl md:text-4xl font-black 
             ${isUrgent ? 'text-red-400 animate-bounce' : isCritical ? 'text-orange-400' : 'text-white'}
           `}
           style={{
@@ -940,8 +940,8 @@ export default function BattleUI() {
       )}
 
       {/* Top HUD */}
-      <div className="absolute top-0 left-0 right-0 p-2 sm:p-4">
-        <div className="max-w-6xl mx-auto">
+      <div className="absolute top-0 left-0 right-0 p-1.5 sm:p-2.5">
+        <div className="max-w-5xl mx-auto">
           {trainingSession && (
             <div className="text-center mb-1 pointer-events-none">
               <span className="inline-block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-full border border-emerald-500/40 bg-emerald-950/50 text-emerald-200/95">
