@@ -912,7 +912,7 @@ export default function BattleUI() {
   if (!playerFighter || !opponentFighter) return null;
   
   return (
-    <div className="fixed inset-0 pointer-events-none">
+    <div className="kj-vision-shell fixed inset-0 pointer-events-none">
       {/* Critical low-health vignette */}
       {isCritical && (
         <div
@@ -940,8 +940,8 @@ export default function BattleUI() {
       )}
 
       {/* Top HUD */}
-      <div className="absolute top-0 left-0 right-0 p-1.5 sm:p-2.5">
-        <div className="max-w-5xl mx-auto">
+      <div className="absolute top-0 left-0 right-0 p-2 sm:p-3">
+        <div className="kj-vision-hud mx-auto max-w-5xl px-2 py-2 sm:px-3">
           {trainingSession && (
             <div className="text-center mb-1 pointer-events-none">
               <span className="inline-block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-full border border-emerald-500/40 bg-emerald-950/50 text-emerald-200/95">
@@ -1011,7 +1011,7 @@ export default function BattleUI() {
         <button
           type="button"
           onClick={() => setShowMoves(true)}
-          className="absolute top-16 right-3 sm:top-20 sm:right-5 pointer-events-auto z-20 px-3 py-2 min-h-[44px] rounded-lg border border-cyan-500/50 bg-slate-900/70 text-cyan-300 text-xs font-bold uppercase tracking-wider hover:border-cyan-400 hover:bg-slate-800/80 transition-all"
+          className="kj-vision-button absolute top-20 right-4 z-20 min-h-[44px] pointer-events-auto px-4 py-2 text-xs"
         >
           Moves
         </button>
@@ -1027,7 +1027,7 @@ export default function BattleUI() {
       {/* Stamina + combat state (Phase 3) */}
       {battlePhase === "fighting" && (
         <div className="absolute left-4 bottom-24 sm:bottom-28 pointer-events-none max-w-[min(90vw,280px)]">
-          <div className="bg-black/70 backdrop-blur-md rounded-lg px-3 py-2 border border-white/15">
+          <div className="kj-vision-hud px-3 py-2">
             <div className="flex justify-between items-center gap-2 mb-1">
               <span className="mk-hud text-[10px] sm:text-xs text-slate-400 uppercase tracking-wider">Stamina</span>
               <span className="text-[10px] sm:text-xs text-cyan-200/90 font-mono">
@@ -1067,7 +1067,7 @@ export default function BattleUI() {
       {/* Controls Guide */}
       {battlePhase === 'fighting' && !touchCapable && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex justify-center px-2 w-full max-w-2xl">
-          <div className="bg-black/75 backdrop-blur-md rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 border border-cyan-400/40 shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+          <div className="kj-vision-hud px-3 py-2 sm:px-4 sm:py-2.5">
             <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 text-white text-xs sm:text-sm">
               <div className="flex items-center gap-1.5">
                 <kbd className="bg-white/25 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">←→</kbd>
@@ -1083,15 +1083,15 @@ export default function BattleUI() {
               </div>
               <div className="flex items-center gap-1.5">
                 <kbd className="bg-cyan-500/50 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">J</kbd>
-                <span className="text-cyan-200">Punch</span>
+                <span className="text-[#d9c29a]">Punch</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <kbd className="bg-orange-500/50 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">K</kbd>
-                <span className="text-orange-200">Kick</span>
+                <span className="text-[#d9c29a]">Kick</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <kbd className="bg-purple-500/50 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">L</kbd>
-                <span className="text-purple-200">Special</span>
+                <span className="text-purple-300">Memory</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <kbd className="bg-amber-500/50 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">T</kbd>
