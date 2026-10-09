@@ -38,9 +38,9 @@ export default function BattleCamera() {
   const posRef = useRef(new THREE.Vector3(0, BASE_HEIGHT, BASE_DIST));
   const frameRef = useRef(0);
   const currentParams = useRef({
-    distMul: 1.12,
-    heightMul: 1.05,
-    targetYOffset: 1.25,
+    distMul: 1.04,
+    heightMul: 1.0,
+    targetYOffset: 1.12,
   });
 
   useFrame((state, rawDelta) => {
@@ -77,21 +77,21 @@ export default function BattleCamera() {
     const midY = (playerY + opponentY) * 0.5;
 
     const targetParams = {
-      distMul: 1.16,
-      heightMul: 1.04,
-      targetYOffset: 1.25,
+      distMul: 1.06,
+      heightMul: 1.0,
+      targetYOffset: 1.12,
     };
 
     // Combat should not zoom *into* the action. Give both silhouettes breathing
     // room so attacks, dodges, and knockback remain readable.
     if (mode === "combat") {
-      targetParams.distMul = 1.12;
-      targetParams.heightMul = 1.02;
-      targetParams.targetYOffset = 1.2;
+      targetParams.distMul = 0.98;
+      targetParams.heightMul = 0.98;
+      targetParams.targetYOffset = 1.08;
     } else if (mode === "lockOn") {
-      targetParams.distMul = 1.14;
-      targetParams.heightMul = 1.02;
-      targetParams.targetYOffset = 1.2;
+      targetParams.distMul = 1.0;
+      targetParams.heightMul = 0.99;
+      targetParams.targetYOffset = 1.1;
     }
 
     const paramK = 1 - Math.exp(-(mode === "exploration" ? 3.5 : 5.0) * delta);
@@ -116,10 +116,10 @@ export default function BattleCamera() {
     // Horizontal spacing drives the majority of zoom-out. Vertical knockback
     // also contributes so launched fighters remain visible.
     const dynamicDist =
-      (BASE_DIST + horizontalSeparation * Math.max(0.5, bt.separationDistScale) + Math.abs(dy) * 0.18) *
+      (BASE_DIST + horizontalSeparation * Math.max(0.26, bt.separationDistScale) + Math.abs(dy) * 0.18) *
       distMul;
     const dynamicHeight =
-      (BASE_HEIGHT + separation * Math.max(0.14, bt.separationHeightScale)) * heightMul;
+      (BASE_HEIGHT + separation * Math.max(0.1, bt.separationHeightScale)) * heightMul;
 
     const idealTarget = new THREE.Vector3(midX, midY + targetYOffset, 0);
     const lookK = 1 - Math.exp(-8 * delta);
@@ -131,7 +131,7 @@ export default function BattleCamera() {
 
     // Keep FOV predictable. Wide enough for separation, never so wide that
     // fighters become tiny, and never punch in during hit-stop.
-    const targetFov = THREE.MathUtils.clamp(46 + separation * 0.45, 46, 56);
+    const targetFov = THREE.MathUtils.clamp(44 + separation * 0.32, 44, 52);
     if ("fov" in camera && typeof camera.fov === "number") {
       camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 1 - Math.exp(-6 * delta));
       camera.updateProjectionMatrix();
