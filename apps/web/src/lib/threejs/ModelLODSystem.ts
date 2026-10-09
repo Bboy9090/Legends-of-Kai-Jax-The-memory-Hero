@@ -61,9 +61,10 @@ export const LOD_THRESHOLDS = {
 export function getLODModelPath(
   characterId: string,
   distance: number = 0
-): string {
-  const config = LOD_MODEL_REGISTRY[characterId];
-  if (!config) return '/models/kai_jax_beast.glb'; // Fallback
+): string | null {
+  const normalizedId = characterId === 'kaijax' || characterId === 'kai_jax' ? 'kai-jax' : characterId;
+  const config = LOD_MODEL_REGISTRY[normalizedId];
+  if (!config) return null;
 
   const deviceType = getDeviceType();
   const thresholds = LOD_THRESHOLDS[deviceType];

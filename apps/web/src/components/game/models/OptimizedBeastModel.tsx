@@ -11,7 +11,7 @@ import * as THREE from 'three';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { useBattle } from '../../../lib/stores/useBattle';
-import { MODEL_REGISTRY } from '../../../assets/modelRegistry';
+import { MODEL_REGISTRY, getModelConfig } from '../../../assets/modelRegistry';
 import {
   findLimbs,
   captureBaseRotations,
@@ -29,8 +29,9 @@ import {
   type LimbBaseRotations,
 } from '../../../lib/animationUtils';
 
-// Guaranteed-to-exist fallback if a fighter has no registered model.
-const FALLBACK_MODEL_PATH = '/models/kai_jax_beast.glb';
+// Unknown fighter IDs render a diagnostic proxy. A known model is loaded only
+// to keep hook order stable; it is never shown for the unknown identity.
+const DIAGNOSTIC_LOAD_PATH = '/models/kai_jax_beast.glb';
 
 // Production combat uses each fighter's canonical registry asset. Performance
 // optimization must happen through real per-character LODs, texture/mesh
@@ -56,13 +57,14 @@ interface OptimizedBeastModelProps {
 /**
  * Get GLB model path for beast
  */
-function getBeastModelPath(beastId: string): string {
-  const registered = MODEL_REGISTRY[beastId]?.path;
-  if (registered) return registered;
-  console.warn(
-    `[OptimizedBeastModel] No canonical model registered for "${beastId}". Using emergency fallback.`
-  );
-  return FALLBACK_MODEL_PATH;
+function getBeastModelPath(beastId: string): string | null {
+  const resolved = getModelConfig(beastId)?.path ?? null;
+  if (!resolved) {
+    console.warn(
+      `[OptimizedBeastModel] No canonical model registered for "${beastId}". Rendering diagnostic proxy.`
+    );
+  }
+  return resolved;
 }
 
 /**
@@ -97,7 +99,8 @@ export default function OptimizedBeastModel({
   const loadingCompanionPathsRef = useRef(new Set<string>());
   const mountedRef = useRef(true);
   const modelPath = getBeastModelPath(beast.id);
-  const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
+  const safeLoadPath = modelPath ?? getModelConfig('kai-jax')?.path ?? DIAGNOSTIC_LOAD_PATH;
+  const animationPaths = getModelConfig(beast.id)?.animationPaths;
   const criticalCompanionPaths = useMemo(() => {
     if (beast.id !== 'kai') return [] as string[];
     return [
@@ -156,7 +159,7 @@ export default function OptimizedBeastModel({
   // Load GLB model. Note: useGLTF's fourth argument is extendLoader, NOT an
   // onError callback. The previous code mislabeled successful loader setup as
   // a model load failure in release smoke tests.
-  const { scene, animations } = useGLTF(modelPath);
+  const { scene, animations } = useGLTF(safeLoadPath);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -553,6 +556,17 @@ export default function OptimizedBeastModel({
   });
 
 
+  if (!modelPath) {
+    return (
+      <group ref={groupRef}>
+        <mesh castShadow receiveShadow position={[0, 0.8, 0]}>
+          <boxGeometry args={[0.6, 1.6, 0.6]} />
+          <meshStandardMaterial color={beast.color || '#6b7280'} roughness={0.9} metalness={0.05} />
+        </mesh>
+      </group>
+    );
+  }
+
   return (
     <group ref={groupRef} rotation={[0, Math.PI / 2, 0]}>
       <primitive object={cloned} />
@@ -562,6 +576,6 @@ export default function OptimizedBeastModel({
 
 // Preload common models
 // Preload the real registered models for the primary fighters (correct paths).
-useGLTF.preload(getBeastModelPath('kai-jax'));
-useGLTF.preload(getBeastModelPath('jaxon'));
-useGLTF.preload(getBeastModelPath('kaison'));
+useGLTF.preload(getBeastModelPath('kai-jax') ?? DIAGNOSTIC_LOAD_PATH);
+useGLTF.preload(getBeastModelPath('jaxon') ?? DIAGNOSTIC_LOAD_PATH);
+useGLTF.preload(getBeastModelPath('kaison') ?? DIAGNOSTIC_LOAD_PATH);

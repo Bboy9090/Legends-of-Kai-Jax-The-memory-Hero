@@ -45,12 +45,38 @@ interface ProfileData {
   lastPlayedTitle: string | null;
 }
 
-interface RunnerState {
+export type StorageStatus = "persistent" | "temporary" | "unavailable";
+
+export function detectStorageCapability(): StorageStatus {
+  if (typeof window === "undefined") return "unavailable";
+  try {
+    const storage = window.localStorage;
+    const probeKey = "__kai_jax_storage_probe__";
+    storage.setItem(probeKey, "1");
+    storage.getItem(probeKey);
+    storage.removeItem(probeKey);
+    return "persistent";
+  } catch {
+    return "temporary";
+  }
+}
+
+let currentStorageStatus: StorageStatus = detectStorageCapability();
+let publishStorageStatus: ((status: StorageStatus) => void) | null = null;
+
+function updateStorageStatus(status: StorageStatus): void {
+  if (currentStorageStatus === status) return;
+  currentStorageStatus = status;
+  publishStorageStatus?.(status);
+}
+
+export interface RunnerState {
   // Runtime State (Reset on app launch, not per-profile)
   gameState: GameState;
   selectedCharacter: string | null;
   activeStoryMissionId: string | null;
   trainingSession: boolean;
+  storageStatus: StorageStatus;
   
   // Persistent Profile Management
   activeProfileIndex: number;
@@ -93,8 +119,13 @@ const RUNNER_BACKUP_SUFFIX = "-backup";
 
 const runnerStorage: StateStorage = {
   getItem: (name) => {
+    if (typeof localStorage === "undefined") {
+      updateStorageStatus("unavailable");
+      return null;
+    }
     try {
       const primary = localStorage.getItem(name);
+      updateStorageStatus("persistent");
       if (primary) {
         try {
           JSON.parse(primary);
@@ -116,11 +147,16 @@ const runnerStorage: StateStorage = {
       }
     } catch (error) {
       console.error("[Save] Unable to read runner profile", error);
+      updateStorageStatus("temporary");
       return null;
     }
   },
 
   setItem: (name, value) => {
+    if (typeof localStorage === "undefined") {
+      updateStorageStatus("unavailable");
+      return;
+    }
     try {
       const previous = localStorage.getItem(name);
       if (previous) {
@@ -132,17 +168,25 @@ const runnerStorage: StateStorage = {
         }
       }
       localStorage.setItem(name, value);
+      updateStorageStatus("persistent");
     } catch (error) {
       console.error("[Save] Unable to persist runner profile", error);
+      updateStorageStatus("temporary");
     }
   },
 
   removeItem: (name) => {
+    if (typeof localStorage === "undefined") {
+      updateStorageStatus("unavailable");
+      return;
+    }
     try {
       localStorage.removeItem(name);
       localStorage.removeItem(`${name}${RUNNER_BACKUP_SUFFIX}`);
+      updateStorageStatus("persistent");
     } catch (error) {
       console.error("[Save] Unable to clear runner profile", error);
+      updateStorageStatus("temporary");
     }
   },
 };
@@ -190,6 +234,7 @@ export const useRunner = create<RunnerState>()(
       selectedCharacter: "jaxon",
       activeStoryMissionId: null,
       trainingSession: false,
+      storageStatus: currentStorageStatus,
       
       // Profiles Initial
       activeProfileIndex: 0,
@@ -335,11 +380,20 @@ export const useRunner = create<RunnerState>()(
           completedStoryMissionIds: active.completedStoryMissionIds,
           completedRoamDistrictIds: active.completedRoamDistrictIds,
           unlockedUpgrades: active.unlockedUpgrades,
+          storageStatus: currentStorageStatus,
         };
       },
     }
   )
 );
+
+publishStorageStatus = (storageStatus) => {
+  queueMicrotask(() => {
+    if (useRunner.getState().storageStatus !== storageStatus) {
+      useRunner.setState({ storageStatus });
+    }
+  });
+};
 
 // Expose for cross-store access without circular imports
 if (typeof window !== 'undefined') {

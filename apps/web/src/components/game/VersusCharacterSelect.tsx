@@ -16,7 +16,7 @@ import { FIGHTERS, getFighterById } from "../../lib/characters";
 import { getDefaultVariant } from "../../lib/characterVariants";
 import { getQualitySettings } from "../../lib/threejs/PerformanceOptimizer";
 import {
-  VERSUS_ROSTER,
+  GOLD_SLICE_VERSUS_ROSTER,
   type VersusRosterEntry,
 } from "../../lib/versusRoster";
 
@@ -142,22 +142,27 @@ export default function VersusCharacterSelect() {
   const setOpponentFighter = useBattle((s) => s.setOpponentFighter);
   const completedStoryMissionIds = useRunner((s) => s.completedStoryMissionIds);
 
-  const playableEntries = useMemo(
-    () => VERSUS_ROSTER.filter((entry) => entry.defaultUnlocked && Boolean(getCombatProfile(entry))),
+  const goldSliceEntries = useMemo(
+    () => GOLD_SLICE_VERSUS_ROSTER,
     [],
+  );
+
+  const playableEntries = useMemo(
+    () => goldSliceEntries.filter((entry) => entry.defaultUnlocked && Boolean(getCombatProfile(entry))),
+    [goldSliceEntries],
   );
 
   const initialSelection = useMemo(() => {
     const persisted = persistedCharacter
-      ? VERSUS_ROSTER.find((entry) => resolveCombatId(entry.id) === persistedCharacter || entry.id === persistedCharacter)
+      ? goldSliceEntries.find((entry) => resolveCombatId(entry.id) === persistedCharacter || entry.id === persistedCharacter)
       : undefined;
-    return persisted?.id ?? playableEntries[0]?.id ?? VERSUS_ROSTER[0]?.id ?? "kai";
-  }, [persistedCharacter, playableEntries]);
+    return persisted?.id ?? playableEntries[0]?.id ?? goldSliceEntries[0]?.id ?? "kai-jax";
+  }, [persistedCharacter, playableEntries, goldSliceEntries]);
 
   const [selectedId, setSelectedId] = useState(initialSelection);
   const [variantByFighter, setVariantByFighter] = useState<Record<string, string>>({});
 
-  const selectedEntry = VERSUS_ROSTER.find((entry) => entry.id === selectedId) ?? VERSUS_ROSTER[0];
+  const selectedEntry = goldSliceEntries.find((entry) => entry.id === selectedId) ?? goldSliceEntries[0];
   const selectedProfile = selectedEntry ? getCombatProfile(selectedEntry) : null;
   const selectedPlayable = Boolean(selectedEntry?.defaultUnlocked && selectedProfile);
   const selectedCombatId = selectedEntry ? resolveCombatId(selectedEntry.id) : "";
@@ -173,17 +178,17 @@ export default function VersusCharacterSelect() {
   };
 
   const selectByIndex = useCallback((nextIndex: number) => {
-    if (VERSUS_ROSTER.length === 0) return;
-    const wrapped = ((nextIndex % VERSUS_ROSTER.length) + VERSUS_ROSTER.length) % VERSUS_ROSTER.length;
-    const next = VERSUS_ROSTER[wrapped];
+    if (goldSliceEntries.length === 0) return;
+    const wrapped = ((nextIndex % goldSliceEntries.length) + goldSliceEntries.length) % goldSliceEntries.length;
+    const next = goldSliceEntries[wrapped];
     if (!next) return;
     setSelectedId(next.id);
-  }, []);
+  }, [goldSliceEntries]);
 
   const moveSelection = useCallback((delta: number) => {
-    const currentIndex = Math.max(0, VERSUS_ROSTER.findIndex((entry) => entry.id === selectedId));
+    const currentIndex = Math.max(0, goldSliceEntries.findIndex((entry) => entry.id === selectedId));
     selectByIndex(currentIndex + delta);
-  }, [selectedId, selectByIndex]);
+  }, [selectedId, selectByIndex, goldSliceEntries]);
 
   const beginMatch = useCallback((training: boolean) => {
     if (!selectedEntry || !selectedPlayable || !selectedProfile) return;
@@ -347,9 +352,9 @@ export default function VersusCharacterSelect() {
           </div>
         </section>
 
-        <aside className="lg:w-[25rem] max-h-[36vh] lg:max-h-none flex flex-col gap-3 overflow-y-auto pr-1" role="group" aria-label="Locked baseline fighter roster">
+        <aside className="lg:w-[25rem] max-h-[36vh] lg:max-h-none flex flex-col gap-3 overflow-y-auto pr-1" role="group" aria-label="Gold Slice fighter roster">
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-2">
-            {VERSUS_ROSTER.map((entry) => {
+            {goldSliceEntries.map((entry) => {
               const playable = entry.defaultUnlocked && Boolean(getCombatProfile(entry));
               return (
                 <FighterCard
