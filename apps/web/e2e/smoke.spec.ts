@@ -186,6 +186,14 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   await page.getByRole("button", { name: /^Kai,.*playable/ }).click();
 
   // Start the real training battle for deterministic move certification.
+  // Clear menu/title preview telemetry first; certification begins only after
+  // the actual PlayerController has mounted in the battle scene.
+  await page.evaluate(() => {
+    delete (window as any).__KAI_JAX_CONTROLLER_READY__;
+    (window as any).__KAI_JAX_ANIMATION_PROBE__ = {};
+    (window as any).__KAI_JAX_DEFORMATION_PROBE__ = {};
+    (window as any).__KAI_JAX_FRAME_PROBE__ = {};
+  });
   // Training uses the same battle renderer/controller but keeps the opponent passive,
   // so authored attack proof is not contaminated by random AI hitstun.
   await page.getByRole("button", { name: "Training", exact: true }).click();
@@ -198,6 +206,11 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
     () => (window as any).battleStore?.getState?.().battlePhase === "fighting",
     null,
     { timeout: 15_000 },
+  );
+  await page.waitForFunction(
+    () => (window as any).__KAI_JAX_CONTROLLER_READY__?.mounted === true,
+    null,
+    { timeout: 45_000 },
   );
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
@@ -360,6 +373,12 @@ test("fusion rig: Kai-Jax visibly articulates instead of translating as a statue
   const fusionCard = page.getByRole("button", { name: /^Kai-Jax,.*playable/ });
   await fusionCard.click();
   await expect(fusionCard).toHaveAttribute("aria-pressed", "true", { timeout: 10_000 });
+  await page.evaluate(() => {
+    delete (window as any).__KAI_JAX_CONTROLLER_READY__;
+    (window as any).__KAI_JAX_ANIMATION_PROBE__ = {};
+    (window as any).__KAI_JAX_DEFORMATION_PROBE__ = {};
+    (window as any).__KAI_JAX_FRAME_PROBE__ = {};
+  });
   await page.getByRole("button", { name: "Training", exact: true }).click();
   await page.waitForFunction(
     () => (window as any).runnerStore?.getState?.().gameState === "playing",
@@ -370,6 +389,11 @@ test("fusion rig: Kai-Jax visibly articulates instead of translating as a statue
     () => (window as any).battleStore?.getState?.().battlePhase === "fighting",
     null,
     { timeout: 15_000 },
+  );
+  await page.waitForFunction(
+    () => (window as any).__KAI_JAX_CONTROLLER_READY__?.mounted === true,
+    null,
+    { timeout: 45_000 },
   );
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
