@@ -302,7 +302,7 @@ export default function AdventureHUD() {
   const isCritical = !trainingSession && playerHpPct > 0 && playerHpPct < 25;
 
   return (
-    <div className="absolute inset-0 pointer-events-none z-40">
+    <div className="kj-vision-shell absolute inset-0 pointer-events-none z-40">
       <ImpactFlash color={player.impactFlash} />
 
       {/* Critical low-health vignette (mirrors versus danger feedback) */}
@@ -332,21 +332,21 @@ export default function AdventureHUD() {
 
       <div className="absolute top-4 left-4 right-4 pointer-events-auto">
         <div className="flex items-start justify-between gap-4">
-          <div className="w-64 space-y-1 bg-black/50 backdrop-blur-sm rounded-xl p-3 border border-slate-700/50">
+          <div className="kj-vision-hud w-64 space-y-1 p-3">
             <HealthBar
               current={player.health}
               max={player.maxHealth}
-              color="#22d3ee"
+              color="#c69b55"
               label="HP"
               flashLow
             />
             <StaminaBar current={player.stamina} max={player.maxStamina} />
           </div>
 
-          <div className="flex items-center gap-4 bg-black/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-slate-700/50">
+          <div className="kj-vision-hud flex items-center gap-4 px-4 py-2">
             <div className="text-center">
               <div className="text-xs text-slate-400">{districtMeta ? "Encounter" : "Wave"}</div>
-              <div className="text-lg font-black text-cyan-300">
+              <div className="text-lg font-black text-[#d2b375]">
                 {districtMeta
                   ? districtCompleted
                     ? "Done"
@@ -369,7 +369,7 @@ export default function AdventureHUD() {
       </div>
 
       {districtMeta && (
-        <div className="absolute top-20 left-4 max-w-xs bg-black/55 backdrop-blur-sm rounded-lg px-3 py-2 border border-cyan-500/25 pointer-events-none">
+        <div className="kj-vision-hud absolute top-20 left-4 max-w-xs px-3 py-2 pointer-events-none">
           <div className="text-[10px] text-cyan-300/90 font-bold uppercase tracking-wider">{districtMeta.name}</div>
           <div className="text-[11px] text-slate-400 mt-0.5 line-clamp-2">{districtMeta.theme}</div>
           {roamDistrictId === "district-1" && !districtCompleted && districtMeta.encounters[encounterIndex] && (
@@ -396,7 +396,7 @@ export default function AdventureHUD() {
 
       {!touchCapable && (
         <div className="absolute bottom-4 left-0 right-0 text-center">
-          <div className="inline-flex gap-3 bg-black/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-slate-700/50 text-slate-400 text-xs">
+          <div className="kj-vision-hud inline-flex gap-3 px-4 py-2 text-[#b2a58f] text-xs">
             <span>WASD move</span>
             <span className="text-slate-600">|</span>
             <span>J attack</span>
