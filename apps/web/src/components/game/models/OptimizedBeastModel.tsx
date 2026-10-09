@@ -606,6 +606,22 @@ export default function OptimizedBeastModel({
     const procedural = proceduralStateRef.current;
     const t = animTime || state.clock.elapsedTime;
 
+    if (typeof window !== 'undefined' && (window as any).__KAI_JAX_CERTIFICATION__) {
+      const w = window as any;
+      w.__KAI_JAX_FRAME_PROBE__ ??= {};
+      w.__KAI_JAX_FRAME_PROBE__[beast.id] = {
+        isMoving,
+        isRunning,
+        isAttacking,
+        wrapperReady: Boolean(visualGroup),
+        rigReady: Boolean(limbsRef.current && basesRef.current),
+        boneFrames: deformationSampleRef.current.frames,
+        skinFrames: skinDeformationSampleRef.current.frames,
+        skinSampleCount: skinSampleRef.current.length,
+        timestamp: performance.now(),
+      };
+    }
+
     // A selected AnimationAction is not proof that the visible rig is moving.
     // Measure actual arm/leg/spine quaternion changes. If an authored clip is
     // bound incorrectly and the visible skeleton remains static, fail over to
