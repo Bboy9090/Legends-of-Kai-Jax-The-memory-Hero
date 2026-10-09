@@ -25,7 +25,7 @@ export function Mission1EncounterBridge() {
         missions.startMission('story', activeMissionId);
       }
 
-      if (import.meta.env.DEV && typeof window !== 'undefined') {
+      if ((import.meta.env.DEV || import.meta.env.VITE_KJ_TEST_HOOK === '1') && typeof window !== 'undefined') {
         (window as any).__KJ_MISSION1_TEST__ = {
           getWave: () => directorRef.current?.getCurrentWave() ?? null,
           getEnemies: () => directorRef.current?.getEnemies() ?? [],
