@@ -30,6 +30,7 @@ import TitleScreen from "./components/game/TitleScreen";
 import SaveSlotScreen from "./components/game/SaveSlotScreen";
 import BootAccessibilityScreen from "./components/game/BootAccessibilityScreen";
 import StoryHubScreen from "./components/game/StoryHubScreen";
+import LegendSelectScreen from "./components/game/LegendSelectScreen";
 import MissionSelectScreen from "./components/game/MissionSelectScreen";
 import CharacterAbilityScreen from "./components/game/CharacterAbilityScreen";
 import MissionCompleteScreen from "./components/game/MissionCompleteScreen";
@@ -236,6 +237,9 @@ function App() {
 
         {/* Story Hub (Raging City Map) */}
         {phase === "ready" && gameState === "story-hub" && <StoryHubScreen />}
+
+        {/* Story / Adventure Legend Select */}
+        {phase === "ready" && gameState === "character-select" && <LegendSelectScreen />}
 
         {/* Mission Select */}
         {phase === "ready" && gameState === "mission-select" && <MissionSelectScreen />}
