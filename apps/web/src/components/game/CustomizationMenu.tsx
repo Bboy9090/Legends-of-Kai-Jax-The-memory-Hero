@@ -1,5 +1,5 @@
 import { useRunner } from "../../lib/stores/useRunner";
-import { FIGHTERS, getFighterById } from "../../lib/characters";
+import { PLAYABLE_FIGHTERS } from "../../lib/characters";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -25,7 +25,7 @@ export default function CustomizationMenu() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
               Fighters
             </h1>
-            <p className="text-gray-300 mt-1">All fighters are unlocked and ready.</p>
+            <p className="text-gray-300 mt-1">Gold Slice fighters ready for this build.</p>
           </div>
           <Button
             onClick={() => setGameState('menu')}
@@ -41,7 +41,7 @@ export default function CustomizationMenu() {
       <div className="max-w-7xl mx-auto p-4 sm:p-6 pb-8 sm:pb-24">
         {/* Fighter Categories */}
         {categories.map(category => {
-          const categoryFighters = FIGHTERS.filter(f => f.category === category.id);
+          const categoryFighters = PLAYABLE_FIGHTERS.filter(f => f.category === category.id);
           
           return (
             <div key={category.id} className="mb-8">
@@ -104,7 +104,7 @@ export default function CustomizationMenu() {
                 Unlocked Fighters
               </h3>
               <p className="text-5xl font-bold text-white mb-4">
-                {FIGHTERS.length} / {FIGHTERS.length}
+                {PLAYABLE_FIGHTERS.length} / {PLAYABLE_FIGHTERS.length}
               </p>
               <div className="w-full bg-gray-700 rounded-full h-4 max-w-md mx-auto">
                 <div 
@@ -113,7 +113,7 @@ export default function CustomizationMenu() {
                 />
               </div>
               <p className="text-gray-300 mt-4">
-                All fighters are unlocked and ready.
+                Gold Slice roster is intentionally limited to release-validated fighters.
               </p>
             </div>
           </CardContent>
