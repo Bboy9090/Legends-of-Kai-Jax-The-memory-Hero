@@ -156,11 +156,6 @@ test.describe('Phase B2: Mobile Performance Testing', () => {
         (sample) => sample.fps > 30 && sample.maxFrameTime < 50,
       );
 
-      // Keep the exact release thresholds, but require them across a majority
-      // of independent sustained windows so one shared-runner scheduling spike
-      // cannot masquerade as a rendering regression.
-      expect(passingWindows.length).toBeGreaterThanOrEqual(2);
-
       const sortedByFps = [...windowStats].sort((a, b) => a.fps - b.fps);
       const sortedByMax = [...windowStats].sort((a, b) => a.maxFrameTime - b.maxFrameTime);
       const fps = sortedByFps[1].fps;
@@ -168,6 +163,8 @@ test.describe('Phase B2: Mobile Performance Testing', () => {
       const maxFrameTime = sortedByMax[1].maxFrameTime;
       const worstFrameTime = Math.max(...windowStats.map((sample) => sample.maxFrameTime));
 
+      // Emit the complete evidence before enforcing the gate. A failing device
+      // must still leave behind actionable window-level telemetry.
       console.log('Phase B2 Frame Windows:', JSON.stringify({
         device: deviceName,
         passingWindows: passingWindows.length,
@@ -179,6 +176,11 @@ test.describe('Phase B2: Mobile Performance Testing', () => {
         })),
         worstFrameTime: Number(worstFrameTime.toFixed(2)),
       }));
+
+      // Keep the exact release thresholds, but require them across a majority
+      // of independent sustained windows so one shared-runner scheduling spike
+      // cannot masquerade as a rendering regression.
+      expect(passingWindows.length).toBeGreaterThanOrEqual(2);
 
       // Exercise the mounted arena through its real movement controller.
       // Pointer clicks are not a locomotion contract and can be intercepted by
