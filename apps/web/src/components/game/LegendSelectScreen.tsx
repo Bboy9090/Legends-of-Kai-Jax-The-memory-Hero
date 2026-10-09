@@ -11,6 +11,8 @@ type LegendCard = {
   locked?: boolean;
   mentor?: boolean;
   traits: string[];
+  image?: string;
+  imagePosition?: string;
 };
 
 const LEGENDS: LegendCard[] = [
@@ -30,6 +32,8 @@ const LEGENDS: LegendCard[] = [
     subtitle: 'MEMORY-WEB HEIR',
     role: 'PLAYABLE LEGEND',
     accent: '#c76cff',
+    image: '/brand/kai-and-jax-before-merge.png',
+    imagePosition: '30% center',
     traits: ['Memory-Web', 'Venom Strike', 'Rescue Utility'],
   },
   {
@@ -38,6 +42,8 @@ const LEGENDS: LegendCard[] = [
     subtitle: 'STORM FANG',
     role: 'PLAYABLE LEGEND',
     accent: '#5aaeff',
+    image: '/brand/kai-and-jax-before-merge.png',
+    imagePosition: '72% center',
     traits: ['Storm Pressure', 'Speed', 'Disrupt'],
   },
   {
@@ -46,6 +52,8 @@ const LEGENDS: LegendCard[] = [
     subtitle: 'FUSION HERO',
     role: 'PLAYABLE LEGEND',
     accent: '#efc76d',
+    image: '/images/lore/hero-kaijax.png',
+    imagePosition: 'center 22%',
     traits: ['Fusion Form', 'Memory Resistance', 'Synergy'],
   },
   {
@@ -93,8 +101,8 @@ export default function LegendSelectScreen() {
 
         <div className="text-center">
           <div className="text-[10px] uppercase tracking-[0.45em] text-[#9f8762]">Adventure Mode</div>
-          <h1 className="kj-vision-title mt-1 text-3xl sm:text-5xl">Choose Your Legend</h1>
-          <div className="kj-vision-subtitle mt-2 text-[10px] sm:text-xs">The Raging City Awaits</div>
+          <h1 className="kj-vision-title mt-1 text-3xl sm:text-5xl">Character Select</h1>
+          <div className="kj-vision-subtitle mt-2 text-[10px] sm:text-xs">Choose Your Hero · The Raging City Awaits</div>
         </div>
 
         <div className="hidden text-right text-[9px] uppercase tracking-[0.24em] text-[#8b806f] sm:block">
@@ -104,7 +112,7 @@ export default function LegendSelectScreen() {
       </header>
 
       <main className="relative z-10 flex h-[calc(100vh-152px)] min-h-0 flex-col px-4 py-4 sm:px-6">
-        <div className="mx-auto grid h-full w-full max-w-[1540px] grid-cols-5 gap-2 lg:gap-4">
+        <div className="mx-auto grid h-full w-full max-w-[1540px] grid-cols-[minmax(105px,.58fr)_repeat(3,minmax(0,1fr))_minmax(105px,.58fr)] gap-2 lg:gap-4">
           {LEGENDS.map((legend) => {
             const selected = legend.id === active.id;
             return (
@@ -128,26 +136,40 @@ export default function LegendSelectScreen() {
                 <div
                   className="relative min-h-0 flex-1 overflow-hidden"
                   style={{
-                    background: `
-                      radial-gradient(circle at 50% 24%, ${legend.accent}38, transparent 30%),
-                      linear-gradient(180deg, ${legend.accent}14, rgba(2,3,7,.16) 42%, rgba(2,3,7,.96)),
-                      url('/models/ruined_city_bg.jpg') center/cover
-                    `,
+                    background: legend.image
+                      ? `
+                        radial-gradient(circle at 50% 28%, ${legend.accent}20, transparent 34%),
+                        linear-gradient(180deg, rgba(2,3,7,.02) 32%, rgba(2,3,7,.92) 94%),
+                        url('${legend.image}') ${legend.imagePosition ?? 'center'}/cover no-repeat
+                      `
+                      : `
+                        radial-gradient(circle at 50% 24%, ${legend.accent}38, transparent 30%),
+                        linear-gradient(180deg, ${legend.accent}14, rgba(2,3,7,.16) 42%, rgba(2,3,7,.96)),
+                        url('/models/ruined_city_bg.jpg') center/cover
+                      `,
                   }}
                 >
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_48%,rgba(0,0,0,.94)_96%)]" />
-                  <div
-                    className="absolute left-1/2 top-[18%] grid h-28 w-28 -translate-x-1/2 place-items-center rounded-full border text-5xl sm:h-36 sm:w-36"
-                    style={{
-                      color: legend.accent,
-                      borderColor: `${legend.accent}66`,
-                      background: `radial-gradient(circle, ${legend.accent}2f, rgba(0,0,0,.68) 68%)`,
-                      boxShadow: `0 0 44px ${legend.accent}28`,
-                    }}
-                    aria-hidden="true"
-                  >
-                    {legend.mentor ? <Shield className="h-16 w-16" /> : legend.id === 'jax' ? <Zap className="h-16 w-16" /> : <Sparkles className="h-16 w-16" />}
-                  </div>
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.05)_35%,rgba(0,0,0,.94)_96%)]" />
+                  {!legend.image ? (
+                    <div
+                      className="absolute left-1/2 top-[18%] grid h-28 w-28 -translate-x-1/2 place-items-center rounded-full border text-5xl sm:h-36 sm:w-36"
+                      style={{
+                        color: legend.accent,
+                        borderColor: `${legend.accent}66`,
+                        background: `radial-gradient(circle, ${legend.accent}2f, rgba(0,0,0,.68) 68%)`,
+                        boxShadow: `0 0 44px ${legend.accent}28`,
+                      }}
+                      aria-hidden="true"
+                    >
+                      {legend.mentor ? <Shield className="h-16 w-16" /> : legend.id === 'jax' ? <Zap className="h-16 w-16" /> : <Sparkles className="h-16 w-16" />}
+                    </div>
+                  ) : (
+                    <div
+                      className="absolute inset-x-[8%] bottom-[8%] h-[30%] rounded-[50%] blur-3xl"
+                      style={{ background: `${legend.accent}20` }}
+                      aria-hidden="true"
+                    />
+                  )}
 
                   {legend.locked ? (
                     <div className="absolute left-1/2 top-[54%] flex -translate-x-1/2 items-center gap-2 border border-[#9d835b]/50 bg-black/75 px-3 py-1.5 text-[9px] uppercase tracking-[0.22em] text-[#b7a17d]">
