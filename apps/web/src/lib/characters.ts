@@ -315,7 +315,7 @@ export function getFighterById(id: string): Fighter | null {
   return FIGHTERS.find((f) => f.id === combatId) ?? null;
 }
 
-export function isGoldSlicePlayableId(id: string): id is GoldSlicePlayableId {
+export function isGoldSlicePlayableId(id: string): boolean {
   const publicId = toGoldSlicePublicId(id);
   return (GOLD_SLICE_PLAYABLE_IDS as readonly string[]).includes(publicId);
 }
