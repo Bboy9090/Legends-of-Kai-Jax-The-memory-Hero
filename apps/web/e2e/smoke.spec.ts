@@ -207,16 +207,26 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   // stalls while rasterizing a screenshot. Preserve the image when possible;
   // final presentation review remains a separate explicit release gate.
   try {
-    // Reduce the capture surface after runtime proof is complete. This keeps
-    // software-WebGL review evidence practical without changing the gameplay
-    // path or the animation assertions above.
+    // First prefer a compact canvas-only capture. If the WebGL canvas stalls
+    // during readback on a real GPU, fall back to the full-page path that has
+    // already proven reliable on hardware-backed macOS.
     await page.setViewportSize({ width: 640, height: 400 });
     await page.waitForTimeout(250);
-    await page.locator("canvas").first().screenshot({
-      path: testInfo.outputPath("kai-authored-kick-640x400.png"),
-      timeout: 15_000,
-    });
-    console.log("KAI_AUTHORED_KICK_SCREENSHOT", "captured-640x400");
+    try {
+      await page.locator("canvas").first().screenshot({
+        path: testInfo.outputPath("kai-authored-kick-640x400.png"),
+        timeout: 15_000,
+      });
+      console.log("KAI_AUTHORED_KICK_SCREENSHOT", "captured-640x400");
+    } catch (canvasError) {
+      console.log("KAI_AUTHORED_KICK_CANVAS_SCREENSHOT", "capture-unavailable", String(canvasError));
+      await page.screenshot({
+        path: testInfo.outputPath("kai-authored-kick-fallback.png"),
+        animations: "disabled",
+        timeout: 15_000,
+      });
+      console.log("KAI_AUTHORED_KICK_SCREENSHOT", "captured-fallback-page");
+    }
   } catch (error) {
     console.log("KAI_AUTHORED_KICK_SCREENSHOT", "capture-unavailable", String(error));
   }
