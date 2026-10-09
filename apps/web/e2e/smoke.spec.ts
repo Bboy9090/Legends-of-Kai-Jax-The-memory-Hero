@@ -194,6 +194,13 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_WALK_PROBE", JSON.stringify(walkProbe));
   expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
+  await page.waitForFunction(() => {
+    const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai;
+    return probe?.requested === "walk" && probe?.moving === true;
+  }, null, { timeout: 20_000 });
+  const walkDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai);
+  console.log("LIVE_DEFORMATION_WALK_PROBE", JSON.stringify(walkDeform));
+  expect(walkDeform?.moving).toBe(true);
   await page.keyboard.down("ShiftLeft");
   await page.waitForFunction(() => {
     const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
@@ -202,6 +209,13 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   const runProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_RUN_PROBE", JSON.stringify(runProbe));
   expect(Object.values(runProbe ?? {}).some((p: any) => p?.requested === "run" && /run/i.test(p?.selectedClip ?? ""))).toBeTruthy();
+  await page.waitForFunction(() => {
+    const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai;
+    return probe?.requested === "run" && probe?.moving === true;
+  }, null, { timeout: 20_000 });
+  const runDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai);
+  console.log("LIVE_DEFORMATION_RUN_PROBE", JSON.stringify(runDeform));
+  expect(runDeform?.moving).toBe(true);
   await page.keyboard.up("ShiftLeft");
   await page.keyboard.up("ArrowRight");
 
@@ -238,6 +252,13 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   expect(kaiJaxKick?.attackType).toBe("kick");
   expect(kaiJaxKick?.authored).toBe(true);
   expect(kaiJaxKick?.selectedClip).toMatch(/kick/i);
+  await page.waitForFunction(() => {
+    const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai;
+    return probe?.requested === "kick" && probe?.moving === true;
+  }, null, { timeout: 20_000 });
+  const kickDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai);
+  console.log("LIVE_DEFORMATION_KICK_PROBE", JSON.stringify(kickDeform));
+  expect(kickDeform?.moving).toBe(true);
   // Runtime certification must not fail solely because a software WebGL runner
   // stalls while rasterizing a screenshot. Preserve the image when possible;
   // final presentation review remains a separate explicit release gate.
