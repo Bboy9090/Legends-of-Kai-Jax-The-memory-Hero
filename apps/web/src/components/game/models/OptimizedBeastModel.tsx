@@ -4,11 +4,12 @@
  * Mobile/Tablet/PC optimized Three.js character model
  */
 
-import { useRef, useMemo, useEffect } from 'react';
+import { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { useBattle } from '../../../lib/stores/useBattle';
 import { MODEL_REGISTRY } from '../../../assets/modelRegistry';
 import {
@@ -89,9 +90,20 @@ export default function OptimizedBeastModel({
   const activeActionRef = useRef<THREE.AnimationAction | null>(null);
   const previousHitAnimRef = useRef(0);
   const previousAttackRef = useRef(false);
+  const animationSelectionAttackRef = useRef(false);
+  const kickVariantRef = useRef(0);
+  const [companionAnimations, setCompanionAnimations] = useState<THREE.AnimationClip[]>([]);
   const modelPath = getBeastModelPath(beast.id);
   const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
-  const companionPaths = useMemo(() => [animationPaths?.walk, animationPaths?.run, ...(animationPaths?.kick ?? []), ...(animationPaths?.punch ?? [])].filter(Boolean) as string[], [animationPaths]);
+  const companionPaths = useMemo(
+    () => [
+      animationPaths?.walk,
+      animationPaths?.run,
+      ...(animationPaths?.kick ?? []),
+      ...(animationPaths?.punch ?? []),
+    ].filter(Boolean) as string[],
+    [animationPaths],
+  );
 
   // DIAGNOSTIC: log model path resolution
   useEffect(() => {
@@ -116,20 +128,78 @@ export default function OptimizedBeastModel({
   // onError callback. The previous code mislabeled successful loader setup as
   // a model load failure in release smoke tests.
   const { scene, animations } = useGLTF(modelPath);
-  const companionGLTFs = useGLTF(companionPaths) as any[];
-  const authoredAnimations = useMemo(() => {
-    const clips: THREE.AnimationClip[] = [...animations];
-    companionGLTFs.forEach((gltf, index) => {
-      const path = companionPaths[index] ?? '';
-      (gltf?.animations ?? []).forEach((clip: THREE.AnimationClip) => {
-        const semantic = /Running/i.test(path) ? 'Run' : /Walking/i.test(path) ? 'Walk' : /Kick/i.test(path) ? 'Kick' : /Punch|Jab/i.test(path) ? 'Punch' : clip.name;
-        const clone = clip.clone();
-        clone.name = `${semantic}:${clip.name || index}`;
-        clips.push(clone);
+
+  // Companion files are complete GLBs, not animation-only payloads. Do not put
+  // them in useGLTF/useLoader's render-critical cache: that made battle startup
+  // wait on ~100 MB of duplicate meshes/textures and kept those resources alive.
+  // Load them after the base fighter mounts, extract only clips, then dispose the
+  // companion scene graph so the renderer retains animation data rather than
+  // duplicate character bodies.
+  useEffect(() => {
+    if (companionPaths.length === 0) {
+      setCompanionAnimations([]);
+      return;
+    }
+
+    let cancelled = false;
+    const loader = new GLTFLoader();
+
+    const disposeCompanionScene = (root: THREE.Object3D) => {
+      root.traverse((obj: any) => {
+        obj.geometry?.dispose?.();
+        const materials = Array.isArray(obj.material) ? obj.material : obj.material ? [obj.material] : [];
+        materials.forEach((material: any) => {
+          Object.values(material).forEach((value: any) => {
+            if (value?.isTexture) value.dispose?.();
+          });
+          material.dispose?.();
+        });
       });
-    });
-    return clips;
-  }, [animations, companionGLTFs, companionPaths]);
+    };
+
+    const loadCompanions = async () => {
+      const extracted: THREE.AnimationClip[] = [];
+      for (let index = 0; index < companionPaths.length; index += 1) {
+        if (cancelled) return;
+        const path = companionPaths[index];
+        try {
+          const gltf = await loader.loadAsync(path);
+          const semantic =
+            /Running/i.test(path) ? 'Run'
+            : /Walking/i.test(path) ? 'Walk'
+            : /Kick/i.test(path) ? 'Kick'
+            : /Punch|Jab/i.test(path) ? 'Punch'
+            : 'Companion';
+          (gltf.animations ?? []).forEach((clip, clipIndex) => {
+            const clone = clip.clone();
+            clone.name = `${semantic}:${clip.name || clipIndex}:${index}`;
+            extracted.push(clone);
+          });
+          disposeCompanionScene(gltf.scene);
+        } catch (error) {
+          console.warn('[OptimizedBeastModel] Optional companion animation failed to load', {
+            beastId: beast.id,
+            path,
+            error,
+          });
+        }
+      }
+      if (!cancelled) setCompanionAnimations(extracted);
+    };
+
+    // Yield one turn so the canonical base fighter can render before optional
+    // animation companions begin downloading/parsing.
+    const timer = window.setTimeout(() => { void loadCompanions(); }, 0);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [beast.id, companionPaths]);
+
+  const authoredAnimations = useMemo(
+    () => [...animations, ...companionAnimations],
+    [animations, companionAnimations],
+  );
   // DIAGNOSTIC: log scene load success
   useEffect(() => {
     if (scene) {
@@ -219,7 +289,19 @@ export default function OptimizedBeastModel({
       // Never cross-fallback between attack families. If Kai has authored
       // Kick clips but no authored Punch clip, a punch must use the articulated
       // procedural fallback instead of incorrectly playing a kick animation.
-      match = available.find(n => attackPattern.test(n));
+      const matches = available.filter(n => attackPattern.test(n));
+      if ((attackType === 'kick' || attackType === 'heavy') && matches.length > 1) {
+        if (!animationSelectionAttackRef.current) {
+          match = matches[kickVariantRef.current % matches.length];
+          kickVariantRef.current = (kickVariantRef.current + 1) % matches.length;
+        } else {
+          match = activeActionRef.current
+            ? matches.find(name => actions[name] === activeActionRef.current) ?? matches[0]
+            : matches[0];
+        }
+      } else {
+        match = matches[0];
+      }
     } else {
       match = available.find(n => /idle|breath|stand/i.test(n));
     }
@@ -238,20 +320,40 @@ export default function OptimizedBeastModel({
     }
 
     if (match && actions[match]) {
-      // Stop all other actions with smooth crossfade
+      // Stop all other actions with smooth crossfade.
       Object.values(actions).forEach(a => {
         if (a && a !== actions[match]) {
           a.fadeOut(0.3);
         }
       });
-      // Play selected animation with smooth fade-in
+
       const next = actions[match];
       if (activeActionRef.current !== next) {
-        activeActionRef.current?.fadeOut(0.18);
-        next.reset().fadeIn(0.18).play();
+        const previous = activeActionRef.current;
+        previous?.fadeOut(0.18);
+
+        next.reset();
+        if (targetAction === 'attack') {
+          next.setLoop(THREE.LoopOnce, 1);
+          next.clampWhenFinished = true;
+        } else {
+          next.setLoop(THREE.LoopRepeat, Infinity);
+          next.clampWhenFinished = false;
+        }
+        next.fadeIn(0.18).play();
         activeActionRef.current = next;
       }
+    } else if (activeActionRef.current) {
+      // When the next state intentionally falls back to procedural animation,
+      // release the prior authored clip. Otherwise a LoopRepeat kick can keep
+      // driving the skeleton underneath procedural idle.
+      const previous = activeActionRef.current;
+      previous.fadeOut(0.12);
+      activeActionRef.current = null;
+      window.setTimeout(() => previous.stop(), 140);
     }
+
+    animationSelectionAttackRef.current = isAttacking;
   }, [actions, isAttacking, isMoving, isRunning, attackType, beast.id]);
 
   // Hit animation and effects
