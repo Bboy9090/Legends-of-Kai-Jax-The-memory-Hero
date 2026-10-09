@@ -43,8 +43,6 @@ export const VERSUS_ROSTER: readonly VersusRosterEntry[] = [
   { id: "kai", displayName: "Kai", faction: "core", role: "hero", defaultUnlocked: true, sourceSheet: "08_Main_Character_Lineup.png", portraitSource: "08_Main_Character_Lineup.png" },
   { id: "jax", displayName: "Jax", faction: "core", role: "hero", defaultUnlocked: true, sourceSheet: "08_Main_Character_Lineup.png", portraitSource: "08_Main_Character_Lineup.png" },
   { id: "kai-jax", combatProfileId: "kaijax", displayName: "Kai-Jax", faction: "core", role: "hero", defaultUnlocked: true, sourceSheet: "08_Main_Character_Lineup.png", portraitSource: "08_Main_Character_Lineup.png" },
-  { id: "jaxon", displayName: "Jaxon", faction: "core", role: "hero", defaultUnlocked: true, sourceSheet: PENDING_CURRENT_LOCK, portraitSource: PENDING_CURRENT_LOCK },
-  { id: "kaison", displayName: "Kaison", faction: "core", role: "hero", defaultUnlocked: true, sourceSheet: PENDING_CURRENT_LOCK, portraitSource: PENDING_CURRENT_LOCK },
   { id: "boryn", displayName: "Boryn", faction: "core", role: "ally", defaultUnlocked: true, sourceSheet: "04_Fathers_Mentor_Elder_Fang.png", portraitSource: "04_Fathers_Mentor_Elder_Fang.png" },
   { id: "borax", displayName: "Borax", faction: "core", role: "ally", defaultUnlocked: true, sourceSheet: "04_Fathers_Mentor_Elder_Fang.png", portraitSource: "04_Fathers_Mentor_Elder_Fang.png" },
   { id: "vharok", displayName: "Vharok", faction: "bloodward-antagonist", role: "villain", defaultUnlocked: false, sourceSheet: "04_Fathers_Mentor_Elder_Fang.png", portraitSource: "04_Fathers_Mentor_Elder_Fang.png" },
@@ -75,6 +73,28 @@ export const VERSUS_ROSTER: readonly VersusRosterEntry[] = [
   { id: "hollow-architect", displayName: "Hollow Architect", faction: "engineered-horror", role: "boss", defaultUnlocked: false, bossClass: true, sourceSheet: "07_Major_Threats_Engineered_Horrors.png", portraitSource: "07_Major_Threats_Engineered_Horrors.png" },
   { id: "fang-colossus", displayName: "Fang Colossus", faction: "engineered-horror", role: "boss", defaultUnlocked: false, bossClass: true, sourceSheet: "07_Major_Threats_Engineered_Horrors.png", portraitSource: "07_Major_Threats_Engineered_Horrors.png" },
   { id: "erasure-choir", displayName: "Erasure Choir", faction: "engineered-horror", role: "boss", defaultUnlocked: false, bossClass: true, sourceSheet: "07_Major_Threats_Engineered_Horrors.png", portraitSource: "07_Major_Threats_Engineered_Horrors.png" },
+] as const;
+
+export const GOLD_SLICE_VERSUS_ROSTER: readonly VersusRosterEntry[] = [
+  VERSUS_ROSTER.find((entry) => entry.id === "kai-jax")!,
+  {
+    id: "jaxon",
+    displayName: "Jaxon",
+    faction: "core",
+    role: "hero",
+    defaultUnlocked: true,
+    sourceSheet: PENDING_CURRENT_LOCK,
+    portraitSource: PENDING_CURRENT_LOCK,
+  },
+  {
+    id: "kaison",
+    displayName: "Kaison",
+    faction: "core",
+    role: "hero",
+    defaultUnlocked: true,
+    sourceSheet: PENDING_CURRENT_LOCK,
+    portraitSource: PENDING_CURRENT_LOCK,
+  },
 ] as const;
 
 export const VERSUS_ROSTER_IDS = VERSUS_ROSTER.map((fighter) => fighter.id);
