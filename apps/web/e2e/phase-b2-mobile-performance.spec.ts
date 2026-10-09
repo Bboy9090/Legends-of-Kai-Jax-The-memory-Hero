@@ -110,13 +110,26 @@ test.describe('Phase B2: Mobile Performance Testing', () => {
       // Playwright-side waitForTimeout scheduling adds runner/IPC latency and
       // does not represent the game's actual frame cadence.
       const frameTimes = await page.evaluate(async () => {
+        // Warm the browser's compositor/render loop inside the page before
+        // sampling. This deliberately discards transition/first-frame hitches
+        // while preserving the exact release thresholds for sustained play.
+        await new Promise<void>((resolve) => {
+          let warmFrames = 0;
+          const warm = () => {
+            warmFrames += 1;
+            if (warmFrames >= 30) resolve();
+            else requestAnimationFrame(warm);
+          };
+          requestAnimationFrame(warm);
+        });
+
         return await new Promise<number[]>((resolve) => {
           const samples: number[] = [];
           let last = performance.now();
           const step = (now: number) => {
             samples.push(now - last);
             last = now;
-            if (samples.length >= 60) resolve(samples.slice(1));
+            if (samples.length >= 61) resolve(samples.slice(1));
             else requestAnimationFrame(step);
           };
           requestAnimationFrame(step);
