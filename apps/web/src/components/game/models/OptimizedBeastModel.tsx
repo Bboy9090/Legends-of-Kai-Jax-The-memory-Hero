@@ -100,6 +100,8 @@ export default function OptimizedBeastModel({
   const loadingCompanionPathsRef = useRef(new Set<string>());
   const mountedRef = useRef(true);
   const deformationSampleRef = useRef<{ frames: number; motion: number; last: number[] | null }>({ frames: 0, motion: 0, last: null });
+  const skinSampleRef = useRef<Array<{ mesh: THREE.SkinnedMesh; vertexIndex: number; base: THREE.Vector3 }>>([]);
+  const skinDeformationSampleRef = useRef<{ frames: number; motion: number; last: number[] | null }>({ frames: 0, motion: 0, last: null });
   const forceProceduralRef = useRef(false);
   const locomotionBaseline = isRunning ? 9.5 : 6;
   const locomotionRate = isMoving
@@ -362,6 +364,78 @@ export default function OptimizedBeastModel({
     const limbs = findLimbs(cloned);
     limbsRef.current = limbs;
     basesRef.current = captureBaseRotations(limbs);
+
+    // Build a small set of vertices that are actually weighted to the primary
+    // arm/leg/spine bones. Measuring these vertices proves visible skin
+    // deformation instead of merely proving that a detached bone rotated.
+    const targetBones = new Set(
+      [
+        limbs.leftUpperArm,
+        limbs.rightUpperArm,
+        limbs.leftUpperLeg,
+        limbs.rightUpperLeg,
+        limbs.spine,
+      ].filter((node): node is THREE.Bone => Boolean(node && (node as THREE.Bone).isBone)),
+    );
+    const skinSamples: Array<{ mesh: THREE.SkinnedMesh; vertexIndex: number; base: THREE.Vector3 }> = [];
+
+    cloned.traverse((node) => {
+      if (skinSamples.length >= 24 || !(node as THREE.SkinnedMesh).isSkinnedMesh) return;
+      const mesh = node as THREE.SkinnedMesh;
+      const position = mesh.geometry.getAttribute('position') as THREE.BufferAttribute | undefined;
+      const skinIndex = mesh.geometry.getAttribute('skinIndex') as THREE.BufferAttribute | undefined;
+      const skinWeight = mesh.geometry.getAttribute('skinWeight') as THREE.BufferAttribute | undefined;
+      if (!position || !skinIndex || !skinWeight || !mesh.skeleton) return;
+
+      const targetIndices = new Set<number>();
+      mesh.skeleton.bones.forEach((bone, index) => {
+        if (targetBones.has(bone)) targetIndices.add(index);
+      });
+      if (targetIndices.size === 0) return;
+
+      const stride = Math.max(1, Math.floor(position.count / 2500));
+      for (let vertexIndex = 0; vertexIndex < position.count && skinSamples.length < 24; vertexIndex += stride) {
+        const indices = [
+          skinIndex.getX(vertexIndex),
+          skinIndex.getY(vertexIndex),
+          skinIndex.getZ(vertexIndex),
+          skinIndex.getW(vertexIndex),
+        ];
+        const weights = [
+          skinWeight.getX(vertexIndex),
+          skinWeight.getY(vertexIndex),
+          skinWeight.getZ(vertexIndex),
+          skinWeight.getW(vertexIndex),
+        ];
+        const drivenByTarget = indices.some((boneIndex, slot) =>
+          targetIndices.has(Math.round(boneIndex)) && weights[slot] >= 0.18,
+        );
+        if (!drivenByTarget) continue;
+
+        const base = new THREE.Vector3().fromBufferAttribute(position, vertexIndex);
+        skinSamples.push({ mesh, vertexIndex, base });
+      }
+    });
+
+    skinSampleRef.current = skinSamples;
+    skinDeformationSampleRef.current = { frames: 0, motion: 0, last: null };
+
+    if (typeof window !== 'undefined') {
+      const w = window as any;
+      w.__KAI_JAX_RIG_PROBE__ ??= {};
+      w.__KAI_JAX_RIG_PROBE__[beast.id] = {
+        limbCount: Object.values(limbs).filter(Boolean).length,
+        sampledSkinVertices: skinSamples.length,
+        sampledLimbNames: [
+          limbs.leftUpperArm?.name,
+          limbs.rightUpperArm?.name,
+          limbs.leftUpperLeg?.name,
+          limbs.rightUpperLeg?.name,
+          limbs.spine?.name,
+        ].filter(Boolean),
+        timestamp: performance.now(),
+      };
+    }
   }, [cloned, beast.id]);
 
   const sampleRigPose = () => {
@@ -380,6 +454,17 @@ export default function OptimizedBeastModel({
       node.quaternion.z,
       node.quaternion.w,
     ]);
+  };
+
+  const sampleVisibleSkinPose = () => {
+    const values: number[] = [];
+    const point = new THREE.Vector3();
+    for (const sample of skinSampleRef.current) {
+      point.copy(sample.base);
+      sample.mesh.applyBoneTransform(sample.vertexIndex, point);
+      values.push(point.x, point.y, point.z);
+    }
+    return values;
   };
 
   // Handle animations
@@ -486,6 +571,7 @@ export default function OptimizedBeastModel({
     if (!isMoving && !isAttacking) {
       forceProceduralRef.current = false;
       deformationSampleRef.current = { frames: 0, motion: 0, last: null };
+      skinDeformationSampleRef.current = { frames: 0, motion: 0, last: null };
     }
   }, [actions, isAttacking, isMoving, isRunning, locomotionRate, attackType, beast.id]);
 
@@ -506,38 +592,64 @@ export default function OptimizedBeastModel({
     // the articulated procedural rig instead of letting the fighter skate.
     if (isMoving || isAttacking) {
       const pose = sampleRigPose();
+      const skinPose = sampleVisibleSkinPose();
+
+      const boneSample = deformationSampleRef.current;
       if (pose.length > 0) {
-        const sample = deformationSampleRef.current;
-        if (sample.last && sample.last.length === pose.length) {
+        if (boneSample.last && boneSample.last.length === pose.length) {
           let deltaSum = 0;
-          for (let i = 0; i < pose.length; i += 1) deltaSum += Math.abs(pose[i] - sample.last[i]);
-          sample.motion += deltaSum;
+          for (let i = 0; i < pose.length; i += 1) deltaSum += Math.abs(pose[i] - boneSample.last[i]);
+          boneSample.motion += deltaSum;
         }
-        sample.last = pose;
-        sample.frames += 1;
-        if (sample.frames >= 12) {
-          const averageMotion = sample.motion / sample.frames;
-          const moving = averageMotion > 0.0015;
-          const source = activeActionRef.current && !forceProceduralRef.current ? 'authored' : 'procedural';
-          if (typeof window !== 'undefined') {
-            const w = window as any;
-            w.__KAI_JAX_DEFORMATION_PROBE__ ??= {};
-            w.__KAI_JAX_DEFORMATION_PROBE__[beast.id] = {
-              requested: isAttacking ? attackType ?? 'attack' : isRunning ? 'run' : 'walk',
-              moving,
-              averageMotion,
-              source,
-              forcedProcedural: forceProceduralRef.current,
-              timestamp: performance.now(),
-            };
-          }
-          if (!moving && activeActionRef.current && !forceProceduralRef.current) {
-            forceProceduralRef.current = true;
-            activeActionRef.current.stop();
-            activeActionRef.current = null;
-          }
-          deformationSampleRef.current = { frames: 0, motion: 0, last: pose };
+        boneSample.last = pose;
+        boneSample.frames += 1;
+      }
+
+      const skinSample = skinDeformationSampleRef.current;
+      if (skinPose.length > 0) {
+        if (skinSample.last && skinSample.last.length === skinPose.length) {
+          let deltaSum = 0;
+          for (let i = 0; i < skinPose.length; i += 1) deltaSum += Math.abs(skinPose[i] - skinSample.last[i]);
+          skinSample.motion += deltaSum;
         }
+        skinSample.last = skinPose;
+        skinSample.frames += 1;
+      }
+
+      const measuredFrames = Math.max(boneSample.frames, skinSample.frames);
+      if (measuredFrames >= 12) {
+        const averageBoneMotion = boneSample.frames > 0 ? boneSample.motion / boneSample.frames : 0;
+        const averageSkinMotion = skinSample.frames > 0 ? skinSample.motion / skinSample.frames : 0;
+        const skinVerified = skinPose.length > 0;
+        const moving = skinVerified
+          ? averageSkinMotion > 0.00008
+          : averageBoneMotion > 0.0015;
+        const source = activeActionRef.current && !forceProceduralRef.current ? 'authored' : 'procedural';
+
+        if (typeof window !== 'undefined') {
+          const w = window as any;
+          w.__KAI_JAX_DEFORMATION_PROBE__ ??= {};
+          w.__KAI_JAX_DEFORMATION_PROBE__[beast.id] = {
+            requested: isAttacking ? attackType ?? 'attack' : isRunning ? 'run' : 'walk',
+            moving,
+            averageMotion: averageBoneMotion,
+            averageSkinMotion,
+            skinVerified,
+            skinSampleCount: skinSampleRef.current.length,
+            source,
+            forcedProcedural: forceProceduralRef.current,
+            timestamp: performance.now(),
+          };
+        }
+
+        if (!moving && activeActionRef.current && !forceProceduralRef.current) {
+          forceProceduralRef.current = true;
+          activeActionRef.current.stop();
+          activeActionRef.current = null;
+        }
+
+        deformationSampleRef.current = { frames: 0, motion: 0, last: pose.length > 0 ? pose : null };
+        skinDeformationSampleRef.current = { frames: 0, motion: 0, last: skinPose.length > 0 ? skinPose : null };
       }
     }
 
