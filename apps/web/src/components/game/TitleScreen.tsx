@@ -1,86 +1,24 @@
-import React, { Suspense, useEffect, useMemo } from 'react';
-import { Canvas } from '@react-three/fiber';
-import * as THREE from 'three';
+import React, { useEffect } from 'react';
 import { useRunner } from '../../lib/stores/useRunner';
 import { useAudio } from '../../lib/stores/useAudio';
 import { Settings, UserCheck, Play } from 'lucide-react';
 import { BRAND } from '../../lib/brand';
-import { getFighterById } from '../../lib/characters';
-import OptimizedBeastModel from './models/OptimizedBeastModel';
-
 
 function TitleHeroStage() {
-  const compact = useMemo(() => typeof window !== 'undefined' && window.innerWidth < 1024, []);
-  const kai = compact ? null : getFighterById('kai');
-  const jax = compact ? null : getFighterById('jax');
-
-  // Compact devices keep the approved city/title composition but do not
-  // preload two additional heavyweight GLBs before gameplay. Those devices
-  // reserve model memory for the fighter the player actually controls.
-  if (compact || (!kai && !jax)) return null;
-
   return (
     <div
-      className="pointer-events-none absolute bottom-0 right-0 top-[7%] z-[4] w-[58%] min-w-[560px] max-md:w-[72%] max-md:min-w-[420px] max-sm:opacity-45"
+      className="pointer-events-none absolute bottom-0 right-0 top-[7%] z-[4] hidden w-[58%] min-w-[560px] overflow-hidden lg:block"
       aria-hidden="true"
-      data-testid="title-live-hero-stage"
+      data-testid="title-cinematic-hero-stage"
     >
       <img
         src="/brand/kai-and-jax-before-merge.png"
         alt=""
-        className="absolute inset-y-[3%] right-[-2%] h-[96%] w-[92%] object-cover object-center opacity-30 mix-blend-screen [mask-image:linear-gradient(to_left,black_58%,rgba(0,0,0,.72)_76%,transparent_100%)]"
+        className="absolute inset-y-[2%] right-[-1%] h-[98%] w-[94%] object-cover object-center opacity-70 [mask-image:linear-gradient(to_left,black_60%,rgba(0,0,0,.92)_76%,transparent_100%)]"
         decoding="async"
         aria-hidden="true"
       />
-      <Canvas
-        shadows
-        camera={{ position: [0, 1.45, 7.4], fov: 36 }}
-        gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
-        onCreated={({ gl }) => {
-          gl.setClearColor(new THREE.Color('#000000'), 0);
-          gl.outputColorSpace = THREE.SRGBColorSpace;
-          gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.16;
-        }}
-      >
-        <ambientLight intensity={0.85} color="#76698f" />
-        <directionalLight
-          castShadow
-          position={[3.8, 6.5, 5.5]}
-          intensity={3.2}
-          color="#f0c783"
-        />
-        <directionalLight position={[-4, 3, 1]} intensity={2.8} color="#7c4dff" />
-        <pointLight position={[1.5, 2.2, 3.2]} intensity={20} distance={8} color="#55b7ff" />
-        <pointLight position={[-1.8, 1.8, 2.4]} intensity={16} distance={7} color="#b85cff" />
-
-        <Suspense fallback={null}>
-          {kai ? (
-            <group position={[-0.85, -1.45, 0.05]} rotation={[0, -0.14, 0]}>
-              <OptimizedBeastModel
-                beast={kai}
-                emotionIntensity={0.28}
-                isMoving={false}
-                isRunning={false}
-                isAttacking={false}
-                locomotionState="neutral"
-              />
-            </group>
-          ) : null}
-          {jax ? (
-            <group position={[1.18, -1.42, -0.35]} rotation={[0, 0.14, 0]} scale={1.07}>
-              <OptimizedBeastModel
-                beast={jax}
-                emotionIntensity={0.22}
-                isMoving={false}
-                isRunning={false}
-                isAttacking={false}
-                locomotionState="neutral"
-              />
-            </group>
-          ) : null}
-        </Suspense>
-      </Canvas>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_68%_40%,rgba(157,78,221,.12),transparent_28%),linear-gradient(90deg,transparent_0%,rgba(2,3,7,.02)_54%,rgba(2,3,7,.16)_100%)]" />
       <div className="absolute inset-x-[8%] bottom-[6%] h-24 rounded-[50%] bg-purple-500/10 blur-3xl" />
     </div>
   );
