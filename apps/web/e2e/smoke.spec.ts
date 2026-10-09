@@ -207,12 +207,16 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   // stalls while rasterizing a screenshot. Preserve the image when possible;
   // final presentation review remains a separate explicit release gate.
   try {
-    await page.screenshot({
-      path: testInfo.outputPath("kai-authored-kick.png"),
-      animations: "disabled",
+    // Reduce the capture surface after runtime proof is complete. This keeps
+    // software-WebGL review evidence practical without changing the gameplay
+    // path or the animation assertions above.
+    await page.setViewportSize({ width: 640, height: 400 });
+    await page.waitForTimeout(250);
+    await page.locator("canvas").first().screenshot({
+      path: testInfo.outputPath("kai-authored-kick-640x400.png"),
       timeout: 15_000,
     });
-    console.log("KAI_AUTHORED_KICK_SCREENSHOT", "captured");
+    console.log("KAI_AUTHORED_KICK_SCREENSHOT", "captured-640x400");
   } catch (error) {
     console.log("KAI_AUTHORED_KICK_SCREENSHOT", "capture-unavailable", String(error));
   }
