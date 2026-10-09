@@ -277,7 +277,8 @@ function App() {
             <>
               <div className="relative w-full h-screen">
                 <Canvas
-                  shadows
+                  shadows={QUALITY.shadowMap.enabled}
+                  dpr={QUALITY.pixelRatio}
                   camera={{
                     position: [0, 4, 7],
                     fov: 50,
@@ -287,9 +288,9 @@ function App() {
                   onCreated={({ gl }) => {
                     gl.setPixelRatio(QUALITY.pixelRatio);
                     gl.outputColorSpace = THREE.SRGBColorSpace;
-                    gl.toneMapping = THREE.ACESFilmicToneMapping;
-                    gl.toneMappingExposure = 0.85;
-                    gl.shadowMap.enabled = true;
+                    gl.toneMapping = QUALITY.toneMapping;
+                    gl.toneMappingExposure = QUALITY.isMobile ? 1.0 : 0.85;
+                    gl.shadowMap.enabled = QUALITY.shadowMap.enabled;
                     gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
                   }}
                   gl={{
@@ -320,7 +321,8 @@ function App() {
             <>
               <div className="relative w-full h-screen">
                 <Canvas
-                  shadows
+                  shadows={QUALITY.shadowMap.enabled}
+                  dpr={QUALITY.pixelRatio}
                   camera={{
                     position: [0, 4, 7],
                     fov: 50,
@@ -328,16 +330,15 @@ function App() {
                     far: 200,
                   }}
                   onCreated={({ gl }) => {
-                    const q = getQualitySettings();
-                    gl.setPixelRatio(q.pixelRatio);
+                    gl.setPixelRatio(QUALITY.pixelRatio);
                     gl.outputColorSpace = THREE.SRGBColorSpace;
-                    gl.toneMapping = THREE.ACESFilmicToneMapping;
-                    gl.toneMappingExposure = 0.85;
-                    gl.shadowMap.enabled = true;
-                    gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
+                    gl.toneMapping = QUALITY.toneMapping;
+                    gl.toneMappingExposure = QUALITY.isMobile ? 1.0 : 0.85;
+                    gl.shadowMap.enabled = QUALITY.shadowMap.enabled;
+                    gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
                   }}
                   gl={{
-                    antialias: getQualitySettings().antialias,
+                    antialias: QUALITY.antialias,
                     powerPreference: "high-performance",
                   }}
                 >
@@ -376,7 +377,8 @@ function App() {
           <>
             <div className="relative w-full h-screen">
               <Canvas
-                shadows
+                shadows={QUALITY.shadowMap.enabled}
+                dpr={QUALITY.pixelRatio}
                 camera={{
                   position: [0, 3.5, 7],
                   fov: 50,
@@ -386,9 +388,9 @@ function App() {
                 onCreated={({ gl }) => {
                   gl.setPixelRatio(QUALITY.pixelRatio);
                   gl.outputColorSpace = THREE.SRGBColorSpace;
-                  gl.toneMapping = THREE.ACESFilmicToneMapping;
-                  gl.toneMappingExposure = 0.98;
-                  gl.shadowMap.enabled = true;
+                  gl.toneMapping = QUALITY.toneMapping;
+                  gl.toneMappingExposure = QUALITY.isMobile ? 1.0 : 0.98;
+                  gl.shadowMap.enabled = QUALITY.shadowMap.enabled;
                   gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
                 }}
                 gl={{
