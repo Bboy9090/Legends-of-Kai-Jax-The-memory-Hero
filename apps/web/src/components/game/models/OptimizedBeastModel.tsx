@@ -12,6 +12,7 @@ import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { useBattle } from '../../../lib/stores/useBattle';
 import { MODEL_REGISTRY } from '../../../assets/modelRegistry';
+import { getQualitySettings } from '../../../lib/threejs/PerformanceOptimizer';
 import {
   findLimbs,
   captureBaseRotations,
@@ -87,6 +88,7 @@ export default function OptimizedBeastModel({
   scale = 2.5,
 }: OptimizedBeastModelProps) {
   const groupRef = useRef<THREE.Group>(null!);
+  const quality = useMemo(() => getQualitySettings(), []);
   const limbsRef = useRef<LimbRefs | null>(null);
   const basesRef = useRef<LimbBaseRotations | null>(null);
   const proceduralStateRef = useRef(createAnimState());
@@ -334,11 +336,57 @@ export default function OptimizedBeastModel({
       beastId: beast.id,
       childrenCount: c.children.length,
     });
+
+    // Compact renderers keep the exact geometry, skeleton, textures and
+    // silhouette, but swap expensive PBR materials for Lambert equivalents.
+    // This removes normal/metal/roughness sampling and real-time shadow work
+    // while preserving the approved character art direction and animation.
+    if (quality.deviceType !== 'desktop') {
+      c.traverse((node: any) => {
+        if (!node?.isMesh) return;
+        node.castShadow = false;
+        node.receiveShadow = false;
+        const sourceMaterials = Array.isArray(node.material)
+          ? node.material
+          : node.material
+            ? [node.material]
+            : [];
+
+        const compact = sourceMaterials.map((source: THREE.Material) => {
+          if (!(source instanceof THREE.MeshStandardMaterial) && !(source instanceof THREE.MeshPhysicalMaterial)) {
+            const clone = source.clone();
+            clone.needsUpdate = true;
+            return clone;
+          }
+
+          const material = new THREE.MeshLambertMaterial({
+            name: source.name,
+            color: source.color?.clone?.() ?? new THREE.Color('#ffffff'),
+            map: source.map ?? null,
+            emissive: source.emissive?.clone?.() ?? new THREE.Color('#000000'),
+            emissiveMap: source.emissiveMap ?? null,
+            emissiveIntensity: Math.min(source.emissiveIntensity ?? 1, 1.25),
+            transparent: source.transparent,
+            opacity: source.opacity,
+            alphaTest: source.alphaTest,
+            side: source.side,
+            depthWrite: source.depthWrite,
+            depthTest: source.depthTest,
+            vertexColors: source.vertexColors,
+          });
+          material.needsUpdate = true;
+          return material;
+        });
+
+        node.material = Array.isArray(node.material) ? compact : compact[0];
+      });
+    }
+
     // Never zero imported bone rotations here. Meshy/glTF bind transforms are
     // part of the rig and must remain intact for skin deformation.
     c.updateMatrixWorld(true);
     return c;
-  }, [scene, beast.id]);
+  }, [scene, beast.id, quality.deviceType]);
   const { actions } = useAnimations(authoredAnimations, cloned);
 
   // Normalize the model to a consistent height and stand it on the ground.
