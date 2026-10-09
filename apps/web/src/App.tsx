@@ -3,6 +3,7 @@ import { Suspense, useState, useRef, useMemo, useEffect, useCallback } from "rea
 import { KeyboardControls } from "@react-three/drei";
 import "@fontsource/inter";
 import "@fontsource/bebas-neue";
+import "./styles/kai-jax-vision.css";
 
 import BattleScene from "./components/game/BattleScene";
 import MobileControls from "./components/game/MobileControls";
