@@ -12,11 +12,12 @@ import VariantSelector from "./VariantSelector";
 import { useGame } from "../../lib/stores/useGame";
 import { useRunner } from "../../lib/stores/useRunner";
 import { useBattle } from "../../lib/stores/useBattle";
-import { FIGHTERS, getFighterById, isGoldSlicePlayableId } from "../../lib/characters";
+import { FIGHTERS, getFighterById } from "../../lib/characters";
 import { getDefaultVariant } from "../../lib/characterVariants";
 import { getQualitySettings } from "../../lib/threejs/PerformanceOptimizer";
 import {
   VERSUS_ROSTER,
+  GOLD_SLICE_VERSUS_ROSTER,
   type VersusRosterEntry,
 } from "../../lib/versusRoster";
 
@@ -143,7 +144,7 @@ export default function VersusCharacterSelect() {
   const completedStoryMissionIds = useRunner((s) => s.completedStoryMissionIds);
 
   const goldSliceEntries = useMemo(
-    () => VERSUS_ROSTER.filter((entry) => isGoldSlicePlayableId(resolveCombatId(entry.id))),
+    () => GOLD_SLICE_VERSUS_ROSTER,
     [],
   );
 
