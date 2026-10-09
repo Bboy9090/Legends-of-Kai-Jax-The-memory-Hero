@@ -3,8 +3,8 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
-import AnatomicalBeastModel from "./models/AnatomicalBeastModel";
-import { useBeastPreset } from "../../lib/stores/useBeastPreset";
+import OptimizedBeastModel from "./models/OptimizedBeastModel";
+import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
 
 /**
  * Opponent is presentation-only. OpponentAI is the single gameplay authority
@@ -17,19 +17,17 @@ export default function Opponent() {
   const opponentY = useBattle((s) => s.opponentY);
   const opponentFacingRight = useBattle((s) => s.opponentFacingRight);
   const opponentAttacking = useBattle((s) => s.opponentAttacking);
+  const opponentAttackType = useBattle((s) => s.opponentAttackType);
+  const opponentVelocityX = useBattle((s) => s.opponentVelocityX);
+  const opponentGrounded = useBattle((s) => s.opponentGrounded);
   const opponentHealth = useBattle((s) => s.opponentHealth);
   const timeScale = useBattle((s) => s.timeScale);
 
   const meshRef = useRef<THREE.Group>(null);
   const bodyRef = useRef<THREE.Group>(null);
   const headRef = useRef<THREE.Group>(null);
-  const leftArmRef = useRef<THREE.Group>(null);
-  const rightArmRef = useRef<THREE.Group>(null);
-  const leftLegRef = useRef<THREE.Group>(null);
-  const rightLegRef = useRef<THREE.Group>(null);
   const animTimeRef = useRef(0);
   const emotionIntensityRef = useRef(0);
-  const beastPreset = useBeastPreset((s) => s.preset);
 
   const fighter = getFighterById(opponentFighterId);
 
@@ -51,20 +49,19 @@ export default function Opponent() {
   return (
     <group ref={meshRef} position={[opponentX, opponentY, 0]}>
       <group scale={opponentFacingRight ? [1, 1, 1] : [-1, 1, 1]}>
-        <AnatomicalBeastModel
-          fighter={fighter}
+        <OptimizedBeastModel
+          beast={fighter}
           bodyRef={bodyRef}
           headRef={headRef}
-          leftArmRef={leftArmRef}
-          rightArmRef={rightArmRef}
-          leftLegRef={leftLegRef}
-          rightLegRef={rightLegRef}
           emotionIntensity={emotionIntensityRef.current}
           hitAnim={0}
           animTime={animTimeRef.current}
           isAttacking={opponentAttacking}
           isInvulnerable={false}
-          presetOverride={beastPreset === "auto" ? null : beastPreset}
+          isMoving={Math.abs(opponentVelocityX) > 0.08 && !opponentAttacking}
+          isRunning={Math.abs(opponentVelocityX) > MOVEMENT_TUNING.battle.walkMaxSpeed}
+          attackType={opponentAttackType}
+          locomotionState={opponentGrounded ? 'neutral' : 'airborne'}
         />
 
         {opponentAttacking && (

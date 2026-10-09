@@ -1,12 +1,12 @@
 {
   "battle": {
-    "baseHeight": 4.8,
-    "baseDist": 11.25,
+    "baseHeight": 3.6,
+    "baseDist": 7.7,
     "camLerp": 6,
     "shakeSeedBase": 10007,
     "separationMax": 16,
-    "separationDistScale": 0.45,
-    "separationHeightScale": 0.16,
+    "separationDistScale": 0.32,
+    "separationHeightScale": 0.11,
     "shakeScaleCombat": 0.58,
     "shakeScaleLockOn": 0.45,
     "reduceMotionShakeMult": 0.2

@@ -9,31 +9,15 @@ export interface GLBModelConfig {
   animationIndexWalk?: number;
   animationIndexRun?: number;
   animationIndexAttack?: number;
+  animationPaths?: { idle?: string; walk?: string; run?: string; kick?: string[]; punch?: string[] };
 }
 
 /**
- * CANONICAL CONSTRAINTS — V0.1.0 MVP
- *
- * These story and identity locks are immutable for the MVP release:
- *
- * CHARACTER IDENTITY:
- *   • Kai remains male and is Jax's older brother
- *   • Jax remains male and is Kai's younger brother
- *   • Both brothers are sapient anthropomorphic foxes with tails
- *
- * FUSION & TRANSFORMATION:
- *   • Kai-Jax is permanently and exclusively the fusion of Kai + Jax
- *   • Kai-Jax is the only nine-tail form (the Memory King system)
- *   • Kai and Jax cannot fuse with any other character
- *   • No future expansion may override this without an explicit canon rewrite approved by Bobby
- *   • Each brother's beast-hybrid forms (if any) preserve their base identity
- *
- * CORE MECHANICS:
- *   • The nine-tail system is Kai-Jax's exclusive signature power
- *   • Memory King mechanics remain tied to Kai-Jax fusion only
- *
- * These constraints are permanent canon locks, including beyond the MVP release.
- * Changes require an explicit canon rewrite approved by Bobby.
+ * CURRENT CHARACTER AUTHORITY
+ * Kai, Jax and Kai-Jax are distinct presentation identities. Kai-Jax is one
+ * physical body with the Kai / Jax / Kai-Jax identity domains. Legacy tail
+ * count and old fusion-system comments are intentionally not authoritative;
+ * visual/gameplay assets must follow the current project canon lock.
  */
 
 /**
@@ -56,18 +40,39 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   "kai-jax": {
     // Primary protagonist: The Memory Hero (Animated version)
     path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
+    animationPaths: {
+      run: "/models/Meshy_AI_Animation_Running_withSkin9TAILSKAIJAX.glb",
+      kick: [
+        "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb",
+        "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb",
+      ],
+    },
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   kai_jax: {
     path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
+    animationPaths: {
+      run: "/models/Meshy_AI_Animation_Running_withSkin9TAILSKAIJAX.glb",
+      kick: [
+        "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb",
+        "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb",
+      ],
+    },
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   kaijax: {
     path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
+    animationPaths: {
+      run: "/models/Meshy_AI_Animation_Running_withSkin9TAILSKAIJAX.glb",
+      kick: [
+        "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb",
+        "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb",
+      ],
+    },
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
@@ -95,7 +100,15 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
   kai: {
-    path: "/models/Meshy_AI_Meshy_Merged_Animations4KAI.glb",
+    path: "/models/Meshy_AI_Character_outputSPiDERKAIJAX9TIALS.glb",
+    animationPaths: {
+      walk: "/models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb",
+      run: "/models/Meshy_AI_Animation_Running_withSkinSPiDERKAIJAX9TIALS.glb",
+      kick: [
+        "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb",
+        "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb",
+      ],
+    },
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],

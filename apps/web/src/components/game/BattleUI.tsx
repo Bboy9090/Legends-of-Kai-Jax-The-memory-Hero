@@ -7,6 +7,7 @@ import { getPortraitPath } from "../../data/characterDesigns";
 import MoveSetTooltip from "./MoveSetTooltip";
 import { getMoveSet } from "../../lib/combatAbilities";
 import { useState, useEffect, useRef } from "react";
+import { isTouchDevice } from "../../lib/touchUtils";
 import { Zap, RotateCcw, Home, Star, Sparkles, CheckCircle2, XCircle, Target, ChevronRight } from "../ui/icons";
 
 // ⚡ LEGENDARY SYNERGY METER
@@ -253,7 +254,7 @@ function LegendaryHealthBar({
       <div 
         className={`
           relative bg-gradient-to-b from-gray-900/95 to-black/95 backdrop-blur-md 
-          rounded-xl p-2 sm:p-3 
+          rounded-xl p-1.5 sm:p-2 
           border-2 
           transition-all duration-300
           shadow-[0_4px_24px_rgba(0,0,0,0.5)]
@@ -278,9 +279,9 @@ function LegendaryHealthBar({
           {/* Fighter Avatar — design-driven portrait when available */}
           <div 
             className={`
-              relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 
+              relative w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10
               rounded-full flex items-center justify-center overflow-hidden
-              font-black text-lg sm:text-xl md:text-2xl text-white
+              font-black text-base sm:text-lg md:text-xl text-white
               flex-shrink-0 border-2 border-white/30
               ${isCritical ? 'animate-pulse' : ''}
             `}
@@ -308,7 +309,7 @@ function LegendaryHealthBar({
           {/* Fighter Name & Wins */}
           <div className={`min-w-0 ${side === 'right' ? 'text-right' : ''}`}>
             <h3 
-              className="text-white font-bold text-sm sm:text-base md:text-lg truncate"
+              className="text-white font-bold text-xs sm:text-sm md:text-base truncate"
               style={{ textShadow: `0 0 10px ${fighter.accentColor}` }}
             >
               {fighter.displayName}
@@ -330,7 +331,7 @@ function LegendaryHealthBar({
         {/* Health Bar */}
         <div 
           className={`
-            relative h-5 sm:h-6 md:h-8 
+            relative h-3.5 sm:h-4 md:h-5
             bg-gray-800/90 rounded-full overflow-hidden 
             border border-white/25 shadow-[inset_0_2px_6px_rgba(0,0,0,0.5)]
             ${isCritical ? 'shadow-[0_0_20px_rgba(239,68,68,0.9)_inset]' : ''}
@@ -358,7 +359,7 @@ function LegendaryHealthBar({
           
           {/* Health Text */}
           <div 
-            className="absolute inset-0 flex items-center justify-center text-white font-black text-sm sm:text-base md:text-lg"
+            className="absolute inset-0 flex items-center justify-center text-white font-black text-xs sm:text-sm md:text-base"
             style={{ 
               textShadow: '0 1px 2px rgba(0,0,0,1), 0 0 8px rgba(0,0,0,0.8), 0 0 2px rgba(255,255,255,0.3)' 
             }}
@@ -368,7 +369,7 @@ function LegendaryHealthBar({
         </div>
         
         {/* Synergy Meter */}
-        <div className={`mt-2 ${side === 'right' ? 'flex justify-end' : ''}`}>
+        <div className={`mt-1 ${side === 'right' ? 'flex justify-end' : ''}`}>
           <SynergyMeter value={synergy} fighterColor={fighter.color} side={side} />
         </div>
       </div>
@@ -385,8 +386,8 @@ function LegendaryTimer({ time }: { time: number }) {
     <div 
       className={`
         relative bg-gradient-to-b from-gray-900/90 to-black/90 backdrop-blur-md 
-        rounded-xl p-2 sm:p-4 
-        min-w-[70px] sm:min-w-[100px]
+        rounded-xl p-1.5 sm:p-2.5 
+        min-w-[54px] sm:min-w-[68px]
         border-3 
         transition-all duration-300
         ${isUrgent 
@@ -401,7 +402,7 @@ function LegendaryTimer({ time }: { time: number }) {
       <div className="text-center">
         <div 
           className={`
-            text-3xl sm:text-4xl md:text-5xl font-black 
+            text-2xl sm:text-3xl font-black
             ${isUrgent ? 'text-red-400 animate-bounce' : isCritical ? 'text-orange-400' : 'text-white'}
           `}
           style={{
@@ -837,6 +838,10 @@ export default function BattleUI() {
   } = useRunner();
   const playerFighter = getFighterById(playerFighterId);
   const opponentFighter = getFighterById(opponentFighterId);
+  const [touchCapable, setTouchCapable] = useState(false);
+  useEffect(() => {
+    setTouchCapable(isTouchDevice() || window.matchMedia('(pointer: coarse)').matches);
+  }, []);
   
   // Get actual synergy and combo from battle store
   const {
@@ -935,8 +940,8 @@ export default function BattleUI() {
       )}
 
       {/* Top HUD */}
-      <div className="absolute top-0 left-0 right-0 p-2 sm:p-4">
-        <div className="max-w-6xl mx-auto">
+      <div className="absolute top-0 left-0 right-0 p-1.5 sm:p-2.5">
+        <div className="max-w-5xl mx-auto">
           {trainingSession && (
             <div className="text-center mb-1 pointer-events-none">
               <span className="inline-block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-full border border-emerald-500/40 bg-emerald-950/50 text-emerald-200/95">
@@ -1060,7 +1065,7 @@ export default function BattleUI() {
       {activeMission && <MissionHUD />}
       
       {/* Controls Guide */}
-      {battlePhase === 'fighting' && (
+      {battlePhase === 'fighting' && !touchCapable && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex justify-center px-2 w-full max-w-2xl">
           <div className="bg-black/75 backdrop-blur-md rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 border border-cyan-400/40 shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
             <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 text-white text-xs sm:text-sm">

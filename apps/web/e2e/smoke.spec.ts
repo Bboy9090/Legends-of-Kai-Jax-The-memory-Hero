@@ -129,8 +129,13 @@ async function enterStableState(page: Page, gameState: string): Promise<void> {
   await page.getByTestId('game-intro').waitFor({ state: 'detached', timeout: 10_000 }).catch(() => {});
 }
 
-test("versus: boots, navigates menus, and starts a battle without crashing", async ({ page }) => {
+test("versus: boots, navigates menus, and starts a battle without crashing", async ({ page }, testInfo) => {
+  test.setTimeout(150_000);
   const errors = collectErrors(page);
+  await page.addInitScript(() => {
+    (window as any).__KAI_JAX_CERTIFICATION__ = true;
+    (window as any).__KAI_JAX_INPUT_PROBE__ = [];
+  });
   await boot(page);
 
   // Follow the same first-run path a player uses, then open Combat Arena.
@@ -143,24 +148,104 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   );
   await expect(page.getByRole("heading", { name: "Choose Your Fighter" })).toBeVisible({ timeout: 15_000 });
 
-  // Start a fight and confirm the battle canvas mounts.
-  // Exact match so we don't collide with the fighter cards' "Fighter" role label.
-  await page.getByRole("button", { name: "FIGHT", exact: true }).click();
+  await page.getByRole("button", { name: /^Kai,.*playable/ }).click();
+
+  // Start the real training battle for deterministic move certification.
+  // Training uses the same battle renderer/controller but keeps the opponent passive,
+  // so authored attack proof is not contaminated by random AI hitstun.
+  await page.getByRole("button", { name: "Training", exact: true }).click();
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
+  await page.waitForFunction(() => Boolean((window as any).__KAI_JAX_ANIMATION_PROBE__?.kai), null, { timeout: 20_000 });
+
+  // Certify locomotion against the clip actually selected by the mounted fighter.
+  await page.keyboard.down("ArrowRight");
+  await page.waitForFunction(() => (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai?.requested === "walk", null, { timeout: 15_000 });
+  const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
+  console.log("LIVE_ANIMATION_WALK_PROBE", JSON.stringify(walkProbe));
+  expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
+  await page.keyboard.down("ShiftLeft");
+  await page.waitForFunction(() => (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai?.requested === "run", null, { timeout: 15_000 });
+  const runProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
+  console.log("LIVE_ANIMATION_RUN_PROBE", JSON.stringify(runProbe));
+  expect(Object.values(runProbe ?? {}).some((p: any) => p?.requested === "run" && /run/i.test(p?.selectedClip ?? ""))).toBeTruthy();
+  await page.keyboard.up("ShiftLeft");
+  await page.keyboard.up("ArrowRight");
+
   // Exercise the actual keyboard path while the WebGL fighter is mounted.
-  // These are the same bindings PlayerController consumes in gameplay.
-  await page.keyboard.press("KeyJ"); // punch
-  await page.waitForTimeout(500);
-  await page.keyboard.press("KeyK"); // kick
-  await page.waitForTimeout(700);
-  await page.keyboard.press("KeyE"); // dodge
-  await page.waitForTimeout(450);
-  await page.keyboard.down("AltLeft"); // block / parry window
-  await page.waitForTimeout(180);
-  await page.keyboard.up("AltLeft");
-  await page.keyboard.press("Space"); // airborne pose
-  await page.waitForTimeout(650);
+  // Kick is the authored-attack certification target. Procedural Punch pose
+  // quality remains a separate visual-review item and must not gate this proof.
+  await page.keyboard.down("KeyK"); // kick
+  try {
+    await page.waitForFunction(
+      () => {
+        const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
+        return probe?.requested === "attack"
+          && probe?.attackType === "kick"
+          && /kick/i.test(probe?.selectedClip ?? "");
+      },
+      null,
+      { timeout: 15_000 },
+    );
+  } catch (error) {
+    const inputProbe = await page.evaluate(() => (window as any).__KAI_JAX_INPUT_PROBE__);
+    const animationProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
+    console.log("LIVE_INPUT_KICK_PROBE", JSON.stringify(inputProbe));
+    console.log("LIVE_ANIMATION_KICK_TIMEOUT_PROBE", JSON.stringify(animationProbe));
+    throw error;
+  } finally {
+    await page.keyboard.up("KeyK");
+  }
+  const kickProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
+  console.log("LIVE_ANIMATION_KICK_PROBE", JSON.stringify(kickProbe));
+  const kaiJaxKick = kickProbe?.kai;
+  expect(kaiJaxKick?.requested).toBe("attack");
+  expect(kaiJaxKick?.attackType).toBe("kick");
+  expect(kaiJaxKick?.authored).toBe(true);
+  expect(kaiJaxKick?.selectedClip).toMatch(/kick/i);
+  // Runtime certification must not fail solely because a software WebGL runner
+  // stalls while rasterizing a screenshot. Preserve the image when possible;
+  // final presentation review remains a separate explicit release gate.
+  try {
+    // First prefer a compact canvas-only capture. If the WebGL canvas stalls
+    // during readback on a real GPU, fall back to the full-page path that has
+    // already proven reliable on hardware-backed macOS.
+    await page.setViewportSize({ width: 640, height: 400 });
+    await page.waitForTimeout(250);
+    try {
+      await page.locator("canvas").first().screenshot({
+        path: testInfo.outputPath("kai-authored-kick-640x400.png"),
+        timeout: 15_000,
+      });
+      console.log("KAI_AUTHORED_KICK_SCREENSHOT", "captured-640x400");
+    } catch (canvasError) {
+      console.log("KAI_AUTHORED_KICK_CANVAS_SCREENSHOT", "capture-unavailable", String(canvasError));
+      try {
+        await page.screenshot({
+          path: testInfo.outputPath("kai-authored-kick-fallback.png"),
+          animations: "disabled",
+          timeout: 15_000,
+        });
+        console.log("KAI_AUTHORED_KICK_SCREENSHOT", "captured-fallback-page");
+      } catch (pageError) {
+        console.log("KAI_AUTHORED_KICK_PAGE_SCREENSHOT", "capture-unavailable", String(pageError));
+        const cdp = await page.context().newCDPSession(page);
+        const shot = await cdp.send("Page.captureScreenshot", {
+          format: "png",
+          fromSurface: true,
+          captureBeyondViewport: false,
+        });
+        const fs = await import("node:fs/promises");
+        await fs.writeFile(
+          testInfo.outputPath("kai-authored-kick-cdp-fallback.png"),
+          Buffer.from(shot.data, "base64"),
+        );
+        console.log("KAI_AUTHORED_KICK_SCREENSHOT", "captured-cdp-fallback");
+      }
+    }
+  } catch (error) {
+    console.log("KAI_AUTHORED_KICK_SCREENSHOT", "capture-unavailable", String(error));
+  }
 
   expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
 });

@@ -5,6 +5,7 @@ import { useBattle } from "../../lib/stores/useBattle";
 import { getFighterById } from "../../lib/characters";
 import { soundManager } from "../../lib/soundEffects";
 import OptimizedBeastModel from "./models/OptimizedBeastModel";
+import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
 
 export default function BattlePlayer() {
   const { 
@@ -47,9 +48,10 @@ export default function BattlePlayer() {
   const fighter = getFighterById(playerFighterId);
   
   // PlayerController is the sole gameplay authority; this component renders its state.
-  useFrame((_state, delta) => {
-    // Apply slow-motion time scale
-    const scaledDelta = delta * timeScale;
+  useFrame((_state, rawDelta) => {
+    // Match the battle simulation's hitch clamp so a long render frame cannot
+    // skip an entire attack phase before it is presented.
+    const scaledDelta = Math.min(rawDelta, 0.05) * timeScale;
     
     if (battlePhase !== 'fighting') {
       // Victory/defeat pose
@@ -269,8 +271,8 @@ export default function BattlePlayer() {
       animTime={animTimeRef.current}
       isAttacking={playerAttacking}
       isInvulnerable={playerInvulnerable}
-      isMoving={isMovingRef.current}
-      isRunning={Math.abs(playerVelocityX) > 4}
+      isMoving={Math.abs(playerVelocityX) > 0.08 && !playerAttacking}
+      isRunning={Math.abs(playerVelocityX) > MOVEMENT_TUNING.battle.walkMaxSpeed}
       attackType={playerAttackType}
       locomotionState={
         playerDodgeTimer > 0 ? 'dodge' :

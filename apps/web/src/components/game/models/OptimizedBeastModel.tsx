@@ -90,6 +90,8 @@ export default function OptimizedBeastModel({
   const previousHitAnimRef = useRef(0);
   const previousAttackRef = useRef(false);
   const modelPath = getBeastModelPath(beast.id);
+  const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
+  const companionPaths = useMemo(() => [animationPaths?.walk, animationPaths?.run, ...(animationPaths?.kick ?? []), ...(animationPaths?.punch ?? [])].filter(Boolean) as string[], [animationPaths]);
 
   // DIAGNOSTIC: log model path resolution
   useEffect(() => {
@@ -100,13 +102,34 @@ export default function OptimizedBeastModel({
     });
   }, [modelPath, beast.id, beast.color]);
 
-  // Target on-screen character height in world units (matches the arena scale).
-  const TARGET_HEIGHT = 2.2;
+  // Target on-screen character height in world units. Keep heroes assertive in
+  // the frame while preventing oversized boss exports from swallowing the versus read.
+  const TARGET_HEIGHT = beast.id === 'kai'
+    ? 2.45
+    : beast.id === 'granite-colossus'
+      ? 2.32
+      : beast.role === 'boss'
+        ? 2.42
+        : 2.3;
 
   // Load GLB model. Note: useGLTF's fourth argument is extendLoader, NOT an
   // onError callback. The previous code mislabeled successful loader setup as
   // a model load failure in release smoke tests.
   const { scene, animations } = useGLTF(modelPath);
+  const companionGLTFs = useGLTF(companionPaths) as any[];
+  const authoredAnimations = useMemo(() => {
+    const clips: THREE.AnimationClip[] = [...animations];
+    companionGLTFs.forEach((gltf, index) => {
+      const path = companionPaths[index] ?? '';
+      (gltf?.animations ?? []).forEach((clip: THREE.AnimationClip) => {
+        const semantic = /Running/i.test(path) ? 'Run' : /Walking/i.test(path) ? 'Walk' : /Kick/i.test(path) ? 'Kick' : /Punch|Jab/i.test(path) ? 'Punch' : clip.name;
+        const clone = clip.clone();
+        clone.name = `${semantic}:${clip.name || index}`;
+        clips.push(clone);
+      });
+    });
+    return clips;
+  }, [animations, companionGLTFs, companionPaths]);
   // DIAGNOSTIC: log scene load success
   useEffect(() => {
     if (scene) {
@@ -133,7 +156,7 @@ export default function OptimizedBeastModel({
     c.updateMatrixWorld(true);
     return c;
   }, [scene, beast.id]);
-  const { actions, mixer } = useAnimations(animations, cloned);
+  const { actions } = useAnimations(authoredAnimations, cloned);
 
   // Normalize the model to a consistent height and stand it on the ground.
   // Meshy exports have wildly different native scales, so a fixed scale left
@@ -171,7 +194,7 @@ export default function OptimizedBeastModel({
       targetAction = 'attack';
     } else if (isMoving) {
       // Prefer 'walk' over 'run' for natural arm movement
-      targetAction = 'walk';
+      targetAction = isRunning ? 'run' : 'walk';
     }
 
     const available = Object.keys(actions);
@@ -181,23 +204,37 @@ export default function OptimizedBeastModel({
     // the articulated procedural fallback and recreate the skating-statue bug.
     let match: string | undefined;
     if (targetAction === 'walk') {
-      match =
-        available.find(n => /walk|locomotion/i.test(n)) ||
-        available.find(n => /run/i.test(n));
+      match = available.find(n => /walk|locomotion/i.test(n));
+    } else if (targetAction === 'run') {
+      match = available.find(n => /run|sprint/i.test(n));
     } else if (targetAction === 'attack') {
       const attackPattern =
         attackType === 'kick' || attackType === 'heavy'
-          ? /kick|heavy/
+          ? /kick|heavy/i
           : attackType === 'special' || attackType === 'skill'
-            ? /special|skill|slash|strike/
+            ? /special|skill|slash|strike/i
             : attackType === 'ultimate'
-              ? /ultimate|super|finisher/
-              : /punch|jab|light|attack/;
-      match =
-        available.find(n => attackPattern.test(n)) ||
-        available.find(n => /attack|punch|kick|slash|strike|hit/i.test(n));
+              ? /ultimate|super|finisher/i
+              : /punch|jab|light|attack/i;
+      // Never cross-fallback between attack families. If Kai has authored
+      // Kick clips but no authored Punch clip, a punch must use the articulated
+      // procedural fallback instead of incorrectly playing a kick animation.
+      match = available.find(n => attackPattern.test(n));
     } else {
       match = available.find(n => /idle|breath|stand/i.test(n));
+    }
+
+    if (typeof window !== 'undefined') {
+      const w = window as any;
+      w.__KAI_JAX_ANIMATION_PROBE__ ??= {};
+      w.__KAI_JAX_ANIMATION_PROBE__[beast.id] = {
+        requested: targetAction,
+        attackType: isAttacking ? attackType : null,
+        selectedClip: match ?? null,
+        authored: Boolean(match),
+        availableClips: available,
+        timestamp: performance.now(),
+      };
     }
 
     if (match && actions[match]) {
@@ -215,11 +252,14 @@ export default function OptimizedBeastModel({
         activeActionRef.current = next;
       }
     }
-  }, [actions, isAttacking, isMoving, attackType, beast.id]);
+  }, [actions, isAttacking, isMoving, isRunning, attackType, beast.id]);
 
   // Hit animation and effects
-  useFrame((state, delta) => {
-    if (mixer) mixer.update(delta);
+  useFrame((state, rawDelta) => {
+    // Keep procedural combat motion aligned with the rest of the battle
+    // simulation during long render hitches.
+    const delta = Math.min(rawDelta, 0.05);
+    // useAnimations advances its mixer once per frame.
     if (!groupRef.current) return;
 
     const procedural = proceduralStateRef.current;
@@ -270,10 +310,18 @@ export default function OptimizedBeastModel({
     // idle/walk/attack set. Drive their real bones procedurally so locomotion
     // and combat still articulate arms, legs, hips and spine.
     const available = actions ? Object.keys(actions) : [];
+    const authoredAttackPattern =
+      attackType === 'kick' || attackType === 'heavy'
+        ? /kick|heavy/i
+        : attackType === 'special' || attackType === 'skill'
+          ? /special|skill|slash|strike/i
+          : attackType === 'ultimate'
+            ? /ultimate|super|finisher/i
+            : /punch|jab|light|attack/i;
     const hasStateClip = isAttacking
-      ? available.some(n => /attack|punch|kick|slash|hit/i.test(n))
+      ? available.some(n => authoredAttackPattern.test(n))
       : isMoving
-        ? available.some(n => /walk|run|locomotion/i.test(n))
+        ? (isRunning ? available.some(n => /run|sprint/i.test(n)) : available.some(n => /walk|locomotion/i.test(n)))
         : available.some(n => /idle|breath|stand/i.test(n));
     if (!hasStateClip && limbsRef.current && basesRef.current) {
       if (isAttacking) {
