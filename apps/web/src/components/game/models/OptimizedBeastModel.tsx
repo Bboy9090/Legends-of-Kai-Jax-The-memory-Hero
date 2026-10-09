@@ -48,6 +48,8 @@ interface OptimizedBeastModelProps {
   isInvulnerable?: boolean;
   isMoving?: boolean;
   isRunning?: boolean;
+  /** Actual world-units/sec so animation cadence can match translation speed. */
+  locomotionSpeed?: number;
   attackType?: 'light1' | 'light2' | 'light3' | 'heavy' | 'skill' | 'punch' | 'kick' | 'special' | 'ultimate' | null;
   locomotionState?: 'neutral' | 'dodge' | 'block' | 'parry' | 'hitstun' | 'airborne';
   scale?: number;
@@ -79,6 +81,7 @@ export default function OptimizedBeastModel({
   isInvulnerable = false,
   isMoving = false,
   isRunning = false,
+  locomotionSpeed,
   attackType = null,
   locomotionState = 'neutral',
   scale = 2.5,
@@ -98,6 +101,10 @@ export default function OptimizedBeastModel({
   const mountedRef = useRef(true);
   const deformationSampleRef = useRef<{ frames: number; motion: number; last: number[] | null }>({ frames: 0, motion: 0, last: null });
   const forceProceduralRef = useRef(false);
+  const locomotionBaseline = isRunning ? 9.5 : 6;
+  const locomotionRate = isMoving
+    ? THREE.MathUtils.clamp((locomotionSpeed ?? locomotionBaseline) / locomotionBaseline, 0.6, 2.5)
+    : 1;
   const modelPath = getBeastModelPath(beast.id);
   const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
   const criticalCompanionPaths = useMemo(() => {
@@ -454,6 +461,7 @@ export default function OptimizedBeastModel({
         previous?.fadeOut(0.18);
 
         next.reset();
+        next.setEffectiveTimeScale(targetAction === 'walk' || targetAction === 'run' ? locomotionRate : 1);
         if (targetAction === 'attack') {
           next.setLoop(THREE.LoopOnce, 1);
           next.clampWhenFinished = true;
@@ -479,7 +487,7 @@ export default function OptimizedBeastModel({
       forceProceduralRef.current = false;
       deformationSampleRef.current = { frames: 0, motion: 0, last: null };
     }
-  }, [actions, isAttacking, isMoving, isRunning, attackType, beast.id]);
+  }, [actions, isAttacking, isMoving, isRunning, locomotionRate, attackType, beast.id]);
 
   // Hit animation and effects
   useFrame((state, rawDelta) => {
@@ -603,7 +611,7 @@ export default function OptimizedBeastModel({
           animatePunch(cloned, limbsRef.current, basesRef.current, procedural, delta, t);
         }
       } else if (isMoving) {
-        animateWalk(cloned, limbsRef.current, basesRef.current, procedural, delta, isRunning);
+        animateWalk(cloned, limbsRef.current, basesRef.current, procedural, delta * locomotionRate, isRunning);
       } else {
         animateIdle(cloned, limbsRef.current, basesRef.current, t, delta);
       }
