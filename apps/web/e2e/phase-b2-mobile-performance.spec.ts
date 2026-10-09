@@ -88,6 +88,24 @@ test.describe('Phase B2: Mobile Performance Testing', () => {
 
       expect(canvasVisible).toBe(true);
 
+      const rendererInfo = await page.evaluate(() => {
+        const canvases = Array.from(document.querySelectorAll('canvas'));
+        for (const canvas of canvases) {
+          const gl = (canvas as HTMLCanvasElement).getContext('webgl2')
+            || (canvas as HTMLCanvasElement).getContext('webgl');
+          if (!gl) continue;
+          const debug = gl.getExtension('WEBGL_debug_renderer_info');
+          return {
+            vendor: debug ? gl.getParameter(debug.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR),
+            renderer: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER),
+            width: (canvas as HTMLCanvasElement).width,
+            height: (canvas as HTMLCanvasElement).height,
+          };
+        }
+        return null;
+      });
+      console.log('Phase B2 WebGL Renderer:', JSON.stringify({ device: deviceName, ...rendererInfo }));
+
       // Measure browser render cadence with requestAnimationFrame. Measuring
       // Playwright-side waitForTimeout scheduling adds runner/IPC latency and
       // does not represent the game's actual frame cadence.
