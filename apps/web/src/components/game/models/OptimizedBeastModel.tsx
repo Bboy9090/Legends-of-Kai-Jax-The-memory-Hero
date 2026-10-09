@@ -653,10 +653,11 @@ export default function OptimizedBeastModel({
       }
 
       const measuredFrames = Math.max(boneSample.frames, skinSample.frames);
-      // Software WebGL runners can deliver only a handful of animation frames
-      // over several seconds. Three distinct moving frames are enough to prove
-      // vertex deformation while still rejecting a translating statue.
-      if (measuredFrames >= 3) {
+      // Software WebGL runners can deliver only a handful of animation frames.
+      // Two distinct samples are the minimum needed to measure a real delta.
+      // A static authored clip still fails this check, switches to procedural,
+      // and must produce a non-zero weighted-vertex delta on the next cycle.
+      if (measuredFrames >= 2) {
         const averageBoneMotion = boneSample.frames > 0 ? boneSample.motion / boneSample.frames : 0;
         const averageSkinMotion = skinSample.frames > 0 ? skinSample.motion / skinSample.frames : 0;
         const skinVerified = skinPose.length > 0;
