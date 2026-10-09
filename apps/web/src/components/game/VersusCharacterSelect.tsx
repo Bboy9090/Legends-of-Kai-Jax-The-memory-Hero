@@ -16,7 +16,6 @@ import { FIGHTERS, getFighterById } from "../../lib/characters";
 import { getDefaultVariant } from "../../lib/characterVariants";
 import { getQualitySettings } from "../../lib/threejs/PerformanceOptimizer";
 import {
-  VERSUS_ROSTER,
   GOLD_SLICE_VERSUS_ROSTER,
   type VersusRosterEntry,
 } from "../../lib/versusRoster";
