@@ -71,7 +71,7 @@ const LegendaryMainMenu: React.FC = () => {
       id: 'story',
       label: 'STORY HUB',
       sublabel: 'The Raging City Campaign Map',
-      action: () => setGameState('campaign-map')
+      action: () => setGameState('story-hub')
     },
     {
       id: 'missions',
