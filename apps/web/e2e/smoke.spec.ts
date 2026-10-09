@@ -196,11 +196,12 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
   await page.waitForFunction(() => {
     const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai;
-    return probe?.requested === "walk" && probe?.moving === true;
+    return probe?.requested === "walk" && probe?.moving === true && probe?.skinVerified === true;
   }, null, { timeout: 20_000 });
   const walkDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai);
   console.log("LIVE_DEFORMATION_WALK_PROBE", JSON.stringify(walkDeform));
   expect(walkDeform?.moving).toBe(true);
+  expect(walkDeform?.skinVerified).toBe(true);
   await page.keyboard.down("ShiftLeft");
   await page.waitForFunction(() => {
     const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
@@ -211,11 +212,12 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   expect(Object.values(runProbe ?? {}).some((p: any) => p?.requested === "run" && /run/i.test(p?.selectedClip ?? ""))).toBeTruthy();
   await page.waitForFunction(() => {
     const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai;
-    return probe?.requested === "run" && probe?.moving === true;
+    return probe?.requested === "run" && probe?.moving === true && probe?.skinVerified === true;
   }, null, { timeout: 20_000 });
   const runDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai);
   console.log("LIVE_DEFORMATION_RUN_PROBE", JSON.stringify(runDeform));
   expect(runDeform?.moving).toBe(true);
+  expect(runDeform?.skinVerified).toBe(true);
   await page.keyboard.up("ShiftLeft");
   await page.keyboard.up("ArrowRight");
 
@@ -256,11 +258,12 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   // check. When a compatible Spider-Kai kick is added, this may become authored.
   await page.waitForFunction(() => {
     const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai;
-    return probe?.requested === "kick" && probe?.moving === true;
+    return probe?.requested === "kick" && probe?.moving === true && probe?.skinVerified === true;
   }, null, { timeout: 20_000 });
   const kickDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai);
   console.log("LIVE_DEFORMATION_KICK_PROBE", JSON.stringify(kickDeform));
   expect(kickDeform?.moving).toBe(true);
+  expect(kickDeform?.skinVerified).toBe(true);
   // Runtime certification must not fail solely because a software WebGL runner
   // stalls while rasterizing a screenshot. Preserve the image when possible;
   // final presentation review remains a separate explicit release gate.
@@ -352,7 +355,9 @@ test("fusion rig: Kai-Jax visibly articulates instead of translating as a statue
 
   const deformation = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__);
   console.log("LIVE_FUSION_DEFORMATION_PROBE", JSON.stringify(deformation));
-  expect(Object.values(deformation ?? {}).some((probe: any) => probe?.requested === "walk" && probe?.moving === true)).toBeTruthy();
+  expect(Object.values(deformation ?? {}).some((probe: any) =>
+    probe?.requested === "walk" && probe?.moving === true && probe?.skinVerified === true
+  )).toBeTruthy();
   expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
 });
 
