@@ -109,14 +109,15 @@ export default function OptimizedBeastModel({
     : 1;
   const modelPath = getBeastModelPath(beast.id);
   const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
+  const isCriticalHeroRig = beast.id === 'kai' || beast.id === 'kaijax' || beast.id === 'kai-jax' || beast.id === 'kai_jax';
   const criticalCompanionPaths = useMemo(() => {
-    if (beast.id !== 'kai') return [] as string[];
+    if (!isCriticalHeroRig) return [] as string[];
     return [
       animationPaths?.walk,
       animationPaths?.run,
       ...(animationPaths?.kick ?? []),
     ].filter(Boolean) as string[];
-  }, [animationPaths, beast.id]);
+  }, [animationPaths, isCriticalHeroRig]);
 
   // Kai is the release-critical hero. Warm his authored locomotion and kick
   // clips before interaction so first input never races the network. The
@@ -127,14 +128,14 @@ export default function OptimizedBeastModel({
   const requestedCompanionPaths = useMemo(() => {
     const paths: string[] = [];
 
-    // Non-Kai locomotion and optional attack families remain lazy.
-    if (beast.id !== 'kai' && isMoving) {
+    // Non-critical roster locomotion and optional attack families remain lazy.
+    if (!isCriticalHeroRig && isMoving) {
       if (isRunning && animationPaths?.run) paths.push(animationPaths.run);
       else if (!isRunning && animationPaths?.walk) paths.push(animationPaths.walk);
     }
 
     if (isAttacking) {
-      const kickIsAlreadyCritical = beast.id === 'kai';
+      const kickIsAlreadyCritical = isCriticalHeroRig;
       if (!kickIsAlreadyCritical && (attackType === 'kick' || attackType === 'heavy') && animationPaths?.kick) {
         paths.push(...animationPaths.kick);
       } else if ((attackType === 'punch' || attackType === 'light1' || attackType === 'light2' || attackType === 'light3') && animationPaths?.punch) {
@@ -143,7 +144,7 @@ export default function OptimizedBeastModel({
     }
 
     return [...new Set(paths)];
-  }, [animationPaths, attackType, beast.id, isAttacking, isMoving, isRunning]);
+  }, [animationPaths, attackType, beast.id, isAttacking, isCriticalHeroRig, isMoving, isRunning]);
 
   // DIAGNOSTIC: log model path resolution
   useEffect(() => {
