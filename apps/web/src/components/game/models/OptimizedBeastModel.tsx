@@ -95,17 +95,18 @@ export default function OptimizedBeastModel({
   const [companionAnimations, setCompanionAnimations] = useState<THREE.AnimationClip[]>([]);
   const loadedCompanionPathsRef = useRef(new Set<string>());
   const loadingCompanionPathsRef = useRef(new Set<string>());
+  const mountedRef = useRef(true);
   const modelPath = getBeastModelPath(beast.id);
   const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
   const requestedCompanionPaths = useMemo(() => {
     const paths: string[] = [];
 
-    // Locomotion is requested on demand. Attack companions are heavier and are
-    // not downloaded until that attack family is actually used.
-    if (isMoving) {
-      if (isRunning && animationPaths?.run) paths.push(animationPaths.run);
-      else if (!isRunning && animationPaths?.walk) paths.push(animationPaths.walk);
-    }
+    // Walk/run are release-critical and small enough to warm immediately after
+    // the canonical base fighter mounts. Heavy attack companions remain
+    // on-demand so the memory cleanup still removes their duplicate render
+    // payloads without making first locomotion race the network.
+    if (animationPaths?.walk) paths.push(animationPaths.walk);
+    if (animationPaths?.run) paths.push(animationPaths.run);
 
     if (isAttacking) {
       if ((attackType === 'kick' || attackType === 'heavy') && animationPaths?.kick) {
@@ -142,14 +143,20 @@ export default function OptimizedBeastModel({
   // a model load failure in release smoke tests.
   const { scene, animations } = useGLTF(modelPath);
 
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   // Companion files are complete GLBs, not animation-only payloads. Keep them
-  // out of useGLTF/useLoader's render-critical cache. Requested clips load on
-  // demand, publish progressively, and their duplicate mesh/material/texture
-  // payloads are disposed as soon as animation clips are extracted.
+  // out of useGLTF/useLoader's render-critical cache. Locomotion warms after
+  // mount; heavier attack clips load on demand. Duplicate render payloads are
+  // disposed immediately after animation extraction.
   useEffect(() => {
     if (requestedCompanionPaths.length === 0) return;
 
-    let cancelled = false;
     const loader = new GLTFLoader();
 
     const disposeCompanionScene = (root: THREE.Object3D) => {
@@ -176,7 +183,8 @@ export default function OptimizedBeastModel({
       loadingCompanionPathsRef.current.add(path);
       void loader.loadAsync(path)
         .then((gltf) => {
-          if (cancelled) {
+          if (!mountedRef.current) {
+            loadingCompanionPathsRef.current.delete(path);
             disposeCompanionScene(gltf.scene);
             return;
           }
@@ -215,9 +223,6 @@ export default function OptimizedBeastModel({
         });
     });
 
-    return () => {
-      cancelled = true;
-    };
   }, [beast.id, requestedCompanionPaths]);
 
   const authoredAnimations = useMemo(
