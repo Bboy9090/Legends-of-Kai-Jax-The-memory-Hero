@@ -12,6 +12,7 @@ import AdventureSessionGuard from "./AdventureSessionGuard";
 import AdventureEnemyAI from "./AdventureEnemyAI";
 import Mission1EncounterBridge from "./Mission1EncounterBridge";
 import * as THREE from "three";
+import { getQualitySettings } from "../../../lib/threejs/PerformanceOptimizer";
 
 const VISUAL_ARENA_SIZE = 76;
 const VISUAL_ARENA_HALF = VISUAL_ARENA_SIZE / 2;
@@ -138,9 +139,10 @@ function ArenaGround({ config }: { config: ArenaConfig }) {
 
 function ArenaEnvironment({ config }: { config: ArenaConfig }) {
   const { biome, lighting } = config;
+  const compact = getQualitySettings().deviceType !== "desktop";
 
   const pillars = useMemo(() => {
-    const count = biome === "void" || biome === "tech" ? 6 : 4;
+    const count = compact ? 0 : biome === "void" || biome === "tech" ? 6 : 4;
     return Array.from({ length: count }, (_, i) => {
       const angle = (i / count) * Math.PI * 2;
       const r = biome === "mystic" ? 35 : 34;
@@ -151,7 +153,7 @@ function ArenaEnvironment({ config }: { config: ArenaConfig }) {
         color: i % 2 === 0 ? lighting.color : lighting.ambientColor,
       };
     });
-  }, [biome, lighting]);
+  }, [biome, compact, lighting]);
 
   return (
     <group>
@@ -187,7 +189,7 @@ function ArenaEnvironment({ config }: { config: ArenaConfig }) {
                 <boxGeometry args={[b.w, b.h, b.d]} />
                 <meshStandardMaterial color={b.c} roughness={0.8} />
               </mesh>
-              {[-b.w / 4, b.w / 4].map((wx, j) =>
+              {!compact && [-b.w / 4, b.w / 4].map((wx, j) =>
                 [5, 11, 17].map((wy, k) => (
                   <mesh key={`win-${j}-${k}`} position={[wx, wy - b.h / 2, b.d / 2 + 0.06]}>
                     <planeGeometry args={[1.8, 2.4]} />
@@ -203,7 +205,7 @@ function ArenaEnvironment({ config }: { config: ArenaConfig }) {
               <meshBasicMaterial color="#9d4edd" transparent opacity={0.62} />
             </mesh>
           </group>
-          {[-20, 20].map((x, i) =>
+          {!compact && [-20, 20].map((x, i) =>
             [-16, 16].map((z, j) => (
               <group key={`lamp-${i}-${j}`} position={[x, 0, z]}>
                 <mesh position={[0, 3.5, 0]}>
@@ -244,18 +246,19 @@ function ArenaEnvironment({ config }: { config: ArenaConfig }) {
 
 function ArenaLighting({ config }: { config: ArenaConfig }) {
   const { lighting } = config;
+  const compact = getQualitySettings().deviceType !== "desktop";
   return (
     <group>
-      <ambientLight intensity={0.72} color={lighting.ambientColor} />
+      <ambientLight intensity={compact ? 1.0 : 0.72} color={lighting.ambientColor} />
       <directionalLight
         position={[10, 24, 10]}
-        intensity={Math.min(2.2, lighting.intensity)}
+        intensity={compact ? 1.1 : Math.min(2.2, lighting.intensity)}
         color={lighting.color}
-        castShadow
-        shadow-mapSize-width={768}
-        shadow-mapSize-height={768}
+        castShadow={!compact}
+        shadow-mapSize-width={compact ? 256 : 768}
+        shadow-mapSize-height={compact ? 256 : 768}
       />
-      <hemisphereLight args={[lighting.color, "#000000", 0.55]} />
+      {!compact && <hemisphereLight args={[lighting.color, "#000000", 0.55]} />}
     </group>
   );
 }
