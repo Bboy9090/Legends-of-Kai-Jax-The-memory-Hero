@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useRunner } from '../../lib/stores/useRunner';
@@ -10,10 +10,14 @@ import OptimizedBeastModel from './models/OptimizedBeastModel';
 
 
 function TitleHeroStage() {
-  const kai = getFighterById('kai');
-  const jax = getFighterById('jax');
+  const compact = useMemo(() => typeof window !== 'undefined' && window.innerWidth < 1024, []);
+  const kai = compact ? null : getFighterById('kai');
+  const jax = compact ? null : getFighterById('jax');
 
-  if (!kai && !jax) return null;
+  // Compact devices keep the approved city/title composition but do not
+  // preload two additional heavyweight GLBs before gameplay. Those devices
+  // reserve model memory for the fighter the player actually controls.
+  if (compact || (!kai && !jax)) return null;
 
   return (
     <div
