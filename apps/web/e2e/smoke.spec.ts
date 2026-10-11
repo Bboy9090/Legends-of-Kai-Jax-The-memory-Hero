@@ -227,21 +227,21 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
   try {
     await page.waitForFunction(() => {
-      const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijaxjax;
+      const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijax;
       return probe?.requested === "walk" && probe?.moving === true && probe?.skinVerified === true;
     }, null, { timeout: 20_000 });
   } catch (error) {
     const diagnostic = await page.evaluate(() => ({
       animation: (window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax ?? null,
-      deformation: (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijaxjax ?? null,
-      rig: (window as any).__KAI_JAX_RIG_PROBE__?.kaijaxjax ?? null,
-      frame: (window as any).__KAI_JAX_FRAME_PROBE__?.kaijaxjax ?? null,
+      deformation: (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijax ?? null,
+      rig: (window as any).__KAI_JAX_RIG_PROBE__?.kaijax ?? null,
+      frame: (window as any).__KAI_JAX_FRAME_PROBE__?.kaijax ?? null,
       companion: (window as any).__KAI_JAX_COMPANION_PROBE__ ?? null,
     }));
     console.log("LIVE_KAI_SKIN_TIMEOUT_DIAGNOSTIC", JSON.stringify(diagnostic));
     throw error;
   }
-  const walkDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijaxjax);
+  const walkDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijax);
   console.log("LIVE_DEFORMATION_WALK_PROBE", JSON.stringify(walkDeform));
   expect(walkDeform?.moving).toBe(true);
   expect(walkDeform?.skinVerified).toBe(true);
@@ -324,10 +324,10 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   // correctness is visible articulation rather than a misleading clip-name
   // check. When a compatible Spider-Kai kick is added, this may become authored.
   await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijaxjax;
+    const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijax;
     return probe?.requested === "kick" && probe?.moving === true && probe?.skinVerified === true;
   }, null, { timeout: 20_000 });
-  const kickDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijaxjax);
+  const kickDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijax);
   console.log("LIVE_DEFORMATION_KICK_PROBE", JSON.stringify(kickDeform));
   expect(kickDeform?.moving).toBe(true);
   expect(kickDeform?.skinVerified).toBe(true);
