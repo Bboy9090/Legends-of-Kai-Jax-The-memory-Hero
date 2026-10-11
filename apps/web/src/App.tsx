@@ -3,6 +3,7 @@ import { Suspense, useState, useRef, useMemo, useEffect, useCallback } from "rea
 import { KeyboardControls } from "@react-three/drei";
 import "@fontsource/inter";
 import "@fontsource/bebas-neue";
+import "./styles/kai-jax-vision.css";
 
 import BattleScene from "./components/game/BattleScene";
 import MobileControls from "./components/game/MobileControls";
@@ -29,6 +30,7 @@ import TitleScreen from "./components/game/TitleScreen";
 import SaveSlotScreen from "./components/game/SaveSlotScreen";
 import BootAccessibilityScreen from "./components/game/BootAccessibilityScreen";
 import StoryHubScreen from "./components/game/StoryHubScreen";
+import LegendSelectScreen from "./components/game/LegendSelectScreen";
 import MissionSelectScreen from "./components/game/MissionSelectScreen";
 import CharacterAbilityScreen from "./components/game/CharacterAbilityScreen";
 import MissionCompleteScreen from "./components/game/MissionCompleteScreen";
@@ -236,6 +238,9 @@ function App() {
         {/* Story Hub (Raging City Map) */}
         {phase === "ready" && gameState === "story-hub" && <StoryHubScreen />}
 
+        {/* Story / Adventure Legend Select */}
+        {phase === "ready" && gameState === "character-select" && <LegendSelectScreen />}
+
         {/* Mission Select */}
         {phase === "ready" && gameState === "mission-select" && <MissionSelectScreen />}
 
@@ -272,7 +277,8 @@ function App() {
             <>
               <div className="relative w-full h-screen">
                 <Canvas
-                  shadows
+                  shadows={QUALITY.shadowMap.enabled}
+                  dpr={QUALITY.pixelRatio}
                   camera={{
                     position: [0, 4, 7],
                     fov: 50,
@@ -282,9 +288,9 @@ function App() {
                   onCreated={({ gl }) => {
                     gl.setPixelRatio(QUALITY.pixelRatio);
                     gl.outputColorSpace = THREE.SRGBColorSpace;
-                    gl.toneMapping = THREE.ACESFilmicToneMapping;
-                    gl.toneMappingExposure = 0.85;
-                    gl.shadowMap.enabled = true;
+                    gl.toneMapping = QUALITY.toneMapping;
+                    gl.toneMappingExposure = QUALITY.isMobile ? 1.0 : 0.85;
+                    gl.shadowMap.enabled = QUALITY.shadowMap.enabled;
                     gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
                   }}
                   gl={{
@@ -315,7 +321,8 @@ function App() {
             <>
               <div className="relative w-full h-screen">
                 <Canvas
-                  shadows
+                  shadows={QUALITY.shadowMap.enabled}
+                  dpr={QUALITY.pixelRatio}
                   camera={{
                     position: [0, 4, 7],
                     fov: 50,
@@ -323,16 +330,15 @@ function App() {
                     far: 200,
                   }}
                   onCreated={({ gl }) => {
-                    const q = getQualitySettings();
-                    gl.setPixelRatio(q.pixelRatio);
+                    gl.setPixelRatio(QUALITY.pixelRatio);
                     gl.outputColorSpace = THREE.SRGBColorSpace;
-                    gl.toneMapping = THREE.ACESFilmicToneMapping;
-                    gl.toneMappingExposure = 0.85;
-                    gl.shadowMap.enabled = true;
-                    gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
+                    gl.toneMapping = QUALITY.toneMapping;
+                    gl.toneMappingExposure = QUALITY.isMobile ? 1.0 : 0.85;
+                    gl.shadowMap.enabled = QUALITY.shadowMap.enabled;
+                    gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
                   }}
                   gl={{
-                    antialias: getQualitySettings().antialias,
+                    antialias: QUALITY.antialias,
                     powerPreference: "high-performance",
                   }}
                 >
@@ -371,7 +377,8 @@ function App() {
           <>
             <div className="relative w-full h-screen">
               <Canvas
-                shadows
+                shadows={QUALITY.shadowMap.enabled}
+                dpr={QUALITY.pixelRatio}
                 camera={{
                   position: [0, 3.5, 7],
                   fov: 50,
@@ -381,9 +388,9 @@ function App() {
                 onCreated={({ gl }) => {
                   gl.setPixelRatio(QUALITY.pixelRatio);
                   gl.outputColorSpace = THREE.SRGBColorSpace;
-                  gl.toneMapping = THREE.ACESFilmicToneMapping;
-                  gl.toneMappingExposure = 0.98;
-                  gl.shadowMap.enabled = true;
+                  gl.toneMapping = QUALITY.toneMapping;
+                  gl.toneMappingExposure = QUALITY.isMobile ? 1.0 : 0.98;
+                  gl.shadowMap.enabled = QUALITY.shadowMap.enabled;
                   gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
                 }}
                 gl={{

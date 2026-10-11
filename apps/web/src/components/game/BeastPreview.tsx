@@ -14,8 +14,9 @@ function BeastModelPanel({ fighterId }: { fighterId: string }) {
   const fighter = getFighterById(fighterId);
   if (!fighter) return null;
 
-  const grade = fighterId === "kai-jax" ? "cosmic" : fighterId === "jaxon" ? "ice" : "ember";
-  const punch = fighterId === "kai-jax" ? 0.35 : 0.18;
+  const isKaiJax = ["kai-jax", "kaijax", "kai_jax"].includes(fighterId);
+  const grade = isKaiJax ? "cosmic" : ["jaxon", "jax"].includes(fighterId) ? "ice" : "ember";
+  const punch = isKaiJax ? 0.35 : 0.18;
 
   return (
     <Canvas

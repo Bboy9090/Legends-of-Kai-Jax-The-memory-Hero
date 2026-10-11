@@ -26,22 +26,22 @@ export default function DistrictSelectScreen() {
 
   return (
     <div
-      className="h-screen w-full overflow-auto p-6 text-white"
-      style={{ background: "linear-gradient(165deg, #0a0a1a 0%, #1a1530 45%, #0d1520 100%)" }}
+      className="kj-vision-shell kj-vision-city-vignette h-screen w-full overflow-auto p-6 text-white"
+      style={{ backgroundColor: "#05070b" }}
     >
       <div className="max-w-2xl mx-auto">
         <button
           type="button"
           onClick={() => setGameState("menu")}
-          className="mb-6 px-4 py-2.5 rounded-xl border-2 border-slate-600 bg-slate-900/60 text-slate-300 hover:border-cyan-400/60 flex items-center gap-2"
+          className="kj-vision-button mb-6 flex items-center gap-2 px-4 py-2.5"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
         </button>
 
         <div className="text-center mb-8">
-          <p className="text-cyan-400/90 text-xs font-semibold tracking-[0.25em] uppercase mb-1">Open world</p>
-          <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#a68e68]">Open World</p>
+          <h1 className="kj-vision-title text-3xl font-black">
             District patrol
           </h1>
           <p className="text-slate-400 text-sm mt-2">
@@ -61,12 +61,12 @@ export default function DistrictSelectScreen() {
                 onClick={() => unlocked && launch(id, meta)}
                 className={`w-full text-left p-4 rounded-xl border-2 transition-all flex gap-3 ${
                   unlocked
-                    ? "bg-slate-900/70 border-slate-600 hover:border-cyan-400/50 hover:bg-slate-800/70"
-                    : "bg-slate-950/50 border-slate-800 opacity-50 cursor-not-allowed"
+                    ? "kj-vision-panel hover:border-[#c69b55]"
+                    : "kj-vision-panel opacity-45 cursor-not-allowed"
                 }`}
               >
-                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-cyan-500/15 border border-cyan-500/40 flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-cyan-300" />
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center border border-[#8d6d3c] bg-black/45">
+                  <MapPin className="w-5 h-5 text-[#e4bd73]" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="font-bold text-white">{meta.name}</div>

@@ -1,6 +1,6 @@
 # Kai gameplay visual review — updated 2026-10-09
 
-Release status: RUNTIME MOTION CERTIFIED; FINAL VISUAL PRESENTATION NOT YET QUALIFIED. PR #285 remains Draft.
+Release status: RUNTIME MOTION CERTIFIED; FINAL VISUAL PRESENTATION NOT YET QUALIFIED. PR #285 was merged on 2026-10-09; presentation certification remains a separate follow-up gate.
 
 At commit c60f92221dd70078f8fcb1548634549e5165b1c2 all seven hosted PR workflows passed: CI, Security Baseline, Combat Release Certification, Registry Validation, Runtime Smoke Diagnostic, Mobile Store Readiness, and Build Android APK.
 
@@ -27,6 +27,6 @@ Remaining visual-release work:
 - Obtain rendered desktop and mobile review captures on a hardware-accelerated environment.
 - Confirm planted feet, silhouette readability, attack contact framing, lighting, camera distance, and opponent scale in those rendered captures.
 - Review the polished Enforcer encounter and approved title/menu/Raging City presentation path.
-- Keep PR #285 Draft until those presentation checks are visually approved.
+- Keep final presentation certification open until those rendered review checks are visually approved; merging the runtime-motion PR does not constitute final art-direction approval.
 
 Do not equate green automation with final art-direction approval. Runtime motion selection is certified at c60f922; presentation certification is still a separate gate.

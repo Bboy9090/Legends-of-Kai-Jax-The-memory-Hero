@@ -12,21 +12,21 @@
     "reduceMotionShakeMult": 0.2
   },
   "adventure": {
-    "camHeight": 5.2,
-    "camDist": 7.25,
-    "camLerp": 5,
+    "camHeight": 3.6,
+    "camDist": 5.8,
+    "camLerp": 6.5,
     "shakeSeedBase": 23011,
-    "lookSmooth": 5.5,
-    "modeBlend": 4.5,
+    "lookSmooth": 7,
+    "modeBlend": 6,
     "nearbyEnemyRadius": 11,
     "nearbyCrowdMin": 3,
-    "crowdDistBonus": 2.5,
-    "crowdHeightBonus": 1.2,
-    "combatDistBonus": 1.15,
-    "combatHeightBonus": 0.5,
+    "crowdDistBonus": 1.7,
+    "crowdHeightBonus": 0.7,
+    "combatDistBonus": 0.65,
+    "combatHeightBonus": 0.25,
     "lowHpThreshold": 0.3,
-    "lowHpDistBonus": 0.65,
-    "lowHpHeightBonus": 0.4,
+    "lowHpDistBonus": 0.4,
+    "lowHpHeightBonus": 0.2,
     "reduceMotionShakeMult": 0.2
   }
 }
