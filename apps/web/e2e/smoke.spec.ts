@@ -334,11 +334,25 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   console.log("KAI_AUTHORED_KICK_EVIDENCE", "attached-json");
 
 
-  const deformation = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__);
-  console.log("LIVE_FUSION_DEFORMATION_PROBE", JSON.stringify(deformation));
-  expect(Object.values(deformation ?? {}).some((probe: any) =>
-    probe?.requested === "walk" && probe?.moving === true && probe?.skinVerified === true
-  )).toBeTruthy();
+  const deformationEvidence = {
+    walk: walkDeform,
+    run: runDeform,
+    kick: kickDeform,
+  };
+  console.log("LIVE_FUSION_DEFORMATION_PROOF", JSON.stringify(deformationEvidence));
+  expect(deformationEvidence.walk?.requested).toBe("walk");
+  expect(deformationEvidence.walk?.moving).toBe(true);
+  expect(deformationEvidence.walk?.skinVerified).toBe(true);
+  expect(deformationEvidence.run?.requested).toBe("run");
+  expect(deformationEvidence.run?.moving).toBe(true);
+  expect(deformationEvidence.run?.skinVerified).toBe(true);
+  expect(deformationEvidence.kick?.requested).toBe("kick");
+  expect(deformationEvidence.kick?.moving).toBe(true);
+  expect(deformationEvidence.kick?.skinVerified).toBe(true);
+  await testInfo.attach("kai-jax-deformation-proof.json", {
+    body: Buffer.from(JSON.stringify(deformationEvidence, null, 2)),
+    contentType: "application/json",
+  });
   expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
 });
 
