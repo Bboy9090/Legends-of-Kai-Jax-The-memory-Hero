@@ -194,6 +194,12 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_WALK_PROBE", JSON.stringify(walkProbe));
   expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
+  await page.waitForFunction(() => {
+    const companions = (window as any).__KAI_JAX_COMPANION_PROBE__ ?? {};
+    return Object.entries(companions).some(([path, state]: [string, any]) =>
+      /Running_withSkin9TAILSKAIJAX\.glb$/i.test(path) && state?.status === "loaded",
+    );
+  }, null, { timeout: 90_000 });
   await page.keyboard.down("ShiftLeft");
   await page.waitForFunction(() => {
     const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax;
@@ -208,6 +214,13 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   // Exercise the actual keyboard path while the WebGL fighter is mounted.
   // Kick is the authored-attack certification target. Procedural Punch pose
   // quality remains a separate visual-review item and must not gate this proof.
+  await page.waitForFunction(() => {
+    const companions = (window as any).__KAI_JAX_COMPANION_PROBE__ ?? {};
+    return Object.entries(companions).some(([path, state]: [string, any]) =>
+      /(?:Lunge_Spin_Kick|Step_in_High_Kick)_withSkin9TAILSKAIJAX\.glb$/i.test(path)
+        && state?.status === "loaded",
+    );
+  }, null, { timeout: 120_000 });
   await page.keyboard.down("KeyK"); // kick
   try {
     await page.waitForFunction(
