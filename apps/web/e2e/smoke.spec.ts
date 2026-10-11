@@ -247,16 +247,9 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   expect(walkDeform?.skinVerified).toBe(true);
   // First run request is allowed to trigger the lazy donor load.
 
-  await page.keyboard.down("ShiftLeft");
-  await page.waitForFunction(() => {
-    const companions = (window as any).__KAI_JAX_COMPANION_PROBE__ ?? {};
-    return Object.entries(companions).some(([path, state]: [string, any]) =>
-      /Running_withSkin9TAILSKAIJAX\.glb$/i.test(path) && state?.status === "loaded",
-    );
-  }, null, { timeout: 120_000 });
-  // Re-issue after loader proof so certification observes the authored run.
-  await page.keyboard.up("ShiftLeft");
-  await page.waitForTimeout(100);
+  // Critical Kai-Jax motion donors are preloaded by the mounted model via useGLTF.
+  // Certify the runtime-selected authored animation directly rather than waiting
+  // on the legacy lazy-companion loader probe, which is not populated for preloads.
   await page.keyboard.down("ShiftLeft");
   await page.waitForFunction(() => {
     const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax;
@@ -279,18 +272,8 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   // Exercise the actual keyboard path while the WebGL fighter is mounted.
   // Kick is the authored-attack certification target. Procedural Punch pose
   // quality remains a separate visual-review item and must not gate this proof.
-  // First kick request may initiate lazy loading of the authored kick donors.
-  await page.keyboard.down("KeyK");
-  await page.waitForTimeout(100);
-  await page.keyboard.up("KeyK");
-  await page.waitForFunction(() => {
-    const companions = (window as any).__KAI_JAX_COMPANION_PROBE__ ?? {};
-    return Object.entries(companions).some(([path, state]: [string, any]) =>
-      /(?:Lunge_Spin_Kick|Step_in_High_Kick)_withSkin9TAILSKAIJAX\.glb$/i.test(path)
-        && state?.status === "loaded",
-    );
-  }, null, { timeout: 150_000 });
-  // Re-issue after the donor is loaded so the mounted fighter must select it.
+  // Critical Kai-Jax kick donors are preloaded by the mounted model.
+  // The release proof is the selected authored kick plus verified skin deformation.
   await page.keyboard.down("KeyK"); // kick
   try {
     await page.waitForFunction(
