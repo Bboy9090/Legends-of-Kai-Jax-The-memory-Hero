@@ -1,5 +1,13 @@
 import type { Fighter } from "../game/characters/shared/CharacterStats";
 import { COMPLETE_BEAST_ROSTER } from "@beast-kin/shared";
+import { GOLD_SLICE_PLAYABLE_IDS } from "./goldSliceRoster";
+
+export {
+  GOLD_SLICE_PLAYABLE_IDS,
+  isGoldSlicePlayableId,
+  normalizeGoldSlicePublicId,
+} from "./goldSliceRoster";
+export type { GoldSlicePlayableId } from "./goldSliceRoster";
 
 /**
  * Legacy combat-profile roster.
@@ -293,10 +301,20 @@ const EXTRA_LEGENDS: Fighter[] = [
 
 export const FIGHTERS: Fighter[] = [...BEAST_WARS_FIGHTERS, ...EXTRA_LEGENDS];
 
+function toCombatProfileId(id: string): string {
+  const normalized = (id ?? "").trim().toLowerCase().replace(/_/g, "-");
+  return normalized === "kai-jax" || normalized === "kaijax" ? "kaijax" : normalized;
+}
+
 export const HERO_FIGHTERS = FIGHTERS.filter((f) => f.role === "hero");
 export const ENEMY_FIGHTERS = FIGHTERS.filter((f) => f.role !== "hero");
 export const ALL_FIGHTER_IDS = FIGHTERS.map((f) => f.id);
 
 export function getFighterById(id: string): Fighter | null {
-  return FIGHTERS.find((f) => f.id === id) ?? null;
+  const combatId = toCombatProfileId(id);
+  return FIGHTERS.find((f) => f.id === combatId) ?? null;
 }
+
+export const PLAYABLE_FIGHTERS: Fighter[] = GOLD_SLICE_PLAYABLE_IDS
+  .map((id) => getFighterById(id))
+  .filter((fighter): fighter is Fighter => Boolean(fighter));

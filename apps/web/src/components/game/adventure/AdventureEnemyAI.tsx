@@ -73,9 +73,28 @@ const ENEMY_TARGET_HEIGHTS: Record<string, number> = {
   boss2: 5.0,
 };
 
+function DiagnosticEnemyProxy({ enemy }: EnemyMeshProps) {
+  return (
+    <group position={[enemy.posX, enemy.posY, enemy.posZ]} rotation={[0, enemy.rotY, 0]}>
+      <mesh castShadow receiveShadow position={[0, 0.9, 0]}>
+        <boxGeometry args={[0.9, 1.8, 0.9]} />
+        <meshStandardMaterial color="#6b7280" roughness={0.9} metalness={0.05} />
+      </mesh>
+    </group>
+  );
+}
+
 function EnemyMesh({ enemy }: EnemyMeshProps) {
   const config = getModelConfig(enemy.fighterId);
-  const modelPath = config?.path || "/models/kai_jax_beast.glb";
+  if (!config) return <DiagnosticEnemyProxy enemy={enemy} />;
+  return <RegisteredEnemyMesh enemy={enemy} modelPath={config.path} modelScale={config.scale} />;
+}
+
+function RegisteredEnemyMesh({
+  enemy,
+  modelPath,
+  modelScale,
+}: EnemyMeshProps & { modelPath: string; modelScale: number }) {
   const { scene, animations } = useGLTF(modelPath);
   const clonedScene = useMemo(() => SkeletonUtils.clone(scene), [scene]);
 
@@ -94,7 +113,7 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
   const attackVariant = useRef(0);
   const yOffset = useRef(0);
   const flashRef = useRef(0);
-  const normalizedScale = useRef(config?.scale || 2.5);
+  const normalizedScale = useRef(modelScale || 2.5);
 
   useFrame((state, rawDelta) => {
     if (!groupRef.current || !innerRef.current) return;

@@ -66,7 +66,11 @@ body {
   inset: 0;
   pointer-events: none;
   opacity: 0.08;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="400" height="400" filter="url(%23noise)" opacity="0.3"/></svg>');
+  background-image:
+    radial-gradient(circle at 18% 22%, rgba(0, 0, 0, 0.55) 0 0.7px, transparent 0.8px),
+    radial-gradient(circle at 72% 61%, rgba(255, 255, 255, 0.18) 0 0.6px, transparent 0.7px),
+    radial-gradient(circle at 43% 84%, rgba(0, 0, 0, 0.4) 0 0.8px, transparent 0.9px);
+  background-size: 7px 7px, 11px 11px, 13px 13px;
   background-repeat: repeat;
   z-index: 9999;
   mix-blend-mode: multiply;

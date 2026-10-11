@@ -44,5 +44,9 @@ export default defineConfig({
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: true,
     timeout: 120000,
+    env: {
+      ...process.env,
+      VITE_KJ_TEST_HOOK: '1',
+    },
   },
 });
