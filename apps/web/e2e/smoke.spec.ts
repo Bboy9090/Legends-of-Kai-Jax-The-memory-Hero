@@ -261,49 +261,19 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   expect(kaiJaxKick?.attackType).toBe("kick");
   expect(kaiJaxKick?.authored).toBe(true);
   expect(kaiJaxKick?.selectedClip).toMatch(/kick/i);
-  // Runtime certification must not fail solely because a software WebGL runner
-  // stalls while rasterizing a screenshot. Preserve the image when possible;
-  // final presentation review remains a separate explicit release gate.
-  try {
-    // First prefer a compact canvas-only capture. If the WebGL canvas stalls
-    // during readback on a real GPU, fall back to the full-page path that has
-    // already proven reliable on hardware-backed macOS.
-    await page.setViewportSize({ width: 640, height: 400 });
-    await page.waitForTimeout(250);
-    try {
-      await page.locator("canvas").first().screenshot({
-        path: testInfo.outputPath("kai-authored-kick-640x400.png"),
-        timeout: 15_000,
-      });
-      console.log("KAI_AUTHORED_KICK_SCREENSHOT", "captured-640x400");
-    } catch (canvasError) {
-      console.log("KAI_AUTHORED_KICK_CANVAS_SCREENSHOT", "capture-unavailable", String(canvasError));
-      try {
-        await page.screenshot({
-          path: testInfo.outputPath("kai-authored-kick-fallback.png"),
-          animations: "disabled",
-          timeout: 15_000,
-        });
-        console.log("KAI_AUTHORED_KICK_SCREENSHOT", "captured-fallback-page");
-      } catch (pageError) {
-        console.log("KAI_AUTHORED_KICK_PAGE_SCREENSHOT", "capture-unavailable", String(pageError));
-        const cdp = await page.context().newCDPSession(page);
-        const shot = await cdp.send("Page.captureScreenshot", {
-          format: "png",
-          fromSurface: true,
-          captureBeyondViewport: false,
-        });
-        const fs = await import("node:fs/promises");
-        await fs.writeFile(
-          testInfo.outputPath("kai-authored-kick-cdp-fallback.png"),
-          Buffer.from(shot.data, "base64"),
-        );
-        console.log("KAI_AUTHORED_KICK_SCREENSHOT", "captured-cdp-fallback");
-      }
-    }
-  } catch (error) {
-    console.log("KAI_AUTHORED_KICK_SCREENSHOT", "capture-unavailable", String(error));
-  }
+  // Runtime certification records deterministic authored-animation evidence.
+  // Raster screenshots are intentionally excluded from this smoke gate because
+  // software WebGL readback can stall after the animation proof has succeeded.
+  // Presentation screenshots remain a separate visual-review artifact.
+  const companionEvidence = await page.evaluate(() => (window as any).__KAI_JAX_COMPANION_PROBE__ ?? {});
+  await testInfo.attach("kai-authored-kick-proof.json", {
+    body: Buffer.from(JSON.stringify({
+      animation: kaiJaxKick,
+      companions: companionEvidence,
+    }, null, 2)),
+    contentType: "application/json",
+  });
+  console.log("KAI_AUTHORED_KICK_EVIDENCE", "attached-json");
 
   expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
 });
