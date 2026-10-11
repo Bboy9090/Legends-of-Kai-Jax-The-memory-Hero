@@ -175,7 +175,7 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   );
   await expect(page.getByRole("heading", { name: "Choose Your Fighter" })).toBeVisible({ timeout: 15_000 });
 
-  await page.getByRole("button", { name: /^Kai,.*playable/ }).click();
+  await page.getByRole("button", { name: /^Kai-Jax,.*playable/ }).click();
 
   // Start the real training battle for deterministic move certification.
   // Training uses the same battle renderer/controller but keeps the opponent passive,
@@ -183,12 +183,12 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   await page.getByRole("button", { name: "Training", exact: true }).click();
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
-  await page.waitForFunction(() => Boolean((window as any).__KAI_JAX_ANIMATION_PROBE__?.kai), null, { timeout: 20_000 });
+  await page.waitForFunction(() => Boolean((window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax), null, { timeout: 20_000 });
 
   // Certify locomotion against the clip actually selected by the mounted fighter.
   await page.keyboard.down("ArrowRight");
   await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
+    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax;
     return probe?.requested === "walk" && probe?.authored === true && /walk/i.test(probe?.selectedClip ?? "");
   }, null, { timeout: 45_000 });
   const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
@@ -196,7 +196,7 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
   await page.keyboard.down("ShiftLeft");
   await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
+    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax;
     return probe?.requested === "run" && probe?.authored === true && /run/i.test(probe?.selectedClip ?? "");
   }, null, { timeout: 45_000 });
   const runProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
@@ -212,7 +212,7 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   try {
     await page.waitForFunction(
       () => {
-        const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
+        const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax;
         return probe?.requested === "attack"
           && probe?.attackType === "kick"
           && /kick/i.test(probe?.selectedClip ?? "");
@@ -233,7 +233,7 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   }
   const kickProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_KICK_PROBE", JSON.stringify(kickProbe));
-  const kaiJaxKick = kickProbe?.kai;
+  const kaiJaxKick = kickProbe?.kaijax;
   expect(kaiJaxKick?.requested).toBe("attack");
   expect(kaiJaxKick?.attackType).toBe("kick");
   expect(kaiJaxKick?.authored).toBe(true);
