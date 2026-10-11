@@ -12,6 +12,7 @@ import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { useBattle } from '../../../lib/stores/useBattle';
 import { MODEL_REGISTRY } from '../../../assets/modelRegistry';
+import { getQualitySettings } from '../../../lib/threejs/PerformanceOptimizer';
 import {
   findLimbs,
   captureBaseRotations,
@@ -48,6 +49,8 @@ interface OptimizedBeastModelProps {
   isInvulnerable?: boolean;
   isMoving?: boolean;
   isRunning?: boolean;
+  /** Actual world-units/sec so animation cadence can match translation speed. */
+  locomotionSpeed?: number;
   attackType?: 'light1' | 'light2' | 'light3' | 'heavy' | 'skill' | 'punch' | 'kick' | 'special' | 'ultimate' | null;
   locomotionState?: 'neutral' | 'dodge' | 'block' | 'parry' | 'hitstun' | 'airborne';
   scale?: number;
@@ -79,11 +82,13 @@ export default function OptimizedBeastModel({
   isInvulnerable = false,
   isMoving = false,
   isRunning = false,
+  locomotionSpeed,
   attackType = null,
   locomotionState = 'neutral',
   scale = 2.5,
 }: OptimizedBeastModelProps) {
   const groupRef = useRef<THREE.Group>(null!);
+  const quality = useMemo(() => getQualitySettings(), []);
   const limbsRef = useRef<LimbRefs | null>(null);
   const basesRef = useRef<LimbBaseRotations | null>(null);
   const proceduralStateRef = useRef(createAnimState());
@@ -96,16 +101,25 @@ export default function OptimizedBeastModel({
   const loadedCompanionPathsRef = useRef(new Set<string>());
   const loadingCompanionPathsRef = useRef(new Set<string>());
   const mountedRef = useRef(true);
+  const deformationSampleRef = useRef<{ frames: number; motion: number; last: number[] | null }>({ frames: 0, motion: 0, last: null });
+  const skinSampleRef = useRef<Array<{ mesh: THREE.SkinnedMesh; vertexIndex: number; base: THREE.Vector3 }>>([]);
+  const skinDeformationSampleRef = useRef<{ frames: number; motion: number; last: number[] | null }>({ frames: 0, motion: 0, last: null });
+  const forceProceduralRef = useRef(false);
+  const locomotionBaseline = isRunning ? 9.5 : 6;
+  const locomotionRate = isMoving
+    ? THREE.MathUtils.clamp((locomotionSpeed ?? locomotionBaseline) / locomotionBaseline, 0.6, 2.5)
+    : 1;
   const modelPath = getBeastModelPath(beast.id);
   const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
+  const isCriticalHeroRig = beast.id === 'kai' || beast.id === 'kaijax' || beast.id === 'kai-jax' || beast.id === 'kai_jax';
   const criticalCompanionPaths = useMemo(() => {
-    if (beast.id !== 'kai') return [] as string[];
+    if (!isCriticalHeroRig) return [] as string[];
     return [
       animationPaths?.walk,
       animationPaths?.run,
       ...(animationPaths?.kick ?? []),
     ].filter(Boolean) as string[];
-  }, [animationPaths, beast.id]);
+  }, [animationPaths, isCriticalHeroRig]);
 
   // Kai is the release-critical hero. Warm his authored locomotion and kick
   // clips before interaction so first input never races the network. The
@@ -116,14 +130,14 @@ export default function OptimizedBeastModel({
   const requestedCompanionPaths = useMemo(() => {
     const paths: string[] = [];
 
-    // Non-Kai locomotion and optional attack families remain lazy.
-    if (beast.id !== 'kai' && isMoving) {
+    // Non-critical roster locomotion and optional attack families remain lazy.
+    if (!isCriticalHeroRig && isMoving) {
       if (isRunning && animationPaths?.run) paths.push(animationPaths.run);
       else if (!isRunning && animationPaths?.walk) paths.push(animationPaths.walk);
     }
 
     if (isAttacking) {
-      const kickIsAlreadyCritical = beast.id === 'kai';
+      const kickIsAlreadyCritical = isCriticalHeroRig;
       if (!kickIsAlreadyCritical && (attackType === 'kick' || attackType === 'heavy') && animationPaths?.kick) {
         paths.push(...animationPaths.kick);
       } else if ((attackType === 'punch' || attackType === 'light1' || attackType === 'light2' || attackType === 'light3') && animationPaths?.punch) {
@@ -132,7 +146,7 @@ export default function OptimizedBeastModel({
     }
 
     return [...new Set(paths)];
-  }, [animationPaths, attackType, beast.id, isAttacking, isMoving, isRunning]);
+  }, [animationPaths, attackType, beast.id, isAttacking, isCriticalHeroRig, isMoving, isRunning]);
 
   // DIAGNOSTIC: log model path resolution
   useEffect(() => {
@@ -322,11 +336,58 @@ export default function OptimizedBeastModel({
       beastId: beast.id,
       childrenCount: c.children.length,
     });
+
+    // Compact renderers keep the exact geometry, skeleton, textures and
+    // silhouette, but swap expensive PBR materials for Lambert equivalents.
+    // This removes normal/metal/roughness sampling and real-time shadow work
+    // while preserving the approved character art direction and animation.
+    if (quality.deviceType !== 'desktop') {
+      c.traverse((node: any) => {
+        if (!node?.isMesh) return;
+        node.castShadow = false;
+        node.receiveShadow = false;
+        const sourceMaterials = Array.isArray(node.material)
+          ? node.material
+          : node.material
+            ? [node.material]
+            : [];
+
+        const compact = sourceMaterials.map((source: THREE.Material) => {
+          if (!(source instanceof THREE.MeshStandardMaterial) && !(source instanceof THREE.MeshPhysicalMaterial)) {
+            const clone = source.clone();
+            clone.needsUpdate = true;
+            return clone;
+          }
+
+          // Compact/mobile uses an unlit material so the rigged hero keeps its
+          // exact textured silhouette without paying per-pixel PBR or dynamic
+          // lighting cost. The desktop path above remains unchanged.
+          const material = new THREE.MeshBasicMaterial({
+            name: source.name,
+            color: source.map ? new THREE.Color('#ffffff') : source.color?.clone?.() ?? new THREE.Color('#ffffff'),
+            map: source.map ?? source.emissiveMap ?? null,
+            transparent: source.transparent,
+            opacity: source.opacity,
+            alphaTest: source.alphaTest,
+            side: source.side,
+            depthWrite: source.depthWrite,
+            depthTest: source.depthTest,
+            vertexColors: source.vertexColors,
+            fog: true,
+          });
+          material.needsUpdate = true;
+          return material;
+        });
+
+        node.material = Array.isArray(node.material) ? compact : compact[0];
+      });
+    }
+
     // Never zero imported bone rotations here. Meshy/glTF bind transforms are
     // part of the rig and must remain intact for skin deformation.
     c.updateMatrixWorld(true);
     return c;
-  }, [scene, beast.id]);
+  }, [scene, beast.id, quality.deviceType]);
   const { actions } = useAnimations(authoredAnimations, cloned);
 
   // Normalize the model to a consistent height and stand it on the ground.
@@ -353,7 +414,125 @@ export default function OptimizedBeastModel({
     const limbs = findLimbs(cloned);
     limbsRef.current = limbs;
     basesRef.current = captureBaseRotations(limbs);
+
+    // Build a small set of vertices that are actually weighted to the primary
+    // arm/leg/spine bones. Measuring these vertices proves visible skin
+    // deformation instead of merely proving that a detached bone rotated.
+    const targetBones = new Set(
+      [
+        limbs.leftUpperArm,
+        limbs.rightUpperArm,
+        limbs.leftUpperLeg,
+        limbs.rightUpperLeg,
+        limbs.spine,
+      ].filter((node): node is THREE.Bone => Boolean(node && (node as THREE.Bone).isBone)),
+    );
+    const skinSamples: Array<{ mesh: THREE.SkinnedMesh; vertexIndex: number; base: THREE.Vector3 }> = [];
+
+    cloned.traverse((node) => {
+      if (skinSamples.length >= 24 || !(node as THREE.SkinnedMesh).isSkinnedMesh) return;
+      const mesh = node as THREE.SkinnedMesh;
+      const position = mesh.geometry.getAttribute('position') as THREE.BufferAttribute | undefined;
+      const skinIndex = mesh.geometry.getAttribute('skinIndex') as THREE.BufferAttribute | undefined;
+      const skinWeight = mesh.geometry.getAttribute('skinWeight') as THREE.BufferAttribute | undefined;
+      if (!position || !skinIndex || !skinWeight || !mesh.skeleton) return;
+
+      const targetIndices = new Set<number>();
+      mesh.skeleton.bones.forEach((bone, index) => {
+        let cursor: THREE.Object3D | null = bone;
+        while (cursor) {
+          if (targetBones.has(cursor as THREE.Bone)) {
+            targetIndices.add(index);
+            break;
+          }
+          cursor = cursor.parent;
+        }
+      });
+      if (targetIndices.size === 0) return;
+
+      const stride = Math.max(1, Math.floor(position.count / 2500));
+      for (let vertexIndex = 0; vertexIndex < position.count && skinSamples.length < 24; vertexIndex += stride) {
+        const indices = [
+          skinIndex.getX(vertexIndex),
+          skinIndex.getY(vertexIndex),
+          skinIndex.getZ(vertexIndex),
+          skinIndex.getW(vertexIndex),
+        ];
+        const weights = [
+          skinWeight.getX(vertexIndex),
+          skinWeight.getY(vertexIndex),
+          skinWeight.getZ(vertexIndex),
+          skinWeight.getW(vertexIndex),
+        ];
+        const drivenByTarget = indices.some((boneIndex, slot) =>
+          targetIndices.has(Math.round(boneIndex)) && weights[slot] >= 0.18,
+        );
+        if (!drivenByTarget) continue;
+
+        const base = new THREE.Vector3().fromBufferAttribute(position, vertexIndex);
+        skinSamples.push({ mesh, vertexIndex, base });
+      }
+    });
+
+    skinSampleRef.current = skinSamples;
+    skinDeformationSampleRef.current = { frames: 0, motion: 0, last: null };
+
+    if (typeof window !== 'undefined') {
+      const w = window as any;
+      w.__KAI_JAX_RIG_PROBE__ ??= {};
+      w.__KAI_JAX_RIG_PROBE__[beast.id] = {
+        limbCount: Object.values(limbs).filter(Boolean).length,
+        sampledSkinVertices: skinSamples.length,
+        sampledLimbNames: [
+          limbs.leftUpperArm?.name,
+          limbs.rightUpperArm?.name,
+          limbs.leftUpperLeg?.name,
+          limbs.rightUpperLeg?.name,
+          limbs.spine?.name,
+        ].filter(Boolean),
+        timestamp: performance.now(),
+      };
+    }
   }, [cloned, beast.id]);
+
+  const sampleRigPose = () => {
+    const limbs = limbsRef.current;
+    if (!limbs) return [] as number[];
+    const nodes = [
+      limbs.leftUpperArm,
+      limbs.rightUpperArm,
+      limbs.leftUpperLeg,
+      limbs.rightUpperLeg,
+      limbs.spine,
+    ].filter(Boolean) as THREE.Object3D[];
+    return nodes.flatMap((node) => [
+      node.quaternion.x,
+      node.quaternion.y,
+      node.quaternion.z,
+      node.quaternion.w,
+    ]);
+  };
+
+  const sampleVisibleSkinPose = () => {
+    // AnimationMixer updates local bone transforms inside the frame loop. The
+    // renderer refreshes matrixWorld later, so force that refresh before
+    // sampling skinned vertices or the deformation probe can read stale poses.
+    cloned.updateMatrixWorld(true);
+
+    const values: number[] = [];
+    const point = new THREE.Vector3();
+    const updatedSkeletons = new Set<THREE.Skeleton>();
+    for (const sample of skinSampleRef.current) {
+      if (!updatedSkeletons.has(sample.mesh.skeleton)) {
+        sample.mesh.skeleton.update();
+        updatedSkeletons.add(sample.mesh.skeleton);
+      }
+      point.copy(sample.base);
+      sample.mesh.applyBoneTransform(sample.vertexIndex, point);
+      values.push(point.x, point.y, point.z);
+    }
+    return values;
+  };
 
   // Handle animations
   useEffect(() => {
@@ -434,6 +613,7 @@ export default function OptimizedBeastModel({
         previous?.fadeOut(0.18);
 
         next.reset();
+        next.setEffectiveTimeScale(targetAction === 'walk' || targetAction === 'run' ? locomotionRate : 1);
         if (targetAction === 'attack') {
           next.setLoop(THREE.LoopOnce, 1);
           next.clampWhenFinished = true;
@@ -455,18 +635,112 @@ export default function OptimizedBeastModel({
     }
 
     animationSelectionAttackRef.current = isAttacking;
-  }, [actions, isAttacking, isMoving, isRunning, attackType, beast.id]);
+    if (!isMoving && !isAttacking) {
+      forceProceduralRef.current = false;
+      deformationSampleRef.current = { frames: 0, motion: 0, last: null };
+      skinDeformationSampleRef.current = { frames: 0, motion: 0, last: null };
+    }
+  }, [actions, isAttacking, isMoving, isRunning, locomotionRate, attackType, beast.id]);
 
   // Hit animation and effects
   useFrame((state, rawDelta) => {
     // Keep procedural combat motion aligned with the rest of the battle
     // simulation during long render hitches.
     const delta = Math.min(rawDelta, 0.05);
-    // useAnimations advances its mixer once per frame.
-    if (!groupRef.current) return;
+    // useAnimations advances its mixer once per frame. Rig deformation and
+    // procedural fallback must not depend on the optional presentation wrapper
+    // ref being assigned; the cloned skinned model is the animation authority.
+    const visualGroup = groupRef.current;
 
     const procedural = proceduralStateRef.current;
     const t = animTime || state.clock.elapsedTime;
+
+    if (typeof window !== 'undefined' && (window as any).__KAI_JAX_CERTIFICATION__) {
+      const w = window as any;
+      w.__KAI_JAX_FRAME_PROBE__ ??= {};
+      w.__KAI_JAX_FRAME_PROBE__[beast.id] = {
+        isMoving,
+        isRunning,
+        isAttacking,
+        wrapperReady: Boolean(visualGroup),
+        rigReady: Boolean(limbsRef.current && basesRef.current),
+        boneFrames: deformationSampleRef.current.frames,
+        skinFrames: skinDeformationSampleRef.current.frames,
+        skinSampleCount: skinSampleRef.current.length,
+        timestamp: performance.now(),
+      };
+    }
+
+    // A selected AnimationAction is not proof that the visible rig is moving.
+    // Measure actual arm/leg/spine quaternion changes. If an authored clip is
+    // bound incorrectly and the visible skeleton remains static, fail over to
+    // the articulated procedural rig instead of letting the fighter skate.
+    if (isMoving || isAttacking) {
+      const pose = sampleRigPose();
+      const skinPose = sampleVisibleSkinPose();
+
+      const boneSample = deformationSampleRef.current;
+      if (pose.length > 0) {
+        if (boneSample.last && boneSample.last.length === pose.length) {
+          let deltaSum = 0;
+          for (let i = 0; i < pose.length; i += 1) deltaSum += Math.abs(pose[i] - boneSample.last[i]);
+          boneSample.motion += deltaSum;
+        }
+        boneSample.last = pose;
+        boneSample.frames += 1;
+      }
+
+      const skinSample = skinDeformationSampleRef.current;
+      if (skinPose.length > 0) {
+        if (skinSample.last && skinSample.last.length === skinPose.length) {
+          let deltaSum = 0;
+          for (let i = 0; i < skinPose.length; i += 1) deltaSum += Math.abs(skinPose[i] - skinSample.last[i]);
+          skinSample.motion += deltaSum;
+        }
+        skinSample.last = skinPose;
+        skinSample.frames += 1;
+      }
+
+      const measuredFrames = Math.max(boneSample.frames, skinSample.frames);
+      // Software WebGL runners can deliver only a handful of animation frames.
+      // Two distinct samples are the minimum needed to measure a real delta.
+      // A static authored clip still fails this check, switches to procedural,
+      // and must produce a non-zero weighted-vertex delta on the next cycle.
+      if (measuredFrames >= 2) {
+        const averageBoneMotion = boneSample.frames > 0 ? boneSample.motion / boneSample.frames : 0;
+        const averageSkinMotion = skinSample.frames > 0 ? skinSample.motion / skinSample.frames : 0;
+        const skinVerified = skinPose.length > 0;
+        const moving = skinVerified
+          ? averageSkinMotion > 0.00008
+          : averageBoneMotion > 0.0015;
+        const source = activeActionRef.current && !forceProceduralRef.current ? 'authored' : 'procedural';
+
+        if (typeof window !== 'undefined') {
+          const w = window as any;
+          w.__KAI_JAX_DEFORMATION_PROBE__ ??= {};
+          w.__KAI_JAX_DEFORMATION_PROBE__[beast.id] = {
+            requested: isAttacking ? attackType ?? 'attack' : isRunning ? 'run' : 'walk',
+            moving,
+            averageMotion: averageBoneMotion,
+            averageSkinMotion,
+            skinVerified,
+            skinSampleCount: skinSampleRef.current.length,
+            source,
+            forcedProcedural: forceProceduralRef.current,
+            timestamp: performance.now(),
+          };
+        }
+
+        if (!moving && activeActionRef.current && !forceProceduralRef.current) {
+          forceProceduralRef.current = true;
+          activeActionRef.current.stop();
+          activeActionRef.current = null;
+        }
+
+        deformationSampleRef.current = { frames: 0, motion: 0, last: pose.length > 0 ? pose : null };
+        skinDeformationSampleRef.current = { frames: 0, motion: 0, last: skinPose.length > 0 ? skinPose : null };
+      }
+    }
 
     if (hitAnim > 0 && previousHitAnimRef.current <= 0) {
       triggerHit(procedural);
@@ -526,7 +800,7 @@ export default function OptimizedBeastModel({
       : isMoving
         ? (isRunning ? available.some(n => /run|sprint/i.test(n)) : available.some(n => /walk|locomotion/i.test(n)))
         : available.some(n => /idle|breath|stand/i.test(n));
-    if (!hasStateClip && limbsRef.current && basesRef.current) {
+    if ((!hasStateClip || forceProceduralRef.current) && limbsRef.current && basesRef.current) {
       if (isAttacking) {
         if (attackType === 'kick' || attackType === 'heavy') {
           animateKick(cloned, limbsRef.current, basesRef.current, procedural, delta);
@@ -538,7 +812,7 @@ export default function OptimizedBeastModel({
           animatePunch(cloned, limbsRef.current, basesRef.current, procedural, delta, t);
         }
       } else if (isMoving) {
-        animateWalk(cloned, limbsRef.current, basesRef.current, procedural, delta, isRunning);
+        animateWalk(cloned, limbsRef.current, basesRef.current, procedural, delta * locomotionRate, isRunning);
       } else {
         animateIdle(cloned, limbsRef.current, basesRef.current, t, delta);
       }
@@ -546,9 +820,9 @@ export default function OptimizedBeastModel({
     }
     
     // Emotion intensity adds a subtle breathing pulse around 1.0
-    if (emotionIntensity > 0) {
+    if (emotionIntensity > 0 && visualGroup) {
       const pulse = 1 + Math.sin(state.clock.elapsedTime * 4) * 0.03 * emotionIntensity;
-      groupRef.current.scale.setScalar(pulse);
+      visualGroup.scale.setScalar(pulse);
     }
   });
 

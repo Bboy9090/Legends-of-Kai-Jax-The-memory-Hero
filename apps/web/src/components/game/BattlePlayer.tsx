@@ -273,6 +273,7 @@ export default function BattlePlayer() {
       isInvulnerable={playerInvulnerable}
       isMoving={Math.abs(playerVelocityX) > 0.08 && !playerAttacking}
       isRunning={Math.abs(playerVelocityX) > MOVEMENT_TUNING.battle.walkMaxSpeed}
+      locomotionSpeed={Math.abs(playerVelocityX)}
       attackType={playerAttackType}
       locomotionState={
         playerDodgeTimer > 0 ? 'dodge' :

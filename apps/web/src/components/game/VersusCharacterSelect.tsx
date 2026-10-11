@@ -93,9 +93,9 @@ function FighterCard({
       data-fighter-id={entry.id}
       data-selected={selected ? "true" : "false"}
       data-playable={playable ? "true" : "false"}
-      className={`relative min-h-24 p-2 rounded-xl border-2 transition-transform duration-150 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/90 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${selected ? "scale-[1.04] z-10" : "hover:scale-[1.02]"}`}
+      className={`kj-vision-button relative min-h-24 p-2 text-center focus-visible:outline-none ${selected ? "scale-[1.04] z-10" : "hover:scale-[1.02]"}`}
       style={{
-        borderColor: selected ? accent : "rgba(100,116,139,0.3)",
+        borderColor: selected ? accent : "rgba(198,155,85,0.28)",
         background: selected
           ? `linear-gradient(180deg, ${accent}20, ${base}66)`
           : "rgba(15,23,42,0.72)",
@@ -199,6 +199,12 @@ export default function VersusCharacterSelect() {
     setCharacter(playerId);
     setPlayerFighter(playerId);
     setOpponentFighter(opponentId);
+
+    // Input authority must become live when the player commits to the match,
+    // not several seconds later when a slow GLB/Suspense tree finally mounts.
+    // BattleScene keeps its defensive start guard, but this removes the
+    // visible-HUD / inactive-controller gap on software WebGL and mobile.
+    useBattle.getState().startBattle();
     start();
     setGameState("playing");
   }, [selectedEntry, selectedPlayable, selectedProfile, playableEntries, resetPhase, setTrainingSession, setCharacter, setPlayerFighter, setOpponentFighter, start, setGameState]);
@@ -264,21 +270,22 @@ export default function VersusCharacterSelect() {
   const base = selectedProfile?.color ?? "#111827";
 
   return (
-    <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-[#07070d] via-purple-950/20 to-[#07070d] flex flex-col overflow-hidden">
-      <header className="flex items-center justify-between px-3 sm:px-6 pt-3 sm:pt-5 pb-2 gap-3">
+    <div className="kj-vision-shell fixed inset-0 flex h-full w-full flex-col overflow-hidden bg-[linear-gradient(rgba(4,5,8,.34),rgba(4,5,8,.88)),url('/models/ruined_city_bg.jpg')] bg-cover bg-center">
+      <header className="relative z-10 flex items-center justify-between gap-3 border-b border-[#755b33]/60 px-3 pb-3 pt-3 sm:px-6 sm:pt-5">
         <button type="button" onClick={() => setGameState("menu")} className="px-3 sm:px-4 py-2 rounded-lg border border-slate-700 text-slate-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white text-xs sm:text-sm font-medium" aria-label="Return to main menu">
           ← BACK
         </button>
         <div className="text-center min-w-0">
-          <h1 className="text-lg sm:text-2xl font-black tracking-[0.14em] sm:tracking-[0.25em] text-white/90 uppercase truncate">Choose Your Fighter</h1>
-          <p className="hidden md:block text-[10px] uppercase tracking-[0.18em] text-slate-500 mt-1">Locked Visual Baseline · Arrows/WASD · A confirm · B back · Y training</p>
+          <div className="text-[10px] uppercase tracking-[0.36em] text-[#9f8b69]">Legends of Kai-Jax</div>
+          <h1 className="kj-vision-title text-lg sm:text-3xl font-black truncate">Character Select</h1>
+          <p className="hidden md:block text-[10px] uppercase tracking-[0.18em] text-[#8f8371] mt-1">Choose your legend · Arrows/WASD · Enter confirm · T training</p>
         </div>
         <div className="w-16 sm:w-20" aria-hidden="true" />
       </header>
 
       <main className="flex-1 flex flex-col lg:flex-row gap-3 lg:gap-6 px-3 sm:px-6 py-2 sm:py-4 min-h-0">
-        <section className="flex-1 flex flex-col min-h-[38vh] lg:min-h-0">
-          <div className="flex-1 rounded-2xl overflow-hidden border-2 relative" style={{ borderColor: `${accent}66`, boxShadow: `0 0 40px ${accent}22` }} aria-live="polite">
+        <section className="kj-vision-panel flex-1 flex flex-col min-h-[38vh] lg:min-h-0">
+          <div className="flex-1 overflow-hidden border relative" style={{ borderColor: `${accent}66`, boxShadow: `0 0 40px ${accent}22` }} aria-live="polite">
             {selectedProfile ? (
               <Canvas
                 style={{ pointerEvents: "auto" }}
@@ -347,7 +354,7 @@ export default function VersusCharacterSelect() {
           </div>
         </section>
 
-        <aside className="lg:w-[25rem] max-h-[36vh] lg:max-h-none flex flex-col gap-3 overflow-y-auto pr-1" role="group" aria-label="Locked baseline fighter roster">
+        <aside className="kj-vision-panel lg:w-[25rem] max-h-[36vh] lg:max-h-none flex flex-col gap-3 overflow-y-auto p-3" role="group" aria-label="Locked baseline fighter roster">
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-2">
             {VERSUS_ROSTER.map((entry) => {
               const playable = entry.defaultUnlocked && Boolean(getCombatProfile(entry));
@@ -370,7 +377,7 @@ export default function VersusCharacterSelect() {
           type="button"
           disabled={!selectedPlayable}
           onClick={() => beginMatch(false)}
-          className="relative px-8 sm:px-12 py-3 sm:py-4 rounded-xl font-black text-lg sm:text-xl tracking-widest text-white uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="kj-vision-button relative px-8 sm:px-12 py-3 sm:py-4 font-black text-lg sm:text-xl disabled:cursor-not-allowed disabled:opacity-40"
           style={{ background: `linear-gradient(135deg, ${accent}cc, ${base})`, border: `2px solid ${accent}88` }}
         >
           {selectedPlayable ? "FIGHT" : "COMBAT PROFILE LOCKED"}
@@ -379,7 +386,7 @@ export default function VersusCharacterSelect() {
           type="button"
           disabled={!selectedPlayable}
           onClick={() => beginMatch(true)}
-          className="px-6 sm:px-8 py-3 rounded-xl font-bold text-sm tracking-widest text-slate-200 uppercase border border-emerald-500/50 bg-emerald-950/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
+          className="kj-vision-button px-6 sm:px-8 py-3 font-bold text-sm disabled:cursor-not-allowed disabled:opacity-40"
         >
           Training
         </button>

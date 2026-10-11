@@ -53,19 +53,29 @@ export function getQualitySettings() {
   const isTablet = deviceType === 'tablet';
 
   return {
-    // Render settings — cap pixelRatio hard. The characters are heavy (100k+
-    // verts each), so rendering at a high-DPI 2x ratio quadruples pixel work
-    // and tanks framerate even on desktop. 1.5 max keeps it crisp but fast.
-    pixelRatio: Math.min(window.devicePixelRatio, isMobile ? 1.25 : 1.5),
-    antialias: !isMobile, // Disable AA on mobile for performance
+    deviceType,
+    isMobile,
+    isTablet,
+    // Render internally below device pixel density on compact screens. The
+    // UI remains CSS-resolution crisp while the 3D layer sheds the expensive
+    // fill-rate cost of dense fur/armor models.
+    pixelRatio: Math.min(
+      window.devicePixelRatio,
+      isMobile ? 0.5 : isTablet ? 0.42 : 1.5,
+    ),
+    antialias: deviceType === 'desktop',
     shadowMap: {
-      enabled: true,
-      type: isMobile ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap,
-      size: isMobile ? 512 : isTablet ? 1024 : 1024,
+      // Dynamic shadow maps are one of the largest GPU costs in the adventure
+      // scene. Mobile/tablet keep the authored baked lighting/material read and
+      // drop real-time shadows; desktop retains the full treatment.
+      enabled: deviceType === 'desktop',
+      type: deviceType === 'desktop' ? THREE.PCFSoftShadowMap : THREE.BasicShadowMap,
+      size: deviceType === 'desktop' ? 1024 : 256,
     },
+    toneMapping: deviceType === 'desktop' ? THREE.ACESFilmicToneMapping : THREE.NoToneMapping,
     
     // Post-processing
-    postProcessing: !isMobile, // Disable on mobile
+    postProcessing: deviceType === 'desktop',
     
     // Geometry
     geometryQuality: isMobile ? 'low' : isTablet ? 'medium' : 'high',
@@ -76,7 +86,7 @@ export function getQualitySettings() {
     useDraco: true, // Use Draco compression
     
     // Animation
-    animationFPS: isMobile ? 30 : 60,
+    animationFPS: isMobile ? 30 : isTablet ? 45 : 60,
     
     // LOD
     useLOD: true,
