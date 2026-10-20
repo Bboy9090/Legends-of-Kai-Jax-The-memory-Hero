@@ -32,8 +32,8 @@ function collectErrors(page: Page): string[] {
   return errors;
 }
 
-async function boot(page: Page): Promise<void> {
-  await page.goto('/');
+async function boot(page: Page, navigate = true): Promise<void> {
+  if (navigate) await page.goto('/');
   await expect(page.locator('body')).toBeVisible();
   await page.waitForFunction(() => Boolean((window as any).runnerStore), null, {
     timeout: 15_000,
@@ -235,8 +235,8 @@ test('E2E-006: Gold Slice real-runtime accelerated player path', async ({ page }
     { timeout: 20_000 },
   );
 
-  await page.reload();
-  await boot(page);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await boot(page, false);
 
   const persisted = await page.evaluate(() =>
     (window as any).runnerStore
