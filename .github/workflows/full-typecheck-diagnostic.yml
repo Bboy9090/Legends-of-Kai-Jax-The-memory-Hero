@@ -1,0 +1,71 @@
+name: Full TypeScript Diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/src/**'
+      - 'apps/web/tsconfig.json'
+      - 'apps/web/package.json'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/full-typecheck-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-typecheck-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  full-typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Materialize exact workspace
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          git clone --filter=blob:none --no-checkout "https://github.com/${REPOSITORY}.git" source
+          cd source
+          git sparse-checkout init --cone
+          git sparse-checkout set apps/web packages
+          git checkout --detach "${COMMIT_SHA}"
+          git show "${COMMIT_SHA}:package.json" > package.json
+          git show "${COMMIT_SHA}:pnpm-lock.yaml" > pnpm-lock.yaml
+          git show "${COMMIT_SHA}:pnpm-workspace.yaml" > pnpm-workspace.yaml
+          git show "${COMMIT_SHA}:tsconfig.base.json" > tsconfig.base.json
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+
+      - name: Install web dependency graph
+        working-directory: source
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          pnpm install --filter ./apps/web... --frozen-lockfile
+
+      - name: Run full application TypeScript diagnostic
+        id: full_ts
+        working-directory: source
+        continue-on-error: true
+        run: |
+          set +e
+          pnpm -C apps/web typecheck:full 2>&1 | tee /tmp/full-typecheck.log
+          status=${PIPESTATUS[0]}
+          echo "exit_code=${status}" >> "${GITHUB_OUTPUT}"
+          echo "diagnostic_count=$(grep -c 'error TS' /tmp/full-typecheck.log || true)" >> "${GITHUB_OUTPUT}"
+          exit "${status}"
+
+      - name: Summarize diagnostic
+        if: always()
+        run: |
+          echo "Full typecheck exit: ${{ steps.full_ts.outputs.exit_code }}"
+          echo "TypeScript diagnostic lines: ${{ steps.full_ts.outputs.diagnostic_count }}"
+          if [ "${{ steps.full_ts.outputs.exit_code }}" = "0" ]; then
+            echo "FULL_TYPECHECK=PASS"
+          else
+            echo "FULL_TYPECHECK=FAIL"
+          fi
