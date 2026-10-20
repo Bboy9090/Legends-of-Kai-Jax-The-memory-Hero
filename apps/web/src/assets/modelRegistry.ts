@@ -1,5 +1,24 @@
 import { getAssetPath } from '../lib/assetPath';
 
+const KAI_JAX_MODEL_PATH = import.meta.env.PROD
+  ? "/models/kai-jax.glb"
+  : "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb";
+const KAI_JAX_RUN_PATH = import.meta.env.PROD
+  ? "/models/kai-jax-run.glb"
+  : "/models/Meshy_AI_Animation_Running_withSkin9TAILSKAIJAX.glb";
+const KAI_JAX_SPIN_KICK_PATH = import.meta.env.PROD
+  ? "/models/kai-jax-spin-kick.glb"
+  : KAI_JAX_SPIN_KICK_PATH;
+const KAI_JAX_HIGH_KICK_PATH = import.meta.env.PROD
+  ? "/models/kai-jax-high-kick.glb"
+  : KAI_JAX_HIGH_KICK_PATH;
+const JAXON_MODEL_PATH = import.meta.env.PROD
+  ? "/models/jaxon.glb"
+  : "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb";
+const KAISON_MODEL_PATH = import.meta.env.PROD
+  ? "/models/kaison.glb"
+  : "/models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb";
+
 export interface GLBModelConfig {
   path: string;
   scale: number;
@@ -41,12 +60,12 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
 
   "kai-jax": {
     // Primary protagonist: The Memory Hero (Animated version)
-    path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
+    path: KAI_JAX_MODEL_PATH,
     animationPaths: {
-      run: "/models/Meshy_AI_Animation_Running_withSkin9TAILSKAIJAX.glb",
+      run: KAI_JAX_RUN_PATH,
       kick: [
-        "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb",
-        "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb",
+        KAI_JAX_SPIN_KICK_PATH,
+        KAI_JAX_HIGH_KICK_PATH,
       ],
     },
     scale: 3.5,
@@ -54,12 +73,12 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
   kai_jax: {
-    path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
+    path: KAI_JAX_MODEL_PATH,
     animationPaths: {
-      run: "/models/Meshy_AI_Animation_Running_withSkin9TAILSKAIJAX.glb",
+      run: KAI_JAX_RUN_PATH,
       kick: [
-        "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb",
-        "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb",
+        KAI_JAX_SPIN_KICK_PATH,
+        KAI_JAX_HIGH_KICK_PATH,
       ],
     },
     scale: 3.5,
@@ -67,12 +86,12 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
   kaijax: {
-    path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
+    path: KAI_JAX_MODEL_PATH,
     animationPaths: {
-      run: "/models/Meshy_AI_Animation_Running_withSkin9TAILSKAIJAX.glb",
+      run: KAI_JAX_RUN_PATH,
       kick: [
-        "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb",
-        "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb",
+        KAI_JAX_SPIN_KICK_PATH,
+        KAI_JAX_HIGH_KICK_PATH,
       ],
     },
     scale: 3.5,
@@ -82,13 +101,13 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
 
   // Jaxon Swift — Shadow Speed Blitzer
   jaxon: {
-    path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb",
+    path: JAXON_MODEL_PATH,
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   jax: {
-    path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb",
+    path: JAXON_MODEL_PATH,
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
@@ -96,7 +115,7 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
 
   // Kaison Ember — Spider tactical blade
   kaison: {
-    path: "/models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb",
+    path: KAISON_MODEL_PATH,
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
@@ -219,7 +238,9 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
   velocity: {
-    path: "/models/Meshy_AI_Animation_Running_withSkinKAIJAXVARIANTSHADOIWSonic.glb",
+    path: import.meta.env.PROD
+      ? "/models/jaxon.glb"
+      : "/models/Meshy_AI_Animation_Running_withSkinKAIJAXVARIANTSHADOIWSonic.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
