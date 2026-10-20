@@ -8,10 +8,10 @@ const KAI_JAX_RUN_PATH = import.meta.env.PROD
   : "/models/Meshy_AI_Animation_Running_withSkin9TAILSKAIJAX.glb";
 const KAI_JAX_SPIN_KICK_PATH = import.meta.env.PROD
   ? "/models/kai-jax-spin-kick.glb"
-  : KAI_JAX_SPIN_KICK_PATH;
+  : "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb";
 const KAI_JAX_HIGH_KICK_PATH = import.meta.env.PROD
   ? "/models/kai-jax-high-kick.glb"
-  : KAI_JAX_HIGH_KICK_PATH;
+  : "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb";
 const JAXON_MODEL_PATH = import.meta.env.PROD
   ? "/models/jaxon.glb"
   : "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb";
@@ -99,7 +99,7 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
 
-  // Jaxon Swift — Shadow Speed Blitzer
+  // Jaxon — Storm Current blitzer
   jaxon: {
     path: JAXON_MODEL_PATH,
     scale: 3.5,
@@ -113,7 +113,7 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
 
-  // Kaison Ember — Spider tactical blade
+  // Kaison — tactical blade specialist
   kaison: {
     path: KAISON_MODEL_PATH,
     scale: 3.5,
