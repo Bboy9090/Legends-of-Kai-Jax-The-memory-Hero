@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { soundManager } from "../soundEffects";
+import { setVoiceMasterMuted } from "../voiceActing";
 
 const STATUE_IDS = new Set(["marble-gladiator", "granite-colossus", "sandstone-sentinel"]);
 
@@ -7,18 +9,27 @@ export function isStatueFighter(id: string): boolean {
 }
 
 let audioCtx: AudioContext | null = null;
+let masterGain: GainNode | null = null;
+const activeProceduralSources = new Set<AudioBufferSourceNode>();
 let resumeBackgroundMusicAfterVisibility = false;
 let resumeBattleMusicAfterVisibility = false;
 function getAudioCtx(): AudioContext | null {
+  if (useAudio.getState().isMuted) return null;
   if (!audioCtx) audioCtx = new AudioContext();
   if (audioCtx.state === "suspended") {
     audioCtx.resume().catch(() => {});
     return null;
   }
+  if (!masterGain) {
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = useAudio.getState().isMuted ? 0 : 1;
+    masterGain.connect(audioCtx.destination);
+  }
   return audioCtx;
 }
 
 function unlockAudioCtx() {
+  if (useAudio.getState().isMuted) return;
   if (!audioCtx) audioCtx = new AudioContext();
   if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
 }
@@ -64,7 +75,9 @@ function playStoneGrind(type: "move" | "attack" | "hit") {
     const gain = ctx.createGain();
     gain.gain.value = type === "move" ? 0.15 : type === "attack" ? 0.25 : 0.2;
 
-    source.connect(filter).connect(gain).connect(ctx.destination);
+    source.connect(filter).connect(gain).connect(masterGain!);
+    activeProceduralSources.add(source);
+    source.onended = () => activeProceduralSources.delete(source);
     source.start();
   } catch (_e) {}
 }
@@ -91,7 +104,9 @@ function playDodgeWhoosh() {
     filter.Q.value = 0.9;
     const gain = ctx.createGain();
     gain.gain.value = 0.12;
-    source.connect(filter).connect(gain).connect(ctx.destination);
+    source.connect(filter).connect(gain).connect(masterGain!);
+    activeProceduralSources.add(source);
+    source.onended = () => activeProceduralSources.delete(source);
     source.start();
   } catch (_e) {}
 }
@@ -127,9 +142,21 @@ interface AudioState {
 }
 
 function tryPlay(a: HTMLAudioElement | null) {
-  if (!a) return;
+  if (!a || useAudio.getState().isMuted) return;
   a.currentTime = 0;
   a.play().catch(() => {});
+}
+
+type AudioRefKey = "backgroundMusic" | "battleMusic" | "hitSound" | "successSound";
+function assignAudio(key: AudioRefKey, audio: HTMLAudioElement | null) {
+  const state = useAudio.getState();
+  const previous = state[key];
+  if (previous && previous !== audio) previous.pause();
+  if (audio) {
+    audio.muted = state.isMuted;
+    if (state.isMuted) audio.pause();
+  }
+  useAudio.setState({ [key]: audio });
 }
 
 export const useAudio = create<AudioState>((set, get) => ({
@@ -141,11 +168,30 @@ export const useAudio = create<AudioState>((set, get) => ({
   battleIntensity: 0,
   setBattleIntensity: (battleIntensity) =>
     set({ battleIntensity: Math.max(0, Math.min(1, battleIntensity)) }),
-  setBackgroundMusic: (backgroundMusic) => set({ backgroundMusic }),
-  setBattleMusic: (battleMusic) => set({ battleMusic }),
-  setHitSound: (hitSound) => set({ hitSound }),
-  setSuccessSound: (successSound) => set({ successSound }),
-  setMuted: (isMuted) => set({ isMuted }),
+  setBackgroundMusic: (audio) => assignAudio("backgroundMusic", audio),
+  setBattleMusic: (audio) => assignAudio("battleMusic", audio),
+  setHitSound: (audio) => assignAudio("hitSound", audio),
+  setSuccessSound: (audio) => assignAudio("successSound", audio),
+  setMuted: (isMuted) => {
+    set({ isMuted });
+    const state = get();
+    for (const audio of [state.backgroundMusic, state.battleMusic, state.hitSound, state.successSound]) {
+      if (!audio) continue;
+      audio.muted = isMuted;
+      if (isMuted) audio.pause();
+    }
+    if (masterGain) masterGain.gain.value = isMuted ? 0 : 1;
+    if (isMuted) {
+      resumeBackgroundMusicAfterVisibility = false;
+      resumeBattleMusicAfterVisibility = false;
+      for (const source of activeProceduralSources) {
+        try { source.stop(); } catch { /* Source may already have ended. */ }
+      }
+      activeProceduralSources.clear();
+    }
+    soundManager.setMuted(isMuted);
+    setVoiceMasterMuted(isMuted);
+  },
   startBattleMusic: () => { if (!get().isMuted) tryPlay(get().battleMusic); },
   stopBattleMusic: () => { const b = get().battleMusic; if (b) b.pause(); },
   playJump: () => tryPlay(get().hitSound),
