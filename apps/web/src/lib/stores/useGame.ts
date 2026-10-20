@@ -7,6 +7,7 @@ interface GameState {
   start: () => void;
   end: () => void;
   reset: () => void;
+  restart: () => void;
 }
 
 export const useGame = create<GameState>((set) => ({
@@ -14,6 +15,7 @@ export const useGame = create<GameState>((set) => ({
   start: () => set({ phase: "playing" }),
   end: () => set({ phase: "ended" }),
   reset: () => set({ phase: "ready" }),
+  restart: () => set({ phase: "ready" }),
 }));
 
 // Release/E2E observability: mirrors runnerStore without changing runtime behavior.
