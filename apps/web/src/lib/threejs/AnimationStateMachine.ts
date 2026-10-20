@@ -110,13 +110,14 @@ export class AnimationStateMachine {
     action.reset().play();
 
     if (onComplete) {
-      const handleComplete = () => {
+      const handleComplete = (event: { action: THREE.AnimationAction }) => {
+        if (event.action !== action) return;
+        this.mixer.removeEventListener('finished', handleComplete);
         onComplete();
-        action.removeEventListener('finished', handleComplete);
         // Return to idle
         this.setState('idle');
       };
-      action.addEventListener('finished', handleComplete);
+      this.mixer.addEventListener('finished', handleComplete);
     }
 
     this.currentAction = action;
