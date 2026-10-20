@@ -28,15 +28,11 @@ export const useTransformations = create<TransformationState>((set, get) => ({
   transformationLevels: {},
   transformationMeters: {},
   unlockedTransformations: {
-    // Default unlocks - base forms always available
+    // Gold Slice only. Historical crossover-era identities are not part of
+    // the production release contract.
+    'kai-jax': [0],
     'jaxon': [0],
     'kaison': [0],
-    'marlo': [0],
-    'flynn': [0],
-    'sparky': [0],
-    'bubble': [0],
-    'novaknight': [0],
-    'speedy': [0],
   },
   activeTransformDuration: {},
   
