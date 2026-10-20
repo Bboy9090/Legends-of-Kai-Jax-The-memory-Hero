@@ -47,8 +47,9 @@ function collectErrors(page: Page): string[] {
     }
   });
   page.on("console", (msg: ConsoleMessage) => {
-    if (msg.type() === "error" && !isBenign(msg.text())) {
-      const entry = `console.error: ${msg.text()}`;
+    const detail = `${msg.text()} (${msg.location().url ?? ''})`;
+    if (msg.type() === "error" && !isBenign(detail)) {
+      const entry = `console.error: ${detail}`;
       errors.push(entry);
       console.log("RELEASE_CONSOLE_ERROR", entry);
     }
@@ -235,6 +236,8 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   await page.waitForFunction(() => Boolean((window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax), null, { timeout: 20_000 });
 
   // Exercise actual keyboard input, retaining the frame that satisfied the gate.
+  await expect(page.locator('.kj-vision-overlay')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(page.locator('.kj-vision-overlay')).toHaveCSS('background-image', 'none');
   await page.keyboard.down("ArrowRight");
   const walk = await captureAuthoredMotion(page, 'walk');
   await page.keyboard.down("ShiftLeft");

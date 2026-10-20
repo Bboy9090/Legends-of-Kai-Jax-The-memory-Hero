@@ -24,8 +24,9 @@ function collectErrors(page: Page): string[] {
     if (!isBenign(error.message)) errors.push(`pageerror: ${error.message}`);
   });
   page.on('console', (message: ConsoleMessage) => {
-    if (message.type() === 'error' && !isBenign(message.text())) {
-      errors.push(`console.error: ${message.text()}`);
+    const detail = `${message.text()} (${message.location().url ?? ''})`;
+    if (message.type() === 'error' && !isBenign(detail)) {
+      errors.push(`console.error: ${detail}`);
     }
   });
   return errors;
@@ -129,6 +130,8 @@ test('E2E-006: Gold Slice real-runtime accelerated player path', async ({ page }
   });
 
   // Exercise the real keyboard/controller damage path before accelerating waves.
+  await expect(page.locator('.kj-vision-overlay')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(page.locator('.kj-vision-overlay')).toHaveCSS('background-image', 'none');
   await waitForWave(page, 'WAVE_1');
   await page.waitForFunction(() => {
     const api = (window as any).__KJ_MISSION1_TEST__;

@@ -306,7 +306,7 @@ export default function AdventureHUD() {
   const isCritical = !trainingSession && playerHpPct > 0 && playerHpPct < 25;
 
   return (
-    <div className="kj-vision-shell absolute inset-0 pointer-events-none z-40">
+    <div className="kj-vision-shell kj-vision-overlay absolute inset-0 pointer-events-none z-40">
       <ImpactFlash color={player.impactFlash} />
 
       {/* Critical low-health vignette (mirrors versus danger feedback) */}
