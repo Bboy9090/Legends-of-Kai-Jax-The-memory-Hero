@@ -250,7 +250,7 @@ export default function AdventureEnemyAI() {
   useFrame((_, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
     const adv = useAdventure.getState();
-    if (adv.isPaused) return;
+    if (adv.isPaused || adv.player.health <= 0 || adv.encounterDamageHandler) return;
 
     const { player, enemies } = adv;
     const liveIds = new Set(enemies.map((enemy) => enemy.id));

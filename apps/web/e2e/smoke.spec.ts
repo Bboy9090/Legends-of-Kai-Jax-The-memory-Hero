@@ -56,6 +56,24 @@ function collectErrors(page: Page): string[] {
   return errors;
 }
 
+// Capture selection and skin evidence from the same successful browser frame.
+async function captureAuthoredMotion(page: Page, requested: 'walk' | 'run' | 'kick'): Promise<any> {
+  const sample = await page.waitForFunction((move) => {
+    const animation = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax;
+    const deformation = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijax;
+    const matches = move === 'kick'
+      ? animation?.requested === 'attack' && animation.attackType === 'kick'
+      : animation?.requested === move;
+    return matches && animation.authored === true
+      && deformation?.requested === move && deformation.moving === true
+      && deformation.skinVerified === true && deformation.source === 'authored'
+      ? { animation: { ...animation }, deformation: { ...deformation } }
+      : false;
+  }, requested, { timeout: 60_000 });
+  try { return await sample.jsonValue(); }
+  finally { await sample.dispose(); }
+}
+
 type BootSnapshot = {
   gameState: string | null;
   phase: string | null;
@@ -216,142 +234,38 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
 
   await page.waitForFunction(() => Boolean((window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax), null, { timeout: 20_000 });
 
-  // Certify locomotion against the clip actually selected by the mounted fighter.
+  // Exercise actual keyboard input, retaining the frame that satisfied the gate.
   await page.keyboard.down("ArrowRight");
-  await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax;
-    return probe?.requested === "walk" && probe?.authored === true && /walk/i.test(probe?.selectedClip ?? "");
-  }, null, { timeout: 45_000 });
-  const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
-  console.log("LIVE_ANIMATION_WALK_PROBE", JSON.stringify(walkProbe));
-  expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
-  try {
-    await page.waitForFunction(() => {
-      const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijax;
-      return probe?.requested === "walk" && probe?.moving === true && probe?.skinVerified === true;
-    }, null, { timeout: 20_000 });
-  } catch (error) {
-    const diagnostic = await page.evaluate(() => ({
-      animation: (window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax ?? null,
-      deformation: (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijax ?? null,
-      rig: (window as any).__KAI_JAX_RIG_PROBE__?.kaijax ?? null,
-      frame: (window as any).__KAI_JAX_FRAME_PROBE__?.kaijax ?? null,
-      companion: (window as any).__KAI_JAX_COMPANION_PROBE__ ?? null,
-    }));
-    console.log("LIVE_KAI_SKIN_TIMEOUT_DIAGNOSTIC", JSON.stringify(diagnostic));
-    throw error;
-  }
-  const walkDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijax);
-  console.log("LIVE_DEFORMATION_WALK_PROBE", JSON.stringify(walkDeform));
-  expect(walkDeform?.moving).toBe(true);
-  expect(walkDeform?.skinVerified).toBe(true);
-  // First run request is allowed to trigger the lazy donor load.
-
-  // Critical Kai-Jax motion donors are preloaded by the mounted model via useGLTF.
-  // Certify the runtime-selected authored animation directly rather than waiting
-  // on the legacy lazy-companion loader probe, which is not populated for preloads.
+  const walk = await captureAuthoredMotion(page, 'walk');
   await page.keyboard.down("ShiftLeft");
-  await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax;
-    return probe?.requested === "run" && probe?.authored === true && /run/i.test(probe?.selectedClip ?? "");
-  }, null, { timeout: 45_000 });
-  const runProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
-  console.log("LIVE_ANIMATION_RUN_PROBE", JSON.stringify(runProbe));
-  expect(Object.values(runProbe ?? {}).some((p: any) => p?.requested === "run" && /run/i.test(p?.selectedClip ?? ""))).toBeTruthy();
-  await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijax;
-    return probe?.requested === "run" && probe?.moving === true && probe?.skinVerified === true;
-  }, null, { timeout: 20_000 });
-  const runDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijax);
-  console.log("LIVE_DEFORMATION_RUN_PROBE", JSON.stringify(runDeform));
-  expect(runDeform?.moving).toBe(true);
-  expect(runDeform?.skinVerified).toBe(true);
+  const run = await captureAuthoredMotion(page, 'run');
   await page.keyboard.up("ShiftLeft");
   await page.keyboard.up("ArrowRight");
-
-  // Exercise the actual keyboard path while the WebGL fighter is mounted.
-  // Kick is the authored-attack certification target. Procedural Punch pose
-  // quality remains a separate visual-review item and must not gate this proof.
-  // Critical Kai-Jax kick donors are preloaded by the mounted model.
-  // The release proof is the selected authored kick plus verified skin deformation.
-  await page.keyboard.down("KeyK"); // kick
-  try {
-    await page.waitForFunction(
-      () => {
-        const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax;
-        return probe?.requested === "attack"
-          && probe?.attackType === "kick";
-      },
-      null,
-      { timeout: 60_000 },
-    );
-  } catch (error) {
-    const inputProbe = await page.evaluate(() => (window as any).__KAI_JAX_INPUT_PROBE__);
-    const animationProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
-    const companionProbe = await page.evaluate(() => (window as any).__KAI_JAX_COMPANION_PROBE__);
-    console.log("LIVE_INPUT_KICK_PROBE", JSON.stringify(inputProbe));
-    console.log("LIVE_ANIMATION_KICK_TIMEOUT_PROBE", JSON.stringify(animationProbe));
-    console.log("LIVE_COMPANION_LOAD_TIMEOUT_PROBE", JSON.stringify(companionProbe));
+  let kick;
+  await page.keyboard.down("KeyK");
+  try { kick = await captureAuthoredMotion(page, 'kick'); }
+  catch (error) {
+    console.log('KICK_TIMEOUT_DIAGNOSTIC', JSON.stringify(await page.evaluate(() => ({
+      animation: (window as any).__KAI_JAX_ANIMATION_PROBE__,
+      deformation: (window as any).__KAI_JAX_DEFORMATION_PROBE__,
+      input: (window as any).__KAI_JAX_INPUT_PROBE__,
+    }))));
     throw error;
-  } finally {
-    await page.keyboard.up("KeyK");
+  } finally { await page.keyboard.up("KeyK"); }
+  const proof = { walk, run, kick };
+  for (const [requested, sample] of Object.entries(proof)) {
+    expect(sample.animation.authored).toBe(true);
+    expect(sample.animation.selectedClip).toMatch(new RegExp(requested, 'i'));
+    expect(sample.deformation.requested).toBe(requested);
+    expect(sample.deformation.moving).toBe(true);
+    expect(sample.deformation.skinVerified).toBe(true);
+    expect(sample.deformation.source).toBe('authored');
   }
-  const kickProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
-  console.log("LIVE_ANIMATION_KICK_PROBE", JSON.stringify(kickProbe));
-  const kaiJaxKickDeformSource = kickProbe?.kaijax;
-  expect(kaiJaxKickDeformSource?.requested).toBe("attack");
-  expect(kaiJaxKickDeformSource?.attackType).toBe("kick");
-
-  // Spider-Kai currently has no compatible authored kick donor. The prior
-  // 9-tail donor shared bone names but not the bind/rest skeleton, so release
-  // correctness is visible articulation rather than a misleading clip-name
-  // check. When a compatible Spider-Kai kick is added, this may become authored.
-  await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijax;
-    return probe?.requested === "kick" && probe?.moving === true && probe?.skinVerified === true;
-  }, null, { timeout: 20_000 });
-  const kickDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijax);
-  console.log("LIVE_DEFORMATION_KICK_PROBE", JSON.stringify(kickDeform));
-  expect(kickDeform?.moving).toBe(true);
-  expect(kickDeform?.skinVerified).toBe(true);
-  const kaiJaxKick = kickProbe?.kaijax;
-  expect(kaiJaxKick?.requested).toBe("attack");
-  expect(kaiJaxKick?.attackType).toBe("kick");
-  expect(kaiJaxKick?.authored).toBe(true);
-  expect(kaiJaxKick?.selectedClip).toMatch(/kick/i);
-  // Runtime certification records deterministic authored-animation evidence.
-  // Raster screenshots are intentionally excluded from this smoke gate because
-  // software WebGL readback can stall after the animation proof has succeeded.
-  // Presentation screenshots remain a separate visual-review artifact.
-  const companionEvidence = await page.evaluate(() => (window as any).__KAI_JAX_COMPANION_PROBE__ ?? {});
-  await testInfo.attach("kai-authored-kick-proof.json", {
-    body: Buffer.from(JSON.stringify({
-      animation: kaiJaxKick,
-      companions: companionEvidence,
-    }, null, 2)),
-    contentType: "application/json",
-  });
-  console.log("KAI_AUTHORED_KICK_EVIDENCE", "attached-json");
-
-
-  const deformationEvidence = {
-    walk: walkDeform,
-    run: runDeform,
-    kick: kickDeform,
-  };
-  console.log("LIVE_FUSION_DEFORMATION_PROOF", JSON.stringify(deformationEvidence));
-  expect(deformationEvidence.walk?.requested).toBe("walk");
-  expect(deformationEvidence.walk?.moving).toBe(true);
-  expect(deformationEvidence.walk?.skinVerified).toBe(true);
-  expect(deformationEvidence.run?.requested).toBe("run");
-  expect(deformationEvidence.run?.moving).toBe(true);
-  expect(deformationEvidence.run?.skinVerified).toBe(true);
-  expect(deformationEvidence.kick?.requested).toBe("kick");
-  expect(deformationEvidence.kick?.moving).toBe(true);
-  expect(deformationEvidence.kick?.skinVerified).toBe(true);
-  await testInfo.attach("kai-jax-deformation-proof.json", {
-    body: Buffer.from(JSON.stringify(deformationEvidence, null, 2)),
-    contentType: "application/json",
+  expect(kick.animation.requested).toBe('attack');
+  expect(kick.animation.attackType).toBe('kick');
+  console.log('LIVE_FUSION_DEFORMATION_PROOF', JSON.stringify(proof));
+  await testInfo.attach('kai-jax-deformation-proof.json', {
+    body: Buffer.from(JSON.stringify(proof, null, 2)), contentType: 'application/json',
   });
   expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
 });

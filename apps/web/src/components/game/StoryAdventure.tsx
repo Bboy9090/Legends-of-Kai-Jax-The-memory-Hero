@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAdventure } from "../../lib/stores/useAdventure";
+import { isMission1Id } from "../../game/combat/mission1Identity";
 import { getStoryMissionById, type StoryMission, type StoryDialogue } from "../../lib/story_missions";
 
 interface StoryAdventureProps {
@@ -9,7 +10,7 @@ interface StoryAdventureProps {
   onBack: () => void;
 }
 
-type StoryPhase = "intro" | "playing" | "wave-transition" | "outro" | "results";
+type StoryPhase = "briefing" | "intro" | "playing" | "wave-transition" | "outro" | "results";
 
 type StoryWaveEnemySpec = {
   fighterId: string;
@@ -329,11 +330,16 @@ function ResultsScreen({ mission, success, onContinue }: { mission: StoryMission
 
 export default function StoryAdventure({ missionId, characterId, onComplete, onBack }: StoryAdventureProps) {
   const mission = getStoryMissionById(missionId);
-  const [phase, setPhase] = useState<StoryPhase | "briefing">("briefing");
+  const [phase, setPhase] = useState<StoryPhase>("briefing");
   const [currentWave, setCurrentWave] = useState(0);
   const [success, setSuccess] = useState(false);
   const spawnedWaves = useRef(new Set<number>());
   const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    useAdventure.getState().reset();
+    return () => useAdventure.getState().reset();
+  }, [missionId]);
 
   const initAdventure = useAdventure((s) => s.initAdventure);
   const spawnEnemies = useAdventure((s) => s.spawnEnemies);
@@ -393,7 +399,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
       return;
     }
 
-    spawnWave(0);
+    if (!isMission1Id(missionId)) spawnWave(0);
     setPhase("playing");
   }, [mission, characterId, missionId, initAdventure, spawnWave]);
 
@@ -401,12 +407,22 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
     if (phase !== "playing" || !mission) return;
 
     checkIntervalRef.current = setInterval(() => {
-      const { enemies, player } = useAdventure.getState();
+      const { enemies, player, isPaused, districtCompleted } = useAdventure.getState();
+      if (isPaused) return;
 
       if (player.health <= 0) {
         setSuccess(false);
         setPhase("outro");
         if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
+        return;
+      }
+
+      if (isMission1Id(missionId)) {
+        if (districtCompleted) {
+          setSuccess(true);
+          setPhase("outro");
+          if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
+        }
         return;
       }
 
@@ -432,7 +448,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
     return () => {
       if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
     };
-  }, [phase, mission, currentWave, spawnWave]);
+  }, [phase, mission, missionId, currentWave, spawnWave]);
 
   if (!mission) {
     return (

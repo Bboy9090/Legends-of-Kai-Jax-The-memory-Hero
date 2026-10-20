@@ -35,7 +35,12 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chromium'],
         headless: true,
-        launchArgs: chromiumLaunchArgs,
+        launchOptions: {
+          args: chromiumLaunchArgs,
+          ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+            ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH }
+            : {}),
+        },
       },
     },
   ],

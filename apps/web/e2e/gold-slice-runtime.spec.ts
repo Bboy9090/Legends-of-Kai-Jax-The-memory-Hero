@@ -45,17 +45,11 @@ async function boot(page: Page): Promise<void> {
 }
 
 async function enterMainMenuThroughVisibleFirstRun(page: Page): Promise<void> {
-  await expect(page.getByTestId('lorehub-play-game-btn')).toBeVisible({ timeout: 15_000 });
-  await page.getByTestId('lorehub-play-game-btn').click();
-
-  await page.getByTestId('game-intro').waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {});
-  await page.getByTestId('game-intro').waitFor({ state: 'detached', timeout: 12_000 }).catch(() => {});
-
-  await page.waitForFunction(
-    () => (window as any).runnerStore?.getState?.().gameState === 'menu',
-    null,
-    { timeout: 15_000 },
-  );
+  await page.getByTestId('game-intro').waitFor({ state: 'detached', timeout: 20_000 });
+  const begin = page.getByRole('button', { name: 'Begin Legends of Kai-Jax' });
+  await expect(begin).toBeVisible({ timeout: 20_000 });
+  await begin.click();
+  await expect(page.getByRole('button', { name: /^MISSIONS\b/i })).toBeVisible();
 }
 
 async function waitForWave(page: Page, wave: string): Promise<void> {
@@ -108,14 +102,7 @@ test('E2E-006: Gold Slice real-runtime accelerated player path', async ({ page }
   await boot(page);
   await enterMainMenuThroughVisibleFirstRun(page);
 
-  // Character selection does not yet have a complete visible campaign route.
-  // This setup changes only the selected Gold Slice identity; it does not change
-  // game state, encounter state, boss state, victory, or persistence.
-  await page.evaluate(() => {
-    (window as any).runnerStore.getState().setCharacter('kai-jax');
-  });
-
-  await page.getByRole('button', { name: /STORY HUB/i }).click();
+  await page.getByRole('button', { name: /^MISSIONS\b/i }).click();
   await expect(page.getByRole('heading', { name: /Legends of Kai-Jax Campaign/i }))
     .toBeVisible({ timeout: 15_000 });
 
@@ -129,6 +116,12 @@ test('E2E-006: Gold Slice real-runtime accelerated player path', async ({ page }
   const beginMission = page.getByRole('button', { name: /Begin Mission/i });
   await expect(beginMission).toBeVisible({ timeout: 10_000 });
   await beginMission.click();
+  await page.getByRole('button', { name: 'Engage Mission', exact: true }).click();
+  for (let press = 0; press < 30; press++) {
+    if (await page.evaluate(() => Boolean((window as any).__KJ_MISSION1_TEST__))) break;
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(80);
+  }
 
   await expect(page.locator('canvas').first()).toBeVisible({ timeout: 20_000 });
   await page.waitForFunction(() => Boolean((window as any).__KJ_MISSION1_TEST__), null, {

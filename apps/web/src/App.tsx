@@ -299,10 +299,7 @@ function App() {
                   }}
                 >
                   <Suspense fallback={null}>
-                    <AdventureArena
-                      characterId={charId}
-                      accentColor={fighter?.accentColor || "#00f2ff"}
-                    />
+                    <AdventureArena />
                   </Suspense>
                 </Canvas>
                 <AdventureHUD />
@@ -343,10 +340,7 @@ function App() {
                   }}
                 >
                   <Suspense fallback={null}>
-                    <AdventureArena
-                      characterId={charId}
-                      accentColor={fighter?.accentColor || "#00f2ff"}
-                    />
+                    <AdventureArena />
                   </Suspense>
                 </Canvas>
                 <AdventureHUD />

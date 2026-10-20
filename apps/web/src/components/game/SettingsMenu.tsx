@@ -7,7 +7,7 @@ import { getVoiceVolume, setVoiceVolume, isVoiceEnabled_, setVoiceEnabled } from
 
 export default function SettingsMenu() {
   const { setGameState } = useRunner();
-  const { isMuted, toggleMute } = useAudio();
+  const { isMuted, setMuted } = useAudio();
   const [quality, setQuality] = useState<QualityPreference>(() => getQualityPreference());
   const [voiceVolume, setVoiceVolumeState] = useState(getVoiceVolume());
   const [voiceEnabled, setVoiceEnabledState] = useState(isVoiceEnabled_());
@@ -70,7 +70,10 @@ export default function SettingsMenu() {
                   <p className="text-white/40 text-sm">Silence all game sounds and music</p>
                 </div>
                 <button
-                  onClick={toggleMute}
+                  role="switch"
+                  aria-label="Master audio"
+                  aria-checked={!isMuted}
+                  onClick={() => setMuted(!isMuted)}
                   className={`
                     relative w-16 h-8 rounded-full transition-colors duration-300
                     ${isMuted ? 'bg-gray-700' : 'bg-blue-600 shadow-[0_0_15px_rgba(37,99,235,0.5)]'}
