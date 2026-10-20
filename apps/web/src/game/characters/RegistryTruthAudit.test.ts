@@ -52,15 +52,15 @@ describe('KJ-011.1 — Canon Integrity and Restricted Alias Audit', () => {
     expect(PROVEN_ALIAS_MAP['kaxon']).toBeUndefined();
   });
 
-  it('ensures unknown fighter IDs fail safely without mutating distinct fighters', () => {
-    const resolveFighterId = (id: string): string => {
+  it('ensures unknown fighter IDs fail safely without impersonating Kai-Jax', () => {
+    const resolveFighterId = (id: string): string | null => {
       if (RELEASE_SLICE_IDS.includes(id)) return id;
-      return PROVEN_ALIAS_MAP[id] || 'kai-jax'; // Safe fallback
+      return PROVEN_ALIAS_MAP[id] ?? null;
     };
 
     expect(resolveFighterId('kaijax')).toBe('kai-jax');
     expect(resolveFighterId('jaxon')).toBe('jaxon');
     expect(resolveFighterId('kaison')).toBe('kaison');
-    expect(resolveFighterId('unknown_id')).toBe('kai-jax');
+    expect(resolveFighterId('unknown_id')).toBeNull();
   });
 });
