@@ -40,8 +40,10 @@ describe('Mission 1 adventure integration', () => {
   });
   it('completes every wave through the player damage entry and saves exactly once', () => {
     const runtime = start();
+    let displayedWave = 1;
     for (const wave of ['WAVE_1', 'WAVE_2', 'WAVE_3', 'WAVE_4', 'ELITE', 'BOSS']) {
       expect(runtime.director.getCurrentWave()).toBe(wave);
+      expect(useAdventure.getState().waveCount).toBe(displayedWave++);
       for (const enemy of useAdventure.getState().enemies) useAdventure.getState().damageEnemy(enemy.id, 10000, true);
       runtime.tick(0.016);
     }

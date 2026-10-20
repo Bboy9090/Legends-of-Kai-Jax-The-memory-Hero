@@ -1,6 +1,6 @@
 import { useAdventure, type AdventureEnemy, type EnemyAIState } from '../../lib/stores/useAdventure';
 import { useMissions } from '../../lib/stores/useMissions';
-import { EncounterDirector } from './EncounterDirector';
+import { EncounterDirector, type MissionWave } from './EncounterDirector';
 import type { EnemyContract, EnemyDamageResult } from './EnemyStateMachine';
 import { isMission1Id } from './mission1Identity';
 
@@ -8,6 +8,10 @@ const RENDER_AI_STATE: Record<EnemyContract['currentState'], EnemyAIState> = {
   IDLE: 'idle', DETECTION: 'chase', APPROACH: 'chase', RETREAT: 'retreat',
   TELEGRAPH: 'telegraph', ATTACK: 'attack', RECOVERY: 'idle', STAGGER: 'stun',
   DEATH: 'idle', TELEPORT: 'chase', PHASE_TRANSITION: 'idle',
+};
+
+const HUD_WAVE: Record<MissionWave, number> = {
+  WAVE_1: 1, WAVE_2: 2, WAVE_3: 3, WAVE_4: 4, ELITE: 5, BOSS: 6, VICTORY: 6,
 };
 
 /** Single Mission 1 simulation owner; the adventure store is its render projection. */
@@ -81,7 +85,7 @@ export class Mission1AdventureSession {
       patrolTargetX: enemy.position.x, patrolTargetZ: enemy.position.z,
       stunTimer: enemy.isStaggered ? enemy.stats.staggerDurationMs / 1000 : 0,
     }));
-    useAdventure.setState({ enemies });
+    useAdventure.setState({ enemies, waveCount: HUD_WAVE[this.director.getCurrentWave()] });
   }
 
   public dispose(): void {
