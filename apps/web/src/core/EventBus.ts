@@ -6,7 +6,7 @@
 
 type Callback = (data?: any) => void;
 
-class EventBus {
+export class EventBus {
     private events: { [key: string]: Callback[] } = {};
 
     /**
@@ -17,6 +17,12 @@ class EventBus {
             this.events[event] = [];
         }
         this.events[event].push(callback);
+    }
+
+    /** Compatibility alias used by decoupled systems. */
+    subscribe(event: string, callback: Callback) {
+        this.on(event, callback);
+        return () => this.off(event, callback);
     }
 
     /**
@@ -40,6 +46,11 @@ class EventBus {
     off(event: string, callback: Callback) {
         if (!this.events[event]) return;
         this.events[event] = this.events[event].filter(cb => cb !== callback);
+    }
+
+    /** Compatibility alias used by decoupled systems. */
+    unsubscribe(event: string, callback: Callback) {
+        this.off(event, callback);
     }
 
     /**
