@@ -5,7 +5,7 @@ Status: **Draft; not release certified or deployed.**
 Repository: Bboy9090/Legends-of-Kai-Jax-The-memory-Hero, PR #291,
 branch `feat/gold-slice-mainline-reconcile`.
 Remote starting head: `ab772304f9db3baa173c28c6f4879f5d9c421302`.
-Local repair head: `6505637`.
+Local source repair head: `5f0bc9b` (before this evidence update).
 
 ## Repairs
 
@@ -13,6 +13,9 @@ Local repair head: `6505637`.
   enemy attacks, armor, health projection, waves, pause/death, completion and save
   now share the same session. Legacy enemy simulation does not overwrite it.
 - The arena reads the selected fighter from the adventure store.
+- Gameplay HUDs retain their menu styling without the opaque full-screen shell
+  background that hid the live arena. Browser tests assert overlay transparency.
+- Mission 1 projects wave progress into the HUD instead of displaying Wave 0.
 - Master mute covers existing and future audio, cloned effects, procedural audio
   and speech while preserving the user's voice preferences.
 - Browser smoke retains clip selection and skin deformation from the same
@@ -34,6 +37,8 @@ Local repair head: `6505637`.
 | Initial Mac browser suite | 5 pass |
 | Stronger Mac mission test including keyboard damage | Pass |
 | Authored walk/run/kick and rendered skin deformation, Mac | Pass |
+| iPhone SE, iPhone 12, iPad viewports on Mac Radeon Pro 5300M | All 9 strict windows pass; about 60 FPS; worst frame 17.8 ms |
+| Final headed smoke after transparent HUD repair | All 4 smoke tests pass; visual capture passes |
 | Production dependency audit | 0 high, 0 critical; 9 moderate, 3 low |
 
 The mission test's accelerated damage is test-only. Its success is not evidence
@@ -50,12 +55,25 @@ does not publish the Mission 1 test API; only guarded cleanup references remain.
 - All three initial Mac mobile viewport performance tests exceeded the default
   30-second test budget on SwiftShader. With a longer diagnostic budget the iPhone
   SE viewport measured 5.21, 6.57 and 5.72 FPS, with a worst frame of 500 ms, and
-  failed the existing software sanity gate. A headed browser diagnostic was
-  started to distinguish software rendering from the Mac GPU path; no physical
-  mobile performance certification has been obtained.
+  failed the existing software sanity gate. The headed browser used the Radeon
+  Pro 5300M Metal renderer and passed all nine strict windows across iPhone SE,
+  iPhone 12 and iPad profiles. Desktop GPU viewport
+  emulation does not constitute physical mobile performance certification.
+- Final headed mission run closed its page/context during the Engage Mission
+  click. The four smoke cases and visual capture passed in that run. A separate
+  headless mission rerun reached completed-save reload persistence but failed the
+  error assertion on four GLTFLoader blob texture loading errors. Earlier
+  keyboard-damage mission runs passed. The final mission browser gate is not green.
 - Authored punch quality, visual/canon approval and full desktop/mobile visual
   certification remain outstanding. Deformation telemetry alone cannot certify
   planted feet, impact, weight transfer or camera/readability.
+- Reviewed live screenshots confirm the arena is now visible, but the environment
+  remains very dark and the hero's tail silhouette obscures nearby enemies. This
+  is not the approved production-quality visual target yet.
+- Recovered and viewed `Legends of Kai-Jax Visual Library(5).png` (2026-10-14).
+  Its armored feline Beast-Kin presentation differs materially from the current
+  tail-heavy fusion model. Do not silently declare the existing model canonical
+  or substitute novel tail progression for the approved game reference.
 - No merged-main production verification or signed store qualification has been
   completed for these repairs.
 
