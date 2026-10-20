@@ -16,6 +16,7 @@
     "noEmit": true,
     "paths": {
       "@/*": ["./src/*"],
+      "@game/*": ["./src/*"],
       "@beast-kin/shared": ["./src/shims/beast-kin-shared.ts"],
       "@beast-kin/shared/data/complete_beast_roster": ["./src/shims/complete_beast_roster.ts"]
     }
