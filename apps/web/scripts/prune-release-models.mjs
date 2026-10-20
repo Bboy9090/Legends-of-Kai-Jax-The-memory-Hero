@@ -3,6 +3,7 @@ import path from "node:path";
 import {
   RELEASE_MODEL_BUDGET_MB,
   RELEASE_MODEL_FILES,
+  RELEASE_MODEL_SOURCE_MAP,
 } from "./release-model-manifest.mjs";
 
 const appRoot = process.cwd();
@@ -40,6 +41,27 @@ function removeEmptyDirectories(dir) {
 
 if (!fs.existsSync(modelsDir)) {
   throw new Error("[release-assets] dist/models is missing; release model manifest cannot be certified.");
+}
+
+// Rename historical source binaries to canonical release filenames before the
+// allowlist check. This changes release packaging only; repository source files
+// remain untouched for development and forensic history.
+for (const [releaseName, sourceName] of Object.entries(RELEASE_MODEL_SOURCE_MAP)) {
+  if (releaseName === sourceName) continue;
+  const sourcePath = path.join(modelsDir, sourceName);
+  const releasePath = path.join(modelsDir, releaseName);
+
+  if (!fs.existsSync(sourcePath)) {
+    if (fs.existsSync(releasePath)) continue;
+    throw new Error(
+      "[release-assets] Source model missing for canonical release alias "
+        + releaseName + ": " + sourceName,
+    );
+  }
+
+  if (fs.existsSync(releasePath)) fs.unlinkSync(releasePath);
+  fs.renameSync(sourcePath, releasePath);
+  console.log("[release-assets] canonicalized release model: " + releaseName);
 }
 
 const before = listGlbFiles(modelsDir);
