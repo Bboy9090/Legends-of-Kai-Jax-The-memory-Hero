@@ -43,7 +43,7 @@ import { useAudio } from "./lib/stores/useAudio";
 import { useMissions } from "./lib/stores/useMissions";
 import { useProgression } from "./lib/stores/useProgression";
 import { registerServiceWorker } from "./lib/offlineModeSystem";
-import { FIGHTERS, getFighterById } from "./lib/characters";
+import { PLAYABLE_FIGHTERS, getFighterById } from "./lib/characters";
 import { getStoryMissionById } from "./lib/story_missions";
 import { initializeVoiceSystem, preloadVoices } from "./lib/voiceActing";
 import * as THREE from "three";
@@ -178,7 +178,9 @@ function App() {
   useEffect(() => {
     if (selectedCharacter && phase === 'playing') {
       setPlayerFighter(selectedCharacter);
-      const opponents = FIGHTERS.map(f => f.id).filter(id => id !== selectedCharacter);
+      const opponents = PLAYABLE_FIGHTERS
+        .map((fighter) => fighter.id)
+        .filter((id) => id !== selectedCharacter);
       const randomOpponent = opponents[Math.floor(Math.random() * opponents.length)] || selectedCharacter;
       setOpponentFighter(randomOpponent);
     }
