@@ -75,6 +75,7 @@ export interface RunnerState {
   gameState: GameState;
   selectedCharacter: string | null;
   activeStoryMissionId: string | null;
+  campaignCurrentNode: CampaignNodeId;
   trainingSession: boolean;
   storageStatus: StorageStatus;
   
@@ -87,6 +88,7 @@ export interface RunnerState {
   setCharacter: (id: string | null) => void;
   setTrainingSession: (v: boolean) => void;
   setActiveStoryMission: (id: string | null) => void;
+  setCampaignCurrentNode: (id: CampaignNodeId) => void;
   addScore: (points: number) => void;
   
   // Profile Actions
@@ -233,6 +235,7 @@ export const useRunner = create<RunnerState>()(
       gameState: "title",
       selectedCharacter: "kai-jax",
       activeStoryMissionId: null,
+      campaignCurrentNode: "start",
       trainingSession: false,
       storageStatus: currentStorageStatus,
       
@@ -259,6 +262,7 @@ export const useRunner = create<RunnerState>()(
       setTrainingSession: (trainingSession) => set({ trainingSession }),
       setCharacter: (selectedCharacter) => set({ selectedCharacter }),
       setActiveStoryMission: (activeStoryMissionId) => set({ activeStoryMissionId }),
+      setCampaignCurrentNode: (campaignCurrentNode) => set({ campaignCurrentNode }),
       
       addScore: (points) => {
         const { totalScore, activeProfileIndex, profiles } = get();
@@ -390,6 +394,7 @@ export const useRunner = create<RunnerState>()(
           gameState: "title",
           selectedCharacter: "kai-jax",
           activeStoryMissionId: null,
+          campaignCurrentNode: "start",
           trainingSession: false,
         };
       },
