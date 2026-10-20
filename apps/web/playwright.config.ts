@@ -21,6 +21,10 @@ export default defineConfig({
   testDir: './e2e',
   testMatch: '**/*.spec.ts',
   fullyParallel: false,
+  // The release browser suite boots a WebGL title shell on software-rendered
+  // CI. A 30s default can expire during browser-context creation before the
+  // test body can raise its own timeout, producing infrastructure flakes.
+  timeout: 120_000,
   forbidOnly: false,
   retries: 0,
   workers: 1,
