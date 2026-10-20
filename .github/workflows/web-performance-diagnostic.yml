@@ -1,0 +1,62 @@
+name: Web Performance Diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/web-performance-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-performance-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  browser-viewport-performance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Materialize exact web workspace
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          git clone --filter=blob:none --no-checkout "https://github.com/${REPOSITORY}.git" source
+          cd source
+          git sparse-checkout init --cone
+          git sparse-checkout set apps/web packages
+          git checkout --detach "${COMMIT_SHA}"
+          git show "${COMMIT_SHA}:package.json" > package.json
+          git show "${COMMIT_SHA}:pnpm-lock.yaml" > pnpm-lock.yaml
+          git show "${COMMIT_SHA}:pnpm-workspace.yaml" > pnpm-workspace.yaml
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+
+      - name: Install web graph
+        working-directory: source
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          pnpm install --filter ./apps/web... --frozen-lockfile
+
+      - name: Install Chromium
+        working-directory: source
+        run: pnpm -C apps/web exec playwright install --with-deps chromium
+
+      - name: Run browser viewport performance diagnostic
+        working-directory: source
+        run: pnpm -C apps/web exec playwright test e2e/phase-b2-mobile-performance.spec.ts --workers=1
+
+      - name: Classification
+        if: always()
+        run: |
+          echo "This workflow measures browser viewport behavior only."
+          echo "Software-renderer results are telemetry, not physical mobile certification."
+          echo "Android/iOS native and store qualification remain outside this gate."
