@@ -128,6 +128,42 @@ test('E2E-006: Gold Slice real-runtime accelerated player path', async ({ page }
     timeout: 20_000,
   });
 
+  // Exercise the real keyboard/controller damage path before accelerating waves.
+  await waitForWave(page, 'WAVE_1');
+  await page.waitForFunction(() => {
+    const api = (window as any).__KJ_MISSION1_TEST__;
+    const player = api.getPlayer();
+    return api.getAdventureEnemies().some((enemy: any) => !enemy.isDead
+      && Math.hypot(enemy.posX - player.posX, enemy.posZ - player.posZ) < 2.5);
+  }, null, { timeout: 20_000 });
+  const beforeHit = await page.evaluate(() =>
+    (window as any).__KJ_MISSION1_TEST__.getEnemies().map((enemy: any) => ({
+      id: enemy.id, health: enemy.stats.currentHealth,
+    })),
+  );
+  await page.keyboard.down('KeyJ');
+  let hit: { id: string; health: number };
+  try {
+    const handle = await page.waitForFunction((before) => {
+      const enemies = (window as any).__KJ_MISSION1_TEST__.getEnemies();
+      const damaged = enemies.find((enemy: any) => before.some((old: any) =>
+        old.id === enemy.id && enemy.stats.currentHealth < old.health));
+      return damaged ? { id: damaged.id, health: damaged.stats.currentHealth } : null;
+    }, beforeHit, { timeout: 10_000 });
+    hit = await handle.jsonValue();
+  } finally {
+    await page.keyboard.up('KeyJ');
+  }
+  await page.waitForTimeout(150);
+  const renderedHealth = await page.evaluate((id) =>
+    (window as any).__KJ_MISSION1_TEST__.getAdventureEnemies()
+      .find((enemy: any) => enemy.id === id)?.health, hit!.id);
+  expect(renderedHealth).toBeLessThanOrEqual(hit!.health);
+  await test.info().attach('keyboard-hit', {
+    body: JSON.stringify({ beforeHit, hit: hit!, renderedHealth }),
+    contentType: 'application/json',
+  });
+
   await defeatCurrentWaveThroughDirector(page, 'WAVE_1');
   await defeatCurrentWaveThroughDirector(page, 'WAVE_2');
   await defeatCurrentWaveThroughDirector(page, 'WAVE_3');
