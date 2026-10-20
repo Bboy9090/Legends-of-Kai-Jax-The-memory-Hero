@@ -122,6 +122,7 @@ interface AudioState {
   setHitSound: (a: HTMLAudioElement | null) => void;
   setSuccessSound: (a: HTMLAudioElement | null) => void;
   setMuted: (m: boolean) => void;
+  toggleMute: () => void;
   startBattleMusic: () => void;
   stopBattleMusic: () => void;
   playJump: () => void;
@@ -192,6 +193,7 @@ export const useAudio = create<AudioState>((set, get) => ({
     soundManager.setMuted(isMuted);
     setVoiceMasterMuted(isMuted);
   },
+  toggleMute: () => get().setMuted(!get().isMuted),
   startBattleMusic: () => { if (!get().isMuted) tryPlay(get().battleMusic); },
   stopBattleMusic: () => { const b = get().battleMusic; if (b) b.pause(); },
   playJump: () => tryPlay(get().hitSound),
