@@ -4,6 +4,7 @@ import { Settings, Volume2, VolumeX, Monitor, ArrowLeft, Zap, Shield, Sparkles, 
 import { useState } from "react";
 import { getQualityPreference, setQualityPreference, type QualityPreference } from "../../lib/threejs/PerformanceOptimizer";
 import { getVoiceVolume, setVoiceVolume, isVoiceEnabled_, setVoiceEnabled } from "../../lib/voiceActing";
+import { useAccessibility } from "../../lib/stores/useAccessibility";
 
 export default function SettingsMenu() {
   const { setGameState } = useRunner();
@@ -11,6 +12,7 @@ export default function SettingsMenu() {
   const [quality, setQuality] = useState<QualityPreference>(() => getQualityPreference());
   const [voiceVolume, setVoiceVolumeState] = useState(getVoiceVolume());
   const [voiceEnabled, setVoiceEnabledState] = useState(isVoiceEnabled_());
+  const { reduceMotion, setReduceMotion } = useAccessibility();
 
   const handleBack = () => {
     setGameState("menu");
@@ -102,6 +104,9 @@ export default function SettingsMenu() {
                   <p className="text-white/40 text-sm">Enable dialogue voice acting with TTS</p>
                 </div>
                 <button
+                  role="switch"
+                  aria-label="Character voices"
+                  aria-checked={voiceEnabled}
                   onClick={handleVoiceToggle}
                   className={`
                     relative w-16 h-8 rounded-full transition-colors duration-300
@@ -121,6 +126,7 @@ export default function SettingsMenu() {
                     <span className="text-blue-400 font-bold">{Math.round(voiceVolume * 100)}%</span>
                   </div>
                   <input
+                    aria-label="Character voice volume"
                     type="range"
                     min="0"
                     max="1"
@@ -145,6 +151,8 @@ export default function SettingsMenu() {
               {(['auto', 'low', 'medium', 'high'] as QualityPreference[]).map((q) => (
                 <button
                   key={q}
+                  aria-pressed={quality === q}
+                  aria-label={`Graphics quality: ${q}`}
                   onClick={() => {
                     setQuality(q);
                     setQualityPreference(q);
@@ -169,6 +177,42 @@ export default function SettingsMenu() {
             <p className="mt-4 text-xs text-white/30 text-center italic">
               "Auto adapts to your device. Low, Medium, and High override the renderer immediately."
             </p>
+          </section>
+
+          {/* Accessibility Section */}
+          <section>
+            <div className="flex items-center gap-3 mb-6">
+              <Shield className="w-5 h-5 text-gray-400" />
+              <h2 className="text-lg font-bold uppercase tracking-widest text-white/80">
+                Accessibility
+              </h2>
+            </div>
+            <div className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5">
+              <div className="pr-6">
+                <p className="text-white font-bold text-lg">Reduced Motion</p>
+                <p className="text-white/40 text-sm">
+                  Reduces camera shake, impact motion, and motion-heavy visual effects.
+                </p>
+              </div>
+              <button
+                role="switch"
+                aria-label="Reduced motion"
+                aria-checked={reduceMotion}
+                onClick={() => setReduceMotion(!reduceMotion)}
+                className={`
+                  relative w-16 h-8 shrink-0 rounded-full transition-colors duration-300
+                  ${reduceMotion ? 'bg-blue-600 shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'bg-gray-700'}
+                `}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`
+                    absolute top-1 w-6 h-6 bg-white rounded-full transition-all duration-300
+                    ${reduceMotion ? 'left-9' : 'left-1'}
+                  `}
+                />
+              </button>
+            </div>
           </section>
         </div>
 
