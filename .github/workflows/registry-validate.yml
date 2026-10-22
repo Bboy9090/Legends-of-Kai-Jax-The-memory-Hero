@@ -6,6 +6,7 @@ on:
       - "apps/web/src/assets/modelRegistry.ts"
       - "apps/web/public/models/**"
       - "apps/web/scripts/validate-registry.mjs"
+      - "apps/web/scripts/registry-source-parser*.mjs"
       - ".github/workflows/registry-validate.yml"
   push:
     branches:
@@ -15,6 +16,7 @@ on:
       - "apps/web/src/assets/modelRegistry.ts"
       - "apps/web/public/models/**"
       - "apps/web/scripts/validate-registry.mjs"
+      - "apps/web/scripts/registry-source-parser*.mjs"
       - ".github/workflows/registry-validate.yml"
   workflow_dispatch:
 
@@ -35,7 +37,9 @@ jobs:
 
       - name: Run registry validator
         working-directory: source/apps/web
-        run: node scripts/validate-registry.mjs
+        run: |
+          node --test scripts/registry-source-parser.test.mjs
+          node scripts/validate-registry.mjs
 
       - name: Re-run with JSON-only output (artifact)
         if: always()

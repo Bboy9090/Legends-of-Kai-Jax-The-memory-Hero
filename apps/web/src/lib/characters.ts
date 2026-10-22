@@ -1,5 +1,5 @@
 import type { Fighter } from "../game/characters/shared/CharacterStats";
-import { COMPLETE_BEAST_ROSTER } from "@beast-kin/shared";
+import { COMPLETE_BEAST_ROSTER } from "@beast-kin/shared/data/complete_beast_roster";
 import { GOLD_SLICE_PLAYABLE_IDS } from "./goldSliceRoster";
 
 export {
