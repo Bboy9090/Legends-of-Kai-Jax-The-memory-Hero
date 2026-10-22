@@ -5,6 +5,7 @@
  */
 
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export type QualityPreference = 'auto' | 'low' | 'medium' | 'high';
 
@@ -174,7 +175,6 @@ export function getLODLevel(distance: number, deviceType: 'mobile' | 'tablet' | 
  * Code splitting helper - lazy load heavy models
  */
 export async function loadModelLazy(path: string): Promise<THREE.Group> {
-  const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
   const { DRACOLoader } = await import('three/examples/jsm/loaders/DRACOLoader.js');
   
   const loader = new GLTFLoader();

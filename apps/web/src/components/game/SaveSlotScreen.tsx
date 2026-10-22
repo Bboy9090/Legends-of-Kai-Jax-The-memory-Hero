@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRunner } from '../../lib/stores/useRunner';
 import { UserCheck, Trophy, ArrowLeft, RefreshCw, Play } from 'lucide-react';
-import { ALL_STORY_MISSIONS } from '../../lib/story_missions';
+import { GOLD_SLICE_STORY_MISSIONS } from '../../lib/story_missions';
 
 export default function SaveSlotScreen() {
   const { profiles, activeProfileIndex, switchProfile, resetProfile, setGameState } = useRunner();
@@ -39,9 +39,9 @@ export default function SaveSlotScreen() {
           const completedCount = new Set(
             (profile.completedStoryMissionIds || [])
               .map((id) => id.startsWith('story:') ? id.slice('story:'.length) : id)
-              .filter((id) => ALL_STORY_MISSIONS.some((mission) => mission.id === id))
+              .filter((id) => GOLD_SLICE_STORY_MISSIONS.some((mission) => mission.id === id))
           ).size;
-          const pct = Math.min(100, Math.round((completedCount / Math.max(1, ALL_STORY_MISSIONS.length)) * 100));
+          const pct = Math.min(100, Math.round((completedCount / Math.max(1, GOLD_SLICE_STORY_MISSIONS.length)) * 100));
 
           return (
             <div

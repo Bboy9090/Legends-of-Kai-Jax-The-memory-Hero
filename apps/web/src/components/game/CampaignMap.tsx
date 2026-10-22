@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useRunner } from "../../lib/stores/useRunner";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useMissions } from "../../lib/stores/useMissions";
-import { getStoryMissionsByAct, type StoryMission } from "../../lib/story_missions";
+import { GOLD_SLICE_STORY_MISSIONS, type StoryMission } from "../../lib/story_missions";
 import { BookOpen, Swords, ArrowLeft, ChevronRight, Skull } from "../ui/icons";
 
 export default function CampaignMap() {
@@ -10,7 +10,6 @@ export default function CampaignMap() {
   const setPlayerFighter = useBattle((s) => s.setPlayerFighter);
   const completedStoryMissionIds = useRunner((s) => s.completedStoryMissionIds);
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
-  const [act, setAct] = useState<number>(1);
 
   const completedMissions = useMemo(
     () => [...new Set(
@@ -20,23 +19,16 @@ export default function CampaignMap() {
     [completedStoryMissionIds]
   );
 
-  const missions = useMemo(() => getStoryMissionsByAct(act), [act]);
+  const missions = GOLD_SLICE_STORY_MISSIONS;
   const selected = missions.find((m) => m.id === selectedMissionId) || null;
 
   const isCompleted = (id: string) => completedMissions.includes(id);
   const completedInAct = missions.filter((mission) => isCompleted(mission.id)).length;
 
-  const isUnlocked = (m: StoryMission, index: number) => {
-    if (index > 0) {
-      const prev = missions[index - 1];
-      return prev ? isCompleted(prev.id) : true;
-    }
-
-    if (act === 1) return true;
-
-    const previousAct = getStoryMissionsByAct(act - 1);
-    const previousFinalMission = previousAct[previousAct.length - 1];
-    return previousFinalMission ? isCompleted(previousFinalMission.id) : false;
+  const isUnlocked = (_m: StoryMission, index: number) => {
+    if (index === 0) return true;
+    const prev = missions[index - 1];
+    return prev ? isCompleted(prev.id) : false;
   };
 
   const setActiveStoryMission = useRunner((s) => s.setActiveStoryMission);
@@ -68,7 +60,7 @@ export default function CampaignMap() {
         </button>
 
         <div className="text-center mb-8">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.32em] text-[#a88e65]">Story Mode</p>
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.32em] text-[#a88e65]">Gold Slice Story</p>
           <h1 className="kj-vision-title mb-2 text-4xl font-black">
             Legends of Kai-Jax Campaign
           </h1>
@@ -88,20 +80,8 @@ export default function CampaignMap() {
           <span className="text-cyan-300 font-bold tabular-nums text-sm">{completedInAct} / {missions.length}</span>
         </div>
 
-        <div className="flex gap-2 mb-6">
-          {[1, 2, 3].map((a) => (
-            <button
-              key={a}
-              onClick={() => { setAct(a); setSelectedMissionId(null); }}
-              className={`px-4 py-2 rounded-xl border-2 font-bold transition-all ${
-                act === a
-                  ? "kj-vision-button text-[#f0cf87] border-[#f0cf87]"
-                  : "kj-vision-button text-[#9d927f]"
-              }`}
-            >
-              ACT {a}
-            </button>
-          ))}
+        <div className="kj-vision-panel mb-6 px-4 py-3 text-xs uppercase tracking-[0.18em] text-[#a88e65]">
+          Gold Slice scope: Act I, Mission 1. Later campaign chapters remain staged until their runtime and asset gates are certified.
         </div>
 
         <div className="space-y-2 mb-8">

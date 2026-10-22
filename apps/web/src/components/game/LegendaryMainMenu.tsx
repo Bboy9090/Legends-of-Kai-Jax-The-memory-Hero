@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../../styles/bronx_grit.css';
 import '../../styles/legendary-effects.css';
 import { useRunner } from '../../lib/stores/useRunner';
-import { ALL_STORY_MISSIONS } from '../../lib/story_missions';
+import { GOLD_SLICE_STORY_MISSIONS } from '../../lib/story_missions';
 
 
 /**
@@ -187,7 +187,7 @@ const LegendaryMainMenu: React.FC = () => {
                 {profile.totalScore > 0 ? `LEVEL ${Math.floor(profile.totalScore / 1000) + 1}` : 'EMPTY ECHO'}
               </div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                Story: {profile.completedStoryMissionIds.length} / {ALL_STORY_MISSIONS.length}
+                Story: {profile.completedStoryMissionIds.filter((id) => GOLD_SLICE_STORY_MISSIONS.some((mission) => mission.id === id || `story:${mission.id}` === id)).length} / {GOLD_SLICE_STORY_MISSIONS.length}
               </div>
               <div className="mt-4 pt-4 border-t border-white/10 text-xs text-legendary-gold opacity-0 group-hover:opacity-100 transition-opacity">
                 LOAD MEMORY →

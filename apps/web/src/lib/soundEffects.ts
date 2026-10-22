@@ -180,6 +180,7 @@ export const SOUND_EFFECTS: Record<string, SoundEffect> = {
 class SoundManager {
   private sounds: Map<string, HTMLAudioElement> = new Map();
   private isMuted: boolean = false;
+  private activeClones = new Set<HTMLAudioElement>();
 
   async loadSound(key: string, sound: SoundEffect): Promise<void> {
     try {
@@ -187,6 +188,7 @@ class SoundManager {
       const audio = new Audio(fullPath);
       audio.volume = sound.volume;
       audio.preload = 'auto';
+      audio.muted = this.isMuted;
       this.sounds.set(key, audio);
     } catch (error) {
       console.warn(`Failed to load sound ${key}:`, error);
@@ -211,9 +213,15 @@ class SoundManager {
 
     try {
       const clone = sound.cloneNode() as HTMLAudioElement;
+      clone.muted = this.isMuted;
+      this.activeClones.add(clone);
+      const release = () => this.activeClones.delete(clone);
+      clone.addEventListener('ended', release, { once: true });
+      clone.addEventListener('error', release, { once: true });
       if (options?.volume !== undefined) clone.volume = options.volume;
       if (options?.playbackRate !== undefined) clone.playbackRate = options.playbackRate;
       clone.play().catch((error) => {
+        release();
         if (error.name !== 'NotAllowedError') {
           console.warn(`Failed to play sound ${key}:`, error);
         }
@@ -225,6 +233,14 @@ class SoundManager {
 
   setMuted(muted: boolean): void {
     this.isMuted = muted;
+    for (const sound of this.sounds.values()) sound.muted = muted;
+    if (muted) {
+      for (const clone of this.activeClones) {
+        clone.muted = true;
+        clone.pause();
+      }
+      this.activeClones.clear();
+    }
   }
 
   isSoundLoaded(key: string): boolean {

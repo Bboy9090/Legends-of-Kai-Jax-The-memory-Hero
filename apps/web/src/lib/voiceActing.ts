@@ -115,6 +115,13 @@ let currentUtterance: SpeechSynthesisUtterance | null = null;
 let isSpeaking = false;
 let voiceVolume = 1.0;
 let isVoiceEnabled = true;
+let masterMuted = false;
+
+/** Transient master control; independent of saved voice preferences. */
+export function setVoiceMasterMuted(muted: boolean): void {
+  masterMuted = muted;
+  if (muted) stopDialogueAudio();
+}
 
 /**
  * Initialize speech synthesis
@@ -142,7 +149,7 @@ export function initializeVoiceSystem(): void {
 export async function playDialogueAudio(
   options: DialogueAudioOptions
 ): Promise<void> {
-  if (!isVoiceEnabled) {
+  if (!isVoiceEnabled || masterMuted) {
     options.onEnd?.();
     return;
   }
@@ -204,7 +211,7 @@ export async function playDialogueAudio(
  * Stop current speech
  */
 export function stopDialogueAudio(): void {
-  const synth = window.speechSynthesis;
+  const synth = typeof window !== "undefined" ? window.speechSynthesis : null;
   if (synth) {
     synth.cancel();
   }

@@ -18,6 +18,7 @@
 import { readFileSync, existsSync, statSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseRegistrySource } from "./registry-source-parser.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_ROOT = resolve(__dirname, "..");
@@ -52,33 +53,9 @@ const REQUIRED_TAILS = Array.from({ length: 9 }, (_, i) =>
 );
 
 // ---- Registry parser ------------------------------------------------------
-/**
- * Lightweight parse of MODEL_REGISTRY from the TypeScript source.
- * Avoids spinning up a full TS compiler in CI — extracts each entry's
- * `path` field with a tolerant regex pass.
- */
+// Resolve source/dev paths: optimized production aliases are emitted during build.
 function parseRegistry() {
-  const src = readFileSync(REGISTRY_PATH, "utf8");
-  const start = src.indexOf("MODEL_REGISTRY");
-  if (start < 0) {
-    throw new Error(`MODEL_REGISTRY not found in ${REGISTRY_PATH}`);
-  }
-  const block = src.slice(start);
-  // Match every `<id>: { ... path: "<path>" ... }` entry.
-  const entryRe = /(?:["']([\w-]+)["']|(\b[\w-]+))\s*:\s*\{[^}]*?path:\s*["']([^"']+)["'][^}]*?\}/g;
-  const entries = {};
-  let m;
-  while ((m = entryRe.exec(block)) !== null) {
-    const id = m[1] ?? m[2];
-    const path = m[3];
-    if (id === "MODEL_REGISTRY") continue;
-    if (!path.startsWith("/")) continue;
-    entries[id] = path;
-  }
-  if (Object.keys(entries).length === 0) {
-    throw new Error("Failed to parse any entries from MODEL_REGISTRY");
-  }
-  return entries;
+  return parseRegistrySource(readFileSync(REGISTRY_PATH, "utf8"));
 }
 
 // ---- GLB binary parser ----------------------------------------------------

@@ -912,7 +912,7 @@ export default function BattleUI() {
   if (!playerFighter || !opponentFighter) return null;
 
   return (
-    <div className="kj-vision-shell fixed inset-0 pointer-events-none">
+    <div className="kj-vision-shell kj-vision-overlay fixed inset-0 pointer-events-none">
       {/* Critical low-health vignette */}
       {isCritical && (
         <div

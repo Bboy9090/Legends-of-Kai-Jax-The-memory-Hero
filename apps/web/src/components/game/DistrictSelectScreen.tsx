@@ -14,12 +14,10 @@ const ORDER: CampaignNodeId[] = [
 
 export default function DistrictSelectScreen() {
   const setGameState = useRunner((s) => s.setGameState);
-  const setCampaignCurrentNode = useRunner((s) => s.setCampaignCurrentNode);
   const completed = useRunner((s) => s.campaignCompletedNodes);
   const selectedCharacter = useRunner((s) => s.selectedCharacter);
 
   const launch = (nodeId: CampaignNodeId, _meta: DistrictRoamMeta) => {
-    setCampaignCurrentNode(nodeId);
     useAdventure.getState().startDistrictRoam(nodeId, selectedCharacter || "kai-jax");
     setGameState("adventure");
   };

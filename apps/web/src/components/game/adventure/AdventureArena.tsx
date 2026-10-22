@@ -12,6 +12,8 @@ import AdventureSessionGuard from "./AdventureSessionGuard";
 import AdventureEnemyAI from "./AdventureEnemyAI";
 import Mission1EncounterBridge from "./Mission1EncounterBridge";
 import * as THREE from "three";
+import { getFighterById } from "../../../lib/characters";
+import { isMission1Id } from "../../../game/combat/mission1Identity";
 import { getQualitySettings } from "../../../lib/threejs/PerformanceOptimizer";
 
 const VISUAL_ARENA_SIZE = 76;
@@ -419,6 +421,8 @@ function ScriptedEncounterSpawner({ roamSessionId }: { roamSessionId: number }) 
 }
 
 export default function AdventureArena() {
+  const fighterId = useAdventure((state) => state.player.fighterId);
+  const accentColor = getFighterById(fighterId)?.accentColor ?? "#9d4edd";
   const arenaId = useAdventure((s) => s.arenaId);
   const roamDistrictId = useAdventure((s) => s.roamDistrictId);
   const roamSessionId = useAdventure((s) => s.roamSessionId);
@@ -431,12 +435,12 @@ export default function AdventureArena() {
       <ArenaLighting config={arena} />
       <ArenaGround config={arena} />
       <ArenaEnvironment config={arena} />
-      <AdventureCharacter />
+      <AdventureCharacter fighterId={fighterId} accentColor={accentColor} />
       <AdventureCamera />
       <AdventureSessionGuard />
       <AdventurePlayerController />
       <AdventureEnemyAI />
-      {missionId === "mission1" && <Mission1EncounterBridge />}
+      {isMission1Id(missionId) && <Mission1EncounterBridge />}
       {roamDistrictId ? <ScriptedEncounterSpawner roamSessionId={roamSessionId} /> : !missionId && !trainingSession ? <WaveSpawner roamSessionId={roamSessionId} /> : null}
     </>
   );

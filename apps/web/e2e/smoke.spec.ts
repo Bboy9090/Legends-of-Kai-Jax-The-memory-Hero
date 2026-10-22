@@ -47,13 +47,32 @@ function collectErrors(page: Page): string[] {
     }
   });
   page.on("console", (msg: ConsoleMessage) => {
-    if (msg.type() === "error" && !isBenign(msg.text())) {
-      const entry = `console.error: ${msg.text()}`;
+    const detail = `${msg.text()} (${msg.location().url ?? ''})`;
+    if (msg.type() === "error" && !isBenign(detail)) {
+      const entry = `console.error: ${detail}`;
       errors.push(entry);
       console.log("RELEASE_CONSOLE_ERROR", entry);
     }
   });
   return errors;
+}
+
+// Capture selection and skin evidence from the same successful browser frame.
+async function captureAuthoredMotion(page: Page, requested: 'walk' | 'run' | 'kick'): Promise<any> {
+  const sample = await page.waitForFunction((move) => {
+    const animation = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax;
+    const deformation = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kaijax;
+    const matches = move === 'kick'
+      ? animation?.requested === 'attack' && animation.attackType === 'kick'
+      : animation?.requested === move;
+    return matches && animation.authored === true
+      && deformation?.requested === move && deformation.moving === true
+      && deformation.skinVerified === true && deformation.source === 'authored'
+      ? { animation: { ...animation }, deformation: { ...deformation } }
+      : false;
+  }, requested, { timeout: 60_000 });
+  try { return await sample.jsonValue(); }
+  finally { await sample.dispose(); }
 }
 
 type BootSnapshot = {
@@ -183,7 +202,7 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   );
   await expect(page.getByRole("heading", { name: "Character Select" })).toBeVisible({ timeout: 15_000 });
 
-  await page.getByRole("button", { name: /^Kai,.*playable/ }).click();
+  await page.getByRole("button", { name: /^Kai-Jax,.*playable/ }).click();
 
   // Start the real training battle for deterministic move certification.
   // Clear menu/title preview telemetry first; certification begins only after
@@ -214,216 +233,43 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   );
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
 
-  await page.waitForFunction(() => Boolean((window as any).__KAI_JAX_ANIMATION_PROBE__?.kai), null, { timeout: 20_000 });
+  await page.waitForFunction(() => Boolean((window as any).__KAI_JAX_ANIMATION_PROBE__?.kaijax), null, { timeout: 20_000 });
 
-  // Certify locomotion against the clip actually selected by the mounted fighter.
+  // Exercise actual keyboard input, retaining the frame that satisfied the gate.
+  await expect(page.locator('.kj-vision-overlay')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(page.locator('.kj-vision-overlay')).toHaveCSS('background-image', 'none');
   await page.keyboard.down("ArrowRight");
-  await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
-    return probe?.requested === "walk" && probe?.authored === true && /walk/i.test(probe?.selectedClip ?? "");
-  }, null, { timeout: 45_000 });
-  const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
-  console.log("LIVE_ANIMATION_WALK_PROBE", JSON.stringify(walkProbe));
-  expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
-  try {
-    await page.waitForFunction(() => {
-      const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai;
-      return probe?.requested === "walk" && probe?.moving === true && probe?.skinVerified === true;
-    }, null, { timeout: 20_000 });
-  } catch (error) {
-    const diagnostic = await page.evaluate(() => ({
-      animation: (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai ?? null,
-      deformation: (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai ?? null,
-      rig: (window as any).__KAI_JAX_RIG_PROBE__?.kai ?? null,
-      frame: (window as any).__KAI_JAX_FRAME_PROBE__?.kai ?? null,
-      companion: (window as any).__KAI_JAX_COMPANION_PROBE__ ?? null,
-    }));
-    console.log("LIVE_KAI_SKIN_TIMEOUT_DIAGNOSTIC", JSON.stringify(diagnostic));
-    throw error;
-  }
-  const walkDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai);
-  console.log("LIVE_DEFORMATION_WALK_PROBE", JSON.stringify(walkDeform));
-  expect(walkDeform?.moving).toBe(true);
-  expect(walkDeform?.skinVerified).toBe(true);
+  const walk = await captureAuthoredMotion(page, 'walk');
   await page.keyboard.down("ShiftLeft");
-  await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
-    return probe?.requested === "run" && probe?.authored === true && /run/i.test(probe?.selectedClip ?? "");
-  }, null, { timeout: 45_000 });
-  const runProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
-  console.log("LIVE_ANIMATION_RUN_PROBE", JSON.stringify(runProbe));
-  expect(Object.values(runProbe ?? {}).some((p: any) => p?.requested === "run" && /run/i.test(p?.selectedClip ?? ""))).toBeTruthy();
-  await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai;
-    return probe?.requested === "run" && probe?.moving === true && probe?.skinVerified === true;
-  }, null, { timeout: 20_000 });
-  const runDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai);
-  console.log("LIVE_DEFORMATION_RUN_PROBE", JSON.stringify(runDeform));
-  expect(runDeform?.moving).toBe(true);
-  expect(runDeform?.skinVerified).toBe(true);
+  const run = await captureAuthoredMotion(page, 'run');
   await page.keyboard.up("ShiftLeft");
   await page.keyboard.up("ArrowRight");
-
-  // Exercise the actual keyboard path while the WebGL fighter is mounted.
-  // Kick is the authored-attack certification target. Procedural Punch pose
-  // quality remains a separate visual-review item and must not gate this proof.
-  await page.keyboard.down("KeyK"); // kick
-  try {
-    await page.waitForFunction(
-      () => {
-        const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
-        return probe?.requested === "attack"
-          && probe?.attackType === "kick";
-      },
-      null,
-      { timeout: 60_000 },
-    );
-  } catch (error) {
-    const inputProbe = await page.evaluate(() => (window as any).__KAI_JAX_INPUT_PROBE__);
-    const animationProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
-    const companionProbe = await page.evaluate(() => (window as any).__KAI_JAX_COMPANION_PROBE__);
-    console.log("LIVE_INPUT_KICK_PROBE", JSON.stringify(inputProbe));
-    console.log("LIVE_ANIMATION_KICK_TIMEOUT_PROBE", JSON.stringify(animationProbe));
-    console.log("LIVE_COMPANION_LOAD_TIMEOUT_PROBE", JSON.stringify(companionProbe));
+  let kick;
+  await page.keyboard.down("KeyK");
+  try { kick = await captureAuthoredMotion(page, 'kick'); }
+  catch (error) {
+    console.log('KICK_TIMEOUT_DIAGNOSTIC', JSON.stringify(await page.evaluate(() => ({
+      animation: (window as any).__KAI_JAX_ANIMATION_PROBE__,
+      deformation: (window as any).__KAI_JAX_DEFORMATION_PROBE__,
+      input: (window as any).__KAI_JAX_INPUT_PROBE__,
+    }))));
     throw error;
-  } finally {
-    await page.keyboard.up("KeyK");
+  } finally { await page.keyboard.up("KeyK"); }
+  const proof = { walk, run, kick };
+  for (const [requested, sample] of Object.entries(proof)) {
+    expect(sample.animation.authored).toBe(true);
+    expect(sample.animation.selectedClip).toMatch(new RegExp(requested, 'i'));
+    expect(sample.deformation.requested).toBe(requested);
+    expect(sample.deformation.moving).toBe(true);
+    expect(sample.deformation.skinVerified).toBe(true);
+    expect(sample.deformation.source).toBe('authored');
   }
-  const kickProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
-  console.log("LIVE_ANIMATION_KICK_PROBE", JSON.stringify(kickProbe));
-  const kaiKick = kickProbe?.kai;
-  expect(kaiKick?.requested).toBe("attack");
-  expect(kaiKick?.attackType).toBe("kick");
-
-  // Spider-Kai currently has no compatible authored kick donor. The prior
-  // 9-tail donor shared bone names but not the bind/rest skeleton, so release
-  // correctness is visible articulation rather than a misleading clip-name
-  // check. When a compatible Spider-Kai kick is added, this may become authored.
-  await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai;
-    return probe?.requested === "kick" && probe?.moving === true && probe?.skinVerified === true;
-  }, null, { timeout: 20_000 });
-  const kickDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai);
-  console.log("LIVE_DEFORMATION_KICK_PROBE", JSON.stringify(kickDeform));
-  expect(kickDeform?.moving).toBe(true);
-  expect(kickDeform?.skinVerified).toBe(true);
-  // Runtime certification must not fail solely because a software WebGL runner
-  // stalls while rasterizing a screenshot. Preserve the image when possible;
-  // final presentation review remains a separate explicit release gate.
-  try {
-    // First prefer a compact canvas-only capture. If the WebGL canvas stalls
-    // during readback on a real GPU, fall back to the full-page path that has
-    // already proven reliable on hardware-backed macOS.
-    await page.setViewportSize({ width: 640, height: 400 });
-    await page.waitForTimeout(250);
-    try {
-      await page.locator("canvas").first().screenshot({
-        path: testInfo.outputPath("kai-authored-kick-640x400.png"),
-        timeout: 15_000,
-      });
-      console.log("KAI_KICK_MOTION_SCREENSHOT", "captured-640x400");
-    } catch (canvasError) {
-      console.log("KAI_KICK_MOTION_CANVAS_SCREENSHOT", "capture-unavailable", String(canvasError));
-      try {
-        await page.screenshot({
-          path: testInfo.outputPath("kai-authored-kick-fallback.png"),
-          animations: "disabled",
-          timeout: 15_000,
-        });
-        console.log("KAI_KICK_MOTION_SCREENSHOT", "captured-fallback-page");
-      } catch (pageError) {
-        console.log("KAI_KICK_MOTION_PAGE_SCREENSHOT", "capture-unavailable", String(pageError));
-        const cdp = await page.context().newCDPSession(page);
-        const shot = await cdp.send("Page.captureScreenshot", {
-          format: "png",
-          fromSurface: true,
-          captureBeyondViewport: false,
-        });
-        const fs = await import("node:fs/promises");
-        await fs.writeFile(
-          testInfo.outputPath("kai-authored-kick-cdp-fallback.png"),
-          Buffer.from(shot.data, "base64"),
-        );
-        console.log("KAI_KICK_MOTION_SCREENSHOT", "captured-cdp-fallback");
-      }
-    }
-  } catch (error) {
-    console.log("KAI_KICK_MOTION_SCREENSHOT", "capture-unavailable", String(error));
-  }
-
-  expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
-});
-
-test("fusion rig: Kai-Jax visibly articulates instead of translating as a statue", async ({ page }) => {
-  test.setTimeout(180_000);
-  const errors = collectErrors(page);
-  await page.addInitScript(() => {
-    (window as any).__KAI_JAX_CERTIFICATION__ = true;
+  expect(kick.animation.requested).toBe('attack');
+  expect(kick.animation.attackType).toBe('kick');
+  console.log('LIVE_FUSION_DEFORMATION_PROOF', JSON.stringify(proof));
+  await testInfo.attach('kai-jax-deformation-proof.json', {
+    body: Buffer.from(JSON.stringify(proof, null, 2)), contentType: 'application/json',
   });
-  await boot(page);
-  await enterGameFromLaunch(page);
-
-  await page.getByRole("button", { name: /COMBAT ARENA/i }).click();
-  await page.waitForFunction(
-    () => (window as any).runnerStore?.getState?.().gameState === "versus-select",
-    null,
-    { timeout: 10_000 },
-  );
-
-  const fusionCard = page.getByRole("button", { name: /^Kai-Jax,.*playable/ });
-  await fusionCard.click();
-  await expect(fusionCard).toHaveAttribute("aria-pressed", "true", { timeout: 10_000 });
-  await page.evaluate(() => {
-    delete (window as any).__KAI_JAX_CONTROLLER_READY__;
-    (window as any).__KAI_JAX_ANIMATION_PROBE__ = {};
-    (window as any).__KAI_JAX_DEFORMATION_PROBE__ = {};
-    (window as any).__KAI_JAX_FRAME_PROBE__ = {};
-  });
-  await page.getByRole("button", { name: "Training", exact: true }).click();
-  await page.waitForFunction(
-    () => (window as any).runnerStore?.getState?.().gameState === "playing",
-    null,
-    { timeout: 15_000 },
-  );
-  await page.waitForFunction(
-    () => (window as any).battleStore?.getState?.().battlePhase === "fighting",
-    null,
-    { timeout: 15_000 },
-  );
-  await page.waitForFunction(
-    () => (window as any).__KAI_JAX_CONTROLLER_READY__?.mounted === true,
-    null,
-    { timeout: 45_000 },
-  );
-  await expect(page.locator("canvas").first()).toBeVisible({ timeout: 20_000 });
-
-  await page.keyboard.down("ArrowRight");
-  try {
-    await page.waitForFunction(() => {
-      const probes = Object.values((window as any).__KAI_JAX_DEFORMATION_PROBE__ ?? {}) as any[];
-      return probes.some((probe) => probe?.requested === "walk" && probe?.moving === true);
-    }, null, { timeout: 30_000 });
-  } catch (error) {
-    const diagnostic = await page.evaluate(() => ({
-      fighter: (window as any).battleStore?.getState?.().playerFighterId ?? null,
-      battlePhase: (window as any).battleStore?.getState?.().battlePhase ?? null,
-      velocityX: (window as any).battleStore?.getState?.().playerVelocityX ?? null,
-      animation: (window as any).__KAI_JAX_ANIMATION_PROBE__ ?? null,
-      deformation: (window as any).__KAI_JAX_DEFORMATION_PROBE__ ?? null,
-      frame: (window as any).__KAI_JAX_FRAME_PROBE__ ?? null,
-      companion: (window as any).__KAI_JAX_COMPANION_PROBE__ ?? null,
-    }));
-    console.log("LIVE_FUSION_TIMEOUT_DIAGNOSTIC", JSON.stringify(diagnostic));
-    throw error;
-  } finally {
-    await page.keyboard.up("ArrowRight");
-  }
-
-  const deformation = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__);
-  console.log("LIVE_FUSION_DEFORMATION_PROBE", JSON.stringify(deformation));
-  expect(Object.values(deformation ?? {}).some((probe: any) =>
-    probe?.requested === "walk" && probe?.moving === true && probe?.skinVerified === true
-  )).toBeTruthy();
   expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
 });
 

@@ -79,7 +79,7 @@ export default function AdventurePlayerController() {
 
   useFrame((state, rawDelta) => {
     const store = useAdventure.getState();
-    if (store.isPaused) return;
+    if (store.isPaused || store.player.health <= 0) return;
 
     const p = store.player;
     const delta = Math.min(rawDelta, 0.05) * p.timeScale;
@@ -196,7 +196,7 @@ export default function AdventurePlayerController() {
               const dz = p.posZ - enemy.posZ;
               const dist = Math.sqrt(dx * dx + dz * dz);
               if (dist <= PLAYER_HIT_RANGE) {
-                store.damageEnemy(enemy.id, currentMove.damage);
+                store.damageEnemy(enemy.id, currentMove.damage, p.attackType === "kick" || p.attackType === "heavy" || p.attackType === "ultimate");
                 if (isStatueFighter(enemy.fighterId)) useAudio.getState().playStoneHit();
                 store.setHitStopTimer(currentMove.hitStopFrames / 60);
                 if (currentMove.hitStopFrames >= 6) {

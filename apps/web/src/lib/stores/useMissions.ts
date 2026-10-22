@@ -274,7 +274,7 @@ function resolveMissionMeta(source: MissionSource, id: string): ActiveMissionMet
   if (source === "uee") {
     const m = getUEEMissionById(id);
     if (!m) return null;
-    const arenaRaw = m.arena ?? m.arenaId;
+    const arenaRaw = m.arena;
     return { source, id: m.id, title: m.name, description: m.description, arenaId: toPlayableArenaId(arenaRaw) };
   }
   const m = getStoryMissionById(id);

@@ -314,10 +314,8 @@ export default function CinematicPostFX({
 
       // Film grain (very subtle)
       const film = new FilmPass(
-        0.22, // noise intensity
-        0.04, // scanline intensity
-        720, // scanline count
-        false
+        0.22, // film intensity
+        false // grayscale
       );
       filmRef.current = film;
       composer.addPass(film);
