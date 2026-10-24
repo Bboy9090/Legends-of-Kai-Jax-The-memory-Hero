@@ -179,7 +179,7 @@ export const ACT_II_STORY_MISSIONS: StoryMission[] = [
     actNumber: 2,
     missionNumber: 7,
     title: 'The Third Voice Revealed',
-    description: 'The Rift brings the already shared physical form's three internal identity domains into conscious coordination; no physical separation occurs.',
+    description: 'The Rift brings three internal identity domains in the already shared physical form into conscious coordination; no physical separation occurs.',
     introCutscene: [
       { speaker: 'Kai', text: 'Jax, I can hear you inside our thoughts. Stop trying to carry my side for me.', side: 'left', emotion: 'angry' },
       { speaker: 'Jax', text: 'We share this body. You hold your will, and I will hold mine.', side: 'right', emotion: 'determined' },
