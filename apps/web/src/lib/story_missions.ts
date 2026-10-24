@@ -98,7 +98,7 @@ export const ACT_I_STORY_MISSIONS: StoryMission[] = [
     outroCutscene: [
       { speaker: 'Kaison', text: 'The arena is lost. We need to find the others.', side: 'left' }
     ],
-    objectives: ['Defeat 8 Void Grunts', 'Close the Rift'],
+    objectives: ['Defeat all 20 Void Grunts across both waves', 'Survive the Rift assault'],
     difficulty: 3,
     arena: 'memory_vault',
     storyBeat: 'INCITING INCIDENT: The tournament is invaded. Reality is under attack.',
