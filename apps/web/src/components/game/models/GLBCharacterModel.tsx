@@ -185,6 +185,8 @@ function GLBModelInner({
   const basesRef = useRef<LimbBaseRotations | null>(null);
   const animStateRef = useRef<AnimState>(createAnimState());
   const wasAttacking = useRef(false);
+  const currentClipNameRef = useRef("none");
+  const attackTypeRef = useRef<GLBCharacterModelProps["attackType"]>(null);
 
   // Animation Selector State
   const [activeClipName, setActiveClipName] = useState<string>("none");
@@ -300,9 +302,10 @@ function GLBModelInner({
     }
 
     // Transition Clips
-    if (nextClip !== activeClipName) {
+    if (nextClip !== currentClipNameRef.current) {
       const prevAction = currentActionRef.current;
       const nextAction = actionsRef.current[nextClip];
+      currentClipNameRef.current = nextClip;
 
       if (nextAction) {
         if (prevAction) prevAction.fadeOut(0.3);
@@ -342,11 +345,12 @@ function GLBModelInner({
         currentActionRef.current.weight = THREE.MathUtils.lerp(currentActionRef.current.weight, 0, delta * 10);
       }
 
-      if (!wasAttacking.current) {
+      if (!wasAttacking.current || attackTypeRef.current !== attackType) {
         anim.attackPhase = 0;
         anim.comboStep = (anim.comboStep + 1) % 8;
       }
       wasAttacking.current = true;
+      attackTypeRef.current = attackType;
       
       // Procedural Combat
       if (attackType === "punch") animatePunch(innerRef.current, limbs, bases, anim, delta, t);
@@ -357,12 +361,13 @@ function GLBModelInner({
       
     } else {
       wasAttacking.current = false;
+      attackTypeRef.current = null;
       if (currentActionRef.current) {
         currentActionRef.current.weight = THREE.MathUtils.lerp(currentActionRef.current.weight, 1, delta * 5);
       }
 
       // If no clip is driving this state, use procedural locomotion
-      if (activeClipName === "none") {
+      if (currentClipNameRef.current === "none") {
         if (isMoving) animateWalk(innerRef.current, limbs, bases, anim, delta, isRunning);
         else animateIdle(innerRef.current, limbs, bases, t, delta);
       }
