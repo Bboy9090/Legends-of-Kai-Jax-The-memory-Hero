@@ -150,6 +150,7 @@ interface AdventureState {
   applyDistrictCheckpoint: () => void;
   togglePause: () => void;
   reset: () => void;
+  retryMission: () => void;
 }
 
 const defaultPlayer: AdventurePlayerState = {
@@ -514,4 +515,15 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       districtCompleted: false,
       checkpointBetweenEncounters: true,
     }),
+  retryMission: () => {
+    const state = get();
+    set({
+      player: { ...defaultPlayer, fighterId: state.player.fighterId },
+      enemies: [],
+      objectives: freshObjectives(state.missionId),
+      waveCount: 1,
+      enemiesDefeated: 0,
+      isPaused: false,
+    });
+  },
 }));
