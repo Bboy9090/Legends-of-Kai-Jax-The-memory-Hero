@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAdventure } from "../../lib/stores/useAdventure";
 import { evaluateCampaignProgressionGating } from "../../lib/adventureEvaluator";
-import { hasChaseTargetEscaped, findCivilianAttack, CIVILIAN_ATTACK_DAMAGE } from "../../lib/adventureTelemetry";
+import { shouldMarkChaseTargetEscaped, findCivilianAttack, CIVILIAN_ATTACK_DAMAGE } from "../../lib/adventureTelemetry";
 import { getStoryMissionById, type StoryMission, type StoryDialogue } from "../../lib/story_missions";
 
 interface StoryAdventureProps {
@@ -405,8 +405,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
     checkIntervalRef.current = setInterval(() => {
       const state = useAdventure.getState();
       const { enemies, player } = state;
-      if (mission.id === "story_act1_m4" && !state.objectives.milestones.stalkerIntercepted &&
-          hasChaseTargetEscaped(player, enemies)) {
+      if (shouldMarkChaseTargetEscaped(mission.id, state.objectives.milestones.stalkerIntercepted, player, enemies)) {
         state.markChaseTargetEscaped();
       }
       if (mission.id === "story_act1_m5") {

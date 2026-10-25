@@ -10,6 +10,16 @@ export function hasChaseTargetEscaped(player: Pick<AdventurePlayerState, "posX" 
     Math.hypot(e.posX - player.posX, e.posZ - player.posZ) >= CHASE_ESCAPE_DISTANCE);
 }
 
+/** Escape only counts before interception; the successful retreat is not a failure. */
+export function shouldMarkChaseTargetEscaped(
+  missionId: string | null,
+  stalkerIntercepted: boolean,
+  player: Pick<AdventurePlayerState, "posX" | "posZ">,
+  enemies: AdventureEnemy[],
+): boolean {
+  return missionId === "story_act1_m4" && !stalkerIntercepted && hasChaseTargetEscaped(player, enemies);
+}
+
 export function findCivilianAttack(
   enemies: AdventureEnemy[],
   civilians: DedicatedCivilian[],

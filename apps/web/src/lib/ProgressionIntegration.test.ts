@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { useAdventure, type AdventureEnemy } from './stores/useAdventure';
 import { evaluateCampaignProgressionGating } from './adventureEvaluator';
+import { shouldMarkChaseTargetEscaped } from './adventureTelemetry';
 
 /**
  * Progression integration tests: verify evaluateCampaignProgressionGating
@@ -355,6 +356,42 @@ describe('Mission Progression Integration', () => {
       });
 
       expect(outcome).toBe('FAILED');
+    });
+  });
+
+  describe('Mission 4 interception/escape precedence', () => {
+    it('counts escape before interception but not the scripted retreat afterward', () => {
+      useAdventure.getState().initAdventure('kai-jax', 'story_act1_m4', 'arena');
+      useAdventure.setState({
+        player: { ...useAdventure.getState().player, posX: 0, posZ: 0 },
+        enemies: [{
+          id: 'stalker', fighterId: 'void-stalker', tier: 'boss1',
+          posX: 75, posY: 0, posZ: 0, rotY: 0,
+          health: 2500, maxHealth: 2500, isDead: false,
+          isAggro: true, isAttacking: false, aiState: 'chase',
+          telegraphTimer: 0, patrolTargetX: 0, patrolTargetZ: 0, stunTimer: 0,
+        }],
+      });
+      const before = useAdventure.getState();
+      expect(shouldMarkChaseTargetEscaped(before.missionId, false, before.player, before.enemies)).toBe(true);
+      useAdventure.getState().damageEnemy('stalker', 6000);
+      const after = useAdventure.getState();
+      expect(after.objectives.milestones.stalkerIntercepted).toBe(true);
+      expect(shouldMarkChaseTargetEscaped(after.missionId, true, after.player, after.enemies)).toBe(false);
+      expect(evaluateCampaignProgressionGating({
+        missionId: after.missionId, enemies: after.enemies, objectives: after.objectives,
+        currentWaveIndex: 0, totalWavesCount: 1,
+      })).toBe('VICTORY');
+    });
+
+    it('does not suppress a genuine escape failure recorded before interception', () => {
+      useAdventure.getState().initAdventure('kai-jax', 'story_act1_m4', 'arena');
+      useAdventure.getState().markChaseTargetEscaped();
+      const s = useAdventure.getState();
+      expect(evaluateCampaignProgressionGating({
+        missionId: s.missionId, enemies: s.enemies, objectives: s.objectives,
+        currentWaveIndex: 0, totalWavesCount: 1,
+      })).toBe('FAILED');
     });
   });
 
