@@ -11,7 +11,7 @@ export default defineConfig({
   workers: 1,
   reporter: [['html'], ['list']],
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:5000',
     trace: 'on-first-retry',
   },
   projects: [
@@ -21,13 +21,14 @@ export default defineConfig({
         ...devices['Desktop Chromium'],
         headless: true,
         launchArgs: ['--no-sandbox', '--disable-dev-shm-usage'],
+        executablePath: CHROMIUM_PATH,
       },
     },
   ],
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
+    command: 'true',
+    url: 'http://localhost:5000',
     reuseExistingServer: true,
-    timeout: 120000,
+    timeout: 10000,
   },
 });
