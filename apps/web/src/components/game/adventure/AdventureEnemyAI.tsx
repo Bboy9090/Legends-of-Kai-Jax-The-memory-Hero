@@ -6,6 +6,7 @@ import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdvent
 import { getModelConfig } from "../../../assets/modelRegistry";
 import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
 import { ENEMY_TIERS } from "../../../game/tuning/enemyTuning";
+import { civilianPursuitStep } from "../../../lib/civilianPursuit";
 import {
   findLimbs,
   captureBaseRotations,
@@ -267,8 +268,13 @@ export default function AdventureEnemyAI() {
 
       if (dist < tierConfig.aggroRange && !enemy.isAggro) adv.setEnemyAggro(enemy.id, true);
       const healthPct = enemy.health / enemy.maxHealth;
+      const interceptedStalker = adv.missionId === "story_act1_m4" && enemy.fighterId === "void-stalker" && adv.objectives.milestones.stalkerIntercepted;
+      if (interceptedStalker && enemy.aiState !== "retreat") {
+        adv.setEnemyAIState(enemy.id, "retreat");
+        adv.setEnemyAttacking(enemy.id, false);
+      }
 
-      if (enemy.aiState === "retreat" && healthPct <= tierConfig.retreatThreshold) {
+      if (interceptedStalker || (enemy.aiState === "retreat" && healthPct <= tierConfig.retreatThreshold)) {
         const fleeX = -dx / (dist || 1);
         const fleeZ = -dz / (dist || 1);
         adv.setEnemyPos(
@@ -284,6 +290,20 @@ export default function AdventureEnemyAI() {
           ),
         }));
         return;
+      }
+
+      if (adv.missionId === "story_act1_m5" && dist > tierConfig.aggroRange &&
+          enemy.aiState !== "telegraph" && enemy.aiState !== "attack" && enemy.aiState !== "retreat") {
+        const pursuit = civilianPursuitStep(enemy, adv.objectives.civilianRegistry, tierConfig.speed, delta);
+        if (pursuit) {
+          adv.setEnemyPos(enemy.id, pursuit.nextX, enemy.posY, pursuit.nextZ);
+          adv.setEnemyAIState(enemy.id, "chase");
+          const angle = Math.atan2(pursuit.nextX - enemy.posX, pursuit.nextZ - enemy.posZ);
+          if (pursuit.nextX !== enemy.posX || pursuit.nextZ !== enemy.posZ) {
+            useAdventure.setState(s => ({ enemies: s.enemies.map(e => e.id === enemy.id ? { ...e, rotY: angle } : e) }));
+          }
+          return;
+        }
       }
 
       if ((enemy.aiState === "idle" || enemy.aiState === "patrol") && !enemy.isAggro) {
