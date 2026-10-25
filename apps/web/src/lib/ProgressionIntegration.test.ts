@@ -2,6 +2,9 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { useAdventure, type AdventureEnemy } from './stores/useAdventure';
 import { evaluateCampaignProgressionGating } from './adventureEvaluator';
 import { shouldMarkChaseTargetEscaped } from './adventureTelemetry';
+import { retreatMovementStep } from './enemyMovement';
+import { civilianPursuitStep } from './civilianPursuit';
+import { ENEMY_TIERS } from '../game/tuning/enemyTuning';
 
 /**
  * Progression integration tests: verify evaluateCampaignProgressionGating
@@ -419,24 +422,16 @@ describe('Mission Progression Integration', () => {
       const initialPos = useAdventure.getState().enemies[0].posX;
       const initialDist = Math.abs(initialPos - 0);
 
-      // Simulate retreat movement: flee away from player (toward negative X)
+      // Execute the same movement function called by AdventureEnemyAI on each frame.
       const player = useAdventure.getState().player;
-      const enemy = useAdventure.getState().enemies[0];
-      const dx = player.posX - enemy.posX;
-      const dz = player.posZ - enemy.posZ;
-      const dist = Math.sqrt(dx * dx + dz * dz);
-
-      const fleeX = -dx / (dist || 1);
-      const speed = 8; // boss1 speed
       const frames = 5;
       const deltaPerFrame = 0.016;
-      let currentX = enemy.posX;
-
       for (let i = 0; i < frames; i++) {
-        currentX += fleeX * speed * 1.15 * deltaPerFrame;
+        const enemy = useAdventure.getState().enemies[0];
+        const next = retreatMovementStep(enemy, player, ENEMY_TIERS[enemy.tier].speed, deltaPerFrame);
+        useAdventure.getState().setEnemyPos(enemy.id, next.nextX, enemy.posY, next.nextZ);
       }
-
-      const finalDist = Math.abs(currentX - 0);
+      const finalDist = Math.abs(useAdventure.getState().enemies[0].posX - player.posX);
       expect(finalDist).toBeGreaterThan(initialDist);
     });
 
@@ -501,19 +496,14 @@ describe('Mission Progression Integration', () => {
         Math.pow(civ1.posX - (-10), 2) + Math.pow(civ1.posZ - 10, 2)
       );
 
-      // Simulate movement toward civilian
-      const speed = 4; // minion1 speed
-      const frames = 3;
-      const deltaPerFrame = 0.016;
-      const moveAmount = speed * deltaPerFrame * frames;
-
-      // Move 5 units closer to civilian (toward posX -5)
-      const newX = -10 + moveAmount;
-
-      const finalDist = Math.sqrt(
-        Math.pow(civ1.posX - newX, 2) + Math.pow(civ1.posZ - 10, 2)
-      );
-
+      for (let i = 0; i < 3; i++) {
+        const enemy = useAdventure.getState().enemies[0];
+        const step = civilianPursuitStep(enemy, useAdventure.getState().objectives.civilianRegistry, ENEMY_TIERS[enemy.tier].speed, 0.016);
+        expect(step).not.toBeNull();
+        useAdventure.getState().setEnemyPos(enemy.id, step!.nextX, enemy.posY, step!.nextZ);
+      }
+      const finalEnemy = useAdventure.getState().enemies[0];
+      const finalDist = Math.hypot(civ1.posX - finalEnemy.posX, civ1.posZ - finalEnemy.posZ);
       expect(finalDist).toBeLessThan(initialDist);
     });
   });

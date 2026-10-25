@@ -7,6 +7,7 @@ import { getModelConfig } from "../../../assets/modelRegistry";
 import { useAudio, isStatueFighter } from "../../../lib/stores/useAudio";
 import { ENEMY_TIERS } from "../../../game/tuning/enemyTuning";
 import { civilianPursuitStep } from "../../../lib/civilianPursuit";
+import { retreatMovementStep } from "../../../lib/enemyMovement";
 import {
   findLimbs,
   captureBaseRotations,
@@ -275,15 +276,9 @@ export default function AdventureEnemyAI() {
       }
 
       if (interceptedStalker || (enemy.aiState === "retreat" && healthPct <= tierConfig.retreatThreshold)) {
-        const fleeX = -dx / (dist || 1);
-        const fleeZ = -dz / (dist || 1);
-        adv.setEnemyPos(
-          enemy.id,
-          enemy.posX + fleeX * tierConfig.speed * 1.15 * delta,
-          enemy.posY,
-          enemy.posZ + fleeZ * tierConfig.speed * 1.15 * delta,
-        );
-        const fleeRot = Math.atan2(-dx, -dz);
+        const flee = retreatMovementStep(enemy, player, tierConfig.speed, delta);
+        adv.setEnemyPos(enemy.id, flee.nextX, enemy.posY, flee.nextZ);
+        const fleeRot = flee.fleeRotation;
         useAdventure.setState((s) => ({
           enemies: s.enemies.map((e) =>
             e.id === enemy.id ? { ...e, rotY: THREE.MathUtils.lerp(e.rotY, fleeRot, 5 * delta) } : e,
