@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAdventure } from "../../lib/stores/useAdventure";
+import { evaluateCampaignProgressionGating } from "../../lib/adventureEvaluator";
+import { shouldMarkChaseTargetEscaped, findCivilianAttack, CIVILIAN_ATTACK_DAMAGE } from "../../lib/adventureTelemetry";
 import { getStoryMissionById, type StoryMission, type StoryDialogue } from "../../lib/story_missions";
 
 interface StoryAdventureProps {
@@ -41,11 +43,9 @@ function normalizeWaveEnemies(mission: StoryMission, waveIndex: number): StoryWa
 
   const count = Math.max(1, Number(wave.count ?? 1));
   const isFinalBossWave = Boolean(mission.bossId) && waveIndex === mission.enemyWaves.length - 1;
-  const fighterId = isFinalBossWave
-    ? mission.bossId!
-    : WAVE_TYPE_TO_FIGHTER_ID[String(wave.type)] ?? "rift-drone";
-
-  return Array.from({ length: count }, () => ({ fighterId }));
+  const fighterId = WAVE_TYPE_TO_FIGHTER_ID[String(wave.type)] ?? "rift-drone";
+  const minions = Array.from({ length: count }, () => ({ fighterId }));
+  return isFinalBossWave ? [...minions, { fighterId: mission.bossId! }] : minions;
 }
 
 function getWaveDelaySeconds(mission: StoryMission, waveIndex: number): number {
@@ -334,6 +334,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
   const [success, setSuccess] = useState(false);
   const spawnedWaves = useRef(new Set<number>());
   const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const civilianAttackTimes = useRef(new Map<string, number>());
 
   const initAdventure = useAdventure((s) => s.initAdventure);
   const spawnEnemies = useAdventure((s) => s.spawnEnemies);
@@ -358,13 +359,13 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
       return {
         id: `w${waveIndex}-${i}-${e.fighterId}`,
         fighterId: e.fighterId,
-        tier: (isBoss ? "boss1" : "minion1") as "minion1" | "minion2" | "boss1" | "boss2",
+        tier: (isBoss ? (mission.id === "story_act1_m5" ? "boss2" : "boss1") : "minion1") as "minion1" | "minion2" | "boss1" | "boss2",
         posX: Math.sin(angle) * radius,
         posY: 0,
         posZ: Math.cos(angle) * radius,
         rotY: 0,
-        health: isBoss ? 200 : 80 + mission.difficulty * 20,
-        maxHealth: isBoss ? 200 : 80 + mission.difficulty * 20,
+        health: isBoss ? (mission.id === "story_act1_m5" ? 1200 : 500) : 80 + mission.difficulty * 20,
+        maxHealth: isBoss ? (mission.id === "story_act1_m5" ? 1200 : 500) : 80 + mission.difficulty * 20,
         isAggro: false,
         isAttacking: false,
         isDead: false,
@@ -384,6 +385,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
     initAdventure(characterId, missionId, mission.arena || "cross_point_arena");
     setCurrentWave(0);
     spawnedWaves.current.clear();
+    civilianAttackTimes.current.clear();
 
     // Narrative-only missions (for example the epilogue) must resolve
     // without waiting for enemies that will never spawn.
@@ -401,16 +403,33 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
     if (phase !== "playing" || !mission) return;
 
     checkIntervalRef.current = setInterval(() => {
-      const { enemies, player } = useAdventure.getState();
-
-      if (player.health <= 0) {
+      const state = useAdventure.getState();
+      const { enemies, player } = state;
+      if (shouldMarkChaseTargetEscaped(mission.id, state.objectives.milestones.stalkerIntercepted, player, enemies)) {
+        state.markChaseTargetEscaped();
+      }
+      if (mission.id === "story_act1_m5") {
+        const nowMs = Date.now();
+        const attacks = findCivilianAttack(enemies, state.objectives.civilianRegistry, nowMs, civilianAttackTimes.current);
+        for (const attack of attacks) {
+          useAdventure.getState().damageCivilian(attack.civilianId, CIVILIAN_ATTACK_DAMAGE);
+          civilianAttackTimes.current.set(attack.enemyId, nowMs);
+        }
+      }
+      const updated = useAdventure.getState();
+      const outcome = evaluateCampaignProgressionGating({
+        ...updated, currentWaveIndex: currentWave, totalWavesCount: mission.enemyWaves.length,
+      });
+      if (player.health <= 0 || outcome === "FAILED") {
         setSuccess(false);
         setPhase("outro");
         if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
         return;
       }
 
-      const allDead = enemies.length > 0 && enemies.every((e) => e.isDead);
+      const allDead = enemies.length > 0 && enemies.every((e) =>
+        e.isDead || (mission.id === "story_act1_m4" && e.fighterId === "void-stalker" && state.objectives.milestones.stalkerIntercepted)
+      );
       if (allDead) {
         const nextWave = currentWave + 1;
         if (nextWave < mission.enemyWaves.length) {
@@ -421,9 +440,11 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
             spawnWave(nextWave);
             setPhase("playing");
           }, delay * 1000);
-        } else {
+        } else if (outcome === "VICTORY") {
           setSuccess(true);
           setPhase("outro");
+        } else {
+          return; // Fail closed until the mission's actual objective is satisfied.
         }
         if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
       }

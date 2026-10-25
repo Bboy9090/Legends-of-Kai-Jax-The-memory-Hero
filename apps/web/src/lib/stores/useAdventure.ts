@@ -62,7 +62,36 @@ export interface AdventureEnemy {
   stunTimer: number;
 }
 
+export interface DedicatedCivilian {
+  id: string;
+  health: number;
+  maxHealth: number;
+  posX: number;
+  posY: number;
+  posZ: number;
+}
+export interface ObjectiveState {
+  status: "UNINITIALIZED" | "ACTIVE" | "FAILED" | "VICTORY";
+  civilianRegistry: DedicatedCivilian[];
+  milestones: {
+    stalkerIntercepted: boolean;
+    generalDefeated: boolean;
+    chaseTargetEscaped: boolean;
+  };
+}
+const freshObjectives = (missionId: string | null): ObjectiveState => ({
+  status: missionId ? "ACTIVE" : "UNINITIALIZED",
+  civilianRegistry: missionId === "story_act1_m5" ? [
+    { id: "civ_01", health: 100, maxHealth: 100, posX: -5, posY: 0, posZ: 10 },
+    { id: "civ_02", health: 100, maxHealth: 100, posX: -8, posY: 0, posZ: 12 },
+  ] : [],
+  milestones: { stalkerIntercepted: false, generalDefeated: false, chaseTargetEscaped: false },
+});
+
 interface AdventureState {
+  objectives: ObjectiveState;
+  damageCivilian: (id: string, amount: number) => void;
+  markChaseTargetEscaped: () => void;
   player: AdventurePlayerState;
   enemies: AdventureEnemy[];
   missionId: string | null;
@@ -164,6 +193,20 @@ export const useAdventure = create<AdventureState>((set, get) => ({
   player: { ...defaultPlayer },
   enemies: [],
   missionId: null,
+  objectives: freshObjectives(null),
+  damageCivilian: (id, amount) => set(s => ({
+    objectives: s.objectives.status !== "ACTIVE" || s.missionId !== "story_act1_m5" ? s.objectives : {
+      ...s.objectives,
+      civilianRegistry: s.objectives.civilianRegistry.map(c =>
+        c.id === id ? { ...c, health: Math.max(0, c.health - Math.max(0, amount)) } : c),
+    },
+  })),
+  markChaseTargetEscaped: () => set(s => ({
+    objectives: s.missionId !== "story_act1_m4" || s.objectives.status !== "ACTIVE" ? s.objectives : {
+      ...s.objectives,
+      milestones: { ...s.objectives.milestones, chaseTargetEscaped: true },
+    },
+  })),
   arenaId: "open-world",
   waveCount: 0,
   enemiesDefeated: 0,
@@ -325,22 +368,33 @@ export const useAdventure = create<AdventureState>((set, get) => ({
 
   damageEnemy: (id, amount) =>
     set((s) => {
+      const target = s.enemies.find(e => e.id === id && !e.isDead);
+      const isStalkerIntercept = s.objectives.status === "ACTIVE" && s.missionId === "story_act1_m4" && target?.fighterId === "void-stalker";
+      const floorHp = isStalkerIntercept ? Math.max(1, target.maxHealth * 0.1) : 0;
+      const targetHp = target ? Math.max(floorHp, target.health - Math.max(0, amount)) : null;
       const enemies = s.enemies.map((e) => {
-        if (e.id !== id) return e;
-        const newHp = Math.max(0, e.health - amount);
+        if (e.id !== id || e.isDead || targetHp === null) return e;
         return {
           ...e,
-          health: newHp,
-          isDead: newHp <= 0,
-          aiState: (newHp <= 0 ? "idle" : newHp / e.maxHealth < 0.3 ? "retreat" : e.aiState) as EnemyAIState,
-          stunTimer: newHp > 0 ? 0.3 : 0,
+          health: targetHp,
+          isDead: targetHp <= 0,
+          aiState: (isStalkerIntercept && targetHp <= floorHp ? "retreat" : targetHp <= 0 ? "idle" : targetHp / e.maxHealth < 0.3 ? "retreat" : e.aiState) as EnemyAIState,
+          stunTimer: targetHp > 0 ? 0.3 : 0,
         };
       });
-      const justKilled = s.enemies.find((e) => e.id === id && !e.isDead);
-      const newHp = justKilled ? Math.max(0, justKilled.health - amount) : 1;
+      const milestones = { ...s.objectives.milestones };
+      if (s.objectives.status === "ACTIVE" && target && targetHp !== null) {
+        if (s.missionId === "story_act1_m4" && target.fighterId === "void-stalker" && targetHp <= target.maxHealth * 0.1) {
+          milestones.stalkerIntercepted = true;
+        }
+        if (s.missionId === "story_act1_m5" && target.fighterId === "rift-general" && targetHp === 0) {
+          milestones.generalDefeated = true;
+        }
+      }
       return {
         enemies,
-        enemiesDefeated: newHp <= 0 ? s.enemiesDefeated + 1 : s.enemiesDefeated,
+        enemiesDefeated: target && targetHp === 0 ? s.enemiesDefeated + 1 : s.enemiesDefeated,
+        objectives: { ...s.objectives, milestones },
       };
     }),
 
@@ -394,6 +448,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       player: { ...defaultPlayer, fighterId: characterId },
       enemies: [],
       missionId,
+      objectives: freshObjectives(missionId),
       arenaId,
       waveCount: 0,
       enemiesDefeated: 0,
@@ -411,6 +466,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       player: { ...defaultPlayer, fighterId: characterId },
       enemies: [],
       missionId: null,
+      objectives: freshObjectives(null),
       arenaId: `roam-${districtId}`,
       waveCount: 0,
       enemiesDefeated: 0,
@@ -447,6 +503,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       player: { ...defaultPlayer },
       enemies: [],
       missionId: null,
+      objectives: freshObjectives(null),
       arenaId: "open-world",
       waveCount: 0,
       enemiesDefeated: 0,
