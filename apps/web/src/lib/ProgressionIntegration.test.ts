@@ -275,9 +275,9 @@ describe('Mission Progression Integration', () => {
           fighterId: 'rift-general',
           tier: 'boss1',
           posX: 5, posY: 0, posZ: 5, rotY: 0,
-          health: 0, maxHealth: 1000,
-          isDead: true, isAggro: false, isAttacking: false,
-          aiState: 'idle', telegraphTimer: 0,
+          health: 1000, maxHealth: 1000,
+          isDead: false, isAggro: true, isAttacking: false,
+          aiState: 'chase', telegraphTimer: 0,
           patrolTargetX: 0, patrolTargetZ: 0, stunTimer: 0,
         }],
       });
@@ -424,13 +424,13 @@ describe('Mission Progression Integration', () => {
 
       // Move player into aggro range
       useAdventure.setState({
-        player: { ...useAdventure.getState().player, posX: -5, posY: 0, posZ: -5 },
+        player: { ...useAdventure.getState().player, posX: -18, posY: 0, posZ: -18 },
       });
 
       // Simulate aggro check (minion1 aggroRange is ~8 units)
       enemy = useAdventure.getState().enemies[0];
-      const dx = -5 - enemy.posX;
-      const dz = -5 - enemy.posZ;
+      const dx = -18 - enemy.posX;
+      const dz = -18 - enemy.posZ;
       const distToPlayer = Math.sqrt(dx * dx + dz * dz);
 
       if (distToPlayer < 8) {
