@@ -84,6 +84,13 @@ export class EncounterDirector {
   private isPaused = false;
   private isCompleted = false;
   private saveState: MissionSaveState = { missionId: MISSION_ID, completed: false };
+  private pendingPlayerDamage: number[] = [];
+
+  public drainPlayerDamage(): number[] {
+    const damage = this.pendingPlayerDamage;
+    this.pendingPlayerDamage = [];
+    return damage;
+  }
 
   constructor() {
     this.startWave('WAVE_1');
@@ -117,6 +124,7 @@ export class EncounterDirector {
     this.isPaused = false;
     this.isCompleted = false;
     this.saveState = { missionId: MISSION_ID, completed: false };
+    this.pendingPlayerDamage = [];
     this.startWave('WAVE_1');
   }
 
@@ -132,6 +140,7 @@ export class EncounterDirector {
       if (before.isDead) continue;
 
       enemyMachine.update(dt, playerPosition, isPlayerDodging);
+      this.pendingPlayerDamage.push(...enemyMachine.drainPlayerDamage());
 
       // Re-read after update. The previous implementation checked a stale snapshot.
       const after = enemyMachine.getEntity();
