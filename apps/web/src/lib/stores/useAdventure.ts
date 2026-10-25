@@ -368,21 +368,20 @@ export const useAdventure = create<AdventureState>((set, get) => ({
 
   damageEnemy: (id, amount) =>
     set((s) => {
+      const target = s.enemies.find(e => e.id === id && !e.isDead);
+      const isStalkerIntercept = s.objectives.status === "ACTIVE" && s.missionId === "story_act1_m4" && target?.fighterId === "void-stalker";
+      const floorHp = isStalkerIntercept ? Math.max(1, target.maxHealth * 0.1) : 0;
+      const targetHp = target ? Math.max(floorHp, target.health - Math.max(0, amount)) : null;
       const enemies = s.enemies.map((e) => {
-        if (e.id !== id) return e;
-        const newHp = Math.max(0, e.health - amount);
+        if (e.id !== id || e.isDead || targetHp === null) return e;
         return {
           ...e,
-          health: newHp,
-          isDead: newHp <= 0,
-          aiState: (newHp <= 0 ? "idle" : newHp / e.maxHealth < 0.3 ? "retreat" : e.aiState) as EnemyAIState,
-          stunTimer: newHp > 0 ? 0.3 : 0,
+          health: targetHp,
+          isDead: targetHp <= 0,
+          aiState: (isStalkerIntercept && targetHp <= floorHp ? "retreat" : targetHp <= 0 ? "idle" : targetHp / e.maxHealth < 0.3 ? "retreat" : e.aiState) as EnemyAIState,
+          stunTimer: targetHp > 0 ? 0.3 : 0,
         };
       });
-      const justKilled = s.enemies.find((e) => e.id === id && !e.isDead);
-      const newHp = justKilled ? Math.max(0, justKilled.health - amount) : 1;
-      const target = s.enemies.find(e => e.id === id && !e.isDead);
-      const targetHp = target ? Math.max(0, target.health - Math.max(0, amount)) : null;
       const milestones = { ...s.objectives.milestones };
       if (s.objectives.status === "ACTIVE" && target && targetHp !== null) {
         if (s.missionId === "story_act1_m4" && target.fighterId === "void-stalker" && targetHp <= target.maxHealth * 0.1) {
@@ -394,7 +393,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       }
       return {
         enemies,
-        enemiesDefeated: newHp <= 0 ? s.enemiesDefeated + 1 : s.enemiesDefeated,
+        enemiesDefeated: target && targetHp === 0 ? s.enemiesDefeated + 1 : s.enemiesDefeated,
         objectives: { ...s.objectives, milestones },
       };
     }),
