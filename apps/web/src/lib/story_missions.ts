@@ -47,8 +47,8 @@ export const ACT_I_STORY_MISSIONS: StoryMission[] = [
     title: 'Awakening of the Memory Hero',
     description: 'Kai-Jax awakens in the Cross Point Arena. The fragments of a thousand memories swirl around him as the Rift begins to tear.',
     introCutscene: [
-      { speaker: 'System', text: 'Synchronization complete. Kai-Jax protocol active.', side: 'right' },
-      { speaker: 'Kai-Jax', text: 'My head... it\'s full of voices. These aren\'t just echoes... they are survivors.', side: 'left', emotion: 'determined' },
+      { speaker: 'System', text: 'One body online. Two inherited currents resonate beneath a single will.', side: 'right' },
+      { speaker: 'Kai-Jax', text: 'I move as one. Beneath my thoughts, Myrr’Kai and Pyraxis stir like distant thunder.', side: 'left', emotion: 'determined' },
       { speaker: 'System', text: 'WARNING: Void energy detected in the lower sectors. Engagement required.', side: 'right' }
     ],
     outroCutscene: [
@@ -98,7 +98,7 @@ export const ACT_I_STORY_MISSIONS: StoryMission[] = [
     outroCutscene: [
       { speaker: 'Kaison', text: 'The arena is lost. We need to find the others.', side: 'left' }
     ],
-    objectives: ['Defeat 8 Void Grunts', 'Close the Rift'],
+    objectives: ['Defeat all 20 Void Grunts across both waves', 'Survive the Rift assault'],
     difficulty: 3,
     arena: 'memory_vault',
     storyBeat: 'INCITING INCIDENT: The tournament is invaded. Reality is under attack.',
@@ -179,20 +179,20 @@ export const ACT_II_STORY_MISSIONS: StoryMission[] = [
     actNumber: 2,
     missionNumber: 7,
     title: 'The Third Voice Revealed',
-    description: 'The pressure of the Rift forces Kai, Jax, and Kai-Jax into open coordination without collapsing their separate identities.',
+    description: 'The Rift brings three internal identity domains in the already shared physical form into conscious coordination; no physical separation occurs.',
     introCutscene: [
-      { speaker: 'Kai', text: 'Jax, stop trying to carry my side for me.', side: 'left', emotion: 'angry' },
-      { speaker: 'Jax', text: 'Then hold yours. I will hold mine.', side: 'right', emotion: 'determined' },
-      { speaker: 'Kai-Jax', text: 'And I will hold what belongs to me.', side: 'left', emotion: 'determined' }
+      { speaker: 'Kai', text: 'Jax, I can hear you inside our thoughts. Stop trying to carry my side for me.', side: 'left', emotion: 'angry' },
+      { speaker: 'Jax', text: 'We share this body. You hold your will, and I will hold mine.', side: 'right', emotion: 'determined' },
+      { speaker: 'Kai-Jax', text: 'I am the third voice within us—not another body. I will hold what belongs to us together.', side: 'left', emotion: 'determined' }
     ],
     outroCutscene: [
-      { speaker: 'Kai-Jax', text: 'Three voices. One body. Nobody disappears.', side: 'left', emotion: 'determined' }
+      { speaker: 'Kai-Jax', text: 'Three voices. One body. None of us disappears.', side: 'left', emotion: 'determined' }
     ],
     objectives: ['Master coordinated attacks', 'Defeat the Synergy Hunter'],
     difficulty: 6,
     arena: 'rift_frontier',
     requiredCharacters: ['kai-jax'],
-    storyBeat: 'MIDPOINT: Kai, Jax, and Kai-Jax openly coordinate as three distinct persons sharing one body.',
+    storyBeat: 'MIDPOINT: The third internal identity becomes consciously articulate; Kai, Jax, and Kai-Jax coordinate within one continuous physical body.',
     rewards: { xp: 800, currency: 600, loot: ['Synergy Core'] },
     gameplayType: 'boss',
     bossId: 'synergy-hunter',
