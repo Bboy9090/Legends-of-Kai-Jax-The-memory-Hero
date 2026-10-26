@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { useRunner } from '../../lib/stores/useRunner';
+import { validateMissionUnlockState } from '../../lib/campaignProgression';
 import { ArrowLeft, Target, Award, Play, ShieldAlert, Zap } from 'lucide-react';
 
 export default function MissionSelectScreen() {
-  const { setGameState } = useRunner();
+  const { setGameState, activeStoryMissionId, completedStoryMissionIds } = useRunner();
+  const access = validateMissionUnlockState(activeStoryMissionId ?? 'story_act1_m1', completedStoryMissionIds);
+  const mission = access.mission;
   const [difficulty, setDifficulty] = useState<'story' | 'ronin' | 'nightmare'>('ronin');
 
   const handleStartMission = () => {
-    setGameState('adventure');
+    if (!access.isUnlocked || !mission) return;
+    setGameState('story-mode');
   };
 
   return (
@@ -26,7 +30,7 @@ export default function MissionSelectScreen() {
           </button>
           <div>
             <h1 className="kj-vision-title text-3xl font-black">MISSION BRIEFING</h1>
-            <p className="mt-1 text-xs uppercase tracking-[0.28em] text-[#ae9160]">STORM RONIN SANCTUM</p>
+            <p className="mt-1 text-xs uppercase tracking-[0.28em] text-[#ae9160]">{mission?.arena ?? 'CAMPAIGN BRIEFING'}</p>
           </div>
         </div>
       </div>
@@ -35,11 +39,11 @@ export default function MissionSelectScreen() {
       <div className="kj-vision-panel relative z-10 mx-auto my-auto w-full max-w-5xl space-y-6 p-6 sm:p-8">
         <div>
           <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/40 text-purple-300 text-[10px] font-bold tracking-widest uppercase rounded-full">
-            ACT I — MISSION 1
+            ACT {mission?.actNumber ?? '?'} — MISSION {mission?.missionNumber ?? '?'}
           </span>
-          <h2 className="text-4xl font-black italic tracking-wide uppercase mt-2">THE RONIN'S VOW</h2>
+          <h2 className="text-4xl font-black italic tracking-wide uppercase mt-2">{mission?.title ?? 'MISSION UNAVAILABLE'}</h2>
           <p className="text-slate-300 text-sm mt-2">
-            Infiltrate the sacred Ronin Sanctum and recover the lost oath scroll before the Anti-Sabertooth Covenant erases it from memory.
+            {mission?.description ?? access.reason}
           </p>
         </div>
 
@@ -50,18 +54,12 @@ export default function MissionSelectScreen() {
             <span>MISSION OBJECTIVES</span>
           </h3>
           <ul className="space-y-2 text-sm text-slate-200 font-medium">
-            <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-              <span>Reach the Inner Sanctum Courtyard</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-              <span>Defeat the Chainsworn Syndicate Guardians</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
-              <span>Survive the Ronin Trial</span>
-            </li>
+            {mission?.objectives.map((objective, index) => (
+              <li key={index} className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                <span>{objective}</span>
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -91,12 +89,13 @@ export default function MissionSelectScreen() {
             <Award className="w-5 h-5 text-amber-400" />
             <div>
               <span className="text-slate-400 block">REWARDS</span>
-              <span className="font-bold text-amber-300">250 XP | Tactical Crest Loot</span>
+              <span className="font-bold text-amber-300">{mission ? `${mission.rewards.xp} XP | ${mission.rewards.currency} Currency | ${mission.rewards.loot.join(', ')}` : 'Unavailable'}</span>
             </div>
           </div>
 
           <button
             onClick={handleStartMission}
+            disabled={!access.isUnlocked}
             className="kj-vision-button flex items-center gap-3 px-8 py-4 font-black text-base"
           >
             <Play className="w-5 h-5 fill-current" />

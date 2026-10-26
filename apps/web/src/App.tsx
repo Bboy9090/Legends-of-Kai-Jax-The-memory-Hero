@@ -357,6 +357,7 @@ function App() {
                     if (success) {
                       useMissions.getState().startMission("story", storyMissionId);
                       useMissions.getState().completeMission(true);
+                      useRunner.getState().setMissionCompleted(storyMissionId);
 
                       useRunner.getState().setLastPlayedTitle(
                         getStoryMissionById(storyMissionId)?.title ?? storyMissionId
