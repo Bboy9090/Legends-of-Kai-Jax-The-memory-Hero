@@ -133,6 +133,13 @@ export class EnemyStateMachine {
   private enemy: EnemyContract;
   private readonly random: AIRandom;
   private projectileSerial = 0;
+  private pendingPlayerDamage: number[] = [];
+
+  public drainPlayerDamage(): number[] {
+    const damage = this.pendingPlayerDamage;
+    this.pendingPlayerDamage = [];
+    return damage;
+  }
 
   constructor(enemy: EnemyContract) {
     this.enemy = {
@@ -219,6 +226,9 @@ export class EnemyStateMachine {
         if (this.enemy.stateTimerMs >= this.enemy.stats.telegraphDurationMs) {
           this.transitionTo('ATTACK');
           if (this.enemy.type === 'RIFT_DRONE') this.spawnProjectile(playerPosition);
+          else if (distToPlayer <= this.enemy.stats.attackRange && !isPlayerDodging) {
+            this.pendingPlayerDamage.push(this.enemy.stats.attackPower);
+          }
         }
         break;
 
@@ -389,6 +399,7 @@ export class EnemyStateMachine {
       const distToPlayer = this.calculateDistance(projectile.position, playerPosition);
       if (distToPlayer < PROJECTILE_PLAYER_RADIUS && !isPlayerDodging) {
         projectile.active = false;
+        this.pendingPlayerDamage.push(projectile.damage);
       }
     }
 

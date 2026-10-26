@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useRunner } from '../../lib/stores/useRunner';
+import { ALL_STORY_MISSIONS } from '../../lib/story_missions';
+import { validateMissionUnlockState } from '../../lib/campaignProgression';
 import { ArrowLeft, LockKeyhole, MapPin, Shield, Skull, Sparkles, Zap } from 'lucide-react';
 
 interface DistrictInfo {
@@ -30,6 +32,7 @@ export default function StoryHubScreen() {
     setCharacter,
     totalScore,
     activeProfileIndex,
+    completedStoryMissionIds,
   } = useRunner();
   const [selectedDistrict, setSelectedDistrict] = useState(DISTRICTS[0]);
   const profileLevel = Math.max(1, Math.floor(totalScore / 1000) + 1);
@@ -39,10 +42,17 @@ export default function StoryHubScreen() {
     to: DISTRICTS[index + 1],
   })), []);
 
-  const handleEnterDistrict = () => {
-    setActiveStoryMission('story_act1_m1');
+  const handleEnterMission = (id: string) => {
+    const access = validateMissionUnlockState(id, completedStoryMissionIds);
+    if (!access.isUnlocked || !access.mission) return;
+    setActiveStoryMission(access.mission.id);
     setGameState('character-select');
   };
+
+  const nextMission = ALL_STORY_MISSIONS.find((mission) =>
+    validateMissionUnlockState(mission.id, completedStoryMissionIds).isUnlocked &&
+    !completedStoryMissionIds.includes(mission.id)
+  ) ?? ALL_STORY_MISSIONS[0];
 
   return (
     <div className="kj-vision-shell fixed inset-0 z-50 overflow-hidden">
@@ -102,7 +112,7 @@ export default function StoryHubScreen() {
             </div>
           </div>
 
-          <button onClick={handleEnterDistrict} className="kj-vision-button mt-auto px-4 py-3 text-xs">
+          <button onClick={() => handleEnterMission(nextMission.id)} className="kj-vision-button mt-auto px-4 py-3 text-xs">
             View Quest Details
           </button>
         </aside>
@@ -184,6 +194,21 @@ export default function StoryHubScreen() {
             </div>
           </div>
 
+          <div className="kj-vision-panel max-h-72 overflow-y-auto p-4" data-testid="campaign-mission-list">
+            <div className="mb-3 text-[10px] uppercase tracking-[0.28em] text-[#a48c65]">Campaign Missions</div>
+            {ALL_STORY_MISSIONS.map((mission) => {
+              const access = validateMissionUnlockState(mission.id, completedStoryMissionIds);
+              return (
+                <button key={mission.id} type="button" data-mission-id={mission.id}
+                  disabled={!access.isUnlocked} onClick={() => handleEnterMission(mission.id)}
+                  title={access.reason ?? mission.description}
+                  className="mb-2 flex w-full items-center gap-2 border border-[#735a35]/50 bg-black/40 p-2 text-left text-xs text-white disabled:cursor-not-allowed disabled:opacity-40">
+                  {!access.isUnlocked && <LockKeyhole className="h-3 w-3 shrink-0" />}
+                  <span>{mission.missionNumber}. {mission.title}</span>
+                </button>
+              );
+            })}
+          </div>
           <div className="kj-vision-panel flex-1 p-4">
             <div className="text-[10px] uppercase tracking-[0.28em] text-[#a48c65]">Map Legend</div>
             <div className="mt-4 space-y-3 text-xs text-[#cfc1aa]">

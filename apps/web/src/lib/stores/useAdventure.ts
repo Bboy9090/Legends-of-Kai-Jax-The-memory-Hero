@@ -94,6 +94,8 @@ interface AdventureState {
   markChaseTargetEscaped: () => void;
   player: AdventurePlayerState;
   enemies: AdventureEnemy[];
+  /** Scripted encounter damage authority; rendering snapshots are not simulation. */
+  encounterDamageHandler: ((id: string, amount: number, heavy: boolean) => void) | null;
   missionId: string | null;
   arenaId: string;
   waveCount: number;
@@ -135,7 +137,7 @@ interface AdventureState {
   triggerImpactFlash: (color: string) => void;
 
   spawnEnemies: (enemies: AdventureEnemy[]) => void;
-  damageEnemy: (id: string, amount: number) => void;
+  damageEnemy: (id: string, amount: number, heavy?: boolean) => void;
   setEnemyAggro: (id: string, aggro: boolean) => void;
   setEnemyPos: (id: string, x: number, y: number, z: number) => void;
   setEnemyAttacking: (id: string, attacking: boolean) => void;
@@ -193,6 +195,7 @@ const defaultPlayer: AdventurePlayerState = {
 export const useAdventure = create<AdventureState>((set, get) => ({
   player: { ...defaultPlayer },
   enemies: [],
+  encounterDamageHandler: null,
   missionId: null,
   objectives: freshObjectives(null),
   damageCivilian: (id, amount) => set(s => ({
@@ -263,7 +266,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
     // @ts-ignore - Avoid circular dependency if useRunner is not imported yet, 
     // but we can check the trainingSession flag via the global runner store if needed 
     // or just pass it in. For now, let's assume we can get it.
-    const { trainingSession } = (window as any).runnerStore?.getState() || { trainingSession: false };
+    const { trainingSession } = (typeof window !== "undefined" ? (window as any).runnerStore?.getState() : null) || { trainingSession: false };
     
     if (p.invulnTimer > 0 || trainingSession) return;
     if (p.superArmor) {
@@ -296,7 +299,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
     const s = get();
     const cur = s.player.stamina;
     // @ts-ignore
-    const { trainingSession } = (window as any).runnerStore?.getState() || { trainingSession: false };
+    const { trainingSession } = (typeof window !== "undefined" ? (window as any).runnerStore?.getState() : null) || { trainingSession: false };
     
     if (trainingSession) return true; // Infinite stamina in training
     if (cur < amount) return false;
@@ -367,7 +370,9 @@ export const useAdventure = create<AdventureState>((set, get) => ({
 
   spawnEnemies: (enemies) => set({ enemies }),
 
-  damageEnemy: (id, amount) =>
+  damageEnemy: (id, amount, heavy = false) => {
+    const handler = get().encounterDamageHandler;
+    if (handler) { handler(id, amount, heavy); return; }
     set((s) => {
       const target = s.enemies.find(e => e.id === id && !e.isDead);
       const isStalkerIntercept = s.objectives.status === "ACTIVE" && s.missionId === "story_act1_m4" && target?.fighterId === "void-stalker";
@@ -397,7 +402,8 @@ export const useAdventure = create<AdventureState>((set, get) => ({
         enemiesDefeated: target && targetHp === 0 ? s.enemiesDefeated + 1 : s.enemiesDefeated,
         objectives: { ...s.objectives, milestones },
       };
-    }),
+    });
+  },
 
   setEnemyAggro: (id, aggro) =>
     set((s) => ({
@@ -448,6 +454,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
     set({
       player: { ...defaultPlayer, fighterId: characterId },
       enemies: [],
+      encounterDamageHandler: null,
       missionId,
       objectives: freshObjectives(missionId),
       arenaId,
@@ -466,6 +473,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
     set({
       player: { ...defaultPlayer, fighterId: characterId },
       enemies: [],
+      encounterDamageHandler: null,
       missionId: null,
       objectives: freshObjectives(null),
       arenaId: `roam-${districtId}`,
@@ -503,6 +511,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
     set({
       player: { ...defaultPlayer },
       enemies: [],
+      encounterDamageHandler: null,
       missionId: null,
       objectives: freshObjectives(null),
       arenaId: "open-world",
