@@ -296,7 +296,7 @@ function MissionBriefing({ mission, onStart, onBack }: { mission: StoryMission; 
   );
 }
 
-function ResultsScreen({ mission, success, onContinue }: { mission: StoryMission; success: boolean; onContinue: () => void }) {
+function ResultsScreen({ mission, success, onContinue, onRetry }: { mission: StoryMission; success: boolean; onContinue: () => void; onRetry: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "radial-gradient(ellipse at center, rgba(10,10,30,0.95), rgba(0,0,0,0.98))" }}>
       <div className="max-w-md w-full text-center">
@@ -312,16 +312,26 @@ function ResultsScreen({ mission, success, onContinue }: { mission: StoryMission
             <span className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-300 font-bold">+{mission.rewards.currency} Gold</span>
           </div>
         )}
-        <button
-          onClick={onContinue}
-          className={`w-full py-4 rounded-xl font-bold text-lg transition-all hover:scale-[1.02] active:scale-[0.98] ${
-            success
-              ? "bg-gradient-to-r from-green-600 to-cyan-600 text-white"
-              : "bg-gradient-to-r from-red-600 to-amber-600 text-white"
-          }`}
-        >
-          {success ? "Continue" : "Return to Campaign"}
-        </button>
+        <div className={`flex gap-3 ${success ? "flex-col" : "flex-col"}`}>
+          {!success && (
+            <button
+              onClick={onRetry}
+              className="w-full py-4 rounded-xl font-bold text-lg transition-all hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-r from-yellow-600 to-amber-600 text-white"
+            >
+              Retry Mission
+            </button>
+          )}
+          <button
+            onClick={onContinue}
+            className={`w-full py-4 rounded-xl font-bold text-lg transition-all hover:scale-[1.02] active:scale-[0.98] ${
+              success
+                ? "bg-gradient-to-r from-green-600 to-cyan-600 text-white"
+                : "bg-gradient-to-r from-red-600 to-red-700 text-white"
+            }`}
+          >
+            {success ? "Continue" : "Return to Campaign"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -338,6 +348,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
 
   const initAdventure = useAdventure((s) => s.initAdventure);
   const spawnEnemies = useAdventure((s) => s.spawnEnemies);
+  const retryMissionAction = useAdventure((s) => s.retryMission);
 
   const spawnWave = useCallback((waveIndex: number) => {
     if (!mission || waveIndex >= mission.enemyWaves.length) return;
@@ -399,16 +410,25 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
     setPhase("playing");
   }, [mission, characterId, missionId, initAdventure, spawnWave]);
 
+  const handleRetry = useCallback(() => {
+    retryMissionAction();
+    setCurrentWave(0);
+    spawnedWaves.current.clear();
+    civilianAttackTimes.current.clear();
+    spawnWave(0);
+    setPhase("playing");
+  }, [retryMissionAction, spawnWave]);
+
   useEffect(() => {
     if (phase !== "playing" || !mission) return;
 
     checkIntervalRef.current = setInterval(() => {
       const state = useAdventure.getState();
-      const { enemies, player } = state;
+      const { enemies, player, isPaused } = state;
       if (shouldMarkChaseTargetEscaped(mission.id, state.objectives.milestones.stalkerIntercepted, player, enemies)) {
         state.markChaseTargetEscaped();
       }
-      if (mission.id === "story_act1_m5") {
+      if (mission.id === "story_act1_m5" && !isPaused) {
         const nowMs = Date.now();
         const attacks = findCivilianAttack(enemies, state.objectives.civilianRegistry, nowMs, civilianAttackTimes.current);
         for (const attack of attacks) {
@@ -500,6 +520,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
           mission={mission}
           success={success}
           onContinue={() => onComplete(success)}
+          onRetry={handleRetry}
         />
       )}
     </>
