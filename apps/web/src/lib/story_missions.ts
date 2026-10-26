@@ -379,6 +379,16 @@ export const ALL_STORY_MISSIONS: StoryMission[] = [
   ...ACT_III_STORY_MISSIONS,
 ];
 
+// The production Gold Slice certifies one complete story route. The remaining
+// campaign data stays in source for future expansion but is not advertised as
+// release-ready until each route clears runtime, asset, and device gates.
+export const GOLD_SLICE_STORY_MISSION_IDS = ["story_act1_m1"] as const;
+const GOLD_SLICE_STORY_MISSION_ID_SET = new Set<string>(GOLD_SLICE_STORY_MISSION_IDS);
+
+export const GOLD_SLICE_STORY_MISSIONS: StoryMission[] = ALL_STORY_MISSIONS.filter(
+  (mission) => GOLD_SLICE_STORY_MISSION_ID_SET.has(mission.id),
+);
+
 export function getStoryMissionById(id: string): StoryMission | undefined {
   return ALL_STORY_MISSIONS.find((m) => m.id === id);
 }

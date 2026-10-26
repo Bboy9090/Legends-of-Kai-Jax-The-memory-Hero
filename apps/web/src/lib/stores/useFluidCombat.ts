@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { CharacterRole } from '../roster';
+import type { CharacterRole } from '../roster';
 
 // Spider-Man style fluid combat system
 // - Auto-targeting nearest enemy

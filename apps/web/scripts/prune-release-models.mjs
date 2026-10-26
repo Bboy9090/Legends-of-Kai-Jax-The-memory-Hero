@@ -1,63 +1,124 @@
 import fs from "node:fs";
 import path from "node:path";
+import {
+  RELEASE_MODEL_BUDGET_MB,
+  RELEASE_MODEL_FILES,
+  RELEASE_MODEL_SOURCE_MAP,
+} from "./release-model-manifest.mjs";
 
 const appRoot = process.cwd();
-const srcRoot = path.join(appRoot, "src");
 const modelsDir = path.join(appRoot, "dist", "models");
-const LARGE_MODEL_BYTES = 5 * 1024 * 1024;
+const allowed = new Set(RELEASE_MODEL_FILES.map((file) => file.replaceAll("\\", "/")));
 
-function collectTextFiles(dir) {
+function listGlbFiles(dir, root = dir) {
+  if (!fs.existsSync(dir)) return [];
   const out = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      out.push(...collectTextFiles(full));
+      out.push(...listGlbFiles(full, root));
       continue;
     }
-    if (/\.(ts|tsx|js|jsx|json|css|html)$/.test(entry.name)) out.push(full);
+    if (!entry.isFile() || !entry.name.toLowerCase().endsWith(".glb")) continue;
+    out.push({
+      full,
+      relative: path.relative(root, full).replaceAll("\\", "/"),
+      bytes: fs.statSync(full).size,
+    });
   }
   return out;
 }
 
-if (!fs.existsSync(modelsDir)) {
-  console.log("[release-assets] No dist/models directory; nothing to prune.");
-  process.exit(0);
-}
-
-const sourceCorpus = collectTextFiles(srcRoot)
-  .map((file) => fs.readFileSync(file, "utf8"))
-  .join("\n");
-
-let removedBytes = 0;
-let keptBytes = 0;
-let removedCount = 0;
-let keptCount = 0;
-
-for (const entry of fs.readdirSync(modelsDir, { withFileTypes: true })) {
-  if (!entry.isFile() || !entry.name.toLowerCase().endsWith(".glb")) continue;
-
-  const full = path.join(modelsDir, entry.name);
-  const stat = fs.statSync(full);
-  const basename = entry.name.slice(0, -4);
-
-  // Keep all small models. For large models, retain when runtime source
-  // references either the full filename or its basename (covers registry
-  // paths and dynamic /models/${id}.glb resolution).
-  const referenced =
-    sourceCorpus.includes(entry.name) ||
-    (basename.length >= 6 && sourceCorpus.includes(basename));
-
-  if (stat.size > LARGE_MODEL_BYTES && !referenced) {
-    fs.unlinkSync(full);
-    removedBytes += stat.size;
-    removedCount += 1;
-    console.log(`[release-assets] pruned unused large model: ${entry.name} (${(stat.size / 1024 / 1024).toFixed(2)} MB)`);
-  } else {
-    keptBytes += stat.size;
-    keptCount += 1;
+function removeEmptyDirectories(dir) {
+  if (!fs.existsSync(dir)) return;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const child = path.join(dir, entry.name);
+    removeEmptyDirectories(child);
+    if (fs.readdirSync(child).length === 0) fs.rmdirSync(child);
   }
 }
 
+if (!fs.existsSync(modelsDir)) {
+  throw new Error("[release-assets] dist/models is missing; release model manifest cannot be certified.");
+}
+
+// Rename historical source binaries to canonical release filenames before the
+// allowlist check. This changes release packaging only; repository source files
+// remain untouched for development and forensic history.
+for (const [releaseName, sourceName] of Object.entries(RELEASE_MODEL_SOURCE_MAP)) {
+  if (releaseName === sourceName) continue;
+  const sourcePath = path.join(modelsDir, sourceName);
+  const releasePath = path.join(modelsDir, releaseName);
+
+  if (!fs.existsSync(sourcePath)) {
+    if (fs.existsSync(releasePath)) continue;
+    throw new Error(
+      "[release-assets] Source model missing for canonical release alias "
+        + releaseName + ": " + sourceName,
+    );
+  }
+
+  if (fs.existsSync(releasePath)) fs.unlinkSync(releasePath);
+  fs.renameSync(sourcePath, releasePath);
+  console.log("[release-assets] canonicalized release model: " + releaseName);
+}
+
+const before = listGlbFiles(modelsDir);
+const existing = new Set(before.map((file) => file.relative));
+const missing = [...allowed].filter((file) => !existing.has(file));
+if (missing.length > 0) {
+  throw new Error(
+    "[release-assets] Required Gold Slice models are missing from dist/models: " + missing.join(", "),
+  );
+}
+
+let keptBytes = 0;
+let removedBytes = 0;
+let keptCount = 0;
+let removedCount = 0;
+
+for (const file of before) {
+  if (allowed.has(file.relative)) {
+    keptBytes += file.bytes;
+    keptCount += 1;
+    continue;
+  }
+
+  fs.unlinkSync(file.full);
+  removedBytes += file.bytes;
+  removedCount += 1;
+  console.log(
+    "[release-assets] pruned non-Gold-Slice model: " + file.relative + " (" + (file.bytes / 1024 / 1024).toFixed(2) + " MB)",
+  );
+}
+
+removeEmptyDirectories(modelsDir);
+
+const keptMB = keptBytes / 1024 / 1024;
+const removedMB = removedBytes / 1024 / 1024;
+const beforeMB = (keptBytes + removedBytes) / 1024 / 1024;
+
 console.log(
-  `[release-assets] models kept=${keptCount} pruned=${removedCount} keptMB=${(keptBytes / 1024 / 1024).toFixed(2)} removedMB=${(removedBytes / 1024 / 1024).toFixed(2)}`
+  "[release-assets] Gold Slice manifest kept=" + keptCount
+    + " pruned=" + removedCount
+    + " beforeMB=" + beforeMB.toFixed(2)
+    + " keptMB=" + keptMB.toFixed(2)
+    + " removedMB=" + removedMB.toFixed(2)
+    + " budgetMB=" + RELEASE_MODEL_BUDGET_MB,
 );
+
+const finalFiles = listGlbFiles(modelsDir);
+const unexpected = finalFiles
+  .map((file) => file.relative)
+  .filter((file) => !allowed.has(file));
+if (unexpected.length > 0) {
+  throw new Error("[release-assets] Unexpected GLBs survived release pruning: " + unexpected.join(", "));
+}
+
+if (keptMB > RELEASE_MODEL_BUDGET_MB) {
+  throw new Error(
+    "[release-assets] Gold Slice model payload " + keptMB.toFixed(2)
+      + " MB exceeds " + RELEASE_MODEL_BUDGET_MB + " MB budget.",
+  );
+}

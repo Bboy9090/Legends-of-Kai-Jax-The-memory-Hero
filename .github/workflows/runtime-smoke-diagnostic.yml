@@ -57,6 +57,6 @@ jobs:
         working-directory: source
         run: pnpm -C apps/web exec playwright install --with-deps chromium
 
-      - name: Run release smoke only
+      - name: Run release smoke and Mission 1 completion
         working-directory: source
-        run: pnpm -C apps/web exec playwright test e2e/smoke.spec.ts
+        run: pnpm -C apps/web exec playwright test e2e/smoke.spec.ts e2e/gold-slice-runtime.spec.ts --workers=1

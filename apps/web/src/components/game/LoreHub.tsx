@@ -506,9 +506,13 @@ function TailsSection() {
                 <div className="flex items-start justify-between mb-3">
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center"
-                    style={{ background: `${tail.color}15`, boxShadow: `0 0 15px ${tail.color}30` }}
+                    style={{
+                      background: `${tail.color}15`,
+                      boxShadow: `0 0 15px ${tail.color}30`,
+                      color: tail.color,
+                    }}
                   >
-                    <Icon className="w-5 h-5" style={{ color: tail.color } as React.CSSProperties} />
+                    <Icon className="w-5 h-5" />
                   </div>
                   <span className="text-3xl font-black text-white/8">{tail.id.toString().padStart(2, "0")}</span>
                 </div>

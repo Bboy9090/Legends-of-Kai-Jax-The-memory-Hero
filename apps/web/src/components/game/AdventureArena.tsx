@@ -308,7 +308,6 @@ function Player3D({
       if (positionRef.current.distanceTo(enemy.position) < ATTACK_RANGE) {
         hitEnemiesThisSwingRef.current.add(i);
         onHitEnemy(i, 25);
-        useFluidCombat.setState({ hitStop: 0.05 });
       }
     });
   };

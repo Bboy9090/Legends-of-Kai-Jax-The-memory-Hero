@@ -75,6 +75,28 @@ export const VERSUS_ROSTER: readonly VersusRosterEntry[] = [
   { id: "erasure-choir", displayName: "Erasure Choir", faction: "engineered-horror", role: "boss", defaultUnlocked: false, bossClass: true, sourceSheet: "07_Major_Threats_Engineered_Horrors.png", portraitSource: "07_Major_Threats_Engineered_Horrors.png" },
 ] as const;
 
+export const GOLD_SLICE_VERSUS_ROSTER: readonly VersusRosterEntry[] = [
+  VERSUS_ROSTER.find((entry) => entry.id === "kai-jax")!,
+  {
+    id: "jaxon",
+    displayName: "Jaxon",
+    faction: "core",
+    role: "hero",
+    defaultUnlocked: true,
+    sourceSheet: PENDING_CURRENT_LOCK,
+    portraitSource: PENDING_CURRENT_LOCK,
+  },
+  {
+    id: "kaison",
+    displayName: "Kaison",
+    faction: "core",
+    role: "hero",
+    defaultUnlocked: true,
+    sourceSheet: PENDING_CURRENT_LOCK,
+    portraitSource: PENDING_CURRENT_LOCK,
+  },
+] as const;
+
 export const VERSUS_ROSTER_IDS = VERSUS_ROSTER.map((fighter) => fighter.id);
 
 export function getVersusRosterEntry(id: string): VersusRosterEntry | null {

@@ -135,11 +135,12 @@ export function GLBModel({
 
     // Handle animation completion
     if (!loop && onAnimationComplete) {
-      const handleComplete = () => {
-        onAnimationComplete?.();
-        action.removeEventListener('finished', handleComplete);
+      const handleComplete = (event: { action: THREE.AnimationAction }) => {
+        if (event.action !== action) return;
+        mixer.removeEventListener('finished', handleComplete);
+        onAnimationComplete();
       };
-      action.addEventListener('finished', handleComplete);
+      mixer.addEventListener('finished', handleComplete);
     }
 
     currentActionRef.current = action;

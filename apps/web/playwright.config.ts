@@ -21,6 +21,10 @@ export default defineConfig({
   testDir: './e2e',
   testMatch: '**/*.spec.ts',
   fullyParallel: false,
+  // The release browser suite boots a WebGL title shell on software-rendered
+  // CI. A 30s default can expire during browser-context creation before the
+  // test body can raise its own timeout, producing infrastructure flakes.
+  timeout: 120_000,
   forbidOnly: false,
   retries: 0,
   workers: 1,
@@ -35,7 +39,12 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chromium'],
         headless: true,
-        launchArgs: chromiumLaunchArgs,
+        launchOptions: {
+          args: chromiumLaunchArgs,
+          ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+            ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH }
+            : {}),
+        },
       },
     },
   ],
@@ -44,5 +53,9 @@ export default defineConfig({
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: true,
     timeout: 120000,
+    env: {
+      ...process.env,
+      VITE_KJ_TEST_HOOK: '1',
+    },
   },
 });

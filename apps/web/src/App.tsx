@@ -1,40 +1,40 @@
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useState, useRef, useMemo, useEffect, useCallback } from "react";
+import { Suspense, lazy, useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { KeyboardControls } from "@react-three/drei";
 import "@fontsource/inter";
 import "@fontsource/bebas-neue";
 import "./styles/kai-jax-vision.css";
 
-import BattleScene from "./components/game/BattleScene";
-import MobileControls from "./components/game/MobileControls";
-import BattleUI from "./components/game/BattleUI";
-import DialogueDisplay from "./components/game/DialogueDisplay";
+const BattleScene = lazy(() => import("./components/game/BattleScene"));
+const MobileControls = lazy(() => import("./components/game/MobileControls"));
+const BattleUI = lazy(() => import("./components/game/BattleUI"));
+const DialogueDisplay = lazy(() => import("./components/game/DialogueDisplay"));
 import LegendaryMainMenu from "./components/game/LegendaryMainMenu";
 
-import VersusCharacterSelect from "./components/game/VersusCharacterSelect";
-import BeastPreview from "./components/game/BeastPreview";
-import CampaignMap from "./components/game/CampaignMap";
-import DistrictSelectScreen from "./components/game/DistrictSelectScreen";
-import TransformationOverlay from "./components/game/TransformationOverlay";
-import ScreenEffects from "./components/game/ScreenEffects";
+const VersusCharacterSelect = lazy(() => import("./components/game/VersusCharacterSelect"));
+const BeastPreview = lazy(() => import("./components/game/BeastPreview"));
+const CampaignMap = lazy(() => import("./components/game/CampaignMap"));
+const DistrictSelectScreen = lazy(() => import("./components/game/DistrictSelectScreen"));
+const TransformationOverlay = lazy(() => import("./components/game/TransformationOverlay"));
+const ScreenEffects = lazy(() => import("./components/game/ScreenEffects"));
 import { GameIntro } from "./components/game/LoadingScreen";
-import CustomizationMenu from "./components/game/CustomizationMenu";
+const CustomizationMenu = lazy(() => import("./components/game/CustomizationMenu"));
 import LoreHub from "./components/game/LoreHub";
-import ControllerTestScene from "./components/game/ControllerTestScene";
-import AdventureArena from "./components/game/adventure/AdventureArena";
-import AdventureHUD from "./components/game/adventure/AdventureHUD";
-import AdventureTouchControls from "./components/game/adventure/AdventureTouchControls";
-import StoryAdventure from "./components/game/StoryAdventure";
+const ControllerTestScene = lazy(() => import("./components/game/ControllerTestScene"));
+const AdventureArena = lazy(() => import("./components/game/adventure/AdventureArena"));
+const AdventureHUD = lazy(() => import("./components/game/adventure/AdventureHUD"));
+const AdventureTouchControls = lazy(() => import("./components/game/adventure/AdventureTouchControls"));
+const StoryAdventure = lazy(() => import("./components/game/StoryAdventure"));
 import SettingsMenu from "./components/game/SettingsMenu";
 import TitleScreen from "./components/game/TitleScreen";
-import SaveSlotScreen from "./components/game/SaveSlotScreen";
+const SaveSlotScreen = lazy(() => import("./components/game/SaveSlotScreen"));
 import BootAccessibilityScreen from "./components/game/BootAccessibilityScreen";
-import StoryHubScreen from "./components/game/StoryHubScreen";
-import LegendSelectScreen from "./components/game/LegendSelectScreen";
-import MissionSelectScreen from "./components/game/MissionSelectScreen";
-import CharacterAbilityScreen from "./components/game/CharacterAbilityScreen";
-import MissionCompleteScreen from "./components/game/MissionCompleteScreen";
-import DevFrameHud from "./components/game/DevFrameHud";
+const StoryHubScreen = lazy(() => import("./components/game/StoryHubScreen"));
+const LegendSelectScreen = lazy(() => import("./components/game/LegendSelectScreen"));
+const MissionSelectScreen = lazy(() => import("./components/game/MissionSelectScreen"));
+const CharacterAbilityScreen = lazy(() => import("./components/game/CharacterAbilityScreen"));
+const MissionCompleteScreen = lazy(() => import("./components/game/MissionCompleteScreen"));
+const DevFrameHud = lazy(() => import("./components/game/DevFrameHud"));
 import GameOverlays from "./components/game/GameOverlays";
 import { useGame } from "./lib/stores/useGame";
 import { useRunner } from "./lib/stores/useRunner";
@@ -43,7 +43,7 @@ import { useAudio } from "./lib/stores/useAudio";
 import { useMissions } from "./lib/stores/useMissions";
 import { useProgression } from "./lib/stores/useProgression";
 import { registerServiceWorker } from "./lib/offlineModeSystem";
-import { FIGHTERS, getFighterById } from "./lib/characters";
+import { PLAYABLE_FIGHTERS, getFighterById } from "./lib/characters";
 import { getStoryMissionById } from "./lib/story_missions";
 import { initializeVoiceSystem, preloadVoices } from "./lib/voiceActing";
 import * as THREE from "three";
@@ -178,7 +178,9 @@ function App() {
   useEffect(() => {
     if (selectedCharacter && phase === 'playing') {
       setPlayerFighter(selectedCharacter);
-      const opponents = FIGHTERS.map(f => f.id).filter(id => id !== selectedCharacter);
+      const opponents = PLAYABLE_FIGHTERS
+        .map((fighter) => fighter.id)
+        .filter((id) => id !== selectedCharacter);
       const randomOpponent = opponents[Math.floor(Math.random() * opponents.length)] || selectedCharacter;
       setOpponentFighter(randomOpponent);
     }
@@ -225,6 +227,7 @@ function App() {
       {/* ⚡ LEGENDARY INTRO SEQUENCE */}
       {showIntro && gameState !== "lore-hub" && <GameIntro onComplete={handleIntroComplete} />}
       
+      <Suspense fallback={null}>
       <KeyboardControls map={controls}>
         {/* Title Screen */}
         {phase === "ready" && gameState === "title" && !showIntro && <TitleScreen />}
@@ -299,10 +302,7 @@ function App() {
                   }}
                 >
                   <Suspense fallback={null}>
-                    <AdventureArena
-                      characterId={charId}
-                      accentColor={fighter?.accentColor || "#00f2ff"}
-                    />
+                    <AdventureArena />
                   </Suspense>
                 </Canvas>
                 <AdventureHUD />
@@ -343,10 +343,7 @@ function App() {
                   }}
                 >
                   <Suspense fallback={null}>
-                    <AdventureArena
-                      characterId={charId}
-                      accentColor={fighter?.accentColor || "#00f2ff"}
-                    />
+                    <AdventureArena />
                   </Suspense>
                 </Canvas>
                 <AdventureHUD />
@@ -415,6 +412,7 @@ function App() {
           </>
         )}
       </KeyboardControls>
+      </Suspense>
     </div>
   );
 }
