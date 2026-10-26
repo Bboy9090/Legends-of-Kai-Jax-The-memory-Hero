@@ -150,6 +150,33 @@ function ImpactFlash({ color }: { color: string | null }) {
   );
 }
 
+function CivilianStatus({ civilianRegistry }: { civilianRegistry: Record<string, any> }) {
+  if (!civilianRegistry || Object.keys(civilianRegistry).length === 0) return null;
+  const civilians = Object.values(civilianRegistry) as any[];
+  const aliveCivilians = civilians.filter((c) => c.health > 0);
+  return (
+    <div className="kj-vision-hud min-w-[240px] max-w-[360px] px-4 py-3">
+      <div className="text-[9px] font-bold uppercase tracking-[0.28em] text-pink-400 mb-2">
+        Civilians at Risk
+      </div>
+      <div className="space-y-1.5">
+        {aliveCivilians.map((civ: any, idx: number) => (
+          <HealthBar
+            key={civ.id}
+            current={civ.health}
+            max={civ.maxHealth || 100}
+            color="#ec4899"
+            label={`C${idx + 1}`}
+          />
+        ))}
+      </div>
+      <div className="mt-2 text-[9px] text-slate-400">
+        {aliveCivilians.length}/{civilians.length} alive
+      </div>
+    </div>
+  );
+}
+
 function CombatStateLabel({ state }: { state: CombatState }) {
   if (state === CombatState.FREE) return null;
   const labels: Record<CombatState, { text: string; color: string }> = {
@@ -227,6 +254,8 @@ export default function AdventureHUD() {
   const roamDistrictId = useAdventure((s) => s.roamDistrictId);
   const encounterIndex = useAdventure((s) => s.encounterIndex);
   const districtCompleted = useAdventure((s) => s.districtCompleted);
+  const missionId = useAdventure((s) => s.missionId);
+  const objectives = useAdventure((s) => s.objectives);
   const trainingSession = useRunner((s) => s.trainingSession);
   const selectedCharacter = useRunner((s) => s.selectedCharacter);
   const isPaused = useAdventure((s) => s.isPaused);
@@ -379,19 +408,23 @@ export default function AdventureHUD() {
               ) : null}
             </div>
 
-            <div className="kj-vision-hud flex items-center gap-3 px-3 py-1.5 text-[9px] uppercase tracking-[0.16em]">
-              <span className="text-[#8f8371]">{districtMeta ? "Encounter" : "Wave"}</span>
-              <strong className="text-[#d2b375]">
-                {districtMeta
-                  ? districtCompleted
-                    ? "DONE"
-                    : `${Math.min(encounterIndex + 1, districtMeta.encounters.length)}/${districtMeta.encounters.length}`
-                  : waveCount}
-              </strong>
-              <span className="text-[#6f6558]">•</span>
-              <span className="text-[#8f8371]">Enemies</span>
-              <strong className="text-red-300">{aliveEnemies}</strong>
-            </div>
+            {missionId === "story_act1_m5" && objectives?.civilianRegistry ? (
+              <CivilianStatus civilianRegistry={objectives.civilianRegistry} />
+            ) : (
+              <div className="kj-vision-hud flex items-center gap-3 px-3 py-1.5 text-[9px] uppercase tracking-[0.16em]">
+                <span className="text-[#8f8371]">{districtMeta ? "Encounter" : "Wave"}</span>
+                <strong className="text-[#d2b375]">
+                  {districtMeta
+                    ? districtCompleted
+                      ? "DONE"
+                      : `${Math.min(encounterIndex + 1, districtMeta.encounters.length)}/${districtMeta.encounters.length}`
+                    : waveCount}
+                </strong>
+                <span className="text-[#6f6558]">•</span>
+                <span className="text-[#8f8371]">Enemies</span>
+                <strong className="text-red-300">{aliveEnemies}</strong>
+              </div>
+            )}
           </div>
         </div>
       </div>
