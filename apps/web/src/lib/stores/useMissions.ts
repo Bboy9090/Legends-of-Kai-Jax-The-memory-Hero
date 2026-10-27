@@ -430,6 +430,8 @@ export const useMissions = create<MissionsState>()(
           (window as any).progressionStore?.getState?.().awardXP(charId, xp);
         }
         if (active.source === "story") {
+          // Profile-scoped, deduplicated loot is saved alongside story completion.
+          if (reward?.loot?.length) useRunner.getState().grantStoryLoot(reward.loot);
           useRunner.getState().setMissionCompleted(active.id);
         }
         const next = [...prev, k];

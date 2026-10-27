@@ -262,6 +262,11 @@ function ResultsScreen({ mission, success, onContinue, onRetry }: { mission: Sto
         <p className="text-slate-300 text-sm mb-6">
           {success ? `You completed "${mission.title}" and earned your rewards.` : `You were defeated. Train harder and try again.`}
         </p>
+        {success && mission.rewards.loot.length > 0 && (
+          <div data-testid="story-mission-loot-reward" className="mb-5 text-center text-sm text-cyan-200">
+            Memory recovered: {mission.rewards.loot.join(", ")}
+          </div>
+        )}
         {success && (
           <div className="flex justify-center gap-3 mb-6">
             <span className="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 font-bold">+{mission.rewards.xp} XP</span>
