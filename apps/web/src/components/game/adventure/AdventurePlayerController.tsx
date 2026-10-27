@@ -6,6 +6,7 @@ import { useTouchInput } from "../../../lib/stores/useTouchInput";
 import { CombatState } from "../../../game/combat/stateEnums";
 import { COMBAT_RANGES, MOVES } from "../../../game/combat/moveData";
 import { getMoveFrameTime } from "../../../game/combat/frameTiming";
+import { evaluateCancelTransition } from "../../../game/combat/cancelTransition";
 import { DODGE, STAMINA_CONFIG, COMBO_CONFIG } from "../../../game/tuning/adventureTuning";
 import { getAutoTarget } from "../../../game/combat/targeting";
 import * as THREE from "three";
@@ -36,6 +37,7 @@ function firstConnectedGamepad(): Gamepad | null {
 
 export default function AdventurePlayerController() {
   const keysRef = useRef<Record<string, boolean>>({});
+  const pendingKeyEdgesRef = useRef<Set<string>>(new Set());
   const prevKeysRef = useRef<Record<string, boolean>>({});
   const prevPadButtonsRef = useRef<boolean[]>([]);
   const attackTimerRef = useRef(0);
@@ -46,10 +48,14 @@ export default function AdventurePlayerController() {
 
   useEffect(() => {
     const keys = keysRef.current;
-    const handleDown = (e: KeyboardEvent) => { keys[e.code] = true; };
+    const handleDown = (e: KeyboardEvent) => {
+      if (!keys[e.code]) pendingKeyEdgesRef.current.add(e.code);
+      keys[e.code] = true;
+    };
     const handleUp = (e: KeyboardEvent) => { keys[e.code] = false; };
     const clearHeld = () => {
       Object.keys(keys).forEach((key) => { keys[key] = false; });
+      pendingKeyEdgesRef.current.clear();
       prevKeysRef.current = {};
       prevPadButtonsRef.current = [];
       velSmoothRef.current = { x: 0, z: 0 };
@@ -85,7 +91,7 @@ export default function AdventurePlayerController() {
     const delta = Math.min(rawDelta, 0.05) * p.timeScale;
     const keys = keysRef.current;
     const prev = prevKeysRef.current;
-    const justPressed = (code: string) => keys[code] && !prev[code];
+    const justPressed = (code: string) => pendingKeyEdgesRef.current.has(code) || (keys[code] && !prev[code]);
 
     const pad = firstConnectedGamepad();
     const padPressed = (index: number) => !!pad?.buttons[index]?.pressed;
@@ -96,13 +102,14 @@ export default function AdventurePlayerController() {
     const padY = Math.abs(rawPadY) >= GAMEPAD_DEADZONE ? rawPadY : 0;
 
     const rememberInputs = () => {
+      pendingKeyEdgesRef.current.clear();
       prevKeysRef.current = { ...keys };
       prevPadButtonsRef.current = pad ? pad.buttons.map((button) => button.pressed) : [];
     };
 
     if (p.hitStopTimer > 0) {
       store.setHitStopTimer(Math.max(0, p.hitStopTimer - rawDelta));
-      rememberInputs();
+      // Preserve keyboard edges until the first active simulation frame.
       return;
     }
 
@@ -217,7 +224,16 @@ export default function AdventurePlayerController() {
         if (elapsed >= timing.cancelTime && (justPressed("KeyJ") || justPressed("KeyX") || padJustPressed(2) || touchAttacks.includes("attack"))) {
           const nextStep = p.comboStep + 1;
           const moveKey = `light${nextStep + 1}`;
-          if (nextStep < COMBO_CONFIG.maxChain && MOVES[moveKey] && store.useStamina(MOVES[moveKey].staminaCost)) {
+          const decision = nextStep < COMBO_CONFIG.maxChain && MOVES[moveKey]
+            ? evaluateCancelTransition({
+                currentMove: p.attackType as keyof typeof MOVES,
+                elapsedSeconds: elapsed, attacking: p.combatState === CombatState.ATTACKING,
+                dodging: false,
+                guardBroken: false, hitstun: false,
+                stamina: p.stamina,
+              }, moveKey as keyof typeof MOVES)
+            : { allowed: false as const };
+          if (decision.allowed && store.useStamina(MOVES[moveKey].staminaCost)) {
             const move = MOVES[moveKey];
             store.playerAttack(moveKey as any);
             attackTimerRef.current = getMoveFrameTime(move).totalTime;

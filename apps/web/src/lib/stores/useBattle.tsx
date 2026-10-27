@@ -53,6 +53,7 @@ import {
 } from "../../game/tuning/combatTuning";
 import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
 import { resolveBattleCombatState } from "../../game/combat/CombatStateMachine";
+import { evaluateCancelTransition } from "../../game/combat/cancelTransition";
 import {
   clashPriorityForAttack,
   getMoveKeyForPlayerAttack,
@@ -698,19 +699,24 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
 
   attemptComboCancel: () => {
-    const { playerAttacking, playerAttackType, playerComboStep, playerAttackElapsed, guardBreakTimer, playerHitStunTimer } = get();
-    if (guardBreakTimer > 0 || playerHitStunTimer > 0) return false;
-    if (!playerAttacking || playerAttackType !== 'punch' || playerComboStep >= 2) return false;
-    const moveKey = `light${playerComboStep + 1}` as keyof typeof MOVES;
-    const move = MOVES[moveKey];
-    if (!move || move.cancelAt <= 0) return false;
-    const timing = getMoveFrameTime(move);
-    if (playerAttackElapsed < timing.cancelTime) return false;
+    const p = get();
+    if (!p.playerAttacking || p.playerAttackType !== 'punch' || p.playerComboStep >= 2) return false;
+    const currentMove = `light${p.playerComboStep + 1}` as keyof typeof MOVES;
+    const nextMove = `light${p.playerComboStep + 2}` as keyof typeof MOVES;
+    const decision = evaluateCancelTransition({
+      currentMove, elapsedSeconds: p.playerAttackElapsed,
+      attacking: p.playerAttacking, dodging: p.playerDodgeTimer > 0,
+      guardBroken: p.guardBreakTimer > 0, hitstun: p.playerHitStunTimer > 0,
+      stamina: p.playerStamina,
+    }, nextMove);
+    if (!decision.allowed) return false;
     set({
       playerAttackType: 'punch',
       playerAttackElapsed: 0,
       playerAttackHasHit: false,
-      playerComboStep: playerComboStep + 1,
+      playerComboStep: p.playerComboStep + 1,
+      playerStamina: Math.max(0, p.playerStamina - MOVES[nextMove].staminaCost),
+      battleStaminaRegenDelay: Math.max(p.battleStaminaRegenDelay, 0.12),
     });
     useAudio.getState().playPunch();
     return true;
