@@ -63,4 +63,59 @@ describe('adventure live controller cancel gates', () => {
     frame?.(camera, 0.001);
     expect(useAdventure.getState().player.attackType).toBe('light1');
   });
+  const beginLight1 = () => {
+    useAdventure.setState(s => ({ player: { ...s.player, stamina: 20 } }));
+    press('KeyJ'); frame?.(camera, 0.001);
+    expect(useAdventure.getState().player.attackType).toBe('light1');
+    frame?.(camera, 0.05);
+    frame?.(camera, 0.05);
+    frame?.(camera, 0.05);
+    frame?.(camera, 0.02);
+  };
+
+  it('replays punch pressed during hitstop into light2 and debits exactly once', () => {
+    beginLight1();
+    useAdventure.setState(s => ({ player: { ...s.player, hitStopTimer: 0.05 } }));
+    press('KeyX');
+    frame?.(camera, 0.03); frame?.(camera, 0.03);
+    expect(useAdventure.getState().player.comboStep).toBe(0);
+    frame?.(camera, 0.001);
+    expect(useAdventure.getState().player).toMatchObject({ attackType: 'light2', comboStep: 1, stamina: 12 });
+  });
+
+  it('gamepad punch continues light1 into light2 using the same stamina gate', () => {
+    beginLight1();
+    let pressed = false;
+    Object.defineProperty(globalThis, 'navigator', { configurable: true, value: {
+      getGamepads: () => [{ connected: true, buttons: Array.from({ length: 18 }, (_, i) => ({ pressed: i === 2 && pressed })), axes: [0, 0] }],
+    } });
+    frame?.(camera, 0.001); pressed = true;
+    frame?.(camera, 0.001);
+    expect(useAdventure.getState().player).toMatchObject({ attackType: 'light2', comboStep: 1, stamina: 12 });
+  });
+
+  it('touch punch continues light1 into light2 using the same stamina gate', () => {
+    beginLight1();
+    useTouchInput.getState().queueAttack('attack');
+    frame?.(camera, 0.001);
+    expect(useAdventure.getState().player).toMatchObject({ attackType: 'light2', comboStep: 1, stamina: 12 });
+  });
+
+  it('gamepad and touch cancel denial leave original move unchanged when exhausted', () => {
+    for (const mode of ['touch', 'gamepad'] as const) {
+      cleanup?.();
+      useAdventure.setState({ ...initial, isPaused: false, enemies: [], player: { ...initial.player, stamina: 0, combatState: CombatState.FREE, timeScale: 1 } });
+      useTouchInput.setState({ ...touchInitial, pendingAttacks: [] });
+      AdventurePlayerController();
+      beginLight1();
+      useAdventure.setState(s => ({ player: { ...s.player, stamina: 0 } }));
+      if (mode === 'touch') useTouchInput.getState().queueAttack('attack');
+      else Object.defineProperty(globalThis, 'navigator', { configurable: true, value: {
+        getGamepads: () => [{ connected: true, buttons: Array.from({ length: 18 }, (_, i) => ({ pressed: i === 2 })), axes: [0, 0] }],
+      } });
+      frame?.(camera, 0.001);
+      expect(useAdventure.getState().player).toMatchObject({ attackType: 'light1', comboStep: 0, stamina: 0 });
+    }
+  });
+
 });
