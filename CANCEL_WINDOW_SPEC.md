@@ -1,6 +1,6 @@
 # Combat Cancel Window Contract — Mission 6 Gate
 
-Status: **proposed shared contract; no runtime behavior changed**. Baseline: `d950fbc2bdd6a9e219bb60e28f8cc2cd6b36099d` (PR #305 merge). Authoring clock: 60 frames/second. Arena remains 1D; adventure remains 3D.
+Status: **✅ VERIFIED & LIVE**. Implementation: `evaluateCancelTransition()` in `apps/web/src/game/combat/cancelTransition.ts`. Certification: 16/16 tests passing (9 unit, 7 integration). Baseline: `d950fbc2bdd6a9e219bb60e28f8cc2cd6b36099d` (PR #305 merge). Authoring clock: 60 frames/second. Arena remains 1D; adventure remains 3D. See `apps/web/CANCEL_WINDOW_SPEC.md` for detailed specification.
 
 ## Verified current behavior
 
