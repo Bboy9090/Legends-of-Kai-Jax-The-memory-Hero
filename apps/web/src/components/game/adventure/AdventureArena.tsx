@@ -4,6 +4,7 @@ import { useAdventure, type AdventureEnemy } from "../../../lib/stores/useAdvent
 import { ENEMY_TIERS } from "../../../game/tuning/enemyTuning";
 import { buildEncounterEnemies, getDistrictMeta } from "../../../lib/encounters";
 import { useMissions } from "../../../lib/stores/useMissions";
+import { useRunner } from "../../../lib/stores/useRunner";
 import { ARENA_REGISTRY, type ArenaConfig, getArenaConfig } from "../../../assets/arenaRegistry";
 import AdventureCharacter from "./AdventureCharacter";
 import AdventureCamera from "./AdventureCamera";
@@ -12,6 +13,7 @@ import AdventureSessionGuard from "./AdventureSessionGuard";
 import AdventureEnemyAI from "./AdventureEnemyAI";
 import Mission1EncounterBridge from "./Mission1EncounterBridge";
 import * as THREE from "three";
+import { MISSION6_ID } from "../../../lib/mission6";
 import { getQualitySettings } from "../../../lib/threejs/PerformanceOptimizer";
 
 const VISUAL_ARENA_SIZE = 76;
@@ -418,12 +420,46 @@ function ScriptedEncounterSpawner({ roamSessionId }: { roamSessionId: number }) 
   return null;
 }
 
+/** Actual in-world recovery nodes, not fake character artwork or a HUD-only counter. */
+function Mission6MemoryNodes() {
+  const memories = useAdventure(s => s.objectives.memoryRescues);
+  const group = useRef<THREE.Group>(null);
+  useFrame(({ clock }) => {
+    if (group.current) group.current.children.forEach((child, i) => {
+      child.rotation.y = clock.elapsedTime * (0.45 + i * 0.07);
+    });
+  });
+  return (
+    <group ref={group}>
+      {memories.filter(node => !node.rescued).map(node => (
+        <group key={node.id} position={[node.posX, 0, node.posZ]}>
+          <mesh position={[0, 1.5, 0]}>
+            <octahedronGeometry args={[0.72, 0]} />
+            <meshStandardMaterial
+              color={node.unlocked ? "#90faff" : "#4d3673"}
+              emissive={node.unlocked ? "#2fdbef" : "#35205c"}
+              emissiveIntensity={node.unlocked ? 1.4 : 0.32}
+              transparent opacity={node.unlocked ? 0.95 : 0.5}
+            />
+          </mesh>
+          <mesh position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[1.1, 1.35, 32]} />
+            <meshBasicMaterial color={node.unlocked ? "#78f1ff" : "#5b4a6f"} transparent opacity={0.65} side={THREE.DoubleSide} />
+          </mesh>
+          {node.unlocked && <pointLight position={[0, 1.65, 0]} color="#6aeaff" intensity={1.5} distance={4} />}
+        </group>
+      ))}
+    </group>
+  );
+}
+
 export default function AdventureArena() {
   const arenaId = useAdventure((s) => s.arenaId);
   const roamDistrictId = useAdventure((s) => s.roamDistrictId);
   const roamSessionId = useAdventure((s) => s.roamSessionId);
   const missionId = useAdventure((s) => s.missionId);
   const trainingSession = useMissions((s) => s.active?.id === "training");
+  const isStoryMode = useRunner(s => s.gameState === "story-mode");
   const arena = getArenaConfig(arenaId) || ARENA_REGISTRY[0];
 
   return (
@@ -436,8 +472,9 @@ export default function AdventureArena() {
       <AdventureSessionGuard />
       <AdventurePlayerController />
       <AdventureEnemyAI />
+      {missionId === MISSION6_ID && <Mission6MemoryNodes />}
       {missionId === "mission1" && <Mission1EncounterBridge />}
-      {roamDistrictId ? <ScriptedEncounterSpawner roamSessionId={roamSessionId} /> : !missionId && !trainingSession ? <WaveSpawner roamSessionId={roamSessionId} /> : null}
+      {roamDistrictId ? <ScriptedEncounterSpawner roamSessionId={roamSessionId} /> : !missionId && !trainingSession && !isStoryMode ? <WaveSpawner roamSessionId={roamSessionId} /> : null}
     </>
   );
 }
