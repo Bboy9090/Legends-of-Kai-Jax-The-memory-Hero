@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { getStoryMissionById } from "./story_missions";
+import { getArenaConfig } from "../assets/arenaRegistry";
+import { getModelConfig } from "../assets/modelRegistry";
+import { ENEMY_TIERS } from "../game/tuning/enemyTuning";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { normalizeWaveEnemies, getWaveDelaySeconds } from "./storyWaveRuntime";
 import { MISSION6_ID } from "./mission6";
 import { evaluateCampaignProgressionGating } from "./adventureEvaluator";
@@ -42,6 +47,18 @@ describe("M6-A/B Shadows of the Ashblock playable encounter contract", () => {
     expect(normalizeWaveEnemies(mission!, 1)).toEqual(Array(8).fill({ fighterId: "hyena-scout" }));
     expect(getWaveDelaySeconds(mission!, 1)).toBe(3);
     expect(mission?.rewards).toEqual({ xp: 500, currency: 350, loot: ["Ashblock Memory"] });
+  });
+
+  it("registers a distinct Rift Frontier environment and real GLB assets for both waves", () => {
+    expect(getArenaConfig("rift_frontier").id).toBe("rift_frontier");
+    expect(getArenaConfig("rift_frontier").displayName).toMatch(/Ashblock/);
+    for (const id of ["rift-drone", "hyena-scout"]) {
+      const model = getModelConfig(id);
+      expect(model?.path.endsWith(".glb")).toBe(true);
+      expect(existsSync(join(process.cwd(), "public", "models", model!.path.split("/").pop()!))).toBe(true);
+    }
+    expect(ENEMY_TIERS.minion1.aggroRange).toBeGreaterThan(8);
+    expect(ENEMY_TIERS.minion2.telegraphDuration).toBeGreaterThan(0);
   });
 
   it("starts with three separately sealed memories and cannot rescue early or from afar", () => {

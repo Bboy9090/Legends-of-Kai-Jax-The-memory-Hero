@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("M6: briefing enters real Ashblock arena with six active Void grunts and three sealed memories", async ({ page }) => {
-  test.setTimeout(240_000);
+  test.setTimeout(360_000);
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/");
@@ -30,6 +30,34 @@ test("M6: briefing enters real Ashblock arena with six active Void grunts and th
   await expect(hud).toContainText("South Memory");
   await expect(page.locator("canvas").first()).toBeVisible();
   await expect(page.getByTestId("story-active-enemy-count")).toHaveText("6", { timeout: 30_000 });
-  await page.waitForTimeout(1200);
+  await expect.poll(async () => Number(await page.getByTestId("mission6-ai-telemetry").getAttribute("data-aggro")), {
+    timeout: 40_000,
+    intervals: [200, 300, 500],
+    message: "Actual M6 enemy AI must transition into aggro, not remain static",
+  }).toBeGreaterThan(0);
+  console.log("M6_AI_FIRST_AGGRO", await page.getByTestId("mission6-ai-telemetry").evaluate(el => ({
+    chase: el.getAttribute("data-chasing"),
+    nearestDistance: el.getAttribute("data-nearest-distance"),
+  })));
+  const aiSnapshots: Array<{ elapsed: number, chase: string|null, nearestDistance: string|null, telegraphs: string|null }> = [];
+  const aiDebugTicker = setInterval(async () => {
+    try {
+      const stats = await page.getByTestId("mission6-ai-telemetry").evaluate(el => ({
+        chase: el.getAttribute("data-chasing"), nearestDistance: el.getAttribute("data-nearest-distance"),
+        telegraphs: el.getAttribute("data-telegraphs"),
+      }));
+      aiSnapshots.push({ elapsed: Date.now(), ...stats });
+      console.log("M6_AI_SNAPSHOT", JSON.stringify(stats));
+    } catch { /* navigation or test teardown */ }
+  }, 5_000);
+  try {
+  await expect.poll(async () => Number(await page.getByTestId("mission6-ai-telemetry").getAttribute("data-telegraphs")), {
+    timeout: 180_000,
+    intervals: [100, 150, 250, 300],
+    message: "Actual M6 enemy AI must expose a telegraphed attack window",
+  }).toBeGreaterThan(0);
+  } finally {
+    clearInterval(aiDebugTicker);
+  }
   expect(errors).toEqual([]);
 });

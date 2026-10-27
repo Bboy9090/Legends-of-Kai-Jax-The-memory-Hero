@@ -475,6 +475,16 @@ export default function AdventureHUD() {
               );
             })}
           </div>
+          <div
+            data-testid="mission6-ai-telemetry"
+            data-aggro={enemies.filter(e => !e.isDead && e.isAggro).length}
+            data-telegraphs={enemies.filter(e => !e.isDead && e.aiState === "telegraph").length}
+            data-chasing={enemies.filter(e => !e.isDead && e.aiState === "chase").length}
+            data-nearest-distance={Math.min(999, ...enemies.filter(e => !e.isDead).map(e => Math.hypot(e.posX - player.posX, e.posZ - player.posZ))).toFixed(2)}
+            className="mt-2 text-[9px] text-purple-200/75"
+          >
+            Void pressure: {enemies.filter(e => !e.isDead && e.isAggro).length} active threats
+          </div>
           <div className="mt-2 text-[9px] text-slate-400">Defeat Void guards to unseal nodes. Move close and press E or tap Rescue.</div>
         </div>
       )}
