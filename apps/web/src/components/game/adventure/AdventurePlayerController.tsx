@@ -222,8 +222,8 @@ export default function AdventurePlayerController() {
             ? evaluateCancelTransition({
                 currentMove: p.attackType as keyof typeof MOVES,
                 elapsedSeconds: elapsed, attacking: p.combatState === CombatState.ATTACKING,
-                dodging: p.combatState === CombatState.DODGING,
-                guardBroken: false, hitstun: p.combatState === CombatState.HITSTUN,
+                dodging: false,
+                guardBroken: false, hitstun: false,
                 stamina: p.stamina,
               }, moveKey as keyof typeof MOVES)
             : { allowed: false as const };
