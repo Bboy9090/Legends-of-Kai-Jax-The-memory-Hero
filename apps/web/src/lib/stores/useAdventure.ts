@@ -73,6 +73,11 @@ export interface DedicatedCivilian {
 export interface ObjectiveState {
   status: "UNINITIALIZED" | "ACTIVE" | "FAILED" | "VICTORY";
   civilianRegistry: DedicatedCivilian[];
+  memoryRescues: {
+    shard1: boolean;
+    shard2: boolean;
+    shard3: boolean;
+  };
   milestones: {
     stalkerIntercepted: boolean;
     generalDefeated: boolean;
@@ -85,12 +90,14 @@ const freshObjectives = (missionId: string | null): ObjectiveState => ({
     { id: "civ_01", health: 100, maxHealth: 100, posX: -5, posY: 0, posZ: 10 },
     { id: "civ_02", health: 100, maxHealth: 100, posX: -8, posY: 0, posZ: 12 },
   ] : [],
+  memoryRescues: { shard1: false, shard2: false, shard3: false },
   milestones: { stalkerIntercepted: false, generalDefeated: false, chaseTargetEscaped: false },
 });
 
 interface AdventureState {
   objectives: ObjectiveState;
   damageCivilian: (id: string, amount: number) => void;
+  markMemoryRescued: (shardId: 'shard1' | 'shard2' | 'shard3') => void;
   markChaseTargetEscaped: () => void;
   player: AdventurePlayerState;
   enemies: AdventureEnemy[];
@@ -209,6 +216,12 @@ export const useAdventure = create<AdventureState>((set, get) => ({
     objectives: s.missionId !== "story_act1_m4" || s.objectives.status !== "ACTIVE" ? s.objectives : {
       ...s.objectives,
       milestones: { ...s.objectives.milestones, chaseTargetEscaped: true },
+    },
+  })),
+  markMemoryRescued: (shardId) => set(s => ({
+    objectives: s.missionId !== "story_act2_m6" || s.objectives.status !== "ACTIVE" ? s.objectives : {
+      ...s.objectives,
+      memoryRescues: { ...s.objectives.memoryRescues, [shardId]: true },
     },
   })),
   arenaId: "open-world",
