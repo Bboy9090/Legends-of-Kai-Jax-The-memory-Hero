@@ -487,3 +487,50 @@ test("story: enters a real story mission and mounts the arena without crashing",
   await page.waitForTimeout(3_000);
   expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
 });
+
+
+test("story rewards: Ashblock Memory persists across browser reload and remains profile-scoped", async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await boot(page);
+
+  // This verifies real browser persistence. Combat victory is separately
+  // exercised by the Mission6RewardSettlement state-machine tests.
+  await page.evaluate(() => {
+    const runner = (window as any).runnerStore.getState();
+    runner.resetProfile(0);
+    runner.resetProfile(1);
+    runner.switchProfile(0);
+    runner.grantStoryLoot(["Ashblock Memory", "Ashblock Memory"]);
+    runner.setMissionCompleted("story_act2_m6");
+  });
+
+  const persisted = await page.evaluate(() => {
+    const raw = window.localStorage.getItem("kai-jax-save");
+    return raw ? JSON.parse(raw) : null;
+  });
+  expect(persisted?.state?.profiles?.[0]?.storyLoot).toEqual(["Ashblock Memory"]);
+  expect(persisted?.state?.profiles?.[0]?.completedStoryMissionIds).toContain("story_act2_m6");
+  expect(persisted?.state?.profiles?.[1]?.storyLoot).toEqual([]);
+
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.waitForFunction(
+    () => Boolean((window as any).runnerStore?.persist?.hasHydrated?.()), null,
+    { timeout: 20_000 },
+  );
+  const restored = await page.evaluate(() => {
+    const runner = (window as any).runnerStore.getState();
+    const first = [...runner.storyLoot];
+    runner.switchProfile(1);
+    const second = [...(window as any).runnerStore.getState().storyLoot];
+    runner.switchProfile(0);
+    const backToFirst = [...(window as any).runnerStore.getState().storyLoot];
+    return { first, second, backToFirst };
+  });
+  expect(restored).toEqual({
+    first: ["Ashblock Memory"],
+    second: [],
+    backToFirst: ["Ashblock Memory"],
+  });
+  expect(errors, `Unexpected runtime errors:\n${errors.join("\n")}`).toEqual([]);
+});
