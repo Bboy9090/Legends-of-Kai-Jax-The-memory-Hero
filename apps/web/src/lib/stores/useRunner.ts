@@ -72,6 +72,7 @@ interface RunnerState {
   totalScore: number;
   campaignCompletedNodes: CampaignNodeId[];
   completedStoryMissionIds: string[];
+  storyLoot: string[];
   completedRoamDistrictIds: string[];
   unlockedUpgrades: string[];
   setCampaignCompleted: (nodeId: CampaignNodeId) => void;
@@ -209,6 +210,7 @@ export const useRunner = create<RunnerState>()(
       totalScore: 0,
       campaignCompletedNodes: [],
       completedStoryMissionIds: [],
+      storyLoot: [],
       completedRoamDistrictIds: [],
       unlockedUpgrades: [],
 
