@@ -400,19 +400,6 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
           civilianAttackTimes.current.set(attack.enemyId, nowMs);
         }
       }
-      if (mission.id === "story_act2_m6") {
-        const deadCount = enemies.filter(e => e.isDead).length;
-        const totalCount = enemies.length;
-        if (deadCount >= 2 && !state.objectives.memoryRescues.shard1) {
-          state.markMemoryRescued('shard1');
-        }
-        if (deadCount >= 5 && !state.objectives.memoryRescues.shard2) {
-          state.markMemoryRescued('shard2');
-        }
-        if (deadCount >= totalCount && totalCount > 0 && !state.objectives.memoryRescues.shard3) {
-          state.markMemoryRescued('shard3');
-        }
-      }
       const updated = useAdventure.getState();
       const outcome = evaluateCampaignProgressionGating({
         ...updated, currentWaveIndex: currentWave, totalWavesCount: mission.enemyWaves.length,

@@ -18,10 +18,6 @@ export function evaluateCampaignProgressionGating(state: {
     if (objectives.civilianRegistry.length === 0) return "CONTINUE";
     if (objectives.civilianRegistry.every(c => c.health <= 0)) return "FAILED";
   }
-  if (missionId === "story_act2_m6") {
-    const allShardsRescued = objectives.memoryRescues.shard1 && objectives.memoryRescues.shard2 && objectives.memoryRescues.shard3;
-    if (!allShardsRescued) return "CONTINUE";
-  }
   if (totalWavesCount <= 0 || currentWaveIndex !== totalWavesCount - 1) return "CONTINUE";
   if (enemies.length === 0 || enemies.some(e => !e.isDead && e.health > 0 && !(missionId === "story_act1_m4" && e.fighterId === "void-stalker" && objectives.milestones.stalkerIntercepted))) return "CONTINUE";
   if (missionId === "story_act1_m4" && !objectives.milestones.stalkerIntercepted) return "CONTINUE";

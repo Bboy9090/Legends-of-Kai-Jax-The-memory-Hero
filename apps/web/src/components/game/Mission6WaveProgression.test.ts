@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useAdventure } from '../../lib/stores/useAdventure';
 import { useMissions } from '../../lib/stores/useMissions';
 import { useRunner } from '../../lib/stores/useRunner';
 import { getStoryMissionById } from '../../lib/story_missions';
 import { evaluateCampaignProgressionGating } from '../../lib/adventureEvaluator';
+import { hasRescuedAllMission6Memories, unlockMission6Memories } from '../../lib/mission6';
 
 describe('Mission 6 (Shadows of the Ashblock) - Combat Encounters (M6-B)', () => {
   beforeEach(() => {
@@ -27,12 +28,10 @@ describe('Mission 6 (Shadows of the Ashblock) - Combat Encounters (M6-B)', () =>
 
     useAdventure.getState().initAdventure('kai-jax', 'story_act2_m6', mission.arena || 'cross_point_arena');
 
-    // Simulate wave 1 spawn (maps void-grunt to rift-drone)
     const wave1 = mission.enemyWaves[0] as any;
     expect(wave1.type).toBe('void-grunt');
     expect(wave1.count).toBe(6);
 
-    // Manually spawn wave 1 enemies to test
     const wave1Enemies = Array.from({ length: 6 }, (_, i) => ({
       id: `w0-${i}-rift-drone`,
       fighterId: 'rift-drone',
@@ -70,72 +69,48 @@ describe('Mission 6 (Shadows of the Ashblock) - Combat Encounters (M6-B)', () =>
     expect(wave2.delay).toBe(3);
   });
 
-  it('Memory rescue triggers at correct enemy defeat milestones', () => {
-    const mission = getStoryMissionById('story_act2_m6');
-    expect(mission).toBeDefined();
-    if (!mission) return;
+  it('Memory nodes unlock progressively based on enemy defeats', () => {
+    useAdventure.getState().initAdventure('kai-jax', 'story_act2_m6', 'rift_frontier');
+    const objectives = useAdventure.getState().objectives;
 
-    useAdventure.getState().initAdventure('kai-jax', 'story_act2_m6', mission.arena || 'cross_point_arena');
+    expect(objectives.memoryRescues.every(m => !m.unlocked)).toBe(true);
+    expect(objectives.memoryRescues.length).toBe(3);
 
-    // Spawn 6 enemies for testing
-    const testEnemies = Array.from({ length: 6 }, (_, i) => ({
-      id: `test-${i}`,
-      fighterId: 'rift-drone',
-      tier: 'minion1' as const,
-      posX: 0,
-      posY: 0,
-      posZ: 0,
-      rotY: 0,
-      health: 100,
-      maxHealth: 100,
-      isAggro: false,
-      isAttacking: false,
-      isDead: false,
-      aiState: 'idle' as const,
-      telegraphTimer: 0,
-      patrolTargetX: 0,
-      patrolTargetZ: 0,
-      stunTimer: 0,
-    }));
+    let unlocked = unlockMission6Memories(objectives.memoryRescues, 2);
+    expect(unlocked[0].unlocked).toBe(true);
+    expect(unlocked[1].unlocked).toBe(false);
+    expect(unlocked[2].unlocked).toBe(false);
 
-    useAdventure.getState().spawnEnemies(testEnemies);
+    unlocked = unlockMission6Memories(objectives.memoryRescues, 4);
+    expect(unlocked[0].unlocked).toBe(true);
+    expect(unlocked[1].unlocked).toBe(true);
+    expect(unlocked[2].unlocked).toBe(false);
 
-    // Initially no shards rescued
-    let objectives = useAdventure.getState().objectives;
-    expect(objectives.memoryRescues.shard1).toBe(false);
-    expect(objectives.memoryRescues.shard2).toBe(false);
-    expect(objectives.memoryRescues.shard3).toBe(false);
-
-    // Kill 2 enemies → shard1 should be rescued
-    useAdventure.getState().damageEnemy('test-0', 200);
-    useAdventure.getState().damageEnemy('test-1', 200);
-    useAdventure.getState().markMemoryRescued('shard1');
-    objectives = useAdventure.getState().objectives;
-    expect(objectives.memoryRescues.shard1).toBe(true);
-
-    // Kill 5 total enemies → shard2 should be rescued
-    useAdventure.getState().damageEnemy('test-2', 200);
-    useAdventure.getState().damageEnemy('test-3', 200);
-    useAdventure.getState().damageEnemy('test-4', 200);
-    useAdventure.getState().markMemoryRescued('shard2');
-    objectives = useAdventure.getState().objectives;
-    expect(objectives.memoryRescues.shard2).toBe(true);
-
-    // Kill all 6 enemies → shard3 should be rescued
-    useAdventure.getState().damageEnemy('test-5', 200);
-    useAdventure.getState().markMemoryRescued('shard3');
-    objectives = useAdventure.getState().objectives;
-    expect(objectives.memoryRescues.shard3).toBe(true);
+    unlocked = unlockMission6Memories(objectives.memoryRescues, 6);
+    expect(unlocked[0].unlocked).toBe(true);
+    expect(unlocked[1].unlocked).toBe(true);
+    expect(unlocked[2].unlocked).toBe(true);
   });
 
-  it('Mission victory requires all 3 shards rescued AND all enemies defeated', () => {
+  it('Memory nodes have correct unlock thresholds and positions', () => {
+    useAdventure.getState().initAdventure('kai-jax', 'story_act2_m6', 'rift_frontier');
+    const memories = useAdventure.getState().objectives.memoryRescues;
+
+    expect(memories[0].id).toBe('ashblock_memory_1');
+    expect(memories[0].unlockAfterDefeats).toBe(2);
+    expect(memories[1].id).toBe('ashblock_memory_2');
+    expect(memories[1].unlockAfterDefeats).toBe(4);
+    expect(memories[2].id).toBe('ashblock_memory_3');
+    expect(memories[2].unlockAfterDefeats).toBe(6);
+  });
+
+  it('Mission victory requires all 3 memories rescued AND all enemies defeated', () => {
     const mission = getStoryMissionById('story_act2_m6');
     expect(mission).toBeDefined();
     if (!mission) return;
 
     useAdventure.getState().initAdventure('kai-jax', 'story_act2_m6', mission.arena || 'cross_point_arena');
 
-    // Create test state with all shards but no enemies
     const testEnemies = Array.from({ length: 14 }, (_, i) => ({
       id: `enemy-${i}`,
       fighterId: i < 6 ? 'rift-drone' : 'hyena-scout',
@@ -158,12 +133,6 @@ describe('Mission 6 (Shadows of the Ashblock) - Combat Encounters (M6-B)', () =>
 
     useAdventure.getState().spawnEnemies(testEnemies);
 
-    // Mark all shards rescued
-    useAdventure.getState().objectives.memoryRescues.shard1 = true;
-    useAdventure.getState().objectives.memoryRescues.shard2 = true;
-    useAdventure.getState().objectives.memoryRescues.shard3 = true;
-
-    // Still CONTINUE because enemies alive
     let outcome = evaluateCampaignProgressionGating({
       missionId: 'story_act2_m6',
       enemies: useAdventure.getState().enemies,
@@ -173,23 +142,25 @@ describe('Mission 6 (Shadows of the Ashblock) - Combat Encounters (M6-B)', () =>
     });
     expect(outcome).toBe('CONTINUE');
 
-    // Kill all enemies
-    useAdventure.getState().damageEnemy('enemy-0', 200);
-    useAdventure.getState().damageEnemy('enemy-1', 200);
-    useAdventure.getState().damageEnemy('enemy-2', 200);
-    useAdventure.getState().damageEnemy('enemy-3', 200);
-    useAdventure.getState().damageEnemy('enemy-4', 200);
-    useAdventure.getState().damageEnemy('enemy-5', 200);
-    useAdventure.getState().damageEnemy('enemy-6', 200);
-    useAdventure.getState().damageEnemy('enemy-7', 200);
-    useAdventure.getState().damageEnemy('enemy-8', 200);
-    useAdventure.getState().damageEnemy('enemy-9', 200);
-    useAdventure.getState().damageEnemy('enemy-10', 200);
-    useAdventure.getState().damageEnemy('enemy-11', 200);
-    useAdventure.getState().damageEnemy('enemy-12', 200);
-    useAdventure.getState().damageEnemy('enemy-13', 200);
+    let memories = useAdventure.getState().objectives.memoryRescues;
+    memories = memories.map(m => ({ ...m, rescued: true }));
+    useAdventure.setState(s => ({
+      objectives: { ...s.objectives, memoryRescues: memories }
+    }));
 
-    // Now all shards rescued AND all enemies dead → VICTORY
+    outcome = evaluateCampaignProgressionGating({
+      missionId: 'story_act2_m6',
+      enemies: useAdventure.getState().enemies,
+      objectives: useAdventure.getState().objectives,
+      currentWaveIndex: 1,
+      totalWavesCount: 2,
+    });
+    expect(outcome).toBe('CONTINUE');
+
+    for (let i = 0; i < 14; i++) {
+      useAdventure.getState().damageEnemy(`enemy-${i}`, 200);
+    }
+
     outcome = evaluateCampaignProgressionGating({
       missionId: 'story_act2_m6',
       enemies: useAdventure.getState().enemies,
@@ -205,9 +176,21 @@ describe('Mission 6 (Shadows of the Ashblock) - Combat Encounters (M6-B)', () =>
     expect(mission).toBeDefined();
     if (!mission) return;
 
-    // Check that the delay is properly extracted
     const wave2 = mission.enemyWaves[1] as any;
     const delay = wave2?.spawnDelay ?? wave2?.delay ?? 2;
     expect(delay).toBe(3);
+  });
+
+  it('hasRescuedAllMission6Memories correctly checks rescue state', () => {
+    useAdventure.getState().initAdventure('kai-jax', 'story_act2_m6', 'rift_frontier');
+    let memories = useAdventure.getState().objectives.memoryRescues;
+
+    expect(hasRescuedAllMission6Memories(memories)).toBe(false);
+
+    memories = memories.map((m, i) => ({ ...m, rescued: i === 0 }));
+    expect(hasRescuedAllMission6Memories(memories)).toBe(false);
+
+    memories = memories.map(m => ({ ...m, rescued: true }));
+    expect(hasRescuedAllMission6Memories(memories)).toBe(true);
   });
 });
