@@ -10,7 +10,7 @@ import { ASHBLOCK_OBJECTIVE_BLURBS } from "../../../game/world/zones/AshblockHei
 import MoveListOverlay from "../MoveListOverlay";
 import { useState, useEffect } from "react";
 import { isTouchDevice } from "../../../lib/touchUtils";
-import { MISSION6_ID, isMemoryInRange } from "../../../lib/mission6";
+import { MISSION6_ID, isMemoryInRange, findRecoverableMemory } from "../../../lib/mission6";
 
 function HealthBar({
   current,
@@ -268,9 +268,8 @@ export default function AdventureHUD() {
       if (event.code !== "KeyE" || event.repeat) return;
       const state = useAdventure.getState();
       if (state.missionId !== MISSION6_ID || state.isPaused) return;
-      const next = state.objectives.memoryRescues.find(node =>
-        node.unlocked && !node.rescued &&
-        isMemoryInRange(node, state.player.posX, state.player.posZ));
+      const next = findRecoverableMemory(
+        state.objectives.memoryRescues, state.player.posX, state.player.posZ);
       if (next) {
         event.preventDefault();
         state.rescueMemory(next.id);
@@ -469,7 +468,7 @@ export default function AdventureHUD() {
                       className="rounded border border-cyan-300 bg-cyan-800 px-2 py-2 font-bold"
                       onClick={() => useAdventure.getState().rescueMemory(node.id)}
                       aria-label={'Rescue ' + node.label}
-                    >RESCUE · E</button>
+                    >RESCUE</button>
                   )}
                 </div>
               );
@@ -485,7 +484,7 @@ export default function AdventureHUD() {
           >
             Void pressure: {enemies.filter(e => !e.isDead && e.isAggro).length} active threats
           </div>
-          <div className="mt-2 text-[9px] text-slate-400">Defeat Void guards to unseal nodes. Move close and press E or tap Rescue.</div>
+          <div className="mt-2 text-[9px] text-slate-400">Defeat Void guards to unseal nodes. Move close: press E, LB/L1, or tap Rescue.</div>
         </div>
       )}
 

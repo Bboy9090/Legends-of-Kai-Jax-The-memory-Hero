@@ -6,7 +6,7 @@ import { ENEMY_TIERS } from "../game/tuning/enemyTuning";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { normalizeWaveEnemies, getWaveDelaySeconds } from "./storyWaveRuntime";
-import { MISSION6_ID } from "./mission6";
+import { MISSION6_ID, MISSION6_RESCUE_GAMEPAD_BUTTON, findRecoverableMemory, isGamepadRescueEdge } from "./mission6";
 import { evaluateCampaignProgressionGating } from "./adventureEvaluator";
 import { useAdventure, type AdventureEnemy } from "./stores/useAdventure";
 
@@ -87,6 +87,21 @@ describe("M6-A/B Shadows of the Ashblock playable encounter contract", () => {
       expect(unlocked).toBe(Math.floor((i + 1) / 2));
     }
     expect(useAdventure.getState().enemiesDefeated).toBe(6);
+  });
+
+  it("gamepad LB/L1 rising edge shares the exact rescue eligibility contract", () => {
+    expect(MISSION6_RESCUE_GAMEPAD_BUTTON).toBe(4);
+    useAdventure.getState().initAdventure("kai-jax", MISSION6_ID, "rift_frontier");
+    const first = useAdventure.getState().objectives.memoryRescues[0];
+    useAdventure.getState().setPlayerPos(first.posX, 0, first.posZ);
+    expect(findRecoverableMemory(useAdventure.getState().objectives.memoryRescues, first.posX, first.posZ)).toBeUndefined();
+    defeatFirstWave();
+    expect(findRecoverableMemory(useAdventure.getState().objectives.memoryRescues, first.posX, first.posZ)?.id).toBe(first.id);
+    expect(isGamepadRescueEdge(true, false)).toBe(true);
+    expect(isGamepadRescueEdge(true, true)).toBe(false);
+    expect(isGamepadRescueEdge(false, true)).toBe(false);
+    expect(useAdventure.getState().rescueMemory(first.id)).toBe(true);
+    expect(findRecoverableMemory(useAdventure.getState().objectives.memoryRescues, first.posX, first.posZ)).toBeUndefined();
   });
 
   it("rescues are range-, pause- and activity-gated; rescue is idempotent", () => {

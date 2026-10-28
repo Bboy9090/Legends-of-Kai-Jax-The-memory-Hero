@@ -134,3 +134,55 @@ test("M6-C real mission UI: waves, timed transition, rescues, results and persis
   });
   expect(pageErrors).toEqual([]);
 });
+
+
+test("M6-D virtual standard gamepad LB/L1 rescues unlocked memory through the live controller", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.goto("/");
+  await page.waitForFunction(() => Boolean((window as any).runnerStore?.persist?.hasHydrated?.()), null, { timeout: 30000 });
+  await page.evaluate(() => {
+    const runner = (window as any).runnerStore.getState();
+    runner.setCharacter("kai-jax");
+    runner.setActiveStoryMission("story_act2_m6");
+    runner.setGameState("story-mode");
+  });
+  await expect(page.getByRole("heading", { name: "Shadows of the Ashblock" })).toBeVisible({ timeout: 30000 });
+  await page.getByRole("button", { name: "Engage Mission" }).click();
+  await expect(page.getByText("I can feel another shard nearby.", { exact: false })).toBeVisible({ timeout: 30000 });
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("mission6-memory-hud")).toBeVisible({ timeout: 45000 });
+
+  await page.evaluate(async () => {
+    const { useAdventure } = await import("/src/lib/stores/useAdventure.ts");
+    const store = useAdventure.getState();
+    const first = store.enemies.filter(e => e.id.startsWith("w0-")).slice(0, 2);
+    if (first.length !== 2) throw new Error("Missing first wave");
+    for (const e of first) useAdventure.getState().damageEnemy(e.id, 100000);
+    const node = useAdventure.getState().objectives.memoryRescues[0];
+    useAdventure.getState().setPlayerPos(node.posX, 0, node.posZ);
+
+    // Virtual standard gamepad, read through the actual navigator.getGamepads()
+    // path by AdventurePlayerController. No production test hooks installed.
+    const pad = {
+      id: "Playwright virtual standard gamepad",
+      connected: true, mapping: "standard",
+      axes: [0, 0, 0, 0],
+      buttons: Array.from({ length: 17 }, () => ({ pressed: false, touched: false, value: 0 })),
+    };
+    (window as any).__m6VirtualPad = pad;
+    Object.defineProperty(navigator, "getGamepads", { configurable: true, value: () => [pad] });
+  });
+
+  await expect(page.getByTestId("rescue-ashblock_memory_1")).toBeVisible({ timeout: 15000 });
+  await page.waitForTimeout(600);
+  await page.evaluate(() => {
+    (window as any).__m6VirtualPad.buttons[4].pressed = true;
+  });
+  await expect.poll(async () => page.evaluate(async () => {
+    const { useAdventure } = await import("/src/lib/stores/useAdventure.ts");
+    return useAdventure.getState().objectives.memoryRescues.filter(node => node.rescued).length;
+  }), { timeout: 45000 }).toBe(1);
+  console.log("M6_VIRTUAL_GAMEPAD_LB_RESCUE", "1 rescued through live gamepad polling");
+  await page.evaluate(() => { (window as any).__m6VirtualPad.buttons[4].pressed = false; });
+});

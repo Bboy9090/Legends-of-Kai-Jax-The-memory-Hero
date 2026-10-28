@@ -31,3 +31,15 @@ export function unlockMission6Memories(nodes: TrappedMemory[], defeated: number)
 export function hasRescuedAllMission6Memories(nodes: TrappedMemory[]): boolean {
   return nodes.length === 3 && nodes.every(node => node.rescued);
 }
+
+/** Standard Gamepad mapping: left shoulder (LB / L1). */
+export const MISSION6_RESCUE_GAMEPAD_BUTTON = 4;
+
+export function findRecoverableMemory(nodes: TrappedMemory[], x: number, z: number): TrappedMemory | undefined {
+  return nodes.find(node => node.unlocked && !node.rescued && isMemoryInRange(node, x, z));
+}
+
+/** Rising edge only: holding LB never repeats or rescues multiple nodes. */
+export function isGamepadRescueEdge(pressed: boolean, previouslyPressed: boolean): boolean {
+  return pressed && !previouslyPressed;
+}
