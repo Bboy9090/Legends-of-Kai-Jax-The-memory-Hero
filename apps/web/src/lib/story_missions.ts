@@ -164,7 +164,8 @@ export const ACT_II_STORY_MISSIONS: StoryMission[] = [
       { speaker: 'Kai-Jax', text: 'I can feel another shard nearby. We can\'t let the Void consume it.', side: 'left' }
     ],
     outroCutscene: [
-      { speaker: 'Kai-Jax', text: 'One step closer to restoring the Weave.', side: 'left' }
+      { speaker: 'Kai-Jax', text: 'One step closer to restoring the Weave.', side: 'left' },
+      { speaker: 'Kai-Jax', text: 'And... I can feel us becoming clearer. Like echoes learning to speak together.', side: 'left', emotion: 'thoughtful' }
     ],
     objectives: ['Contain the Void outbreak', 'Rescue 3 Trapped Memories'],
     difficulty: 5,
