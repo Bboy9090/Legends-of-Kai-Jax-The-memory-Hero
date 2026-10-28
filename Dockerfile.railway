@@ -20,7 +20,7 @@ COPY packages/shared packages/shared
 COPY packages/ui packages/ui
 
 # Runtime web imports reach canonical shared data through workspace source aliases.
-COPY kai_jax.character.json ./kai_jax.character.json
+COPY data/kai_jax.character.json ./kai_jax.character.json
 COPY schemas ./schemas
 COPY data ./data
 
