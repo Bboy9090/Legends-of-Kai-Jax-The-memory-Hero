@@ -29,6 +29,16 @@ for (const target of TARGETS) {
       await page.waitForFunction(
         () => Boolean((window as any).runnerStore?.persist?.hasHydrated?.()), null, { timeout: 25000 },
       );
+      // Resolve GLB authority before entering the heavy Three.js scene, so
+      // a development-server reload cannot invalidate the late results read.
+      // These exact registered rigs, never stand-in illustrations, are tested.
+      const modelEvidence = await page.evaluate(async () => {
+        const { getModelConfig } = await import("/src/assets/modelRegistry.ts");
+        return ["kai-jax", "rift-drone", "hyena-scout"].map(id => ({
+          id, path: getModelConfig(id)?.path ?? null,
+        }));
+      });
+      for (const entry of modelEvidence) expect(entry.path).toMatch(/\.glb$/);
       await page.evaluate(() => {
         const runner = (window as any).runnerStore.getState();
         runner.resetProfile(0);
@@ -40,10 +50,12 @@ for (const target of TARGETS) {
       await expect(page.getByRole("heading", { name: "Shadows of the Ashblock" })).toBeVisible({ timeout: 35000 });
       await page.getByRole("button", { name: "Engage Mission" }).tap();
       await expect(page.getByText("Transmission Active", { exact: true })).toBeVisible({ timeout: 25000 });
-      // Touch through the existing onClick dialogue handler: first tap finishes
-      // typewriter text, second advances the one-line briefing.
-      await page.getByText("Transmission Active", { exact: true }).tap();
-      await page.getByText("Click to engage", { exact: true }).tap({ timeout: 30000 });
+      // Actual touch dialogue handler, two beats: the M5 retreat and the
+      // Ashblock recovery order. A tap finishes typing; the next advances.
+      for (let beat = 0; beat < 2; beat++) {
+        await page.getByText("Transmission Active", { exact: true }).tap();
+        await page.getByText(beat === 0 ? "Ready for next phase" : "Click to engage", { exact: true }).tap({ timeout: 30000 });
+      }
       await expect(page.getByTestId("mission6-memory-hud")).toBeVisible({ timeout: 50000 });
 
       const controls = ["touch-joystick", "touch-attack", "touch-heavy", "touch-skill", "touch-dodge", "touch-pause"];
@@ -92,15 +104,6 @@ for (const target of TARGETS) {
         return useAdventure.getState().objectives.memoryRescues.filter(n => n.rescued).length;
       }), { timeout: 25000 }).toBe(1);
 
-      // This checks the *registered playable hero and enemy model paths*.
-      // A false screenshot or substitute image does not satisfy this contract.
-      const modelEvidence = await page.evaluate(async () => {
-        const { getModelConfig } = await import("/src/assets/modelRegistry.ts");
-        return ["kai-jax", "rift-drone", "hyena-scout"].map(id => ({
-          id, path: getModelConfig(id)?.path ?? null,
-        }));
-      });
-      for (const entry of modelEvidence) expect(entry.path).toMatch(/\.glb$/);
       console.log("M6_TOUCH_PASS", JSON.stringify({ device: target.name, rescued: 1,
         models: modelEvidence, viewport: [target.width, target.height] }));
       expect(exceptions).toEqual([]);

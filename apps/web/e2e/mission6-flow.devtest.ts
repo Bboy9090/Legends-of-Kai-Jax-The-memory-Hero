@@ -25,6 +25,9 @@ test("M6-C real mission UI: waves, timed transition, rescues, results and persis
   });
   await expect(page.getByRole("heading", { name: "Shadows of the Ashblock" })).toBeVisible({ timeout: 30000 });
   await page.getByRole("button", { name: "Engage Mission" }).click();
+  await expect(page.getByText("Cross Point has fallen.", { exact: false })).toBeVisible({ timeout: 30000 });
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
   await expect(page.getByText("I can feel another shard nearby.", { exact: false })).toBeVisible({ timeout: 30000 });
   await page.keyboard.press("Enter");
   await page.keyboard.press("Enter");
@@ -101,6 +104,12 @@ test("M6-C real mission UI: waves, timed transition, rescues, results and persis
   console.log("M6_DEV_CHECKPOINT_OUTRO", JSON.stringify(await getProgress()));
   await page.keyboard.press("Enter");
   await page.keyboard.press("Enter");
+  // The second outro line is mounted, but headless WebGL can throttle its
+  // character-by-character typing. Assert the stable overlay and advance via
+  // the real Enter handler; narrative content is checked in unit tests.
+  await expect(page.getByText("Transmission Active", { exact: true })).toBeVisible({ timeout: 30000 });
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { name: "Mission Complete" })).toBeVisible({ timeout: 12000 });
   await expect(page.getByTestId("story-mission-loot-reward")).toContainText("Ashblock Memory");
   await expect(page.getByText("+500 XP", { exact: true })).toBeVisible();
@@ -148,6 +157,9 @@ test("M6-D virtual standard gamepad LB/L1 rescues unlocked memory through the li
   });
   await expect(page.getByRole("heading", { name: "Shadows of the Ashblock" })).toBeVisible({ timeout: 30000 });
   await page.getByRole("button", { name: "Engage Mission" }).click();
+  await expect(page.getByText("Cross Point has fallen.", { exact: false })).toBeVisible({ timeout: 30000 });
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
   await expect(page.getByText("I can feel another shard nearby.", { exact: false })).toBeVisible({ timeout: 30000 });
   await page.keyboard.press("Enter");
   await page.keyboard.press("Enter");

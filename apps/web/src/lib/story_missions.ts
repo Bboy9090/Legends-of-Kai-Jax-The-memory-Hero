@@ -159,18 +159,19 @@ export const ACT_II_STORY_MISSIONS: StoryMission[] = [
     actNumber: 2,
     missionNumber: 6,
     title: 'Shadows of the Ashblock',
-    description: 'The heroes fight to contain the Void spreading through the Ashblock district ruins.',
+    description: 'After the fall of Cross Point, the heroes defend survivors sheltering in Ashblock and recover memories threatened by the spreading Void.',
     introCutscene: [
-      { speaker: 'Kai-Jax', text: 'I can feel another shard nearby. We can\'t let the Void consume it.', side: 'left' }
+      { speaker: 'Narrator', text: 'Cross Point has fallen. The Rift remains open, and survivors of the retreat are taking shelter among Ashblock\'s ruins.', side: 'left', emotion: 'neutral' },
+      { speaker: 'Kai-Jax', text: 'We could not close the breach, but we can hold this ground. I can feel another shard nearby. Three memories are trapped in these streets. We bring each one home before the Void takes them.', side: 'left', emotion: 'determined' }
     ],
     outroCutscene: [
       { speaker: 'Kai-Jax', text: 'One step closer to restoring the Weave.', side: 'left' },
-      { speaker: 'Kai-Jax', text: 'And... I can feel us becoming clearer. Like echoes learning to speak together.', side: 'left', emotion: 'thoughtful' }
+      { speaker: 'Kai-Jax', text: 'And... I can hear Kai and Jax more clearly now. Those memories warned them of different dangers. I need to listen to both before we face what comes next.', side: 'left', emotion: 'determined' }
     ],
     objectives: ['Contain the Void outbreak', 'Rescue 3 Trapped Memories'],
     difficulty: 5,
     arena: 'rift_frontier',
-    storyBeat: 'The struggle continues as the Void infects the environment and consumes memory nodes.',
+    storyBeat: 'ACT II OPEN: After losing Cross Point, the survivors retreat to Ashblock. Recovering three threatened memories foreshadows the need for Kai, Jax, and Kai-Jax to coordinate their distinct voices without physical separation.',
     rewards: { xp: 500, currency: 350, loot: ['Ashblock Memory'] },
     gameplayType: 'combat',
     enemyWaves: [{ type: 'void-grunt', count: 6 }, { type: 'void-scout', count: 8, delay: 3 }]
