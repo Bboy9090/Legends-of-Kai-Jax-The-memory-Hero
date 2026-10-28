@@ -16,7 +16,12 @@ export default defineConfig({
     use: {
       ...devices["Desktop Chromium"],
       headless: true,
-      launchArgs: ["--no-sandbox", "--disable-dev-shm-usage"],
+      launchArgs: [
+        "--no-sandbox", "--disable-dev-shm-usage",
+        ...(process.env.CI
+          ? ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"]
+          : []),
+      ],
     },
   }],
   webServer: {
