@@ -41,3 +41,15 @@ export function getWaveDelaySeconds(mission: StoryMission, waveIndex: number): n
   return Number.isFinite(delay) && delay >= 0 ? delay : 2;
 }
 
+
+/**
+ * Progress a scripted-wave delay by actual monotonic elapsed time.
+ *
+ * Browser rendering and throttled timers may skip callbacks. Subtracting a
+ * fixed nominal setInterval period would make a 3-second gap last minutes.
+ * Pause samples never consume gameplay delay.
+ */
+export function advanceWaveDelayMs(remainingMs: number, elapsedMs: number, paused: boolean): number {
+  if (paused || !Number.isFinite(elapsedMs) || elapsedMs <= 0) return remainingMs;
+  return Math.max(0, remainingMs - elapsedMs);
+}

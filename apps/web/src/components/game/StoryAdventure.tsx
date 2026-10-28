@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useAdventure } from "../../lib/stores/useAdventure";
 import { evaluateCampaignProgressionGating } from "../../lib/adventureEvaluator";
 import { MISSION6_ID } from "../../lib/mission6";
-import { normalizeWaveEnemies, getWaveDelaySeconds } from "../../lib/storyWaveRuntime";
+import { normalizeWaveEnemies, getWaveDelaySeconds, advanceWaveDelayMs } from "../../lib/storyWaveRuntime";
 import { shouldMarkChaseTargetEscaped, findCivilianAttack, CIVILIAN_ATTACK_DAMAGE } from "../../lib/adventureTelemetry";
 import { getStoryMissionById, type StoryMission, type StoryDialogue } from "../../lib/story_missions";
 
@@ -425,12 +425,17 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
           setCurrentWave(nextWave);
           const delay = getWaveDelaySeconds(mission, nextWave);
           setPhase("wave-transition");
-          // Transition time only advances during unpaused play. Cancel on retry/unmount.
+          // Account for actual elapsed time, not the nominal callback period.
+          // Headless WebGL, background tabs and low-end mobile GPUs can throttle
+          // setInterval far beyond 100ms. Pause consumes no mission time.
           let remainingMs = delay * 1000;
+          let lastTickMs = performance.now();
           if (waveDelayTimerRef.current) clearInterval(waveDelayTimerRef.current);
           waveDelayTimerRef.current = setInterval(() => {
-            if (useAdventure.getState().isPaused) return;
-            remainingMs -= 100;
+            const nowMs = performance.now();
+            const elapsedMs = nowMs - lastTickMs;
+            lastTickMs = nowMs;
+            remainingMs = advanceWaveDelayMs(remainingMs, elapsedMs, useAdventure.getState().isPaused);
             if (remainingMs > 0) return;
             if (waveDelayTimerRef.current) clearInterval(waveDelayTimerRef.current);
             waveDelayTimerRef.current = null;
