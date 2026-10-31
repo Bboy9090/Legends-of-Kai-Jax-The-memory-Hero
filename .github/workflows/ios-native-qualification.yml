@@ -7,7 +7,7 @@ on:
       - 'apps/ios/LegendsOfKaiJax/**'
       - '.github/workflows/ios-native-qualification.yml'
   push:
-    branches: [main]
+    branches: [main, "release/ios-native-qualification-20261031"]
     paths:
       - 'apps/ios/LegendsOfKaiJax/**'
       - '.github/workflows/ios-native-qualification.yml'
