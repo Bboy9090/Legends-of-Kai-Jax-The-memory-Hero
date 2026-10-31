@@ -1,0 +1,40 @@
+name: Kai-Jax iOS Native Qualification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/ios/LegendsOfKaiJax/**'
+      - '.github/workflows/ios-native-qualification.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/ios/LegendsOfKaiJax/**'
+      - '.github/workflows/ios-native-qualification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  swift-package:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: apps/ios/LegendsOfKaiJax
+    steps:
+      - uses: actions/checkout@v7
+      - name: Resolve Swift package
+        run: swift package resolve
+      - name: Build native package
+        run: swift build -c release
+      - name: Run package tests when present
+        shell: bash
+        run: |
+          if find Tests -type f -name '*.swift' -print -quit 2>/dev/null | grep -q .; then
+            swift test
+          else
+            echo "No Swift package tests are present yet."
+          fi
+      - name: Verify executable product exists
+        run: test -x .build/release/LegendsOfKaiJax
