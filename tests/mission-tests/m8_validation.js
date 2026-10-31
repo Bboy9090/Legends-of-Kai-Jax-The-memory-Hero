@@ -4,12 +4,15 @@
  * Verify all mission data and systems are configured correctly
  */
 
-const path = require('path');
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
-// Load the story missions file
-const repoPath = '/home/user/Legends-of-Kai-Jax-The-memory-Hero';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const repoPath = path.resolve(__dirname, '../../..');
 const storyMissionsPath = path.join(repoPath, 'apps/web/src/lib/story_missions.ts');
-const content = require('fs').readFileSync(storyMissionsPath, 'utf8');
+const content = fs.readFileSync(storyMissionsPath, 'utf8');
 
 const log = (msg) => console.log(`[M8] ${msg}`);
 
@@ -110,3 +113,7 @@ if (failed === 0) {
 }
 
 log('\n');
+
+if (failed > 0) {
+  process.exit(1);
+}
