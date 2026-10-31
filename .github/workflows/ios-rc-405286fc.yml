@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - release/ios-405286fc
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
