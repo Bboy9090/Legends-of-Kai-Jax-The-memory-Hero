@@ -40,6 +40,7 @@ interface ProfileData {
   totalScore: number;
   campaignCompletedNodes: CampaignNodeId[];
   completedStoryMissionIds: string[];
+  storyLoot: string[];
   completedRoamDistrictIds: string[];
   unlockedUpgrades: string[];
   lastPlayedTitle: string | null;
@@ -71,10 +72,12 @@ interface RunnerState {
   totalScore: number;
   campaignCompletedNodes: CampaignNodeId[];
   completedStoryMissionIds: string[];
+  storyLoot: string[];
   completedRoamDistrictIds: string[];
   unlockedUpgrades: string[];
   setCampaignCompleted: (nodeId: CampaignNodeId) => void;
   setMissionCompleted: (missionKey: string) => void;
+  grantStoryLoot: (loot: string[]) => void;
   setLastPlayedTitle: (title: string | null) => void;
   setRoamDistrictCompleted: (districtKey: string) => void;
 }
@@ -83,6 +86,7 @@ const DEFAULT_PROFILE: ProfileData = {
   totalScore: 0,
   campaignCompletedNodes: [],
   completedStoryMissionIds: [],
+  storyLoot: [],
   completedRoamDistrictIds: [],
   unlockedUpgrades: [],
   lastPlayedTitle: null,
@@ -152,6 +156,9 @@ function normalizeProfile(profile?: Partial<ProfileData>): ProfileData {
     totalScore: Number.isFinite(profile?.totalScore) ? Number(profile?.totalScore) : 0,
     campaignCompletedNodes: Array.isArray(profile?.campaignCompletedNodes) ? profile!.campaignCompletedNodes! : [],
     completedStoryMissionIds: Array.isArray(profile?.completedStoryMissionIds) ? profile!.completedStoryMissionIds! : [],
+    storyLoot: Array.isArray(profile?.storyLoot)
+      ? [...new Set(profile.storyLoot.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0))]
+      : [],
     completedRoamDistrictIds: Array.isArray(profile?.completedRoamDistrictIds) ? profile!.completedRoamDistrictIds! : [],
     unlockedUpgrades: Array.isArray(profile?.unlockedUpgrades) ? profile!.unlockedUpgrades! : [],
     lastPlayedTitle: typeof profile?.lastPlayedTitle === "string" ? profile.lastPlayedTitle : null,
@@ -203,6 +210,7 @@ export const useRunner = create<RunnerState>()(
       totalScore: 0,
       campaignCompletedNodes: [],
       completedStoryMissionIds: [],
+      storyLoot: [],
       completedRoamDistrictIds: [],
       unlockedUpgrades: [],
 
@@ -251,6 +259,16 @@ export const useRunner = create<RunnerState>()(
         });
       },
 
+      // Unique permanent loot is owned by the active save profile, not the transient result overlay.
+      grantStoryLoot: (loot) => {
+        const { storyLoot, activeProfileIndex, profiles } = get();
+        const nextLoot = [...new Set([...storyLoot, ...loot.filter((item) => typeof item === "string" && item.trim().length > 0)])];
+        if (nextLoot.length === storyLoot.length) return;
+        const newProfiles = [...profiles] as [ProfileData, ProfileData, ProfileData];
+        newProfiles[activeProfileIndex] = { ...newProfiles[activeProfileIndex], storyLoot: nextLoot };
+        set({ storyLoot: nextLoot, profiles: newProfiles });
+      },
+
       setLastPlayedTitle: (lastPlayedTitle) => {
         const { activeProfileIndex, profiles } = get();
         const newProfiles = [...profiles] as [ProfileData, ProfileData, ProfileData];
@@ -280,6 +298,7 @@ export const useRunner = create<RunnerState>()(
           totalScore: targetProfile.totalScore,
           campaignCompletedNodes: targetProfile.campaignCompletedNodes,
           completedStoryMissionIds: targetProfile.completedStoryMissionIds || [],
+          storyLoot: targetProfile.storyLoot || [],
           completedRoamDistrictIds: targetProfile.completedRoamDistrictIds || [],
           unlockedUpgrades: targetProfile.unlockedUpgrades,
         });
@@ -295,6 +314,7 @@ export const useRunner = create<RunnerState>()(
             totalScore: DEFAULT_PROFILE.totalScore,
             campaignCompletedNodes: DEFAULT_PROFILE.campaignCompletedNodes,
             completedStoryMissionIds: DEFAULT_PROFILE.completedStoryMissionIds,
+            storyLoot: DEFAULT_PROFILE.storyLoot,
             completedRoamDistrictIds: DEFAULT_PROFILE.completedRoamDistrictIds,
             unlockedUpgrades: DEFAULT_PROFILE.unlockedUpgrades,
           });
@@ -339,6 +359,7 @@ export const useRunner = create<RunnerState>()(
           totalScore: active.totalScore,
           campaignCompletedNodes: active.campaignCompletedNodes,
           completedStoryMissionIds: active.completedStoryMissionIds,
+          storyLoot: active.storyLoot,
           completedRoamDistrictIds: active.completedRoamDistrictIds,
           unlockedUpgrades: active.unlockedUpgrades,
           gameState: "title",

@@ -10,6 +10,7 @@ import { ASHBLOCK_OBJECTIVE_BLURBS } from "../../../game/world/zones/AshblockHei
 import MoveListOverlay from "../MoveListOverlay";
 import { useState, useEffect } from "react";
 import { isTouchDevice } from "../../../lib/touchUtils";
+import { MISSION6_ID, isMemoryInRange, findRecoverableMemory } from "../../../lib/mission6";
 
 function HealthBar({
   current,
@@ -263,6 +264,22 @@ export default function AdventureHUD() {
   const [touchCapable] = useState(() => isTouchDevice());
 
   useEffect(() => {
+    const handleRescue = (event: KeyboardEvent) => {
+      if (event.code !== "KeyE" || event.repeat) return;
+      const state = useAdventure.getState();
+      if (state.missionId !== MISSION6_ID || state.isPaused) return;
+      const next = findRecoverableMemory(
+        state.objectives.memoryRescues, state.player.posX, state.player.posZ);
+      if (next) {
+        event.preventDefault();
+        state.rescueMemory(next.id);
+      }
+    };
+    window.addEventListener("keydown", handleRescue);
+    return () => window.removeEventListener("keydown", handleRescue);
+  }, []);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === "Tab") {
         e.preventDefault();
@@ -422,12 +439,54 @@ export default function AdventureHUD() {
                 </strong>
                 <span className="text-[#6f6558]">•</span>
                 <span className="text-[#8f8371]">Enemies</span>
-                <strong className="text-red-300">{aliveEnemies}</strong>
+                <strong data-testid="story-active-enemy-count" className="text-red-300">{aliveEnemies}</strong>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {missionId === MISSION6_ID && (
+        <div data-testid="mission6-memory-hud" className="kj-vision-hud absolute right-4 top-40 w-[min(310px,42vw)] p-3 pointer-events-auto text-slate-100">
+          <div className="text-[11px] font-black uppercase tracking-[0.15em] text-cyan-200">
+            Trapped Memories {objectives.memoryRescues.filter(node => node.rescued).length}/3
+          </div>
+          <div className="mt-2 space-y-1">
+            {objectives.memoryRescues.map(node => {
+              const near = isMemoryInRange(node, player.posX, player.posZ);
+              const canRescue = node.unlocked && !node.rescued && near;
+              return (
+                <div key={node.id} className="flex items-center justify-between gap-2 text-[10px]">
+                  <span>{node.label}</span>
+                  <span className={node.rescued ? "text-emerald-300" : node.unlocked ? "text-cyan-200" : "text-slate-500"}>
+                    {node.rescued ? "RECOVERED" : !node.unlocked ? "SEALED" : near ? "IN RANGE" : "FIND NODE"}
+                  </span>
+                  {canRescue && (
+                    <button
+                      type="button"
+                      data-testid={'rescue-' + node.id}
+                      className="rounded border border-cyan-300 bg-cyan-800 px-2 py-2 font-bold"
+                      onClick={() => useAdventure.getState().rescueMemory(node.id)}
+                      aria-label={'Rescue ' + node.label}
+                    >RESCUE</button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div
+            data-testid="mission6-ai-telemetry"
+            data-aggro={enemies.filter(e => !e.isDead && e.isAggro).length}
+            data-telegraphs={enemies.filter(e => !e.isDead && e.aiState === "telegraph").length}
+            data-chasing={enemies.filter(e => !e.isDead && e.aiState === "chase").length}
+            data-nearest-distance={Math.min(999, ...enemies.filter(e => !e.isDead).map(e => Math.hypot(e.posX - player.posX, e.posZ - player.posZ))).toFixed(2)}
+            className="mt-2 text-[9px] text-purple-200/75"
+          >
+            Void pressure: {enemies.filter(e => !e.isDead && e.isAggro).length} active threats
+          </div>
+          <div className="mt-2 text-[9px] text-slate-400">Defeat Void guards to unseal nodes. Move close: press E, LB/L1, or tap Rescue.</div>
+        </div>
+      )}
 
       {districtCompleted && lastReward?.granted && lastReward.totalPoints > 0 && (
         <div className="kj-vision-hud absolute right-4 top-36 px-3 py-2 text-[10px] font-bold text-emerald-300">

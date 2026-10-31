@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAdventure } from "../../lib/stores/useAdventure";
 import { evaluateCampaignProgressionGating } from "../../lib/adventureEvaluator";
+import { MISSION6_ID } from "../../lib/mission6";
+import { normalizeWaveEnemies, getWaveDelaySeconds, advanceWaveDelayMs } from "../../lib/storyWaveRuntime";
 import { shouldMarkChaseTargetEscaped, findCivilianAttack, CIVILIAN_ATTACK_DAMAGE } from "../../lib/adventureTelemetry";
 import { getStoryMissionById, type StoryMission, type StoryDialogue } from "../../lib/story_missions";
 
@@ -12,47 +14,6 @@ interface StoryAdventureProps {
 }
 
 type StoryPhase = "intro" | "playing" | "wave-transition" | "outro" | "results";
-
-type StoryWaveEnemySpec = {
-  fighterId: string;
-};
-
-const WAVE_TYPE_TO_FIGHTER_ID: Record<string, string> = {
-  grunt: "hyena-scout",
-  "void-grunt": "rift-drone",
-  "void-scout": "hyena-scout",
-  "void-elite": "neon-wraith",
-  "void-legion": "rift-drone",
-  "void-stalker-minion": "neon-wraith",
-  "void-wraith": "neon-wraith",
-  "void-brute": "void-stalker",
-  "void-god-guard": "rift-general-prime",
-  "void-stalker": "void-stalker",
-  "rift-general": "rift-general",
-};
-
-function normalizeWaveEnemies(mission: StoryMission, waveIndex: number): StoryWaveEnemySpec[] {
-  const wave = mission.enemyWaves[waveIndex] as any;
-  if (!wave) return [];
-
-  if (Array.isArray(wave.enemies)) {
-    return wave.enemies
-      .filter((enemy: any) => typeof enemy?.fighterId === "string")
-      .map((enemy: any) => ({ fighterId: enemy.fighterId }));
-  }
-
-  const count = Math.max(1, Number(wave.count ?? 1));
-  const isFinalBossWave = Boolean(mission.bossId) && waveIndex === mission.enemyWaves.length - 1;
-  const fighterId = WAVE_TYPE_TO_FIGHTER_ID[String(wave.type)] ?? "rift-drone";
-  const minions = Array.from({ length: count }, () => ({ fighterId }));
-  return isFinalBossWave ? [...minions, { fighterId: mission.bossId! }] : minions;
-}
-
-function getWaveDelaySeconds(mission: StoryMission, waveIndex: number): number {
-  const wave = mission.enemyWaves[waveIndex] as any;
-  const delay = Number(wave?.spawnDelay ?? wave?.delay ?? 2);
-  return Number.isFinite(delay) && delay >= 0 ? delay : 2;
-}
 
 function DialogueOverlay({
   lines,
@@ -197,12 +158,7 @@ function getSpeakerColor(speaker: string): string {
   return colors[speaker] || "#00f2ff";
 }
 
-function WaveTransition({ waveNum, total, onContinue }: { waveNum: number; total: number; onContinue: () => void }) {
-  useEffect(() => {
-    const timer = setTimeout(onContinue, 2500);
-    return () => clearTimeout(timer);
-  }, [onContinue]);
-
+function WaveTransition({ waveNum, total }: { waveNum: number; total: number }) {
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
       <div className="text-center animate-pulse">
@@ -306,6 +262,11 @@ function ResultsScreen({ mission, success, onContinue, onRetry }: { mission: Sto
         <p className="text-slate-300 text-sm mb-6">
           {success ? `You completed "${mission.title}" and earned your rewards.` : `You were defeated. Train harder and try again.`}
         </p>
+        {success && mission.rewards.loot.length > 0 && (
+          <div data-testid="story-mission-loot-reward" className="mb-5 text-center text-sm text-cyan-200">
+            Memory recovered: {mission.rewards.loot.join(", ")}
+          </div>
+        )}
         {success && (
           <div className="flex justify-center gap-3 mb-6">
             <span className="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 font-bold">+{mission.rewards.xp} XP</span>
@@ -344,6 +305,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
   const [success, setSuccess] = useState(false);
   const spawnedWaves = useRef(new Set<number>());
   const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const waveDelayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const civilianAttackTimes = useRef(new Map<string, number>());
 
   const initAdventure = useAdventure((s) => s.initAdventure);
@@ -370,7 +332,8 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
       return {
         id: `w${waveIndex}-${i}-${e.fighterId}`,
         fighterId: e.fighterId,
-        tier: (isBoss ? (mission.id === "story_act1_m5" ? "boss2" : "boss1") : "minion1") as "minion1" | "minion2" | "boss1" | "boss2",
+        tier: (isBoss ? (mission.id === "story_act1_m5" ? "boss2" : "boss1") :
+          mission.id === MISSION6_ID && waveIndex === 1 ? "minion2" : "minion1") as "minion1" | "minion2" | "boss1" | "boss2",
         posX: Math.sin(angle) * radius,
         posY: 0,
         posZ: Math.cos(angle) * radius,
@@ -389,12 +352,15 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
     });
 
     spawnEnemies([...existingEnemies, ...newEnemies]);
+    useAdventure.setState({ waveCount: waveIndex + 1 });
   }, [mission, spawnEnemies]);
 
   const startPlaying = useCallback(() => {
     if (!mission) return;
     initAdventure(characterId, missionId, mission.arena || "cross_point_arena");
     setCurrentWave(0);
+    if (waveDelayTimerRef.current) clearInterval(waveDelayTimerRef.current);
+    waveDelayTimerRef.current = null;
     spawnedWaves.current.clear();
     civilianAttackTimes.current.clear();
 
@@ -413,6 +379,8 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
   const handleRetry = useCallback(() => {
     retryMissionAction();
     setCurrentWave(0);
+    if (waveDelayTimerRef.current) clearInterval(waveDelayTimerRef.current);
+    waveDelayTimerRef.current = null;
     spawnedWaves.current.clear();
     civilianAttackTimes.current.clear();
     spawnWave(0);
@@ -425,6 +393,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
     checkIntervalRef.current = setInterval(() => {
       const state = useAdventure.getState();
       const { enemies, player, isPaused } = state;
+      if (isPaused) return;
       if (shouldMarkChaseTargetEscaped(mission.id, state.objectives.milestones.stalkerIntercepted, player, enemies)) {
         state.markChaseTargetEscaped();
       }
@@ -456,10 +425,23 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
           setCurrentWave(nextWave);
           const delay = getWaveDelaySeconds(mission, nextWave);
           setPhase("wave-transition");
-          setTimeout(() => {
+          // Account for actual elapsed time, not the nominal callback period.
+          // Headless WebGL, background tabs and low-end mobile GPUs can throttle
+          // setInterval far beyond 100ms. Pause consumes no mission time.
+          let remainingMs = delay * 1000;
+          let lastTickMs = performance.now();
+          if (waveDelayTimerRef.current) clearInterval(waveDelayTimerRef.current);
+          waveDelayTimerRef.current = setInterval(() => {
+            const nowMs = performance.now();
+            const elapsedMs = nowMs - lastTickMs;
+            lastTickMs = nowMs;
+            remainingMs = advanceWaveDelayMs(remainingMs, elapsedMs, useAdventure.getState().isPaused);
+            if (remainingMs > 0) return;
+            if (waveDelayTimerRef.current) clearInterval(waveDelayTimerRef.current);
+            waveDelayTimerRef.current = null;
             spawnWave(nextWave);
             setPhase("playing");
-          }, delay * 1000);
+          }, 100);
         } else if (outcome === "VICTORY") {
           setSuccess(true);
           setPhase("outro");
@@ -474,6 +456,10 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
       if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
     };
   }, [phase, mission, currentWave, spawnWave]);
+
+  useEffect(() => () => {
+    if (waveDelayTimerRef.current) clearInterval(waveDelayTimerRef.current);
+  }, []);
 
   if (!mission) {
     return (
@@ -501,7 +487,6 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
         <WaveTransition
           waveNum={currentWave + 1}
           total={mission.enemyWaves.length}
-          onContinue={() => {}}
         />
       )}
 
