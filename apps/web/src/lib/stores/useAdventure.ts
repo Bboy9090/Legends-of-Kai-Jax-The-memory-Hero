@@ -560,3 +560,5 @@ export const useAdventure = create<AdventureState>((set, get) => ({
     });
   },
 }));
+
+(window as any).useAdventure = useAdventure;
