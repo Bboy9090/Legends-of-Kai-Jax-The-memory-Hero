@@ -561,4 +561,4 @@ export const useAdventure = create<AdventureState>((set, get) => ({
   },
 }));
 
-(window as any).useAdventure = useAdventure;
+if (typeof window !== "undefined") (window as any).useAdventure = useAdventure;
