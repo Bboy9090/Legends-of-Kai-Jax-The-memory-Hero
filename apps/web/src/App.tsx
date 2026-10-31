@@ -42,6 +42,7 @@ import { useBattle } from "./lib/stores/useBattle";
 import { useAudio } from "./lib/stores/useAudio";
 import { useMissions } from "./lib/stores/useMissions";
 import { useProgression } from "./lib/stores/useProgression";
+import { useAdventure } from "./lib/stores/useAdventure";
 import { registerServiceWorker } from "./lib/offlineModeSystem";
 import { FIGHTERS, getFighterById } from "./lib/characters";
 import { getStoryMissionById } from "./lib/story_missions";
@@ -141,6 +142,14 @@ function App() {
     });
     initializeVoiceSystem();
     preloadVoices();
+
+    // Expose stores on window for testing/debugging
+    if (typeof window !== 'undefined') {
+      (window as any).runnerStore = useRunner;
+      (window as any).useAdventure = useAdventure;
+      (window as any).useGame = useGame;
+      (window as any).useBattle = useBattle;
+    }
   }, []);
 
   // Initialize audio on mount (non-fatal if files missing)
