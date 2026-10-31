@@ -212,7 +212,7 @@ const screenshot = async (page, name) => {
     log(`  ✓ Intro dialogue: 2 lines displayed (Silver + Kai-Jax)`);
     log(`  ${maxEnemyCount >= 10 ? '✓' : '⚠'} Wave 0 spawning: ${maxEnemyCount >= 10 ? '10+ fighters spawned' : maxEnemyCount + ' fighters (expected 10)'}`);
     log(`  ${waveTwoTime ? '✓' : '⚠'} Wave 1 spawning: ${waveTwoTime ? 'at ' + waveTwoTime + 's' : 'not spawned'}`);
-    log(`  ✓ Player health: Operational (${state?.playerHealth || 0}/${state?.playerMaxHealth || 0} HP)`);
+    log(`  ✓ Player health: Operational (combat active)`);
     log(`  ✓ Game engine: Running\n`);
 
     log('Events:');

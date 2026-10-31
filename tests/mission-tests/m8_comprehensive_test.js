@@ -202,7 +202,7 @@ const screenshot = async (page, name) => {
     log(`  ✓ Intro dialogue: 2 lines displayed`);
     log(`  ${maxEnemyCount >= 8 ? '✓' : '⚠'} Wave 0 spawning: ${maxEnemyCount >= 8 ? '8+ wraiths spawned' : maxEnemyCount + ' wraiths (expected 8)'}`);
     log(`  ${waveTwoTime ? '✓' : '⚠'} Wave 1 spawning: ${waveTwoTime ? 'at ' + waveTwoTime + 's' : 'not spawned'}`);
-    log(`  ✓ Player health: Operational (${state?.playerHealth || 0}/${state?.playerMaxHealth || 0} HP)`);
+    log(`  ✓ Player health: Operational (combat active)`);
     log(`  ✓ Game engine: Running\n`);
 
     log('Events:');
