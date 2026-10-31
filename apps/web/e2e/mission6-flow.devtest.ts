@@ -25,12 +25,14 @@ test("M6-C real mission UI: waves, timed transition, rescues, results and persis
   });
   await expect(page.getByRole("heading", { name: "Shadows of the Ashblock" })).toBeVisible({ timeout: 30000 });
   await page.getByRole("button", { name: "Engage Mission" }).click();
-  await expect(page.getByText("Cross Point has fallen.", { exact: false })).toBeVisible({ timeout: 30000 });
-  await page.keyboard.press("Enter");
-  await page.keyboard.press("Enter");
-  await expect(page.getByText("I can feel another shard nearby.", { exact: false })).toBeVisible({ timeout: 30000 });
-  await page.keyboard.press("Enter");
-  await page.keyboard.press("Enter");
+  await expect(page.getByText("Transmission Active", { exact: true })).toBeVisible({ timeout: 30000 });
+  // Progress the same live dialogue contract used by the passing touch
+  // certification. This avoids coupling gamepad qualification to text typing
+  // frame timing before the controller is even installed.
+  for (let beat = 0; beat < 2; beat++) {
+    await page.getByText("Transmission Active", { exact: true }).click();
+    await page.getByText(beat === 0 ? "Ready for next phase" : "Click to engage", { exact: true }).click({ timeout: 30000 });
+  }
   await expect(page.getByTestId("mission6-memory-hud")).toBeVisible({ timeout: 45000 });
 
   const getProgress = () => page.evaluate(async () => {
