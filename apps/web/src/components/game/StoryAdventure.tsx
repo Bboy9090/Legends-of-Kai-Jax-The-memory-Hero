@@ -96,12 +96,14 @@ function DialogueOverlay({
 
   const handleClickRef = useRef<() => void>(() => {});
   handleClickRef.current = () => {
+    console.log(`[DialogueOverlay] Click: isTyping=${isTyping}, isLastLine=${isLastLine}, lineIndex=${lineIndex}, totalLines=${lines.length}`);
     if (isTyping) {
       setShowFull(true);
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
     if (isLastLine) {
+      console.log(`[DialogueOverlay] Last line reached, calling onComplete()`);
       onComplete();
     } else {
       setLineIndex((i) => i + 1);
@@ -350,6 +352,13 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
   const spawnEnemies = useAdventure((s) => s.spawnEnemies);
   const retryMissionAction = useAdventure((s) => s.retryMission);
 
+  useEffect(() => {
+    console.log(`[StoryAdventure] Loaded with missionId=${missionId}, mission found=${!!mission}, phase=${phase}`);
+    if (mission && phase === "intro") {
+      console.log(`[StoryAdventure] Intro phase - introCutscene exists=${!!mission.introCutscene}, lines=${mission.introCutscene?.length || 0}`);
+    }
+  }, [missionId, mission, phase]);
+
   const spawnWave = useCallback((waveIndex: number) => {
     if (!mission || waveIndex >= mission.enemyWaves.length) return;
     if (spawnedWaves.current.has(waveIndex)) return;
@@ -392,11 +401,13 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
   }, [mission, spawnEnemies]);
 
   const startPlaying = useCallback(() => {
+    console.log(`[StoryAdventure] startPlaying called, mission=${mission?.id}, enemyWaves=${mission?.enemyWaves.length}`);
     if (!mission) return;
     initAdventure(characterId, missionId, mission.arena || "cross_point_arena");
     setCurrentWave(0);
     spawnedWaves.current.clear();
     civilianAttackTimes.current.clear();
+    console.log(`[StoryAdventure] Spawning wave 0 with ${mission.enemyWaves[0]?.count} enemies`);
 
     // Narrative-only missions (for example the epilogue) must resolve
     // without waiting for enemies that will never spawn.

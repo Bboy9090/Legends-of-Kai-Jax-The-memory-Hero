@@ -26,7 +26,7 @@ export default defineConfig({
   workers: 1,
   reporter: [['html'], ['list']],
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: 'http://localhost:5000',
     trace: 'on-first-retry',
   },
   projects: [
@@ -36,13 +36,14 @@ export default defineConfig({
         ...devices['Desktop Chromium'],
         headless: true,
         launchArgs: chromiumLaunchArgs,
+        executablePath: CHROMIUM_PATH,
       },
     },
   ],
   webServer: {
-    command: 'npm run build && npm run preview -- --host 127.0.0.1 --port 4173',
-    url: 'http://127.0.0.1:4173',
-    reuseExistingServer: true,
-    timeout: 120000,
+    command: 'npx vite --host 0.0.0.0 --port 5000',
+    url: 'http://localhost:5000',
+    reuseExistingServer: false,
+    timeout: 10000,
   },
 });
