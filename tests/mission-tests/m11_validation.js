@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const repoPath = path.resolve(__dirname, '../../..');
+const repoPath = path.resolve(__dirname, '../..');
 const storyMissionsPath = path.join(repoPath, 'apps/web/src/lib/story_missions.ts');
 const content = fs.readFileSync(storyMissionsPath, 'utf8');
 
