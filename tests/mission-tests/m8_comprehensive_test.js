@@ -5,9 +5,13 @@
  * Test: 2-line intro dialogue, enemy waves spawning, survival mechanics
  */
 
-const { chromium } = require('playwright');
-const fs = require('fs');
-const path = require('path');
+import { chromium } from 'playwright';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const SCREENSHOTS_DIR = '/tmp/claude-0/-home-user-Legends-of-Kai-Jax-The-memory-Hero/7d32b628-cc02-56f6-bb6d-0a77b7d91ed7/scratchpad/m8-comprehensive';
 if (!fs.existsSync(SCREENSHOTS_DIR)) {
@@ -62,10 +66,11 @@ const screenshot = async (page, name) => {
     log('Unlocking previous missions...');
     await page.evaluate(() => {
       const state = window.runnerStore.getState();
-      for (let i = 1; i <= 7; i++) {
-        const missionId = i <= 5 ? `story_act1_m${i}` : `story_act2_m${i - 5}`;
-        state.setMissionCompleted(missionId);
-      }
+      const requiredMissions = [
+        'story_act1_m1', 'story_act1_m2', 'story_act1_m3', 'story_act1_m4', 'story_act1_m5',
+        'story_act2_m6', 'story_act2_m7'
+      ];
+      requiredMissions.forEach(id => state.setMissionCompleted(id));
     });
     await page.waitForTimeout(1000);
 
@@ -134,7 +139,7 @@ const screenshot = async (page, name) => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
 
       const state = await page.evaluate(() => {
-        const adventure = window.useAdventure?.getState();
+        const adventure = window.useAdventure?.getState?.();
         return {
           enemies: adventure?.enemies ? adventure.enemies.length : 0,
           enemyDetails: adventure?.enemies ? adventure.enemies.map(e => ({

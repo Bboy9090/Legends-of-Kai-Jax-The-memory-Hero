@@ -32,7 +32,7 @@ const checks = {
   title: { pattern: /title:\s*'The Ghostly Echo'/, expected: "mission title" },
   introCutscene: { pattern: /introCutscene:\s*\[[\s\S]*?\]/, expected: "intro dialogue" },
   outroCutscene: { pattern: /outroCutscene:\s*\[[\s\S]*?\]/, expected: "outro dialogue" },
-  objectives: { pattern: /objectives:\s*\[.*Survive.*Don't use special moves.*\]/, expected: "survival objectives" },
+  objectives: { pattern: /objectives:\s*\[.*Survive.*Don\\?'t use special moves.*\]/, expected: "survival objectives" },
   gameplayType: { pattern: /gameplayType:\s*'survival'/, expected: "survival gameplay type" },
   enemyWaves: { pattern: /enemyWaves:\s*\[\s*{[^}]*type:\s*'void-wraith'[^}]*count:\s*8[^}]*}[^}]*{[^}]*type:\s*'void-wraith'[^}]*count:\s*12/, expected: "2 enemy waves (8 + 12)" }
 };
