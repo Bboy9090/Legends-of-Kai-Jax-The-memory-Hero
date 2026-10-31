@@ -107,6 +107,5 @@ export function findAnimationClip(
   clip = clips.find((c) => c.name.toLowerCase().includes(name.toLowerCase()));
   if (clip) return clip;
   
-  // Return first clip as fallback
-  return clips[0];
+  // Never substitute an unrelated clip for the requested move.\n  // Missing authored motion must remain missing so the renderer can use its\n  // explicit procedural fallback instead of making a punch look like a shake.\n  return undefined;
 }

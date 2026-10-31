@@ -1,66 +1,52 @@
-# CodeQL Security Analysis
-#
-# This workflow replaces the default GitHub auto-configured CodeQL scanner
-# (dynamic/github-code-scanning/codeql) which was incorrectly attempting to
-# analyze C# source that does not exist in this repository.
-#
-# This project uses:
-#   - TypeScript / JavaScript  (apps/web, frontend, packages)
-#   - Python                   (backend/)
-#
-# Language mapping used by CodeQL:
-#   "javascript-typescript" covers both .js/.ts/.jsx/.tsx files
-#   "python"                covers .py files
-
-name: CodeQL
+name: Security Baseline
 
 on:
   push:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
-  # Run on a schedule to catch newly-discovered vulnerabilities in existing code.
   schedule:
-    - cron: '0 6 * * 1'  # Every Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
 
 permissions:
-  actions: read
   contents: read
-  security-events: write
+
+concurrency:
+  group: security-baseline-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  analyze:
-    if: false  # Disabled for MVP — not requested by current maintainer
-    name: Analyze (${{ matrix.language }})
+  dependency-audit:
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        # Only scan languages that are actually present in this repo.
-        # Adding "csharp" here would cause the job to fail with "No source
-        # files found" because this is a TypeScript + Python project.
-        language:
-          - javascript-typescript
-          - python
-
+    timeout-minutes: 20
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout exact commit without reusable actions
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
+          cd source
+          git checkout --detach "${COMMIT_SHA}"
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: ${{ matrix.language }}
-          # Use the default query suite for broad security coverage.
-          queries: security-extended
+      - name: Activate pnpm
+        working-directory: source
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
 
-      # For javascript-typescript CodeQL can auto-build; for python it is not
-      # required.  Using autobuild keeps the workflow simple.
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+      - name: Audit production dependency graph
+        working-directory: source
+        run: |
+          pnpm install --filter ./apps/web... --frozen-lockfile
+          cd apps/web
+          pnpm audit --prod --audit-level high
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
-        with:
-          category: /language:${{ matrix.language }}
+      - name: Scan tracked files for common private-key material
+        working-directory: source
+        run: |
+          if git grep -n -I -E 'BEGIN (RSA |EC |OPENSSH |)?PRIVATE KEY|BEGIN CERTIFICATE' -- ':!*.md' ':!*.txt' ':!.github/workflows/codeql.yml'; then
+            echo "Potential private key or certificate material is tracked in the repository."
+            exit 1
+          fi

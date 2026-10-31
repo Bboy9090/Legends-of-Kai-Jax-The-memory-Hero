@@ -112,6 +112,13 @@ function safeSaveCompleted(keys: string[]) {
   }
 }
 
+function normalizeCompletedKeys(keys: string[]): string[] {
+  const normalized = keys
+    .filter((key) => typeof key === "string" && key.length > 0)
+    .map((key) => (key.startsWith("story:") || key.startsWith("uee:")) ? key : `story:${key}`);
+  return [...new Set(normalized)];
+}
+
 function safeLoadRoamDistricts(): string[] {
   try {
     if (typeof window === "undefined") return [];
@@ -337,7 +344,10 @@ export const useMissions = create<MissionsState>()(
     active: null,
     objectives: [],
     result: null,
-    completedKeys: useRunner.getState().completedStoryMissionIds,
+    completedKeys: normalizeCompletedKeys([
+      ...safeLoadCompleted(),
+      ...useRunner.getState().completedStoryMissionIds,
+    ]),
     completedRoamDistrictKeys: useRunner.getState().completedRoamDistrictIds,
     lastReward: null,
 
@@ -400,7 +410,13 @@ export const useMissions = create<MissionsState>()(
       }
       const k = keyFor(active.source, active.id);
       const prev = get().completedKeys;
-      if (!prev.includes(k)) {
+      const runnerCompleted = useRunner.getState().completedStoryMissionIds;
+      const storyAlreadyCompleted =
+        active.source === "story" &&
+        runnerCompleted.some((id) => id === active.id || id === k);
+      const alreadyCompleted = active.source === "story" ? storyAlreadyCompleted : prev.includes(k);
+
+      if (!alreadyCompleted) {
         const reward = resolveRewards(active.source, active.id);
         const totalPoints = (reward?.xp ?? 0) + (reward?.currency ?? 0);
         if (totalPoints > 0) {
@@ -413,8 +429,11 @@ export const useMissions = create<MissionsState>()(
         if (xp > 0 && charId && typeof window !== "undefined") {
           (window as any).progressionStore?.getState?.().awardXP(charId, xp);
         }
-        useRunner.getState().setMissionCompleted(k);
+        if (active.source === "story") {
+          useRunner.getState().setMissionCompleted(active.id);
+        }
         const next = [...prev, k];
+        safeSaveCompleted(next);
         set({
           completedKeys: next,
           result: "success",

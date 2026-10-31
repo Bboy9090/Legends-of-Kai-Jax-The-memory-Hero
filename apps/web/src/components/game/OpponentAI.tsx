@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useDifficulty, type Difficulty } from "../../lib/stores/useDifficulty";
+import { useRunner } from "../../lib/stores/useRunner";
 import { BEHAVIOR_PROFILES, type AIBehaviorDifficulty } from "../../lib/enemyAIv2";
 import { COMBAT_RANGES } from "../../game/combat/moveData";
 
@@ -27,9 +28,11 @@ export default function OpponentAI() {
   const currentAction = useRef<"chase" | "retreat" | "idle">("chase");
   const jumpCooldown = useRef(0);
   const difficulty = useDifficulty((s) => s.difficulty);
+  const trainingSession = useRunner((s) => s.trainingSession);
 
   useFrame((_, rawDelta) => {
     const state = useBattle.getState();
+    if (trainingSession) return;
     if (state.battlePhase !== "fighting") return;
     if (state.hitStop > 0) return;
     if (state.opponentStaggerTimer > 0 || state.opponentHitStunTimer > 0) return;

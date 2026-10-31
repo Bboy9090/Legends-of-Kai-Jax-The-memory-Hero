@@ -15,7 +15,7 @@ const ABILITIES: AbilityNode[] = [
   { id: 'fire_dash', name: 'Pyraxis Flame Dash', category: 'EMBER', description: 'Surge forward in a trail of elemental fire, damaging enemies.', unlocked: true, cost: 0 },
   { id: 'storm_lightning', name: 'Thryxen Lightning Burst', category: 'STORM', description: 'Unleash a radial electric shockwave stunning nearby targets.', unlocked: true, cost: 0 },
   { id: 'memory_weave', name: 'Memory Weave Shield', category: 'MEMORY', description: 'Absorb incoming damage and restore synergy energy.', unlocked: false, cost: 150 },
-  { id: 'fusion_sovereign', name: 'Sovereign Nine-Tail Form', category: 'MEMORY', description: 'Unlock permanent Memory King Kai-Jax transformation duration.', unlocked: false, cost: 300 },
+  { id: 'three_strand_mastery', name: 'Three-Strand Mastery', category: 'MEMORY', description: 'Extend coordinated Bloodward, Storm Current, and Memory Weave resonance.', unlocked: false, cost: 300 },
 ];
 
 export default function CharacterAbilityScreen() {

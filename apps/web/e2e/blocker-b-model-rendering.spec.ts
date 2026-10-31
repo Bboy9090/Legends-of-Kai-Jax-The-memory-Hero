@@ -78,7 +78,7 @@ test("versus mode: both fighter components mount without errors", async ({ page 
 
   // Navigate to versus select
   await page.evaluate(() => (window as any).runnerStore.getState().setGameState("versus-select"));
-  await expect(page.getByText("Choose Your Fighter")).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("heading", { name: "Character Select", exact: true })).toBeVisible({ timeout: 15_000 });
 
   // Start battle
   await page.getByRole("button", { name: "FIGHT", exact: true }).click();
@@ -86,10 +86,10 @@ test("versus mode: both fighter components mount without errors", async ({ page 
 
   // Verify battle scene fully loaded
   const battleData = await page.evaluate(() => {
-    const battle = (window as any).useBattle?.getState?.();
+    const battle = (window as any).battleStore?.getState?.();
     return {
-      playerFighter: battle?.playerFighter,
-      opponentFighter: battle?.opponentFighter,
+      playerFighter: battle?.playerFighterId,
+      opponentFighter: battle?.opponentFighterId,
       phaseRunning: (window as any).useGame?.getState?.().phase === "running",
     };
   });

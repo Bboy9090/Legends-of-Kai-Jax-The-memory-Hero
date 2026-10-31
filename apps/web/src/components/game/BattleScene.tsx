@@ -41,8 +41,9 @@ export default function BattleScene() {
   } = useBattle();
   const reduceMotion = useAccessibility((s) => s.reduceMotion);
   const playerFighter = getFighterById(playerFighterId);
+  const isKaiJax = ["kai-jax", "kaijax", "kai_jax"].includes(playerFighterId);
   const grade =
-    playerFighterId === "kai-jax" ? "cosmic" : playerFighterId === "jaxon" ? "ice" : playerFighterId === "kaison" ? "ember" : "neutral";
+    isKaiJax ? "cosmic" : ["jaxon", "jax"].includes(playerFighterId) ? "ice" : ["kaison", "kai"].includes(playerFighterId) ? "ember" : "neutral";
   const accent = playerFighter?.accentColor || "#00f2ff";
   const bgColor = grade === "cosmic" ? "#0b0b18" : grade === "ice" ? "#0b1d34" : grade === "ember" ? "#2a0d0d" : "#121224";
   const fogColor = grade === "cosmic" ? "#111128" : grade === "ice" ? "#11384a" : grade === "ember" ? "#3a1410" : "#14142a";
@@ -76,8 +77,9 @@ export default function BattleScene() {
     return () => clearTimeout(timer);
   }, []);
 
-  useFrame((_state, delta) => {
+  useFrame((_state, rawDelta) => {
     if (battlePhase === 'fighting') {
+      const delta = Math.min(rawDelta, 0.05);
       updateRoundTimer(delta);
       const comboIntensity = Math.min(1, (comboCount + (maxCombo > 0 ? maxCombo * 0.2 : 0)) / 8);
       const healthIntensity = 1 - Math.min(playerHealth, opponentHealth) / maxHealth;

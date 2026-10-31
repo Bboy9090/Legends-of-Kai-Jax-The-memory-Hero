@@ -505,4 +505,3 @@ Before merging any Mission 6 changes, verify:
 | Adventure execution | `components/game/adventure/AdventurePlayerController.tsx` | 80–250+ |
 | Stamina validation | `lib/stores/useBattle.tsx` | (stamina property) |
 | Adventure stamina | `lib/stores/useAdventure.ts` | 298–320 |
-

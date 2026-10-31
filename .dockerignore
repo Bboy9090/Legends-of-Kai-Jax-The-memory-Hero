@@ -1,0 +1,9 @@
+.git
+**/node_modules
+**/dist
+apps/desktop
+apps/mobile
+artifacts
+coverage
+playwright-report
+test-results

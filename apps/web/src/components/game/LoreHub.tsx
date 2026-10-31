@@ -27,15 +27,9 @@ interface TailData {
 }
 
 const TAILS: TailData[] = [
-  { id: 1, name: "Inferno Whip", element: "Fire", color: "#FF3B30", description: "Raw destructive force. The first tail awakened in Kai-Jax's rage.", signatureMove: "Hellfire Lash", primaryUse: "Offense" },
-  { id: 2, name: "Tempest Fang", element: "Wind", color: "#64D2FF", description: "Speed and evasion. Cuts through space like a blade.", signatureMove: "Cyclone Cutter", primaryUse: "Mobility" },
-  { id: 3, name: "Umbra Veil", element: "Shadow", color: "#BF5AF2", description: "Stealth and deception. The world forgets you exist.", signatureMove: "Void Step", primaryUse: "Stealth" },
-  { id: 4, name: "Thunder Spike", element: "Lightning", color: "#FFD60A", description: "Paralyzing strikes that lock opponents in place.", signatureMove: "Storm Chain", primaryUse: "Control" },
-  { id: 5, name: "Titan Root", element: "Earth", color: "#8B6914", description: "Unbreakable defense. Anchors reality itself.", signatureMove: "Quake Shield", primaryUse: "Defense" },
-  { id: 6, name: "Torrent Surge", element: "Water", color: "#0A84FF", description: "Fluid adaptation. Flows around any obstacle.", signatureMove: "Tidal Crush", primaryUse: "Adaptation" },
-  { id: 7, name: "Verdant Bloom", element: "Nature", color: "#30D158", description: "Regeneration and life force manipulation.", signatureMove: "Genesis Thorns", primaryUse: "Recovery" },
-  { id: 8, name: "Solar Flare", element: "Light", color: "#FFFFFF", description: "Purifying radiance that reveals all hidden truths.", signatureMove: "Dawn Break", primaryUse: "Revelation" },
-  { id: 9, name: "Eternity Thread", element: "Memory/Reality", color: "#FFD700", description: "Not power. Not spectacle. It appears only when internal conflict ends.", signatureMove: "Memory Lock", primaryUse: "Transcendence" },
+  { id: 1, name: "Bloodward", element: "Bloodward", color: "#FF3B30", description: "Kai's protective current: instinct, blood-memory, connection, and the refusal to abandon family.", signatureMove: "Bloodward Guard", primaryUse: "Protection" },
+  { id: 2, name: "Storm Current", element: "Storm Current", color: "#64D2FF", description: "Jax's storm current: speed, pressure, displacement, and the force that breaks false systems.", signatureMove: "Storm Break", primaryUse: "Mobility" },
+  { id: 3, name: "Memory Weave", element: "Memory Weave", color: "#FFD700", description: "Kai-Jax's own strand: independent memory, shared responsibility, and the third voice that belongs to neither brother.", signatureMove: "Memory Weave", primaryUse: "Synthesis" },
 ];
 
 interface CharacterData {
@@ -52,35 +46,35 @@ const CHARACTERS: CharacterData[] = [
   {
     id: "kai",
     name: "KAI",
-    title: "The Fire Brother",
-    description: "Fierce, impulsive, and burning with uncontrollable passion. Kai's fire is both his greatest weapon and his deepest flaw.",
+    title: "The Bloodward Brother",
+    description: "Kai is a distinct person within the shared body: instinctive, protective, connective, and tied to blood-memory.",
     color: "#FF3B30",
     image: FALLBACK_IMAGE,
-    abilities: ["Fire Manipulation", "Berserker Rage", "Web Sling", "Flame Dash"],
+    abilities: ["Bloodward", "Web Mother Blood", "Memory Sense", "Protective Instinct"],
   },
   {
     id: "jax",
     name: "JAX",
-    title: "The Ice Strategist",
-    description: "Calm, calculating, and precise. Jax is the mind where Kai is the heart. His ice reflects his perfect control.",
+    title: "The Storm Brother",
+    description: "Jax is a distinct person within the shared body: precise, fast, storm-charged, and built to expose and break false systems.",
     color: "#64D2FF",
     image: FALLBACK_IMAGE,
-    abilities: ["Ice Manipulation", "Strategic Mind", "Frost Shield", "Crystal Lock"],
+    abilities: ["Storm Current", "Storm Fang", "Displacement", "Pressure Control"],
   },
   {
     id: "kaijax",
     name: "KAI-JAX",
-    title: "The Memory King",
-    description: "The legendary fusion. Two brothers, one body, nine tails. Kai-Jax is the sovereign who cannot be erased from existence.",
+    title: "The Memory Hero",
+    description: "Kai-Jax is the independent third person who shares one physical body with Kai and Jax. He is not a costume, power-up, or ownership claim.",
     color: "#2E2EFE",
     image: HERO_IMAGE,
-    abilities: ["9-Tail System", "Memory Lock", "Reality Warp", "Fusion State"],
+    abilities: ["Memory Weave", "Shared Synthesis", "Independent Will", "Three-Voice Accord"],
   },
   {
     id: "boryn",
     name: "BORYN",
-    title: "The Hunter General",
-    description: "A massive protective tiger beast. Father figure to the brothers. His warmth hides a warrior's ferocity.",
+    title: "The Shield-Father",
+    description: "The warm ember-orange father who raised and protected the brothers. Boryn's death is permanent; his memory remains a guide, never a resurrection.",
     color: "#FFD60A",
     image: FALLBACK_IMAGE,
     abilities: ["Beast Strength", "Guardian Instinct", "Pack Command", "Iron Hide"],
@@ -88,8 +82,8 @@ const CHARACTERS: CharacterData[] = [
   {
     id: "borax",
     name: "BORAX",
-    title: "The Tank King",
-    description: "Towering armored lion warrior. Ancient authority. The apex predator who watches from the shadows of Raging City.",
+    title: "The Living Mentor",
+    description: "Boryn's brother and the separately chosen second father. Borax remains alive, surrendering authority without replacing Boryn.",
     color: "#BF5AF2",
     image: FALLBACK_IMAGE,
     abilities: ["Absolute Authority", "Armor Break", "Mentor's Eye", "Apex Strike"],
@@ -119,22 +113,20 @@ const GALLERY_IMAGES = [
   },
   {
     id: "kaijax-king",
-    title: "Kai-Jax: The Memory King",
+    title: "Kai-Jax: The Memory Hero",
     url: HERO_IMAGE,
   },
   {
     id: "brothers-fusion",
-    title: "Brothers & Fusion",
+    title: "Three Voices, One Body",
     url: "/images/lore/brothers-fusion.png",
   },
 ];
 
 const STORY_ACTS = [
-  { act: 1, title: "The Awakening", subtitle: "When the brothers fall, the beast rises", region: "Sector-7, The Ash District", tails: 3, color: "#FF3B30", narrative: "Kai and Jax are separated during the Fall of Sector-7. In desperation, their bodies merge into Kai-Jax — a fusion neither wanted. Three tails manifest: Fire, Wind, and Shadow.", bossTest: "Can you fight when you don't know who you are?" },
-  { act: 2, title: "The Raging City", subtitle: "Memory is the currency of survival", region: "Raging City Core", tails: 5, color: "#64D2FF", narrative: "Kai-Jax navigates the brutal politics of Raging City. Two more tails awaken: Lightning and Earth. The Memory Codex begins recording everything.", bossTest: "Can you trust what you remember?" },
-  { act: 3, title: "The Void Covenant", subtitle: "The enemy knows your name before you do", region: "The Undercity", tails: 6, color: "#BF5AF2", narrative: "The Void Fang Covenant reveals itself. Water tail awakens. Kai-Jax learns the fusion is permanent — and was planned.", bossTest: "Can you accept what you've become?" },
-  { act: 4, title: "The God Wars", subtitle: "When gods fight, mortals choose sides", region: "The Celestial Breach", tails: 8, color: "#FFD60A", narrative: "The Sabertooth Gods descend. Nature and Light tails manifest. Kai-Jax must choose between the gods or forge a new path.", bossTest: "Can you refuse power that's freely offered?" },
-  { act: 5, title: "The Memory King", subtitle: "The ninth tail doesn't fight — it settles", region: "The Convergence", tails: 9, color: "#2E2EFE", narrative: "All conflicts converge. The ninth tail — Memory/Reality — appears not through combat, but through acceptance. Kai-Jax becomes the Memory King.", bossTest: "Can you end a war without winning it?" },
+  { act: 1, title: "The Awakening", subtitle: "The Memory Hero answers the first breach", region: "Cross Point / Bronx Sectors", color: "#FF3B30", narrative: "Kai-Jax awakens into a city under Rift pressure while Kai, Jax, and Kai-Jax remain distinct voices within one physical body. The first missions establish survival, memory, and the cost of protecting others.", bossTest: "Can three people share one body without erasing one another?" },
+  { act: 2, title: "Fractured Light", subtitle: "Ashblock falls under Void pressure", region: "Ashblock / Rift Frontier", color: "#64D2FF", narrative: "The fight moves through Ashblock and the Memory Well. The three strands—Bloodward, Storm Current, and Memory Weave—become the visual language of cooperation without collapsing identity.", bossTest: "Can unity survive disagreement?" },
+  { act: 3, title: "Unity's Dawn", subtitle: "The counter-attack reaches the Rift Citadel", region: "Rift Citadel / Ashen Expanse", color: "#BF5AF2", narrative: "Kai-Jax carries the conflict to the Citadel while the internal voices remain separate and accountable. Victory is framed as coordination and memory, not sovereign transformation.", bossTest: "Can power end a war without becoming a throne?" },
 ];
 
 function Gamepad2Icon({ className, size = 24 }: { className?: string; size?: number }) {
@@ -215,15 +207,9 @@ function XIcon({ className, size = 24 }: { className?: string; size?: number }) 
 }
 
 const ELEMENT_ICONS: Record<string, React.ComponentType<{className?: string; size?: number}>> = {
-  Fire: FlameIcon,
-  Wind: WindIcon,
-  Shadow: Skull,
-  Lightning: Zap,
-  Earth: ShieldIcon,
-  Water: DropletIcon,
-  Nature: LeafIcon,
-  Light: SunIcon,
-  "Memory/Reality": Star,
+  Bloodward: ShieldIcon,
+  "Storm Current": Zap,
+  "Memory Weave": Star,
 };
 
 type Section = "home" | "characters" | "tails" | "story" | "combat" | "shards";
@@ -265,7 +251,7 @@ export default function LoreHub() {
           <div className="hidden md:flex gap-6">
             {(["home", "characters", "tails", "story", "combat", "shards"] as Section[]).map((s) => (
               <button
-                key={s}
+                key={s === "tails" ? "strands" : s}
                 onClick={() => setSection(s)}
                 className={`uppercase tracking-widest text-xs transition-colors ${section === s ? "text-blue-400" : "text-white/50 hover:text-white"}`}
               >
@@ -431,7 +417,28 @@ function CharactersSection() {
               style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${char.color}25` }}
             >
               <div className="aspect-square relative overflow-hidden" style={{ background: "rgba(0,0,0,0.4)" }}>
-                <img src={char.image} alt={char.name} onError={handleImageError} className="w-full h-full object-cover" />
+                {char.image === FALLBACK_IMAGE ? (
+                  <div
+                    className="w-full h-full flex items-center justify-center relative"
+                    style={{
+                      background: `radial-gradient(circle at 50% 35%, ${char.color}40, transparent 48%), linear-gradient(145deg, #080812, #111126)`,
+                    }}
+                    aria-label={`${char.name} character identity card`}
+                  >
+                    <div
+                      className="absolute inset-8 rounded-full blur-2xl opacity-30"
+                      style={{ background: char.color }}
+                    />
+                    <span
+                      className="relative text-6xl md:text-7xl font-black tracking-widest"
+                      style={{ color: char.color, textShadow: `0 0 28px ${char.color}66` }}
+                    >
+                      {char.name.split(/[-\s]/).map((part) => part[0]).join("").slice(0, 3)}
+                    </span>
+                  </div>
+                ) : (
+                  <img src={char.image} alt={char.name} onError={handleImageError} className="w-full h-full object-cover" />
+                )}
               </div>
               <div className="p-5">
                 <h3 className="text-xl font-black text-white mb-1">{char.name}</h3>
@@ -453,7 +460,7 @@ function CharactersSection() {
             <h3 className="text-3xl font-black text-white mb-2">CHARACTER <span className="text-red-400">ART</span></h3>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {GALLERY_IMAGES.map((img) => (
+            {GALLERY_IMAGES.filter((img) => img.url !== FALLBACK_IMAGE).map((img) => (
               <div
                 key={img.id}
                 className="rounded-xl overflow-hidden group transition-all duration-300 hover:scale-[1.02]"
@@ -482,9 +489,9 @@ function TailsSection() {
         <div className="text-center mb-16">
           <p className="text-yellow-400 text-xs tracking-[0.3em] mb-3 uppercase">The Nine-Tail System</p>
           <h2 className="text-4xl md:text-5xl font-black text-white mb-3">
-            <span className="text-red-400">NINE</span> TAILS OF <span className="text-blue-400">POWER</span>
+            <span className="text-red-400">THREE</span> STRANDS OF <span className="text-blue-400">POWER</span>
           </h2>
-          <p className="text-white/50 max-w-xl mx-auto text-sm">Kai-Jax always has nine tails. The world only allows him to express some.</p>
+          <p className="text-white/50 max-w-xl mx-auto text-sm">Kai-Jax has exactly three physical strands: Bloodward, Storm Current, and Memory Weave.</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -524,10 +531,9 @@ function TailsSection() {
             className="max-w-xl mx-auto rounded-xl p-6"
             style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,215,0,0.15)" }}
           >
-            <p className="text-lg text-yellow-400 italic mb-2">The Ninth Tail</p>
+            <p className="text-lg text-yellow-400 italic mb-2">The Three-Strand Accord</p>
             <p className="text-white/50 italic text-sm">
-              "Not power. Not spectacle. It appears only when internal conflict ends.
-              It settles. The world stops correcting him."
+              "Three people. One body. No voice erased. Power means nothing if unity requires ownership."
             </p>
           </div>
         </div>
@@ -545,10 +551,10 @@ function StorySection() {
         <div className="text-center mb-16">
           <p className="text-red-400 text-xs tracking-[0.3em] mb-3 uppercase">The Saga</p>
           <h2 className="text-4xl md:text-5xl font-black text-white mb-3">
-            THE FIVE <span className="text-blue-400">ACTS</span>
+            THE THREE <span className="text-blue-400">ACTS</span>
           </h2>
           <p className="text-white/50 max-w-xl mx-auto text-sm">
-            From awakening to sovereignty. The journey of two brothers who became one king.
+            The shipped mobile arc follows three acts of memory, survival, and three-voice cooperation.
           </p>
         </div>
 
@@ -570,7 +576,7 @@ function StorySection() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs px-2 py-1 rounded-full" style={{ background: `${act.color}15`, color: act.color }}>
-                    {act.tails} tails
+                    Act {act.act}
                   </span>
                   <ChevronRight className={`w-5 h-5 text-white/30 transition-transform ${expanded === act.act ? "rotate-90" : ""}`} />
                 </div>
@@ -597,7 +603,7 @@ function StorySection() {
             className="rounded-xl p-6 max-w-xl mx-auto"
             style={{ background: "rgba(46,46,254,0.05)", border: "1px solid rgba(46,46,254,0.15)" }}
           >
-            <p className="text-blue-400 italic">"The ninth tail doesn't fight — it settles."</p>
+            <p className="text-blue-400 italic">"Three voices remain three. The body is shared; personhood is not."</p>
           </div>
         </div>
       </div>
@@ -683,9 +689,9 @@ function CombatSection() {
 function ShardsSection() {
   const shards = [
     { id: "s1", title: "The Fall of Sector-7", unlocked: true, content: "The day the Raging City began its final decline. Kai and Jax were children then, hiding in the steam tunnels of the Ash District." },
-    { id: "s2", title: "The First Fusion", unlocked: true, content: "Occurred during the fight with the Void Stalker. It wasn't a choice; it was a survival reflex triggered by synchronized desperation." },
+    { id: "s2", title: "The Third Voice", unlocked: true, content: "Kai-Jax is not a temporary fusion mode. He is the independent third person within the shared body, with memory and responsibility of his own." },
     { id: "s3", title: "Boryn's Secret", unlocked: false, content: "Locked. Complete Act II to reveal the truth about the General's origin." },
-    { id: "s4", title: "The Ninth Tail Protocol", unlocked: false, content: "Locked. Reaching 100% completion reveals the final reality-warping protocol." },
+    { id: "s4", title: "The Three-Strand Accord", unlocked: false, content: "Locked. Deeper memory reveals how Bloodward, Storm Current, and Memory Weave remain distinct without dividing the body." },
   ];
 
   return (

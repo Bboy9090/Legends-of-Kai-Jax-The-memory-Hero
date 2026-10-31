@@ -7,6 +7,8 @@ export function isStatueFighter(id: string): boolean {
 }
 
 let audioCtx: AudioContext | null = null;
+let resumeBackgroundMusicAfterVisibility = false;
+let resumeBattleMusicAfterVisibility = false;
 function getAudioCtx(): AudioContext | null {
   if (!audioCtx) audioCtx = new AudioContext();
   if (audioCtx.state === "suspended") {
@@ -158,3 +160,44 @@ export const useAudio = create<AudioState>((set, get) => ({
   playStoneHit: () => { if (!get().isMuted) playStoneGrind("hit"); },
   playDodge: () => { if (!get().isMuted) playDodgeWhoosh(); },
 }));
+
+
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    const state = useAudio.getState();
+    const background = state.backgroundMusic;
+    const battle = state.battleMusic;
+
+    if (document.hidden) {
+      resumeBackgroundMusicAfterVisibility = Boolean(background && !background.paused);
+      resumeBattleMusicAfterVisibility = Boolean(battle && !battle.paused);
+
+      background?.pause();
+      battle?.pause();
+
+      if (audioCtx?.state === "running") {
+        audioCtx.suspend().catch(() => {});
+      }
+      return;
+    }
+
+    if (state.isMuted) {
+      resumeBackgroundMusicAfterVisibility = false;
+      resumeBattleMusicAfterVisibility = false;
+      return;
+    }
+
+    if (audioCtx?.state === "suspended") {
+      audioCtx.resume().catch(() => {});
+    }
+
+    if (resumeBattleMusicAfterVisibility && battle) {
+      battle.play().catch(() => {});
+    } else if (resumeBackgroundMusicAfterVisibility && background) {
+      background.play().catch(() => {});
+    }
+
+    resumeBackgroundMusicAfterVisibility = false;
+    resumeBattleMusicAfterVisibility = false;
+  });
+}

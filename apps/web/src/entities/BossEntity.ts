@@ -109,9 +109,7 @@ export class BossEntity {
     this.hurtbox.setPosition(aiPos.x, aiPos.y, aiPos.z);
     if (this.rig?.loaded) {
       this.rig.group.position.set(aiPos.x, 0, aiPos.z);
-    }
-    if (this.rig?.loaded) {
-      this.rig.group.position.set(aiPos.x, 0, aiPos.z);
+      this.rig.mixer?.update(deltaTime);
     }
 
     if (this.hurtbox.getHealth() <= 0 && !this.isDead) {
@@ -161,6 +159,11 @@ export class BossEntity {
 
   destroy(): void {
     this.scene.remove(this.mesh);
+    if (this.rig?.loaded) {
+      this.rig.mixer?.stopAllAction();
+      this.scene.remove(this.rig.group);
+      this.rig = null;
+    }
     this.hurtbox.destroy(this.scene);
   }
 

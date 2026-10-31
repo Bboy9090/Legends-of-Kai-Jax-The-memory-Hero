@@ -1,17 +1,23 @@
 import { useState, useEffect } from "react";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useTouchInput } from "../../lib/stores/useTouchInput";
+import { isTouchDevice } from "../../lib/touchUtils";
 
 type Orientation = 'portrait' | 'landscape';
 
 export default function MobileControls() {
   const [orientation, setOrientation] = useState<Orientation>('portrait');
   const [activeButtons, setActiveButtons] = useState<Set<string>>(new Set());
+  const [touchCapable, setTouchCapable] = useState(false);
   const battlePhase = useBattle((s) => s.battlePhase);
   const setJoystick = useTouchInput((s) => s.setJoystick);
   const releaseJoystick = useTouchInput((s) => s.releaseJoystick);
   const queueAttack = useTouchInput((s) => s.queueAttack);
   
+  useEffect(() => {
+    setTouchCapable(isTouchDevice() || window.matchMedia('(pointer: coarse)').matches);
+  }, []);
+
   // Detect orientation (MUST be before early return to follow Rules of Hooks)
   useEffect(() => {
     const checkOrientation = () => {
@@ -33,7 +39,7 @@ export default function MobileControls() {
   }, []);
   
   // Only show controls during active fighting (AFTER all hooks)
-  if (battlePhase !== 'fighting') {
+  if (battlePhase !== 'fighting' || !touchCapable) {
     return null;
   }
 

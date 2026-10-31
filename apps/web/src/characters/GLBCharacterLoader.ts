@@ -9,6 +9,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { SkeletonUtils } from 'three/examples/jsm/Addons.js';
 
 export interface CharacterRig {
   /** Group placed in scene (use this as fighter root for combat math) */
@@ -25,6 +26,10 @@ export interface CharacterRig {
   loaded: boolean;
   /** Source URL if loaded */
   source?: string;
+  /** Baked clips preserved for mission/combat playback. */
+  animations: THREE.AnimationClip[];
+  /** Mixer rooted to the same cloned skinned scene that is rendered. */
+  mixer: THREE.AnimationMixer | null;
 }
 
 const loader = new GLTFLoader();
@@ -55,7 +60,7 @@ function buildBoxFallback(color: number, height: number = 1.8): CharacterRig {
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.y = height / 2;
   group.add(mesh);
-  return { group, root: mesh, spine: null, head: null, tails: [], height, loaded: false };
+  return { group, root: mesh, spine: null, head: null, tails: [], height, loaded: false, animations: [], mixer: null };
 }
 
 export async function loadCharacterRig(
@@ -67,7 +72,9 @@ export async function loadCharacterRig(
 
   try {
     const gltf = await loader.loadAsync(url);
-    const sceneRoot = gltf.scene;
+    // Skeleton-aware clone is mandatory: a plain scene clone can leave a
+    // SkinnedMesh bound to the source skeleton and recreate statue motion.
+    const sceneRoot = SkeletonUtils.clone(gltf.scene);
 
     // Compute bounding box → uniform scale to target height
     const bbox = new THREE.Box3().setFromObject(sceneRoot);
@@ -110,6 +117,8 @@ export async function loadCharacterRig(
 
     const group = new THREE.Group();
     group.add(sceneRoot);
+    const animations = gltf.animations ?? [];
+    const mixer = animations.length > 0 ? new THREE.AnimationMixer(sceneRoot) : null;
 
     return {
       group,
@@ -120,6 +129,8 @@ export async function loadCharacterRig(
       height: targetHeight,
       loaded: true,
       source: url,
+      animations,
+      mixer,
     };
   } catch (err) {
     console.warn(`[GLBLoader] Failed to load ${url}, using box fallback:`, err);

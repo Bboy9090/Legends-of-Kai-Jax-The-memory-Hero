@@ -53,6 +53,7 @@ import {
 } from "../../game/tuning/combatTuning";
 import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
 import { resolveBattleCombatState } from "../../game/combat/CombatStateMachine";
+import { evaluateCancelTransition } from "../../game/combat/cancelTransition";
 import {
   clashPriorityForAttack,
   getMoveKeyForPlayerAttack,
@@ -63,6 +64,11 @@ import {
 
 const ARENA_X_MIN = MOVEMENT_TUNING.battle.arenaXMin;
 const ARENA_X_MAX = MOVEMENT_TUNING.battle.arenaXMax;
+
+const KAI_JAX_IDS = new Set(["kai-jax", "kaijax", "kai_jax"]);
+function isKaiJaxId(fighterId: string): boolean {
+  return KAI_JAX_IDS.has(fighterId);
+}
 
 function getEffectiveMaxComboTimer(): number {
   return useRunner.getState().unlockedUpgrades.includes("comboWindow")
@@ -346,7 +352,7 @@ export const useBattle = create<BattleState>((set, get) => ({
   damageDealt: 0,
   roundTimeSurvived: 0,
   
-  playerX: -5,
+  playerX: -3.25,
   playerY: 0.8,
   playerVelocityX: 0,
   playerVelocityY: 0,
@@ -355,7 +361,7 @@ export const useBattle = create<BattleState>((set, get) => ({
   playerDodgeTimer: 0,
   playerDodgeDirection: 1,
   
-  opponentX: 5,
+  opponentX: 3.25,
   opponentY: 0.8,
   opponentVelocityX: 0,
   opponentVelocityY: 0,
@@ -422,9 +428,9 @@ export const useBattle = create<BattleState>((set, get) => ({
       roundTime: get().maxRoundTime,
       playerHealth: get().maxHealth,
       opponentHealth: get().maxHealth,
-      playerX: -5,
+      playerX: -3.25,
       playerY: 0.8,
-      opponentX: 5,
+      opponentX: 3.25,
       opponentY: 0.8,
       winner: null,
       playerSynergy: 0,
@@ -471,9 +477,9 @@ export const useBattle = create<BattleState>((set, get) => ({
       playerHealth: get().maxHealth,
       opponentHealth: get().maxHealth,
       roundTime: get().maxRoundTime,
-      playerX: -5,
+      playerX: -3.25,
       playerY: 0.8,
-      opponentX: 5,
+      opponentX: 3.25,
       opponentY: 0.8,
       playerVelocityX: 0,
       playerVelocityY: 0,
@@ -637,7 +643,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     if (playerAttacking || (battlePhase !== 'fighting' && battlePhase !== 'transforming')) return;
 
     const { playerFighterId, playerOverdrive, maxOverdrive } = get();
-    const hasNativeUltimate = ['kai-jax', 'kai', 'jax', 'boryn'].includes(playerFighterId);
+    const hasNativeUltimate = isKaiJaxId(playerFighterId) || ['kai', 'jax', 'boryn'].includes(playerFighterId);
     const canUltimate = playerOverdrive >= maxOverdrive && (playerTransformed || hasNativeUltimate);
     if (type === 'ultimate' && !canUltimate) return;
 
@@ -693,19 +699,24 @@ export const useBattle = create<BattleState>((set, get) => ({
   },
 
   attemptComboCancel: () => {
-    const { playerAttacking, playerAttackType, playerComboStep, playerAttackElapsed, guardBreakTimer, playerHitStunTimer } = get();
-    if (guardBreakTimer > 0 || playerHitStunTimer > 0) return false;
-    if (!playerAttacking || playerAttackType !== 'punch' || playerComboStep >= 2) return false;
-    const moveKey = `light${playerComboStep + 1}` as keyof typeof MOVES;
-    const move = MOVES[moveKey];
-    if (!move || move.cancelAt <= 0) return false;
-    const timing = getMoveFrameTime(move);
-    if (playerAttackElapsed < timing.cancelTime) return false;
+    const p = get();
+    if (!p.playerAttacking || p.playerAttackType !== 'punch' || p.playerComboStep >= 2) return false;
+    const currentMove = `light${p.playerComboStep + 1}` as keyof typeof MOVES;
+    const nextMove = `light${p.playerComboStep + 2}` as keyof typeof MOVES;
+    const decision = evaluateCancelTransition({
+      currentMove, elapsedSeconds: p.playerAttackElapsed,
+      attacking: p.playerAttacking, dodging: p.playerDodgeTimer > 0,
+      guardBroken: p.guardBreakTimer > 0, hitstun: p.playerHitStunTimer > 0,
+      stamina: p.playerStamina,
+    }, nextMove);
+    if (!decision.allowed) return false;
     set({
       playerAttackType: 'punch',
       playerAttackElapsed: 0,
       playerAttackHasHit: false,
-      playerComboStep: playerComboStep + 1,
+      playerComboStep: p.playerComboStep + 1,
+      playerStamina: Math.max(0, p.playerStamina - MOVES[nextMove].staminaCost),
+      battleStaminaRegenDelay: Math.max(p.battleStaminaRegenDelay, 0.12),
     });
     useAudio.getState().playPunch();
     return true;
@@ -1020,7 +1031,7 @@ export const useBattle = create<BattleState>((set, get) => ({
   // ⚡ LEGENDARY SYNERGY SYSTEM (Resonance for Jaxon/Kaison -> Kai-Jax)
   addSynergy: (amount) => {
     const { playerSynergy, maxSynergy, playerTransformed, playerFighterId } = get();
-    if (playerTransformed || playerFighterId === 'kai-jax') return; // Can't build synergy while transformed or already fused
+    if (playerTransformed || isKaiJaxId(playerFighterId)) return; // Can't build synergy while transformed or already fused
     
     const newSynergy = Math.min(maxSynergy, playerSynergy + amount);
     set({ playerSynergy: newSynergy });
@@ -1042,7 +1053,7 @@ export const useBattle = create<BattleState>((set, get) => ({
 
     // Jaxon/Kaison -> Kai-Jax fusion requires 50% Resonance
     const fusionThreshold = FUSION_SYNERGY_THRESHOLD;
-    if (playerTransformed || playerFighterId === 'kai-jax') return;
+    if (playerTransformed || isKaiJaxId(playerFighterId)) return;
     if ((playerFighterId === 'jaxon' || playerFighterId === 'kaison') && playerSynergy < fusionThreshold) return;
     
     // Enter transformation phase (60-frame hit-stop for core integration)
@@ -1093,9 +1104,9 @@ export const useBattle = create<BattleState>((set, get) => ({
     const { playerFighterId, playerPreFusionFighterId } = get();
     
     // Revert to pre-fusion fighter (jaxon or kaison)
-    const revertTo = playerFighterId === 'kai-jax' && playerPreFusionFighterId
+    const revertTo = isKaiJaxId(playerFighterId) && playerPreFusionFighterId
       ? playerPreFusionFighterId
-      : playerFighterId === 'kai-jax' ? 'jaxon' : playerFighterId;
+      : isKaiJaxId(playerFighterId) ? 'jaxon' : playerFighterId;
     set({
       playerTransformed: false,
       transformationTimeRemaining: 0,
@@ -1432,3 +1443,10 @@ export const useBattle = create<BattleState>((set, get) => ({
     }
   },
 }));
+
+
+// Certification/debug bridge for runtime smoke. Keeps the battle store
+// inspectable without affecting gameplay authority.
+if (typeof window !== 'undefined') {
+  (window as any).battleStore = useBattle;
+}

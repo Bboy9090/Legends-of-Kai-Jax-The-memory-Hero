@@ -6,6 +6,34 @@
 
 import * as THREE from 'three';
 
+export type QualityPreference = 'auto' | 'low' | 'medium' | 'high';
+
+const QUALITY_STORAGE_KEY = 'kai-jax-quality';
+
+export function getQualityPreference(): QualityPreference {
+  if (typeof window === 'undefined') return 'auto';
+  const value = window.localStorage.getItem(QUALITY_STORAGE_KEY);
+  return value === 'low' || value === 'medium' || value === 'high' ? value : 'auto';
+}
+
+export function setQualityPreference(value: QualityPreference): void {
+  if (typeof window === 'undefined') return;
+  if (value === 'auto') {
+    window.localStorage.removeItem(QUALITY_STORAGE_KEY);
+  } else {
+    window.localStorage.setItem(QUALITY_STORAGE_KEY, value);
+  }
+  window.dispatchEvent(new CustomEvent('kai-jax-quality-change'));
+}
+
+function getEffectiveDeviceType(): 'mobile' | 'tablet' | 'desktop' {
+  const preference = getQualityPreference();
+  if (preference === 'low') return 'mobile';
+  if (preference === 'medium') return 'tablet';
+  if (preference === 'high') return 'desktop';
+  return getDeviceType();
+}
+
 /**
  * Detect device type for optimization
  */
@@ -20,24 +48,34 @@ export function getDeviceType(): 'mobile' | 'tablet' | 'desktop' {
  * Get optimal quality settings based on device
  */
 export function getQualitySettings() {
-  const deviceType = getDeviceType();
+  const deviceType = getEffectiveDeviceType();
   const isMobile = deviceType === 'mobile';
   const isTablet = deviceType === 'tablet';
 
   return {
-    // Render settings — cap pixelRatio hard. The characters are heavy (100k+
-    // verts each), so rendering at a high-DPI 2x ratio quadruples pixel work
-    // and tanks framerate even on desktop. 1.5 max keeps it crisp but fast.
-    pixelRatio: Math.min(window.devicePixelRatio, isMobile ? 1.25 : 1.5),
-    antialias: !isMobile, // Disable AA on mobile for performance
+    deviceType,
+    isMobile,
+    isTablet,
+    // Render internally below device pixel density on compact screens. The
+    // UI remains CSS-resolution crisp while the 3D layer sheds the expensive
+    // fill-rate cost of dense fur/armor models.
+    pixelRatio: Math.min(
+      window.devicePixelRatio,
+      isMobile ? 0.5 : isTablet ? 0.42 : 1.5,
+    ),
+    antialias: deviceType === 'desktop',
     shadowMap: {
-      enabled: true,
-      type: isMobile ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap,
-      size: isMobile ? 512 : isTablet ? 1024 : 1024,
+      // Dynamic shadow maps are one of the largest GPU costs in the adventure
+      // scene. Mobile/tablet keep the authored baked lighting/material read and
+      // drop real-time shadows; desktop retains the full treatment.
+      enabled: deviceType === 'desktop',
+      type: deviceType === 'desktop' ? THREE.PCFSoftShadowMap : THREE.BasicShadowMap,
+      size: deviceType === 'desktop' ? 1024 : 256,
     },
+    toneMapping: deviceType === 'desktop' ? THREE.ACESFilmicToneMapping : THREE.NoToneMapping,
     
     // Post-processing
-    postProcessing: !isMobile, // Disable on mobile
+    postProcessing: deviceType === 'desktop',
     
     // Geometry
     geometryQuality: isMobile ? 'low' : isTablet ? 'medium' : 'high',
@@ -48,7 +86,7 @@ export function getQualitySettings() {
     useDraco: true, // Use Draco compression
     
     // Animation
-    animationFPS: isMobile ? 30 : 60,
+    animationFPS: isMobile ? 30 : isTablet ? 45 : 60,
     
     // LOD
     useLOD: true,

@@ -6,7 +6,7 @@ export default function MissionCompleteScreen() {
   const { setGameState } = useRunner();
 
   const handleContinue = () => {
-    setGameState('story-hub');
+    setGameState('campaign-map');
   };
 
   return (

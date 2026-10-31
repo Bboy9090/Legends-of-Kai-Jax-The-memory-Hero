@@ -27,7 +27,7 @@ export default function GameOverlays() {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.code === "F3") {
+      if (event.code === "F3" && import.meta.env.DEV) {
         event.preventDefault();
         setShowPerf((value) => !value);
       } else if (event.code === "F2") {
@@ -45,7 +45,7 @@ export default function GameOverlays() {
 
   return (
     <>
-      <PerformanceHUD visible={showPerf} />
+      <PerformanceHUD visible={import.meta.env.DEV && showPerf} />
       <TrainingLabOverlay visible={showTraining} />
       <QuestLog isOpen={showQuests} onClose={() => setShowQuests(false)} />
     </>

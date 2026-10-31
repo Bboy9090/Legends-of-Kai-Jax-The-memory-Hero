@@ -1,8 +1,9 @@
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useState, useRef, useMemo, useEffect } from "react";
+import { Suspense, useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { KeyboardControls } from "@react-three/drei";
 import "@fontsource/inter";
 import "@fontsource/bebas-neue";
+import "./styles/kai-jax-vision.css";
 
 import BattleScene from "./components/game/BattleScene";
 import MobileControls from "./components/game/MobileControls";
@@ -29,6 +30,7 @@ import TitleScreen from "./components/game/TitleScreen";
 import SaveSlotScreen from "./components/game/SaveSlotScreen";
 import BootAccessibilityScreen from "./components/game/BootAccessibilityScreen";
 import StoryHubScreen from "./components/game/StoryHubScreen";
+import LegendSelectScreen from "./components/game/LegendSelectScreen";
 import MissionSelectScreen from "./components/game/MissionSelectScreen";
 import CharacterAbilityScreen from "./components/game/CharacterAbilityScreen";
 import MissionCompleteScreen from "./components/game/MissionCompleteScreen";
@@ -42,12 +44,10 @@ import { useMissions } from "./lib/stores/useMissions";
 import { useProgression } from "./lib/stores/useProgression";
 import { registerServiceWorker } from "./lib/offlineModeSystem";
 import { FIGHTERS, getFighterById } from "./lib/characters";
+import { getStoryMissionById } from "./lib/story_missions";
 import { initializeVoiceSystem, preloadVoices } from "./lib/voiceActing";
 import * as THREE from "three";
 import { getQualitySettings } from "./lib/threejs/PerformanceOptimizer";
-
-// Compute quality settings once (device/pixel-ratio never changes mid-session)
-const QUALITY = getQualitySettings();
 
 // Define control keys for the game
 enum Controls {
@@ -86,12 +86,16 @@ const controls = [
 
 function App() {
   const { phase } = useGame();
+  const [qualityRevision, setQualityRevision] = useState(0);
+  const QUALITY = useMemo(() => getQualitySettings(), [qualityRevision]);
   const { gameState, selectedCharacter, activeStoryMissionId } = useRunner();
   const battleCanvasActive =
     (phase === "playing" || phase === "ended") && gameState === "playing";
 
   useEffect(() => {
-    console.log('[Blocker A Trace] App render', { phase, gameState, battleCanvasActive });
+    if (import.meta.env.DEV) {
+      console.log('[Blocker A Trace] App render', { phase, gameState, battleCanvasActive });
+    }
   }, [phase, gameState, battleCanvasActive]);
 
   // If we left battle with phase "ended" but navigated to a menu screen, recover so UI mounts.
@@ -118,6 +122,12 @@ function App() {
     isMuted
   } = useAudio();
   
+  useEffect(() => {
+    const handleQualityChange = () => setQualityRevision((value) => value + 1);
+    window.addEventListener('kai-jax-quality-change', handleQualityChange);
+    return () => window.removeEventListener('kai-jax-quality-change', handleQualityChange);
+  }, []);
+
   // ⚡ LEGENDARY INTRO SYSTEM
   const [showIntro, setShowIntro] = useState(true);
 
@@ -175,9 +185,9 @@ function App() {
   }, [selectedCharacter, phase, setPlayerFighter, setOpponentFighter]);
 
   // Handle intro completion
-  const handleIntroComplete = () => {
+  const handleIntroComplete = useCallback(() => {
     setShowIntro(false);
-  };
+  }, []);
 
   // Calculate screen shake transform - stable random offsets per shake intensity change
   const shakeOffsetRef = useRef({ x: 0, y: 0 });
@@ -228,6 +238,9 @@ function App() {
         {/* Story Hub (Raging City Map) */}
         {phase === "ready" && gameState === "story-hub" && <StoryHubScreen />}
 
+        {/* Story / Adventure Legend Select */}
+        {phase === "ready" && gameState === "character-select" && <LegendSelectScreen />}
+
         {/* Mission Select */}
         {phase === "ready" && gameState === "mission-select" && <MissionSelectScreen />}
 
@@ -264,7 +277,8 @@ function App() {
             <>
               <div className="relative w-full h-screen">
                 <Canvas
-                  shadows
+                  shadows={QUALITY.shadowMap.enabled}
+                  dpr={QUALITY.pixelRatio}
                   camera={{
                     position: [0, 4, 7],
                     fov: 50,
@@ -274,9 +288,9 @@ function App() {
                   onCreated={({ gl }) => {
                     gl.setPixelRatio(QUALITY.pixelRatio);
                     gl.outputColorSpace = THREE.SRGBColorSpace;
-                    gl.toneMapping = THREE.ACESFilmicToneMapping;
-                    gl.toneMappingExposure = 0.85;
-                    gl.shadowMap.enabled = true;
+                    gl.toneMapping = QUALITY.toneMapping;
+                    gl.toneMappingExposure = QUALITY.isMobile ? 1.0 : 0.85;
+                    gl.shadowMap.enabled = QUALITY.shadowMap.enabled;
                     gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
                   }}
                   gl={{
@@ -307,7 +321,8 @@ function App() {
             <>
               <div className="relative w-full h-screen">
                 <Canvas
-                  shadows
+                  shadows={QUALITY.shadowMap.enabled}
+                  dpr={QUALITY.pixelRatio}
                   camera={{
                     position: [0, 4, 7],
                     fov: 50,
@@ -315,16 +330,15 @@ function App() {
                     far: 200,
                   }}
                   onCreated={({ gl }) => {
-                    const q = getQualitySettings();
-                    gl.setPixelRatio(q.pixelRatio);
+                    gl.setPixelRatio(QUALITY.pixelRatio);
                     gl.outputColorSpace = THREE.SRGBColorSpace;
-                    gl.toneMapping = THREE.ACESFilmicToneMapping;
-                    gl.toneMappingExposure = 0.85;
-                    gl.shadowMap.enabled = true;
-                    gl.shadowMap.type = q.shadowMap.type as THREE.ShadowMapType;
+                    gl.toneMapping = QUALITY.toneMapping;
+                    gl.toneMappingExposure = QUALITY.isMobile ? 1.0 : 0.85;
+                    gl.shadowMap.enabled = QUALITY.shadowMap.enabled;
+                    gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
                   }}
                   gl={{
-                    antialias: getQualitySettings().antialias,
+                    antialias: QUALITY.antialias,
                     powerPreference: "high-performance",
                   }}
                 >
@@ -343,6 +357,11 @@ function App() {
                     if (success) {
                       useMissions.getState().startMission("story", storyMissionId);
                       useMissions.getState().completeMission(true);
+                      useRunner.getState().setMissionCompleted(storyMissionId);
+
+                      useRunner.getState().setLastPlayedTitle(
+                        getStoryMissionById(storyMissionId)?.title ?? storyMissionId
+                      );
                     }
                     useRunner.getState().setGameState("campaign-map");
                   }}
@@ -359,7 +378,8 @@ function App() {
           <>
             <div className="relative w-full h-screen">
               <Canvas
-                shadows
+                shadows={QUALITY.shadowMap.enabled}
+                dpr={QUALITY.pixelRatio}
                 camera={{
                   position: [0, 3.5, 7],
                   fov: 50,
@@ -369,9 +389,9 @@ function App() {
                 onCreated={({ gl }) => {
                   gl.setPixelRatio(QUALITY.pixelRatio);
                   gl.outputColorSpace = THREE.SRGBColorSpace;
-                  gl.toneMapping = THREE.ACESFilmicToneMapping;
-                  gl.toneMappingExposure = 0.98;
-                  gl.shadowMap.enabled = true;
+                  gl.toneMapping = QUALITY.toneMapping;
+                  gl.toneMappingExposure = QUALITY.isMobile ? 1.0 : 0.98;
+                  gl.shadowMap.enabled = QUALITY.shadowMap.enabled;
                   gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
                 }}
                 gl={{
@@ -383,9 +403,6 @@ function App() {
                   <BattleScene />
                 </Suspense>
               </Canvas>
-              <div className="absolute bottom-4 left-0 right-0 text-center text-slate-400 text-sm pointer-events-none hidden md:block">
-                ← → move · Space jump · J punch · K kick · L special · Q/E dodge · Alt block · R ultimate · T transform
-              </div>
             </div>
             
             {/* ⚡ LEGENDARY UI OVERLAYS */}
