@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 // Validates animation performance on mobile viewports
 // Measures Web Vitals and verifies smooth animation playback
 
-const PREVIEW_URL = 'http://localhost:4173';
+const PREVIEW_URL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:5000';
 
 // Mobile device presets matching common deployment targets
 const MOBILE_DEVICES = {
