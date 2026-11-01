@@ -2,78 +2,14 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main", "integration/clean-upgrade-stack-2026-05-20", "artifact/sideload-apk-20261101" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ "artifact/sideload-apk-20261101" ]
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  build-android:
-    if: github.ref_name != 'artifact/sideload-apk-20261101'
-    name: Build APK
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-
-    steps:
-      - name: Checkout source without external actions
-        env:
-          REPOSITORY: ${{ github.repository }}
-          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          git clone --no-checkout "https://github.com/$REPOSITORY.git" source
-          cd source
-          git checkout --detach "$SHA"
-          test "$(git rev-parse HEAD)" = "$SHA"
-
-      - name: Build web app and sync Android
-        working-directory: source
-        run: |
-          corepack enable
-          corepack prepare pnpm@9.15.9 --activate
-          pnpm install --filter ./apps/web... --frozen-lockfile
-          pnpm --dir apps/web run build
-          cd apps/web
-          npx cap sync android
-
-      - name: Build debug APK
-        working-directory: source/apps/web/android
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
-          test -s app/build/outputs/apk/debug/app-debug.apk
-
-      - name: Record APK checksum
-        working-directory: source
-        run: |
-          mkdir -p release
-          cp apps/web/android/app/build/outputs/apk/debug/app-debug.apk release/Legends-of-Kai-Jax-main.apk
-          sha256sum release/Legends-of-Kai-Jax-main.apk | tee release/SHA256SUMS.txt
-          git rev-parse HEAD > release/BUILD-SHA.txt
-
-      - name: Preserve APK evidence in workflow log
-        working-directory: source
-        run: |
-          test -s release/Legends-of-Kai-Jax-main.apk
-          cat release/BUILD-SHA.txt
-          cat release/SHA256SUMS.txt
-
-      - name: Publish APK as release asset
-        if: ${{ github.event_name != 'pull_request' }}
-        working-directory: source
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SHA: ${{ github.sha }}
-        run: |
-          SHORT_SHA="${SHA:0:7}"
-          TAG="apk-main-$SHORT_SHA"
-          gh release create "$TAG"             release/Legends-of-Kai-Jax-main.apk             release/SHA256SUMS.txt             release/BUILD-SHA.txt             --target "$SHA"             --title "Legends of Kai Jax APK $SHORT_SHA"             --notes "Installable debug APK built from exact main commit $SHA."
-
-
-  sideload-handoff:
-    if: github.ref_name == 'artifact/sideload-apk-20261101'
+  handoff:
     name: Handoff published APK
     runs-on: ubuntu-latest
     steps:
