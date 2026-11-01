@@ -108,8 +108,7 @@ jobs:
 
       - name: Remove temporary keystore
         if: always()
-        working-directory: source/apps/web/android
-        run: rm -f release-upload.jks
+        run: rm -f source/apps/web/android/release-upload.jks
 
   ios-signed-ipa:
     if: ${{ github.event_name == 'pull_request' || inputs.platform == 'both' || inputs.platform == 'ios' }}
