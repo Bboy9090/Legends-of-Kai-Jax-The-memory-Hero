@@ -28,21 +28,21 @@ export default function SettingsMenu() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center relative p-6 bg-[#050510]">
+    <div className="kj-safe-screen fixed inset-0 z-50 w-full overflow-y-auto bg-[#050510] p-3 sm:p-6">
       {/* Background Glows */}
       <div className="absolute top-1/4 -left-20 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Settings Container */}
-      <div className="relative z-10 w-full max-w-2xl bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+      <div className="relative z-10 mx-auto w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl">
         {/* Header */}
-        <div className="p-8 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-blue-600/10 to-transparent">
+        <div className="flex flex-col gap-4 border-b border-white/10 bg-gradient-to-r from-blue-600/10 to-transparent p-4 sm:flex-row sm:items-center sm:justify-between sm:p-8">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center border border-blue-500/40">
               <Settings className="w-6 h-6 text-blue-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-black italic tracking-widest text-white uppercase">Settings</h1>
+              <h1 className="text-2xl font-black italic tracking-widest text-white uppercase sm:text-3xl">Settings</h1>
               <p className="text-blue-400/60 text-xs tracking-[0.2em] font-bold mt-1">Configure your experience</p>
             </div>
           </div>
@@ -56,7 +56,7 @@ export default function SettingsMenu() {
         </div>
 
         {/* Content */}
-        <div className="p-8 space-y-10">
+        <div className="space-y-8 p-4 sm:space-y-10 sm:p-8">
           {/* Audio Section */}
           <section>
             <div className="flex items-center gap-3 mb-6">
@@ -64,7 +64,7 @@ export default function SettingsMenu() {
               <h2 className="text-lg font-bold uppercase tracking-widest text-white/80">Audio</h2>
             </div>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5">
+              <div className="flex flex-col gap-4 rounded-2xl border border-white/5 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                 <div>
                   <p className="text-white font-bold text-lg">Master Mute</p>
                   <p className="text-white/40 text-sm">Silence all game sounds and music</p>
@@ -93,7 +93,7 @@ export default function SettingsMenu() {
               <h2 className="text-lg font-bold uppercase tracking-widest text-white/80">Voice Acting</h2>
             </div>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5">
+              <div className="flex flex-col gap-4 rounded-2xl border border-white/5 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                 <div>
                   <p className="text-white font-bold text-lg">Character Voices</p>
                   <p className="text-white/40 text-sm">Enable dialogue voice acting with TTS</p>
