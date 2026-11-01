@@ -4,6 +4,7 @@ async function bootToMenu(page: Page) {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await page.waitForFunction(() => Boolean((window as any).runnerStore?.persist?.hasHydrated?.()));
+  await page.getByTestId('game-intro').waitFor({ state: 'detached', timeout: 20_000 }).catch(() => {});
   await page.evaluate(() => {
     const runner = (window as any).runnerStore;
     const game = (window as any).gameStore;
@@ -68,6 +69,7 @@ test('portrait legend select keeps Confirm Legend tappable above Android navigat
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await page.waitForFunction(() => Boolean((window as any).runnerStore?.persist?.hasHydrated?.()));
+  await page.getByTestId('game-intro').waitFor({ state: 'detached', timeout: 20_000 }).catch(() => {});
   await page.evaluate(() => {
     const runner = (window as any).runnerStore;
     const game = (window as any).gameStore;
