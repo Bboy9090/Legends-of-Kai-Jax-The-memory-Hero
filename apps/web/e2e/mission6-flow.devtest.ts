@@ -159,12 +159,11 @@ test("M6-D virtual standard gamepad LB/L1 rescues unlocked memory through the li
   });
   await expect(page.getByRole("heading", { name: "Shadows of the Ashblock" })).toBeVisible({ timeout: 30000 });
   await page.getByRole("button", { name: "Engage Mission" }).click();
-  await expect(page.getByText("Cross Point has fallen.", { exact: false })).toBeVisible({ timeout: 30000 });
-  await page.keyboard.press("Enter");
-  await page.keyboard.press("Enter");
-  await expect(page.getByText("I can feel another shard nearby.", { exact: false })).toBeVisible({ timeout: 30000 });
-  await page.keyboard.press("Enter");
-  await page.keyboard.press("Enter");
+  await expect(page.getByText("Transmission Active", { exact: true })).toBeVisible({ timeout: 30000 });
+  for (let beat = 0; beat < 2; beat++) {
+    await page.getByText("Transmission Active", { exact: true }).click();
+    await page.getByText(beat === 0 ? "Ready for next phase" : "Click to engage", { exact: true }).click({ timeout: 30000 });
+  }
   await expect(page.getByTestId("mission6-memory-hud")).toBeVisible({ timeout: 45000 });
 
   await page.evaluate(async () => {
