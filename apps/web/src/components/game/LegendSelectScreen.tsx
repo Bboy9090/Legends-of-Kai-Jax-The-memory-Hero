@@ -85,7 +85,7 @@ export default function LegendSelectScreen() {
   };
 
   return (
-    <div className="kj-vision-shell kj-safe-screen fixed inset-0 z-50 overflow-hidden">
+    <div className="kj-vision-shell kj-safe-screen fixed inset-0 z-50 flex h-[100dvh] flex-col overflow-hidden">
       <div className="absolute inset-0 bg-[linear-gradient(rgba(2,3,7,.28),rgba(2,3,7,.72)),url('/models/ruined_city_bg.jpg')] bg-cover bg-center" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(157,78,221,.18),transparent_32%),linear-gradient(90deg,rgba(0,0,0,.72),transparent_28%,transparent_72%,rgba(0,0,0,.72))]" />
 
