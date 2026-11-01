@@ -128,3 +128,42 @@
   .kj-vision-title { letter-spacing: .08em; }
   .kj-vision-subtitle { letter-spacing: .18em; }
 }
+
+
+/* Mobile safe-area and portrait composition */
+.kj-safe-screen {
+  box-sizing: border-box;
+  padding-top: max(env(safe-area-inset-top), 24px);
+  padding-bottom: max(env(safe-area-inset-bottom), 16px);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.kj-mobile-legend-strip {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.kj-mobile-legend-strip::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .kj-safe-screen {
+    padding: 0;
+  }
+}
+
+@media (max-width: 639px) {
+  .kj-vision-shell::after {
+    top: max(env(safe-area-inset-top), 28px);
+    bottom: max(env(safe-area-inset-bottom), 18px);
+    left: 6px;
+    right: 6px;
+  }
+
+  .kj-vision-button:hover,
+  .kj-vision-button[data-active='true'],
+  .kj-vision-button:focus-visible {
+    transform: none;
+  }
+}

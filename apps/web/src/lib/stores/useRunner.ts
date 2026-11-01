@@ -22,6 +22,7 @@ export type GameState =
   | "abilities"
   | "mission-complete"
   | "settings"
+  | "credits"
   | "codex"
   | "playing";
 
@@ -217,7 +218,7 @@ export const useRunner = create<RunnerState>()(
       setGameState: (gameState) =>
         set({
           gameState,
-          ...(gameState !== "playing" ? { trainingSession: false } : {}),
+          ...(!["playing", "adventure"].includes(gameState) ? { trainingSession: false } : {}),
         }),
       setTrainingSession: (trainingSession) => set({ trainingSession }),
       setCharacter: (selectedCharacter) => set({ selectedCharacter }),

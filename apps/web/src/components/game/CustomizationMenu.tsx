@@ -17,19 +17,19 @@ export default function CustomizationMenu() {
   ];
   
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-purple-900 via-blue-900 to-cyan-900 text-white">
+    <div className="kj-safe-screen fixed inset-0 z-50 w-full overflow-y-auto bg-gradient-to-br from-purple-900 via-blue-900 to-cyan-900 text-white">
       {/* Header */}
-      <div className="bg-black/40 border-b-4 border-cyan-400 p-6">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <div className="border-b-4 border-cyan-400 bg-black/40 p-3 sm:p-6">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+            <h1 className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-2xl font-bold text-transparent sm:text-4xl">
               Fighters
             </h1>
             <p className="text-gray-300 mt-1">All fighters are unlocked and ready.</p>
           </div>
           <Button
             onClick={() => setGameState('menu')}
-            className="bg-red-600 hover:bg-red-700 px-6 py-3 text-white font-bold"
+            className="bg-red-600 hover:bg-red-700 px-4 py-2.5 text-white font-bold sm:px-6 sm:py-3"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Menu

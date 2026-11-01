@@ -57,6 +57,9 @@ jobs:
         working-directory: source
         run: pnpm -C apps/web exec playwright install --with-deps chromium
 
-      - name: Run release smoke only
+      - name: Run release and mobile touch smoke
         working-directory: source
-        run: pnpm -C apps/web exec playwright test e2e/smoke.spec.ts
+        run: |
+          pnpm -C apps/web exec playwright test \
+            e2e/smoke.spec.ts \
+            e2e/mobile-menu-links.spec.ts

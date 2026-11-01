@@ -28,9 +28,9 @@ export default function CharacterAbilityScreen() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#050510] text-white flex flex-col justify-between p-6 sm:p-12 overflow-y-auto font-sans">
-      <div className="flex items-center justify-between z-10 border-b border-white/10 pb-6">
-        <div className="flex items-center gap-4">
+    <div className="kj-safe-screen fixed inset-0 z-50 flex flex-col justify-between overflow-y-auto bg-[#050510] p-3 font-sans text-white sm:p-12">
+      <div className="z-10 flex flex-col gap-4 border-b border-white/10 pb-4 sm:flex-row sm:items-center sm:justify-between sm:pb-6">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <button 
             onClick={() => setGameState('menu')}
             className="p-3 bg-white/5 hover:bg-white/15 border border-white/10 rounded-2xl transition-all group"
@@ -38,16 +38,16 @@ export default function CharacterAbilityScreen() {
             <ArrowLeft className="w-5 h-5 text-slate-300 group-hover:-translate-x-1 transition-transform" />
           </button>
           <div>
-            <h1 className="text-3xl font-black italic tracking-wider uppercase">CHARACTER ABILITIES</h1>
+            <h1 className="text-xl font-black italic tracking-wider uppercase sm:text-3xl">CHARACTER ABILITIES</h1>
             <p className="text-xs text-amber-400 font-mono tracking-widest uppercase">UPGRADE MEMORY WEAVE & SKILLS</p>
           </div>
         </div>
-        <div className="px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 font-mono text-xs font-bold">
+        <div className="self-start rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 font-mono text-[10px] font-bold text-amber-300 sm:self-auto sm:px-4 sm:text-xs">
           MEMORY POINTS: {totalScore.toLocaleString()}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl w-full mx-auto my-auto py-6 z-10">
+      <div className="z-10 mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 py-4 sm:gap-6 sm:py-6 md:grid-cols-2">
         {nodes.map((node) => (
           <div
             key={node.id}

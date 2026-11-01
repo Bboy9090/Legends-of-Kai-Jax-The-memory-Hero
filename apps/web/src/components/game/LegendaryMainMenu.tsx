@@ -59,7 +59,14 @@ const LegendaryMainMenu: React.FC = () => {
       id: 'continue',
       label: 'CONTINUE',
       sublabel: 'Resume last saga save',
-      action: () => setGameState('story-hub'),
+      action: () => {
+        const profile = profiles[activeProfileIndex];
+        const hasProgress =
+          profile.completedStoryMissionIds.length > 0 ||
+          profile.campaignCompletedNodes.length > 0 ||
+          profile.totalScore > 0;
+        setGameState(hasProgress ? 'campaign-map' : 'story-hub');
+      },
       legendary: true
     },
     {
@@ -117,7 +124,7 @@ const LegendaryMainMenu: React.FC = () => {
       id: 'credits',
       label: 'CREDITS',
       sublabel: 'Development team',
-      action: () => setGameState('title')
+      action: () => setGameState('credits')
     },
     {
       id: 'quit',
@@ -207,7 +214,7 @@ const LegendaryMainMenu: React.FC = () => {
 
 
   return (
-    <div className="kj-vision-shell kj-vision-city-vignette relative h-screen w-full overflow-hidden">
+    <div className="kj-vision-shell kj-vision-city-vignette kj-safe-screen relative h-[100dvh] w-full overflow-y-auto sm:overflow-hidden">
       {showProfileSelect && renderProfileSelect()}
       
       {!compactMenu && (
@@ -233,26 +240,26 @@ const LegendaryMainMenu: React.FC = () => {
       )}
 
       {/* Main Content */}
-      <div className="relative z-10 flex h-full w-full max-w-[760px] flex-col items-start justify-between p-6 sm:p-8 lg:w-[46%] lg:min-w-[650px] lg:p-12">
+      <div className="relative z-10 flex min-h-full w-full max-w-[760px] flex-col items-start gap-4 px-4 pb-6 pt-2 sm:h-full sm:justify-between sm:p-8 lg:w-[46%] lg:min-w-[650px] lg:p-12">
         
         {/* Logo - Top Center with Legendary Effects */}
-        <div className="mt-8 text-left lg:mt-10">
+        <div className="w-full text-left sm:mt-8 lg:mt-10">
           <h1 
-            className="kj-vision-title mb-2 text-4xl sm:text-5xl lg:text-7xl"
+            className="kj-vision-title mb-2 max-w-full text-[clamp(2.15rem,10vw,3.35rem)] leading-[0.92] tracking-[0.06em] sm:text-5xl sm:leading-none sm:tracking-[0.13em] lg:text-7xl"
           >
             LEGENDS OF KAI-JAX
           </h1>
-          <h2 className="text-transformation text-2xl lg:text-4xl text-white mb-4">
+          <h2 className="text-transformation mb-3 text-lg tracking-[0.18em] text-white sm:text-2xl lg:text-4xl">
             THE MEMORY KING
           </h2>
-          <div className="flex max-w-[680px] items-center gap-3 mt-6">
-            <div className="h-0.5 w-12 lg:w-24 bg-gradient-to-r from-transparent via-legendary-gold to-transparent" />
+          <div className="mt-3 flex max-w-[680px] items-center gap-2 sm:mt-6 sm:gap-3">
+            <div className="hidden h-0.5 w-12 bg-gradient-to-r from-transparent via-legendary-gold to-transparent sm:block lg:w-24" />
             <div className="flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-legendary-purple animate-pulse" />
               <span className="w-2 h-2 rounded-full bg-legendary-cyan animate-pulse" style={{ animationDelay: '0.2s' }} />
               <span className="w-2 h-2 rounded-full bg-legendary-gold animate-pulse" style={{ animationDelay: '0.4s' }} />
             </div>
-            <p className="text-mono-small text-legendary-gold uppercase tracking-[0.3em] text-xs lg:text-sm">
+            <p className="max-w-[30rem] text-[9px] font-bold uppercase leading-relaxed tracking-[0.18em] text-legendary-gold sm:text-xs sm:tracking-[0.3em] lg:text-sm">
               FORGED IN THE RAGING CITY. CROWNED BY MEMORY.
             </p>
             <div className="hidden sm:flex items-center gap-3">
@@ -264,7 +271,7 @@ const LegendaryMainMenu: React.FC = () => {
           </div>
 
           {/* Profile Quick Switcher */}
-          <div className="kj-vision-panel mt-4 inline-flex items-center gap-4 px-4 py-2">
+          <div className="kj-vision-panel mt-3 flex w-full max-w-md flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 sm:mt-4 sm:inline-flex sm:w-auto sm:px-4">
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Profile:</span>
             <button 
               onClick={() => setShowProfileSelect(true)}
@@ -277,7 +284,7 @@ const LegendaryMainMenu: React.FC = () => {
         </div>
 
         {/* Menu Items - Center Vertical */}
-        <div className="kj-vision-panel mb-10 flex w-full max-w-md flex-col gap-1 p-2 lg:mb-16">
+        <div className="kj-vision-panel flex w-full max-w-md flex-col gap-0.5 p-1.5 sm:mb-10 sm:gap-1 sm:p-2 lg:mb-16">
           {menuItems.map((item, index) => {
             const isSelected = index === selectedIndex;
 
@@ -287,7 +294,7 @@ const LegendaryMainMenu: React.FC = () => {
                 onClick={() => !item.disabled && item.action()}
                 onMouseEnter={() => !item.disabled && setSelectedIndex(index)}
                 disabled={item.disabled}
-                className={`kj-vision-button relative w-full px-5 py-3 text-left group ${item.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                className={`kj-vision-button relative w-full px-3 py-2 text-left group sm:px-5 sm:py-3 ${item.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
                 data-active={isSelected}
               >
                 {/* Selection indicator */}
@@ -308,7 +315,7 @@ const LegendaryMainMenu: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <span
-                      className="text-base lg:text-lg font-bold uppercase tracking-wider"
+                      className="text-sm font-bold uppercase tracking-[0.08em] sm:text-base sm:tracking-wider lg:text-lg"
                       style={{
                         color: item.legendary && isSelected ? '#ffd700' : '#ffffff',
                         textShadow: item.legendary && isSelected
@@ -319,7 +326,7 @@ const LegendaryMainMenu: React.FC = () => {
                       {item.label}
                     </span>
                     {item.sublabel && (
-                      <p className="text-xs mt-0.5 tracking-wide" style={{ color: '#cbd5e1', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                      <p className="mt-0.5 text-[10px] leading-tight tracking-wide sm:text-xs" style={{ color: '#cbd5e1', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
                         {item.sublabel}
                       </p>
                     )}
@@ -342,7 +349,7 @@ const LegendaryMainMenu: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="mb-6 lg:mb-8 text-center">
+        <div className="hidden text-center sm:mb-6 sm:block lg:mb-8">
           <p className="text-mono-small text-neutral-600 uppercase tracking-[0.2em] text-xs">
             WE TAKE. WE HOLD. WE HUNT. THIS IS OUR CITY.
           </p>
@@ -370,7 +377,7 @@ const LegendaryMainMenu: React.FC = () => {
       <div className="grit-filter" style={{ zIndex: 50 }} />
 
       {/* Controls hint */}
-      <div className="absolute bottom-4 right-4 z-40">
+      <div className="absolute bottom-4 right-4 z-40 hidden sm:block">
         <div className="bg-neutral-900/50 backdrop-blur-sm rounded px-3 py-1.5 border border-white/10">
           <p className="text-neutral-500 text-xs">
             ↑↓ Navigate • Enter Select
