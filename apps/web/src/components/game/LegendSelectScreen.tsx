@@ -111,7 +111,7 @@ export default function LegendSelectScreen() {
         </div>
       </header>
 
-      <main className="relative z-10 flex min-h-0 flex-1 flex-col px-3 pb-2 pt-3 sm:h-[calc(100vh-152px)] sm:px-6 sm:py-4">
+      <main className="relative z-10 flex min-h-0 flex-1 flex-col px-3 pb-24 pt-3 sm:h-[calc(100vh-152px)] sm:px-6 sm:py-4">
         <div className="kj-mobile-legend-strip mx-auto flex h-full w-full max-w-[1540px] snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-hidden pb-2 sm:grid sm:snap-none sm:grid-cols-[minmax(105px,.58fr)_repeat(3,minmax(0,1fr))_minmax(105px,.58fr)] sm:overflow-visible sm:pb-0 lg:gap-4">
           {LEGENDS.map((legend) => {
             const selected = legend.id === active.id;
@@ -198,7 +198,7 @@ export default function LegendSelectScreen() {
           })}
         </div>
 
-        <div className="mx-auto mt-2 flex w-full max-w-[900px] items-center justify-between gap-2 sm:mt-3 sm:gap-3">
+        <div className="fixed inset-x-3 bottom-[max(env(safe-area-inset-bottom),12px)] z-40 mx-auto flex max-w-[900px] items-center justify-between gap-2 border border-[#735c39]/70 bg-[#05070bf2] p-2 shadow-[0_-10px_30px_rgba(0,0,0,.55)] backdrop-blur-md sm:static sm:mt-3 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none">
           <button
             type="button"
             onClick={() => setGameState('story-hub')}
