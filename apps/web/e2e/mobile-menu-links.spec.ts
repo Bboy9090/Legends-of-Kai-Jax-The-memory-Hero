@@ -30,25 +30,26 @@ test('portrait main menu routes every advertised entry to a real screen', async 
   await bootToMenu(page);
 
   const routes = [
-    [/^CONTINUE\b/i, 'story-hub'],
-    [/^STORY\b/i, 'story-hub'],
-    [/^MISSIONS\b/i, 'campaign-map'],
-    [/^COMBAT ARENA\b/i, 'versus-select'],
-    [/^LEGENDS ARCHIVE\b/i, 'lore-hub'],
-    [/^CUSTOMIZE\b/i, 'customization'],
-    [/^OPTIONS\b/i, 'settings'],
-    [/^EXTRAS\b/i, 'abilities'],
-    [/^CREDITS\b/i, 'credits'],
-    [/^EXIT GAME\b/i, 'title'],
+    [/^CONTINUE\b/i, 'story-hub', /Story Hub/i],
+    [/^STORY\b/i, 'story-hub', /Story Hub/i],
+    [/^MISSIONS\b/i, 'campaign-map', /Legends of Kai-Jax Campaign/i],
+    [/^COMBAT ARENA\b/i, 'versus-select', /Character Select/i],
+    [/^LEGENDS ARCHIVE\b/i, 'lore-hub', /Legends of Kai-Jax/i],
+    [/^CUSTOMIZE\b/i, 'customization', /Custom/i],
+    [/^OPTIONS\b/i, 'settings', /Settings/i],
+    [/^EXTRAS\b/i, 'abilities', /Character Abilities/i],
+    [/^CREDITS\b/i, 'credits', /^Credits$/i],
+    [/^EXIT GAME\b/i, 'title', /Legends of Kai-Jax/i],
   ] as const;
 
-  for (const [label, state] of routes) {
+  for (const [label, state, visibleText] of routes) {
     await page.getByRole('button', { name: label }).click();
     await page.waitForFunction(
       (expected) => (window as any).runnerStore?.getState?.().gameState === expected,
       state,
     );
     expect(await page.evaluate(() => (window as any).runnerStore.getState().gameState)).toBe(state);
+    await expect(page.getByText(visibleText).first()).toBeVisible({ timeout: 10_000 });
     if (state !== 'title') await resetMenu(page);
     else {
       await page.evaluate(() => (window as any).runnerStore.setState({ gameState: 'menu' }));
@@ -60,6 +61,7 @@ test('portrait main menu routes every advertised entry to a real screen', async 
   await page.waitForFunction(() => (window as any).runnerStore?.getState?.().gameState === 'adventure');
   const training = await page.evaluate(() => (window as any).runnerStore.getState().trainingSession);
   expect(training).toBe(true);
+  await expect(page.locator('canvas').first()).toBeVisible({ timeout: 20_000 });
 });
 
 test('portrait legend select keeps Confirm Legend tappable above Android navigation', async ({ page }) => {
