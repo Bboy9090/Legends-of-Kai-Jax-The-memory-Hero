@@ -104,7 +104,7 @@ export default function StoryHubScreen() {
             <div>
               <div className="mb-2 text-[10px] uppercase tracking-[0.25em] text-[#8d806d]">Rewards</div>
               {['Memory Fragment', 'Tail XP', selectedDistrict.reward].map((reward, index) => (
-                <div key={reward} className="flex items-center gap-2 border-t border-white/5 py-2 text-sm text-[#d6c9b5]">
+                <div key={`reward-${index}-${reward}`} className="flex items-center gap-2 border-t border-white/5 py-2 text-sm text-[#d6c9b5]">
                   {index === 0 ? <Sparkles className="h-4 w-4 text-purple-300" /> : index === 1 ? <Zap className="h-4 w-4 text-blue-300" /> : <Shield className="h-4 w-4 text-amber-300" />}
                   {reward}
                 </div>
