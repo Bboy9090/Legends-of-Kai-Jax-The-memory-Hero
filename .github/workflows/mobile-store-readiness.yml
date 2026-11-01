@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: mobile-store-readiness-${{ github.event.pull_request.head.sha || github.sha }}
+  group: mobile-store-readiness-${{ github.event_name }}-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 permissions:
