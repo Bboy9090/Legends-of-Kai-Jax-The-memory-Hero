@@ -40,7 +40,7 @@ npx cap open ios
 - **Bundle ID**: `com.bobbyblanco.legendsofkaijax`
 - **Display Name**: `Legends of Kai-Jax`
 - **Version**: `1.0.0`
-- **Build**: Increment this for every TestFlight/App Store upload.
+- **Build**: `2` for the next TestFlight/App Store upload. Increment for every subsequent upload.
 
 ### Assets & Branding
 High-fidelity branding assets have been generated and are available in the project artifacts:
