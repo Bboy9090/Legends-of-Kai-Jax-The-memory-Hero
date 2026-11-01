@@ -59,7 +59,14 @@ const LegendaryMainMenu: React.FC = () => {
       id: 'continue',
       label: 'CONTINUE',
       sublabel: 'Resume last saga save',
-      action: () => setGameState('story-hub'),
+      action: () => {
+        const profile = profiles[activeProfileIndex];
+        const hasProgress =
+          profile.completedStoryMissionIds.length > 0 ||
+          profile.campaignCompletedNodes.length > 0 ||
+          profile.totalScore > 0;
+        setGameState(hasProgress ? 'campaign-map' : 'story-hub');
+      },
       legendary: true
     },
     {
@@ -117,7 +124,7 @@ const LegendaryMainMenu: React.FC = () => {
       id: 'credits',
       label: 'CREDITS',
       sublabel: 'Development team',
-      action: () => setGameState('title')
+      action: () => setGameState('credits')
     },
     {
       id: 'quit',
