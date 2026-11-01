@@ -55,18 +55,18 @@ export default function StoryHubScreen() {
   ) ?? ALL_STORY_MISSIONS[0];
 
   return (
-    <div className="kj-vision-shell fixed inset-0 z-50 overflow-hidden">
+    <div className="kj-vision-shell kj-safe-screen fixed inset-0 z-50 overflow-y-auto sm:overflow-hidden">
       <div className="absolute inset-0 bg-[linear-gradient(rgba(2,3,7,.25),rgba(2,3,7,.62)),url('/models/ruined_city_bg.jpg')] bg-cover bg-center" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_52%_38%,rgba(154,72,220,.13),transparent_26%),linear-gradient(90deg,rgba(3,4,8,.72),transparent_26%,transparent_72%,rgba(3,4,8,.78))]" />
 
-      <header className="relative z-10 mx-5 mt-4 flex items-center justify-between border-b border-[#7d6136]/55 px-4 pb-4">
-        <div className="flex items-center gap-4">
+      <header className="relative z-10 mx-3 mt-1 flex items-center justify-between border-b border-[#7d6136]/55 px-2 pb-3 sm:mx-5 sm:mt-4 sm:px-4 sm:pb-4">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <button onClick={() => setGameState('menu')} className="kj-vision-button p-3" aria-label="Back to main menu">
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div>
             <div className="text-[10px] uppercase tracking-[0.42em] text-[#9c8764]">Legends of Kai-Jax</div>
-            <h1 className="kj-vision-title mt-1 text-2xl sm:text-4xl">Story Hub — The Raging City</h1>
+            <h1 className="kj-vision-title mt-1 text-[clamp(1.25rem,6vw,2rem)] leading-tight tracking-[0.08em] sm:text-4xl sm:tracking-[0.13em]">Story Hub — The Raging City</h1>
           </div>
         </div>
         <div className="hidden items-center gap-4 text-[10px] uppercase tracking-[0.22em] text-[#a79372] md:flex">
@@ -82,8 +82,8 @@ export default function StoryHubScreen() {
         </div>
       </header>
 
-      <main className="relative z-10 grid h-[calc(100vh-96px)] grid-cols-1 gap-4 p-5 lg:grid-cols-[320px_1fr_280px]">
-        <aside className="kj-vision-panel flex flex-col overflow-hidden p-4">
+      <main className="relative z-10 grid min-h-0 grid-cols-1 gap-3 p-3 pb-8 sm:h-[calc(100vh-96px)] sm:gap-4 sm:p-5 lg:grid-cols-[320px_1fr_280px]">
+        <aside className="kj-vision-panel flex flex-col p-4 sm:overflow-hidden">
           <div className="mb-4 border border-[#8b6e3d]/45 bg-black/45 p-3">
             <div className="text-[10px] uppercase tracking-[0.28em] text-[#ab976f]">Selected District</div>
             <h2 className="mt-2 text-2xl uppercase tracking-[0.12em] text-[#efcf91]">{selectedDistrict.name}</h2>
@@ -117,7 +117,7 @@ export default function StoryHubScreen() {
           </button>
         </aside>
 
-        <section className="relative overflow-hidden border border-[#7b5f34]/55 bg-black/25">
+        <section className="relative min-h-[360px] overflow-hidden border border-[#7b5f34]/55 bg-black/25 sm:min-h-0">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(157,78,221,.08),transparent_58%)]" />
 
           <svg className="absolute inset-0 h-full w-full opacity-75" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
@@ -152,7 +152,7 @@ export default function StoryHubScreen() {
           </div>
         </section>
 
-        <aside className="flex flex-col gap-4">
+        <aside className="flex flex-col gap-3 sm:gap-4">
           <div className="kj-vision-panel p-4">
             <div className="text-center text-[10px] uppercase tracking-[0.3em] text-[#a48c65]">Your Legends</div>
             <div className="mt-4 grid grid-cols-3 gap-2">
