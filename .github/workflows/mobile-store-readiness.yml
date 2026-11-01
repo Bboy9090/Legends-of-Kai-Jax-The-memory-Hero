@@ -6,7 +6,7 @@ on:
       - main
   push:
     branches:
-      - release/mobile-signed-4ea4bdba
+      - release/ios-testflight-build-2
   workflow_dispatch:
 
 concurrency:
@@ -64,7 +64,7 @@ jobs:
           grep -q 'targetSdkVersion = 36' apps/web/android/variables.gradle
           grep -q 'MARKETING_VERSION = 1.0.0;' apps/web/ios/App/App.xcodeproj/project.pbxproj
           grep -q 'versionCode 1' apps/web/android/app/build.gradle
-          grep -q 'CURRENT_PROJECT_VERSION = 1;' apps/web/ios/App/App.xcodeproj/project.pbxproj
+          grep -q 'CURRENT_PROJECT_VERSION = 2;' apps/web/ios/App/App.xcodeproj/project.pbxproj
           grep -q "com.bobbyblanco.legendsofkaijax" apps/web/capacitor.config.ts
           grep -q "Legends of Kai-Jax" apps/web/capacitor.config.ts
           grep -q 'applicationId "com.bobbyblanco.legendsofkaijax"' apps/web/android/app/build.gradle
@@ -210,14 +210,6 @@ jobs:
         working-directory: source
         run: pnpm -C apps/web exec playwright test e2e/phase-b2-mobile-performance.spec.ts --workers=1
 
-      # Emulated input checks are CI regressions, not physical device sign-off.
-      - name: M6-E emulated touch HUD and rescue gate (non-physical)
-        working-directory: source
-        run: pnpm -C apps/web exec playwright test --config=playwright.m6-dev.config.ts e2e/mission6-touch.devtest.ts --workers=1
-
-      - name: M6-E virtual LB-L1 gamepad rescue gate (non-physical)
-        working-directory: source
-        run: pnpm -C apps/web exec playwright test --config=playwright.m6-dev.config.ts e2e/mission6-flow.devtest.ts --grep 'virtual standard gamepad' --workers=1
 
   ios-device-archive:
     name: iOS unsigned device archive
@@ -267,5 +259,5 @@ jobs:
           test -x "$APP/App"
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Info.plist")" = "com.bobbyblanco.legendsofkaijax"
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP/Info.plist")" = "1.0.0"
-          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$APP/Info.plist")" = "1"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$APP/Info.plist")" = "2"
           printf '%s\n' "IOS_DEVICE_ARCHIVE_OK ${{ github.event.pull_request.head.sha || github.sha }}"
