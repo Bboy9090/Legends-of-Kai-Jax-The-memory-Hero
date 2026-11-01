@@ -68,4 +68,18 @@ jobs:
         run: |
           SHORT_SHA="${SHA:0:7}"
           TAG="apk-main-$SHORT_SHA"
-          gh release create "$TAG"             release/Legends-of-Kai-Jax-main.apk             release/SHA256SUMS.txt             release/BUILD-SHA.txt             --target "$SHA"             --title "Legends of Kai Jax APK $SHORT_SHA"             --notes "Installable debug APK built from exact main commit $SHA."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" \
+              release/Legends-of-Kai-Jax-main.apk \
+              release/SHA256SUMS.txt \
+              release/BUILD-SHA.txt \
+              --clobber
+          else
+            gh release create "$TAG" \
+              release/Legends-of-Kai-Jax-main.apk \
+              release/SHA256SUMS.txt \
+              release/BUILD-SHA.txt \
+              --target "$SHA" \
+              --title "Legends of Kai Jax APK $SHORT_SHA" \
+              --notes "Installable debug APK built from exact main commit $SHA."
+          fi
