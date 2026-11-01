@@ -260,6 +260,9 @@ function App() {
         {/* Mission Complete */}
         {phase === "ready" && gameState === "mission-complete" && <MissionCompleteScreen />}
 
+        {/* Credits */}
+        {phase === "ready" && gameState === "credits" && <CreditsScreen />}
+
         {/* Campaign Map */}
         {phase === "ready" && gameState === "campaign-map" && <CampaignMap />}
 
