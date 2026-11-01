@@ -63,8 +63,17 @@ test('portrait main menu routes every advertised entry to a real screen', async 
 
   await page.evaluate(() => {
     const runner = (window as any).runnerStore;
+    const state = runner.getState();
+    const activeProfileIndex = state.activeProfileIndex;
+    const profiles = [...state.profiles];
+    profiles[activeProfileIndex] = {
+      ...profiles[activeProfileIndex],
+      completedStoryMissionIds: ['story_act1_m1'],
+      totalScore: 100,
+    };
     runner.setState({
       gameState: 'menu',
+      profiles,
       completedStoryMissionIds: ['story_act1_m1'],
       totalScore: 100,
     });
