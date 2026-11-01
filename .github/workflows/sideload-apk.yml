@@ -1,0 +1,41 @@
+name: Sideload APK
+on:
+  push:
+    branches: [artifact/sideload-apk-20261101]
+permissions:
+  contents: read
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap sync android
+      - name: Build installable debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          cp app/build/outputs/apk/debug/app-debug.apk ../Kai-Jax-sideload.apk
+          sha256sum ../Kai-Jax-sideload.apk > ../Kai-Jax-sideload.sha256
+      - uses: actions/upload-artifact@v7
+        with:
+          name: kai-jax-sideload-apk
+          path: |
+            apps/web/Kai-Jax-sideload.apk
+            apps/web/Kai-Jax-sideload.sha256
+          if-no-files-found: error
