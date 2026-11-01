@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main", "integration/clean-upgrade-stack-2026-05-20" ]
+    branches: [ "main", "integration/clean-upgrade-stack-2026-05-20", "artifact/sideload-apk-20261101" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
