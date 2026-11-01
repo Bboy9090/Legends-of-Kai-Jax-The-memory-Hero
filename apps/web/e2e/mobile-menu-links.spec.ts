@@ -50,11 +50,14 @@ test('portrait main menu routes every advertised entry to a real screen', async 
       state,
     );
     expect(await page.evaluate(() => (window as any).runnerStore.getState().gameState)).toBe(state);
-    await expect(page.getByText(visibleText).first()).toBeVisible({ timeout: 10_000 });
-    if (state !== 'title') await resetMenu(page);
-    else {
+    if (state === 'title') {
+      await expect(page.getByTestId('title-screen')).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByTestId('title-begin-button')).toBeVisible({ timeout: 10_000 });
       await page.evaluate(() => (window as any).runnerStore.setState({ gameState: 'menu' }));
       await expect(page.getByRole('button', { name: /CONTINUE/i })).toBeVisible();
+    } else {
+      await expect(page.getByText(visibleText).first()).toBeVisible({ timeout: 10_000 });
+      await resetMenu(page);
     }
   }
 
