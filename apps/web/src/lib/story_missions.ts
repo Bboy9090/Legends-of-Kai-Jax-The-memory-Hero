@@ -165,6 +165,8 @@ export const ACT_II_STORY_MISSIONS: StoryMission[] = [
       { speaker: 'Kai-Jax', text: 'We could not close the breach, but we can hold this ground. I can feel another shard nearby. Three memories are trapped in these streets. We bring each one home before the Void takes them.', side: 'left', emotion: 'determined' }
     ],
     outroCutscene: [
+      { speaker: 'Narrator', text: 'The three memories are safe, but Cross Point remains lost. Ashblock becomes the survivors\' new defensive line, not a reclaimed victory.', side: 'left', emotion: 'neutral' },
+      { speaker: 'Kai-Jax', text: 'Move the rescued families behind the barricades. Keep a watch on the Rift approach and assign escorts to anyone still arriving from Cross Point. We hold Ashblock until everyone is accounted for.', side: 'left', emotion: 'determined' },
       { speaker: 'Kai-Jax', text: 'One step closer to restoring the Weave.', side: 'left' },
       { speaker: 'Kai-Jax', text: 'And... I can hear Kai and Jax more clearly now. Those memories warned them of different dangers. I need to listen to both before we face what comes next.', side: 'left', emotion: 'determined' }
     ],
