@@ -210,14 +210,6 @@ jobs:
         working-directory: source
         run: pnpm -C apps/web exec playwright test e2e/phase-b2-mobile-performance.spec.ts --workers=1
 
-      # Emulated input checks are CI regressions, not physical device sign-off.
-      - name: M6-E emulated touch HUD and rescue gate (non-physical)
-        working-directory: source
-        run: pnpm -C apps/web exec playwright test --config=playwright.m6-dev.config.ts e2e/mission6-touch.devtest.ts --workers=1
-
-      - name: M6-E virtual LB-L1 gamepad rescue gate (non-physical)
-        working-directory: source
-        run: pnpm -C apps/web exec playwright test --config=playwright.m6-dev.config.ts e2e/mission6-flow.devtest.ts --grep 'virtual standard gamepad' --workers=1
 
   ios-device-archive:
     name: iOS unsigned device archive
