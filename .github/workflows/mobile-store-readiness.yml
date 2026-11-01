@@ -6,7 +6,7 @@ on:
       - main
   push:
     branches:
-      - release/mobile-signed-4ea4bdba
+      - release/ios-testflight-build-2
   workflow_dispatch:
 
 concurrency:
