@@ -33,6 +33,7 @@ import StoryHubScreen from "./components/game/StoryHubScreen";
 import LegendSelectScreen from "./components/game/LegendSelectScreen";
 import MissionSelectScreen from "./components/game/MissionSelectScreen";
 import CharacterAbilityScreen from "./components/game/CharacterAbilityScreen";
+import CreditsScreen from "./components/game/CreditsScreen";
 import MissionCompleteScreen from "./components/game/MissionCompleteScreen";
 import DevFrameHud from "./components/game/DevFrameHud";
 import GameOverlays from "./components/game/GameOverlays";
