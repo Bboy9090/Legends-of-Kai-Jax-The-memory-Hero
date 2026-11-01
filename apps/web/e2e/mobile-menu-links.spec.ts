@@ -36,7 +36,7 @@ test('portrait main menu routes every advertised entry to a real screen', async 
     [/^MISSIONS\b/i, 'campaign-map', /Legends of Kai-Jax Campaign/i],
     [/^COMBAT ARENA\b/i, 'versus-select', /Character Select/i],
     [/^LEGENDS ARCHIVE\b/i, 'lore-hub', /Legends of Kai-Jax/i],
-    [/^CUSTOMIZE\b/i, 'customization', /Custom/i],
+    [/^CUSTOMIZE\b/i, 'customization', /Fighters/i],
     [/^OPTIONS\b/i, 'settings', /Settings/i],
     [/^EXTRAS\b/i, 'abilities', /Character Abilities/i],
     [/^CREDITS\b/i, 'credits', /^Credits$/i],
@@ -58,6 +58,19 @@ test('portrait main menu routes every advertised entry to a real screen', async 
     }
   }
 
+  await page.evaluate(() => {
+    const runner = (window as any).runnerStore;
+    runner.setState({
+      gameState: 'menu',
+      completedStoryMissionIds: ['story_act1_m1'],
+      totalScore: 100,
+    });
+  });
+  await page.getByRole('button', { name: /^CONTINUE\b/i }).click();
+  await page.waitForFunction(() => (window as any).runnerStore?.getState?.().gameState === 'campaign-map');
+  await expect(page.getByText(/Legends of Kai-Jax Campaign/i)).toBeVisible();
+
+  await resetMenu(page);
   await page.getByRole('button', { name: /^TRAINING\b/i }).click();
   await page.waitForFunction(() => (window as any).runnerStore?.getState?.().gameState === 'adventure');
   const training = await page.evaluate(() => (window as any).runnerStore.getState().trainingSession);
