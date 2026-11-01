@@ -15,7 +15,7 @@ on:
       source_sha:
         description: "Exact source commit to sign"
         required: true
-        default: "2ff7979402e51b54cf5e6296645d9164de2a7568"
+        default: "4ea4bdba659cb3fbb07fde2cb6a3951374ce4713"
         type: string
 
 permissions:
@@ -100,8 +100,7 @@ jobs:
 
       - name: Remove temporary keystore
         if: always()
-        working-directory: source/apps/web/android
-        run: rm -f release-upload.jks
+        run: rm -f source/apps/web/android/release-upload.jks
 
   ios-signed-ipa:
     if: ${{ inputs.platform == 'both' || inputs.platform == 'ios' }}
