@@ -1,3 +1,4 @@
+import { MISSION6_ID, hasRescuedAllMission6Memories } from "./mission6";
 import type { AdventureEnemy, ObjectiveState } from "./stores/useAdventure";
 
 export type ProgressionOutcome = "CONTINUE" | "VICTORY" | "FAILED";
@@ -21,5 +22,6 @@ export function evaluateCampaignProgressionGating(state: {
   if (enemies.length === 0 || enemies.some(e => !e.isDead && e.health > 0 && !(missionId === "story_act1_m4" && e.fighterId === "void-stalker" && objectives.milestones.stalkerIntercepted))) return "CONTINUE";
   if (missionId === "story_act1_m4" && !objectives.milestones.stalkerIntercepted) return "CONTINUE";
   if (missionId === "story_act1_m5" && !objectives.milestones.generalDefeated) return "CONTINUE";
+  if (missionId === MISSION6_ID && !hasRescuedAllMission6Memories(objectives.memoryRescues)) return "CONTINUE";
   return "VICTORY";
 }

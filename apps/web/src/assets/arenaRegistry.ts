@@ -116,6 +116,25 @@ export const ARENA_REGISTRY: Record<string, ArenaConfig> = {
     iosPerformanceTier: 'low',
     musicMood: 'heavy-metal',
   },
+  // M6 canonical arena: Void-infected Ashblock streets, not a fallback.
+  rift_frontier: {
+    id: 'rift_frontier',
+    displayName: 'Ashblock Rift Frontier',
+    biome: 'urban',
+    lighting: {
+      intensity: 1.3,
+      color: '#c084fc',
+      ambientColor: '#392b4a',
+      fogColor: '#120d1c',
+      fogDensity: 0.045,
+    },
+    ground: {
+      color: '#18111e',
+      gridColor: '#a855f7',
+    },
+    iosPerformanceTier: 'medium',
+    musicMood: 'void-invasion-ashblock',
+  },
   rift_citadel: {
     id: 'rift_citadel',
     displayName: 'The Rift Citadel',

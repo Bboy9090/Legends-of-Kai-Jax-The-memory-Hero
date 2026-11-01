@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { CombatState } from "../../game/combat/stateEnums";
+import { MISSION6_ID, freshMission6Memories, isMemoryInRange, unlockMission6Memories, type TrappedMemory } from "../mission6";
 import { STAMINA_CONFIG } from "../../game/tuning/adventureTuning";
 import type { CampaignNodeId } from "./useRunner";
 
@@ -73,6 +74,7 @@ export interface DedicatedCivilian {
 export interface ObjectiveState {
   status: "UNINITIALIZED" | "ACTIVE" | "FAILED" | "VICTORY";
   civilianRegistry: DedicatedCivilian[];
+  memoryRescues: TrappedMemory[];
   milestones: {
     stalkerIntercepted: boolean;
     generalDefeated: boolean;
@@ -85,12 +87,14 @@ const freshObjectives = (missionId: string | null): ObjectiveState => ({
     { id: "civ_01", health: 100, maxHealth: 100, posX: -5, posY: 0, posZ: 10 },
     { id: "civ_02", health: 100, maxHealth: 100, posX: -8, posY: 0, posZ: 12 },
   ] : [],
+  memoryRescues: freshMission6Memories(missionId),
   milestones: { stalkerIntercepted: false, generalDefeated: false, chaseTargetEscaped: false },
 });
 
 interface AdventureState {
   objectives: ObjectiveState;
   damageCivilian: (id: string, amount: number) => void;
+  rescueMemory: (id: TrappedMemory["id"]) => boolean;
   markChaseTargetEscaped: () => void;
   player: AdventurePlayerState;
   enemies: AdventureEnemy[];
@@ -205,6 +209,21 @@ export const useAdventure = create<AdventureState>((set, get) => ({
         c.id === id ? { ...c, health: Math.max(0, c.health - Math.max(0, amount)) } : c),
     },
   })),
+  rescueMemory: (id) => {
+    const s = get();
+    const memory = s.objectives.memoryRescues.find(node => node.id === id);
+    if (s.missionId !== MISSION6_ID || s.objectives.status !== "ACTIVE" ||
+        s.isPaused || s.player.health <= 0 || !memory || !memory.unlocked ||
+        memory.rescued || !isMemoryInRange(memory, s.player.posX, s.player.posZ)) return false;
+    set(state => ({
+      objectives: {
+        ...state.objectives,
+        memoryRescues: state.objectives.memoryRescues.map(node =>
+          node.id === id ? { ...node, rescued: true } : node),
+      },
+    }));
+    return true;
+  },
   markChaseTargetEscaped: () => set(s => ({
     objectives: s.missionId !== "story_act1_m4" || s.objectives.status !== "ACTIVE" ? s.objectives : {
       ...s.objectives,
@@ -397,10 +416,15 @@ export const useAdventure = create<AdventureState>((set, get) => ({
           milestones.generalDefeated = true;
         }
       }
+      const enemiesDefeated = target && targetHp === 0 && target.health > 0
+        ? s.enemiesDefeated + 1 : s.enemiesDefeated;
+      const memoryRescues = s.missionId === MISSION6_ID
+        ? unlockMission6Memories(s.objectives.memoryRescues, enemiesDefeated)
+        : s.objectives.memoryRescues;
       return {
         enemies,
-        enemiesDefeated: target && targetHp === 0 ? s.enemiesDefeated + 1 : s.enemiesDefeated,
-        objectives: { ...s.objectives, milestones },
+        enemiesDefeated,
+        objectives: { ...s.objectives, milestones, memoryRescues },
       };
     });
   },
@@ -536,3 +560,5 @@ export const useAdventure = create<AdventureState>((set, get) => ({
     });
   },
 }));
+
+if (typeof window !== "undefined") (window as any).useAdventure = useAdventure;

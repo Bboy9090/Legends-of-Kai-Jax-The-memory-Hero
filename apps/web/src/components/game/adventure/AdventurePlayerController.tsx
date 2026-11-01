@@ -12,6 +12,7 @@ import { getAutoTarget } from "../../../game/combat/targeting";
 import * as THREE from "three";
 import { MOVEMENT_TUNING } from "../../../game/tuning/movementTuning";
 import { moveTowards } from "../../../game/movement/movementMath";
+import { MISSION6_ID, MISSION6_RESCUE_GAMEPAD_BUTTON, findRecoverableMemory, isGamepadRescueEdge } from "../../../lib/mission6";
 
 const adv = MOVEMENT_TUNING.adventure;
 const WALK_SPEED = adv.walkSpeed;
@@ -146,6 +147,17 @@ export default function AdventurePlayerController() {
       }
       rememberInputs();
       return;
+    }
+
+    // Gamepad LB/L1 explicitly rescues nearby, unlocked Ashblock memories.
+    // Do not change existing X/Y/B/A combat input assignments.
+    if (store.missionId === MISSION6_ID &&
+        isGamepadRescueEdge(padPressed(MISSION6_RESCUE_GAMEPAD_BUTTON), !!prevPadButtonsRef.current[MISSION6_RESCUE_GAMEPAD_BUTTON])) {
+      const memory = findRecoverableMemory(store.objectives.memoryRescues, p.posX, p.posZ);
+      if (memory && store.rescueMemory(memory.id)) {
+        rememberInputs();
+        return;
+      }
     }
 
     const enemies = store.enemies;
