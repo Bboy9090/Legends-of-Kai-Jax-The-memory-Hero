@@ -85,24 +85,24 @@ export default function LegendSelectScreen() {
   };
 
   return (
-    <div className="kj-vision-shell fixed inset-0 z-50 overflow-hidden">
+    <div className="kj-vision-shell kj-safe-screen fixed inset-0 z-50 overflow-hidden">
       <div className="absolute inset-0 bg-[linear-gradient(rgba(2,3,7,.28),rgba(2,3,7,.72)),url('/models/ruined_city_bg.jpg')] bg-cover bg-center" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(157,78,221,.18),transparent_32%),linear-gradient(90deg,rgba(0,0,0,.72),transparent_28%,transparent_72%,rgba(0,0,0,.72))]" />
 
-      <header className="relative z-10 flex items-center justify-between border-b border-[#7d6136]/55 px-5 py-4 sm:px-8">
+      <header className="relative z-10 grid grid-cols-[auto_1fr] items-start gap-3 border-b border-[#7d6136]/55 px-3 pb-3 pt-1 sm:flex sm:items-center sm:justify-between sm:px-8 sm:py-4">
         <button
           type="button"
           onClick={() => setGameState('story-hub')}
-          className="kj-vision-button flex items-center gap-2 px-4 py-2 text-[10px]"
+          className="kj-vision-button flex items-center gap-1.5 px-3 py-2 text-[9px] sm:gap-2 sm:px-4 sm:text-[10px]"
         >
           <ArrowLeft className="h-4 w-4" />
           Story Hub
         </button>
 
-        <div className="text-center">
-          <div className="text-[10px] uppercase tracking-[0.45em] text-[#9f8762]">Adventure Mode</div>
-          <h1 className="kj-vision-title mt-1 text-3xl sm:text-5xl">Character Select</h1>
-          <div className="kj-vision-subtitle mt-2 text-[10px] sm:text-xs">Choose Your Hero · The Raging City Awaits</div>
+        <div className="min-w-0 text-center">
+          <div className="text-[8px] uppercase tracking-[0.28em] text-[#9f8762] sm:text-[10px] sm:tracking-[0.45em]">Adventure Mode</div>
+          <h1 className="kj-vision-title mt-1 text-[clamp(1.45rem,7vw,2.2rem)] leading-none tracking-[0.08em] sm:text-5xl sm:tracking-[0.13em]">Character Select</h1>
+          <div className="kj-vision-subtitle mt-1 text-[8px] leading-snug tracking-[0.18em] sm:mt-2 sm:text-xs sm:tracking-[0.32em]">Choose Your Hero · The Raging City Awaits</div>
         </div>
 
         <div className="hidden text-right text-[9px] uppercase tracking-[0.24em] text-[#8b806f] sm:block">
@@ -111,8 +111,8 @@ export default function LegendSelectScreen() {
         </div>
       </header>
 
-      <main className="relative z-10 flex h-[calc(100vh-152px)] min-h-0 flex-col px-4 py-4 sm:px-6">
-        <div className="mx-auto grid h-full w-full max-w-[1540px] grid-cols-[minmax(105px,.58fr)_repeat(3,minmax(0,1fr))_minmax(105px,.58fr)] gap-2 lg:gap-4">
+      <main className="relative z-10 flex min-h-0 flex-1 flex-col px-3 pb-2 pt-3 sm:h-[calc(100vh-152px)] sm:px-6 sm:py-4">
+        <div className="kj-mobile-legend-strip mx-auto flex h-full w-full max-w-[1540px] snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-hidden pb-2 sm:grid sm:snap-none sm:grid-cols-[minmax(105px,.58fr)_repeat(3,minmax(0,1fr))_minmax(105px,.58fr)] sm:overflow-visible sm:pb-0 lg:gap-4">
           {LEGENDS.map((legend) => {
             const selected = legend.id === active.id;
             return (
@@ -123,7 +123,7 @@ export default function LegendSelectScreen() {
                 onClick={() => setCharacter(legend.id)}
                 aria-pressed={selected}
                 className={
-                  'group relative flex min-w-0 flex-col overflow-hidden border bg-black/55 text-left transition ' +
+                  'group relative flex w-[72vw] max-w-[290px] shrink-0 snap-center flex-col overflow-hidden border bg-black/55 text-left transition sm:w-auto sm:max-w-none sm:shrink sm:snap-align-none ' +
                   (legend.locked
                     ? 'cursor-default opacity-72'
                     : 'hover:-translate-y-1 hover:bg-black/70')
@@ -184,7 +184,7 @@ export default function LegendSelectScreen() {
                   <div className="mt-1 text-[clamp(17px,2vw,30px)] tracking-[0.12em] text-[#efe5cf]">{legend.name}</div>
                   <div className="mt-1 text-[8px] uppercase tracking-[0.18em]" style={{ color: legend.accent }}>{legend.subtitle}</div>
 
-                  <div className="mt-4 space-y-1.5 border-t border-white/5 pt-3">
+                  <div className="mt-2 space-y-1 border-t border-white/5 pt-2 sm:mt-4 sm:space-y-1.5 sm:pt-3">
                     {legend.traits.map((trait) => (
                       <div key={trait} className="flex items-center gap-2 text-[8px] uppercase tracking-[0.12em] text-[#9a9081]">
                         <span className="text-[10px]" style={{ color: legend.accent }}>✦</span>
@@ -198,11 +198,11 @@ export default function LegendSelectScreen() {
           })}
         </div>
 
-        <div className="mx-auto mt-3 flex w-full max-w-[900px] items-center justify-between gap-3">
+        <div className="mx-auto mt-2 flex w-full max-w-[900px] items-center justify-between gap-2 sm:mt-3 sm:gap-3">
           <button
             type="button"
             onClick={() => setGameState('story-hub')}
-            className="kj-vision-button min-w-36 px-6 py-3 text-xs"
+            className="kj-vision-button min-w-0 flex-1 px-4 py-2.5 text-[10px] sm:min-w-36 sm:flex-none sm:px-6 sm:py-3 sm:text-xs"
           >
             Back
           </button>
@@ -216,7 +216,7 @@ export default function LegendSelectScreen() {
             disabled={active.locked}
             onClick={confirm}
             data-testid="legend-select-confirm"
-            className="kj-vision-button min-w-44 px-8 py-3 text-xs disabled:cursor-not-allowed disabled:opacity-40"
+            className="kj-vision-button min-w-0 flex-[1.4] px-4 py-2.5 text-[10px] disabled:cursor-not-allowed disabled:opacity-40 sm:min-w-44 sm:flex-none sm:px-8 sm:py-3 sm:text-xs"
             style={{ borderColor: active.locked ? undefined : active.accent }}
           >
             Confirm Legend
