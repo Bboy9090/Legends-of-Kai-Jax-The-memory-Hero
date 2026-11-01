@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - release/mobile-signed-4ea4bdba
   workflow_dispatch:
 
 concurrency:
