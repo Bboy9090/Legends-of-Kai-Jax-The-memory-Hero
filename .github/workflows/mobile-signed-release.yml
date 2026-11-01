@@ -17,21 +17,13 @@ on:
         required: true
         default: "4ea4bdba659cb3fbb07fde2cb6a3951374ce4713"
         type: string
-  pull_request:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/mobile-signed-release.yml"
-
-env:
-  RELEASE_SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.source_sha || '4ea4bdba659cb3fbb07fde2cb6a3951374ce4713' }}
 
 permissions:
   contents: write
 
 jobs:
   android-signed-aab:
-    if: ${{ github.event_name == 'pull_request' || inputs.platform == 'both' || inputs.platform == 'android' }}
+    if: ${{ inputs.platform == 'both' || inputs.platform == 'android' }}
     name: Android signed Play AAB
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -43,7 +35,7 @@ jobs:
     steps:
       - name: Require Android signing credentials
         env:
-          SOURCE_SHA: ${{ env.RELEASE_SOURCE_SHA }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
         run: |
           test -n "$ANDROID_KEYSTORE_BASE64"
           test -n "$ANDROID_KEYSTORE_PASSWORD"
@@ -54,7 +46,7 @@ jobs:
       - name: Checkout exact commit
         env:
           REPOSITORY: ${{ github.repository }}
-          COMMIT_SHA: ${{ env.RELEASE_SOURCE_SHA }}
+          COMMIT_SHA: ${{ inputs.source_sha }}
         run: |
           git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
           cd source
@@ -88,14 +80,14 @@ jobs:
           test -s "$AAB"
           jarsigner -verify -verbose -certs "$AAB"
           sha256sum "$AAB"
-          printf '%s\n' "ANDROID_SIGNED_AAB_OK ${{ env.RELEASE_SOURCE_SHA }}"
+          printf '%s\n' "ANDROID_SIGNED_AAB_OK ${{ inputs.source_sha }}"
 
       - name: Persist signed AAB as private draft release asset
         working-directory: source/apps/web/android
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
-          COMMIT_SHA: ${{ env.RELEASE_SOURCE_SHA }}
+          COMMIT_SHA: ${{ inputs.source_sha }}
         run: |
           AAB="app/build/outputs/bundle/release/app-release.aab"
           SHORT_SHA="${COMMIT_SHA:0:12}"
@@ -111,7 +103,7 @@ jobs:
         run: rm -f source/apps/web/android/release-upload.jks
 
   ios-signed-ipa:
-    if: ${{ github.event_name == 'pull_request' || inputs.platform == 'both' || inputs.platform == 'ios' }}
+    if: ${{ inputs.platform == 'both' || inputs.platform == 'ios' }}
     name: iOS signed App Store IPA
     runs-on: macos-latest
     timeout-minutes: 55
@@ -123,7 +115,7 @@ jobs:
     steps:
       - name: Require iOS signing credentials
         env:
-          SOURCE_SHA: ${{ env.RELEASE_SOURCE_SHA }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
         run: |
           test -n "$IOS_P12_BASE64"
           test -n "$IOS_P12_PASSWORD"
@@ -134,7 +126,7 @@ jobs:
       - name: Checkout exact commit
         env:
           REPOSITORY: ${{ github.repository }}
-          COMMIT_SHA: ${{ env.RELEASE_SOURCE_SHA }}
+          COMMIT_SHA: ${{ inputs.source_sha }}
         run: |
           git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
           cd source
@@ -246,14 +238,14 @@ jobs:
           test -s "$IPA"
           codesign --verify --deep --strict build/LegendsOfKaiJax.xcarchive/Products/Applications/App.app
           shasum -a 256 "$IPA"
-          printf '%s\n' "IOS_SIGNED_IPA_OK ${{ env.RELEASE_SOURCE_SHA }}"
+          printf '%s\n' "IOS_SIGNED_IPA_OK ${{ inputs.source_sha }}"
 
       - name: Persist signed IPA as private draft release asset
         working-directory: source/apps/web/ios/App
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
-          COMMIT_SHA: ${{ env.RELEASE_SOURCE_SHA }}
+          COMMIT_SHA: ${{ inputs.source_sha }}
         run: |
           IPA="$(find build/export -maxdepth 1 -name '*.ipa' -print -quit)"
           test -n "$IPA"
