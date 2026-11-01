@@ -230,7 +230,7 @@ export default function LoreHub() {
   };
 
   return (
-    <div className="min-h-screen w-full relative overflow-y-auto overflow-x-hidden" style={{ background: "linear-gradient(to bottom, #050510, #0a0a1a, #050510)" }}>
+    <div className="kj-safe-screen min-h-screen w-full relative overflow-y-auto overflow-x-hidden" style={{ background: "linear-gradient(to bottom, #050510, #0a0a1a, #050510)" }}>
       {particles.map((p, i) => (
         <div
           key={i}
@@ -239,7 +239,7 @@ export default function LoreHub() {
         />
       ))}
 
-      <nav className="fixed top-0 left-0 right-0 z-50" style={{ background: "rgba(5,5,16,0.85)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+      <nav className="fixed left-0 right-0 top-6 z-50 sm:top-0" style={{ background: "rgba(5,5,16,0.85)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
         <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: "rgba(46,46,254,0.2)", border: "1px solid rgba(46,46,254,0.5)" }}>
@@ -295,7 +295,7 @@ export default function LoreHub() {
         )}
       </nav>
 
-      <main className="pt-16">
+      <main className="pt-24 sm:pt-16">
         {section === "home" && <HeroSection onNavigate={setSection} onPlayGame={handlePlayGame} />}
         {section === "characters" && <CharactersSection />}
         {section === "tails" && <TailsSection />}
