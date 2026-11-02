@@ -114,6 +114,7 @@ export default function TitleScreen() {
               data-testid="title-begin-button"
               onClick={handleStart}
               className="kj-vision-button group flex min-h-14 w-full items-center justify-between px-6 py-4 text-sm sm:text-base"
+              aria-label="Begin Legends of Kai-Jax"
             >
               <span className="flex items-center gap-3">
                 <Play className="h-4 w-4 fill-current text-purple-300" aria-hidden />
