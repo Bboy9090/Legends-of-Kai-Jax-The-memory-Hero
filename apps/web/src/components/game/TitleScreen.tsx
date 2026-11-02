@@ -67,16 +67,16 @@ export default function TitleScreen() {
         <div className="flex gap-2">
           <button
             onClick={() => setGameState('settings')}
-            className="kj-vision-button flex items-center gap-2 px-4 py-2 text-xs"
-            aria-label="Open settings"
+            className="kj-vision-button flex min-h-11 min-w-11 items-center justify-center gap-2 px-4 py-2 text-xs"
+            aria-label="Settings — open settings"
           >
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">Settings</span>
           </button>
           <button
             onClick={() => setGameState('save-slots')}
-            className="kj-vision-button flex items-center gap-2 px-4 py-2 text-xs"
-            aria-label="Switch profile"
+            className="kj-vision-button flex min-h-11 min-w-11 items-center justify-center gap-2 px-4 py-2 text-xs"
+            aria-label="Profile — switch profile"
           >
             <UserCheck className="h-4 w-4" />
             <span className="hidden sm:inline">Profile</span>
@@ -113,8 +113,8 @@ export default function TitleScreen() {
               type="button"
               data-testid="title-begin-button"
               onClick={handleStart}
-              className="kj-vision-button group flex w-full items-center justify-between px-6 py-4 text-sm sm:text-base"
-              aria-label="Begin Legends of Kai-Jax"
+              className="kj-vision-button group flex min-h-14 w-full items-center justify-between px-6 py-4 text-sm sm:text-base"
+              aria-label="Enter the Raging City — begin Legends of Kai-Jax"
             >
               <span className="flex items-center gap-3">
                 <Play className="h-4 w-4 fill-current text-purple-300" aria-hidden />
