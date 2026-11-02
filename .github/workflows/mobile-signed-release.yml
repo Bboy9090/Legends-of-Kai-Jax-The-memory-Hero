@@ -1,6 +1,9 @@
 name: Mobile Signed Release
 
 on:
+  push:
+    branches:
+      - release/android-signed-current-main
   workflow_dispatch:
     inputs:
       platform:
@@ -23,7 +26,7 @@ permissions:
 
 jobs:
   android-signed-aab:
-    if: ${{ inputs.platform == 'both' || inputs.platform == 'android' }}
+    if: ${{ github.event_name == 'push' || inputs.platform == 'both' || inputs.platform == 'android' }}
     name: Android signed Play AAB
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -35,7 +38,7 @@ jobs:
     steps:
       - name: Require Android signing credentials
         env:
-          SOURCE_SHA: ${{ inputs.source_sha }}
+          SOURCE_SHA: ${{ github.event_name == 'push' && '60f392551c1dd111f553bfc146926c8fcbd9eb3d' || inputs.source_sha }}
         run: |
           test -n "$ANDROID_KEYSTORE_BASE64"
           test -n "$ANDROID_KEYSTORE_PASSWORD"
@@ -46,7 +49,7 @@ jobs:
       - name: Checkout exact commit
         env:
           REPOSITORY: ${{ github.repository }}
-          COMMIT_SHA: ${{ inputs.source_sha }}
+          COMMIT_SHA: ${{ github.event_name == 'push' && '60f392551c1dd111f553bfc146926c8fcbd9eb3d' || inputs.source_sha }}
         run: |
           git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
           cd source
@@ -80,14 +83,14 @@ jobs:
           test -s "$AAB"
           jarsigner -verify -verbose -certs "$AAB"
           sha256sum "$AAB"
-          printf '%s\n' "ANDROID_SIGNED_AAB_OK ${{ inputs.source_sha }}"
+          printf '%s\n' "ANDROID_SIGNED_AAB_OK ${{ github.event_name == 'push' && '60f392551c1dd111f553bfc146926c8fcbd9eb3d' || inputs.source_sha }}"
 
       - name: Persist signed AAB as private draft release asset
         working-directory: source/apps/web/android
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
-          COMMIT_SHA: ${{ inputs.source_sha }}
+          COMMIT_SHA: ${{ github.event_name == 'push' && '60f392551c1dd111f553bfc146926c8fcbd9eb3d' || inputs.source_sha }}
         run: |
           AAB="app/build/outputs/bundle/release/app-release.aab"
           SHORT_SHA="${COMMIT_SHA:0:12}"
@@ -103,7 +106,7 @@ jobs:
         run: rm -f source/apps/web/android/release-upload.jks
 
   ios-signed-ipa:
-    if: ${{ inputs.platform == 'both' || inputs.platform == 'ios' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.platform == 'both' || inputs.platform == 'ios') }}
     name: iOS signed App Store IPA
     runs-on: macos-latest
     timeout-minutes: 55
@@ -115,7 +118,7 @@ jobs:
     steps:
       - name: Require iOS signing credentials
         env:
-          SOURCE_SHA: ${{ inputs.source_sha }}
+          SOURCE_SHA: ${{ github.event_name == 'push' && '60f392551c1dd111f553bfc146926c8fcbd9eb3d' || inputs.source_sha }}
         run: |
           test -n "$IOS_P12_BASE64"
           test -n "$IOS_P12_PASSWORD"
@@ -126,7 +129,7 @@ jobs:
       - name: Checkout exact commit
         env:
           REPOSITORY: ${{ github.repository }}
-          COMMIT_SHA: ${{ inputs.source_sha }}
+          COMMIT_SHA: ${{ github.event_name == 'push' && '60f392551c1dd111f553bfc146926c8fcbd9eb3d' || inputs.source_sha }}
         run: |
           git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
           cd source
@@ -238,14 +241,14 @@ jobs:
           test -s "$IPA"
           codesign --verify --deep --strict build/LegendsOfKaiJax.xcarchive/Products/Applications/App.app
           shasum -a 256 "$IPA"
-          printf '%s\n' "IOS_SIGNED_IPA_OK ${{ inputs.source_sha }}"
+          printf '%s\n' "IOS_SIGNED_IPA_OK ${{ github.event_name == 'push' && '60f392551c1dd111f553bfc146926c8fcbd9eb3d' || inputs.source_sha }}"
 
       - name: Persist signed IPA as private draft release asset
         working-directory: source/apps/web/ios/App
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
-          COMMIT_SHA: ${{ inputs.source_sha }}
+          COMMIT_SHA: ${{ github.event_name == 'push' && '60f392551c1dd111f553bfc146926c8fcbd9eb3d' || inputs.source_sha }}
         run: |
           IPA="$(find build/export -maxdepth 1 -name '*.ipa' -print -quit)"
           test -n "$IPA"
