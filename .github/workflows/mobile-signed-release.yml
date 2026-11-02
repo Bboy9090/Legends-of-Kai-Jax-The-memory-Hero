@@ -15,7 +15,7 @@ on:
       source_sha:
         description: "Exact source commit to sign"
         required: true
-        default: "cc1d7468cd0ef66265720ca9b72b4311189ee3d6"
+        default: "9511302b9e0e7a5e066dd3bfb772bafa3ba0c492"
         type: string
 
 permissions:
