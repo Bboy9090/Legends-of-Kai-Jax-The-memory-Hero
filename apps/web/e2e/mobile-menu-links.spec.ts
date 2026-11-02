@@ -107,9 +107,9 @@ test('portrait legend select keeps Confirm Legend tappable above Android navigat
   await expect(confirm).toBeEnabled();
   const box = await confirm.boundingBox();
   expect(box).not.toBeNull();
-  expect((box?.y ?? 9999) + (box?.height ?? 0)).toBeLessThanOrEqual(832);
+  // Reserve clearance beyond the system navigation/gesture strip on real Android phones.\n  expect((box?.y ?? 9999) + (box?.height ?? 0)).toBeLessThanOrEqual(780);
 
   await page.getByRole('button', { name: /JAX/i }).filter({ hasNotText: /KAI-JAX/i }).first().click();
-  await confirm.click();
+  await expect(confirm).toHaveAttribute('aria-label', /Confirm JAX and continue to missions/i);\n  await confirm.click();
   await page.waitForFunction(() => (window as any).runnerStore?.getState?.().gameState === 'mission-select');
 });
