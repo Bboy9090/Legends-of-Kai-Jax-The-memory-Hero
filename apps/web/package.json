@@ -39,7 +39,7 @@
     "@react-three/fiber": "^8.16.6",
     "@react-three/postprocessing": "2.19.1",
     "@tanstack/react-query": "^5.101.2",
-    "@types/node": "^25.0.3",
+    "@types/node": "^26.6.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
