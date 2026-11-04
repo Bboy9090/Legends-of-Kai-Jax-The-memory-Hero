@@ -104,14 +104,13 @@ test("M6-C real mission UI: waves, timed transition, rescues, results and persis
   // Text types in character-by-character; assert the stable transmission overlay.
   await expect(page.getByText("Transmission Active", { exact: true })).toBeVisible({ timeout: 30000 });
   console.log("M6_DEV_CHECKPOINT_OUTRO", JSON.stringify(await getProgress()));
-  await page.keyboard.press("Enter");
-  await page.keyboard.press("Enter");
-  // The second outro line is mounted, but headless WebGL can throttle its
-  // character-by-character typing. Assert the stable overlay and advance via
-  // the real Enter handler; narrative content is checked in unit tests.
-  await expect(page.getByText("Transmission Active", { exact: true })).toBeVisible({ timeout: 30000 });
-  await page.keyboard.press("Enter");
-  await page.keyboard.press("Enter");
+  const missionOutroLines = 4;
+  // Four narrative beats follow the Ashblock tactical handover. Each click
+  // first completes the typewriter, then advances via the real UI handler.
+  for (let beat = 0; beat < missionOutroLines; beat++) {
+    await page.getByText("Transmission Active", { exact: true }).click();
+    await page.getByText(beat === missionOutroLines - 1 ? "Click to engage" : "Ready for next phase", { exact: true }).click({ timeout: 30000 });
+  }
   await expect(page.getByRole("heading", { name: "Mission Complete" })).toBeVisible({ timeout: 12000 });
   await expect(page.getByTestId("story-mission-loot-reward")).toContainText("Ashblock Memory");
   await expect(page.getByText("+500 XP", { exact: true })).toBeVisible();
