@@ -156,16 +156,22 @@ function App() {
   // Initialize audio on mount (non-fatal if files missing)
   useEffect(() => {
     try {
-      const bgMusic = new Audio("/sounds/background.mp3");
+      const createLazyAudio = (src: string) => {
+        const audio = new Audio();
+        audio.preload = "none";
+        audio.src = src;
+        return audio;
+      };
+      const bgMusic = createLazyAudio("/sounds/background.mp3");
       bgMusic.loop = true;
       bgMusic.volume = 0.3;
       setBackgroundMusic(bgMusic);
-      const battleMusic = new Audio("/sounds/background.mp3");
+      const battleMusic = createLazyAudio("/sounds/background.mp3");
       battleMusic.loop = true;
       battleMusic.volume = 0.4;
       setBattleMusic(battleMusic);
-      setHitSound(new Audio("/sounds/hit.mp3"));
-      setSuccessSound(new Audio("/sounds/success.mp3"));
+      setHitSound(createLazyAudio("/sounds/hit.mp3"));
+      setSuccessSound(createLazyAudio("/sounds/success.mp3"));
     } catch (e) {
       console.warn("Audio init skipped:", e);
     }

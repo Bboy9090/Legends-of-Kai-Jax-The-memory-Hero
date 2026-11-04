@@ -27,14 +27,12 @@ jobs:
           git checkout --detach "$SHA"
           test "$(git rev-parse HEAD)" = "$SHA"
 
-      - name: Pin Android build JDK 17
+      - name: Select supported Java 21 from hosted runner
         run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends openjdk-17-jdk
-          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> "$GITHUB_ENV"
-          echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> "$GITHUB_PATH"
-          /usr/lib/jvm/java-17-openjdk-amd64/bin/java -version
+          test -n "${JAVA_HOME_21_X64:-}"
+          test -x "$JAVA_HOME_21_X64/bin/java"
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME_21_X64/bin" >> "$GITHUB_PATH"
 
       - name: Build web app and sync Android
         working-directory: source
