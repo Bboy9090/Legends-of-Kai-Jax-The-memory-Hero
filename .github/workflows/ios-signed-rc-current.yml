@@ -1,0 +1,167 @@
+name: iOS Signed RC Current Main
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/ios-signed-rc-current.yml"
+      - "apps/web/**"
+      - "pnpm-lock.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-signed-rc-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  ios-signed-ipa:
+    name: iOS signed App Store IPA
+    runs-on: macos-latest
+    timeout-minutes: 60
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      IOS_P12_BASE64: ${{ secrets.IOS_P12_BASE64 }}
+      IOS_P12_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
+      IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+      IOS_TEAM_ID: "86NUJ8M3B8"
+      IOS_BUNDLE_ID: "com.bobbyblanco.legendsofkaijax"
+
+    steps:
+      - name: Require iOS signing credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$IOS_P12_BASE64" || { echo "Missing IOS_P12_BASE64"; exit 1; }
+          test -n "$IOS_P12_PASSWORD" || { echo "Missing IOS_P12_PASSWORD"; exit 1; }
+          test -n "$IOS_PROVISIONING_PROFILE_BASE64" || { echo "Missing IOS_PROVISIONING_PROFILE_BASE64"; exit 1; }
+
+      - name: Checkout exact candidate source
+        shell: bash
+        env:
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
+          cd source
+          git checkout --detach "$SOURCE_SHA"
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+
+      - name: Build web and sync iOS
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          pnpm install --filter ./apps/web... --frozen-lockfile
+          pnpm -C apps/web build
+          pnpm -C apps/web cap:sync
+
+      - name: Install temporary signing identity and profile
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          KEYCHAIN="$RUNNER_TEMP/kai-jax-signing.keychain-db"
+          CERT="$RUNNER_TEMP/distribution.p12"
+          PROFILE="$RUNNER_TEMP/profile.mobileprovision"
+          PROFILE_PLIST="$RUNNER_TEMP/profile.plist"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+
+          printf '%s' "$IOS_P12_BASE64" | base64 --decode > "$CERT"
+          printf '%s' "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$PROFILE"
+          security cms -D -i "$PROFILE" > "$PROFILE_PLIST"
+
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$PROFILE_PLIST")
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' "$PROFILE_PLIST")
+          PROFILE_TEAM=$(/usr/libexec/PlistBuddy -c 'Print :TeamIdentifier:0' "$PROFILE_PLIST")
+          PROFILE_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$PROFILE_PLIST")
+          PROFILE_GET_TASK_ALLOW=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:get-task-allow' "$PROFILE_PLIST" 2>/dev/null || echo false)
+
+          test "$PROFILE_TEAM" = "$IOS_TEAM_ID"
+          test "$PROFILE_APP_ID" = "$IOS_TEAM_ID.$IOS_BUNDLE_ID"
+          test "$PROFILE_GET_TASK_ALLOW" != "true"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$CERT" -P "$IOS_P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN"
+
+          IDENTITY_LINE=$(security find-identity -v -p codesigning "$KEYCHAIN" | grep -F "Apple Distribution" | grep -F "($IOS_TEAM_ID)" | head -1)
+          test -n "$IDENTITY_LINE"
+
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$PROFILE" "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
+
+          echo "IOS_PROFILE_UUID=$PROFILE_UUID" >> "$GITHUB_ENV"
+          echo "IOS_PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+          echo "IOS_KEYCHAIN=$KEYCHAIN" >> "$GITHUB_ENV"
+
+      - name: Archive signed device app
+        working-directory: source/apps/web/ios/App
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild             -workspace App.xcworkspace             -scheme App             -configuration Release             -sdk iphoneos             -destination 'generic/platform=iOS'             -archivePath build/LegendsOfKaiJax.xcarchive             DEVELOPMENT_TEAM="$IOS_TEAM_ID"             CODE_SIGN_STYLE=Manual             CODE_SIGN_IDENTITY="Apple Distribution"             PROVISIONING_PROFILE_SPECIFIER="$IOS_PROFILE_NAME"             archive
+
+      - name: Export signed App Store IPA
+        working-directory: source/apps/web/ios/App
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          cat > build/ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>teamID</key><string>$IOS_TEAM_ID</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>$IOS_BUNDLE_ID</key><string>$IOS_PROFILE_NAME</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive             -archivePath build/LegendsOfKaiJax.xcarchive             -exportPath build/export             -exportOptionsPlist build/ExportOptions.plist
+
+          APP="build/LegendsOfKaiJax.xcarchive/Products/Applications/App.app"
+          IPA="$(find build/export -maxdepth 1 -name '*.ipa' -print -quit)"
+          test -d "$APP"
+          test -n "$IPA"
+          test -s "$IPA"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Info.plist")" = "$IOS_BUNDLE_ID"
+          shasum -a 256 "$IPA" | tee build/IPA-SHA256.txt
+
+      - name: Upload signed IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Legends-of-Kai-Jax-iOS-signed-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            source/apps/web/ios/App/build/export/*.ipa
+            source/apps/web/ios/App/build/IPA-SHA256.txt
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Remove temporary signing material
+        if: always()
+        shell: bash
+        run: |
+          if [ -n "${IOS_PROFILE_UUID:-}" ]; then
+            rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/$IOS_PROFILE_UUID.mobileprovision"
+          fi
+          if [ -n "${IOS_KEYCHAIN:-}" ]; then
+            security delete-keychain "$IOS_KEYCHAIN" || true
+          fi
+          rm -f "$RUNNER_TEMP/distribution.p12" "$RUNNER_TEMP/profile.mobileprovision" "$RUNNER_TEMP/profile.plist"
