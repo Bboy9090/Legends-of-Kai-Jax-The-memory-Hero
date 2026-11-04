@@ -53,6 +53,13 @@ jobs:
           git checkout --detach "${COMMIT_SHA}"
           test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
 
+      - name: Select supported Java 21 from hosted runner
+        run: |
+          test -n "${JAVA_HOME_21_X64:-}"
+          test -x "$JAVA_HOME_21_X64/bin/java"
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME_21_X64/bin" >> "$GITHUB_PATH"
+
       - name: Prepare web and Android
         working-directory: source
         run: |
