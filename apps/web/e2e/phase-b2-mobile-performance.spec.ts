@@ -197,7 +197,12 @@ test.describe('Phase B2: Mobile Performance Testing', () => {
           strictHardwareGateApplied: false,
           softwareSanityWindows: softwareSanityWindows.length,
         }));
-        expect(softwareSanityWindows.length).toBeGreaterThanOrEqual(1);
+        // Software renderers are telemetry-only. They must prove the render loop is
+        // alive and produce finite samples, but they cannot certify or veto physical
+        // mobile performance because hosted-runner SwiftShader cadence is not device
+        // performance evidence.
+        expect(windowStats).toHaveLength(3);
+        expect(windowStats.every((sample) => Number.isFinite(sample.fps) && sample.fps > 0)).toBe(true);
       }
 
       // Exercise the mounted arena through its real movement controller.
