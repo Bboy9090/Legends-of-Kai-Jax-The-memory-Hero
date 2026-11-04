@@ -92,6 +92,12 @@ jobs:
           git checkout --detach "${COMMIT_SHA}"
           test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
 
+      - name: Set up supported Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: Verify Java and activate pnpm
         working-directory: source
         run: |
