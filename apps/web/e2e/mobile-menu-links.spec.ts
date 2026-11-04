@@ -107,10 +107,44 @@ test('portrait legend select keeps Confirm Legend tappable above Android navigat
   await expect(confirm).toBeEnabled();
   const box = await confirm.boundingBox();
   expect(box).not.toBeNull();
-  // Reserve clearance beyond the system navigation/gesture strip on real Android phones.\n  expect((box?.y ?? 9999) + (box?.height ?? 0)).toBeLessThanOrEqual(780);
+  // Reserve clearance beyond the system navigation/gesture strip on real Android phones.
+  expect((box?.y ?? 9999) + (box?.height ?? 0)).toBeLessThanOrEqual(780);
 
   await page.getByRole('button', { name: /JAX/i }).filter({ hasNotText: /KAI-JAX/i }).first().click();
   await expect(confirm).toHaveAttribute('aria-label', /Confirm JAX and continue to missions/i);
   await confirm.click();
   await page.waitForFunction(() => (window as any).runnerStore?.getState?.().gameState === 'mission-select');
+});
+
+
+test('switching save slots clears mission and training context without leaking progress', async ({ page }) => {
+  await bootToMenu(page);
+  const snapshot = await page.evaluate(() => {
+    const runner = (window as any).runnerStore;
+    runner.getState().switchProfile(0);
+    runner.getState().setMissionCompleted('story_act1_m1');
+    runner.setState({ activeStoryMissionId: 'story_act1_m2', selectedCharacter: 'jax', trainingSession: true });
+    runner.getState().switchProfile(1);
+    const next = runner.getState();
+    const isolated = {
+      activeProfileIndex: next.activeProfileIndex,
+      activeStoryMissionId: next.activeStoryMissionId,
+      selectedCharacter: next.selectedCharacter,
+      trainingSession: next.trainingSession,
+      completedStoryMissionIds: [...next.completedStoryMissionIds],
+    };
+    runner.getState().switchProfile(0);
+    const restored = [...runner.getState().completedStoryMissionIds];
+    runner.getState().switchProfile(-1);
+    return { isolated, restored, invalidIndex: runner.getState().activeProfileIndex };
+  });
+  expect(snapshot.isolated).toEqual({
+    activeProfileIndex: 1,
+    activeStoryMissionId: null,
+    selectedCharacter: 'kai-jax',
+    trainingSession: false,
+    completedStoryMissionIds: [],
+  });
+  expect(snapshot.restored).toContain('story_act1_m1');
+  expect(snapshot.invalidIndex).toBe(0);
 });

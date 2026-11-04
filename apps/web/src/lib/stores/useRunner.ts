@@ -293,6 +293,7 @@ export const useRunner = create<RunnerState>()(
 
       switchProfile: (index) => {
         const { profiles } = get();
+        if (!Number.isInteger(index) || index < 0 || index >= profiles.length) return;
         const targetProfile = profiles[index];
         set({
           activeProfileIndex: index,
@@ -302,6 +303,10 @@ export const useRunner = create<RunnerState>()(
           storyLoot: targetProfile.storyLoot || [],
           completedRoamDistrictIds: targetProfile.completedRoamDistrictIds || [],
           unlockedUpgrades: targetProfile.unlockedUpgrades,
+          // Runtime mission/session context must never leak between save slots.
+          activeStoryMissionId: null,
+          trainingSession: false,
+          selectedCharacter: "kai-jax",
         });
       },
 
