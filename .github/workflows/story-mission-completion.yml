@@ -12,10 +12,6 @@ on:
       - '.github/workflows/story-mission-completion.yml'
   workflow_dispatch:
 
-concurrency:
-  group: story-mission-completion-${{ github.event.pull_request.head.sha || github.sha }}
-  cancel-in-progress: true
-
 permissions:
   contents: read
 
@@ -23,7 +19,7 @@ jobs:
   mission-6-software-completion:
     name: Mission 6 full software completion
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout exact proposed head
         env:
