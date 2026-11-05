@@ -79,6 +79,15 @@ test('Combat Arena commits a playable fighter into a live battle and supports re
   expect(live.phase).toBe('fighting');
   expect(live.training).toBe(false);
 
+  // BattleScene performs a delayed mount-time initialization at 400 ms.
+  // Prove the settled scene is still live before forcing a deterministic result.
+  await page.waitForTimeout(500);
+  await page.waitForFunction(
+    () => (window as any).battleStore?.getState?.().battlePhase === 'fighting',
+    null,
+    { timeout: 5_000 },
+  );
+
   await page.evaluate(() => (window as any).battleStore?.getState?.().endBattle?.('player'));
   await page.waitForFunction(
     () => (window as any).battleStore?.getState?.().battlePhase === 'results',
