@@ -337,7 +337,7 @@ function HeroSection({ onNavigate, onPlayGame }: { onNavigate: (s: Section) => v
               KAI-JAX
             </span>
           </h1>
-          <p className="text-2xl md:text-3xl text-blue-400 font-black mb-6">THE MEMORY KING</p>
+          <p className="text-2xl md:text-3xl text-blue-400 font-black mb-6">THE MEMORY HERO</p>
           <p className="text-white/50 text-lg md:text-xl max-w-xl mb-10 italic">
             "Survival without memory is extinction with better design."
           </p>
@@ -621,7 +621,7 @@ function CombatSection() {
             COMBAT <span className="text-cyan-400">DATA</span>
           </h2>
           <p className="text-white/50 max-w-xl mx-auto text-sm">
-            Analysis of the Memory King's combat forms and tactical protocols.
+            Analysis of the Memory Hero's combat forms and tactical protocols.
           </p>
         </div>
 
