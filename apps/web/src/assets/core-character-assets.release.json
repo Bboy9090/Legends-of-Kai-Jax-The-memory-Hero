@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "releaseAuthority": "blocked-pending-approved-assets",
+  "characters": {
+    "kai": {
+      "approved": false,
+      "path": null,
+      "sha256": null,
+      "provenance": null,
+      "approvalReceipt": null
+    },
+    "jax": {
+      "approved": false,
+      "path": null,
+      "sha256": null,
+      "provenance": null,
+      "approvalReceipt": null
+    },
+    "kai-jax": {
+      "approved": false,
+      "path": null,
+      "sha256": null,
+      "provenance": null,
+      "approvalReceipt": null
+    }
+  }
+}
