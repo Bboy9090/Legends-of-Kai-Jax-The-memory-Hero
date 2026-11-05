@@ -10,6 +10,9 @@ const runtimeSurfaces = [
   'src/components/game/LoadingScreen.tsx',
   'src/components/game/LegendaryMainMenu.tsx',
   'src/components/game/LoreHub.tsx',
+  'src/lib/questSystem.ts',
+  'src/systems/TransformationSystem.ts',
+  'src/lib/stores/useBattle.tsx',
 ];
 
 describe('runtime Memory Hero brand identity', () => {
