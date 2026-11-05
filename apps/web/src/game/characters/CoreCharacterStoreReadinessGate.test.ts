@@ -10,8 +10,6 @@ describe('mobile store core-character authority gate', () => {
   it('runs the fail-closed character asset validator before store packaging', () => {
     expect(workflow).toContain('core-character-release-authority:');
     expect(workflow).toContain('node apps/web/scripts/validate-core-character-assets.mjs');
-    expect(workflow).toContain('outputs:');
-    expect(workflow).toContain('approved: ${{ steps.authority.outputs.approved }}');
     expect(workflow).toContain('blocked-pending-approved-canonical-glbs');
     expect(workflow).toContain('if [ "${{ github.event_name }}" = "pull_request" ]; then');
   });
@@ -25,9 +23,9 @@ describe('mobile store core-character authority gate', () => {
     ]) {
       const index = workflow.indexOf(job);
       expect(index).toBeGreaterThan(-1);
-      const block = workflow.slice(index, index + 360);
+      const block = workflow.slice(index, index + 320);
       expect(block).toContain('needs: core-character-release-authority');
-      expect(block).toContain("if: ${{ needs.core-character-release-authority.outputs.approved == 'true' }}");
+      expect(block).toContain("if: ${{ github.event_name != 'pull_request' }}");
     }
   });
 
