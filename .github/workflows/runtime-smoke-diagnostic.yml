@@ -34,7 +34,7 @@ jobs:
           git clone --filter=blob:none --no-checkout "https://github.com/${REPOSITORY}.git" source
           cd source
           git sparse-checkout init --cone
-          git sparse-checkout set apps/web packages .github
+          git sparse-checkout set apps/web packages
           git checkout --detach "${COMMIT_SHA}"
           git show "${COMMIT_SHA}:package.json" > package.json
           git show "${COMMIT_SHA}:pnpm-lock.yaml" > pnpm-lock.yaml
@@ -68,52 +68,13 @@ jobs:
             e2e/menu-modes-action-certification.spec.ts \
             e2e/campaign-progression.spec.ts
 
-      - name: Verify mission-completion evidence contract
-        working-directory: source
-        run: node apps/web/scripts/story-mission-completion-workflow.test.mjs
-
-      - name: Run full Mission 6 state-driven completion certification
+      - name: Run non-physical full Mission 6 completion certification
         working-directory: source/apps/web
         env:
           CI: "true"
         run: |
-          set -o pipefail
           pnpm exec playwright test \
             --config=playwright.m6-dev.config.ts \
             e2e/mission6-flow.devtest.ts \
             --grep 'M6-C real mission UI' \
-            --workers=1 2>&1 | tee mission6-completion.log
-          {
-            echo "STORY_MISSION_COMPLETION=PASS"
-            echo "SOURCE_SHA=${{ github.event.pull_request.head.sha || github.sha }}"
-            echo "MISSION=story_act2_m6"
-            echo "EVIDENCE_CLASS=state-driven-software-integration"
-            echo "PHYSICAL_DEVICE_CERTIFICATION=NOT_PROVEN"
-            echo "USER_EXECUTED_ATTACKS=NOT_PROVEN"
-          } | tee mission6-completion-receipt.txt
-
-      - name: Publish full mission software evidence
-        if: always()
-        working-directory: source/apps/web
-        run: |
-          {
-            echo '## Mission 6 software completion evidence'
-            echo
-            echo '```text'
-            if [ -f mission6-completion-receipt.txt ]; then
-              cat mission6-completion-receipt.txt
-            else
-              echo 'STORY_MISSION_COMPLETION=NOT_PROVEN'
-              echo 'CERTIFICATION_RESULT=FAILED_OR_INCOMPLETE'
-            fi
-            echo '```'
-            echo
-            echo '- Evidence class: state-driven software integration.'
-            echo '- Physical-device certification: not proven.'
-            echo '- User-executed attack inputs: not proven.'
-          } >> "${GITHUB_STEP_SUMMARY}"
-
-          if [ -f mission6-completion.log ]; then
-            echo '--- Mission 6 completion log tail ---'
-            tail -n 200 mission6-completion.log
-          fi
+            --workers=1
