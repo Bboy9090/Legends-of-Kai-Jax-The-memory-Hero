@@ -101,7 +101,7 @@ export default function TitleScreen() {
           <div className="kj-vision-divider my-5 max-w-xl" />
 
           <h2 className="kj-vision-subtitle text-[clamp(18px,2.4vw,36px)]">
-            The Memory King
+            The Memory Hero
           </h2>
 
           <p className="mt-7 max-w-xl text-sm tracking-[0.12em] text-[#d4bd91] sm:text-base">
