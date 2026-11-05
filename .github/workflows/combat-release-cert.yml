@@ -36,7 +36,7 @@ jobs:
           git config core.sparseCheckout true
           git config extensions.partialClone origin
           git sparse-checkout init --cone
-          git sparse-checkout set apps/web packages
+          git sparse-checkout set apps/web packages .github/workflows
           git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin "${COMMIT_SHA}"
           git checkout --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
