@@ -23,6 +23,8 @@ jobs:
   runtime-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
     steps:
       - name: Materialize exact web workspace
         env:
