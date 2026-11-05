@@ -15,7 +15,6 @@ on:
       source_sha:
         description: "Exact source commit to sign"
         required: true
-        default: "9511302b9e0e7a5e066dd3bfb772bafa3ba0c492"
         type: string
 
 permissions:
@@ -50,8 +49,10 @@ jobs:
         run: |
           git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
           cd source
+          git fetch origin main --depth=1000
           git checkout --detach "${COMMIT_SHA}"
           test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+          git merge-base --is-ancestor "${COMMIT_SHA}" origin/main
 
       - name: Select supported Java 21 from hosted runner
         run: |
@@ -137,8 +138,10 @@ jobs:
         run: |
           git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
           cd source
+          git fetch origin main --depth=1000
           git checkout --detach "${COMMIT_SHA}"
           test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+          git merge-base --is-ancestor "${COMMIT_SHA}" origin/main
 
       - name: Build web and sync iOS
         working-directory: source
