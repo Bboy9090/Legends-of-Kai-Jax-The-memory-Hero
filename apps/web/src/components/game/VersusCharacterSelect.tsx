@@ -200,11 +200,9 @@ export default function VersusCharacterSelect() {
     setPlayerFighter(playerId);
     setOpponentFighter(opponentId);
 
-    // Input authority must become live when the player commits to the match,
-    // not several seconds later when a slow GLB/Suspense tree finally mounts.
-    // BattleScene keeps its defensive start guard, but this removes the
-    // visible-HUD / inactive-controller gap on software WebGL and mobile.
-    useBattle.getState().startBattle();
+    // Mount the playing scene first. BattleScene owns the single
+    // preRound -> fighting transition after its runtime tree is committed,
+    // preventing a live battle store from racing mount-time initialization.
     start();
     setGameState("playing");
   }, [selectedEntry, selectedPlayable, selectedProfile, playableEntries, resetPhase, setTrainingSession, setCharacter, setPlayerFighter, setOpponentFighter, start, setGameState]);
