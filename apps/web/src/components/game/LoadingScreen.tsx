@@ -225,7 +225,7 @@ export function GameIntro({ onComplete }: { onComplete: () => void }) {
         {phase === 'city' && (
           <div className="max-w-4xl animate-[fadeIn_.6s_ease-out] lg:mr-[34vw] lg:text-left">
             <p className="text-xs uppercase tracking-[0.55em] text-[#a88d62]">The Raging City</p>
-            <h2 className="kj-vision-subtitle mt-5 text-[clamp(28px,4vw,58px)]">The Memory King</h2>
+            <h2 className="kj-vision-subtitle mt-5 text-[clamp(28px,4vw,58px)]">The Memory Hero</h2>
             <p className="mx-auto mt-7 max-w-2xl text-base leading-8 tracking-[0.12em] text-[#d4c2a0] sm:text-lg lg:mx-0">
               Forged in the Raging City. Crowned by Memory.
             </p>
