@@ -159,7 +159,7 @@ export default function StoryHubScreen() {
               {[
                 ['kai', 'KAI', '#c76cff', 'MEMORY-WEB HEIR', '/brand/kai-and-jax-before-merge.png', '30% center'],
                 ['jax', 'JAX', '#5aaeff', 'STORM FANG', '/brand/kai-and-jax-before-merge.png', '72% center'],
-                ['kai-jax', 'KAI-JAX', '#efc76d', 'FUSION HERO', '/images/lore/hero-kaijax.png', 'center 24%'],
+                ['kai-jax', 'KAI-JAX', '#efc76d', 'MEMORY HERO', '/images/lore/hero-kaijax.png', 'center 24%'],
               ].map(([id, name, color, subtitle, image, imagePosition]) => {
                 const active = selectedCharacter === id
                   || (id === 'kai-jax' && ['kaijax', 'kai_jax'].includes(selectedCharacter ?? ''));
