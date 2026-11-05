@@ -2,10 +2,10 @@ import fs from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-const workflow = fs.readFileSync('.github/workflows/story-mission-completion.yml', 'utf8');
+const workflow = fs.readFileSync('.github/workflows/runtime-smoke-diagnostic.yml', 'utf8');
 const mission = fs.readFileSync('apps/web/e2e/mission6-flow.devtest.ts', 'utf8');
 
-test('mission completion workflow runs the existing full M6-C integration path', () => {
+test('runtime smoke runs the existing full M6-C integration path with explicit evidence boundaries', () => {
   for (const marker of [
     "e2e/mission6-flow.devtest.ts",
     "M6-C real mission UI",
