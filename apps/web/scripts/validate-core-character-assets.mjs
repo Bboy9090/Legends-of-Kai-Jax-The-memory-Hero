@@ -2,8 +2,9 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = resolve(new URL("..", import.meta.url).pathname, "..");
+const root = fileURLToPath(new URL("../", import.meta.url));
 const manifestPath = resolve(root, "src/assets/core-character-assets.release.json");
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
 const ids = ["kai", "jax", "kai-jax"];
