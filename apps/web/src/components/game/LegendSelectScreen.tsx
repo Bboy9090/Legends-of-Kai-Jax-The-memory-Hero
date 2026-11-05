@@ -49,12 +49,12 @@ const LEGENDS: LegendCard[] = [
   {
     id: 'kai-jax',
     name: 'KAI-JAX',
-    subtitle: 'FUSION HERO',
+    subtitle: 'MEMORY HERO',
     role: 'PLAYABLE LEGEND',
     accent: '#efc76d',
     image: '/images/lore/hero-kaijax.png',
     imagePosition: 'center 22%',
-    traits: ['Fusion Form', 'Memory Resistance', 'Synergy'],
+    traits: ['Memory Form', 'Memory Resistance', 'Synergy'],
   },
   {
     id: 'borax',
