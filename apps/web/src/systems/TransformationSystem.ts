@@ -115,7 +115,7 @@ export const TRANSFORMATION_CONFIGS: Record<string, TransformationConfig[]> = {
     {
       tier: TransformationTier.LEGENDARY,
       name: 'legendary',
-      displayName: 'Memory King',
+      displayName: 'Memory Hero',
       resonanceThreshold: 75,
       statMultipliers: { power: 2.0, speed: 1.5, defense: 1.5, gravity: 16.0 },
       visualConfig: {
