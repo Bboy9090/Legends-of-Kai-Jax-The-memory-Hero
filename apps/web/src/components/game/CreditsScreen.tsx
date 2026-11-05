@@ -40,7 +40,7 @@ export default function CreditsScreen() {
         </button>
 
         <header className="mb-8 text-center">
-          <div className="text-[9px] uppercase tracking-[0.35em] text-[#9f8762]">The Memory King</div>
+          <div className="text-[9px] uppercase tracking-[0.35em] text-[#9f8762]">The Memory Hero</div>
           <h1 className="kj-vision-title mt-2 text-3xl sm:text-5xl">Credits</h1>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#b7ad9e]">
             Built as a living action-adventure universe across story, combat, mobile, and desktop experiences.

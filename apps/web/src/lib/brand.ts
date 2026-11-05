@@ -1,6 +1,6 @@
 export const BRAND = {
   title: "LEGENDS OF KAI-JAX",
-  subtitle: "THE MEMORY KING",
+  subtitle: "THE MEMORY HERO",
   tagline: "FORGED IN THE RAGING CITY • CROWNED BY MEMORY",
   shortTagline: "FORGED IN THE RAGING CITY. CROWNED BY MEMORY.",
   // localStorage save slot

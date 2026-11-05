@@ -49,12 +49,12 @@ const LEGENDS: LegendCard[] = [
   {
     id: 'kai-jax',
     name: 'KAI-JAX',
-    subtitle: 'FUSION HERO',
+    subtitle: 'MEMORY HERO',
     role: 'PLAYABLE LEGEND',
     accent: '#efc76d',
     image: '/images/lore/hero-kaijax.png',
     imagePosition: 'center 22%',
-    traits: ['Fusion Form', 'Memory Resistance', 'Synergy'],
+    traits: ['Memory Form', 'Memory Resistance', 'Synergy'],
   },
   {
     id: 'borax',
@@ -107,7 +107,7 @@ export default function LegendSelectScreen() {
 
         <div className="hidden text-right text-[9px] uppercase tracking-[0.24em] text-[#8b806f] sm:block">
           <div>Story Mode</div>
-          <div className="mt-1 text-[#c8af82]">Memory King</div>
+          <div className="mt-1 text-[#c8af82]">Memory Hero</div>
         </div>
       </header>
 
