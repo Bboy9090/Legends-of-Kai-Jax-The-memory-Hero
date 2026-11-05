@@ -63,4 +63,5 @@ jobs:
           pnpm -C apps/web exec playwright test \
             e2e/smoke.spec.ts \
             e2e/mobile-menu-links.spec.ts \
-            e2e/menu-modes-action-certification.spec.ts
+            e2e/menu-modes-action-certification.spec.ts \
+            e2e/campaign-progression.spec.ts
