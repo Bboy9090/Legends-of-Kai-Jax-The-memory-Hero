@@ -83,33 +83,14 @@ test('Combat Arena commits a playable fighter into a live battle and supports re
   expect(live.training).toBe(false);
 
   // Prove the settled scene is still live before forcing a deterministic result.
-  // Keep failure diagnostics source-bound so a phase transition cannot hide behind a timeout.
+  // Poll from the Playwright host instead of running an in-page polling loop:
+  // software WebGL can monopolize the browser main thread even while the store
+  // has already reached the correct stable state.
   await page.waitForTimeout(500);
-  try {
-    await page.waitForFunction(
-      () => (window as any).battleStore?.getState?.().battlePhase === 'fighting',
-      null,
-      { timeout: 5_000 },
-    );
-  } catch (error) {
-    const diagnostic = await page.evaluate(() => {
-      const battle = (window as any).battleStore?.getState?.();
-      return {
-        phase: battle?.battlePhase ?? null,
-        winner: battle?.winner ?? null,
-        playerHealth: battle?.playerHealth ?? null,
-        opponentHealth: battle?.opponentHealth ?? null,
-        roundTime: battle?.roundTime ?? null,
-        timeScale: battle?.timeScale ?? null,
-        playerFighterId: battle?.playerFighterId ?? null,
-        opponentFighterId: battle?.opponentFighterId ?? null,
-        gameState: (window as any).runnerStore?.getState?.().gameState ?? null,
-        gamePhase: (window as any).gameStore?.getState?.().phase ?? null,
-      };
-    });
-    console.log('COMBAT_ARENA_SETTLE_DIAGNOSTIC', JSON.stringify(diagnostic));
-    throw error;
-  }
+  await expect.poll(
+    async () => page.evaluate(() => (window as any).battleStore?.getState?.().battlePhase ?? null),
+    { timeout: 10_000, intervals: [250, 500, 1_000] },
+  ).toBe('fighting');
 
   await page.evaluate(() => (window as any).battleStore?.getState?.().endBattle?.('player'));
   await page.waitForFunction(
