@@ -111,6 +111,12 @@ export default function OptimizedBeastModel({
     : 1;
   const modelPath = getBeastModelPath(beast.id);
   const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
+  const warmLocomotionDonors =
+    beast.id === 'kai' ||
+    beast.id === 'kaijax' ||
+    beast.id === 'kai-jax' ||
+    beast.id === 'kai_jax';
+
   // Keep donor GLBs off the render-critical path. Companion animations are
   // requested only when gameplay actually enters the matching state. This
   // prevents large donor GLBs from competing with the initial battle scene,
@@ -118,10 +124,14 @@ export default function OptimizedBeastModel({
   const requestedCompanionPaths = useMemo(() => {
     const paths: string[] = [];
 
-    if (isMoving && !isRunning && animationPaths?.walk) {
+    // Core-hero locomotion warms immediately after the fighter component
+    // mounts, but through GLTFLoader rather than useGLTF/Suspense. This keeps
+    // battle startup non-blocking while making authored walk/run available by
+    // first input on ordinary network/disk conditions.
+    if ((warmLocomotionDonors || (isMoving && !isRunning)) && animationPaths?.walk) {
       paths.push(animationPaths.walk);
     }
-    if (isMoving && isRunning && animationPaths?.run) {
+    if ((warmLocomotionDonors || (isMoving && isRunning)) && animationPaths?.run) {
       paths.push(animationPaths.run);
     }
 
@@ -140,7 +150,7 @@ export default function OptimizedBeastModel({
     }
 
     return [...new Set(paths)];
-  }, [animationPaths, attackType, isAttacking, isMoving, isRunning]);
+  }, [animationPaths, attackType, isAttacking, isMoving, isRunning, warmLocomotionDonors]);
 
   // DIAGNOSTIC: log model path resolution
   useEffect(() => {
