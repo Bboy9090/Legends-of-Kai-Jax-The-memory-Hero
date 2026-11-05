@@ -78,7 +78,7 @@ export const STORY_CHECKPOINTS: StoryCheckpoint[] = [
     act: 3,
     missionId: 'story_act3_m5',
     missionNumber: 15,
-    title: 'Act III: The Memory King - Complete',
+    title: 'Act III: The Memory Hero - Complete',
     narrative: 'Kai-Jax stands victorious. The Architect is defeated. Peace returns to the nine-tailed realm.',
     completed: false,
   },
