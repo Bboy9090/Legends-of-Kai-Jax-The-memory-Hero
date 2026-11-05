@@ -115,6 +115,18 @@ function App() {
     }
   }, [phase, gameState]);
   const { setPlayerFighter, setOpponentFighter, screenShake } = useBattle();
+
+  // The battle shell is committed before the 3D scene resolves its Suspense
+  // dependencies. Start combat from this committed shell so input/HUD
+  // authority never waits on GLB loading, while still avoiding the old
+  // pre-mount start race from VersusCharacterSelect.
+  useEffect(() => {
+    if (!battleCanvasActive) return;
+    const battle = useBattle.getState();
+    if (battle.battlePhase === "preRound") {
+      battle.startBattle();
+    }
+  }, [battleCanvasActive]);
   const { 
     setBackgroundMusic, 
     setBattleMusic, 
