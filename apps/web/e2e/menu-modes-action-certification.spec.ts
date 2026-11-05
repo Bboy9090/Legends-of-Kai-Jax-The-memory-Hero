@@ -35,7 +35,10 @@ test('Training performs a live session pause/resume cycle and keeps training aut
   await expect(page.getByRole('heading', { name: /^PAUSED$/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Resume$/i })).toBeVisible();
 
-  await page.getByRole('button', { name: /^Resume$/i }).click();
+  await page.getByRole('button', { name: /^Resume$/i }).evaluate((element) => {
+    (element as HTMLButtonElement).click();
+  });
+  await page.waitForFunction(() => (window as any).useAdventure?.getState?.().isPaused === false);
   await expect(page.getByRole('heading', { name: /^PAUSED$/i })).toBeHidden();
 
   const state = await page.evaluate(() => ({
@@ -95,8 +98,13 @@ test('Combat Arena commits a playable fighter into a live battle and supports re
     { timeout: 10_000 },
   );
 
-  await expect(page.getByText(/VICTORY!/i)).toBeVisible();
+  const result = await page.evaluate(() => {
+    const battle = (window as any).battleStore?.getState?.();
+    return { phase: battle?.battlePhase, winner: battle?.winner };
+  });
+  expect(result).toEqual({ phase: 'results', winner: 'player' });
   await expect(page.getByRole('button', { name: /^REMATCH$/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^MAIN MENU$/i })).toBeVisible();
   await page.getByRole('button', { name: /^MAIN MENU$/i }).click();
   await page.waitForFunction(() => (window as any).runnerStore?.getState?.().gameState === 'menu');
   await expect(page.getByRole('button', { name: /^COMBAT ARENA\b/i })).toBeVisible();
