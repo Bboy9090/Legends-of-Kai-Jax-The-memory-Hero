@@ -22,7 +22,7 @@ permissions:
 jobs:
   runtime-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
     steps:
@@ -67,3 +67,40 @@ jobs:
             e2e/mobile-menu-links.spec.ts \
             e2e/menu-modes-action-certification.spec.ts \
             e2e/campaign-progression.spec.ts
+
+      - name: Verify mission-completion evidence contract
+        working-directory: source
+        run: node apps/web/scripts/story-mission-completion-workflow.test.mjs
+
+      - name: Run full Mission 6 state-driven completion certification
+        working-directory: source/apps/web
+        env:
+          CI: "true"
+        run: |
+          set -o pipefail
+          pnpm exec playwright test \
+            --config=playwright.m6-dev.config.ts \
+            e2e/mission6-flow.devtest.ts \
+            --grep 'M6-C real mission UI' \
+            --workers=1 2>&1 | tee mission6-completion.log
+          {
+            echo "STORY_MISSION_COMPLETION=PASS"
+            echo "SOURCE_SHA=${{ github.event.pull_request.head.sha || github.sha }}"
+            echo "MISSION=story_act2_m6"
+            echo "EVIDENCE_CLASS=state-driven-software-integration"
+            echo "PHYSICAL_DEVICE_CERTIFICATION=NOT_PROVEN"
+            echo "USER_EXECUTED_ATTACKS=NOT_PROVEN"
+          } | tee mission6-completion-receipt.txt
+
+      - name: Upload full mission software evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mission6-software-completion-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            source/apps/web/mission6-completion.log
+            source/apps/web/mission6-completion-receipt.txt
+            source/apps/web/test-results/**
+            source/apps/web/playwright-report/**
+          if-no-files-found: warn
+          retention-days: 30
