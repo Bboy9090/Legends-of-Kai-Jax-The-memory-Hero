@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const workflow = readFileSync(
-  new URL('../../../../.github/workflows/mobile-store-readiness.yml', import.meta.url),
+  new URL('../../../../../.github/workflows/mobile-store-readiness.yml', import.meta.url),
   'utf8',
 );
 
