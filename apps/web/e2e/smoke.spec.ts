@@ -218,17 +218,29 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
 
   // Certify locomotion against the clip actually selected by the mounted fighter.
   await page.keyboard.down("ArrowRight");
-  await expect.poll(
-    async () => page.evaluate(() => {
-      const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
-      return Boolean(
-        probe?.requested === "walk" &&
-        probe?.authored === true &&
-        /walk/i.test(probe?.selectedClip ?? "")
-      );
-    }),
-    { timeout: 60_000, intervals: [250, 500, 1_000, 2_000] },
-  ).toBe(true);
+  try {
+    await expect.poll(
+      async () => page.evaluate(() => {
+        const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
+        return Boolean(
+          probe?.requested === "walk" &&
+          probe?.authored === true &&
+          /walk/i.test(probe?.selectedClip ?? "")
+        );
+      }),
+      { timeout: 60_000, intervals: [250, 500, 1_000, 2_000] },
+    ).toBe(true);
+  } catch (error) {
+    const diagnostic = await page.evaluate(() => ({
+      animation: (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai ?? null,
+      companion: (window as any).__KAI_JAX_COMPANION_PROBE__ ?? null,
+      deformation: (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai ?? null,
+      rig: (window as any).__KAI_JAX_RIG_PROBE__?.kai ?? null,
+      frame: (window as any).__KAI_JAX_FRAME_PROBE__?.kai ?? null,
+    }));
+    console.log("LIVE_KAI_WALK_TIMEOUT_DIAGNOSTIC", JSON.stringify(diagnostic));
+    throw error;
+  }
   const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_WALK_PROBE", JSON.stringify(walkProbe));
   expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
