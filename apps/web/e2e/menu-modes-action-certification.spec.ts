@@ -82,14 +82,34 @@ test('Combat Arena commits a playable fighter into a live battle and supports re
   expect(live.phase).toBe('fighting');
   expect(live.training).toBe(false);
 
-  // BattleScene performs a delayed mount-time initialization at 400 ms.
   // Prove the settled scene is still live before forcing a deterministic result.
+  // Keep failure diagnostics source-bound so a phase transition cannot hide behind a timeout.
   await page.waitForTimeout(500);
-  await page.waitForFunction(
-    () => (window as any).battleStore?.getState?.().battlePhase === 'fighting',
-    null,
-    { timeout: 5_000 },
-  );
+  try {
+    await page.waitForFunction(
+      () => (window as any).battleStore?.getState?.().battlePhase === 'fighting',
+      null,
+      { timeout: 5_000 },
+    );
+  } catch (error) {
+    const diagnostic = await page.evaluate(() => {
+      const battle = (window as any).battleStore?.getState?.();
+      return {
+        phase: battle?.battlePhase ?? null,
+        winner: battle?.winner ?? null,
+        playerHealth: battle?.playerHealth ?? null,
+        opponentHealth: battle?.opponentHealth ?? null,
+        roundTime: battle?.roundTime ?? null,
+        timeScale: battle?.timeScale ?? null,
+        playerFighterId: battle?.playerFighterId ?? null,
+        opponentFighterId: battle?.opponentFighterId ?? null,
+        gameState: (window as any).runnerStore?.getState?.().gameState ?? null,
+        gamePhase: (window as any).gameStore?.getState?.().phase ?? null,
+      };
+    });
+    console.log('COMBAT_ARENA_SETTLE_DIAGNOSTIC', JSON.stringify(diagnostic));
+    throw error;
+  }
 
   await page.evaluate(() => (window as any).battleStore?.getState?.().endBattle?.('player'));
   await page.waitForFunction(
