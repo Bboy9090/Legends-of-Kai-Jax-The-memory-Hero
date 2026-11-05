@@ -6,8 +6,8 @@ import { ALL_STORY_MISSIONS } from '../../lib/story_missions';
 
 
 /**
- * ⚡ LEGENDS OF KAI-JAX: THE MEMORY KING ⚡
- * MEMORY KING / RAGING CITY MAIN MENU
+ * ⚡ LEGENDS OF KAI-JAX: THE MEMORY HERO ⚡
+ * MEMORY HERO / RAGING CITY MAIN MENU
  *
  * Production goals:
  * - cinematic city-first composition
@@ -231,7 +231,7 @@ const LegendaryMainMenu: React.FC = () => {
             <div className="mt-2 text-base uppercase tracking-[0.12em] text-[#efe3cc]">The City Bites Back</div>
             <div className="mt-1 text-[10px] uppercase tracking-[0.16em] text-purple-300/80">Current Form · Kai-Jax</div>
             <div className="mt-3 flex items-center gap-3 text-[9px] uppercase tracking-[0.16em] text-[#817666]">
-              <span className="text-[#c69b55]">Memory King</span>
+              <span className="text-[#c69b55]">Memory Hero</span>
               <span>•</span>
               <span>Raging City</span>
             </div>
@@ -250,7 +250,7 @@ const LegendaryMainMenu: React.FC = () => {
             LEGENDS OF KAI-JAX
           </h1>
           <h2 className="text-transformation mb-3 text-lg tracking-[0.18em] text-white sm:text-2xl lg:text-4xl">
-            THE MEMORY KING
+            THE MEMORY HERO
           </h2>
           <div className="mt-3 flex max-w-[680px] items-center gap-2 sm:mt-6 sm:gap-3">
             <div className="hidden h-0.5 w-12 bg-gradient-to-r from-transparent via-legendary-gold to-transparent sm:block lg:w-24" />
@@ -368,7 +368,7 @@ const LegendaryMainMenu: React.FC = () => {
             </button>
           </div>
           <p className="text-neutral-700 text-[10px] mt-4 uppercase tracking-widest">
-            THE MEMORY KING — RELEASE VISION
+            THE MEMORY HERO — RELEASE VISION
           </p>
         </div>
       </div>
