@@ -82,14 +82,15 @@ test('Combat Arena commits a playable fighter into a live battle and supports re
   expect(live.phase).toBe('fighting');
   expect(live.training).toBe(false);
 
-  // BattleScene performs a delayed mount-time initialization at 400 ms.
   // Prove the settled scene is still live before forcing a deterministic result.
+  // Poll from the Playwright host instead of running an in-page polling loop:
+  // software WebGL can monopolize the browser main thread even while the store
+  // has already reached the correct stable state.
   await page.waitForTimeout(500);
-  await page.waitForFunction(
-    () => (window as any).battleStore?.getState?.().battlePhase === 'fighting',
-    null,
-    { timeout: 5_000 },
-  );
+  await expect.poll(
+    async () => page.evaluate(() => (window as any).battleStore?.getState?.().battlePhase ?? null),
+    { timeout: 10_000, intervals: [250, 500, 1_000] },
+  ).toBe('fighting');
 
   await page.evaluate(() => (window as any).battleStore?.getState?.().endBattle?.('player'));
   await page.waitForFunction(

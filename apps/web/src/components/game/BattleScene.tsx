@@ -70,7 +70,7 @@ export default function BattleScene() {
     const delayMs = 400;
     const timer = setTimeout(() => {
       const s = useBattle.getState();
-      if (s.battlePhase === "intro") {
+      if (s.battlePhase === "preRound") {
         s.startBattle();
       }
     }, delayMs);

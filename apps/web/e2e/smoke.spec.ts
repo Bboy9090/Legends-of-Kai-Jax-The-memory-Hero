@@ -218,10 +218,17 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
 
   // Certify locomotion against the clip actually selected by the mounted fighter.
   await page.keyboard.down("ArrowRight");
-  await page.waitForFunction(() => {
-    const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
-    return probe?.requested === "walk" && probe?.authored === true && /walk/i.test(probe?.selectedClip ?? "");
-  }, null, { timeout: 45_000 });
+  await expect.poll(
+    async () => page.evaluate(() => {
+      const probe = (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai;
+      return Boolean(
+        probe?.requested === "walk" &&
+        probe?.authored === true &&
+        /walk/i.test(probe?.selectedClip ?? "")
+      );
+    }),
+    { timeout: 60_000, intervals: [250, 500, 1_000, 2_000] },
+  ).toBe(true);
   const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_WALK_PROBE", JSON.stringify(walkProbe));
   expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();

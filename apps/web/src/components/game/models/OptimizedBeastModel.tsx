@@ -93,6 +93,7 @@ export default function OptimizedBeastModel({
   const basesRef = useRef<LimbBaseRotations | null>(null);
   const proceduralStateRef = useRef(createAnimState());
   const activeActionRef = useRef<THREE.AnimationAction | null>(null);
+  const authoredActionStartedAtRef = useRef(0);
   const previousHitAnimRef = useRef(0);
   const previousAttackRef = useRef(false);
   const animationSelectionAttackRef = useRef(false);
@@ -111,42 +112,46 @@ export default function OptimizedBeastModel({
     : 1;
   const modelPath = getBeastModelPath(beast.id);
   const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
-  const isCriticalHeroRig = beast.id === 'kai' || beast.id === 'kaijax' || beast.id === 'kai-jax' || beast.id === 'kai_jax';
-  const criticalCompanionPaths = useMemo(() => {
-    if (!isCriticalHeroRig) return [] as string[];
-    return [
-      animationPaths?.walk,
-      animationPaths?.run,
-      ...(animationPaths?.kick ?? []),
-    ].filter(Boolean) as string[];
-  }, [animationPaths, isCriticalHeroRig]);
+  const warmLocomotionDonors =
+    beast.id === 'kai' ||
+    beast.id === 'kaijax' ||
+    beast.id === 'kai-jax' ||
+    beast.id === 'kai_jax';
 
-  // Kai is the release-critical hero. Warm his authored locomotion and kick
-  // clips before interaction so first input never races the network. The
-  // source GLBs are used only as animation donors; duplicate render payloads
-  // are disposed after clip extraction below.
-  const criticalCompanionGLTFs = useGLTF(criticalCompanionPaths) as any[];
-
+  // Keep donor GLBs off the render-critical path. Companion animations are
+  // requested only when gameplay actually enters the matching state. This
+  // prevents large donor GLBs from competing with the initial battle scene,
+  // while still making authored locomotion/attacks available on demand.
   const requestedCompanionPaths = useMemo(() => {
     const paths: string[] = [];
 
-    // Non-critical roster locomotion and optional attack families remain lazy.
-    if (!isCriticalHeroRig && isMoving) {
-      if (isRunning && animationPaths?.run) paths.push(animationPaths.run);
-      else if (!isRunning && animationPaths?.walk) paths.push(animationPaths.walk);
+    // Core-hero locomotion warms immediately after the fighter component
+    // mounts, but through GLTFLoader rather than useGLTF/Suspense. This keeps
+    // battle startup non-blocking while making authored walk/run available by
+    // first input on ordinary network/disk conditions.
+    if ((warmLocomotionDonors || (isMoving && !isRunning)) && animationPaths?.walk) {
+      paths.push(animationPaths.walk);
+    }
+    if ((warmLocomotionDonors || (isMoving && isRunning)) && animationPaths?.run) {
+      paths.push(animationPaths.run);
     }
 
     if (isAttacking) {
-      const kickIsAlreadyCritical = isCriticalHeroRig;
-      if (!kickIsAlreadyCritical && (attackType === 'kick' || attackType === 'heavy') && animationPaths?.kick) {
+      if ((attackType === 'kick' || attackType === 'heavy') && animationPaths?.kick) {
         paths.push(...animationPaths.kick);
-      } else if ((attackType === 'punch' || attackType === 'light1' || attackType === 'light2' || attackType === 'light3') && animationPaths?.punch) {
+      } else if (
+        (attackType === 'punch' ||
+          attackType === 'light1' ||
+          attackType === 'light2' ||
+          attackType === 'light3') &&
+        animationPaths?.punch
+      ) {
         paths.push(...animationPaths.punch);
       }
     }
 
     return [...new Set(paths)];
-  }, [animationPaths, attackType, beast.id, isAttacking, isCriticalHeroRig, isMoving, isRunning]);
+  }, [animationPaths, attackType, isAttacking, isMoving, isRunning, warmLocomotionDonors]);
 
   // DIAGNOSTIC: log model path resolution
   useEffect(() => {
@@ -179,9 +184,10 @@ export default function OptimizedBeastModel({
     };
   }, []);
 
-  // Companion files are complete GLBs, not animation-only payloads. Keep them
-  // out of useGLTF/useLoader's render-critical cache. Locomotion warms after
-  // mount; heavier attack clips load on demand. Duplicate render payloads are
+  // Companion files are complete GLBs, not animation-only payloads. Keep all
+  // donor files out of useGLTF/useLoader's render-critical cache so entering a
+  // battle never waits on optional animation payloads. Walk/run and attacks
+  // load only when gameplay requests them, then their render payloads are
   // disposed immediately after animation extraction.
   useEffect(() => {
     if (requestedCompanionPaths.length === 0) return;
@@ -277,43 +283,9 @@ export default function OptimizedBeastModel({
 
   }, [beast.id, requestedCompanionPaths]);
 
-  const criticalAnimations = useMemo(() => {
-    const clips: THREE.AnimationClip[] = [];
-    criticalCompanionGLTFs.forEach((gltf, index) => {
-      const path = criticalCompanionPaths[index] ?? '';
-      const semantic =
-        /Running/i.test(path) ? 'Run'
-        : /Walking/i.test(path) ? 'Walk'
-        : /Kick/i.test(path) ? 'Kick'
-        : /Punch|Jab/i.test(path) ? 'Punch'
-        : 'Companion';
-      (gltf?.animations ?? []).forEach((clip: THREE.AnimationClip, clipIndex: number) => {
-        const clone = clip.clone();
-        clone.name = `${semantic}:${clip.name || clipIndex}:${path.split('/').pop() || clipIndex}`;
-        clips.push(clone);
-      });
-    });
-    return clips;
-  }, [criticalCompanionGLTFs, criticalCompanionPaths]);
-
-  useEffect(() => {
-    criticalCompanionGLTFs.forEach((gltf) => {
-      gltf?.scene?.traverse?.((obj: any) => {
-        obj.geometry?.dispose?.();
-        const materials = Array.isArray(obj.material) ? obj.material : obj.material ? [obj.material] : [];
-        materials.forEach((material: any) => {
-          Object.values(material).forEach((value: any) => {
-            if (value?.isTexture) value.dispose?.();
-          });
-          material.dispose?.();
-        });
-      });
-    });
-  }, [criticalCompanionGLTFs]);
-
   const authoredAnimations = useMemo(
-    () => [...animations, ...criticalAnimations, ...companionAnimations],
-    [animations, criticalAnimations, companionAnimations],
+    () => [...animations, ...companionAnimations],
+    [animations, companionAnimations],
   );
   // DIAGNOSTIC: log scene load success
   useEffect(() => {
@@ -621,6 +593,10 @@ export default function OptimizedBeastModel({
           next.setLoop(THREE.LoopRepeat, Infinity);
           next.clampWhenFinished = false;
         }
+        deformationSampleRef.current = { frames: 0, motion: 0, last: null };
+        skinDeformationSampleRef.current = { frames: 0, motion: 0, last: null };
+        authoredActionStartedAtRef.current =
+          typeof performance !== 'undefined' ? performance.now() : 0;
         next.fadeIn(0.18).play();
         activeActionRef.current = next;
       }
@@ -706,7 +682,13 @@ export default function OptimizedBeastModel({
       // Two distinct samples are the minimum needed to measure a real delta.
       // A static authored clip still fails this check, switches to procedural,
       // and must produce a non-zero weighted-vertex delta on the next cycle.
-      if (measuredFrames >= 2) {
+      const authoredWarmupElapsedMs =
+        activeActionRef.current && !forceProceduralRef.current && authoredActionStartedAtRef.current > 0
+          ? (typeof performance !== 'undefined' ? performance.now() : 0) - authoredActionStartedAtRef.current
+          : Number.POSITIVE_INFINITY;
+      const authoredWarmupComplete = authoredWarmupElapsedMs >= 250;
+
+      if (measuredFrames >= 2 && authoredWarmupComplete) {
         const averageBoneMotion = boneSample.frames > 0 ? boneSample.motion / boneSample.frames : 0;
         const averageSkinMotion = skinSample.frames > 0 ? skinSample.motion / skinSample.frames : 0;
         const skinVerified = skinPose.length > 0;
