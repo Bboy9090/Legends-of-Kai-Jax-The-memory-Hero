@@ -11,7 +11,7 @@ const runtimeSurfaces = [
 describe('runtime Memory Hero brand identity', () => {
   it('uses Memory Hero on the public runtime surfaces', () => {
     for (const relative of runtimeSurfaces) {
-      const source = readFileSync(new URL(`../../${relative}`, import.meta.url), 'utf8');
+      const source = readFileSync(new URL(`../../../${relative}`, import.meta.url), 'utf8');
       expect(source).toContain('MEMORY HERO');
       expect(source.toUpperCase()).not.toContain('MEMORY KING');
       expect(source.toUpperCase()).not.toContain('FUSION HERO');
