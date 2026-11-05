@@ -1,0 +1,86 @@
+name: Story Mission Completion Certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/e2e/mission6-flow.devtest.ts'
+      - 'apps/web/playwright.m6-dev.config.ts'
+      - 'apps/web/src/**'
+      - 'apps/web/package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/story-mission-completion.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: story-mission-completion-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  mission-6-software-completion:
+    name: Mission 6 full software completion
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact proposed head
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
+          cd source
+          git checkout --detach "${COMMIT_SHA}"
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+
+      - name: Activate pnpm and install web dependencies
+        working-directory: source
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          pnpm install --filter ./apps/web... --frozen-lockfile
+
+      - name: Install Chromium
+        working-directory: source
+        run: pnpm -C apps/web exec playwright install --with-deps chromium
+
+      - name: Run full Mission 6 state-driven completion certification
+        working-directory: source/apps/web
+        env:
+          CI: "true"
+        run: |
+          set -o pipefail
+          pnpm exec playwright test \
+            --config=playwright.m6-dev.config.ts \
+            e2e/mission6-flow.devtest.ts \
+            --grep 'M6-C real mission UI' \
+            --workers=1 2>&1 | tee mission6-completion.log
+
+      - name: Record evidence classification
+        if: success()
+        working-directory: source/apps/web
+        run: |
+          {
+            echo "STORY_MISSION_COMPLETION=PASS"
+            echo "SOURCE_SHA=${{ github.event.pull_request.head.sha || github.sha }}"
+            echo "MISSION=story_act2_m6"
+            echo "EVIDENCE_CLASS=state-driven-software-integration"
+            echo "PHYSICAL_DEVICE_CERTIFICATION=NOT_PROVEN"
+            echo "USER_EXECUTED_ATTACKS=NOT_PROVEN"
+          } | tee mission6-completion-receipt.txt
+
+      - name: Upload mission completion evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mission6-software-completion-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            source/apps/web/mission6-completion.log
+            source/apps/web/mission6-completion-receipt.txt
+            source/apps/web/test-results/**
+            source/apps/web/playwright-report/**
+          if-no-files-found: warn
+          retention-days: 30
