@@ -111,22 +111,6 @@ export default function OptimizedBeastModel({
     : 1;
   const modelPath = getBeastModelPath(beast.id);
   const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
-  const isCriticalHeroRig =
-    beast.id === 'kai' ||
-    beast.id === 'kaijax' ||
-    beast.id === 'kai-jax' ||
-    beast.id === 'kai_jax';
-
-  // Authored locomotion is release-critical and already proven on current
-  // main. Keep only critical walk/run donors ready before interaction while
-  // leaving all attack donors state-driven. This removes the startup kick
-  // payload without changing the certified locomotion contract.
-  const eagerLocomotionPaths = useMemo(() => {
-    if (!isCriticalHeroRig) return [] as string[];
-    return [animationPaths?.walk, animationPaths?.run].filter(Boolean) as string[];
-  }, [animationPaths?.run, animationPaths?.walk, isCriticalHeroRig]);
-  const eagerLocomotionGLTFs = useGLTF(eagerLocomotionPaths) as any[];
-
   // Keep donor GLBs off the render-critical path. Companion animations are
   // requested only when gameplay actually enters the matching state. This
   // prevents large donor GLBs from competing with the initial battle scene,
@@ -134,10 +118,10 @@ export default function OptimizedBeastModel({
   const requestedCompanionPaths = useMemo(() => {
     const paths: string[] = [];
 
-    if (!isCriticalHeroRig && isMoving && !isRunning && animationPaths?.walk) {
+    if (isMoving && !isRunning && animationPaths?.walk) {
       paths.push(animationPaths.walk);
     }
-    if (!isCriticalHeroRig && isMoving && isRunning && animationPaths?.run) {
+    if (isMoving && isRunning && animationPaths?.run) {
       paths.push(animationPaths.run);
     }
 
@@ -156,7 +140,7 @@ export default function OptimizedBeastModel({
     }
 
     return [...new Set(paths)];
-  }, [animationPaths, attackType, isAttacking, isCriticalHeroRig, isMoving, isRunning]);
+  }, [animationPaths, attackType, isAttacking, isMoving, isRunning]);
 
   // DIAGNOSTIC: log model path resolution
   useEffect(() => {
@@ -189,9 +173,10 @@ export default function OptimizedBeastModel({
     };
   }, []);
 
-  // Companion files are complete GLBs, not animation-only payloads. Keep them
-  // out of useGLTF/useLoader's render-critical cache. Locomotion warms after
-  // mount; heavier attack clips load on demand. Duplicate render payloads are
+  // Companion files are complete GLBs, not animation-only payloads. Keep all
+  // donor files out of useGLTF/useLoader's render-critical cache so entering a
+  // battle never waits on optional animation payloads. Walk/run and attacks
+  // load only when gameplay requests them, then their render payloads are
   // disposed immediately after animation extraction.
   useEffect(() => {
     if (requestedCompanionPaths.length === 0) return;
@@ -287,41 +272,9 @@ export default function OptimizedBeastModel({
 
   }, [beast.id, requestedCompanionPaths]);
 
-  const eagerLocomotionAnimations = useMemo(() => {
-    const clips: THREE.AnimationClip[] = [];
-    eagerLocomotionGLTFs.forEach((gltf, index) => {
-      const donorPath = eagerLocomotionPaths[index] ?? '';
-      (gltf?.animations ?? []).forEach((clip: THREE.AnimationClip, clipIndex: number) => {
-        const clone = clip.clone();
-        clone.name = `Walk:${clip.name || clipIndex}:${donorPath.split('/').pop() || clipIndex}`;
-        clips.push(clone);
-      });
-    });
-    return clips;
-  }, [eagerLocomotionGLTFs, eagerLocomotionPaths]);
-
-  useEffect(() => {
-    eagerLocomotionGLTFs.forEach((gltf) => {
-      gltf?.scene?.traverse?.((obj: any) => {
-        obj.geometry?.dispose?.();
-        const materials = Array.isArray(obj.material)
-          ? obj.material
-          : obj.material
-            ? [obj.material]
-            : [];
-        materials.forEach((material: any) => {
-          Object.values(material).forEach((value: any) => {
-            if (value?.isTexture) value.dispose?.();
-          });
-          material.dispose?.();
-        });
-      });
-    });
-  }, [eagerLocomotionGLTFs]);
-
   const authoredAnimations = useMemo(
-    () => [...animations, ...eagerLocomotionAnimations, ...companionAnimations],
-    [animations, eagerLocomotionAnimations, companionAnimations],
+    () => [...animations, ...companionAnimations],
+    [animations, companionAnimations],
   );
   // DIAGNOSTIC: log scene load success
   useEffect(() => {
