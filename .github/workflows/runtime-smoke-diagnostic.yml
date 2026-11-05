@@ -34,7 +34,7 @@ jobs:
           git clone --filter=blob:none --no-checkout "https://github.com/${REPOSITORY}.git" source
           cd source
           git sparse-checkout init --cone
-          git sparse-checkout set apps/web packages
+          git sparse-checkout set apps/web packages .github
           git checkout --detach "${COMMIT_SHA}"
           git show "${COMMIT_SHA}:package.json" > package.json
           git show "${COMMIT_SHA}:pnpm-lock.yaml" > pnpm-lock.yaml
@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload full mission software evidence
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: mission6-software-completion-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
