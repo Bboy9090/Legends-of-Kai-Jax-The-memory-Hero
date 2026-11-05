@@ -93,6 +93,7 @@ export default function OptimizedBeastModel({
   const basesRef = useRef<LimbBaseRotations | null>(null);
   const proceduralStateRef = useRef(createAnimState());
   const activeActionRef = useRef<THREE.AnimationAction | null>(null);
+  const authoredActionStartedAtRef = useRef(0);
   const previousHitAnimRef = useRef(0);
   const previousAttackRef = useRef(false);
   const animationSelectionAttackRef = useRef(false);
@@ -592,6 +593,10 @@ export default function OptimizedBeastModel({
           next.setLoop(THREE.LoopRepeat, Infinity);
           next.clampWhenFinished = false;
         }
+        deformationSampleRef.current = { frames: 0, motion: 0, last: null };
+        skinDeformationSampleRef.current = { frames: 0, motion: 0, last: null };
+        authoredActionStartedAtRef.current =
+          typeof performance !== 'undefined' ? performance.now() : 0;
         next.fadeIn(0.18).play();
         activeActionRef.current = next;
       }
@@ -677,7 +682,13 @@ export default function OptimizedBeastModel({
       // Two distinct samples are the minimum needed to measure a real delta.
       // A static authored clip still fails this check, switches to procedural,
       // and must produce a non-zero weighted-vertex delta on the next cycle.
-      if (measuredFrames >= 2) {
+      const authoredWarmupElapsedMs =
+        activeActionRef.current && !forceProceduralRef.current && authoredActionStartedAtRef.current > 0
+          ? (typeof performance !== 'undefined' ? performance.now() : 0) - authoredActionStartedAtRef.current
+          : Number.POSITIVE_INFINITY;
+      const authoredWarmupComplete = authoredWarmupElapsedMs >= 250;
+
+      if (measuredFrames >= 2 && authoredWarmupComplete) {
         const averageBoneMotion = boneSample.frames > 0 ? boneSample.motion / boneSample.frames : 0;
         const averageSkinMotion = skinSample.frames > 0 ? skinSample.motion / skinSample.frames : 0;
         const skinVerified = skinPose.length > 0;
