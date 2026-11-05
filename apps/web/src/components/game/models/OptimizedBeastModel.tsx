@@ -111,6 +111,15 @@ export default function OptimizedBeastModel({
     : 1;
   const modelPath = getBeastModelPath(beast.id);
   const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
+  // Kai's authored walk is a release-critical interaction contract. Keep only
+  // that one donor ready before interaction; run/attack donors and all Kai-Jax
+  // companion donors remain state-driven below.
+  const eagerWalkPaths = useMemo(
+    () => beast.id === 'kai' && animationPaths?.walk ? [animationPaths.walk] : [],
+    [animationPaths?.walk, beast.id],
+  );
+  const eagerWalkGLTFs = useGLTF(eagerWalkPaths) as any[];
+
   // Keep donor GLBs off the render-critical path. Companion animations are
   // requested only when gameplay actually enters the matching state. This
   // prevents large donor GLBs from competing with the initial battle scene,
@@ -118,7 +127,7 @@ export default function OptimizedBeastModel({
   const requestedCompanionPaths = useMemo(() => {
     const paths: string[] = [];
 
-    if (isMoving && !isRunning && animationPaths?.walk) {
+    if (isMoving && !isRunning && animationPaths?.walk && beast.id !== 'kai') {
       paths.push(animationPaths.walk);
     }
     if (isMoving && isRunning && animationPaths?.run) {
@@ -140,7 +149,7 @@ export default function OptimizedBeastModel({
     }
 
     return [...new Set(paths)];
-  }, [animationPaths, attackType, isAttacking, isMoving, isRunning]);
+  }, [animationPaths, attackType, beast.id, isAttacking, isMoving, isRunning]);
 
   // DIAGNOSTIC: log model path resolution
   useEffect(() => {
@@ -271,9 +280,41 @@ export default function OptimizedBeastModel({
 
   }, [beast.id, requestedCompanionPaths]);
 
+  const eagerWalkAnimations = useMemo(() => {
+    const clips: THREE.AnimationClip[] = [];
+    eagerWalkGLTFs.forEach((gltf, index) => {
+      const donorPath = eagerWalkPaths[index] ?? '';
+      (gltf?.animations ?? []).forEach((clip: THREE.AnimationClip, clipIndex: number) => {
+        const clone = clip.clone();
+        clone.name = `Walk:${clip.name || clipIndex}:${donorPath.split('/').pop() || clipIndex}`;
+        clips.push(clone);
+      });
+    });
+    return clips;
+  }, [eagerWalkGLTFs, eagerWalkPaths]);
+
+  useEffect(() => {
+    eagerWalkGLTFs.forEach((gltf) => {
+      gltf?.scene?.traverse?.((obj: any) => {
+        obj.geometry?.dispose?.();
+        const materials = Array.isArray(obj.material)
+          ? obj.material
+          : obj.material
+            ? [obj.material]
+            : [];
+        materials.forEach((material: any) => {
+          Object.values(material).forEach((value: any) => {
+            if (value?.isTexture) value.dispose?.();
+          });
+          material.dispose?.();
+        });
+      });
+    });
+  }, [eagerWalkGLTFs]);
+
   const authoredAnimations = useMemo(
-    () => [...animations, ...companionAnimations],
-    [animations, companionAnimations],
+    () => [...animations, ...eagerWalkAnimations, ...companionAnimations],
+    [animations, eagerWalkAnimations, companionAnimations],
   );
   // DIAGNOSTIC: log scene load success
   useEffect(() => {
