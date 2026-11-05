@@ -111,32 +111,36 @@ export default function OptimizedBeastModel({
     : 1;
   const modelPath = getBeastModelPath(beast.id);
   const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
-  const isCriticalHeroRig = beast.id === 'kai' || beast.id === 'kaijax' || beast.id === 'kai-jax' || beast.id === 'kai_jax';
-  // Keep donor GLBs off the render-critical path for every canonical hero ID.
-  // Walk and the primary kick are warmed asynchronously; sprint and variants
-  // load on demand to avoid blocking first render with multiple GLB requests.
+  // Keep donor GLBs off the render-critical path. Companion animations are
+  // requested only when gameplay actually enters the matching state. This
+  // prevents large donor GLBs from competing with the initial battle scene,
+  // while still making authored locomotion/attacks available on demand.
   const requestedCompanionPaths = useMemo(() => {
     const paths: string[] = [];
 
-    if (isCriticalHeroRig) {
-      if (animationPaths?.walk) paths.push(animationPaths.walk);
-      const primaryKick = animationPaths?.kick?.[0];
-      if (primaryKick) paths.push(primaryKick);
-    } else if (isMoving && !isRunning && animationPaths?.walk) {
+    if (isMoving && !isRunning && animationPaths?.walk) {
       paths.push(animationPaths.walk);
     }
-    if (isMoving && isRunning && animationPaths?.run) paths.push(animationPaths.run);
+    if (isMoving && isRunning && animationPaths?.run) {
+      paths.push(animationPaths.run);
+    }
 
     if (isAttacking) {
       if ((attackType === 'kick' || attackType === 'heavy') && animationPaths?.kick) {
-        paths.push(...(isCriticalHeroRig ? animationPaths.kick.slice(1) : animationPaths.kick));
-      } else if ((attackType === 'punch' || attackType === 'light1' || attackType === 'light2' || attackType === 'light3') && animationPaths?.punch) {
+        paths.push(...animationPaths.kick);
+      } else if (
+        (attackType === 'punch' ||
+          attackType === 'light1' ||
+          attackType === 'light2' ||
+          attackType === 'light3') &&
+        animationPaths?.punch
+      ) {
         paths.push(...animationPaths.punch);
       }
     }
 
     return [...new Set(paths)];
-  }, [animationPaths, attackType, beast.id, isAttacking, isCriticalHeroRig, isMoving, isRunning]);
+  }, [animationPaths, attackType, isAttacking, isMoving, isRunning]);
 
   // DIAGNOSTIC: log model path resolution
   useEffect(() => {
