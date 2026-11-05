@@ -21,8 +21,6 @@ jobs:
     name: Core character release authority
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    outputs:
-      approved: ${{ steps.authority.outputs.approved }}
     steps:
       - name: Checkout exact commit without reusable actions
         env:
@@ -34,8 +32,7 @@ jobs:
           git checkout --detach "${COMMIT_SHA}"
           test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
 
-      - name: Evaluate approved Kai, Jax, and Kai-Jax release assets
-        id: authority
+      - name: Validate approved Kai, Jax, and Kai-Jax release assets
         working-directory: source
         shell: bash
         run: |
@@ -44,49 +41,18 @@ jobs:
           STATUS=${PIPESTATUS[0]}
           set -e
 
-          if [ "${STATUS}" -eq 0 ]; then
-            echo "approved=true" >> "$GITHUB_OUTPUT"
-            printf '%s\n' "CORE_CHARACTER_RELEASE_AUTHORITY=approved-current"
-            exit 0
-          fi
-
-          echo "approved=false" >> "$GITHUB_OUTPUT"
-          printf '%s\n' "CORE_CHARACTER_RELEASE_AUTHORITY=blocked"
-
-          # Pull requests are allowed to prove that release is correctly blocked
-          # while canonical assets are pending. Actual release execution remains
-          # fail-closed below and store-facing jobs require approved=true.
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            grep -q "BLOCKED" core-character-authority.log
+            if [ "${STATUS}" -eq 0 ]; then
+              printf '%s\n' "CORE_CHARACTER_RELEASE_AUTHORITY=approved-current"
+            else
+              grep -q "BLOCKED" core-character-authority.log
+              printf '%s\n' "CORE_CHARACTER_RELEASE_AUTHORITY=blocked-pending-approved-canonical-glbs"
+            fi
             exit 0
           fi
 
+          # Release execution is fail-closed.
           exit "${STATUS}"
-
-      - name: Emit blocked release receipt for pull requests
-        if: ${{ github.event_name == 'pull_request' && steps.authority.outputs.approved != 'true' }}
-        working-directory: source
-        run: |
-          cat > core-character-release-state.json <<JSON
-          {
-            "schema": "kai-jax.core-character-release-state.v1",
-            "sourceCommit": "${{ github.event.pull_request.head.sha || github.sha }}",
-            "event": "${{ github.event_name }}",
-            "approved": false,
-            "storePackagingAllowed": false,
-            "status": "blocked-pending-approved-canonical-glbs"
-          }
-          JSON
-          cat core-character-release-state.json
-
-      - name: Upload core-character release-state receipt
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: kai-jax-core-character-release-state
-          path: source/core-character-release-state.json
-          if-no-files-found: ignore
-          retention-days: 30
 
   web-cert:
     name: Web + Capacitor source certification
@@ -150,7 +116,7 @@ jobs:
 
   android-release:
     needs: core-character-release-authority
-    if: ${{ needs.core-character-release-authority.outputs.approved == 'true' }}
+    if: ${{ github.event_name != 'pull_request' }}
     name: Android release bundle
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -205,7 +171,7 @@ jobs:
 
   ios-release-compile:
     needs: core-character-release-authority
-    if: ${{ needs.core-character-release-authority.outputs.approved == 'true' }}
+    if: ${{ github.event_name != 'pull_request' }}
     name: iOS Release compile
     runs-on: macos-latest
     timeout-minutes: 40
@@ -260,7 +226,7 @@ jobs:
 
   runtime-mobile-e2e:
     needs: core-character-release-authority
-    if: ${{ needs.core-character-release-authority.outputs.approved == 'true' }}
+    if: ${{ github.event_name != 'pull_request' }}
     name: Production mobile runtime smoke
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -297,7 +263,7 @@ jobs:
 
   ios-device-archive:
     needs: core-character-release-authority
-    if: ${{ needs.core-character-release-authority.outputs.approved == 'true' }}
+    if: ${{ github.event_name != 'pull_request' }}
     name: iOS unsigned device archive
     runs-on: macos-latest
     timeout-minutes: 45
