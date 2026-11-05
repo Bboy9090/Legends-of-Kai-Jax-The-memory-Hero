@@ -111,14 +111,21 @@ export default function OptimizedBeastModel({
     : 1;
   const modelPath = getBeastModelPath(beast.id);
   const animationPaths = MODEL_REGISTRY[beast.id]?.animationPaths;
-  // Kai's authored walk is a release-critical interaction contract. Keep only
-  // that one donor ready before interaction; run/attack donors and all Kai-Jax
-  // companion donors remain state-driven below.
-  const eagerWalkPaths = useMemo(
-    () => beast.id === 'kai' && animationPaths?.walk ? [animationPaths.walk] : [],
-    [animationPaths?.walk, beast.id],
-  );
-  const eagerWalkGLTFs = useGLTF(eagerWalkPaths) as any[];
+  const isCriticalHeroRig =
+    beast.id === 'kai' ||
+    beast.id === 'kaijax' ||
+    beast.id === 'kai-jax' ||
+    beast.id === 'kai_jax';
+
+  // Authored locomotion is release-critical and already proven on current
+  // main. Keep only critical walk/run donors ready before interaction while
+  // leaving all attack donors state-driven. This removes the startup kick
+  // payload without changing the certified locomotion contract.
+  const eagerLocomotionPaths = useMemo(() => {
+    if (!isCriticalHeroRig) return [] as string[];
+    return [animationPaths?.walk, animationPaths?.run].filter(Boolean) as string[];
+  }, [animationPaths?.run, animationPaths?.walk, isCriticalHeroRig]);
+  const eagerLocomotionGLTFs = useGLTF(eagerLocomotionPaths) as any[];
 
   // Keep donor GLBs off the render-critical path. Companion animations are
   // requested only when gameplay actually enters the matching state. This
@@ -127,10 +134,10 @@ export default function OptimizedBeastModel({
   const requestedCompanionPaths = useMemo(() => {
     const paths: string[] = [];
 
-    if (isMoving && !isRunning && animationPaths?.walk && beast.id !== 'kai') {
+    if (!isCriticalHeroRig && isMoving && !isRunning && animationPaths?.walk) {
       paths.push(animationPaths.walk);
     }
-    if (isMoving && isRunning && animationPaths?.run) {
+    if (!isCriticalHeroRig && isMoving && isRunning && animationPaths?.run) {
       paths.push(animationPaths.run);
     }
 
@@ -149,7 +156,7 @@ export default function OptimizedBeastModel({
     }
 
     return [...new Set(paths)];
-  }, [animationPaths, attackType, beast.id, isAttacking, isMoving, isRunning]);
+  }, [animationPaths, attackType, isAttacking, isCriticalHeroRig, isMoving, isRunning]);
 
   // DIAGNOSTIC: log model path resolution
   useEffect(() => {
@@ -280,10 +287,10 @@ export default function OptimizedBeastModel({
 
   }, [beast.id, requestedCompanionPaths]);
 
-  const eagerWalkAnimations = useMemo(() => {
+  const eagerLocomotionAnimations = useMemo(() => {
     const clips: THREE.AnimationClip[] = [];
-    eagerWalkGLTFs.forEach((gltf, index) => {
-      const donorPath = eagerWalkPaths[index] ?? '';
+    eagerLocomotionGLTFs.forEach((gltf, index) => {
+      const donorPath = eagerLocomotionPaths[index] ?? '';
       (gltf?.animations ?? []).forEach((clip: THREE.AnimationClip, clipIndex: number) => {
         const clone = clip.clone();
         clone.name = `Walk:${clip.name || clipIndex}:${donorPath.split('/').pop() || clipIndex}`;
@@ -291,10 +298,10 @@ export default function OptimizedBeastModel({
       });
     });
     return clips;
-  }, [eagerWalkGLTFs, eagerWalkPaths]);
+  }, [eagerLocomotionGLTFs, eagerLocomotionPaths]);
 
   useEffect(() => {
-    eagerWalkGLTFs.forEach((gltf) => {
+    eagerLocomotionGLTFs.forEach((gltf) => {
       gltf?.scene?.traverse?.((obj: any) => {
         obj.geometry?.dispose?.();
         const materials = Array.isArray(obj.material)
@@ -310,11 +317,11 @@ export default function OptimizedBeastModel({
         });
       });
     });
-  }, [eagerWalkGLTFs]);
+  }, [eagerLocomotionGLTFs]);
 
   const authoredAnimations = useMemo(
-    () => [...animations, ...eagerWalkAnimations, ...companionAnimations],
-    [animations, eagerWalkAnimations, companionAnimations],
+    () => [...animations, ...eagerLocomotionAnimations, ...companionAnimations],
+    [animations, eagerLocomotionAnimations, companionAnimations],
   );
   // DIAGNOSTIC: log scene load success
   useEffect(() => {
