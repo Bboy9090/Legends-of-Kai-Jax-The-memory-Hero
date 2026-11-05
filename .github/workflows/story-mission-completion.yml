@@ -72,15 +72,30 @@ jobs:
             echo "USER_EXECUTED_ATTACKS=NOT_PROVEN"
           } | tee mission6-completion-receipt.txt
 
-      - name: Upload mission completion evidence
+      - name: Publish mission completion evidence to job summary
         if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: mission6-software-completion-${{ github.event.pull_request.head.sha || github.sha }}
-          path: |
-            source/apps/web/mission6-completion.log
-            source/apps/web/mission6-completion-receipt.txt
-            source/apps/web/test-results/**
-            source/apps/web/playwright-report/**
-          if-no-files-found: warn
-          retention-days: 30
+        working-directory: source/apps/web
+        run: |
+          {
+            echo '## Story Mission Completion Certification'
+            echo
+            echo '### Source-bound receipt'
+            echo '```text'
+            if [ -f mission6-completion-receipt.txt ]; then
+              cat mission6-completion-receipt.txt
+            else
+              echo 'MISSION_COMPLETION_RECEIPT=NOT_PRODUCED'
+              echo 'CERTIFICATION_RESULT=FAILED_OR_INCOMPLETE'
+            fi
+            echo '```'
+            echo
+            echo '### Evidence boundary'
+            echo '- State-driven software integration only.'
+            echo '- Physical-device certification is not proven.'
+            echo '- User-executed combat inputs are not proven.'
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          if [ -f mission6-completion.log ]; then
+            echo '--- mission completion log tail ---'
+            tail -n 200 mission6-completion.log
+          fi
