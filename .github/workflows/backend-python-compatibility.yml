@@ -1,0 +1,85 @@
+name: Backend Python Compatibility
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'tests/**/*.py'
+      - '.github/workflows/backend-python-compatibility.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: backend-python-compatibility-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend-python:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Materialize exact source head
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none --no-checkout "https://github.com/${REPOSITORY}.git" source
+          cd source
+          git checkout --detach "${COMMIT_SHA}"
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+
+      - name: Verify runner Python
+        working-directory: source
+        run: |
+          set -euo pipefail
+          python3 --version
+          python3 - <<'PY'
+          import sys
+          if sys.version_info < (3, 11):
+              raise SystemExit("Kai-Jax backend compatibility requires Python 3.11+")
+          PY
+
+      - name: Install pinned backend dependency graph
+        working-directory: source
+        run: |
+          set -euo pipefail
+          python3 -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/python -m pip install --requirement backend/requirements.txt
+
+      - name: Compile backend Python
+        working-directory: source
+        run: .venv/bin/python -m compileall -q backend
+
+      - name: Run standalone backend-adjacent tests
+        working-directory: source
+        run: |
+          set -euo pipefail
+          .venv/bin/python tests/test_schema_validation.py
+          .venv/bin/python tests/test_story_mode_enforcement.py
+
+      - name: Import compatibility-sensitive dependencies
+        working-directory: source
+        run: |
+          .venv/bin/python - <<'PY'
+          import aiohttp
+          import fastapi
+          import google.auth
+          import grpc
+          import jwt
+          import pydantic
+          import pymongo
+          import starlette
+          import uvicorn
+
+          print("backend dependency imports ok")
+          print("fastapi", fastapi.__version__)
+          print("pydantic", pydantic.__version__)
+          print("pymongo", pymongo.__version__)
+          print("starlette", starlette.__version__)
+          print("uvicorn", uvicorn.__version__)
+          PY
