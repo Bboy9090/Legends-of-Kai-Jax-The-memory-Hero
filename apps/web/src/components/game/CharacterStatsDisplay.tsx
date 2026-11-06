@@ -28,7 +28,7 @@ export default function CharacterStatsDisplay({ characterId, showLore = true }: 
 
   return (
     <div className="space-y-6">
-      {/* CHARACTER HEADER */}
+      {/* CHARACTER HEADER WITH PORTRAIT */}
       <div
         className="border border-[#8b6e3d]/45 bg-gradient-to-r from-black/50 to-black/20 p-4 relative overflow-hidden"
         style={{
@@ -39,8 +39,8 @@ export default function CharacterStatsDisplay({ characterId, showLore = true }: 
           backgroundImage: `radial-gradient(circle, ${characterData.visualIdentity.primaryColor}, transparent)`,
         }} />
         <div className="relative z-10">
-          <div className="flex items-start justify-between gap-3 mb-2">
-            <div>
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <div className="flex-1">
               <div className="text-[10px] uppercase tracking-[0.28em] text-[#8d806d]">
                 {faction}
               </div>
@@ -50,7 +50,7 @@ export default function CharacterStatsDisplay({ characterId, showLore = true }: 
                 {characterData.displayName}
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-right flex flex-col items-end gap-2">
               <div className="inline-block px-2 py-1 bg-black/40 border border-[#735a35]/50 rounded">
                 <div className="text-[9px] uppercase tracking-[0.1em]" style={{
                   color: characterData.visualIdentity.accentColor,
@@ -58,6 +58,14 @@ export default function CharacterStatsDisplay({ characterId, showLore = true }: 
                   {rarity}
                 </div>
               </div>
+              {characterData.portraitPath && (
+                <img
+                  src={characterData.portraitPath}
+                  alt={characterData.displayName}
+                  className="w-28 h-28 object-cover rounded-sm border border-[#8b6e3d]/50"
+                  style={{ borderColor: characterData.visualIdentity.primaryColor + '60' }}
+                />
+              )}
             </div>
           </div>
           <div className="text-[11px] text-[#bbb0a0]">{bio}</div>

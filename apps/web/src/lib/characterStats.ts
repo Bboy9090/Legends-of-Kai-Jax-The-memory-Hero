@@ -32,6 +32,7 @@ export interface CharacterData {
   stats: CharacterStats;
   bio: string;
   lore: string;
+  portraitPath: string;
   visualIdentity: {
     primaryColor: string;
     accentColor: string;
@@ -80,6 +81,7 @@ export const KAI_JAX_DATA: CharacterData = {
   },
   bio: 'Born from the fusion of Kaison and Jaxon, Kai-Jax represents the ultimate convergence of strategic intellect and raw speed. As the Memory Hero, he can perceive and manipulate the threads of reality itself.',
   lore: 'When two heroes become one, the world trembles. Kai-Jax emerged during the darkest hour of the Rift invasion, his existence a beacon of hope that unity could triumph over division.',
+  portraitPath: '/images/characters/kai-jax.png',
   visualIdentity: {
     primaryColor: '#00f2ff',
     accentColor: '#efc76d',
@@ -140,6 +142,7 @@ export const JAX_DATA: CharacterData = {
   },
   bio: 'Jax is the incarnation of speed and electricity. His body channels the power of lightning, allowing him to strike with devastating velocity before opponents can react.',
   lore: 'Born in the Voltage District during a lightning storm, Jax grew up with electricity as his constant companion. He became a Storm Ronin to protect others from the Void threat.',
+  portraitPath: '/images/characters/jax.png',
   visualIdentity: {
     primaryColor: '#5aaeff',
     accentColor: '#ff8c00',
@@ -200,6 +203,7 @@ export const KAISON_DATA: CharacterData = {
   },
   bio: 'Kaison is the strategic counterpart to Jax\'s raw speed. With fox-like reflexes and mastery over webs, he executes precise strikes from the shadows.',
   lore: 'Growing up in the refugee sectors, Kaison learned to survive through cunning and precision. His web-weaving abilities are both a tool and a reflection of his strategic mind.',
+  portraitPath: '/images/characters/kaison.png',
   visualIdentity: {
     primaryColor: '#22d3ee',
     accentColor: '#ff6347',
@@ -260,6 +264,7 @@ export const SILVER_DATA: CharacterData = {
   },
   bio: 'Silver is a traveler from a timeline consumed by the Void. His mastery of time allows him to see possible futures and prevent catastrophic outcomes.',
   lore: 'From a doomed future where the Void consumed everything, Silver was sent back to change fate. He is the oldest soul in this timeline, with memories spanning centuries.',
+  portraitPath: '/images/characters/silver.png',
   visualIdentity: {
     primaryColor: '#c0c0c0',
     accentColor: '#ffd700',
@@ -313,6 +318,7 @@ export const VOLTER_DATA: CharacterData = {
   },
   bio: 'Volter is pure chaos and energy incarnate. Born from a ruptured memory shard, this lightning beast follows instinct over strategy.',
   lore: 'When a memory crystal shattered in the Thunder Valley, it fused with a wild beast. Volter emerged as a force of nature, neither fully beast nor fully intelligent.',
+  portraitPath: '/images/characters/volter.png',
   visualIdentity: {
     primaryColor: '#ffff00',
     accentColor: '#ff6347',

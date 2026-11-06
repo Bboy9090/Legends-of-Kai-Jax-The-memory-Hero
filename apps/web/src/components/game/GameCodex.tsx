@@ -8,6 +8,7 @@ import AbilityDisplay from './AbilityDisplay';
 import CharacterStatsDisplay from './CharacterStatsDisplay';
 import LocationDisplay from './LocationDisplay';
 import BossEncounterDisplay from './BossEncounterDisplay';
+import { getCharacterData } from '../../lib/characterStats';
 import { BookOpen, Users, MapPin, Skull, Zap, Target } from 'lucide-react';
 
 type CodexTab = 'characters' | 'abilities' | 'locations' | 'bosses' | 'mechanics' | 'lore';
@@ -83,21 +84,34 @@ export default function GameCodex({ initialTab = 'characters', characterId }: Ga
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="lg:col-span-1">
                   <div className="space-y-2 border border-[#8b6e3d]/45 bg-black/45 p-3 rounded max-h-96 overflow-y-auto">
-                    {['kai-jax', 'jax', 'kaison', 'silver', 'volter'].map((charId) => (
-                      <button
-                        key={charId}
-                        onClick={() => setSelectedCharacterId(charId)}
-                        className={`w-full text-left px-3 py-2 rounded transition ${
-                          selectedCharacterId === charId
-                            ? 'border border-[#efcf91] bg-black/60'
-                            : 'border border-[#735a35]/50 bg-black/40 hover:bg-black/50'
-                        }`}
-                      >
-                        <div className="text-xs uppercase tracking-[0.08em] text-[#efcf91]">
-                          {charId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                        </div>
-                      </button>
-                    ))}
+                    {['kai-jax', 'jax', 'kaison', 'silver', 'volter'].map((charId) => {
+                      const charData = getCharacterData(charId);
+                      return (
+                        <button
+                          key={charId}
+                          onClick={() => setSelectedCharacterId(charId)}
+                          className={`w-full text-left px-3 py-2 rounded transition flex gap-3 items-center ${
+                            selectedCharacterId === charId
+                              ? 'border border-[#efcf91] bg-black/60'
+                              : 'border border-[#735a35]/50 bg-black/40 hover:bg-black/50'
+                          }`}
+                        >
+                          {charData?.portraitPath && (
+                            <img
+                              src={charData.portraitPath}
+                              alt={charData.displayName}
+                              className="w-12 h-12 object-cover rounded-sm flex-shrink-0"
+                            />
+                          )}
+                          <div>
+                            <div className="text-xs uppercase tracking-[0.08em] text-[#efcf91]">
+                              {charId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                            </div>
+                            <div className="text-[9px] text-[#8f816d]">{charData?.role}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -123,21 +137,34 @@ export default function GameCodex({ initialTab = 'characters', characterId }: Ga
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="lg:col-span-1">
                   <div className="space-y-2 border border-[#8b6e3d]/45 bg-black/45 p-3 rounded max-h-96 overflow-y-auto">
-                    {['kai-jax', 'jax', 'kaison', 'silver', 'volter'].map((charId) => (
-                      <button
-                        key={charId}
-                        onClick={() => setSelectedCharacterId(charId)}
-                        className={`w-full text-left px-3 py-2 rounded transition ${
-                          selectedCharacterId === charId
-                            ? 'border border-[#efcf91] bg-black/60'
-                            : 'border border-[#735a35]/50 bg-black/40 hover:bg-black/50'
-                        }`}
-                      >
-                        <div className="text-xs uppercase tracking-[0.08em] text-[#efcf91]">
-                          {charId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                        </div>
-                      </button>
-                    ))}
+                    {['kai-jax', 'jax', 'kaison', 'silver', 'volter'].map((charId) => {
+                      const charData = getCharacterData(charId);
+                      return (
+                        <button
+                          key={charId}
+                          onClick={() => setSelectedCharacterId(charId)}
+                          className={`w-full text-left px-3 py-2 rounded transition flex gap-3 items-center ${
+                            selectedCharacterId === charId
+                              ? 'border border-[#efcf91] bg-black/60'
+                              : 'border border-[#735a35]/50 bg-black/40 hover:bg-black/50'
+                          }`}
+                        >
+                          {charData?.portraitPath && (
+                            <img
+                              src={charData.portraitPath}
+                              alt={charData.displayName}
+                              className="w-12 h-12 object-cover rounded-sm flex-shrink-0"
+                            />
+                          )}
+                          <div>
+                            <div className="text-xs uppercase tracking-[0.08em] text-[#efcf91]">
+                              {charData?.displayName}
+                            </div>
+                            <div className="text-[9px] text-[#8f816d]">{charData?.role}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
