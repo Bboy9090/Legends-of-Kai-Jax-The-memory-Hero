@@ -284,8 +284,9 @@ function App() {
           const fighter = getFighterById(charId);
           return (
             <>
-              <div className="relative w-full h-screen">
+              <div className="relative w-full h-screen" style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', zIndex: 10 }}>
                 <Canvas
+                  style={{ width: '100%', height: '100%', display: 'block' }}
                   shadows={QUALITY.shadowMap.enabled}
                   dpr={QUALITY.pixelRatio}
                   camera={{
@@ -294,13 +295,27 @@ function App() {
                     near: 0.1,
                     far: 200,
                   }}
-                  onCreated={({ gl }) => {
+                  onCreated={({ gl, camera }) => {
                     gl.setPixelRatio(QUALITY.pixelRatio);
                     gl.outputColorSpace = THREE.SRGBColorSpace;
                     gl.toneMapping = QUALITY.toneMapping;
                     gl.toneMappingExposure = QUALITY.isMobile ? 1.0 : 0.85;
                     gl.shadowMap.enabled = QUALITY.shadowMap.enabled;
                     gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
+
+                    const canvas = gl.domElement as HTMLCanvasElement;
+                    if (canvas && canvas.parentElement) {
+                      const parent = canvas.parentElement as HTMLElement;
+                      const width = parent.clientWidth || window.innerWidth;
+                      const height = parent.clientHeight || window.innerHeight;
+                      if (width > 0 && height > 0) {
+                        canvas.style.width = '100%';
+                        canvas.style.height = '100%';
+                        gl.setSize(width, height, false);
+                        (camera as THREE.PerspectiveCamera).aspect = width / height;
+                        (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+                      }
+                    }
                   }}
                   gl={{
                     antialias: QUALITY.antialias,
@@ -328,8 +343,9 @@ function App() {
           const storyMissionId = activeStoryMissionId || "story_act1_m1";
           return (
             <>
-              <div className="relative w-full h-screen">
+              <div className="relative w-full h-screen" style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', zIndex: 10 }}>
                 <Canvas
+                  style={{ width: '100%', height: '100%', display: 'block' }}
                   shadows={QUALITY.shadowMap.enabled}
                   dpr={QUALITY.pixelRatio}
                   camera={{
@@ -338,13 +354,27 @@ function App() {
                     near: 0.1,
                     far: 200,
                   }}
-                  onCreated={({ gl }) => {
+                  onCreated={({ gl, camera }) => {
                     gl.setPixelRatio(QUALITY.pixelRatio);
                     gl.outputColorSpace = THREE.SRGBColorSpace;
                     gl.toneMapping = QUALITY.toneMapping;
                     gl.toneMappingExposure = QUALITY.isMobile ? 1.0 : 0.85;
                     gl.shadowMap.enabled = QUALITY.shadowMap.enabled;
                     gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
+
+                    const canvas = gl.domElement as HTMLCanvasElement;
+                    if (canvas && canvas.parentElement) {
+                      const parent = canvas.parentElement as HTMLElement;
+                      const width = parent.clientWidth || window.innerWidth;
+                      const height = parent.clientHeight || window.innerHeight;
+                      if (width > 0 && height > 0) {
+                        canvas.style.width = '100%';
+                        canvas.style.height = '100%';
+                        gl.setSize(width, height, false);
+                        (camera as THREE.PerspectiveCamera).aspect = width / height;
+                        (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+                      }
+                    }
                   }}
                   gl={{
                     antialias: QUALITY.antialias,
