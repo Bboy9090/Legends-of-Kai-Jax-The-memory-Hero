@@ -73,7 +73,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(cat release/BUILD-SHA.txt)" = "$EXPECTED_SHA"
-          (cd release && sha256sum -c SHA256SUMS.txt)
+          sha256sum -c release/SHA256SUMS.txt
           printf 'source_sha=%s\nartifact_kind=DEBUG_QA_ONLY\nrelease_signed=false\nstore_approved=false\nphysical_device_qualified=false\n' "$EXPECTED_SHA" > release/QA-QUALIFICATION.txt
 
       - name: Publish PR debug APK as draft QA release
