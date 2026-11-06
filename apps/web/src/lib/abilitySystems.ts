@@ -438,6 +438,148 @@ export const VOLTER_POWER_MATRIX: PowerMatrix = {
   },
 };
 
+// ============ NEW CHARACTER POWER MATRICES ============
+
+export const BORYN_POWER_MATRIX: PowerMatrix = {
+  characterId: 'boryn',
+  abilities: [
+    { id: 'boryn-ability-1', name: 'Shield Bash', description: 'Offensive defense technique using shield', element: 'Physical', tier: 1, cooldown: 3, manaCost: 25, damage: 40, visualEffect: 'shield-impact', animation: 'bash-strike' },
+    { id: 'boryn-ability-2', name: 'Fortified Stance', description: 'Brace for incoming damage', element: 'Physical', tier: 1, cooldown: 4, manaCost: 30, damage: 0, visualEffect: 'fortify-glow', animation: 'stance-hold' },
+    { id: 'boryn-ability-3', name: 'Guardian Protector', description: 'Redirect enemy attacks to self', element: 'Physical', tier: 2, cooldown: 6, manaCost: 50, damage: 55, visualEffect: 'guard-aura', animation: 'protect-cast' },
+  ],
+  passives: [
+    { id: 'boryn-passive-1', name: 'Unwavering Defense', description: 'Reduce all damage by percentage', effect: 'Reduce damage taken by 20%' },
+    { id: 'boryn-passive-2', name: 'Paternal Shield', description: 'Protect allies from harm', effect: 'Share 10% of defense with nearby allies' },
+  ],
+  ultimate: { id: 'boryn-ultimate', name: 'Last Stand', description: 'Become an immovable object absorbing all damage', damage: 0, duration: 8, cooldown: 20, visualEffect: 'immovable-fortress' },
+};
+
+export const BORAX_POWER_MATRIX: PowerMatrix = {
+  characterId: 'borax',
+  abilities: [
+    { id: 'borax-ability-1', name: 'Healing Order', description: 'Command allies to restore their vitality', element: 'Magic', tier: 1, cooldown: 4, manaCost: 40, damage: 0, visualEffect: 'heal-pulse', animation: 'order-cast' },
+    { id: 'borax-ability-2', name: 'Justice Gaze', description: 'Focus on maintaining balance and order', element: 'Magic', tier: 1, cooldown: 3, manaCost: 35, damage: 45, visualEffect: 'justice-beam', animation: 'gaze-focus' },
+    { id: 'borax-ability-3', name: 'Law Enforcement', description: 'Enforce rules of combat through magical power', element: 'Magic', tier: 2, cooldown: 5, manaCost: 55, damage: 65, visualEffect: 'enforce-strike', animation: 'enforce-cast' },
+  ],
+  passives: [
+    { id: 'borax-passive-1', name: 'Mentor\'s Guidance', description: 'Guide allies to better performance', effect: 'Increase ally damage by 10%' },
+    { id: 'borax-passive-2', name: 'Balance Keeper', description: 'Maintain equilibrium in battle', effect: 'Reduce all ability cooldowns by 10%' },
+  ],
+  ultimate: { id: 'borax-ultimate', name: 'Divine Judgment', description: 'Pass ultimate judgment on all enemies', damage: 210, duration: 7, cooldown: 18, visualEffect: 'judgment-strike' },
+};
+
+export const VHARCK_POWER_MATRIX: PowerMatrix = {
+  characterId: 'vharck',
+  abilities: [
+    { id: 'vharck-ability-1', name: 'Prophecy Strike', description: 'Strike with knowledge of the future', element: 'Magic', tier: 1, cooldown: 3, manaCost: 35, damage: 50, visualEffect: 'prophecy-flash', animation: 'fang-strike' },
+    { id: 'vharck-ability-2', name: 'Eldritch Wisdom', description: 'Channel ancient magical knowledge', element: 'Magic', tier: 2, cooldown: 5, manaCost: 50, damage: 70, visualEffect: 'elder-glow', animation: 'wisdom-cast' },
+    { id: 'vharck-ability-3', name: 'Temporal Teaching', description: 'Share wisdom across time', element: 'Time', tier: 2, cooldown: 6, manaCost: 60, damage: 65, visualEffect: 'temporal-link', animation: 'teach-cast' },
+  ],
+  passives: [
+    { id: 'vharck-passive-1', name: 'Ancient Knowledge', description: 'Wisdom of ages past', effect: 'Increase mana regen by 20%' },
+    { id: 'vharck-passive-2', name: 'Prophetic Foresight', description: 'See threats before they arrive', effect: 'Gain 15% dodge chance' },
+  ],
+  ultimate: { id: 'vharck-ultimate', name: 'Apocalypse Vision', description: 'Show enemies a glimpse of their doom', damage: 240, duration: 8, cooldown: 20, visualEffect: 'vision-collapse' },
+};
+
+export const RIKKA_POWER_MATRIX: PowerMatrix = {
+  characterId: 'rikka',
+  abilities: [
+    { id: 'rikka-ability-1', name: 'Spark Sprint', description: 'Move at blazing speed with fire', element: 'Fire', tier: 1, cooldown: 2, manaCost: 25, damage: 45, visualEffect: 'fire-dash', animation: 'sprint-flame' },
+    { id: 'rikka-ability-2', name: 'Inferno Burst', description: 'Unleash explosive fire in all directions', element: 'Fire', tier: 2, cooldown: 4, manaCost: 45, damage: 75, visualEffect: 'inferno-explosion', animation: 'burst-cast' },
+    { id: 'rikka-ability-3', name: 'Flame Tornado', description: 'Create spinning vortex of flame', element: 'Fire', tier: 2, cooldown: 5, manaCost: 50, damage: 80, visualEffect: 'tornado-flame', animation: 'tornado-spin' },
+  ],
+  passives: [
+    { id: 'rikka-passive-1', name: 'Little Spark', description: 'Small but mighty fire core', effect: 'Increase attack speed by 25%' },
+    { id: 'rikka-passive-2', name: 'Unstoppable Fire', description: 'Once started, never stops', effect: 'Gain 30% critical strike chance' },
+  ],
+  ultimate: { id: 'rikka-ultimate', name: 'Supernova', description: 'Release all inner fire in massive explosion', damage: 250, duration: 5, cooldown: 17, visualEffect: 'supernova-blast' },
+};
+
+export const MIREK_POWER_MATRIX: PowerMatrix = {
+  characterId: 'mirek',
+  abilities: [
+    { id: 'mirek-ability-1', name: 'Underground Strike', description: 'Strike from the shadows', element: 'Physical', tier: 1, cooldown: 3, manaCost: 30, damage: 60, visualEffect: 'shadow-strike', animation: 'emerge-attack' },
+    { id: 'mirek-ability-2', name: 'Scout\'s Path', description: 'Find the safest route through danger', element: 'Physical', tier: 1, cooldown: 3, manaCost: 25, damage: 0, visualEffect: 'scout-glow', animation: 'path-reveal' },
+    { id: 'mirek-ability-3', name: 'Tunnel Escape', description: 'Disappear into the earth', element: 'Physical', tier: 2, cooldown: 4, manaCost: 45, damage: 55, visualEffect: 'tunnel-escape', animation: 'disappear-cast' },
+  ],
+  passives: [
+    { id: 'mirek-passive-1', name: 'Underground Knowledge', description: 'Navigate any terrain', effect: 'Increase dodge by 20%' },
+    { id: 'mirek-passive-2', name: 'Scout\'s Precision', description: 'Accurate strikes from any angle', effect: 'Increase critical damage by 40%' },
+  ],
+  ultimate: { id: 'mirek-ultimate', name: 'Earth Rupture', description: 'Tear the earth apart with underground power', damage: 200, duration: 6, cooldown: 16, visualEffect: 'earth-rupture' },
+};
+
+export const AURELION_POWER_MATRIX: PowerMatrix = {
+  characterId: 'aurelion',
+  abilities: [
+    { id: 'aurelion-ability-1', name: 'Temporal Slip', description: 'Slip through time briefly', element: 'Time', tier: 1, cooldown: 3, manaCost: 30, damage: 40, visualEffect: 'time-slip', animation: 'flicker-teleport' },
+    { id: 'aurelion-ability-2', name: 'Chrono Beam', description: 'Strike with focused temporal energy', element: 'Time', tier: 2, cooldown: 4, manaCost: 45, damage: 65, visualEffect: 'chrono-beam', animation: 'beam-cast' },
+    { id: 'aurelion-ability-3', name: 'Future Echo', description: 'Attack with echoes from possible futures', element: 'Time', tier: 2, cooldown: 5, manaCost: 55, damage: 75, visualEffect: 'echo-strike', animation: 'echo-cast' },
+  ],
+  passives: [
+    { id: 'aurelion-passive-1', name: 'Time Survivor', description: 'Endured temporal rifts', effect: 'Increase evasion by 25%' },
+    { id: 'aurelion-passive-2', name: 'Slip Energy', description: 'Natural affinity for temporal magic', effect: 'Reduce spell cooldowns by 15%' },
+  ],
+  ultimate: { id: 'aurelion-ultimate', name: 'Timeline Collapse', description: 'Collapse multiple timelines onto enemies', damage: 230, duration: 7, cooldown: 19, visualEffect: 'timeline-collapse' },
+};
+
+export const SELENE_POWER_MATRIX: PowerMatrix = {
+  characterId: 'selene',
+  abilities: [
+    { id: 'selene-ability-1', name: 'Oracle Vision', description: 'See and strike with mystical sight', element: 'Magic', tier: 1, cooldown: 3, manaCost: 35, damage: 45, visualEffect: 'vision-glow', animation: 'sight-cast' },
+    { id: 'selene-ability-2', name: 'Mystic Veil', description: 'Obscure with mystical energy', element: 'Magic', tier: 1, cooldown: 4, manaCost: 30, damage: 0, visualEffect: 'veil-shroud', animation: 'veil-cast' },
+    { id: 'selene-ability-3', name: 'Destiny Touch', description: 'Influence fate itself', element: 'Magic', tier: 2, cooldown: 5, manaCost: 50, damage: 70, visualEffect: 'destiny-spark', animation: 'touch-cast' },
+  ],
+  passives: [
+    { id: 'selene-passive-1', name: 'Oracle\'s Sight', description: 'See beyond the veil', effect: 'Increase damage by 15%' },
+    { id: 'selene-passive-2', name: 'Myrr\'kai Blood', description: 'Ancient mystical lineage', effect: 'Increase mana by 20%' },
+  ],
+  ultimate: { id: 'selene-ultimate', name: 'Fate Reversal', description: 'Reverse the fate of all combatants', damage: 200, duration: 8, cooldown: 18, visualEffect: 'fate-reverse' },
+};
+
+export const MIRI_POWER_MATRIX: PowerMatrix = {
+  characterId: 'miri',
+  abilities: [
+    { id: 'miri-ability-1', name: 'Protective Seal', description: 'Seal and protect allies', element: 'Magic', tier: 1, cooldown: 4, manaCost: 35, damage: 0, visualEffect: 'seal-glow', animation: 'seal-cast' },
+    { id: 'miri-ability-2', name: 'Identity Guard', description: 'Guard allies\' identities and safety', element: 'Magic', tier: 1, cooldown: 3, manaCost: 30, damage: 40, visualEffect: 'guard-aura', animation: 'guard-cast' },
+    { id: 'miri-ability-3', name: 'Consent Boundary', description: 'Create boundaries that cannot be crossed', element: 'Magic', tier: 2, cooldown: 5, manaCost: 50, damage: 60, visualEffect: 'boundary-wall', animation: 'boundary-cast' },
+  ],
+  passives: [
+    { id: 'miri-passive-1', name: 'Sealed Name', description: 'Identity is protected', effect: 'Reduce damage taken by 15%' },
+    { id: 'miri-passive-2', name: 'Consent Keeper', description: 'Respect others\' boundaries', effect: 'Increase ally defense by 10%' },
+  ],
+  ultimate: { id: 'miri-ultimate', name: 'Safe Haven', description: 'Create ultimate sanctuary for allies', damage: 0, duration: 10, cooldown: 20, visualEffect: 'sanctuary-create' },
+};
+
+export const OLD_MOSS_POWER_MATRIX: PowerMatrix = {
+  characterId: 'old-moss',
+  abilities: [
+    { id: 'old-moss-ability-1', name: 'Root Strike', description: 'Strike with living roots from earth', element: 'Nature', tier: 1, cooldown: 3, manaCost: 30, damage: 50, visualEffect: 'root-strike', animation: 'root-emerge' },
+    { id: 'old-moss-ability-2', name: 'Wildland Blessing', description: 'Bless allies with nature\'s power', element: 'Nature', tier: 1, cooldown: 4, manaCost: 35, damage: 0, visualEffect: 'blessing-glow', animation: 'bless-cast' },
+    { id: 'old-moss-ability-3', name: 'Moss Swarm', description: 'Summon living moss to attack', element: 'Nature', tier: 2, cooldown: 5, manaCost: 50, damage: 70, visualEffect: 'moss-swarm', animation: 'swarm-cast' },
+  ],
+  passives: [
+    { id: 'old-moss-passive-1', name: 'Wildland Elder', description: 'Ancient wisdom of nature', effect: 'Increase max health by 20%' },
+    { id: 'old-moss-passive-2', name: 'Living Memory', description: 'Connected to all living things', effect: 'Gain 10% lifesteal on all attacks' },
+  ],
+  ultimate: { id: 'old-moss-ultimate', name: 'Primordial Forest', description: 'Transform battlefield into living forest', damage: 180, duration: 9, cooldown: 20, visualEffect: 'forest-rise' },
+};
+
+export const SABLE_NINE_POWER_MATRIX: PowerMatrix = {
+  characterId: 'sable-nine',
+  abilities: [
+    { id: 'sable-nine-ability-1', name: 'Shadow Strike', description: 'Strike from the void-touched shadows', element: 'Void', tier: 1, cooldown: 3, manaCost: 30, damage: 65, visualEffect: 'shadow-strike', animation: 'void-strike' },
+    { id: 'sable-nine-ability-2', name: 'Prophecy Sight', description: 'See and strike at weak points', element: 'Memory', tier: 1, cooldown: 3, manaCost: 25, damage: 50, visualEffect: 'prophecy-glow', animation: 'sight-strike' },
+    { id: 'sable-nine-ability-3', name: 'Rival\'s Edge', description: 'Strike with the power of rivalry', element: 'Physical', tier: 2, cooldown: 4, manaCost: 45, damage: 80, visualEffect: 'rival-clash', animation: 'rivalry-strike' },
+  ],
+  passives: [
+    { id: 'sable-nine-passive-1', name: 'Rival Shade', description: 'Embody the spirit of competition', effect: 'Gain 35% critical strike chance' },
+    { id: 'sable-nine-passive-2', name: 'Prophecy Connection', description: 'Connected to dangerous visions', effect: 'Increase attack speed by 20%' },
+  ],
+  ultimate: { id: 'sable-nine-ultimate', name: 'Void Prophecy', description: 'Strike with knowledge of doom', damage: 240, duration: 6, cooldown: 17, visualEffect: 'void-prophecy' },
+};
+
 // ============ POWER MATRIX REGISTRY ============
 
 export const POWER_MATRICES: Record<string, PowerMatrix> = {
@@ -446,6 +588,16 @@ export const POWER_MATRICES: Record<string, PowerMatrix> = {
   'kaison': KAISON_POWER_MATRIX,
   'silver': SILVER_POWER_MATRIX,
   'volter': VOLTER_POWER_MATRIX,
+  'boryn': BORYN_POWER_MATRIX,
+  'borax': BORAX_POWER_MATRIX,
+  'vharck': VHARCK_POWER_MATRIX,
+  'aurelion': AURELION_POWER_MATRIX,
+  'selene': SELENE_POWER_MATRIX,
+  'miri': MIRI_POWER_MATRIX,
+  'old-moss': OLD_MOSS_POWER_MATRIX,
+  'rikka': RIKKA_POWER_MATRIX,
+  'mirek': MIREK_POWER_MATRIX,
+  'sable-nine': SABLE_NINE_POWER_MATRIX,
 };
 
 export function getCharacterPowerMatrix(characterId: string): PowerMatrix | undefined {
