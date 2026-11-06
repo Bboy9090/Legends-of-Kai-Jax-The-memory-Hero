@@ -66,6 +66,45 @@ jobs:
           cat release/BUILD-SHA.txt
           cat release/SHA256SUMS.txt
 
+      - name: Label and verify debug APK candidate
+        working-directory: source
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(cat release/BUILD-SHA.txt)" = "$EXPECTED_SHA"
+          sha256sum -c release/SHA256SUMS.txt
+          printf 'source_sha=%s\nartifact_kind=DEBUG_QA_ONLY\nrelease_signed=false\nstore_approved=false\nphysical_device_qualified=false\n' "$EXPECTED_SHA" > release/QA-QUALIFICATION.txt
+
+      - name: Publish PR debug APK as draft QA release
+        if: ${{ github.event_name == 'pull_request' }}
+        working-directory: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          SHORT_SHA="${SHA:0:7}"
+          TAG="qa-pr-${PR_NUMBER}-${SHORT_SHA}"
+
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --target "$SHA" \
+              --title "Kai-Jax QA APK PR #${PR_NUMBER} ${SHORT_SHA}" \
+              --notes "DEBUG_QA_ONLY. Exact source: $SHA. release_signed=false; store_approved=false; physical_device_qualified=false." \
+              --draft \
+              --prerelease
+          fi
+
+          gh release upload "$TAG" \
+            release/Legends-of-Kai-Jax-main.apk \
+            release/SHA256SUMS.txt \
+            release/BUILD-SHA.txt \
+            release/QA-QUALIFICATION.txt \
+            --clobber
+
       - name: Publish APK as release asset
         if: ${{ github.event_name != 'pull_request' }}
         working-directory: source
