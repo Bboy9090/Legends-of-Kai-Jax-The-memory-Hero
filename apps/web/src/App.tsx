@@ -85,6 +85,113 @@ const controls = [
   { name: Controls.ultimate, keys: ["KeyR"] },
 ];
 
+function StoryModeScene() {
+  const { selectedCharacter, activeStoryMissionId } = useRunner();
+  const QUALITY = useMemo(() => getQualitySettings(), []);
+  const charId = selectedCharacter || "kai-jax";
+  const fighter = getFighterById(charId);
+  const storyMissionId = activeStoryMissionId || "story_act1_m1";
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (import.meta.env.DEV) console.log('[StoryModeScene] Mounted, resizing canvas');
+
+    const forceCanvasResize = () => {
+      const canvas = document.querySelector('canvas');
+      if (!canvas) return;
+
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      if (canvas.width !== w || canvas.height !== h) {
+        if (import.meta.env.DEV) console.log(`[StoryModeScene] Canvas: ${canvas.width}x${canvas.height} → ${w}x${h}`);
+        canvas.width = w;
+        canvas.height = h;
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = `${w}px`;
+        canvas.style.height = `${h}px`;
+        canvas.style.zIndex = '1';
+
+        const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+        if (gl) {
+          gl.viewport(0, 0, w, h);
+        }
+      }
+    };
+
+    forceCanvasResize();
+    const interval = setInterval(forceCanvasResize, 50);
+    window.addEventListener('resize', forceCanvasResize);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('resize', forceCanvasResize);
+    };
+  }, []);
+
+  return (
+    <>
+      <div
+        ref={containerRef}
+        className="relative w-full h-screen"
+        style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', zIndex: 10, overflow: 'hidden' }}
+      >
+        <Canvas
+          style={{ width: '100%', height: '100%', display: 'block' }}
+          shadows={QUALITY.shadowMap.enabled}
+          dpr={QUALITY.pixelRatio}
+          camera={{
+            position: [0, 4, 7],
+            fov: 50,
+            near: 0.1,
+            far: 200,
+          }}
+          gl={{
+            antialias: QUALITY.antialias,
+            powerPreference: "high-performance",
+          }}
+          onCreated={({ gl }) => {
+            gl.setPixelRatio(QUALITY.pixelRatio);
+            gl.outputColorSpace = THREE.SRGBColorSpace;
+            gl.toneMapping = QUALITY.toneMapping;
+            gl.toneMappingExposure = QUALITY.isMobile ? 1.0 : 0.85;
+            gl.shadowMap.enabled = QUALITY.shadowMap.enabled;
+            gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
+            gl.setSize(window.innerWidth, window.innerHeight, false);
+          }}
+        >
+          <Suspense fallback={null}>
+            <AdventureArena
+              characterId={charId}
+              accentColor={fighter?.accentColor || "#00f2ff"}
+            />
+          </Suspense>
+        </Canvas>
+        <AdventureHUD />
+        <StoryAdventure
+          missionId={storyMissionId}
+          characterId={charId}
+          onComplete={(success) => {
+            if (success) {
+              useMissions.getState().startMission("story", storyMissionId);
+              useMissions.getState().completeMission(true);
+              useRunner.getState().setMissionCompleted(storyMissionId);
+              useRunner.getState().setLastPlayedTitle(
+                getStoryMissionById(storyMissionId)?.title ?? storyMissionId
+              );
+            }
+            useRunner.getState().setGameState("campaign-map");
+          }}
+          onBack={() => useRunner.getState().setGameState("campaign-map")}
+        />
+      </div>
+      <AdventureTouchControls />
+    </>
+  );
+}
+
 function App() {
   const { phase } = useGame();
   const [qualityRevision, setQualityRevision] = useState(0);
@@ -295,27 +402,13 @@ function App() {
                     near: 0.1,
                     far: 200,
                   }}
-                  onCreated={({ gl, camera }) => {
+                  onCreated={({ gl }) => {
                     gl.setPixelRatio(QUALITY.pixelRatio);
                     gl.outputColorSpace = THREE.SRGBColorSpace;
                     gl.toneMapping = QUALITY.toneMapping;
                     gl.toneMappingExposure = QUALITY.isMobile ? 1.0 : 0.85;
                     gl.shadowMap.enabled = QUALITY.shadowMap.enabled;
                     gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
-
-                    const canvas = gl.domElement as HTMLCanvasElement;
-                    if (canvas && canvas.parentElement) {
-                      const parent = canvas.parentElement as HTMLElement;
-                      const width = parent.clientWidth || window.innerWidth;
-                      const height = parent.clientHeight || window.innerHeight;
-                      if (width > 0 && height > 0) {
-                        canvas.style.width = '100%';
-                        canvas.style.height = '100%';
-                        gl.setSize(width, height, false);
-                        (camera as THREE.PerspectiveCamera).aspect = width / height;
-                        (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
-                      }
-                    }
                   }}
                   gl={{
                     antialias: QUALITY.antialias,
@@ -337,80 +430,7 @@ function App() {
         })()}
 
         {/* ⚡ STORY MODE - Adventure with narrative */}
-        {gameState === 'story-mode' && (() => {
-          const charId = selectedCharacter || "kai-jax";
-          const fighter = getFighterById(charId);
-          const storyMissionId = activeStoryMissionId || "story_act1_m1";
-          return (
-            <>
-              <div className="relative w-full h-screen" style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', zIndex: 10 }}>
-                <Canvas
-                  style={{ width: '100%', height: '100%', display: 'block' }}
-                  shadows={QUALITY.shadowMap.enabled}
-                  dpr={QUALITY.pixelRatio}
-                  camera={{
-                    position: [0, 4, 7],
-                    fov: 50,
-                    near: 0.1,
-                    far: 200,
-                  }}
-                  onCreated={({ gl, camera }) => {
-                    gl.setPixelRatio(QUALITY.pixelRatio);
-                    gl.outputColorSpace = THREE.SRGBColorSpace;
-                    gl.toneMapping = QUALITY.toneMapping;
-                    gl.toneMappingExposure = QUALITY.isMobile ? 1.0 : 0.85;
-                    gl.shadowMap.enabled = QUALITY.shadowMap.enabled;
-                    gl.shadowMap.type = QUALITY.shadowMap.type as THREE.ShadowMapType;
-
-                    const canvas = gl.domElement as HTMLCanvasElement;
-                    if (canvas && canvas.parentElement) {
-                      const parent = canvas.parentElement as HTMLElement;
-                      const width = parent.clientWidth || window.innerWidth;
-                      const height = parent.clientHeight || window.innerHeight;
-                      if (width > 0 && height > 0) {
-                        canvas.style.width = '100%';
-                        canvas.style.height = '100%';
-                        gl.setSize(width, height, false);
-                        (camera as THREE.PerspectiveCamera).aspect = width / height;
-                        (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
-                      }
-                    }
-                  }}
-                  gl={{
-                    antialias: QUALITY.antialias,
-                    powerPreference: "high-performance",
-                  }}
-                >
-                  <Suspense fallback={null}>
-                    <AdventureArena
-                      characterId={charId}
-                      accentColor={fighter?.accentColor || "#00f2ff"}
-                    />
-                  </Suspense>
-                </Canvas>
-                <AdventureHUD />
-                <StoryAdventure
-                  missionId={storyMissionId}
-                  characterId={charId}
-                  onComplete={(success) => {
-                    if (success) {
-                      useMissions.getState().startMission("story", storyMissionId);
-                      useMissions.getState().completeMission(true);
-                      useRunner.getState().setMissionCompleted(storyMissionId);
-
-                      useRunner.getState().setLastPlayedTitle(
-                        getStoryMissionById(storyMissionId)?.title ?? storyMissionId
-                      );
-                    }
-                    useRunner.getState().setGameState("campaign-map");
-                  }}
-                  onBack={() => useRunner.getState().setGameState("campaign-map")}
-                />
-              </div>
-              <AdventureTouchControls />
-            </>
-          );
-        })()}
+        {gameState === 'story-mode' && <StoryModeScene />}
 
         {/* ⚡ BATTLE CANVAS - THE MAIN EVENT! */}
         {battleCanvasActive && (
