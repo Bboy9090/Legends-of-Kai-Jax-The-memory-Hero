@@ -16,7 +16,8 @@
     "lint:strict": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "clean": "rm -rf dist .turbo node_modules",
     "cap:sync": "cap sync",
-    "cap:open": "cap open ios"
+    "cap:open": "cap open ios",
+    "verify:prod": "bash ../../.github/scripts/verify-production-readiness.sh"
   },
   "dependencies": {
     "@beast-kin/characters": "workspace:*",
