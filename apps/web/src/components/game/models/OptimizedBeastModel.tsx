@@ -132,7 +132,11 @@ export default function OptimizedBeastModel({
     if ((warmLocomotionDonors || (isMoving && !isRunning)) && animationPaths?.walk) {
       paths.push(animationPaths.walk);
     }
-    if ((warmLocomotionDonors || (isMoving && isRunning)) && animationPaths?.run) {
+    // Do not warm walk + run donors concurrently. Kai's locomotion donor GLBs
+    // are each large enough that fetching both during battle startup can delay
+    // the authored walk clip beyond the release smoke window. Warm walk first
+    // and request run only when sprint is actually entered.
+    if (isMoving && isRunning && animationPaths?.run) {
       paths.push(animationPaths.run);
     }
 
