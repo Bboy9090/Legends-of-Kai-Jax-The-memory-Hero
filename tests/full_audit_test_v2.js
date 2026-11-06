@@ -33,7 +33,13 @@ const screenshot = async (page, name) => {
 const auditResults = {
   timestamp: new Date().toISOString(),
   sections: {},
-  summary: {}
+  summary: {},
+  requiredChecks: {
+    gameReady: false,
+    characterSystem: false,
+    missionProgression: false,
+    combatMechanics: false
+  }
 };
 
 (async () => {
@@ -78,7 +84,8 @@ const auditResults = {
     log(`  Game Store: ${gameState.storeAvailable ? '✓ Available' : '✗ Missing'}`);
     log(`  Adventure System: ${gameState.adventureHookAvailable ? '✓ Available' : '✗ Missing'}`);
     log(`  Overall System Status: ${gameState.gameReady ? '✓ READY' : '✗ NOT READY'}`);
-    auditResults.sections.gameSystems = gameState;
+    auditResults.sections.gameSystems = { ...gameState, passed: gameState.gameReady };
+    auditResults.requiredChecks.gameReady = gameState.gameReady;
 
     // SECTION 2: CHARACTER SYSTEM
     log('\n▶ SECTION 2: CHARACTER SYSTEM & 3D MODEL RIGGING');
@@ -136,9 +143,11 @@ const auditResults = {
       };
     });
 
-    log(`  ✓ Character options available: ${characterOptions.count}`);
+    const characterSystemPassed = characterOptions.count > 0;
+    log(`  ${characterSystemPassed ? '✓' : '✗'} Character options available: ${characterOptions.count}`);
     characterOptions.names.forEach(name => log(`    - ${name}`));
-    auditResults.sections.characters = characterOptions;
+    auditResults.sections.characters = { ...characterOptions, passed: characterSystemPassed };
+    auditResults.requiredChecks.characterSystem = characterSystemPassed;
 
     // Select Kai-Jax if available
     const kaiJaxBtn = await page.locator('button:has-text("KAI-JAX")').first();
@@ -194,13 +203,15 @@ const auditResults = {
       }
     });
 
-    log(`  ✓ Mission System: ${missionData.missionUnlockSystem ? 'WORKING' : 'ERROR'}`);
-    log(`  ✓ Total Missions: ${missionData.totalMissions}`);
-    log(`  ✓ Acts: ${missionData.actsSupported} (${missionData.act1.missions + missionData.act2.missions + missionData.act3.missions} missions total)`);
+    const missionSystemPassed = missionData.missionUnlockSystem && missionData.totalMissions === 15 && !missionData.error;
+    log(`  ${missionSystemPassed ? '✓' : '✗'} Mission System: ${missionData.missionUnlockSystem ? 'WORKING' : 'ERROR'}`);
+    log(`  ${missionSystemPassed ? '✓' : '✗'} Total Missions: ${missionData.totalMissions}`);
+    log(`  ${missionSystemPassed ? '✓' : '✗'} Acts: ${missionData.actsSupported} (${missionData.act1.missions + missionData.act2.missions + missionData.act3.missions} missions total)`);
     log(`    - ${missionData.act1.name}`);
     log(`    - ${missionData.act2.name}`);
     log(`    - ${missionData.act3.name}`);
-    auditResults.sections.missions = missionData;
+    auditResults.sections.missions = { ...missionData, passed: missionSystemPassed };
+    auditResults.requiredChecks.missionProgression = missionSystemPassed;
 
     // SECTION 4: COMBAT & MECHANICS
     log('\n▶ SECTION 4: COMBAT MECHANICS & MOVES');
@@ -246,11 +257,17 @@ const auditResults = {
           await page.waitForTimeout(1000);
         }
 
-        log(`  ✓ Combat System: ACTIVE`);
-        log(`  ✓ Enemy Spawning: ${combatStats.enemies > 0 ? 'YES' : 'CHECKING'}`);
-        log(`  ✓ Player Health System: WORKING (${combatStats.playerHealth}/${combatStats.playerMaxHealth} HP)`);
+        const combatPassed = combatStats.enemies > 0 && combatStats.playerHealth > 0;
+        log(`  ${combatPassed ? '✓' : '✗'} Combat System: ${combatPassed ? 'ACTIVE' : 'INACTIVE'}`);
+        log(`  ${combatStats.enemies > 0 ? '✓' : '✗'} Enemy Spawning: ${combatStats.enemies > 0 ? 'YES' : 'NO'}`);
+        log(`  ${combatStats.playerHealth > 0 ? '✓' : '✗'} Player Health System: WORKING (${combatStats.playerHealth}/${combatStats.playerMaxHealth} HP)`);
         log(`  ✓ Animation System: RUNNING`);
-        auditResults.sections.combat = combatStats;
+        auditResults.sections.combat = { ...combatStats, passed: combatPassed };
+        auditResults.requiredChecks.combatMechanics = combatPassed;
+      } else {
+        log('  ✗ Combat section not accessible (START MISSION or Engage button not found)');
+        auditResults.sections.combat = { passed: false, error: 'Combat not accessible' };
+        auditResults.requiredChecks.combatMechanics = false;
       }
     }
 
@@ -282,18 +299,21 @@ const auditResults = {
     log('║  AUDIT COMPLETE - FULL SYSTEM VERIFICATION                         ║');
     log('╚════════════════════════════════════════════════════════════════════╝\n');
 
+    const allChecksPassed = Object.values(auditResults.requiredChecks).every(v => v === true);
+
     auditResults.summary = {
-      status: 'PASSED',
+      status: allChecksPassed ? 'PASSED' : 'FAILED',
+      requiredChecksPassed: auditResults.requiredChecks,
       systems: {
-        'Game 3D Rendering': gameState.gameReady ? '✓' : '✗',
-        'Character Selection': characterOptions.count > 0 ? '✓' : '✗',
+        'Game 3D Rendering': auditResults.sections.gameSystems.passed ? '✓' : '✗',
+        'Character Selection': auditResults.sections.characters.passed ? '✓' : '✗',
         'Character 3D Models': '✓',
         'Model Rigging/Animation': '✓',
-        'Mission Progression': missionData.missionUnlockSystem ? '✓' : '✗',
+        'Mission Progression': auditResults.sections.missions.passed ? '✓' : '✗',
         'All 15 Missions': missionData.totalMissions === 15 ? '✓' : '✗',
-        'Combat Mechanics': '✓',
-        'Enemy Spawning': '✓',
-        'Player Health System': '✓',
+        'Combat Mechanics': auditResults.sections.combat?.passed ? '✓' : '✗',
+        'Enemy Spawning': auditResults.sections.combat?.enemies > 0 ? '✓' : '✗',
+        'Player Health System': auditResults.sections.combat?.playerHealth > 0 ? '✓' : '✗',
         'Animation System': '✓',
         'UI/HUD System': Object.values(uiFeatures).filter(Boolean).length >= 4 ? '✓' : '⚠',
         'Navigation/Links': '✓'
@@ -311,7 +331,15 @@ const auditResults = {
       log(`  ${status} ${system}`);
     });
 
-    log(`\n📊 Overall Status: ✅ FULL AUDIT PASSED`);
+    if (allChecksPassed) {
+      log(`\n📊 Overall Status: ✅ FULL AUDIT PASSED`);
+    } else {
+      log(`\n📊 Overall Status: ❌ FULL AUDIT FAILED - Some required checks did not pass`);
+      log('\nRequired Checks Status:');
+      Object.entries(auditResults.requiredChecks).forEach(([check, passed]) => {
+        log(`  ${passed ? '✓' : '✗'} ${check}`);
+      });
+    }
     log(`📁 Screenshots: ${SCREENSHOTS_DIR}`);
     log(`📋 Detailed results saved to audit-results.json\n`);
 
@@ -321,20 +349,31 @@ const auditResults = {
       JSON.stringify(auditResults, null, 2)
     );
 
+    // Exit with proper status code
+    process.exit(allChecksPassed ? 0 : 1);
+
   } catch (error) {
     log(`\n❌ AUDIT ERROR: ${error.message}`);
-    auditResults.summary.status = 'FAILED';
-    auditResults.summary.error = error.message;
+    auditResults.summary = {
+      status: 'FAILED',
+      error: error.message
+    };
     try {
       await screenshot(page, '99-error.png');
     } catch (e) {}
-  } finally {
-    await browser.close();
 
-    // Save final results
+    // Save results
     fs.writeFileSync(
       path.join(SCREENSHOTS_DIR, 'audit-results.json'),
       JSON.stringify(auditResults, null, 2)
     );
+
+    await browser.close();
+    process.exit(1);
+  } finally {
+    // Only close browser if not already closed in catch
+    try {
+      await browser.close();
+    } catch (e) {}
   }
 })();

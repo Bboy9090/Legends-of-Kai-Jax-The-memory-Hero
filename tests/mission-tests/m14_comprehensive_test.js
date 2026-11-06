@@ -140,6 +140,10 @@ const screenshot = async (page, name) => {
 
       const state = await page.evaluate(() => {
         const adventure = window.useAdventure?.getState?.();
+
+        // Look for boss in enemies array (boss is identified by tier or special property)
+        const boss = adventure?.enemies?.find(e => e.boss === true || e.tier === 'boss' || e.isBoss === true);
+
         return {
           enemies: adventure?.enemies ? adventure.enemies.length : 0,
           enemyDetails: adventure?.enemies ? adventure.enemies.map(e => ({
@@ -147,14 +151,15 @@ const screenshot = async (page, name) => {
             fighterId: e.fighterId,
             health: e.health,
             maxHealth: e.maxHealth,
-            isDead: e.isDead
+            isDead: e.isDead,
+            isBoss: e.boss === true || e.tier === 'boss' || e.isBoss === true
           })) : [],
           waveCount: adventure?.waveCount || 0,
           playerHealth: adventure?.player?.health || 0,
           playerMaxHealth: adventure?.player?.maxHealth || 0,
-          bossActive: adventure?.boss ? true : false,
-          bossHealth: adventure?.boss?.health || 0,
-          bossName: adventure?.boss?.name || null
+          bossActive: boss ? true : false,
+          bossHealth: boss?.health || 0,
+          bossName: boss?.fighterId || null
         };
       });
 
@@ -230,6 +235,7 @@ const screenshot = async (page, name) => {
     log(`\n📁 Screenshots: ${SCREENSHOTS_DIR}\n`);
 
     // Save results
+    const testPassed = maxEnemyCount >= 3 && bossEncountered;
     fs.writeFileSync(
       path.join(SCREENSHOTS_DIR, 'results.json'),
       JSON.stringify({
@@ -240,9 +246,12 @@ const screenshot = async (page, name) => {
         events: events,
         maxEnemyCount: maxEnemyCount,
         bossEncountered: bossEncountered,
-        testPassed: maxEnemyCount >= 3 && bossEncountered
+        testPassed: testPassed
       }, null, 2)
     );
+
+    log(`\n${testPassed ? '✅' : '❌'} TEST ${testPassed ? 'PASSED' : 'FAILED'}\n`);
+    process.exit(testPassed ? 0 : 1);
 
   } catch (error) {
     log(`ERROR: ${error.message}`);
@@ -250,6 +259,8 @@ const screenshot = async (page, name) => {
     try {
       await screenshot(page, '99-error.png');
     } catch (e) {}
+
+    process.exit(1);
   } finally {
     await browser.close();
   }
