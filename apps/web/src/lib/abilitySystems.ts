@@ -308,12 +308,144 @@ export const KAISON_POWER_MATRIX: PowerMatrix = {
   },
 };
 
+export const SILVER_POWER_MATRIX: PowerMatrix = {
+  characterId: 'silver',
+  abilities: [
+    {
+      id: 'silver-ability-1',
+      name: 'Time Rewind',
+      description: 'Reverse recent events to undo damage or escape danger',
+      element: 'Time',
+      tier: 1,
+      cooldown: 4,
+      manaCost: 35,
+      damage: 0,
+      visualEffect: 'temporal-rewind',
+      animation: 'time-reversal',
+    },
+    {
+      id: 'silver-ability-2',
+      name: 'Chrono Acceleration',
+      description: 'Accelerate time for increased movement and attack speed',
+      element: 'Time',
+      tier: 2,
+      cooldown: 5,
+      manaCost: 50,
+      damage: 40,
+      visualEffect: 'time-acceleration',
+      animation: 'speed-burst',
+    },
+    {
+      id: 'silver-ability-3',
+      name: 'Temporal Anchor',
+      description: 'Lock an enemy in temporal stasis, preventing their actions',
+      element: 'Time',
+      tier: 2,
+      cooldown: 6,
+      manaCost: 55,
+      damage: 50,
+      visualEffect: 'temporal-freeze',
+      animation: 'anchor-cast',
+    },
+  ],
+  passives: [
+    {
+      id: 'silver-passive-1',
+      name: 'Time Manipulation',
+      description: 'Naturally slip through time, dodging incoming damage',
+      effect: 'Increase evasion by 20%',
+    },
+    {
+      id: 'silver-passive-2',
+      name: 'Reality Weaver',
+      description: 'Mend tears in reality with each spell cast',
+      effect: 'Regenerate 5% max mana per ability used',
+    },
+  ],
+  ultimate: {
+    id: 'silver-ultimate',
+    name: 'Time Fractured',
+    description: 'Shatter time itself, damaging all enemies and reversing recent actions',
+    damage: 200,
+    duration: 8,
+    cooldown: 18,
+    visualEffect: 'time-fracture',
+  },
+};
+
+export const VOLTER_POWER_MATRIX: PowerMatrix = {
+  characterId: 'volter',
+  abilities: [
+    {
+      id: 'volter-ability-1',
+      name: 'Thunderstrike',
+      description: 'Unleash a powerful lightning bolt at a single target',
+      element: 'Lightning',
+      tier: 1,
+      cooldown: 3,
+      manaCost: 30,
+      damage: 55,
+      visualEffect: 'lightning-bolt',
+      animation: 'strike-down',
+    },
+    {
+      id: 'volter-ability-2',
+      name: 'Static Field',
+      description: 'Create a field of static electricity that damages nearby enemies',
+      element: 'Lightning',
+      tier: 2,
+      cooldown: 4,
+      manaCost: 45,
+      damage: 70,
+      visualEffect: 'static-aura',
+      animation: 'field-expand',
+    },
+    {
+      id: 'volter-ability-3',
+      name: 'Feral Rampage',
+      description: 'Enter a primal fury, striking all nearby enemies with savage power',
+      element: 'Lightning',
+      tier: 2,
+      cooldown: 5,
+      manaCost: 55,
+      damage: 85,
+      visualEffect: 'rampage-charge',
+      animation: 'beast-fury',
+    },
+  ],
+  passives: [
+    {
+      id: 'volter-passive-1',
+      name: 'Primal Instinct',
+      description: 'React with raw instinct to incoming threats',
+      effect: 'Gain 25% critical strike chance',
+    },
+    {
+      id: 'volter-passive-2',
+      name: 'Static Charge',
+      description: 'Build electrical energy with each attack',
+      effect: 'Each ability increases next attack damage by 15%',
+    },
+  ],
+  ultimate: {
+    id: 'volter-ultimate',
+    name: 'Lightning Apocalypse',
+    description: 'Unleash uncontrolled electrical fury, striking all enemies with maximum voltage',
+    damage: 220,
+    duration: 5,
+    cooldown: 16,
+    visualEffect: 'lightning-storm',
+  },
+};
+
 // ============ POWER MATRIX REGISTRY ============
 
 export const POWER_MATRICES: Record<string, PowerMatrix> = {
   'kai-jax': KAI_JAX_POWER_MATRIX,
   'jax': JAX_POWER_MATRIX,
   'kaison': KAISON_POWER_MATRIX,
+  'silver': SILVER_POWER_MATRIX,
+  'volter': VOLTER_POWER_MATRIX,
 };
 
 export function getCharacterPowerMatrix(characterId: string): PowerMatrix | undefined {
