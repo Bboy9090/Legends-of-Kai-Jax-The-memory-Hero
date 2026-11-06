@@ -20,6 +20,8 @@ import ScreenEffects from "./components/game/ScreenEffects";
 import { GameIntro } from "./components/game/LoadingScreen";
 import CustomizationMenu from "./components/game/CustomizationMenu";
 import LoreHub from "./components/game/LoreHub";
+import GameCodex from "./components/game/GameCodex";
+import EnhancedCombatHUD from "./components/game/EnhancedCombatHUD";
 import ControllerTestScene from "./components/game/ControllerTestScene";
 import AdventureArena from "./components/game/adventure/AdventureArena";
 import AdventureHUD from "./components/game/adventure/AdventureHUD";
@@ -351,8 +353,11 @@ function App() {
       {/* Global additive overlays: F3 perf HUD, F1 quest log */}
       <GameOverlays />
 
-      {/* Lore Hub - Landing Page & Codex */}
-      {(gameState === "lore-hub" || gameState === "codex") && <LoreHub />}
+      {/* Lore Hub - Landing Page */}
+      {gameState === "lore-hub" && <LoreHub />}
+
+      {/* Game Codex - Reference Guide */}
+      {gameState === "codex" && <GameCodex />}
 
       {/* Settings Menu */}
       {gameState === "settings" && <SettingsMenu />}
@@ -487,7 +492,7 @@ function App() {
             </div>
             
             {/* ⚡ LEGENDARY UI OVERLAYS */}
-            <BattleUI />
+            <EnhancedCombatHUD />
             <TransformationOverlay />
             <ScreenEffects />
             <DialogueDisplay />

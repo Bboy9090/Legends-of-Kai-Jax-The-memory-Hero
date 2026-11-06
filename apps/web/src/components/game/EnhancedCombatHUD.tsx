@@ -37,9 +37,12 @@ export default function EnhancedCombatHUD({
   const playerStats = getCharacterStats(playerId);
   const playerAbilities = getCharacterAbilities(playerId);
   const boss = bossId ? getBossEncounter(bossId) : null;
-  const bossPhaseThreshold = boss && boss.phases ?
-    boss.phases.find(p => (bossHealth / bossMaxHealth) * 100 >= p.healthThreshold)?.description
-    : null;
+  const currentHealthPct = (bossHealth / bossMaxHealth) * 100;
+  const bossPhaseThreshold = boss && boss.phases ? (() => {
+    const sortedPhases = [...boss.phases].sort((a, b) => b.healthThreshold - a.healthThreshold);
+    const activePhase = sortedPhases.find(p => currentHealthPct >= p.healthThreshold) || sortedPhases[sortedPhases.length - 1];
+    return activePhase?.description || null;
+  })() : null;
 
   const playerHealthPct = (playerHealth / playerMaxHealth) * 100;
   const bossHealthPct = (bossHealth / bossMaxHealth) * 100;
