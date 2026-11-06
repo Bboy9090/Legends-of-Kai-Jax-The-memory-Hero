@@ -232,11 +232,16 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
   const walkProbe = await page.evaluate(() => (window as any).__KAI_JAX_ANIMATION_PROBE__);
   console.log("LIVE_ANIMATION_WALK_PROBE", JSON.stringify(walkProbe));
   expect(Object.values(walkProbe ?? {}).some((p: any) => p?.requested === "walk" && /walk/i.test(p?.selectedClip ?? ""))).toBeTruthy();
+  let walkDeform: any;
   try {
-    await page.waitForFunction(() => {
+    const proof = await page.waitForFunction(() => {
       const probe = (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai;
-      return probe?.requested === "walk" && probe?.moving === true && probe?.skinVerified === true;
+      return probe?.requested === "walk" && probe?.moving === true && probe?.skinVerified === true
+        ? { ...probe }
+        : null;
     }, null, { timeout: 20_000 });
+    walkDeform = await proof.jsonValue();
+    await proof.dispose();
   } catch (error) {
     const diagnostic = await page.evaluate(() => ({
       animation: (window as any).__KAI_JAX_ANIMATION_PROBE__?.kai ?? null,
@@ -248,7 +253,6 @@ test("versus: boots, navigates menus, and starts a battle without crashing", asy
     console.log("LIVE_KAI_SKIN_TIMEOUT_DIAGNOSTIC", JSON.stringify(diagnostic));
     throw error;
   }
-  const walkDeform = await page.evaluate(() => (window as any).__KAI_JAX_DEFORMATION_PROBE__?.kai);
   console.log("LIVE_DEFORMATION_WALK_PROBE", JSON.stringify(walkDeform));
   expect(walkDeform?.moving).toBe(true);
   expect(walkDeform?.skinVerified).toBe(true);
