@@ -492,7 +492,7 @@ function App() {
             </div>
             
             {/* ⚡ LEGENDARY UI OVERLAYS */}
-            <EnhancedCombatHUD />
+            <BattleUI />
             <TransformationOverlay />
             <ScreenEffects />
             <DialogueDisplay />
