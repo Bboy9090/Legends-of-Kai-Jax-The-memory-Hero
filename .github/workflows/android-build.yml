@@ -66,6 +66,28 @@ jobs:
           cat release/BUILD-SHA.txt
           cat release/SHA256SUMS.txt
 
+      - name: Label and verify debug APK candidate
+        working-directory: source
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(cat release/BUILD-SHA.txt)" = "$EXPECTED_SHA"
+          (cd release && sha256sum -c SHA256SUMS.txt)
+          printf 'source_sha=%s\nartifact_kind=DEBUG_QA_ONLY\nrelease_signed=false\nstore_approved=false\nphysical_device_qualified=false\n' "$EXPECTED_SHA" > release/QA-QUALIFICATION.txt
+
+      - name: Attach installable debug APK and provenance to CI run
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: Kai-Jax-debug-APK-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            source/release/Legends-of-Kai-Jax-main.apk
+            source/release/SHA256SUMS.txt
+            source/release/BUILD-SHA.txt
+            source/release/QA-QUALIFICATION.txt
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Publish APK as release asset
         if: ${{ github.event_name != 'pull_request' }}
         working-directory: source
