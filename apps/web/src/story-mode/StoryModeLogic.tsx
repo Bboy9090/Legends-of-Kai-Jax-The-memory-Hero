@@ -339,11 +339,17 @@ export const StoryModeLogic = ({ heroConfig = DEFAULT_HERO }: StoryModeLogicProp
   }, [objectiveStatus, currentLevel, nextLevel]);
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "80vh" }}>
+    <div style={{ position: "relative", width: "100vw", height: "100vh", inset: 0 }}>
       <Canvas
+        style={{ width: '100%', height: '100%', display: 'block' }}
         shadows
         camera={{ position: [0, 6, 14], fov: 60, near: 0.1, far: 500 }}
         gl={{ antialias: true, powerPreference: "high-performance" }}
+        onCreated={({ gl }) => {
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          gl.setSize(w, h, false);
+        }}
       >
         <color attach="background" args={["#0f172a"]} />
         <fog attach="fog" args={["#0f172a", 20, 140]} />
