@@ -121,13 +121,13 @@ importers:
     devDependencies:
       '@capacitor/android':
         specifier: ^5.7.8
-        version: 5.7.8(@capacitor/core@5.7.8)
+        version: 5.7.8(@capacitor/core@8.6.0)
       '@capacitor/cli':
         specifier: ^5.7.8
         version: 5.7.8
       '@capacitor/ios':
         specifier: ^5.7.8
-        version: 5.7.8(@capacitor/core@5.7.8)
+        version: 5.7.8(@capacitor/core@8.6.0)
       '@electron/rebuild':
         specifier: ^4.2.0
         version: 4.2.0
@@ -218,13 +218,13 @@ importers:
         version: link:../../packages/ui
       '@capacitor/android':
         specifier: 5.7.8
-        version: 5.7.8(@capacitor/core@5.7.8)
+        version: 5.7.8(@capacitor/core@8.6.0)
       '@capacitor/core':
-        specifier: ^5.7.8
-        version: 5.7.8
+        specifier: ^8.6.0
+        version: 8.6.0
       '@capacitor/ios':
         specifier: ^5.7.8
-        version: 5.7.8(@capacitor/core@5.7.8)
+        version: 5.7.8(@capacitor/core@8.6.0)
       '@fontsource/bebas-neue':
         specifier: ^5.3.0
         version: 5.3.0
@@ -520,8 +520,8 @@ packages:
     engines: {node: '>=16.0.0'}
     hasBin: true
 
-  '@capacitor/core@5.7.8':
-    resolution: {integrity: sha512-rrZcm/2vJM0WdWRQup1TUidbjQV9PfIadSkV4rAGLD7R6PuzZSMPGT0gmoZzCRlXkqrazrWWDkurei3ozU02FA==}
+  '@capacitor/core@8.6.0':
+    resolution: {integrity: sha512-9F2zzuGYTJu+wqmQSEmqnFBfGrhC/njjMCfmxbvg9mq8xJT4wNh5pxbMFZxvW/yDhYJWPEBFQxeqzfo1gKrvxg==}
 
   '@capacitor/ios@5.7.8':
     resolution: {integrity: sha512-XhGrziBnlRmCJ97LdPXOJquHPpYTwSJZIxYSXuPl7SDDuAEve8vs2wY76gLdaaFH2Z6ctdugUX+jR6VNu+ds+w==}
@@ -1794,6 +1794,9 @@ packages:
   '@types/draco3d@1.4.10':
     resolution: {integrity: sha512-AX22jp8Y7wwaBgAixaSvkoG4M/+PlAcm3Qs4OW8yT9DM4xUpWKeFhLueTAyZF39pviAdcDdeJoACapiAceqNcw==}
 
+  '@types/estree@1.0.10':
+    resolution: {integrity: sha512-lTyOMnOcmRBzdCv6/4zUZCrEhV0xrqQiUZBZtVcbmLHBXKLnN8q89v/wKRF/Q0HbwVsqbIG3o5HDoFl9sduM+g==}
+
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
@@ -2028,8 +2031,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  acorn@8.17.0:
-    resolution: {integrity: sha512-xRQbDb9BnwDafYNn6Vwl839DYVjqXYb1XVGtWAZ1kcDc6iwAL4hg3B1dZlRiuENFeO2H53gFG3in621AdERVAg==}
+  acorn@8.19.0:
+    resolution: {integrity: sha512-oJlA3XiRm7Cyk6qFD2Jn8ak9B7jSy0qy00ADO3+8dpT0LSjFihQYv4C02LFCSYJV3Q37xYwwRy5m+IpIiUzqWw==}
     engines: {node: '>=0.4.0'}
     hasBin: true
 
@@ -4569,6 +4572,9 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
+  tslib@2.9.1:
+    resolution: {integrity: sha512-a4Ux9VKuIMHsOS7ENbEq6hK2ZGYIT27Rtl0E4eD9KqwxhKiQeMZE/9xb3IdYwWaSOyIBQLExhQgXDTYoiCxnWA==}
+
   tsx@4.23.1:
     resolution: {integrity: sha512-GQHnkIfxyx1wYCOS/wonik5MVRZU9hi1TEZmzGZSCJB1y9YgoZ8H6itNE/u4suE+yLmOzuE4E5S4TZ/ZX2wcWQ==}
     engines: {node: '>=18.0.0'}
@@ -5096,9 +5102,9 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
-  '@capacitor/android@5.7.8(@capacitor/core@5.7.8)':
+  '@capacitor/android@5.7.8(@capacitor/core@8.6.0)':
     dependencies:
-      '@capacitor/core': 5.7.8
+      '@capacitor/core': 8.6.0
 
   '@capacitor/cli@5.7.8':
     dependencies:
@@ -5122,13 +5128,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@capacitor/core@5.7.8':
+  '@capacitor/core@8.6.0':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
-  '@capacitor/ios@5.7.8(@capacitor/core@5.7.8)':
+  '@capacitor/ios@5.7.8(@capacitor/core@8.6.0)':
     dependencies:
-      '@capacitor/core': 5.7.8
+      '@capacitor/core': 8.6.0
 
   '@develar/schema-utils@2.6.5':
     dependencies:
@@ -5424,7 +5430,7 @@ snapshots:
   '@ionic/utils-array@2.1.6':
     dependencies:
       debug: 4.4.3
-      tslib: 2.8.1
+      tslib: 2.9.1
     transitivePeerDependencies:
       - supports-color
 
@@ -5440,7 +5446,7 @@ snapshots:
   '@ionic/utils-object@2.1.6':
     dependencies:
       debug: 4.4.3
-      tslib: 2.8.1
+      tslib: 2.9.1
     transitivePeerDependencies:
       - supports-color
 
@@ -5451,14 +5457,14 @@ snapshots:
       debug: 4.4.3
       signal-exit: 3.0.7
       tree-kill: 1.2.2
-      tslib: 2.8.1
+      tslib: 2.9.1
     transitivePeerDependencies:
       - supports-color
 
   '@ionic/utils-stream@3.1.6':
     dependencies:
       debug: 4.4.3
-      tslib: 2.8.1
+      tslib: 2.9.1
     transitivePeerDependencies:
       - supports-color
 
@@ -5483,7 +5489,7 @@ snapshots:
       slice-ansi: 4.0.0
       string-width: 4.2.3
       strip-ansi: 6.0.1
-      tslib: 2.8.1
+      tslib: 2.9.1
       untildify: 4.0.0
       wrap-ansi: 7.0.0
     transitivePeerDependencies:
@@ -6072,7 +6078,7 @@ snapshots:
 
   '@rollup/pluginutils@5.3.0(rollup@4.59.0)':
     dependencies:
-      '@types/estree': 1.0.9
+      '@types/estree': 1.0.10
       estree-walker: 2.0.2
       picomatch: 4.0.4
     optionalDependencies:
@@ -6321,6 +6327,9 @@ snapshots:
   '@types/deep-eql@4.0.2': {}
 
   '@types/draco3d@1.4.10': {}
+
+  '@types/estree@1.0.10':
+    optional: true
 
   '@types/estree@1.0.8': {}
 
@@ -6608,7 +6617,7 @@ snapshots:
 
   acorn@8.15.0: {}
 
-  acorn@8.17.0:
+  acorn@8.19.0:
     optional: true
 
   agent-base@6.0.2:
@@ -9468,7 +9477,7 @@ snapshots:
   terser@5.46.0:
     dependencies:
       '@jridgewell/source-map': 0.3.11
-      acorn: 8.17.0
+      acorn: 8.19.0
       commander: 2.20.3
       source-map-support: 0.5.21
     optional: true
@@ -9553,6 +9562,8 @@ snapshots:
       typescript: 5.9.3
 
   tslib@2.8.1: {}
+
+  tslib@2.9.1: {}
 
   tsx@4.23.1:
     dependencies:
