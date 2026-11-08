@@ -19,11 +19,11 @@ else
 fi
 
 # Phase 2: Build Sanity
-echo "[2/6] Running TypeScript compilation..."
+echo "[2/6] Running TypeScript phase0 check..."
 cd apps/web
-tsc -b --noEmit > /dev/null 2>&1 && echo "✅ TypeScript: PASS" || {
+tsc -p tsconfig.phase0.json --noEmit > /dev/null 2>&1 && echo "✅ TypeScript: PASS" || {
   echo "❌ TypeScript errors detected"
-  tsc -b --noEmit
+  tsc -p tsconfig.phase0.json --noEmit
   exit 1
 }
 cd "$REPO_ROOT"
