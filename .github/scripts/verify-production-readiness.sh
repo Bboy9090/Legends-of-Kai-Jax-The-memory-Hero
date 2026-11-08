@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Determine repo root
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
 echo "🔍 LEGENDS OF KAI-JAX: PRODUCTION READINESS VERIFICATION"
 echo "========================================================"
 
@@ -22,17 +26,17 @@ tsc -b --noEmit > /dev/null 2>&1 && echo "✅ TypeScript: PASS" || {
   tsc -b --noEmit
   exit 1
 }
-cd ../..
+cd "$REPO_ROOT"
 
 # Phase 3: Production Build
 echo "[3/6] Running production build..."
 cd apps/web
 npm run build > /tmp/build.log 2>&1 && echo "✅ Build: PASS" || {
   echo "❌ Build failed"
-  cat /tmp/build.log
+  tail -20 /tmp/build.log
   exit 1
 }
-cd ../..
+cd "$REPO_ROOT"
 
 # Phase 4: Bundle Analysis
 echo "[4/6] Analyzing bundle size..."
@@ -50,8 +54,7 @@ echo "[5/6] Validating character registry..."
 if grep -q "CHARACTER_DATA_MAP" apps/web/src/lib/characterStats.ts && \
    grep -q "POWER_MATRICES" apps/web/src/lib/abilitySystems.ts; then
   CHARACTER_COUNT=$(grep -o "'[a-z-]*':" apps/web/src/lib/characterStats.ts | wc -l)
-  MATRIX_COUNT=$(grep -o "'[a-z-]*':" apps/web/src/lib/abilitySystems.ts | grep -c "POWER_MATRICES" || echo "verified")
-  echo "✅ Character registry valid ($CHARACTER_COUNT characters registered)"
+  echo "✅ Character registry valid ($CHARACTER_COUNT entities registered)"
 else
   echo "❌ Character registry malformed"
   exit 1
