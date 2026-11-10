@@ -80,7 +80,7 @@ function visualFingerprint(gltf: Gltf, bin: Buffer) {
   };
 }
 
-describe('Kai primary walking donor visual authority', () => {
+describe('Kai primary donor authority', () => {
   it('preserves the current Kai skeleton, geometry buffers, textures, and materials', () => {
     const staticKai = parseGlb('public/models/Meshy_AI_Character_outputSPiDERKAIJAX9TIALS.glb');
     const walkingKai = parseGlb('public/models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb');
@@ -89,5 +89,16 @@ describe('Kai primary walking donor visual authority', () => {
     expect(visualFingerprint(walkingKai.json, walkingKai.bin)).toEqual(
       visualFingerprint(staticKai.json, staticKai.bin),
     );
+  });
+
+  it('keeps the authored run donor animation-only and lightweight', () => {
+    const relative = 'public/models/Meshy_AI_Animation_Running_onlySPiDERKAIJAX9TIALS.glb';
+    const run = parseGlb(relative);
+
+    expect(run.json.animations?.length ?? 0).toBeGreaterThan(0);
+    expect(run.json.meshes?.length ?? 0).toBe(0);
+    expect(run.json.images?.length ?? 0).toBe(0);
+    expect(run.json.materials?.length ?? 0).toBe(0);
+    expect(fs.statSync(path.resolve(process.cwd(), relative)).size).toBeLessThan(250_000);
   });
 });
