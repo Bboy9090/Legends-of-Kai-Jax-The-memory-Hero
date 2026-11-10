@@ -29,6 +29,15 @@ const prohibited = [
 const textExtensions = new Set([".js", ".css", ".html", ".json", ".webmanifest", ".txt", ".svg"]);
 const hits = [];
 
+function escapeRegex(value) {
+  return value.replace(/[.*+?^$()|[\]\\]/g, "\\$&");
+}
+
+function containsStandaloneTerm(text, term) {
+  const escaped = escapeRegex(term);
+  return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, "i").test(text);
+}
+
 function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
@@ -49,14 +58,7 @@ function walk(dir) {
 
     const text = fs.readFileSync(full, "utf8").toLowerCase();
     for (const term of prohibited) {
-      const escaped = term.replace(/[.*+?^$\{\}()|[\]\\]/g, "\\    const text = fs.readFileSync(full, "utf8").toLowerCase();
-    for (const term of prohibited) {
-      if (text.includes(term)) {
-        hits.push({ term, file: relative, source: "content" });
-      }
-    }");
-      const pattern = new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, "i");
-      if (pattern.test(text)) {
+      if (containsStandaloneTerm(text, term)) {
         hits.push({ term, file: relative, source: "content" });
       }
     }
