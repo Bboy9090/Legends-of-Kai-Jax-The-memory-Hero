@@ -177,10 +177,10 @@ export const CHARACTER_BIOS: CharacterBio[] = [
   },
   {
     heroId: 'flynn',
-    title: 'The Triforce Champion - Green Tunic Legend',
+    title: 'The Triune Sigil Champion - Verdant Legend',
     shortBio: 'Blade-master with runes, fusions, ancient weapons, and magical counters.',
-    extendedBio: 'Hyrule\'s knight wields every tool, rune, blessing, and ancient technique known to his world. He switches effortlessly between bows, shields, elemental blades, fused weapons, and divine magic. His ultimate form taps the full Triforce, radiating celestial authority. Flynn is courage itself.',
-    originStory: 'Across countless timelines and ages, the same hero is reborn to face darkness—sometimes as a boy, sometimes as an adult, sometimes transformed into something beyond human. Flynn is the eternal champion of Hyrule, blessed by the golden goddesses themselves. His Triforce of Courage burns brighter than any rune magic because he acts not when victory is assured, but when hope is lost. He has wielded every legendary blade, solved ancient puzzles that twisted reality, and even reversed the flow of time itself. When the multiverse needed a defender, Flynn answered without hesitation—because that is what heroes of courage do.',
+    extendedBio: 'the Verdant Realm\'s knight wields every tool, rune, blessing, and ancient technique known to his world. He switches effortlessly between bows, shields, elemental blades, fused weapons, and divine magic. His ultimate form taps the full Triune Sigil, radiating celestial authority. Flynn is courage itself.',
+    originStory: 'Across countless timelines and ages, the same hero is reborn to face darkness—sometimes as a boy, sometimes as an adult, sometimes transformed into something beyond human. Flynn is the eternal champion of the Verdant Realm, blessed by the golden goddesses themselves. His Courage Sigil burns brighter than any rune magic because he acts not when victory is assured, but when hope is lost. He has wielded every legendary blade, solved ancient puzzles that twisted reality, and even reversed the flow of time itself. When the multiverse needed a defender, Flynn answered without hesitation—because that is what heroes of courage do.',
     specialty: 'Precision combat, parries, elemental synergy',
     transformations: [
       { 
@@ -202,25 +202,25 @@ export const CHARACTER_BIOS: CharacterBio[] = [
       { 
         level: 2, 
         name: 'Celestial Link', 
-        description: 'Full Triforce awakening, god-tier', 
-        requirements: 'Unite Triforce pieces + Divine Right', 
+        description: 'Full Triune Sigil awakening, god-tier', 
+        requirements: 'Unite Triune Sigil shards + Divine Right', 
         powerMultiplier: 5.2,
-        transformationSequence: 'The three golden Triforce pieces converge on Flynn\'s hand, bursting into blinding light—he becomes a being of pure divine authority'
+        transformationSequence: 'The three golden Triune Sigil shards converge on Flynn\'s hand, bursting into blinding light—he becomes a being of pure divine authority'
       },
     ],
-    ultimateAttack: 'Triforce Judgment - Divine wrath that judges all falsehood',
+    ultimateAttack: 'Triune Judgment - Divine wrath that judges all falsehood',
     synergyPartners: ['novaknight', 'marlo', 'kingspike'],
     battleQuotes: [
       'Courage is my birthright.',
-      'For Hyrule, for all worlds!',
+      'For the Verdant Realm, for all worlds!',
       'This will not fail.',
-      'The Triforce guides my blade.',
+      'The Triune Sigil guides my blade.',
       'I\'ve faced this before—in another time, another life.'
     ],
     villainMatchups: [
       { villainName: 'The Void King', matchupType: 'advantage', reason: 'His divine power directly counters void corruption' },
       { villainName: 'Echo Flynn', matchupType: 'disadvantage', reason: 'Void corruption perverts his greatest strengths' },
-      { villainName: 'Entropy Court Generals', matchupType: 'advantage', reason: 'Triforce power crushes entropic forces' }
+      { villainName: 'Entropy Court Generals', matchupType: 'advantage', reason: 'Triune Sigil power crushes entropic forces' }
     ]
   },
   {
