@@ -91,6 +91,17 @@ describe('Kai primary donor authority', () => {
     );
   });
 
+  it('keeps the authored walk donor animation-only and lightweight', () => {
+    const relative = 'public/models/Meshy_AI_Animation_Walking_onlySPiDERKAIJAX9TIALS.glb';
+    const walk = parseGlb(relative);
+
+    expect(walk.json.animations?.length ?? 0).toBeGreaterThan(0);
+    expect(walk.json.meshes?.length ?? 0).toBe(0);
+    expect(walk.json.images?.length ?? 0).toBe(0);
+    expect(walk.json.materials?.length ?? 0).toBe(0);
+    expect(fs.statSync(path.resolve(process.cwd(), relative)).size).toBeLessThan(250_000);
+  });
+
   it('keeps the authored run donor animation-only and lightweight', () => {
     const relative = 'public/models/Meshy_AI_Animation_Running_onlySPiDERKAIJAX9TIALS.glb';
     const run = parseGlb(relative);
