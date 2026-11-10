@@ -49,7 +49,14 @@ function walk(dir) {
 
     const text = fs.readFileSync(full, "utf8").toLowerCase();
     for (const term of prohibited) {
+      const escaped = term.replace(/[.*+?^$\{\}()|[\]\\]/g, "\\    const text = fs.readFileSync(full, "utf8").toLowerCase();
+    for (const term of prohibited) {
       if (text.includes(term)) {
+        hits.push({ term, file: relative, source: "content" });
+      }
+    }");
+      const pattern = new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, "i");
+      if (pattern.test(text)) {
         hits.push({ term, file: relative, source: "content" });
       }
     }
