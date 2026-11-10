@@ -23,9 +23,9 @@ export const LOD_MODEL_REGISTRY: Record<string, LODModelConfig> = {
     lodLow: '/models/optimized/lod_low/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX_lod_low.glb',
   },
   jaxon: {
-    standard: '/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb',
-    optimized: '/models/optimized/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI_optimized.glb',
-    lodLow: '/models/optimized/lod_low/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI_lod_low.glb',
+    standard: '/models/Meshy_AI_Jaxon_Velocity_Animations.glb',
+    optimized: '/models/optimized/Meshy_AI_Jaxon_Velocity_Animations_optimized.glb',
+    lodLow: '/models/optimized/lod_low/Meshy_AI_Jaxon_Velocity_Animations_lod_low.glb',
   },
   kaison: {
     standard: '/models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb',

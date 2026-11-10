@@ -39,7 +39,7 @@ export enum UpgradeCategory {
   // Advanced Systems
   CHAOS = 'chaos',
   TECH = 'tech',
-  TRIFORCE = 'triforce',
+  TRIUNE = 'triune',
   STARBORN = 'starborn',
   MEMORY = 'memory',
   TIME = 'time',
