@@ -102,8 +102,8 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   kai: {
     path: "/models/Meshy_AI_Character_outputSPiDERKAIJAX9TIALS.glb",
     animationPaths: {
-      walk: "/models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb",
-      run: "/models/Meshy_AI_Animation_Running_withSkinSPiDERKAIJAX9TIALS.glb",
+      walk: "/models/Meshy_AI_Animation_Walking_onlySPiDERKAIJAX9TIALS.glb",
+      run: "/models/Meshy_AI_Animation_Running_onlySPiDERKAIJAX9TIALS.glb",
       // Do not attach the 9-tail Kai-Jax kick donors here. Their 24 joint
       // names match, but their bind/rest transforms do not match Spider-Kai's
       // skeleton. Kai uses the articulated procedural kick until a compatible

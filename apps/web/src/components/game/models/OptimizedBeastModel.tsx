@@ -99,6 +99,7 @@ export default function OptimizedBeastModel({
   const animationSelectionAttackRef = useRef(false);
   const kickVariantRef = useRef(0);
   const [companionAnimations, setCompanionAnimations] = useState<THREE.AnimationClip[]>([]);
+  const [prefetchRunDonor, setPrefetchRunDonor] = useState(false);
   const loadedCompanionPathsRef = useRef(new Set<string>());
   const loadingCompanionPathsRef = useRef(new Set<string>());
   const mountedRef = useRef(true);
@@ -136,7 +137,7 @@ export default function OptimizedBeastModel({
     // are each large enough that fetching both during battle startup can delay
     // the authored walk clip beyond the release smoke window. Warm walk first
     // and request run only when sprint is actually entered.
-    if (isMoving && isRunning && animationPaths?.run) {
+    if ((prefetchRunDonor || (isMoving && isRunning)) && animationPaths?.run) {
       paths.push(animationPaths.run);
     }
 
@@ -155,7 +156,7 @@ export default function OptimizedBeastModel({
     }
 
     return [...new Set(paths)];
-  }, [animationPaths, attackType, isAttacking, isMoving, isRunning, warmLocomotionDonors]);
+  }, [animationPaths, attackType, isAttacking, isMoving, isRunning, prefetchRunDonor, warmLocomotionDonors]);
 
   // DIAGNOSTIC: log model path resolution
   useEffect(() => {
@@ -264,6 +265,14 @@ export default function OptimizedBeastModel({
             // optional companion to finish. This lets authored locomotion
             // become available as soon as its own file is ready.
             setCompanionAnimations((current) => [...current, ...extracted]);
+
+            // Sequential locomotion prefetch: once the warmed walk donor is
+            // fully available, start the run donor in the background. This
+            // preserves non-blocking battle startup and avoids competing large
+            // GLB downloads while ensuring first sprint can use authored run.
+            if (animationPaths?.walk === path && animationPaths?.run) {
+              setPrefetchRunDonor(true);
+            }
           }
         })
         .catch((error) => {
@@ -285,7 +294,7 @@ export default function OptimizedBeastModel({
         });
     });
 
-  }, [beast.id, requestedCompanionPaths]);
+  }, [animationPaths?.run, animationPaths?.walk, beast.id, requestedCompanionPaths]);
 
   const authoredAnimations = useMemo(
     () => [...animations, ...companionAnimations],
