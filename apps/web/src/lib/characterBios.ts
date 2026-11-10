@@ -369,60 +369,51 @@ export const CHARACTER_BIOS: CharacterBio[] = [
   },
   {
     heroId: 'speedy',
-    title: 'The Blue Blur - Chaos Master',
-    shortBio: 'Pure speed. Sonic rings. Spin dash. Chaos control mastery.',
-    extendedBio: 'The original speedster. Speedy moves faster than sound, collects golden rings for power, and harnesses chaos emeralds to transform. His carefree attitude hides a hero\'s heart willing to risk everything for his friends and freedom.',
-    originStory: 'Created by chaos itself, Speedy is the original speedster—the one who taught the multiverse what velocity truly means. His affinity with Chaos Emeralds runs deeper than any other hero, as if he and they are two halves of the same coin. He has raced through centuries, crossed impossible distances, and even achieved momentary godhood through sheer will and chaos force. But Speedy\'s greatest power isn\'t speed—it\'s his refusal to stop fighting for freedom. When others despair, Speedy smiles. When the odds are impossible, he breaks through. His motto is simple: "Gotta go fast," but his meaning runs deep—always push forward, never accept limits, keep moving until victory is won.',
-    specialty: 'Speed blitz, ring collection, aerial combat',
+    title: 'The Velocity Warden - Rift Current Master',
+    shortBio: 'Pure acceleration, current-step movement, aerial feints, and momentum control.',
+    extendedBio: 'Speedy is a rift-born courier whose body can channel kinetic current without tearing itself apart. He stores momentum in luminous current bands, releases it through impossible direction changes, and treats motion as both shield and weapon. His relaxed grin hides a disciplined instinct to keep civilians ahead of every collapsing front.',
+    originStory: 'Speedy survived the first Velocity District rupture by running messages through streets that were disappearing behind him. The Rift marked his nervous system with a living current, giving him extraordinary acceleration but forcing him to master restraint before speed consumed him. He became the district\'s fastest rescue runner, then a roaming Warden who crosses fractured territories to reconnect isolated communities. He fights for freedom of movement because he remembers what it meant to watch every road close.',
+    specialty: 'Speed blitz, kinetic-current routing, aerial combat',
     transformations: [
-      { 
-        level: 0, 
-        name: 'Base Speed', 
-        description: 'Blue hedgehog, supersonic spin dash', 
-        requirements: 'Default', 
+      {
+        level: 0,
+        name: 'Current Step',
+        description: 'Azure rift-runner with controlled kinetic wake',
+        requirements: 'Default',
         powerMultiplier: 1.0,
-        transformationSequence: 'A blue blur materializes, rings orbit his form, supersonic energy crackles around him'
+        transformationSequence: 'Luminous current bands lock around his limbs as the air compresses into a sharp blue wake.'
       },
-      { 
-        level: 1, 
-        name: 'Super Speedy', 
-        description: 'Golden form, flight, invincibility', 
-        requirements: '7 Chaos Emeralds', 
+      {
+        level: 1,
+        name: 'Overcurrent Speedy',
+        description: 'Golden kinetic overcharge with sustained aerial control',
+        requirements: 'Charge all seven current bands',
         powerMultiplier: 2.5,
-        transformationSequence: 'All seven emeralds merge into Speedy, his form becomes pure golden energy, chaos aura explodes outward in a shockwave'
+        transformationSequence: 'Stored momentum floods every current band, lifting Speedy into a radiant overcharge that bends his wake around incoming attacks.'
       },
-      { 
-        level: 2, 
-        name: 'Hyper Speedy', 
-        description: 'Rainbow chaos, screen-clearing attacks', 
-        requirements: 'Super Emeralds + Super Chaos', 
+      {
+        level: 2,
+        name: 'Prismatic Velocity',
+        description: 'Prismatic current state with battlefield-scale acceleration',
+        requirements: 'Overcurrent mastery + stabilized Rift core',
         powerMultiplier: 5.0,
-        transformationSequence: 'Beyond Super—Speedy becomes a vortex of rainbow energy, time bends around him, he becomes faster than causality itself'
+        transformationSequence: 'Speedy synchronizes with the Rift core and becomes a prismatic velocity field, crossing attack lanes before their motion can fully resolve.'
       },
     ],
-    ultimateAttack: 'Sonic Wind Destroyer - A reality-splitting spin dash',
+    ultimateAttack: 'Riftline Breaker - A chained velocity strike that fractures the enemy formation',
     synergyPartners: ['jaxon', 'midnight', 'kaison'],
     battleQuotes: [
-      'Gotta go fast!',
-      'You\'ll never catch me!',
-      'Chaos power, let\'s go!',
-      'Time to show you real speed!',
-      'Rings collected, victory assured!'
+      'Keep moving. I already found the opening.',
+      'You can guard a lane. You cannot guard every direction.',
+      'Current locked. Route clear.',
+      'I am faster when somebody needs a way out.',
+      'Momentum wins this one.'
     ],
     villainMatchups: [
-      { villainName: 'The Void King', matchupType: 'neutral', reason: 'Speed advantage negated by timeless void entity' },
-      { villainName: 'Echo Speedy', matchupType: 'neutral', reason: 'Perfect speed mirror—technique decides victor' },
-      { villainName: 'Entropy Court Generals', matchupType: 'advantage', reason: 'Speed lets him circle and strike without retaliation' }
+      { villainName: 'The Void King', matchupType: 'neutral', reason: 'Extreme mobility avoids corruption zones but cannot overpower void authority directly' },
+      { villainName: 'Echo Speedy', matchupType: 'disadvantage', reason: 'A mirrored velocity field can predict and cut off his preferred escape lines' },
+      { villainName: 'Entropy Court Generals', matchupType: 'advantage', reason: 'Rapid lane changes disrupt coordinated formation control' }
     ]
-  }
-];
-
-// VILLAIN MATCHUP CHART - Shows advantage/disadvantage against major threats
-export const VILLAIN_MATCHUP_CHART = {
-  'Void King': {
-    strongAgainst: ['bubble', 'flynn'],
-    weakAgainst: ['jaxon', 'speedy'],
-    description: 'Ultimate void entity - stops time, corrupts reality'
   },
   'Echo Jaxon': {
     strongAgainst: ['speedy', 'midnight'],
