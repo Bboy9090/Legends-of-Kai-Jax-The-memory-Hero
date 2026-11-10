@@ -47,7 +47,7 @@ jobs:
 
       - name: Install exact lockfile
         working-directory: source
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --filter ./apps/web... --frozen-lockfile
 
       - name: Typecheck
         working-directory: source
@@ -75,7 +75,7 @@ jobs:
 
       - name: Install exact lockfile
         working-directory: source
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --filter ./apps/web... --frozen-lockfile
 
       - name: Test web
         working-directory: source
@@ -103,7 +103,7 @@ jobs:
 
       - name: Install exact lockfile
         working-directory: source
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --filter ./apps/web... --frozen-lockfile
 
       - name: Build
         working-directory: source
