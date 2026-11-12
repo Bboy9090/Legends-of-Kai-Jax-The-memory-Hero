@@ -88,8 +88,8 @@ export default function CampaignMap() {
           <span className="text-cyan-300 font-bold tabular-nums text-sm">{completedInAct} / {missions.length}</span>
         </div>
 
-        <div className="flex gap-2 mb-6">
-          {[1, 2, 3].map((a) => (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {Array.from({ length: 9 }, (_, i) => i + 1).map((a) => (
             <button
               key={a}
               onClick={() => { setAct(a); setSelectedMissionId(null); }}

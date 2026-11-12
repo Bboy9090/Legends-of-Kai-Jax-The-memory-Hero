@@ -144,6 +144,120 @@ export const STORY_ACTS: Record<ActNumber, StoryAct> = {
     estimatedPlaytime: 200,
     locked: true,
     prerequisiteAct: 2
+  },
+
+  4: {
+    number: 4,
+    title: 'The Hollow Dawn',
+    bookRef: 'Book 4: Aftermath',
+    description: 'The Void is gone but the restored memories fit badly. Hollows scavenge the gaps while a hidden buyer feeds stolen shards to the Rift Warden.',
+    playstyles: ['Stealth', 'Base defense', 'Consent-based rescue', 'Boss duel'],
+    fireMoments: [
+      { id: 'mirek_tunnels', name: 'The Underguide', description: 'Mirek leads the team through the black-market tunnels.', rewardXP: 750 },
+      { id: 'rikka_spark', name: 'The Little Spark', description: 'Rikka joins the defense of Nexus Haven.', rewardXP: 800 },
+      { id: 'miri_consent', name: 'The Sealed Name', description: 'Miri opens her own relic, on her own terms.', rewardXP: 850 }
+    ],
+    bossEncounters: ['Rift Warden'],
+    gameplayTwist: 'Memories must be returned with consent; forcing one open fails the objective.',
+    difficultyRange: [5, 7],
+    estimatedPlaytime: 150,
+    locked: true,
+    prerequisiteAct: 3
+  },
+
+  5: {
+    number: 5,
+    title: 'The Hundred Floors',
+    bookRef: 'Book 5: Ascent',
+    description: 'A black tower rises in the Ashen Expanse. Each floor builds copies of the heroes and asks whether they can be spared.',
+    playstyles: ['Wave survival', 'Mercy mechanics', 'Platforming', 'Guardian bosses'],
+    fireMoments: [
+      { id: 'selene_omen', name: 'The Oracle\'s Omen', description: 'Selene recognizes the tower from her visions.', rewardXP: 900 },
+      { id: 'moss_wound', name: 'A Wound, Not a Monster', description: 'Old Moss reveals that the Void began as an untended memory.', rewardXP: 1000 },
+      { id: 'mirror_door', name: 'The Mirror Door', description: 'The Hundredth Floor opens on an Echo that knows the team.', rewardXP: 1800 }
+    ],
+    bossEncounters: ['Marble Gladiator', 'Granite Colossus'],
+    gameplayTwist: 'Sparing a lowered-guard Echo copy grants bonus XP; defeating it does not.',
+    difficultyRange: [6, 8],
+    estimatedPlaytime: 180,
+    locked: true,
+    prerequisiteAct: 4
+  },
+
+  6: {
+    number: 6,
+    title: 'Dual Destiny',
+    bookRef: 'Book 6: The Mirror',
+    description: 'Beyond the mirror door the roads split: the Hero Path with every ally, and the Echo Path, a silent world with one voice.',
+    playstyles: ['Chase', 'Team combat', 'Stealth', 'Rival duel'],
+    fireMoments: [
+      { id: 'sable_betrayal', name: 'The Fastest Betrayal', description: 'Sable Nine takes the mirror key and runs.', rewardXP: 1100 },
+      { id: 'two_roads', name: 'Two Roads', description: 'The team walks both the Hero and Echo paths.', rewardXP: 1250 },
+      { id: 'echo_falls', name: 'The Echo Falls', description: 'Three voices agreeing to disagree beat one certain voice.', rewardXP: 2200 }
+    ],
+    bossEncounters: ['Sable\'s Shade', 'Echo of Kai-Jax'],
+    gameplayTwist: 'Both paths must be played; each shows the same fight from a different philosophy.',
+    difficultyRange: [7, 9],
+    estimatedPlaytime: 200,
+    locked: true,
+    prerequisiteAct: 5
+  },
+
+  7: {
+    number: 7,
+    title: 'The Weave Unbound',
+    bookRef: 'Book 7: Reckoning',
+    description: 'The Weave unravels. The elders return, Aurelion shows the throne-ruled future, and the war ends by giving the power away.',
+    playstyles: ['Node defense', 'Team combat', 'Time-slip combat', 'Boss duel'],
+    fireMoments: [
+      { id: 'elders_return', name: 'The Elders Gather', description: 'Boryn and Borax hold Cross Point once more.', rewardXP: 1500 },
+      { id: 'erased_future', name: 'The Erased Future', description: 'Aurelion shows the timeline where Kai-Jax rules.', rewardXP: 1600 },
+      { id: 'throne_refused', name: 'The Throne Refused', description: 'Kai-Jax scatters the Weave into the people instead of taking it.', rewardXP: 3000 }
+    ],
+    bossEncounters: ['Rift General Prime'],
+    gameplayTwist: 'The final choice is not to win more, but to share the power.',
+    difficultyRange: [8, 10],
+    estimatedPlaytime: 220,
+    locked: true,
+    prerequisiteAct: 6
+  },
+
+  8: {
+    number: 8,
+    title: 'The All-High',
+    bookRef: 'Book 8: The Overseers',
+    description: 'The cosmic overseers who first wove the strands return and set four Trials, one for each strand and the question beneath it.',
+    playstyles: ['Boss gauntlet', 'Chase', 'Chain combat', 'Consent trial'],
+    fireMoments: [
+      { id: 'sky_opens', name: 'The Sky Opens', description: 'Four colossal overseers look down on the city.', rewardXP: 1800 },
+      { id: 'storm_shared', name: 'Small Lightning', description: 'Jax chains the storm through every ally.', rewardXP: 2200 },
+      { id: 'we_should_have_asked', name: 'We Should Have Asked', description: 'Kai-Jax admits the Weave was given without consent.', rewardXP: 3200 }
+    ],
+    bossEncounters: ['Jade Serpent', 'Frost Wolf', 'Thunder Lion', 'Earth Turtle'],
+    gameplayTwist: 'Each Trial is won by an answer as well as a fight.',
+    difficultyRange: [9, 10],
+    estimatedPlaytime: 220,
+    locked: true,
+    prerequisiteAct: 7
+  },
+
+  9: {
+    number: 9,
+    title: 'The Last Memory',
+    bookRef: 'Book 9: The Last Gate',
+    description: 'The full Circle marches to the Last Gate and finds the origin of the Void: a forgotten memory that only wanted not to be alone.',
+    playstyles: ['Full-roster team combat', 'Long-form survival', 'Final boss', 'Epilogue'],
+    fireMoments: [
+      { id: 'circle_gathers', name: 'Gathering the Circle', description: 'Every ally answers the call at Nexus Haven.', rewardXP: 2200 },
+      { id: 'first_wound', name: 'Where the Void Was Born', description: 'The Well-Defiler reveals the origin of the Void.', rewardXP: 2600 },
+      { id: 'last_memory', name: 'The Last Memory', description: 'Voidonus Imperion is remembered instead of destroyed.', rewardXP: 5000 }
+    ],
+    bossEncounters: ['Well-Defiler', 'Voidonus Imperion'],
+    gameplayTwist: 'The final boss ends by being remembered, not defeated.',
+    difficultyRange: [9, 10],
+    estimatedPlaytime: 240,
+    locked: true,
+    prerequisiteAct: 8
   }
 };
 

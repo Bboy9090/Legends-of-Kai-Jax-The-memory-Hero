@@ -226,6 +226,33 @@ function getStoryObjectives(storyId: string): MissionObjectiveRuntime[] {
   
   const act = parseInt(match[1]);
   const num = parseInt(match[2]);
+
+  // Acts IV-IX use global mission numbers, so derive objectives from mission data instead of the chapter formula below.
+  if (act >= 4) {
+    const mission = getStoryMissionById(storyId);
+    const tier = act - 3;
+    const combo = 8 + tier * 2;
+    if (mission?.bossId) {
+      return [
+        objective("win", "Defeat the Boss", { kind: "winMatch" }, 1),
+        objective("ultimate", "Use Ultimate Finisher", { kind: "useMove", count: 1, move: "ultimate" }, 1),
+        objective("combo", `Reach ${combo + 4} combo`, { kind: "reachCombo", count: combo + 4 }, combo + 4)
+      ];
+    }
+    if (mission?.gameplayType === "survival") {
+      const seconds = 60 + tier * 10;
+      return [
+        objective("win", "Win the match", { kind: "winMatch" }, 1),
+        objective("survival", `Survive ${seconds}s`, { kind: "surviveSeconds", seconds }, seconds)
+      ];
+    }
+    return [
+      objective("win", "Win the match", { kind: "winMatch" }, 1),
+      objective("hits", `Land ${25 + tier * 5} hits`, { kind: "landHits", count: 25 + tier * 5 }, 25 + tier * 5),
+      objective("combo", `Reach ${combo} combo`, { kind: "reachCombo", count: combo }, combo)
+    ];
+  }
+
   const globalChapter = (act - 1) * 18 + num;
 
   // 📈 LOGIC SCALING: Objectives get harder as the chapter count increases

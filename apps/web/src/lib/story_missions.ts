@@ -1,8 +1,10 @@
 /**
  * LEGENDS OF KAI-JAX: THE MEMORY HERO
- * OFFICIAL STORY CAMPAIGN DATA (ACTS I, II, III)
- * Superb 15-Mission Vertical Slice - Feral Action & Memory Magic
+ * OFFICIAL STORY CAMPAIGN DATA (ACTS I-IX, 45 missions)
+ * Acts I-III are defined here; Acts IV-IX live in story_missions_acts4to9.ts
  */
+
+import { LATE_ACT_STORY_MISSIONS } from './story_missions_acts4to9';
 
 export interface StoryDialogue {
   speaker: string;
@@ -19,7 +21,7 @@ export interface EnemyWave {
 
 export interface StoryMission {
   id: string;
-  actNumber: 1 | 2 | 3;
+  actNumber: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
   missionNumber: number;
   title: string;
   description: string;
@@ -381,6 +383,7 @@ export const ALL_STORY_MISSIONS: StoryMission[] = [
   ...ACT_I_STORY_MISSIONS,
   ...ACT_II_STORY_MISSIONS,
   ...ACT_III_STORY_MISSIONS,
+  ...LATE_ACT_STORY_MISSIONS,
 ];
 
 export function getStoryMissionById(id: string): StoryMission | undefined {
