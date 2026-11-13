@@ -6,6 +6,8 @@ on:
       - "apps/web/src/assets/modelRegistry.ts"
       - "apps/web/public/models/**"
       - "apps/web/scripts/validate-registry.mjs"
+      - "apps/web/scripts/registry-source-parser.mjs"
+      - "apps/web/scripts/registry-source-parser.test.mjs"
       - ".github/workflows/registry-validate.yml"
   push:
     branches:
@@ -15,6 +17,8 @@ on:
       - "apps/web/src/assets/modelRegistry.ts"
       - "apps/web/public/models/**"
       - "apps/web/scripts/validate-registry.mjs"
+      - "apps/web/scripts/registry-source-parser.mjs"
+      - "apps/web/scripts/registry-source-parser.test.mjs"
       - ".github/workflows/registry-validate.yml"
   workflow_dispatch:
 
@@ -32,6 +36,10 @@ jobs:
           cd source
           git checkout --detach "${COMMIT_SHA}"
           test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+
+      - name: Run registry parser regressions
+        working-directory: source/apps/web
+        run: node --test scripts/registry-source-parser.test.mjs
 
       - name: Run registry validator
         working-directory: source/apps/web
