@@ -355,13 +355,13 @@ const LegendaryMainMenu: React.FC = () => {
           </p>
           <div className="flex items-center justify-center gap-6 mt-4">
             <button 
-              onClick={() => window.open('https://legendsofkaijax.com/privacy', '_blank')}
+              onClick={() => window.open('/privacy.html', '_blank')}
               className="text-neutral-500 hover:text-white transition-colors text-[10px] uppercase tracking-widest"
             >
               Privacy Policy
             </button>
             <button 
-              onClick={() => window.open('https://legendsofkaijax.com/terms', '_blank')}
+              onClick={() => window.open('/terms.html', '_blank')}
               className="text-neutral-500 hover:text-white transition-colors text-[10px] uppercase tracking-widest"
             >
               Terms of Service
