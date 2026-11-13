@@ -19,9 +19,17 @@ test("M6: briefing enters real Ashblock arena with six active Void grunts and th
   });
   await expect(page.getByRole("heading", { name: "Shadows of the Ashblock" })).toBeVisible({ timeout: 25_000 });
   await page.getByRole("button", { name: "Engage Mission" }).click();
-  await expect(page.getByText("I can feel another shard nearby.", { exact: false })).toBeVisible({ timeout: 20_000 });
-  await page.keyboard.press("Enter");
-  await page.keyboard.press("Enter");
+  // Dialogue is split into short beats, so walk every beat and require the authored line to appear in one.
+  const dialogue = page.getByTestId("dialogue-overlay");
+  await expect(dialogue).toBeVisible({ timeout: 20_000 });
+  const spoken: string[] = [];
+  for (let i = 0; i < 40 && (await dialogue.isVisible().catch(() => false)); i++) {
+    await page.keyboard.press("Enter"); // finish typing the beat
+    spoken.push((await page.getByTestId("dialogue-text").textContent().catch(() => "")) ?? "");
+    await page.keyboard.press("Enter"); // advance
+    await page.waitForTimeout(80);
+  }
+  expect(spoken.join(" ")).toContain("I can feel another shard nearby.");
   const hud = page.getByTestId("mission6-memory-hud");
   await expect(hud).toBeVisible({ timeout: 50_000 });
   await expect(hud).toContainText("Trapped Memories 0/3");

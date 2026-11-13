@@ -26,7 +26,7 @@ export default function DistrictSelectScreen() {
 
   return (
     <div
-      className="kj-vision-shell kj-vision-city-vignette h-screen w-full overflow-auto p-6 text-white"
+      className="kj-vision-shell kj-vision-city-vignette kj-safe-inset h-[100dvh] w-full overflow-auto p-6 text-white"
       style={{ backgroundColor: "#05070b" }}
     >
       <div className="max-w-2xl mx-auto">

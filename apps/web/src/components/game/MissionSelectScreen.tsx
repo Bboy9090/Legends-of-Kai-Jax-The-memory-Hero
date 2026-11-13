@@ -15,7 +15,7 @@ export default function MissionSelectScreen() {
   };
 
   return (
-    <div className="kj-vision-shell kj-vision-city-vignette fixed inset-0 z-50 flex flex-col justify-between overflow-y-auto p-6 text-white sm:p-12">
+    <div className="kj-vision-shell kj-vision-city-vignette kj-safe-inset fixed inset-0 z-50 flex flex-col justify-between overflow-y-auto p-6 text-white sm:p-12">
       {/* Ambient background */}
       <div className="absolute top-0 right-0 w-full max-w-4xl h-96 bg-purple-600/10 rounded-full blur-[160px] pointer-events-none" />
 

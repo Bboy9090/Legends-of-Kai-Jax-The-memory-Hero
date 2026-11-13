@@ -1,10 +1,15 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useAdventure } from "../../lib/stores/useAdventure";
 import { evaluateCampaignProgressionGating } from "../../lib/adventureEvaluator";
 import { MISSION6_ID } from "../../lib/mission6";
 import { normalizeWaveEnemies, getWaveDelaySeconds, advanceWaveDelayMs } from "../../lib/storyWaveRuntime";
 import { shouldMarkChaseTargetEscaped, findCivilianAttack, CIVILIAN_ATTACK_DAMAGE } from "../../lib/adventureTelemetry";
 import { getStoryMissionById, type StoryMission, type StoryDialogue } from "../../lib/story_missions";
+import { expandDialogue, MAX_BEAT_CHARS, PHONE_BEAT_CHARS } from "../../lib/dialogueBeats";
+import { identityForSpeaker, moodFromEmotion, type HeroMood } from "../../lib/heroVisualIdentity";
+import { getBossConfig } from "../../lib/bossPhases";
+import HeroSilhouette from "./HeroSilhouette";
+import { BossEncounterHUD, useBossEncounter } from "./BossEncounter";
 
 interface StoryAdventureProps {
   missionId: string;
@@ -18,20 +23,27 @@ type StoryPhase = "intro" | "playing" | "wave-transition" | "outro" | "results";
 function DialogueOverlay({
   lines,
   onComplete,
+  finale,
 }: {
   lines: StoryDialogue[];
   onComplete: () => void;
+  /** Colours the last beat's portrait: a victory outro ends triumphant, a defeat outro ends hit. */
+  finale?: "victory" | "defeat";
 }) {
+  const beats = useMemo(
+    () => expandDialogue(lines, typeof window !== "undefined" && window.innerWidth < 640 ? PHONE_BEAT_CHARS : MAX_BEAT_CHARS),
+    [lines],
+  );
   const [lineIndex, setLineIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [showFull, setShowFull] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const currentLine = lines[lineIndex];
+  const currentLine = beats[lineIndex];
   const fullText = currentLine?.text || "";
   const displayText = showFull ? fullText : fullText.slice(0, charIndex);
   const isTyping = !showFull && charIndex < fullText.length;
-  const isLastLine = lineIndex >= lines.length - 1;
+  const isLastLine = lineIndex >= beats.length - 1;
 
   useEffect(() => {
     setCharIndex(0);
@@ -49,7 +61,7 @@ function DialogueOverlay({
         }
         return prev + 1;
       });
-    }, 25);
+    }, 22);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
@@ -57,18 +69,13 @@ function DialogueOverlay({
 
   const handleClickRef = useRef<() => void>(() => {});
   handleClickRef.current = () => {
-    console.log(`[DialogueOverlay] Click: isTyping=${isTyping}, isLastLine=${isLastLine}, lineIndex=${lineIndex}, totalLines=${lines.length}`);
     if (isTyping) {
       setShowFull(true);
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
-    if (isLastLine) {
-      console.log(`[DialogueOverlay] Last line reached, calling onComplete()`);
-      onComplete();
-    } else {
-      setLineIndex((i) => i + 1);
-    }
+    if (isLastLine) onComplete();
+    else setLineIndex((i) => i + 1);
   };
 
   const handleClick = () => handleClickRef.current();
@@ -86,58 +93,69 @@ function DialogueOverlay({
 
   if (!currentLine) return null;
 
-  const speakerColor = getSpeakerColor(currentLine.speaker);
+  const identity = identityForSpeaker(currentLine.speaker);
+  const speakerColor = identity?.primaryColor ?? getSpeakerColor(currentLine.speaker);
+  let mood: HeroMood = moodFromEmotion(currentLine.emotion);
+  if (isLastLine && mood === "neutral" && finale) mood = finale === "victory" ? "triumphant" : "hit";
+  const rightSide = currentLine.side === "right";
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center pb-12 px-6"
-      style={{ background: "linear-gradient(transparent 20%, rgba(5,5,10,0.8) 70%, rgba(5,5,10,0.95) 100%)" }}
+      className="fixed inset-0 z-50 flex items-end justify-center px-3 sm:px-6"
+      data-testid="dialogue-overlay"
+      style={{
+        background: "linear-gradient(transparent 20%, rgba(5,5,10,0.8) 70%, rgba(5,5,10,0.95) 100%)",
+        paddingBottom: "max(1.25rem, calc(env(safe-area-inset-bottom) + 0.75rem))",
+        paddingLeft: "max(0.75rem, env(safe-area-inset-left))",
+        paddingRight: "max(0.75rem, env(safe-area-inset-right))",
+      }}
       onClick={handleClick}
     >
-      {/* Cinematic Bars */}
-      <div className="absolute top-0 left-0 w-full h-[10vh] bg-black/80" />
-      <div className="absolute bottom-0 left-0 w-full h-[10vh] bg-black/80" />
+      <div className="absolute left-0 top-0 w-full bg-black/80" style={{ height: "max(8vh, env(safe-area-inset-top))" }} />
+      <div className="absolute bottom-0 left-0 w-full bg-black/80" style={{ height: "max(6vh, env(safe-area-inset-bottom))" }} />
 
-      <div className="w-full max-w-4xl relative">
-        {/* Decorative elements */}
-        <div className="absolute -top-4 -left-4 w-12 h-12 border-t-2 border-l-2 opacity-50" style={{ borderColor: speakerColor }} />
-        <div className="absolute -bottom-4 -right-4 w-12 h-12 border-b-2 border-r-2 opacity-50" style={{ borderColor: speakerColor }} />
+      <div className="relative w-full max-w-3xl">
+        <div className="absolute -left-2 -top-3 h-10 w-10 border-l-2 border-t-2 opacity-50" style={{ borderColor: speakerColor }} />
+        <div className="absolute -bottom-3 -right-2 h-10 w-10 border-b-2 border-r-2 opacity-50" style={{ borderColor: speakerColor }} />
 
-        <div className="bg-black/80 backdrop-blur-md border border-white/10 rounded-2xl p-8 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-          <div className="flex items-center gap-4 mb-4">
-            <div
-              className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl font-black rotate-3 group-hover:rotate-0 transition-transform"
-              style={{ 
-                background: `linear-gradient(135deg, ${speakerColor}44, ${speakerColor}11)`, 
-                color: speakerColor, 
-                border: `1px solid ${speakerColor}60`,
-                boxShadow: `0 0 15px ${speakerColor}22`
-              }}
-            >
-              {currentLine.speaker[0]}
-            </div>
-            <div>
-              <span className="font-black text-xl uppercase tracking-widest block" style={{ color: speakerColor, textShadow: `0 0 10px ${speakerColor}44` }}>
-                {currentLine.speaker}
-              </span>
-              <span className="text-[10px] text-slate-500 uppercase tracking-[0.2em]">Transmission Active</span>
-            </div>
+        <div className={`flex items-stretch gap-3 rounded-2xl border border-white/10 bg-black/80 p-4 shadow-[0_0_40px_rgba(0,0,0,0.5)] backdrop-blur-md sm:gap-5 sm:p-6 ${rightSide ? "flex-row-reverse" : ""}`}>
+          <div
+            className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl sm:h-28 sm:w-24"
+            data-testid="dialogue-portrait"
+            data-mood={mood}
+            data-speaker={currentLine.speaker}
+            style={{
+              background: `linear-gradient(135deg, ${speakerColor}44, ${speakerColor}11)`,
+              border: `1px solid ${speakerColor}80`,
+              boxShadow: `0 0 18px ${speakerColor}33`,
+              transform: mood === "hit" ? "translateX(-2px) rotate(-1.5deg)" : undefined,
+            }}
+          >
+            {identity ? (
+              <HeroSilhouette heroId={identity.id} mood={mood} view="portrait" className="h-full w-full" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-3xl font-black" style={{ color: speakerColor }}>{currentLine.speaker[0]}</div>
+            )}
           </div>
-          
-          <p className="text-slate-100 text-xl font-medium leading-relaxed min-h-[4rem] tracking-wide">
-            {displayText}
-            {isTyping && <span className="w-2 h-5 inline-block bg-cyan-400 ml-1 animate-pulse" />}
-          </p>
-          
-          <div className="mt-6 flex items-center justify-between border-t border-white/5 pt-4">
-            <div className="flex gap-1">
-              {lines.map((_, i) => (
-                <div key={i} className={`h-1 rounded-full transition-all ${i === lineIndex ? 'w-6 bg-cyan-500' : 'w-2 bg-white/10'}`} />
-              ))}
-            </div>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest animate-pulse">
-              {isTyping ? "Synchronizing..." : isLastLine ? "Click to engage" : "Ready for next phase"}
+
+          <div className="min-w-0 flex-1">
+            <span className="block truncate text-base font-black uppercase tracking-widest sm:text-lg" style={{ color: speakerColor, textShadow: `0 0 10px ${speakerColor}44` }}>
+              {currentLine.speaker}
             </span>
+            <p className="mt-1 min-h-[3.4rem] text-[17px] font-medium leading-snug tracking-wide text-slate-100 sm:min-h-[3.8rem] sm:text-xl" data-testid="dialogue-text">
+              {displayText}
+              {isTyping && <span className="ml-1 inline-block h-4 w-2 animate-pulse bg-cyan-400" />}
+            </p>
+            <div className="mt-2 flex items-center justify-between border-t border-white/5 pt-2">
+              <div className="flex gap-1" aria-hidden="true">
+                {beats.slice(0, 14).map((_, i) => (
+                  <div key={i} className={`h-1 rounded-full transition-all ${i === lineIndex ? "w-5 bg-cyan-500" : "w-1.5 bg-white/10"}`} />
+                ))}
+              </div>
+              <span className="animate-pulse text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                {isTyping ? "…" : isLastLine ? "Tap to engage" : "Tap to continue"}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -302,6 +320,10 @@ function ResultsScreen({ mission, success, onContinue, onRetry }: { mission: Sto
 
 export default function StoryAdventure({ missionId, characterId, onComplete, onBack }: StoryAdventureProps) {
   const mission = getStoryMissionById(missionId);
+  const bossConfigRef = useMemo(
+    () => (mission?.bossId ? getBossConfig(mission.id, mission.bossId, mission.difficulty) : undefined),
+    [mission],
+  );
   const [phase, setPhase] = useState<StoryPhase | "briefing">("briefing");
   const [currentWave, setCurrentWave] = useState(0);
   const [success, setSuccess] = useState(false);
@@ -310,6 +332,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
   const waveDelayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const civilianAttackTimes = useRef(new Map<string, number>());
 
+  const bossHud = useBossEncounter(bossConfigRef, phase === "playing" || phase === "wave-transition");
   const initAdventure = useAdventure((s) => s.initAdventure);
   const spawnEnemies = useAdventure((s) => s.spawnEnemies);
   const retryMissionAction = useAdventure((s) => s.retryMission);
@@ -334,21 +357,24 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
 
     const existingEnemies = useAdventure.getState().enemies;
 
+    const bossConfig = bossConfigRef;
     const newEnemies = waveEnemies.map((e, i) => {
       const angle = (i / waveEnemies.length) * Math.PI * 2;
       const radius = 8 + waveIndex * 3;
       const isBoss = mission.bossId === e.fighterId;
+      const boss = isBoss ? bossConfig : undefined;
+      const hp = boss ? boss.maxHealth : 80 + mission.difficulty * 20;
       return {
         id: `w${waveIndex}-${i}-${e.fighterId}`,
         fighterId: e.fighterId,
-        tier: (isBoss ? (mission.id === "story_act1_m5" ? "boss2" : "boss1") :
+        tier: (boss ? boss.tier :
           mission.id === MISSION6_ID && waveIndex === 1 ? "minion2" : "minion1") as "minion1" | "minion2" | "boss1" | "boss2",
         posX: Math.sin(angle) * radius,
         posY: 0,
         posZ: Math.cos(angle) * radius,
         rotY: 0,
-        health: isBoss ? (mission.id === "story_act1_m5" ? 1200 : 500) : 80 + mission.difficulty * 20,
-        maxHealth: isBoss ? (mission.id === "story_act1_m5" ? 1200 : 500) : 80 + mission.difficulty * 20,
+        health: hp,
+        maxHealth: hp,
         isAggro: false,
         isAttacking: false,
         isDead: false,
@@ -357,12 +383,20 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
         patrolTargetX: Math.sin(angle) * radius + (Math.random() - 0.5) * 8,
         patrolTargetZ: Math.cos(angle) * radius + (Math.random() - 0.5) * 8,
         stunTimer: 0,
+        ...(boss
+          ? {
+              bossKey: boss.missionId,
+              bossPhase: 1 as const,
+              bossStage: null,
+              visual: { scale: boss.scale, tint: boss.tint, aura: boss.aura, weapon: boss.weapon },
+            }
+          : {}),
       };
     });
 
     spawnEnemies([...existingEnemies, ...newEnemies]);
     useAdventure.setState({ waveCount: waveIndex + 1 });
-  }, [mission, spawnEnemies]);
+  }, [mission, spawnEnemies, bossConfigRef]);
 
   const startPlaying = useCallback(() => {
     console.log(`[StoryAdventure] startPlaying called, mission=${mission?.id}, enemyWaves=${mission?.enemyWaves.length}`);
@@ -494,6 +528,8 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
         />
       )}
 
+      {(phase === "playing" || phase === "wave-transition") && <BossEncounterHUD hud={bossHud} />}
+
       {phase === "wave-transition" && (
         <WaveTransition
           waveNum={currentWave + 1}
@@ -503,6 +539,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
 
       {phase === "outro" && (
         <DialogueOverlay
+          finale={success ? "victory" : "defeat"}
           lines={success ? mission.outroCutscene : [
             { speaker: "Kai-Jax", text: "No... I can't fall here. Not yet..." },
             { speaker: "???", text: "The Memory Hero crumbles. How disappointing." },

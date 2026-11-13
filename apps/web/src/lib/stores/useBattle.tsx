@@ -69,7 +69,6 @@ import { evaluateCancelTransition } from "../../game/combat/cancelTransition";
 import {
   clashPriorityForAttack,
   getMoveKeyForPlayerAttack,
-  hitStopSecondsForMove,
   resolveClash,
   staminaCostForAttack,
 } from "../../game/combat/AttackResolver";
@@ -767,15 +766,12 @@ export const useBattle = create<BattleState>((set, get) => ({
         get().addSynergy(playerAttackType === 'special' ? 15 : playerAttackType === 'kick' ? 10 : 5);
         get().addOverdrive(damage * 0.4);
         useMissions.getState().recordHit(playerAttackType);
-        const crunchMult = playerAttackType === 'ultimate' ? 1.8 : playerAttackType === 'special' ? 1.4 : 1.1;
         if (hit.hitStopSeconds > 0) {
           // Tier 2 / Ultimate / Critical: fixed 50ms freeze and a damped shake.
           get().triggerHitStop(hit.hitStopSeconds);
           get().triggerScreenShake(hit.shakeIntensity);
-        } else {
-          get().triggerHitStop(hitStopSecondsForMove(move) * crunchMult);
-          get().triggerScreenShake(Math.max(0.7, damage / 6) * crunchMult);
         }
+        // Tier 1 / basic non-crit hits intentionally get no freeze and no shake.
         if (playerAttackType === 'ultimate') {
           get().triggerScreenFlash('#FFD700');
         }

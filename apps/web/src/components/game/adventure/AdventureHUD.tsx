@@ -101,7 +101,7 @@ function AutoTargetIndicator({ targetId, enemies }: { targetId: string | null; e
   const label = isBoss ? "⚠ BOSS" : "TARGET";
   const accent = isBoss ? "#f59e0b" : "#ef4444";
   return (
-    <div className="absolute top-20 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
+    <div className="absolute top-[14.5rem] left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 sm:top-20">
       {/* Attack telegraph warning — enemy is winding up */}
       {isTelegraphing && (
         <div className="text-[11px] font-black uppercase tracking-widest text-amber-300 animate-pulse">
@@ -352,7 +352,7 @@ export default function AdventureHUD() {
   const isCritical = !trainingSession && playerHpPct > 0 && playerHpPct < 25;
 
   return (
-    <div className="kj-vision-shell absolute inset-0 pointer-events-none z-40">
+    <div className="kj-vision-shell kj-shell-clear kj-safe-frame absolute inset-0 pointer-events-none z-40">
       <ImpactFlash color={player.impactFlash} />
 
       {/* Critical low-health vignette (mirrors versus danger feedback) */}
@@ -381,8 +381,8 @@ export default function AdventureHUD() {
       )}
 
       <div className="absolute left-4 right-4 top-4 pointer-events-auto">
-        <div className="flex items-start justify-between gap-4">
-          <div className="kj-vision-hud w-[min(390px,42vw)] min-w-[250px] p-2.5 sm:p-3">
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:justify-between sm:gap-4">
+          <div className="kj-vision-hud w-full max-w-[390px] p-2.5 sm:w-[min(390px,42vw)] sm:min-w-[250px] sm:p-3">
             <div className="mb-2 flex items-center gap-3">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-[#c69b55]/70 bg-[radial-gradient(circle,rgba(157,78,221,.46),rgba(5,7,11,.96)_68%)] text-xl text-purple-200 shadow-[0_0_22px_rgba(157,78,221,.28)]">
                 ✦
@@ -408,8 +408,8 @@ export default function AdventureHUD() {
             </div>
           </div>
 
-          <div className="flex max-w-[390px] flex-col items-end gap-2">
-            <div className="kj-vision-hud min-w-[240px] max-w-[360px] px-4 py-3 text-right">
+          <div className="flex w-full max-w-[390px] flex-col items-start gap-2 sm:w-auto sm:items-end">
+            <div className="kj-vision-hud w-full max-w-[360px] px-4 py-2 text-left sm:w-auto sm:min-w-[240px] sm:py-3 sm:text-right">
               <div className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#c69b55]">
                 {districtMeta?.name || "The Raging City"}
               </div>

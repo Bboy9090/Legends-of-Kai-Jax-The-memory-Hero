@@ -56,13 +56,9 @@ export function getQualitySettings() {
     deviceType,
     isMobile,
     isTablet,
-    // Render internally below device pixel density on compact screens. The
-    // UI remains CSS-resolution crisp while the 3D layer sheds the expensive
-    // fill-rate cost of dense fur/armor models.
-    pixelRatio: Math.min(
-      window.devicePixelRatio,
-      isMobile ? 0.5 : isTablet ? 0.42 : 1.5,
-    ),
+    // Never render below 1x (blurry on every phone) and never above 2x; compact screens stay at 1.5x
+    // max to keep fill-rate in check. Matches the <Canvas dpr={[1, 2]}> cap used across the app.
+    pixelRatio: Math.min(Math.max(window.devicePixelRatio, 1), isMobile || isTablet ? 1.5 : 2),
     antialias: deviceType === 'desktop',
     shadowMap: {
       // Dynamic shadow maps are one of the largest GPU costs in the adventure

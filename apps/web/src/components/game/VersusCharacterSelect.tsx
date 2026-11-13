@@ -268,7 +268,7 @@ export default function VersusCharacterSelect() {
   const base = selectedProfile?.color ?? "#111827";
 
   return (
-    <div className="kj-vision-shell fixed inset-0 flex h-full w-full flex-col overflow-hidden bg-[linear-gradient(rgba(4,5,8,.34),rgba(4,5,8,.88)),url('/models/ruined_city_bg.jpg')] bg-cover bg-center">
+    <div className="kj-vision-shell kj-safe-screen fixed inset-0 flex h-full w-full flex-col overflow-hidden bg-[linear-gradient(rgba(4,5,8,.34),rgba(4,5,8,.88)),url('/models/ruined_city_bg.jpg')] bg-cover bg-center">
       <header className="relative z-10 flex items-center justify-between gap-3 border-b border-[#755b33]/60 px-3 pb-3 pt-3 sm:px-6 sm:pt-5">
         <button type="button" onClick={() => setGameState("menu")} className="px-3 sm:px-4 py-2 rounded-lg border border-slate-700 text-slate-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white text-xs sm:text-sm font-medium" aria-label="Return to main menu">
           ← BACK

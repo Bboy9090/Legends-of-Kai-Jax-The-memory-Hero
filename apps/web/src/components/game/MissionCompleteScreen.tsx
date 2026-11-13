@@ -10,7 +10,7 @@ export default function MissionCompleteScreen() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#050510] text-white flex flex-col justify-between p-6 sm:p-12 overflow-y-auto font-sans">
+    <div className="kj-safe-inset-lg fixed inset-0 z-50 bg-[#050510] text-white flex flex-col justify-between p-6 sm:p-12 overflow-y-auto font-sans">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-96 bg-amber-500/10 rounded-full blur-[180px] pointer-events-none" />
 
       <div className="max-w-2xl w-full mx-auto my-auto py-8 z-10 space-y-8 bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl text-center">

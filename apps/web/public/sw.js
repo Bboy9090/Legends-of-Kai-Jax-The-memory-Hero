@@ -4,14 +4,26 @@
  * duplicated into Cache Storage.
  */
 
-const CACHE = 'kai-jax-shell-v2';
+const CACHE = 'kai-jax-shell-v3';
 const CACHE_URLS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/icon.svg',
   '/privacy.html',
-  '/terms.html'
+  '/terms.html',
+  // Move data is fetched at battle start; keep it available with no network.
+  '/moves/jax_dash_strike.json',
+  '/moves/jax_flash_grab.json',
+  '/moves/jax_quick_jab.json',
+  '/moves/jax_spin_kick.json',
+  '/moves/kai_combo_chain.json',
+  '/moves/kai_grab.json',
+  '/moves/kai_heavy_punch.json',
+  '/moves/kai_light_jab.json',
+  '/moves/kai_sweep.json',
+  '/moves/kai_tail_whip.json',
+  '/moves/kai_uppercut.json'
 ];
 
 self.addEventListener('install', (event) => {

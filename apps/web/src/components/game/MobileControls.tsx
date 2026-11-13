@@ -103,7 +103,7 @@ export default function MobileControls() {
   // Portrait Layout - buttons stacked
   if (orientation === 'portrait') {
     return (
-      <div className="fixed inset-0 pointer-events-none z-50">
+      <div className="kj-safe-frame fixed inset-0 pointer-events-none z-50">
         {/* Left side - Movement */}
         <div className="absolute left-4 bottom-4 flex flex-col gap-2 pointer-events-auto">
           {/* Jump Button */}
@@ -194,7 +194,7 @@ export default function MobileControls() {
 
   // Landscape Layout - buttons on sides
   return (
-    <div className="fixed inset-0 pointer-events-none z-50">
+    <div className="kj-safe-frame fixed inset-0 pointer-events-none z-50">
       {/* Left side - Movement Controls */}
       <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 pointer-events-auto">
         {/* Jump */}

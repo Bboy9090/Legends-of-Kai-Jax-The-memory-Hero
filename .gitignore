@@ -141,3 +141,6 @@ credentials.json
 
 ## Raw model backups from scripts/compress-models.sh
 models_raw_backup/
+
+## Playwright verification output
+artifacts/verification/test-results/

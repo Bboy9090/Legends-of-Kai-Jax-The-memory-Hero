@@ -1,0 +1,7 @@
+{
+  "boss": "Rift Warden",
+  "maxHp": 2900,
+  "warningSeconds": 1.21,
+  "counterDamageDealt100Got": 150,
+  "phaseAfterRoar": 2
+}

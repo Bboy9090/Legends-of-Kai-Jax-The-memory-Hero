@@ -12,7 +12,7 @@ export default function SaveSlotScreen() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#050510] text-white flex flex-col justify-between p-6 sm:p-12 overflow-y-auto font-sans">
+    <div className="kj-safe-inset-lg fixed inset-0 z-50 bg-[#050510] text-white flex flex-col justify-between p-6 sm:p-12 overflow-y-auto font-sans">
       {/* Background Ambient Glow */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-full max-w-5xl h-96 bg-cyan-600/10 rounded-full blur-[160px] pointer-events-none" />
 

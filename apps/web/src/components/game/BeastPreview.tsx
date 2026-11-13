@@ -72,7 +72,7 @@ export default function BeastPreview() {
   const fighter = getFighterById(activeFighter);
 
   return (
-    <div className="h-screen w-full flex flex-col bg-gradient-to-b from-[#07070d] via-purple-950/20 to-[#07070d]">
+    <div className="kj-safe-screen h-[100dvh] w-full flex flex-col bg-gradient-to-b from-[#07070d] via-purple-950/20 to-[#07070d]">
       <div className="flex items-center justify-between px-4 py-3 shrink-0">
         <button
           onClick={() => setGameState("menu")}

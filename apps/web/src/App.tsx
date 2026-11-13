@@ -49,6 +49,8 @@ import { useAdventure } from "./lib/stores/useAdventure";
 import { registerServiceWorker } from "./lib/offlineModeSystem";
 import { FIGHTERS, getFighterById } from "./lib/characters";
 import { getStoryMissionById } from "./lib/story_missions";
+import { useHeroRoster } from "./lib/stores/useHeroRoster";
+import HeroUnlockModal from "./components/game/HeroUnlockModal";
 import { initializeVoiceSystem, preloadVoices } from "./lib/voiceActing";
 import * as THREE from "three";
 import { getQualitySettings } from "./lib/threejs/PerformanceOptimizer";
@@ -95,44 +97,6 @@ function StoryModeScene() {
   const fighter = getFighterById(charId);
   const storyMissionId = activeStoryMissionId || "story_act1_m1";
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (import.meta.env.DEV) console.log('[StoryModeScene] Mounted, resizing canvas');
-
-    const forceCanvasResize = () => {
-      const canvas = document.querySelector('canvas');
-      if (!canvas) return;
-
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-
-      if (canvas.width !== w || canvas.height !== h) {
-        if (import.meta.env.DEV) console.log(`[StoryModeScene] Canvas: ${canvas.width}x${canvas.height} → ${w}x${h}`);
-        canvas.width = w;
-        canvas.height = h;
-        canvas.style.position = 'fixed';
-        canvas.style.top = '0';
-        canvas.style.left = '0';
-        canvas.style.width = `${w}px`;
-        canvas.style.height = `${h}px`;
-        canvas.style.zIndex = '1';
-
-        const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
-        if (gl) {
-          gl.viewport(0, 0, w, h);
-        }
-      }
-    };
-
-    forceCanvasResize();
-    const interval = setInterval(forceCanvasResize, 50);
-    window.addEventListener('resize', forceCanvasResize);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('resize', forceCanvasResize);
-    };
-  }, []);
 
   return (
     <>
@@ -184,6 +148,7 @@ function StoryModeScene() {
               useRunner.getState().setLastPlayedTitle(
                 getStoryMissionById(storyMissionId)?.title ?? storyMissionId
               );
+              useHeroRoster.getState().unlockHeroes(getStoryMissionById(storyMissionId)?.rewards.unlocks);
             }
             useRunner.getState().setGameState("campaign-map");
           }}
@@ -343,7 +308,7 @@ function App() {
     <div 
       style={{ 
         width: '100vw', 
-        height: '100vh', 
+        height: '100dvh', 
         position: 'relative', 
         overflow: gameState === 'lore-hub' ? 'auto' : 'hidden',
         background: 'linear-gradient(to bottom, #0a0a1a, #1a0a2e)',
@@ -352,6 +317,9 @@ function App() {
     >
       {/* Global additive overlays: F3 perf HUD, F1 quest log */}
       <GameOverlays />
+
+      {/* Celebrates each newly unlocked hero with a 3D turntable preview */}
+      <HeroUnlockModal />
 
       {/* Lore Hub - Landing Page */}
       {gameState === "lore-hub" && <LoreHub />}

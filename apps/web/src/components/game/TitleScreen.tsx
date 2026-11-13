@@ -49,7 +49,7 @@ export default function TitleScreen() {
   return (
     <div
       data-testid="title-screen"
-      className="kj-vision-shell kj-vision-city-vignette fixed inset-0 z-50 overflow-hidden select-none"
+      className="kj-vision-shell kj-vision-city-vignette kj-safe-screen fixed inset-0 z-50 overflow-hidden select-none"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_73%_22%,rgba(128,58,180,.20),transparent_24%),linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.54))]" />
       <div className="absolute right-[9%] top-[12%] h-[56vh] w-[36vw] min-w-[320px] rounded-full bg-[radial-gradient(circle,rgba(185,112,255,.18),rgba(78,24,118,.04)_45%,transparent_72%)] blur-[1px]" />

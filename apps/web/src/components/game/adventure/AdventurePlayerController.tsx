@@ -240,9 +240,8 @@ export default function AdventurePlayerController() {
                   store.setHitStopTimer(hit.hitStopSeconds);
                   store.triggerScreenShake(hit.shakeIntensity);
                   store.triggerImpactFlash(hit.kind === "critical" ? "#ffd24a" : hit.kind === "ultimate" ? "#b36bff" : "#ffffff");
-                } else {
-                  store.setHitStopTimer(currentMove.hitStopFrames / 60);
                 }
+                // Tier 1 / basic non-crit hits intentionally get no freeze and no shake.
               }
             });
           }

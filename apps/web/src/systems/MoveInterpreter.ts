@@ -5,6 +5,9 @@
 
 import type { MoveSpec, HitSpec, ActiveHitbox } from '../types/MoveSpec';
 
+// Moves are static local files; once loaded they stay available for the whole session.
+const MOVE_SPEC_CACHE = new Map<string, MoveSpec>();
+
 export class MoveInterpreter {
   private currentMove: MoveSpec | null = null;
   private frameCounter: number = 0;
@@ -16,11 +19,14 @@ export class MoveInterpreter {
    * Load move specification from JSON
    */
   public async loadMove(moveId: string): Promise<MoveSpec> {
+    const cached = MOVE_SPEC_CACHE.get(moveId);
+    if (cached) return cached;
     const response = await fetch(`${import.meta.env.BASE_URL}moves/${moveId}.json`);
     if (!response.ok) {
       throw new Error(`Failed to load move: ${moveId}`);
     }
     const moveSpec: MoveSpec = await response.json();
+    MOVE_SPEC_CACHE.set(moveId, moveSpec);
     return moveSpec;
   }
 

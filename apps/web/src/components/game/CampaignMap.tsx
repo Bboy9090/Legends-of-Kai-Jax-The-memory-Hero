@@ -52,13 +52,11 @@ export default function CampaignMap() {
 
   return (
     <div
-      className="kj-vision-shell kj-vision-city-vignette h-screen w-full overflow-auto p-6 text-white"
-      style={{
-        backgroundColor: "#05070b",
-        paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))"
-      }}
+      className="kj-vision-shell kj-vision-city-vignette kj-safe-inset h-[100dvh] w-full overflow-auto text-white"
+      style={{ backgroundColor: "#05070b" }}
+      data-testid="campaign-map"
     >
-      <div className="max-w-3xl mx-auto">
+      <div className="mx-auto w-full max-w-3xl" data-testid="campaign-map-container">
         <button
           onClick={() => setGameState("menu")}
           className="kj-vision-button mb-6 flex items-center gap-2 px-4 py-2.5"
@@ -70,7 +68,7 @@ export default function CampaignMap() {
         <div className="text-center mb-8">
           <p className="mb-1 text-xs font-semibold uppercase tracking-[0.32em] text-[#a88e65]">Story Mode</p>
           <h1 className="kj-vision-title mb-2 text-4xl font-black">
-            Legends of Kai-Jax Campaign
+            Legends of <span className="whitespace-nowrap">Kai-Jax</span> Campaign
           </h1>
           <p className="text-slate-400 text-sm">
             Follow Kai-Jax's journey to reclaim stolen memories through adventure combat missions.
@@ -88,12 +86,13 @@ export default function CampaignMap() {
           <span className="text-cyan-300 font-bold tabular-nums text-sm">{completedInAct} / {missions.length}</span>
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="mb-6 flex flex-wrap justify-center gap-2" data-testid="act-tabs">
           {Array.from({ length: 9 }, (_, i) => i + 1).map((a) => (
             <button
               key={a}
               onClick={() => { setAct(a); setSelectedMissionId(null); }}
-              className={`px-4 py-2 rounded-xl border-2 font-bold transition-all ${
+              data-testid={`act-tab-${a}`}
+              className={`whitespace-nowrap px-4 py-2 rounded-xl border-2 font-bold transition-all ${
                 act === a
                   ? "kj-vision-button text-[#f0cf87] border-[#f0cf87]"
                   : "kj-vision-button text-[#9d927f]"
@@ -114,6 +113,8 @@ export default function CampaignMap() {
             return (
               <button
                 key={m.id}
+                data-mission-id={m.id}
+                data-testid={`campaign-mission-${m.id}`}
                 onClick={() => unlocked ? setSelectedMissionId(isSelected ? null : m.id) : undefined}
                 disabled={!unlocked}
                 className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
@@ -202,6 +203,7 @@ export default function CampaignMap() {
             )}
 
             <button
+              data-testid="begin-mission"
               onClick={() => launchMission(selected.id)}
               className="kj-vision-button flex min-h-[44px] w-full items-center justify-center gap-2 py-4 text-lg font-bold"
             >

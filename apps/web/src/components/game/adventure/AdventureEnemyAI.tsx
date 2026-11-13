@@ -1,6 +1,6 @@
 import { pushDamagePopup } from "../../../lib/stores/useDamagePopups";
 import { playSfx } from "../../../lib/sfx";
-import { useRef, Suspense, useMemo } from "react";
+import { useEffect, useRef, Suspense, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
@@ -27,6 +27,8 @@ import {
   type AnimState,
 } from "../../../lib/animationUtils";
 import * as THREE from "three";
+import { applyRimLight } from "../../../lib/threejs/rimLight";
+import { Aura3D, GlowAttachment } from "../Aura3D";
 
 interface EnemyMeshProps {
   enemy: AdventureEnemy;
@@ -82,6 +84,14 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
   const modelPath = config?.path || "/models/kai_jax_beast.glb";
   const { scene, animations } = useGLTF(modelPath);
   const clonedScene = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+
+  // Story bosses reuse shared models, so each gets its own emissive rim tint (stronger in phase 2).
+  const bossTint = enemy.visual?.tint;
+  const bossEnraged = enemy.bossPhase === 2;
+  useEffect(() => {
+    if (!bossTint) return;
+    return applyRimLight(clonedScene, { color: bossTint, strength: bossEnraged ? 2.1 : 1.5, power: 2.2, tintStrength: bossEnraged ? 0.14 : 0.05 });
+  }, [clonedScene, bossTint, bossEnraged]);
 
   const groupRef = useRef<THREE.Group>(null);
   const innerRef = useRef<THREE.Group>(null);
@@ -185,7 +195,7 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
     groupRef.current.position.set(enemy.posX, enemy.posY + yOffset.current, enemy.posZ);
     groupRef.current.rotation.y = enemy.rotY;
     const pulse = enemy.aiState === "telegraph" ? 1 + Math.sin(t * 18) * 0.035 : 1;
-    groupRef.current.scale.setScalar(pulse);
+    groupRef.current.scale.setScalar(pulse * (enemy.visual?.scale ?? 1));
 
     const limbs = limbsRef.current;
     const bases = basesRef.current;
@@ -216,6 +226,17 @@ function EnemyMesh({ enemy }: EnemyMeshProps) {
       <group ref={innerRef} scale={normalizedScale.current}>
         <primitive object={clonedScene} castShadow receiveShadow />
       </group>
+      {enemy.visual ? (
+        <>
+          <Aura3D
+            color={enemy.visual.aura.color}
+            intensity={enemy.visual.aura.intensity * (enemy.bossPhase === 2 ? 1.5 : 1)}
+            radius={1.7}
+            pulse={enemy.bossStage === "telegraph" ? 1 : 0}
+          />
+          <GlowAttachment kind={enemy.visual.weapon.kind as never} color={enemy.visual.weapon.color} position={[1.2, 1.7, 0.3]} scale={1.5} />
+        </>
+      ) : null}
       <pointLight
         position={[0, 1.5, 0]}
         color={isTelegraphing ? "#ff4433" : enemy.isAggro ? "#ff3333" : "#883333"}

@@ -36,10 +36,14 @@
 /* ============================================================================
    GLOBAL RESET & BASE STYLES
    ============================================================================ */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Layered so Tailwind v4 utilities (p-*, m-*, mx-auto, space-*) can override it. An unlayered
+   reset beats every utility and flattens spacing across the whole app. */
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 }
 
 html, body {

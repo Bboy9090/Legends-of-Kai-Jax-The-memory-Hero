@@ -147,10 +147,53 @@
   display: none;
 }
 
+/* Keep every notch / home-indicator inset on tablets and landscape phones too (an 844px-wide
+   phone in landscape is "wider than 640px" but still has a notch). */
 @media (min-width: 640px) {
   .kj-safe-screen {
-    padding: 0;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
+}
+
+/* Full-screen menus with their own comfortable padding: never smaller than the safe-area inset. */
+.kj-safe-inset {
+  box-sizing: border-box;
+  padding-top: max(env(safe-area-inset-top), 1.5rem);
+  padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);
+  padding-left: max(env(safe-area-inset-left), 1.5rem);
+  padding-right: max(env(safe-area-inset-right), 1.5rem);
+}
+.kj-safe-inset-lg {
+  box-sizing: border-box;
+  padding-top: max(env(safe-area-inset-top), 1.5rem);
+  padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);
+  padding-left: max(env(safe-area-inset-left), 1.5rem);
+  padding-right: max(env(safe-area-inset-right), 1.5rem);
+}
+@media (min-width: 640px) {
+  .kj-safe-inset-lg {
+    padding-top: max(env(safe-area-inset-top), 3rem);
+    padding-bottom: max(env(safe-area-inset-bottom), 3rem);
+    padding-left: max(env(safe-area-inset-left), 3rem);
+    padding-right: max(env(safe-area-inset-right), 3rem);
+  }
+}
+
+/* HUD roots draw the shell frame over a live 3D canvas, so they must not paint the shell's opaque
+   #05070b backdrop (it hid the entire arena). */
+.kj-vision-shell.kj-shell-clear {
+  background: transparent;
+}
+
+/* HUD roots: absolutely-positioned children ignore their parent's padding, so inset the frame itself. */
+.kj-safe-frame {
+  top: env(safe-area-inset-top);
+  right: env(safe-area-inset-right);
+  bottom: env(safe-area-inset-bottom);
+  left: env(safe-area-inset-left);
 }
 
 @media (max-width: 639px) {

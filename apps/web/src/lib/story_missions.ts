@@ -9,7 +9,7 @@ import { LATE_ACT_STORY_MISSIONS } from './story_missions_acts4to9';
 export interface StoryDialogue {
   speaker: string;
   text: string;
-  emotion?: 'neutral' | 'angry' | 'sad' | 'determined' | 'happy';
+  emotion?: 'neutral' | 'angry' | 'sad' | 'determined' | 'happy' | 'hit' | 'triumphant';
   side?: 'left' | 'right';
 }
 
@@ -148,7 +148,7 @@ export const ACT_I_STORY_MISSIONS: StoryMission[] = [
     arena: 'memory_vault',
     bossId: 'rift-general',
     storyBeat: 'ACT I FINALE: The heroes fail to close the rift. The world changes forever.',
-    rewards: { xp: 600, currency: 500, loot: ['Veteran Seal'] },
+    rewards: { xp: 600, currency: 500, loot: ['Veteran Seal'], unlocks: ['silver'] },
     gameplayType: 'boss',
     enemyWaves: [{ type: 'void-legion', count: 6 }, { type: 'void-elite', count: 4, delay: 5 }]
   }
@@ -241,7 +241,7 @@ export const ACT_II_STORY_MISSIONS: StoryMission[] = [
     difficulty: 7,
     arena: 'rift_frontier',
     storyBeat: 'Systematic reclamation of stolen memory nodes.',
-    rewards: { xp: 600, currency: 500, loot: ['Skyforge Metal'] },
+    rewards: { xp: 600, currency: 500, loot: ['Skyforge Metal'], unlocks: ['volter'] },
     gameplayType: 'combat',
     enemyWaves: [{ type: 'void-elite', count: 6 }, { type: 'void-brute', count: 2, delay: 4 }]
   },

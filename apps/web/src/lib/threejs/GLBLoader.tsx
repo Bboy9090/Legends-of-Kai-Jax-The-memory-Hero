@@ -175,12 +175,14 @@ export function GLBModel({
     action.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, 1);
 
     // Handle animation completion
-    if (!loop && onAnimationComplete) {
-      const handleComplete = () => {
-        onAnimationComplete?.();
-        action.removeEventListener('finished', handleComplete);
+    // 'finished' is dispatched by the mixer (AnimationAction has no event API), tagged with the action.
+    if (!loop && onAnimationComplete && mixer) {
+      const handleComplete = (event: { action: THREE.AnimationAction }) => {
+        if (event.action !== action) return;
+        mixer.removeEventListener('finished', handleComplete);
+        onAnimationComplete();
       };
-      action.addEventListener('finished', handleComplete);
+      mixer.addEventListener('finished', handleComplete);
     }
 
     currentActionRef.current = action;

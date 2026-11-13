@@ -61,6 +61,18 @@ export interface AdventureEnemy {
   patrolTargetX: number;
   patrolTargetZ: number;
   stunTimer: number;
+  /** Set for story bosses: the mission key into BOSS_CONFIG_MAP. */
+  bossKey?: string;
+  bossPhase?: 1 | 2;
+  /** Current heavy-attack stage, used by the mesh for telegraph / counter-window visuals. */
+  bossStage?: "telegraph" | "counter" | null;
+  /** Per-boss visual overrides (scale multiplier, emissive tint, aura and weapon VFX). */
+  visual?: {
+    scale: number;
+    tint: string;
+    aura: { kind: string; color: string; intensity: number };
+    weapon: { kind: string; color: string };
+  };
 }
 
 export interface DedicatedCivilian {
@@ -562,3 +574,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
 }));
 
 if (typeof window !== "undefined") (window as any).useAdventure = useAdventure;
+
+if (typeof window !== "undefined") {
+  (window as any).adventureStore = useAdventure;
+}
