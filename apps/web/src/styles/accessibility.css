@@ -1,0 +1,45 @@
+/* Accessibility settings (driven by lib/accessibilitySettings.ts via data-* attributes + CSS variables). */
+:root {
+  --kj-good: #22c55e;
+  --kj-bad: #ef4444;
+  --kj-hud-scale: 1;
+  --kj-hud-opacity: 0.9;
+  --kj-hud-edge: 0px;
+}
+/* Red/green confusion: swap to blue vs. amber, which stay distinct for protan/deutan viewers. */
+:root[data-cb="protanopia"],
+:root[data-cb="deuteranopia"] {
+  --kj-good: #38bdf8;
+  --kj-bad: #f59e0b;
+}
+/* Blue/yellow confusion: keep green, move "bad" to a magenta-red that separates from it by lightness. */
+:root[data-cb="tritanopia"] {
+  --kj-good: #2dd4bf;
+  --kj-bad: #f43f5e;
+}
+
+:root[data-reduced-motion="true"] *,
+:root[data-reduced-motion="true"] *::before,
+:root[data-reduced-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+:root[data-subtitles="large"] .kj-subtitle {
+  font-size: 1.4rem;
+  line-height: 1.35;
+}
+
+.kj-touch-layer {
+  opacity: var(--kj-hud-opacity);
+}
+.kj-touch-left {
+  transform: scale(var(--kj-hud-scale));
+  transform-origin: bottom left;
+}
+.kj-touch-right {
+  transform: scale(var(--kj-hud-scale));
+  transform-origin: bottom right;
+}

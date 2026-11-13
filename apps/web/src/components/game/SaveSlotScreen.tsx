@@ -2,6 +2,7 @@ import React from 'react';
 import { useRunner } from '../../lib/stores/useRunner';
 import { UserCheck, Trophy, ArrowLeft, RefreshCw, Play } from 'lucide-react';
 import { ALL_STORY_MISSIONS } from '../../lib/story_missions';
+import SaveBackupPanel from './SaveBackupPanel';
 
 export default function SaveSlotScreen() {
   const { profiles, activeProfileIndex, switchProfile, resetProfile, setGameState } = useRunner();
@@ -115,6 +116,8 @@ export default function SaveSlotScreen() {
           );
         })}
       </div>
+
+      <SaveBackupPanel />
 
       {/* Footer hint */}
       <div className="text-center z-10 text-xs font-mono text-slate-500">

@@ -1,5 +1,7 @@
 import { useRunner } from "../../lib/stores/useRunner";
 import { useAudio } from "../../lib/stores/useAudio";
+import { useAccessibility } from "../../lib/stores/useAccessibility";
+import { COLORBLIND_MODES } from "../../lib/accessibilitySettings";
 import { Settings, Volume2, VolumeX, Monitor, ArrowLeft, Zap, Shield, Sparkles, Mic2 } from "lucide-react";
 import { useState } from "react";
 import { getQualityPreference, setQualityPreference, type QualityPreference } from "../../lib/threejs/PerformanceOptimizer";
@@ -11,6 +13,7 @@ export default function SettingsMenu() {
   const [quality, setQuality] = useState<QualityPreference>(() => getQualityPreference());
   const [voiceVolume, setVoiceVolumeState] = useState(getVoiceVolume());
   const [voiceEnabled, setVoiceEnabledState] = useState(isVoiceEnabled_());
+  const a11y = useAccessibility();
 
   const handleBack = () => {
     setGameState("menu");
@@ -101,6 +104,45 @@ export default function SettingsMenu() {
                   className="w-full accent-blue-500 disabled:opacity-40"
                 />
               </div>
+            </div>
+          </section>
+
+          {/* Accessibility Section */}
+          <section data-testid="a11y-settings" aria-label="Accessibility">
+            <h2 className="mb-4 text-lg font-bold uppercase tracking-widest text-white/80">Accessibility &amp; HUD</h2>
+            <div className="space-y-4 text-sm text-white/80">
+              <label className="flex items-center justify-between gap-3">
+                <span>Reduced motion</span>
+                <input type="checkbox" data-testid="a11y-reduced-motion" checked={a11y.reducedMotion} onChange={(e) => a11y.update({ reducedMotion: e.target.checked })} />
+              </label>
+              <label className="flex items-center justify-between gap-3">
+                <span>Haptic feedback</span>
+                <input type="checkbox" data-testid="a11y-haptics" checked={a11y.hapticsEnabled} onChange={(e) => a11y.update({ hapticsEnabled: e.target.checked })} />
+              </label>
+              <label className="flex items-center justify-between gap-3">
+                <span>Colorblind-safe HUD</span>
+                <select data-testid="a11y-colorblind" className="rounded bg-black/60 px-2 py-1" value={a11y.colorblindMode} onChange={(e) => a11y.update({ colorblindMode: e.target.value as typeof a11y.colorblindMode })}>
+                  {COLORBLIND_MODES.map((m) => <option key={m} value={m}>{m === "none" ? "Off" : m}</option>)}
+                </select>
+              </label>
+              <label className="flex items-center justify-between gap-3">
+                <span>Subtitle size</span>
+                <select data-testid="a11y-subtitles" className="rounded bg-black/60 px-2 py-1" value={a11y.subtitleScale} onChange={(e) => a11y.update({ subtitleScale: e.target.value as "normal" | "large" })}>
+                  <option value="normal">Normal</option>
+                  <option value="large">Large</option>
+                </select>
+              </label>
+              {([
+                ["hudButtonScale", "Touch button size", 0.8, 1.4, 0.05],
+                ["hudOpacity", "Touch control opacity", 0.4, 1, 0.05],
+                ["hudEdgeOffset", "Touch edge offset (px)", 0, 48, 2],
+              ] as const).map(([key, label, min, max, step]) => (
+                <label key={key} className="flex items-center justify-between gap-3">
+                  <span>{label}</span>
+                  <input type="range" data-testid={`a11y-${key}`} min={min} max={max} step={step} value={a11y[key]} onChange={(e) => a11y.update({ [key]: Number(e.target.value) })} />
+                </label>
+              ))}
+              <button type="button" className="rounded-lg border border-white/15 px-3 py-1.5 text-xs uppercase tracking-widest hover:bg-white/10" onClick={() => a11y.reset()}>Reset accessibility</button>
             </div>
           </section>
 

@@ -270,19 +270,19 @@ export default function AdventureTouchControls() {
   // cleanup below releases any touch it was mid-tracking.
   if (isPaused) return null;
 
-  const safeBottom = "calc(1rem + env(safe-area-inset-bottom))";
-  const safeLeft = "calc(1rem + env(safe-area-inset-left))";
-  const safeRight = "calc(1rem + env(safe-area-inset-right))";
+  const safeBottom = "calc(1rem + var(--kj-hud-edge) + env(safe-area-inset-bottom))";
+  const safeLeft = "calc(1rem + var(--kj-hud-edge) + env(safe-area-inset-left))";
+  const safeRight = "calc(1rem + var(--kj-hud-edge) + env(safe-area-inset-right))";
   const safeTop = "calc(4.75rem + env(safe-area-inset-top))";
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-40">
-      <div className="absolute" style={{ left: safeLeft, bottom: safeBottom }}>
+    <div className="kj-touch-layer fixed inset-0 pointer-events-none z-40">
+      <div className="kj-touch-left absolute" style={{ left: safeLeft, bottom: safeBottom }}>
         <Joystick />
       </div>
 
       <div
-        className="absolute"
+        className="kj-touch-right absolute"
         style={{ right: safeRight, bottom: safeBottom, width: 190, height: 150 }}
       >
         <TouchButton

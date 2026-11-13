@@ -16,6 +16,8 @@ interface HeroRosterState {
   acknowledgeUnlock: () => void;
   isUnlocked: (id: string) => boolean;
   resetRoster: () => void;
+  /** Replace the roster from a save (no celebration modals). Unknown ids are dropped; the defaults always stay unlocked. */
+  restoreRoster: (ids: readonly string[]) => void;
 }
 
 export const useHeroRoster = create<HeroRosterState>()(
@@ -41,6 +43,12 @@ export const useHeroRoster = create<HeroRosterState>()(
       isUnlocked: (id) => get().unlockedHeroIds.includes(normalizeHeroId(id)),
 
       resetRoster: () => set({ unlockedHeroIds: [...DEFAULT_UNLOCKED_HEROES], pendingUnlocks: [] }),
+
+      restoreRoster: (ids) =>
+        set({
+          unlockedHeroIds: [...new Set([...DEFAULT_UNLOCKED_HEROES, ...ids.map(normalizeHeroId).filter((id) => KNOWN.has(id))])],
+          pendingUnlocks: [],
+        }),
     }),
     {
       name: "kai-jax-hero-roster",

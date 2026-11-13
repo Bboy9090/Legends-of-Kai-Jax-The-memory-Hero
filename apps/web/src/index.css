@@ -2,6 +2,7 @@
 @import './styles/design-system.css';
 @import './styles/bronx_grit.css';
 @import './styles/legendary-effects.css';
+@import './styles/accessibility.css';
 @config '../tailwind.config.ts';
 
 /**

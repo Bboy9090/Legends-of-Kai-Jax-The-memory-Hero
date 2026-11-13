@@ -142,7 +142,7 @@ function DialogueOverlay({
             <span className="block truncate text-base font-black uppercase tracking-widest sm:text-lg" style={{ color: speakerColor, textShadow: `0 0 10px ${speakerColor}44` }}>
               {currentLine.speaker}
             </span>
-            <p className="mt-1 min-h-[3.4rem] text-[17px] font-medium leading-snug tracking-wide text-slate-100 sm:min-h-[3.8rem] sm:text-xl" data-testid="dialogue-text">
+            <p className="kj-subtitle mt-1 min-h-[3.4rem] text-[17px] font-medium leading-snug tracking-wide text-slate-100 sm:min-h-[3.8rem] sm:text-xl" data-testid="dialogue-text">
               {displayText}
               {isTyping && <span className="ml-1 inline-block h-4 w-2 animate-pulse bg-cyan-400" />}
             </p>

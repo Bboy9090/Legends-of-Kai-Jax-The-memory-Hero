@@ -183,7 +183,7 @@ export function BossEncounterHUD({ hud }: { hud: BossHudState | null }) {
           <span className="tabular-nums" data-testid="boss-hp-text">{Math.ceil(hud.hp)} / {hud.maxHp}</span>
         </div>
         <div className="relative h-3 border border-[#7d6136] bg-black/70">
-          <div className="h-full transition-[width] duration-150" style={{ width: `${pct}%`, background: hud.phase === 2 ? "linear-gradient(90deg,#7f1d1d,#ef4444)" : "linear-gradient(90deg,#14532d,#22c55e)" }} />
+          <div className="h-full transition-[width] duration-150" style={{ width: `${pct}%`, background: hud.phase === 2 ? "linear-gradient(90deg,#3b0a0a,var(--kj-bad))" : "linear-gradient(90deg,#0b2a1a,var(--kj-good))" }} />
           <div className="absolute inset-y-0 left-1/2 w-px bg-[#f5e6bd]/70" aria-hidden="true" />
         </div>
         <div className="mt-1 text-center text-[9px] uppercase tracking-[0.35em] text-[#b39a6a]">Phase {hud.phase}</div>
@@ -199,7 +199,7 @@ export function BossEncounterHUD({ hud }: { hud: BossHudState | null }) {
         <div className="w-full max-w-sm text-center" data-testid="boss-heavy-warning">
           <div className="animate-pulse text-sm font-black uppercase tracking-[0.35em] text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.9)]">⚠ Heavy attack · dodge!</div>
           <div className="mt-1 h-2 border border-red-500/80 bg-black/60">
-            <div className="h-full bg-red-500" style={{ width: `${Math.round(hud.telegraphProgress * 100)}%` }} />
+            <div className="h-full" style={{ width: `${Math.round(hud.telegraphProgress * 100)}%`, background: "var(--kj-bad)" }} />
           </div>
         </div>
       ) : null}

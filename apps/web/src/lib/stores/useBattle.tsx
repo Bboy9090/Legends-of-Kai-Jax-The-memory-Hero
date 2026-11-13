@@ -66,6 +66,8 @@ import {
 import { MOVEMENT_TUNING } from "../../game/tuning/movementTuning";
 import { resolveBattleCombatState } from "../../game/combat/CombatStateMachine";
 import { evaluateCancelTransition } from "../../game/combat/cancelTransition";
+import { vibrateIfAllowed } from "../accessibilitySettings";
+import { useAccessibility } from "./useAccessibility";
 import {
   clashPriorityForAttack,
   getMoveKeyForPlayerAttack,
@@ -279,7 +281,7 @@ let _damageNumberId = 0;
 function hapticHit(): void {
   try {
     if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
-      navigator.vibrate(50);
+      vibrateIfAllowed(50, useAccessibility.getState());
     }
   } catch {
     // ignore
@@ -289,7 +291,7 @@ function hapticHit(): void {
 function hapticKO(): void {
   try {
     if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
-      navigator.vibrate([50, 50, 100]);
+      vibrateIfAllowed([50, 50, 100], useAccessibility.getState());
     }
   } catch {
     // ignore

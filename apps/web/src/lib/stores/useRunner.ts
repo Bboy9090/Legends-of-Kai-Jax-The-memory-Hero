@@ -37,7 +37,7 @@ export type CampaignNodeId =
   | "district-5"
   | "final-boss";
 
-interface ProfileData {
+export interface ProfileData {
   totalScore: number;
   campaignCompletedNodes: CampaignNodeId[];
   completedStoryMissionIds: string[];
@@ -68,6 +68,8 @@ interface RunnerState {
   // Profile Actions
   switchProfile: (index: number) => void;
   resetProfile: (index: number) => void;
+  /** Overwrite the active profile (progress fields + stored copy) from a validated snapshot, e.g. a loaded save slot. */
+  restoreActiveProfile: (profile: ProfileData) => void;
   
   // Progress (Maps to active profile)
   totalScore: number;
@@ -152,7 +154,7 @@ const runnerStorage: StateStorage = {
   },
 };
 
-function normalizeProfile(profile?: Partial<ProfileData>): ProfileData {
+export function normalizeProfile(profile?: Partial<ProfileData>): ProfileData {
   return {
     totalScore: Number.isFinite(profile?.totalScore) ? Number(profile?.totalScore) : 0,
     campaignCompletedNodes: Array.isArray(profile?.campaignCompletedNodes) ? profile!.campaignCompletedNodes! : [],
@@ -307,6 +309,24 @@ export const useRunner = create<RunnerState>()(
           activeStoryMissionId: null,
           trainingSession: false,
           selectedCharacter: "kai-jax",
+        });
+      },
+
+      restoreActiveProfile: (profile) => {
+        const next = normalizeProfile(profile);
+        const { activeProfileIndex, profiles } = get();
+        const newProfiles = [...profiles] as [ProfileData, ProfileData, ProfileData];
+        newProfiles[activeProfileIndex] = next;
+        set({
+          profiles: newProfiles,
+          totalScore: next.totalScore,
+          campaignCompletedNodes: next.campaignCompletedNodes,
+          completedStoryMissionIds: next.completedStoryMissionIds,
+          storyLoot: next.storyLoot,
+          completedRoamDistrictIds: next.completedRoamDistrictIds,
+          unlockedUpgrades: next.unlockedUpgrades,
+          activeStoryMissionId: null,
+          trainingSession: false,
         });
       },
 

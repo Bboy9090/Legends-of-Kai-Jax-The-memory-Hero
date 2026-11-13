@@ -1,3 +1,5 @@
+import { vibrateIfAllowed } from './accessibilitySettings';
+import { useAccessibility } from './stores/useAccessibility';
 export interface TouchGesture {
   type: 'tap' | 'swipe' | 'hold';
   direction?: 'up' | 'down' | 'left' | 'right';
@@ -71,14 +73,12 @@ export class TouchManager {
 
 // Haptic feedback for mobile devices
 export function hapticFeedback(type: 'light' | 'medium' | 'heavy' = 'light') {
-  if ('vibrate' in navigator) {
-    const patterns = {
-      light: [10],
-      medium: [20],
-      heavy: [40]
-    };
-    navigator.vibrate(patterns[type]);
-  }
+  const patterns = {
+    light: [10],
+    medium: [20],
+    heavy: [40]
+  };
+  vibrateIfAllowed(patterns[type], useAccessibility.getState());
 }
 
 // Check if device supports touch
