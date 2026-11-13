@@ -329,7 +329,7 @@ export default function LoreHub() {
         <h3 className="text-xl font-black text-white mb-2">
           LEGENDS OF <span className="text-blue-400">KAI-JAX</span>
         </h3>
-        <p className="text-white/40 italic text-sm">"Forged in the Raging City. Crowned by Memory."</p>
+        <p className="text-white/60 italic text-sm">"Forged in the Raging City. Crowned by Memory."</p>
         <p className="text-white/20 text-xs mt-3">Memory cannot be designed out of existence.</p>
       </footer>
     </div>
@@ -467,7 +467,7 @@ function CharactersSection() {
                 <p className="text-white/50 text-sm mb-3 leading-relaxed">{char.description}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {char.abilities.map((a, i) => (
-                    <span key={i} className="text-xs px-2 py-0.5 rounded-full text-white/40" style={{ background: "rgba(255,255,255,0.05)" }}>{a}</span>
+                    <span key={i} className="text-xs px-2 py-0.5 rounded-full text-white/60" style={{ background: "rgba(255,255,255,0.05)" }}>{a}</span>
                   ))}
                 </div>
               </div>
@@ -591,7 +591,7 @@ function StorySection() {
                 onClick={() => setExpanded(expanded === act.act ? null : act.act)}
               >
                 <div>
-                  <p className="text-white/30 text-xs uppercase tracking-widest mb-1">Act {act.act}</p>
+                  <p className="text-white/60 text-xs uppercase tracking-widest mb-1">Act {act.act}</p>
                   <h3 className="text-xl font-black text-white mb-1">{act.title}</h3>
                   <p className="text-sm italic" style={{ color: `${act.color}CC` }}>{act.subtitle}</p>
                 </div>
@@ -599,17 +599,17 @@ function StorySection() {
                   <span className="text-xs px-2 py-1 rounded-full" style={{ background: `${act.color}15`, color: act.color }}>
                     Act {act.act}
                   </span>
-                  <ChevronRight className={`w-5 h-5 text-white/30 transition-transform ${expanded === act.act ? "rotate-90" : ""}`} />
+                  <ChevronRight className={`w-5 h-5 text-white/60 transition-transform ${expanded === act.act ? "rotate-90" : ""}`} />
                 </div>
               </button>
 
               {expanded === act.act && (
                 <div className="px-5 pb-5" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
                   <div className="pt-4">
-                    <p className="text-white/40 text-xs mb-1">Region: <span className="text-white/60">{act.region}</span></p>
+                    <p className="text-white/60 text-xs mb-1">Region: <span className="text-white/60">{act.region}</span></p>
                     <p className="text-white/55 text-sm leading-relaxed mt-3">{act.narrative}</p>
                     <div className="mt-4 rounded-lg p-4" style={{ background: "rgba(0,0,0,0.3)" }}>
-                      <p className="text-xs text-white/30 uppercase tracking-widest mb-1">Boss Philosophy Test</p>
+                      <p className="text-xs text-white/60 uppercase tracking-widest mb-1">Boss Philosophy Test</p>
                       <p className="text-sm font-bold" style={{ color: act.color }}>{act.bossTest}</p>
                     </div>
                   </div>
@@ -740,15 +740,15 @@ function ShardsSection() {
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${shard.unlocked ? "bg-purple-500/20" : "bg-slate-800"}`}>
-                  <ScrollText className={`w-4 h-4 ${shard.unlocked ? "text-purple-400" : "text-slate-600"}`} />
+                  <ScrollText className={`w-4 h-4 ${shard.unlocked ? "text-purple-400" : "text-slate-400/80"}`} />
                 </div>
-                <h3 className={`font-bold ${shard.unlocked ? "text-white" : "text-slate-500"}`}>{shard.title}</h3>
+                <h3 className={`font-bold ${shard.unlocked ? "text-white" : "text-slate-400"}`}>{shard.title}</h3>
               </div>
               <p className="text-sm text-slate-400 leading-relaxed italic">
                 {shard.unlocked ? `"${shard.content}"` : "Memory integrity compromised. Complete mission objectives to reconstruct."}
               </p>
               {!shard.unlocked && (
-                <div className="mt-4 flex items-center gap-2 text-[10px] text-slate-600 uppercase font-black tracking-widest">
+                <div className="mt-4 flex items-center gap-2 text-[10px] text-slate-400/80 uppercase font-black tracking-widest">
                   <Skull className="w-3 h-3" /> Encrypted
                 </div>
               )}

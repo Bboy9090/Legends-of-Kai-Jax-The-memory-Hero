@@ -75,8 +75,8 @@
 
 .kj-vision-button {
   border: 1px solid rgba(198,155,85,.35);
-  background: linear-gradient(90deg, rgba(5,6,9,.92), rgba(18,13,25,.84));
-  color: #d9c29a;
+  background: linear-gradient(90deg, rgba(5,6,9,.97), rgba(18,13,25,.95));
+  color: #ecdcb8;
   letter-spacing: .18em;
   text-transform: uppercase;
   transition: .18s ease;

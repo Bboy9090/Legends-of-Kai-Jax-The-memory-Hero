@@ -77,7 +77,7 @@ export default function CharacterAbilityScreen() {
               {!node.unlocked ? (
                 <button
                   onClick={() => handleUnlock(node.id, node.cost)}
-                  className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-purple-600 hover:from-amber-400 hover:to-purple-500 font-bold text-xs tracking-widest uppercase rounded-xl transition-all shadow-md"
+                  className="px-5 py-2.5 bg-gradient-to-r from-amber-700 to-purple-700 hover:from-amber-600 hover:to-purple-600 font-bold text-xs tracking-widest uppercase rounded-xl transition-all shadow-md"
                 >
                   UNLOCK ABILITY
                 </button>

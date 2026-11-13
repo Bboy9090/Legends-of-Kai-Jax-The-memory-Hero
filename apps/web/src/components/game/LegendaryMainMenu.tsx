@@ -272,13 +272,13 @@ const LegendaryMainMenu: React.FC = () => {
 
           {/* Profile Quick Switcher */}
           <div className="kj-vision-panel mt-3 flex w-full max-w-md flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 sm:mt-4 sm:inline-flex sm:w-auto sm:px-4">
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Profile:</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Profile:</span>
             <button 
               onClick={() => setShowProfileSelect(true)}
               className="text-[10px] font-bold text-cyan-400 hover:text-white transition-colors flex items-center gap-2"
             >
               SLOT 0{activeProfileIndex + 1} • {profiles[activeProfileIndex].totalScore > 0 ? `LVL ${Math.floor(profiles[activeProfileIndex].totalScore / 1000) + 1}` : 'EMPTY'}
-              <span className="text-slate-600">[CHANGE]</span>
+              <span className="text-slate-400/80">[CHANGE]</span>
             </button>
           </div>
         </div>

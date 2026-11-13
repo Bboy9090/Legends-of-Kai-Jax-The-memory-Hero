@@ -76,7 +76,7 @@ export default function CampaignMap() {
         </div>
 
         <div className="mb-6 flex items-center gap-3">
-          <span className="text-slate-500 text-sm">Progress</span>
+          <span className="text-slate-400 text-sm">Progress</span>
           <div className="flex-1 h-2 max-w-[240px] bg-slate-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full transition-all duration-500"
@@ -124,7 +124,7 @@ export default function CampaignMap() {
                       ? "kj-vision-panel border-emerald-500/50"
                       : unlocked
                         ? "kj-vision-panel hover:border-[#c69b55]"
-                        : "kj-vision-panel text-slate-500 cursor-not-allowed opacity-50"
+                        : "kj-vision-panel text-slate-400 cursor-not-allowed opacity-50"
                 }`}
               >
                 <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-slate-800 border border-slate-600">
@@ -148,7 +148,7 @@ export default function CampaignMap() {
                       <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < m.difficulty ? "bg-red-400" : "bg-slate-700"}`} />
                     ))}
                   </div>
-                  {unlocked && <ChevronRight className="w-4 h-4 text-slate-500" />}
+                  {unlocked && <ChevronRight className="w-4 h-4 text-slate-400" />}
                 </div>
               </button>
             );
@@ -198,7 +198,7 @@ export default function CampaignMap() {
               <div className="mb-4 bg-black/30 border border-white/10 rounded-lg p-3">
                 <div className="text-slate-400 text-[10px] uppercase tracking-wider mb-1">Preview</div>
                 <p className="text-slate-300 text-xs italic">"{selected.introCutscene[0].text}"</p>
-                <p className="text-slate-500 text-[10px] mt-1">— {selected.introCutscene[0].speaker}</p>
+                <p className="text-slate-400 text-[10px] mt-1">— {selected.introCutscene[0].speaker}</p>
               </div>
             )}
 

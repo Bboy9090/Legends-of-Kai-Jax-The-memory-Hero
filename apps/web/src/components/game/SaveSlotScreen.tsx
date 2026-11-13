@@ -64,7 +64,7 @@ export default function SaveSlotScreen() {
               <div className="space-y-2 pt-2">
                 <div className="flex justify-between items-center">
                   <h3 className="text-2xl font-black italic tracking-wide uppercase">SLOT {idx + 1}</h3>
-                  <UserCheck className={`w-5 h-5 ${isActive ? 'text-cyan-400' : 'text-slate-500'}`} />
+                  <UserCheck className={`w-5 h-5 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
                 </div>
                 <p className="text-xs text-slate-400 font-mono">
                   {profile.lastPlayedTitle || 'New Adventure Archive'}
@@ -99,7 +99,7 @@ export default function SaveSlotScreen() {
               <div className="flex gap-2 pt-4 border-t border-white/10">
                 <button
                   onClick={() => handleSelectSlot(idx)}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 font-black text-xs tracking-widest uppercase rounded-xl transition-all shadow-md"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-cyan-700 to-purple-700 hover:from-cyan-600 hover:to-purple-600 font-black text-xs tracking-widest uppercase rounded-xl transition-all shadow-md"
                 >
                   <Play className="w-4 h-4 fill-current" />
                   <span>LOAD GAME</span>
@@ -120,7 +120,7 @@ export default function SaveSlotScreen() {
       <SaveBackupPanel />
 
       {/* Footer hint */}
-      <div className="text-center z-10 text-xs font-mono text-slate-500">
+      <div className="text-center z-10 text-xs font-mono text-slate-400">
         SELECT AN ACTIVE RUNNER PROFILE TO SYNC RAGIGN CITY MISSION PROGRESSION
       </div>
     </div>

@@ -62,7 +62,7 @@ export default function DistrictSelectScreen() {
                 className={`w-full text-left p-4 rounded-xl border-2 transition-all flex gap-3 ${
                   unlocked
                     ? "kj-vision-panel hover:border-[#c69b55]"
-                    : "kj-vision-panel opacity-45 cursor-not-allowed"
+                    : "kj-vision-panel opacity-85 cursor-not-allowed"
                 }`}
               >
                 <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center border border-[#8d6d3c] bg-black/45">
@@ -73,7 +73,7 @@ export default function DistrictSelectScreen() {
                   <div className="text-xs text-slate-400 line-clamp-2">
                     {id === "district-1" ? `${meta.theme} — ${ASHBLOCK_TAGLINE}` : meta.theme}
                   </div>
-                  <div className="text-[10px] text-slate-500 mt-1">
+                  <div className="text-[10px] text-slate-400 mt-1">
                     {meta.encounters.length} encounters · first clear +{meta.rewards.xp} XP +{meta.rewards.currency} score
                     {!unlocked && " — complete the previous district in Story campaign map first"}
                   </div>

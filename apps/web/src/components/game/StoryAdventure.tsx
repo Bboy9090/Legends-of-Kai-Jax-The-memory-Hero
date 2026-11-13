@@ -155,7 +155,7 @@ function DialogueOverlay({
                   <div key={i} className={`h-1 rounded-full transition-all ${i === lineIndex ? "w-5 bg-cyan-500" : "w-1.5 bg-white/10"}`} />
                 ))}
               </div>
-              <span className="animate-pulse text-[10px] font-bold uppercase tracking-widest text-slate-500">
+              <span className="animate-pulse text-[10px] font-bold uppercase tracking-widest text-slate-200">
                 {isTyping ? "…" : isLastLine ? "Tap to engage" : "Tap to continue"}
               </span>
             </div>
@@ -209,7 +209,7 @@ function MissionBriefing({ mission, onStart, onBack }: { mission: StoryMission; 
           <div className="relative z-10">
             <button
               onClick={onBack}
-              className="mb-4 text-slate-500 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
+              className="mb-4 text-slate-400 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
             >
               ← Back to Campaign
             </button>
@@ -243,15 +243,15 @@ function MissionBriefing({ mission, onStart, onBack }: { mission: StoryMission; 
 
               <div className="flex gap-4">
                 <div className="flex-1 p-3 rounded-xl bg-white/5 border border-white/5 text-center">
-                  <p className="text-[8px] text-slate-500 uppercase font-black mb-1">XP Reward</p>
+                  <p className="text-[8px] text-slate-400 uppercase font-black mb-1">XP Reward</p>
                   <p className="text-lg font-black text-amber-400">+{mission.rewards.xp}</p>
                 </div>
                 <div className="flex-1 p-3 rounded-xl bg-white/5 border border-white/5 text-center">
-                  <p className="text-[8px] text-slate-500 uppercase font-black mb-1">Currency</p>
+                  <p className="text-[8px] text-slate-400 uppercase font-black mb-1">Currency</p>
                   <p className="text-lg font-black text-emerald-400">+{mission.rewards.currency}</p>
                 </div>
                 <div className="flex-1 p-3 rounded-xl bg-white/5 border border-white/5 text-center">
-                  <p className="text-[8px] text-slate-500 uppercase font-black mb-1">Difficulty</p>
+                  <p className="text-[8px] text-slate-400 uppercase font-black mb-1">Difficulty</p>
                   <p className="text-lg font-black text-red-500">{mission.difficulty}</p>
                 </div>
               </div>
@@ -267,7 +267,7 @@ function MissionBriefing({ mission, onStart, onBack }: { mission: StoryMission; 
           </div>
         </div>
         
-        <p className="text-center mt-6 text-[10px] text-slate-600 uppercase tracking-widest">
+        <p className="text-center mt-6 text-[10px] text-slate-400/80 uppercase tracking-widest">
           Memory Synchronized • All Systems Nominal
         </p>
       </div>

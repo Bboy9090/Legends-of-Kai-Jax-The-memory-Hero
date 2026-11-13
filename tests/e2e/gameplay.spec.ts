@@ -216,7 +216,9 @@ test('mobile gameplay: menu -> character select -> campaign map -> battle with a
     }
     return lit / total;
   }, (await page.screenshot()).toString('base64'));
-  expect(arenaLit, 'the 3D arena must be visible in the page, not hidden behind an overlay').toBeGreaterThan(0.08);
+  // A healthy arena measures ~0.06-0.10 (the camera now frames the hero smaller); the opaque-overlay bug this guards
+  // against measured 0.027, so 0.045 separates the two with margin on both sides.
+  expect(arenaLit, 'the 3D arena must be visible in the page, not hidden behind an overlay').toBeGreaterThan(0.045);
   await shot(page, '04-active-combat');
 
   fs.writeFileSync(

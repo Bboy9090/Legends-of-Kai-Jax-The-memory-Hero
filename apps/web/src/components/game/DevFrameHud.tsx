@@ -33,7 +33,7 @@ export default function DevFrameHud({ active }: { active: boolean }) {
       aria-hidden
     >
       <span className={warn ? "text-amber-400" : "text-emerald-400/90"}>{ms.toFixed(1)} ms</span>
-      <span className="text-slate-500 ml-1">rAF</span>
+      <span className="text-slate-400 ml-1">rAF</span>
     </div>
   );
 }

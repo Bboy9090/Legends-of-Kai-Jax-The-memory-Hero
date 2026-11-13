@@ -39,3 +39,29 @@ export function readableOnDark(color: string, background = "#000000", minRatio =
   }
   return "#ffffff";
 }
+
+/** Black or white, whichever reads better across every one of the given background colours (worst case wins). */
+export function bestTextOn(...backgrounds: string[]): "#000000" | "#ffffff" {
+  const worst = (fg: string) => Math.min(...backgrounds.map((bg) => contrastRatio(fg, bg)));
+  return worst("#ffffff") >= worst("#000000") ? "#ffffff" : "#000000";
+}
+
+/** Mixes two hex colours: t=0 is `a`, t=1 is `b`. Unparseable input returns `a`. */
+export function mixHex(a: string, b: string, t: number): string {
+  const ra = parseHex(a);
+  const rb = parseHex(b);
+  if (!ra || !rb) return a;
+  return toHex(ra.map((v, i) => v + (rb[i] - v) * t));
+}
+
+/**
+ * Darkens background colours (toward black) just enough that `textColor` reads at `minRatio` on every one of them.
+ * Used for coloured gradient buttons and badges whose fill comes from per-hero data.
+ */
+export function darkenForText(colors: string[], textColor = "#ffffff", minRatio = 4.6): string[] {
+  for (let t = 0; t <= 0.9001; t += 0.05) {
+    const out = colors.map((c) => mixHex(c, "#000000", t));
+    if (out.every((c) => contrastRatio(textColor, c) >= minRatio)) return out;
+  }
+  return colors.map(() => "#000000");
+}

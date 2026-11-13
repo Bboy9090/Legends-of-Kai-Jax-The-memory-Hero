@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { contrastRatio, parseHex, readableOnDark } from "./contrast";
+import { bestTextOn, contrastRatio, darkenForText, mixHex, parseHex, readableOnDark } from "./contrast";
 import { ALL_BOSSES } from "./bossEncounters";
 import { CHARACTER_DATA_MAP } from "./characterStats";
 
@@ -37,5 +37,25 @@ describe("contrast helpers", () => {
     for (const c of Object.values(CHARACTER_DATA_MAP)) colours.push(c.visualIdentity.primaryColor, c.visualIdentity.accentColor);
     expect(colours.length).toBeGreaterThan(10);
     for (const c of colours) expect(contrastRatio(readableOnDark(c, "#05070b"), "#05070b"), c).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("fills behind text", () => {
+  it("mixes colours", () => {
+    expect(mixHex("#000000", "#ffffff", 0.5)).toBe("#808080");
+    expect(mixHex("#ff0000", "#000000", 1)).toBe("#000000");
+    expect(mixHex("nothex", "#000000", 0.5)).toBe("nothex");
+  });
+
+  it("picks black or white by worst case across fills", () => {
+    expect(bestTextOn("#ffffff", "#f1f5f9")).toBe("#000000");
+    expect(bestTextOn("#000000", "#1e293b")).toBe("#ffffff");
+  });
+
+  it("darkens bright gradient ends until white text reaches the ratio, and leaves dark ones alone", () => {
+    const bright = darkenForText(["#fbbf24", "#22d3ee"]);
+    for (const c of bright) expect(contrastRatio("#ffffff", c)).toBeGreaterThanOrEqual(4.6);
+    expect(darkenForText(["#1e1b4b", "#0f172a"])).toEqual(["#1e1b4b", "#0f172a"]);
+    expect(darkenForText(["#ffffff"])[0]).not.toBe("#ffffff");
   });
 });

@@ -303,7 +303,7 @@ export default function AdventureHUD() {
           <div className="space-y-3">
             <button
               onClick={() => useAdventure.getState().togglePause()}
-              className="block w-48 mx-auto px-6 py-4 rounded-2xl bg-cyan-500 border-2 border-cyan-300 text-white font-bold hover:bg-cyan-600 active:bg-cyan-700 transition-all shadow-lg shadow-cyan-500/50 hover:shadow-cyan-500/75 min-h-12"
+              className="block w-48 mx-auto px-6 py-4 rounded-2xl bg-cyan-700 border-2 border-cyan-300 text-white font-bold hover:bg-cyan-600 active:bg-cyan-800 transition-all shadow-lg shadow-cyan-500/50 hover:shadow-cyan-500/75 min-h-12"
             >
               Resume
             </button>
@@ -441,7 +441,7 @@ export default function AdventureHUD() {
               return (
                 <div key={node.id} className="flex items-center justify-between gap-2 text-[10px]">
                   <span>{node.label}</span>
-                  <span className={node.rescued ? "text-emerald-300" : node.unlocked ? "text-cyan-200" : "text-slate-500"}>
+                  <span className={node.rescued ? "text-emerald-300" : node.unlocked ? "text-cyan-200" : "text-slate-400"}>
                     {node.rescued ? "RECOVERED" : !node.unlocked ? "SEALED" : near ? "IN RANGE" : "FIND NODE"}
                   </span>
                   {canRescue && (
@@ -485,15 +485,15 @@ export default function AdventureHUD() {
         <div className="absolute bottom-4 left-0 right-0 text-center">
           <div className="kj-vision-hud inline-flex gap-3 px-4 py-1.5 text-[#8f8371] text-[10px] uppercase tracking-[0.12em] opacity-80">
             <span>WASD move</span>
-            <span className="text-slate-600">|</span>
+            <span className="text-slate-400/80">|</span>
             <span>J attack</span>
-            <span className="text-slate-600">|</span>
+            <span className="text-slate-400/80">|</span>
             <span>K heavy</span>
-            <span className="text-slate-600">|</span>
+            <span className="text-slate-400/80">|</span>
             <span>L skill</span>
-            <span className="text-slate-600">|</span>
+            <span className="text-slate-400/80">|</span>
             <span>Space dodge</span>
-            <span className="text-slate-600">|</span>
+            <span className="text-slate-400/80">|</span>
             <span>Esc pause</span>
           </div>
         </div>

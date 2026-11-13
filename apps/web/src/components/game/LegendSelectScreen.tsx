@@ -74,13 +74,13 @@ export default function LegendSelectScreen() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(157,78,221,.18),transparent_32%),linear-gradient(90deg,rgba(0,0,0,.72),transparent_28%,transparent_72%,rgba(0,0,0,.72))]" />
 
       <header className="relative z-10 grid grid-cols-[1fr_auto_1fr] items-start gap-2 border-b border-[#7d6136]/55 px-3 pb-2 pt-1 sm:px-8 sm:py-4">
-        <div className="text-[8px] uppercase tracking-[0.28em] text-[#9f8762] sm:text-[10px] sm:tracking-[0.4em]">Adventure Mode</div>
+        <div className="text-[8px] uppercase tracking-[0.28em] text-[#a48d6a] sm:text-[10px] sm:tracking-[0.4em]">Adventure Mode</div>
         <div className="min-w-0 text-center">
-          <div className="text-[8px] uppercase tracking-[0.45em] text-[#9f8762] sm:text-[11px]">Legends of</div>
+          <div className="text-[8px] uppercase tracking-[0.45em] text-[#a48d6a] sm:text-[11px]">Legends of</div>
           <h1 className="kj-vision-title mt-0.5 whitespace-nowrap text-[clamp(1.35rem,7vw,2.2rem)] leading-none tracking-[0.1em] sm:text-5xl">KAI-JAX</h1>
           <div className="kj-vision-subtitle mt-1 text-[9px] tracking-[0.28em] sm:text-xs sm:tracking-[0.4em]">CHARACTER SELECT</div>
         </div>
-        <div className="text-right text-[8px] uppercase tracking-[0.2em] text-[#9f8762] sm:text-[10px] sm:tracking-[0.35em]">Story Mode · The Raging City</div>
+        <div className="text-right text-[8px] uppercase tracking-[0.2em] text-[#a48d6a] sm:text-[10px] sm:tracking-[0.35em]">Story Mode · The Raging City</div>
       </header>
 
       <main className="relative z-10 flex min-h-0 flex-1 flex-col px-3 pb-2 pt-3 sm:px-6 sm:py-4">
@@ -106,7 +106,7 @@ export default function LegendSelectScreen() {
                 data-locked={!open}
                 className={
                   "group relative flex w-[64vw] max-w-[270px] shrink-0 snap-center flex-col overflow-hidden border bg-black/55 text-left transition sm:w-[210px] " +
-                  (open ? "hover:-translate-y-1 hover:bg-black/70" : "opacity-80")
+                  (open ? "hover:-translate-y-1 hover:bg-black/70" : "opacity-90")
                 }
                 style={{
                   borderColor: selected ? hero.rimColor : "rgba(122,96,53,.52)",
@@ -133,7 +133,7 @@ export default function LegendSelectScreen() {
                   {!open ? (
                     <div className="absolute inset-x-2 top-[48%] flex flex-col items-center gap-1 border border-[#9d835b]/50 bg-black/80 px-2 py-1.5 text-center text-[8px] uppercase tracking-[0.18em] text-[#b7a17d]">
                       <span className="flex items-center gap-1.5"><LockKeyhole className="h-3 w-3" />Locked</span>
-                      <span className="text-[#8b7a5a]">{unlockHintFor(id)}</span>
+                      <span className="text-[#9c8e73]">{unlockHintFor(id)}</span>
                     </div>
                   ) : !playable ? (
                     <div className="absolute inset-x-2 top-2 border border-[#9d835b]/50 bg-black/75 px-2 py-1 text-center text-[8px] uppercase tracking-[0.18em] text-[#b7a17d]">Build pending</div>
@@ -141,7 +141,7 @@ export default function LegendSelectScreen() {
                 </div>
 
                 <div className="relative border-t border-[#735c39]/45 bg-[linear-gradient(180deg,rgba(10,10,14,.96),rgba(3,4,7,.99))] p-3">
-                  <div className="text-[8px] uppercase tracking-[0.24em] text-[#817665]">{ROLE[id] ?? (open ? "PLAYABLE LEGEND" : "UNDISCOVERED")}</div>
+                  <div className="text-[8px] uppercase tracking-[0.24em] text-[#9a9184]">{ROLE[id] ?? (open ? "PLAYABLE LEGEND" : "UNDISCOVERED")}</div>
                   <div className="mt-1 text-[clamp(17px,2vw,26px)] tracking-[0.12em] text-[#efe5cf]">{hero.displayName}</div>
                   <div className="mt-1 text-[8px] uppercase tracking-[0.18em]" style={{ color: hero.rimColor }}>{hero.subtitle}</div>
                   <div className="mt-2 space-y-1 border-t border-white/5 pt-2">
@@ -158,13 +158,13 @@ export default function LegendSelectScreen() {
           })}
         </div>
 
-        <div className="mt-1 text-center text-[8px] uppercase tracking-[0.3em] text-[#8f806b] sm:text-[10px]">Choose your hero. The Raging City awaits.</div>
+        <div className="mt-1 text-center text-[8px] uppercase tracking-[0.3em] text-[#b3a690] sm:text-[10px]">Choose your hero. The Raging City awaits.</div>
       </main>
 
       <footer
         className="relative z-10 grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-t border-[#735c39]/60 bg-[#05070bf2] px-3 pb-[max(4.5rem,calc(env(safe-area-inset-bottom)+3rem))] pt-2 sm:px-8 sm:pb-[max(0.5rem,env(safe-area-inset-bottom))]"
       >
-        <div className="hidden min-w-0 text-[9px] uppercase tracking-[0.2em] text-[#8f806b] sm:block">
+        <div className="hidden min-w-0 text-[9px] uppercase tracking-[0.2em] text-[#b3a690] sm:block">
           Faction: <span style={{ color: active.rimColor }} data-testid="legend-faction">{active.faction}</span>
         </div>
         <div className="col-span-3 flex items-center justify-center gap-2 sm:col-span-1">
@@ -186,7 +186,7 @@ export default function LegendSelectScreen() {
             <Eye className="h-3.5 w-3.5" /> <span className="hidden sm:inline">View </span>Abilities <kbd className="hidden text-[8px] opacity-60 sm:inline">R</kbd>
           </button>
         </div>
-        <div className="hidden text-right text-[9px] uppercase tracking-[0.2em] text-[#8f806b] sm:block">
+        <div className="hidden text-right text-[9px] uppercase tracking-[0.2em] text-[#b3a690] sm:block">
           Difficulty: <span className="text-[#c8af82]">{difficulty}</span>
         </div>
       </footer>

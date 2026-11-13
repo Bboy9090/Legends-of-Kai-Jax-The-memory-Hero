@@ -378,7 +378,7 @@ function TrainingHUD() {
         </div>
         <div className="flex gap-2 mb-4">
           {['W','A','S','D','J','K','L'].map(k => (
-            <div key={k} className="w-10 h-10 flex items-center justify-center border-2 border-white/10 bg-black/40 text-white/40 font-black rounded uppercase">
+            <div key={k} className="w-10 h-10 flex items-center justify-center border-2 border-white/10 bg-black/40 text-white/60 font-black rounded uppercase">
               {k}
             </div>
           ))}

@@ -125,7 +125,7 @@ export default function MoveSetTooltip({
                   <span className="text-slate-400">Input: </span>
                   {move.inputSequence.map((input, idx) => (
                     <React.Fragment key={idx}>
-                      {idx > 0 && <span className="text-slate-600">→</span>}
+                      {idx > 0 && <span className="text-slate-400/80">→</span>}
                       <span className="px-2 py-1 rounded bg-slate-700 text-cyan-300 font-mono text-xs">
                         {input.toUpperCase()}
                       </span>
@@ -160,7 +160,7 @@ export default function MoveSetTooltip({
                   <span className="text-slate-400">Input: </span>
                   {move.inputSequence.map((input, idx) => (
                     <React.Fragment key={idx}>
-                      {idx > 0 && <span className="text-slate-600">+</span>}
+                      {idx > 0 && <span className="text-slate-400/80">+</span>}
                       <span className="px-2 py-1 rounded bg-slate-700 text-cyan-300 font-mono text-xs font-bold">
                         {input.toUpperCase()}
                       </span>
@@ -182,8 +182,8 @@ export default function MoveSetTooltip({
         {/* Legend */}
         <div className="mt-8 pt-6 border-t border-slate-700 text-xs text-slate-400">
           <p className="mb-2">
-            <span className="text-slate-500">f = frames</span> |{' '}
-            <span className="text-slate-500">Recovery = frames before next action</span>
+            <span className="text-slate-400">f = frames</span> |{' '}
+            <span className="text-slate-400">Recovery = frames before next action</span>
           </p>
           <p>
             Charge your ultimate ability by landing hits. At 100%, press your ultimate button to

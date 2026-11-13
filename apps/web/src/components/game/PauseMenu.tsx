@@ -42,7 +42,7 @@ export default function PauseMenu({ onResume }: { onResume: () => void }) {
           </button>
         </div>
 
-        <div className="text-center pt-4 border-t border-white/10 text-[10px] text-slate-500 font-mono">
+        <div className="text-center pt-4 border-t border-white/10 text-[10px] text-slate-400 font-mono">
           LEGENDS OF KAI-JAX — PAUSE CONTROLS ACTIVE
         </div>
       </div>

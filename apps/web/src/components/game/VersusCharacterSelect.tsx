@@ -1,3 +1,4 @@
+import { darkenForText, mixHex } from "../../lib/contrast";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
@@ -100,15 +101,15 @@ function FighterCard({
           ? `linear-gradient(180deg, ${accent}20, ${base}66)`
           : "rgba(15,23,42,0.72)",
         boxShadow: selected ? `0 0 20px ${accent}33` : "none",
-        opacity: playable ? 1 : 0.7,
+        opacity: playable ? 1 : 0.85,
       }}
     >
       <div
         className="w-10 h-10 mx-auto rounded-full mb-1 flex items-center justify-center text-base font-black"
         aria-hidden="true"
         style={{
-          background: `linear-gradient(135deg, ${accent}55, ${base})`,
-          color: accent,
+          background: `linear-gradient(135deg, ${darkenForText([mixHex(accent, base, 0.6), base], "#ffffff").join(", ")})`,
+          color: "#ffffff",
           border: `2px solid ${accent}77`,
         }}
       >
@@ -321,7 +322,7 @@ export default function VersusCharacterSelect() {
                 <div>
                   <div className="text-5xl font-black tracking-widest" style={{ color: accent }}>{selectedEntry?.displayName.slice(0, 2).toUpperCase()}</div>
                   <p className="mt-4 text-sm text-slate-300">Locked visual identity confirmed. Combat model and moveset profile still need integration.</p>
-                  <p className="mt-2 text-[11px] text-slate-500">Source: {selectedEntry?.sourceSheet}</p>
+                  <p className="mt-2 text-[11px] text-slate-400">Source: {selectedEntry?.sourceSheet}</p>
                 </div>
               </div>
             )}
@@ -377,7 +378,7 @@ export default function VersusCharacterSelect() {
           disabled={!selectedPlayable}
           onClick={() => beginMatch(false)}
           className="kj-vision-button relative px-8 sm:px-12 py-3 sm:py-4 font-black text-lg sm:text-xl disabled:cursor-not-allowed disabled:opacity-40"
-          style={{ background: `linear-gradient(135deg, ${accent}cc, ${base})`, border: `2px solid ${accent}88` }}
+          style={{ background: `linear-gradient(135deg, ${darkenForText([accent, base]).join(", ")})`, color: "#ffffff", border: `2px solid ${accent}88` }}
         >
           {selectedPlayable ? "FIGHT" : "COMBAT PROFILE LOCKED"}
         </button>

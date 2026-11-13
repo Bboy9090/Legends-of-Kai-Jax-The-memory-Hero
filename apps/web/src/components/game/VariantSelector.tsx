@@ -71,7 +71,7 @@ export default function VariantSelector({
                 {variant.rarity}
               </div>
               {!unlocked && (
-                <div className="text-[9px] text-slate-500 mt-0.5">
+                <div className="text-[9px] text-slate-400 mt-0.5">
                   🔒 {variant.unlockCondition.description}
                 </div>
               )}

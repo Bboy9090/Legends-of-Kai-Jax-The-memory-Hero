@@ -1,3 +1,4 @@
+import { darkenForText } from "../../lib/contrast";
 import { useState, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
@@ -99,7 +100,8 @@ export default function BeastPreview() {
             style={
               activeFighter === f.id
                 ? {
-                    background: `linear-gradient(135deg, ${f.color}, ${f.accentColor})`,
+                    background: `linear-gradient(135deg, ${darkenForText([f.color, f.accentColor]).join(", ")})`,
+                    color: "#ffffff",
                     borderColor: f.accentColor,
                     border: `2px solid ${f.accentColor}`,
                     boxShadow: `0 0 20px ${f.accentColor}40`,
@@ -121,19 +123,19 @@ export default function BeastPreview() {
           <h2 className="text-lg font-black text-white">{fighter.displayName}</h2>
           <div className="flex gap-5 text-sm">
             <div className="text-center">
-              <div className="text-slate-500 text-[10px] uppercase">Power</div>
+              <div className="text-slate-400 text-[10px] uppercase">Power</div>
               <div className="text-white font-bold">{fighter.baseStats?.power ?? 0}</div>
             </div>
             <div className="text-center">
-              <div className="text-slate-500 text-[10px] uppercase">Speed</div>
+              <div className="text-slate-400 text-[10px] uppercase">Speed</div>
               <div className="text-white font-bold">{fighter.baseStats?.speed ?? 0}</div>
             </div>
             <div className="text-center">
-              <div className="text-slate-500 text-[10px] uppercase">Defense</div>
+              <div className="text-slate-400 text-[10px] uppercase">Defense</div>
               <div className="text-white font-bold">{fighter.baseStats?.defense ?? 0}</div>
             </div>
           </div>
-          <span className="text-slate-600 text-xs hidden sm:inline">Scroll to zoom · Drag to rotate</span>
+          <span className="text-slate-400/80 text-xs hidden sm:inline">Scroll to zoom · Drag to rotate</span>
         </div>
       )}
     </div>

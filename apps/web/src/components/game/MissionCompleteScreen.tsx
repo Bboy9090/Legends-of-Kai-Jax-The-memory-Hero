@@ -42,15 +42,15 @@ export default function MissionCompleteScreen() {
         {/* Score Breakdown */}
         <div className="grid grid-cols-3 gap-4 border-t border-b border-white/10 py-6 text-xs font-mono">
           <div>
-            <span className="text-slate-500 block mb-1">SCORE</span>
+            <span className="text-slate-400 block mb-1">SCORE</span>
             <span className="text-xl font-bold text-white">45,800</span>
           </div>
           <div>
-            <span className="text-slate-500 block mb-1">EXP GAINED</span>
+            <span className="text-slate-400 block mb-1">EXP GAINED</span>
             <span className="text-xl font-bold text-cyan-400">+350 XP</span>
           </div>
           <div>
-            <span className="text-slate-500 block mb-1">LOOT DROPS</span>
+            <span className="text-slate-400 block mb-1">LOOT DROPS</span>
             <span className="text-xl font-bold text-purple-400">TACTICAL CREST</span>
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function MissionCompleteScreen() {
         <div className="pt-4 flex justify-center gap-4">
           <button
             onClick={handleContinue}
-            className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 via-purple-600 to-cyan-500 hover:from-amber-400 hover:to-cyan-400 rounded-2xl font-black text-white text-base tracking-widest uppercase shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all hover:scale-105"
+            className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-700 via-purple-700 to-cyan-700 hover:from-amber-600 hover:to-cyan-600 rounded-2xl font-black text-white text-base tracking-widest uppercase shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all hover:scale-105"
           >
             <span>RETURN TO HUB</span>
             <ArrowRight className="w-5 h-5" />

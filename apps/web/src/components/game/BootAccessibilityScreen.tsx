@@ -29,7 +29,7 @@ export default function BootAccessibilityScreen({ onComplete }: { onComplete: ()
             <p className="text-xs text-slate-400 tracking-widest font-mono">FIRST BOOT PREFERENCES</p>
           </div>
         </div>
-        <span className="text-xs font-mono text-slate-500 hidden sm:block">LEGENDS OF KAI-JAX</span>
+        <span className="text-xs font-mono text-slate-400 hidden sm:block">LEGENDS OF KAI-JAX</span>
       </div>
 
       {/* Main Form */}

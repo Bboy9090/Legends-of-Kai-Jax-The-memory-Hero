@@ -51,7 +51,7 @@ export default function SettingsMenu() {
             </div>
             <div>
               <h1 className="text-2xl font-black italic tracking-widest text-white uppercase sm:text-3xl">Settings</h1>
-              <p className="text-blue-400/60 text-xs tracking-[0.2em] font-bold mt-1">Configure your experience</p>
+              <p className="text-blue-400/85 text-xs tracking-[0.2em] font-bold mt-1">Configure your experience</p>
             </div>
           </div>
           <button 
@@ -75,7 +75,7 @@ export default function SettingsMenu() {
               <div className="flex flex-col gap-4 rounded-2xl border border-white/5 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                 <div>
                   <p className="text-white font-bold text-lg">Master Mute</p>
-                  <p className="text-white/40 text-sm">Silence all game sounds and music</p>
+                  <p className="text-white/60 text-sm">Silence all game sounds and music</p>
                 </div>
                 <button
                   onClick={toggleMute}
@@ -199,7 +199,7 @@ export default function SettingsMenu() {
               <div className="flex flex-col gap-4 rounded-2xl border border-white/5 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                 <div>
                   <p className="text-white font-bold text-lg">Character Voices</p>
-                  <p className="text-white/40 text-sm">Enable dialogue voice acting with TTS</p>
+                  <p className="text-white/60 text-sm">Enable dialogue voice acting with TTS</p>
                 </div>
                 <button
                   onClick={handleVoiceToggle}
@@ -229,7 +229,7 @@ export default function SettingsMenu() {
                     onChange={(e) => handleVoiceVolumeChange(parseFloat(e.target.value))}
                     className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-600"
                   />
-                  <p className="text-white/40 text-xs mt-3">Adjust volume for character dialogue and voice acting</p>
+                  <p className="text-white/60 text-xs mt-3">Adjust volume for character dialogue and voice acting</p>
                 </div>
               )}
             </div>
@@ -256,7 +256,7 @@ export default function SettingsMenu() {
                       : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'}
                   `}
                 >
-                  <span className={`text-sm font-black uppercase tracking-widest ${quality === q ? 'text-blue-400' : 'text-white/40'}`}>
+                  <span className={`text-sm font-black uppercase tracking-widest ${quality === q ? 'text-blue-400' : 'text-white/60'}`}>
                     {q}
                   </span>
                   {q === 'auto' && <Monitor className={`w-4 h-4 ${quality === q ? 'text-blue-400' : 'text-white/20'}`} />}
@@ -266,7 +266,7 @@ export default function SettingsMenu() {
                 </button>
               ))}
             </div>
-            <p className="mt-4 text-xs text-white/30 text-center italic">
+            <p className="mt-4 text-xs text-white/60 text-center italic">
               "Auto adapts to your device. Low, Medium, and High override the renderer immediately."
             </p>
           </section>
@@ -280,13 +280,13 @@ export default function SettingsMenu() {
           <div className="flex items-center justify-center gap-6">
             <button 
               onClick={() => window.open('/privacy.html', '_blank')}
-              className="text-[10px] text-white/40 hover:text-white transition-colors uppercase tracking-widest"
+              className="text-[10px] text-white/60 hover:text-white transition-colors uppercase tracking-widest"
             >
               Privacy Policy
             </button>
             <button 
               onClick={() => window.open('/terms.html', '_blank')}
-              className="text-[10px] text-white/40 hover:text-white transition-colors uppercase tracking-widest"
+              className="text-[10px] text-white/60 hover:text-white transition-colors uppercase tracking-widest"
             >
               Terms of Service
             </button>

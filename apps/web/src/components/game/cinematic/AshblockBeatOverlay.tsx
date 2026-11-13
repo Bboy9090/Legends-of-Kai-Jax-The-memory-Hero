@@ -214,11 +214,11 @@ export function AshblockBeatOverlay(props: AshblockBeatOverlayProps): React.Reac
           >
             ASHBLOCK HEIGHTS
           </div>
-          <div className="text-[10px] tracking-[0.3em] text-white/40">·</div>
+          <div className="text-[10px] tracking-[0.3em] text-white/60">·</div>
           <div className="text-[10px] tracking-[0.3em] text-white/55">
             {encounter.title.toUpperCase()}
           </div>
-          <div className="text-[10px] tracking-[0.3em] text-white/30">·</div>
+          <div className="text-[10px] tracking-[0.3em] text-white/60">·</div>
           <div className="text-[10px] tracking-[0.3em] text-white/70" data-testid="beat-phase-label">
             {phaseLabel}
           </div>

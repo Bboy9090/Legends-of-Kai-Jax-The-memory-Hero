@@ -40,7 +40,7 @@ export default function DefenseStatsPanel() {
                 <span className="text-xs text-white/50">{c.dodges} {c.dodges === 1 ? "dodge" : "dodges"} · {s.strikes} {s.strikes === 1 ? "strike" : "strikes"}</span>
               </div>
               {s.strikes === 0 ? (
-                <p className="text-xs text-white/40">No strikes recorded yet.</p>
+                <p className="text-xs text-white/60">No strikes recorded yet.</p>
               ) : (
                 <>
                   <div className="grid grid-cols-3 gap-2 text-center text-xs tabular-nums">

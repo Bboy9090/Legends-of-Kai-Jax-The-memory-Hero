@@ -35,7 +35,7 @@ export default function MoveListOverlay() {
                 {move.command}
               </span>
             </div>
-            <p className="text-[10px] text-slate-500 leading-relaxed group-hover:text-slate-300 transition-colors">
+            <p className="text-[10px] text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
               {move.description}
             </p>
             <div className="flex gap-2 mt-1.5">
@@ -47,13 +47,13 @@ export default function MoveListOverlay() {
                  {move.type}
                </span>
                {move.stamina > 0 && (
-                 <span className="text-[8px] text-slate-600 font-mono">STAMINA: {move.stamina}</span>
+                 <span className="text-[8px] text-slate-400/80 font-mono">STAMINA: {move.stamina}</span>
                )}
             </div>
           </div>
         ))}
       </div>
-      <p className="mt-4 text-[9px] text-slate-600 italic text-center">
+      <p className="mt-4 text-[9px] text-slate-400/80 italic text-center">
         Practice these forms to unlock hidden resonance.
       </p>
     </div>

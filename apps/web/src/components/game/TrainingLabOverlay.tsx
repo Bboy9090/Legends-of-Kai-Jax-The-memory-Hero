@@ -168,7 +168,7 @@ export default function TrainingLabOverlay({ visible }: { visible: boolean }) {
             Clear
           </button>
         </div>
-        <div className="mt-2 text-[10px] leading-relaxed text-slate-500">
+        <div className="mt-2 text-[10px] leading-relaxed text-slate-400">
           Records jump/punch/kick/special timing from your keyboard inputs and replays those discrete actions on the dummy. Analog movement recording waits for the fixed-step input stream.
         </div>
       </section>
@@ -203,16 +203,16 @@ export default function TrainingLabOverlay({ visible }: { visible: boolean }) {
               <span>Total {(telemetry.move.totalSec * 60).toFixed(0)}f</span>
             </div>
           </>
-        ) : <div className="text-xs text-slate-500">No active player move.</div>}
+        ) : <div className="text-xs text-slate-400">No active player move.</div>}
       </section>
 
       <section className="mt-3 rounded-lg border border-white/10 bg-black/25 p-2">
         <div className="mb-2 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
           <span>Input history</span>
-          <button type="button" className="normal-case tracking-normal text-slate-500 hover:text-slate-200" onClick={() => setInputHistory([])}>clear</button>
+          <button type="button" className="normal-case tracking-normal text-slate-400 hover:text-slate-200" onClick={() => setInputHistory([])}>clear</button>
         </div>
         <div className="flex min-h-6 flex-wrap gap-1">
-          {inputHistory.length === 0 ? <span className="text-[10px] text-slate-600">Waiting for input…</span> : inputHistory.map((event) => (
+          {inputHistory.length === 0 ? <span className="text-[10px] text-slate-400/80">Waiting for input…</span> : inputHistory.map((event) => (
             <span
               key={event.id}
               className={`rounded border px-1.5 py-0.5 font-mono text-[10px] ${event.pressed ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200" : "border-slate-600/40 bg-slate-800/60 text-slate-400"}`}
@@ -224,7 +224,7 @@ export default function TrainingLabOverlay({ visible }: { visible: boolean }) {
         </div>
       </section>
 
-      <div className="mt-3 text-[10px] leading-relaxed text-slate-500">
+      <div className="mt-3 text-[10px] leading-relaxed text-slate-400">
         Collision volumes mirror the duel's scalar range model. One step ticket advances the battle clock, player controller, and opponent AI exactly one 60 Hz slice while training pause remains active.
       </div>
     </aside>
@@ -234,7 +234,7 @@ export default function TrainingLabOverlay({ visible }: { visible: boolean }) {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-white/10 bg-black/25 px-2 py-1.5">
-      <div className="text-[9px] font-bold uppercase tracking-wider text-slate-500">{label}</div>
+      <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400">{label}</div>
       <div className="mt-0.5 font-mono text-[11px] text-slate-200">{value}</div>
     </div>
   );

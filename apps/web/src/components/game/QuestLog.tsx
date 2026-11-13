@@ -152,7 +152,7 @@ export default function QuestLog({ isOpen, onClose }: QuestLogProps) {
                       {obj.description}
                     </span>
                     {obj.target && (
-                      <span className="text-slate-500 ml-auto">
+                      <span className="text-slate-400 ml-auto">
                         {obj.progress ?? 0}/{obj.target}
                       </span>
                     )}
