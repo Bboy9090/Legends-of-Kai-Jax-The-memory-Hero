@@ -268,6 +268,13 @@ export default function LoreHub() {
 
           <div className="flex items-center gap-4">
             <button
+              data-testid="lore-open-codex"
+              onClick={() => setGameState("codex")}
+              className="hidden md:inline-flex px-4 py-1.5 bg-amber-500/10 hover:bg-amber-500/30 border border-amber-400/40 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-amber-300"
+            >
+              Game Codex
+            </button>
+            <button
               onClick={() => setGameState("menu")}
               className="hidden md:inline-flex px-4 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 ttransition-all"
             >
@@ -291,6 +298,14 @@ export default function LoreHub() {
                 {s}
               </button>
             ))}
+            <button
+              data-testid="lore-open-codex-mobile"
+              onClick={() => { setMobileOpen(false); setGameState("codex"); }}
+              className="block w-full text-left px-6 py-3 uppercase tracking-widest text-xs text-amber-300"
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+            >
+              Game Codex
+            </button>
             <button
               onClick={() => { setMobileOpen(false); setGameState("menu"); }}
               className="block w-full text-left px-6 py-3 uppercase tracking-widest text-xs text-blue-400"

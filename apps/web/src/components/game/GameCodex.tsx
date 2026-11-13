@@ -3,13 +3,14 @@
  * Comprehensive reference guide integrating all game systems
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRunner } from '../../lib/stores/useRunner';
 import AbilityDisplay from './AbilityDisplay';
 import CharacterStatsDisplay from './CharacterStatsDisplay';
 import LocationDisplay from './LocationDisplay';
 import BossEncounterDisplay from './BossEncounterDisplay';
 import { getCharacterData } from '../../lib/characterStats';
-import { BookOpen, Users, MapPin, Skull, Zap, Target } from 'lucide-react';
+import { ArrowLeft, BookOpen, Users, MapPin, Skull, Zap, Target } from 'lucide-react';
 
 type CodexTab = 'characters' | 'abilities' | 'locations' | 'bosses' | 'mechanics' | 'lore';
 
@@ -19,7 +20,14 @@ interface GameCodexProps {
 }
 
 export default function GameCodex({ initialTab = 'characters', characterId }: GameCodexProps) {
+  const setGameState = useRunner((s) => s.setGameState);
   const [activeTab, setActiveTab] = useState<CodexTab>(initialTab);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setGameState('lore-hub'); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [setGameState]);
   const [selectedCharacterId, setSelectedCharacterId] = useState<string>(characterId || 'kai-jax');
 
   const tabs: Array<{ id: CodexTab; label: string; icon: React.ReactNode }> = [
@@ -36,8 +44,17 @@ export default function GameCodex({ initialTab = 'characters', characterId }: Ga
       {/* HEADER */}
       <div className="border-b border-[#7d6136]/55 px-5 py-4">
         <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl uppercase tracking-[0.08em] text-[#efcf91]">
+          <button
+            type="button"
+            data-testid="codex-back"
+            onClick={() => setGameState('lore-hub')}
+            aria-label="Back to Legends Archive"
+            className="flex items-center gap-1 border border-[#735a35]/60 bg-black/50 px-3 py-2 text-[10px] uppercase tracking-[0.12em] text-[#efcf91] hover:bg-black/70"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back
+          </button>
+          <div className="flex-1">
+            <h1 className="text-2xl uppercase tracking-[0.08em] text-[#efcf91]" data-testid="codex-title">
               Game Codex
             </h1>
             <p className="text-[10px] uppercase tracking-[0.1em] text-[#8d806d] mt-1">
