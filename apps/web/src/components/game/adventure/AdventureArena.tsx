@@ -7,6 +7,7 @@ import { useMissions } from "../../../lib/stores/useMissions";
 import { useRunner } from "../../../lib/stores/useRunner";
 import { ARENA_REGISTRY, type ArenaConfig, getArenaConfig } from "../../../assets/arenaRegistry";
 import AdventureCharacter from "./AdventureCharacter";
+import AdventureCompanion from "./AdventureCompanion";
 import AdventureCamera from "./AdventureCamera";
 import AdventurePlayerController from "./AdventurePlayerController";
 import AdventureSessionGuard from "./AdventureSessionGuard";
@@ -469,6 +470,7 @@ export default function AdventureArena() {
       <ArenaGround config={arena} />
       <ArenaEnvironment config={arena} />
       <AdventureCharacter />
+      <AdventureCompanion />
       <AdventureCamera />
       <AdventureSessionGuard />
       <AdventurePlayerController />
