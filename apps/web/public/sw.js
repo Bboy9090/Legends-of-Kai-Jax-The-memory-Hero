@@ -4,12 +4,16 @@
  * duplicated into Cache Storage.
  */
 
-const CACHE = 'kai-jax-shell-v3';
+const CACHE = 'kai-jax-shell-v4';
 const CACHE_URLS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/icon.svg',
+  '/pwa-192x192.png',
+  '/pwa-512x512.png',
+  '/pwa-maskable-512x512.png',
+  '/apple-touch-icon.png',
   '/privacy.html',
   '/terms.html',
   // Move data is fetched at battle start; keep it available with no network.
@@ -68,29 +72,40 @@ function shouldCache(request, response) {
   return true;
 }
 
+async function put(request, response) {
+  const cache = await caches.open(CACHE);
+  await cache.put(request, response);
+}
+
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  const request = event.request;
+  if (request.method !== 'GET') return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
 
+  // Never cache the dev server's modules/HMR: a cache-first dev build serves stale code.
+  if (url.pathname.startsWith('/src/') || url.pathname.startsWith('/@') || url.pathname.startsWith('/node_modules/')) return;
+
+  // Page loads: network first so a new deploy is picked up, cached shell when offline.
+  if (request.mode === 'navigate' || request.destination === 'document') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (shouldCache(request, response)) event.waitUntil(put('/index.html', response.clone()));
+          return response;
+        })
+        .catch(async () => (await caches.match(request)) || (await caches.match('/index.html')) || Response.error())
+    );
+    return;
+  }
+
+  // Everything else (hashed JS/CSS, icons, move data): cache first, fill on miss.
   event.respondWith(
-    caches.match(event.request).then(async (cached) => {
+    caches.match(request).then(async (cached) => {
       if (cached) return cached;
-
-      try {
-        const response = await fetch(event.request);
-        if (shouldCache(event.request, response)) {
-          const copy = response.clone();
-          event.waitUntil(
-            caches.open(CACHE).then((cache) => cache.put(event.request, copy))
-          );
-        }
-        return response;
-      } catch (error) {
-        if (event.request.destination === 'document') {
-          const fallback = await caches.match('/index.html');
-          if (fallback) return fallback;
-        }
-        throw error;
-      }
+      const response = await fetch(request);
+      if (shouldCache(request, response)) event.waitUntil(put(request, response.clone()));
+      return response;
     })
   );
 });

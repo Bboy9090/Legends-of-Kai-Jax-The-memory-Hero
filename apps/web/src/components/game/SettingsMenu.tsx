@@ -1,5 +1,7 @@
 import { useRunner } from "../../lib/stores/useRunner";
 import { useAudio } from "../../lib/stores/useAudio";
+import { usePWAInstall } from "../../hooks/usePWAInstall";
+import { useMusic } from "../../lib/stores/useMusic";
 import { useAccessibility } from "../../lib/stores/useAccessibility";
 import { COLORBLIND_MODES } from "../../lib/accessibilitySettings";
 import { Settings, Volume2, VolumeX, Monitor, ArrowLeft, Zap, Shield, Sparkles, Mic2 } from "lucide-react";
@@ -14,6 +16,8 @@ export default function SettingsMenu() {
   const [voiceVolume, setVoiceVolumeState] = useState(getVoiceVolume());
   const [voiceEnabled, setVoiceEnabledState] = useState(isVoiceEnabled_());
   const a11y = useAccessibility();
+  const music = useMusic();
+  const pwa = usePWAInstall();
 
   const handleBack = () => {
     setGameState("menu");
@@ -104,6 +108,35 @@ export default function SettingsMenu() {
                   className="w-full accent-blue-500 disabled:opacity-40"
                 />
               </div>
+            </div>
+          </section>
+
+          {/* Install Section */}
+          {pwa.canInstall || pwa.ios ? (
+            <section data-testid="install-app" aria-label="Install app">
+              <h2 className="mb-4 text-lg font-bold uppercase tracking-widest text-white/80">Install</h2>
+              {pwa.canInstall ? (
+                <button type="button" data-testid="install-app-button" className="rounded-lg border border-white/15 px-4 py-2 text-xs uppercase tracking-widest hover:bg-white/10" onClick={() => void pwa.install()}>
+                  Install Kai-Jax on this device
+                </button>
+              ) : (
+                <p className="text-sm text-white/70" data-testid="install-ios-hint">To install: tap Share, then &ldquo;Add to Home Screen&rdquo;.</p>
+              )}
+            </section>
+          ) : null}
+
+          {/* Music Section */}
+          <section data-testid="music-settings" aria-label="Music">
+            <h2 className="mb-4 text-lg font-bold uppercase tracking-widest text-white/80">Music</h2>
+            <div className="space-y-4 text-sm text-white/80">
+              <label className="flex items-center justify-between gap-3">
+                <span>Adaptive score (changes with the action)</span>
+                <input type="checkbox" data-testid="music-adaptive" checked={music.adaptive} onChange={(e) => music.setAdaptive(e.target.checked)} />
+              </label>
+              <label className="flex items-center justify-between gap-3">
+                <span>Music volume</span>
+                <input type="range" data-testid="music-volume" min={0} max={1} step={0.05} value={music.musicVolume} disabled={!music.adaptive} onChange={(e) => music.setMusicVolume(Number(e.target.value))} />
+              </label>
             </div>
           </section>
 

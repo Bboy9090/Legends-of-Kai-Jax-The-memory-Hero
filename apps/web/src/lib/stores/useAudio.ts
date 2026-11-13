@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { audioSystem, type SfxId } from "../../systems/AudioSystem";
+import { useMusic } from "./useMusic";
 
 const STATUE_IDS = new Set(["marble-gladiator", "granite-colossus", "sandstone-sentinel"]);
 
@@ -202,7 +203,8 @@ export const useAudio = create<AudioState>((set, get) => ({
     set({ volume });
     saveSettings(get().isMuted, volume);
   },
-  startBattleMusic: () => { if (!get().isMuted) tryPlay(get().battleMusic); },
+  // The looping track is the fallback; the adaptive score owns battle music while it is enabled.
+  startBattleMusic: () => { if (!get().isMuted && !useMusic.getState().adaptive) tryPlay(get().battleMusic); },
   stopBattleMusic: () => { const b = get().battleMusic; if (b) b.pause(); },
   playJump: () => { if (!get().isMuted) tryPlay(get().hitSound); },
   playPunch: () => { if (!get().isMuted) tryPlay(get().hitSound); procedural(get, "strike"); },

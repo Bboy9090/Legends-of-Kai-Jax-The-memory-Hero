@@ -1,19 +1,37 @@
 {
   "name": "Legends of Kai-Jax: The Memory Hero",
   "short_name": "Kai-Jax",
-  "description": "Legends of Kai-Jax: The Memory Hero — a mobile action saga of combat, memory, transformation, and brotherhood in the Raging City.",
-  "start_url": ".",
+  "description": "Legends of Kai-Jax: The Memory Hero \u2014 a mobile action saga of combat, memory, transformation, and brotherhood in the Raging City.",
+  "start_url": "/",
   "display": "standalone",
-  "orientation": "landscape",
+  "orientation": "any",
   "background_color": "#050505",
   "theme_color": "#ffbf00",
   "scope": "/",
   "icons": [
     {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
       "src": "/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "categories": [
@@ -24,5 +42,6 @@
   "related_applications": [],
   "prefer_related_applications": false,
   "lang": "en-US",
-  "dir": "ltr"
+  "dir": "ltr",
+  "id": "/"
 }
