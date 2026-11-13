@@ -836,7 +836,7 @@ NARRATIVE_BIBLE = {
     },
     "tone_rules": {
         "allowed": ["Grounded", "Restrained", "Emotionally honest", "Mythic without spectacle-chasing", "Street-level truth with cosmic weight"],
-        "forbidden": ["Camp", "Anime monologues", "Quippy Marvel dialogue", "Lore dumps", "Chosen one language"],
+        "forbidden": ["Camp", "Anime monologues", "Quippy superhero banter", "Lore dumps", "Chosen one language"],
         "never_say": ["You are the chosen one", "This was your destiny", "Only you can save the world"]
     },
     "character_constraints": {

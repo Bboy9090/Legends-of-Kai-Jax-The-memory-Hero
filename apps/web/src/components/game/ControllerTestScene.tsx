@@ -256,6 +256,7 @@ export default function ControllerTestScene() {
   return (
     <div style={{ width: "100vw", height: "100vh", position: "relative", background: "#0a0a1a" }}>
       <Canvas
+        dpr={[1, 2]}
         shadows
         camera={{ position: [0, 5, 8], fov: 50, near: 0.1, far: 200 }}
         onCreated={({ gl }) => {

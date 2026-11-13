@@ -33,7 +33,7 @@ export const CORE_CHARACTER_ASSET_AUTHORITY: Record<CoreCharacterId, CharacterAs
     role: 'core-hero',
     status: 'blocked-pending-approved-asset',
     approvedPath: null,
-    legacyRuntimePath: '/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb',
+    legacyRuntimePath: '/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI.glb',
     notes: 'Jax requires the approved current Panthera / Homotherium-line design before release qualification.',
   },
   'kai-jax': {
@@ -49,7 +49,7 @@ export const CORE_CHARACTER_ASSET_AUTHORITY: Record<CoreCharacterId, CharacterAs
     role: 'family-identity',
     status: 'legacy-runtime-only',
     approvedPath: null,
-    legacyRuntimePath: '/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb',
+    legacyRuntimePath: '/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI.glb',
     notes: 'Jaxon is a distinct family identity and must never be treated as Jax asset authority.',
   },
   kaison: {

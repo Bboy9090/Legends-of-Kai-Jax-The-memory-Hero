@@ -286,6 +286,7 @@ export default function VersusCharacterSelect() {
           <div className="flex-1 overflow-hidden border relative" style={{ borderColor: `${accent}66`, boxShadow: `0 0 40px ${accent}22` }} aria-live="polite">
             {selectedProfile ? (
               <Canvas
+                dpr={[1, 2]}
                 style={{ pointerEvents: "auto" }}
                 shadows
                 camera={{ position: [0, 1.65, 6.4], fov: 42 }}

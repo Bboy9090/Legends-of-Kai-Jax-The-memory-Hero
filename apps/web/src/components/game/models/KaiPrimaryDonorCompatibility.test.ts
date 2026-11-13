@@ -2,13 +2,28 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 
 type Gltf = {
   nodes?: Array<{ name?: string }>;
   skins?: Array<{ joints?: number[] }>;
   meshes?: Array<{ primitives?: Array<{ attributes?: Record<string, number>; indices?: number }> }>;
   accessors?: Array<{ bufferView?: number }>;
-  bufferViews?: Array<{ byteOffset?: number; byteLength: number }>;
+  bufferViews?: Array<{
+    byteOffset?: number;
+    byteLength: number;
+    extensions?: {
+      EXT_meshopt_compression?: {
+        buffer: number;
+        byteOffset?: number;
+        byteLength: number;
+        byteStride: number;
+        count: number;
+        mode: 'ATTRIBUTES' | 'TRIANGLES' | 'INDICES';
+        filter?: 'NONE' | 'OCTAHEDRAL' | 'QUATERNION' | 'EXPONENTIAL';
+      };
+    };
+  }>;
   images?: Array<{ bufferView?: number; mimeType?: string }>;
   materials?: unknown[];
   animations?: unknown[];
@@ -40,9 +55,19 @@ function hash(bytes: Buffer): string {
   return crypto.createHash('sha256').update(bytes).digest('hex');
 }
 
+// Mesh buffer views may be EXT_meshopt_compression-encoded; hash their decoded bytes so the
+// donor-vs-primary guard compares real geometry instead of compressed container bytes.
 function bufferViewHash(gltf: Gltf, bin: Buffer, index: number): string {
   const view = gltf.bufferViews?.[index];
   if (!view) throw new Error(`Missing bufferView ${index}`);
+  const meshopt = view.extensions?.EXT_meshopt_compression;
+  if (meshopt) {
+    const start = meshopt.byteOffset ?? 0;
+    const source = new Uint8Array(bin.subarray(start, start + meshopt.byteLength));
+    const target = new Uint8Array(meshopt.count * meshopt.byteStride);
+    MeshoptDecoder.decodeGltfBuffer(target, meshopt.count, meshopt.byteStride, source, meshopt.mode, meshopt.filter ?? 'NONE');
+    return hash(Buffer.from(target));
+  }
   const start = view.byteOffset ?? 0;
   return hash(bin.subarray(start, start + view.byteLength));
 }
@@ -81,7 +106,8 @@ function visualFingerprint(gltf: Gltf, bin: Buffer) {
 }
 
 describe('Kai primary donor authority', () => {
-  it('preserves the current Kai skeleton, geometry buffers, textures, and materials', () => {
+  it('preserves the current Kai skeleton, geometry buffers, textures, and materials', async () => {
+    await MeshoptDecoder.ready;
     const staticKai = parseGlb('public/models/Meshy_AI_Character_outputSPiDERKAIJAX9TIALS.glb');
     const walkingKai = parseGlb('public/models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb');
 

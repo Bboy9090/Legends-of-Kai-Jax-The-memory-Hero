@@ -3,12 +3,12 @@ import { BaseFighter } from '../../base/BaseFighter';
 import { createJaxonMoveSet } from './JaxonMoves';
 
 /**
- * Jaxon - The Hedgehog
+ * Jaxon - The Storm Fang
  * The fastest character with spin-based attacks
  * Specializes in speed, momentum, and multi-hit combos
  */
 export class Jaxon extends BaseFighter {
-  private spinDashCharge: number = 0;
+  private stormSpinCharge: number = 0;
   private maxSpinCharge: number = 100;
 
   constructor(id: string) {
@@ -44,9 +44,9 @@ export class Jaxon extends BaseFighter {
   protected setupStateMachine(): void {
     // Setup state transitions and callbacks
     this.stateMachine.onEnter(FighterState.IDLE, () => {
-      // Hedgehog-style quick stop with slight drift
+      // Quick stop with slight drift
       this.physics.velocity.x *= 0.7;
-      this.spinDashCharge = 0;
+      this.stormSpinCharge = 0;
     });
 
     this.stateMachine.onEnter(FighterState.JUMP_SQUAT, () => {
@@ -74,23 +74,23 @@ export class Jaxon extends BaseFighter {
       // Lock onto nearest target and dash towards them
     });
 
-    // Spin Dash (Side Special)
+    // Storm Spin (Side Special)
     this.stateMachine.onEnter(FighterState.SIDE_SPECIAL, () => {
-      // Start charging spin dash
-      this.spinDashCharge = 0;
+      // Start charging storm spin
+      this.stormSpinCharge = 0;
     });
 
     this.stateMachine.onUpdate(FighterState.SIDE_SPECIAL, (deltaTime) => {
-      // Charge spin dash
-      this.spinDashCharge = Math.min(this.spinDashCharge + deltaTime * 50, this.maxSpinCharge);
+      // Charge storm spin
+      this.stormSpinCharge = Math.min(this.stormSpinCharge + deltaTime * 50, this.maxSpinCharge);
     });
 
     this.stateMachine.onExit(FighterState.SIDE_SPECIAL, () => {
-      // Release spin dash
+      // Release storm spin
       this.performAttack('side_special');
-      const dashSpeed = (this.stats.runSpeed * 2) * (this.spinDashCharge / this.maxSpinCharge);
+      const dashSpeed = (this.stats.runSpeed * 2) * (this.stormSpinCharge / this.maxSpinCharge);
       this.physics.velocity.x = this.facing === 'right' ? dashSpeed : -dashSpeed;
-      this.spinDashCharge = 0;
+      this.stormSpinCharge = 0;
     });
 
     // Spring Jump (Up Special / Recovery)
@@ -123,7 +123,7 @@ export class Jaxon extends BaseFighter {
     this.stateMachine.onEnter(FighterState.HITSTUN, () => {
       // Clear all active hitboxes
       this.hitboxes.forEach(h => h.active = false);
-      this.spinDashCharge = 0;
+      this.stormSpinCharge = 0;
     });
 
     this.stateMachine.onEnter(FighterState.LANDING, () => {
@@ -145,9 +145,9 @@ export class Jaxon extends BaseFighter {
   }
 
   /**
-   * Jaxon's signature move - Charged Spin Dash
+   * Jaxon's signature move - Charged Storm Spin
    */
-  public startSpinDash(): void {
+  public startStormSpin(): void {
     if (this.stateMachine.isInState(FighterState.HITSTUN) || this.stateMachine.isInState(FighterState.HITSTUN)) {
       return;
     }
@@ -155,16 +155,16 @@ export class Jaxon extends BaseFighter {
     this.stateMachine.changeState(FighterState.SIDE_SPECIAL);
   }
 
-  public releaseSpinDash(): void {
+  public releaseStormSpin(): void {
     if (this.state === FighterState.SIDE_SPECIAL) {
       this.stateMachine.changeState(FighterState.DASH);
     }
   }
 
   /**
-   * Get current spin dash charge percentage
+   * Get current storm spin charge percentage
    */
-  public getSpinDashCharge(): number {
-    return (this.spinDashCharge / this.maxSpinCharge) * 100;
+  public getStormSpinCharge(): number {
+    return (this.stormSpinCharge / this.maxSpinCharge) * 100;
   }
 }

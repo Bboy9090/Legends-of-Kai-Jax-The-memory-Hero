@@ -4,7 +4,7 @@ import { createKaxonMoveSet } from './KaxonMoves';
 
 /**
  * Kaxon - The Fusion
- * Ultimate fusion of Kaison (Fox) and Jaxon (Hedgehog)
+ * Ultimate fusion of Kaison (Fox) and Jaxon (Quillback)
  * Features 3 tails, enhanced stats, and devastating power
  * Requires synergy meter to be at 100% to transform
  */
@@ -59,7 +59,7 @@ export class Kaxon extends BaseFighter {
     });
 
     this.stateMachine.onEnter(FighterState.DASH, () => {
-      // Fusion speed - combination of fox and hedgehog
+      // Fusion speed - combination of fox and quillback
       const dashSpeed = this.stats.runSpeed * 1.4;
       this.physics.velocity.x = this.facing === 'right' ? dashSpeed : -dashSpeed;
     });

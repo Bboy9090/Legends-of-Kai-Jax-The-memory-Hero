@@ -1,3 +1,5 @@
+import { pushDamagePopup } from "../../../lib/stores/useDamagePopups";
+import { playSfx } from "../../../lib/sfx";
 import { useRef, Suspense, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
@@ -361,7 +363,11 @@ export default function AdventureEnemyAI() {
 
           const wasVulnerable = player.invulnTimer <= 0;
           adv.damagePlayer(tierConfig.damage);
-          if (wasVulnerable) adv.setInvulnTimer(POST_HIT_INVULN_SEC);
+          if (wasVulnerable) {
+            adv.setInvulnTimer(POST_HIT_INVULN_SEC);
+            pushDamagePopup({ x: player.posX, y: player.posY + 2.4, z: player.posZ, amount: tierConfig.damage, kind: "normal" });
+            playSfx("hitLight");
+          }
 
           if (isStatueFighter(enemy.fighterId)) useAudio.getState().playStoneAttack();
         }

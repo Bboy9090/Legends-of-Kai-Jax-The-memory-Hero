@@ -57,9 +57,9 @@ Runtime-Verified Playable:        0 currently proven
 | Roster ID | Registry Lookup | Alias Variants | Asset Path | Request Status |
 |-----------|-----------------|-----------------|-----------|-----------------|
 | kai | kai | kai_jax, kai-jax | /models/Meshy_AI_Meshy_Merged_Animations4KAI.glb | UNVERIFIED |
-| jax | jax | jax_kaijax | /models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb | UNVERIFIED |
+| jax | jax | jax_kaijax | /models/Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI.glb | UNVERIFIED |
 | kaijax | kaijax (3 aliases) | kai-jax, kai_jax, KaiJax | /models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb | UNVERIFIED |
-| jaxon | jaxon | jaxon-fox (unknown) | /models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb | UNVERIFIED |
+| jaxon | jaxon | jaxon-fox (unknown) | /models/Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI.glb | UNVERIFIED |
 | kaison | kaison | kaison-ember (unknown) | /models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb | UNVERIFIED |
 
 **Status:** Registry entries exist for all five core heroes, but runtime model loading is UNVERIFIED.

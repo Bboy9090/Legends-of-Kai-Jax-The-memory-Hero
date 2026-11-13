@@ -1,83 +1,72 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Determine repo root
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
+WEB="$REPO_ROOT/apps/web"
+MAX_JS_GZIP_BYTES=$((2500 * 1024))        # 2.5 MB gzipped JS
+MAX_MODELS_BYTES=$((100 * 1024 * 1024))   # 100 MB of shipped GLBs
+EXPECTED_HEROES=15
+EXPECTED_ABILITIES=105
 
-echo "🔍 LEGENDS OF KAI-JAX: PRODUCTION READINESS VERIFICATION"
-echo "========================================================"
+echo "LEGENDS OF KAI-JAX: PRODUCTION READINESS VERIFICATION"
+echo "====================================================="
 
-# Phase 1: Repository State
-echo "[1/6] Checking repository state..."
-if [ -z "$(git status --porcelain)" ]; then
-  echo "✅ Working tree clean"
-else
-  echo "❌ Uncommitted changes detected"
+echo "[1/6] Repository state"
+if [ -n "$(git status --porcelain)" ] && [ "${ALLOW_DIRTY:-0}" != "1" ]; then
+  echo "FAIL: uncommitted changes (set ALLOW_DIRTY=1 to bypass locally)"
   git status --porcelain
   exit 1
 fi
+echo "PASS"
 
-# Phase 2: Build Sanity
-echo "[2/6] Running TypeScript phase0 check..."
-cd apps/web
-tsc -p tsconfig.phase0.json --noEmit > /dev/null 2>&1 && echo "✅ TypeScript: PASS" || {
-  echo "❌ TypeScript errors detected"
-  tsc -p tsconfig.phase0.json --noEmit
-  exit 1
+echo "[2/6] TypeScript (tsc -b)"
+(cd "$WEB" && npx tsc -b)
+echo "PASS"
+
+echo "[3/6] Production build"
+(cd "$WEB" && npm run build > "${TMPDIR:-/tmp}/kj-build.log" 2>&1) || { tail -30 "${TMPDIR:-/tmp}/kj-build.log"; echo "FAIL: build"; exit 1; }
+echo "PASS"
+
+echo "[4/6] Bundle size (gzipped JS in dist/assets, shipped GLBs)"
+js_gzip_total=0
+for f in "$WEB"/dist/assets/*.js; do
+  js_gzip_total=$((js_gzip_total + $(gzip -9 -c "$f" | wc -c)))
+done
+models_total=$(find "$WEB/dist/models" -type f -name '*.glb' -printf '%s\n' 2>/dev/null | awk '{s+=$1} END {print s+0}')
+awk -v b="$js_gzip_total" 'BEGIN { printf "gzipped JS: %.2f MB (limit 2.50 MB)\n", b / 1048576 }'
+awk -v b="$models_total" 'BEGIN { printf "shipped GLBs: %.1f MB (limit 100 MB)\n", b / 1048576 }'
+[ "$js_gzip_total" -lt "$MAX_JS_GZIP_BYTES" ] || { echo "FAIL: gzipped JS over 2.5 MB"; exit 1; }
+[ "$models_total" -lt "$MAX_MODELS_BYTES" ] || { echo "FAIL: shipped GLBs over 100 MB"; exit 1; }
+echo "PASS"
+
+echo "[5/6] Roster and ability registry"
+npx tsx -e "
+import { CHARACTER_DATA_MAP } from './apps/web/src/lib/characterStats.ts';
+import { POWER_MATRICES } from './apps/web/src/lib/abilitySystems.ts';
+const ids = Object.keys(CHARACTER_DATA_MAP);
+const errors = [];
+let total = 0;
+if (ids.length !== $EXPECTED_HEROES) errors.push('expected $EXPECTED_HEROES heroes, found ' + ids.length);
+for (const id of ids) {
+  const m = POWER_MATRICES[id];
+  if (!m) { errors.push(id + ': missing power matrix'); continue; }
+  const t1 = m.abilities.filter(a => a.tier === 1).length;
+  const t2 = m.abilities.filter(a => a.tier === 2).length;
+  const other = m.abilities.length - t1 - t2;
+  if (t1 !== 2 || t2 !== 2 || other !== 0) errors.push(id + ': tiers T1=' + t1 + ' T2=' + t2 + ' other=' + other);
+  if (m.passives.length !== 2) errors.push(id + ': passives=' + m.passives.length);
+  if (!m.ultimate) errors.push(id + ': missing ultimate');
+  total += m.abilities.length + m.passives.length + (m.ultimate ? 1 : 0);
 }
-cd "$REPO_ROOT"
+if (total !== $EXPECTED_ABILITIES) errors.push('expected $EXPECTED_ABILITIES abilities, found ' + total);
+if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
+console.log(ids.length + ' heroes, ' + total + ' abilities');
+"
+echo "PASS"
 
-# Phase 3: Production Build
-echo "[3/6] Running production build..."
-cd apps/web
-npm run build > /tmp/build.log 2>&1 && echo "✅ Build: PASS" || {
-  echo "❌ Build failed"
-  tail -20 /tmp/build.log
-  exit 1
-}
-cd "$REPO_ROOT"
+echo "[6/6] Artifact"
+[ -f "$WEB/dist/index.html" ] || { echo "FAIL: dist/index.html missing"; exit 1; }
+echo "PASS"
 
-# Phase 4: Bundle Analysis
-echo "[4/6] Analyzing bundle size..."
-BUNDLE_SIZE=$(du -sh apps/web/dist/ | cut -f1)
-BUNDLE_BYTES=$(du -s apps/web/dist/ | cut -f1)
-echo "📦 Bundle size: $BUNDLE_SIZE"
-if [ "$BUNDLE_BYTES" -lt 2500000 ]; then
-  echo "✅ Bundle size approved (<2.5MB)"
-else
-  echo "⚠️  Bundle size: ${BUNDLE_BYTES} bytes (threshold: 2500000)"
-fi
-
-# Phase 5: Character Validation
-echo "[5/6] Validating character registry..."
-if grep -q "CHARACTER_DATA_MAP" apps/web/src/lib/characterStats.ts && \
-   grep -q "POWER_MATRICES" apps/web/src/lib/abilitySystems.ts; then
-  CHARACTER_COUNT=$(grep -o "'[a-z-]*':" apps/web/src/lib/characterStats.ts | wc -l)
-  echo "✅ Character registry valid ($CHARACTER_COUNT entities registered)"
-else
-  echo "❌ Character registry malformed"
-  exit 1
-fi
-
-# Phase 6: CI Simulation
-echo "[6/6] Running basic verification..."
-if [ -f "apps/web/dist/index.html" ]; then
-  echo "✅ Production bundle artifact exists"
-else
-  echo "❌ Production bundle not found"
-  exit 1
-fi
-
-echo ""
-echo "==============================================="
-echo "✅ PRODUCTION READINESS: APPROVED"
-echo "==============================================="
-echo ""
-echo "Summary:"
-echo "  • TypeScript: PASS"
-echo "  • Build: PASS"
-echo "  • Bundle Size: $BUNDLE_SIZE"
-echo "  • Characters: $CHARACTER_COUNT registered"
-echo "  • Status: PRODUCTION READY"
-echo ""
+echo "PRODUCTION READINESS: APPROVED"

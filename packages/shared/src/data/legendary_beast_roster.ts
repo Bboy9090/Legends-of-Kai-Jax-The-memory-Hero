@@ -4,7 +4,6 @@
  * Complete roster of legendary hybrid mythical beasts:
  * - All unique beast combinations
  * - Bronx-inspired names
- * - No Super Smash references
  * - Coolest, most wanted hybrids
  * - Underdog thoughts
  */
@@ -43,7 +42,7 @@ export const TRINITY_BEASTS: LegendaryBeast[] = [
     id: 'kaison',
     name: 'Kaison',
     title: 'The Swift Guardian',
-    beastHybrid: 'Saiyan-Kitsune-Lupine (Fox-Wolf Hybrid)',
+    beastHybrid: 'Kitsune-Lupine (Fox-Wolf Hybrid)',
     description: 'Tactical fox-wolf hybrid with Star-Force web control and two mechanical energy tail-blades',
     visual: {
       primaryColor: '#FF8C00', // Golden-Orange
@@ -64,8 +63,8 @@ export const TRINITY_BEASTS: LegendaryBeast[] = [
     id: 'jaxon',
     name: 'Jaxon',
     title: 'The Unstoppable Force',
-    beastHybrid: 'Beastly Hedgehog-Lupine Hybrid',
-    description: 'Feral hedgehog-wolf hybrid with long electricity-flowing quills and extreme speed',
+    beastHybrid: 'Beastly Quillback-Lupine Hybrid',
+    description: 'Feral quillback-wolf hybrid with long electricity-flowing quills and extreme speed',
     visual: {
       primaryColor: '#0066FF', // Electric Blue
       accentColor: '#00FF00', // Green
@@ -85,7 +84,7 @@ export const TRINITY_BEASTS: LegendaryBeast[] = [
     id: 'kai-jax',
     name: 'Kai-Jax',
     title: 'The Memory Hero | The Archive King',
-    beastHybrid: 'Star-Slime Chimera (Hedgehog-Kitsune-Lupine Fusion)',
+    beastHybrid: 'Star-Slime Chimera (Quillback-Kitsune-Lupine Fusion)',
     description: 'THE ULTIMATE FUSION - Three-tailed memory guardian with obsidian charcoal fur, internal nebulae, and sage-mode eyes',
     visual: {
       primaryColor: '#1a1a1a', // Obsidian Charcoal

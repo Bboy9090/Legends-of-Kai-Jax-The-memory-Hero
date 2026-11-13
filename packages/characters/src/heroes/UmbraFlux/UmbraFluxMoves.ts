@@ -14,7 +14,7 @@
  * 
  * Five Tail Strands:
  * - Blue: Sonic velocity - light-speed after-images
- * - Red: Shadow chaos control - teleportation anchors
+ * - Red: Shadow rift control - teleportation anchors
  * - Cyan: Silver psychokinesis - object manipulation
  * - Violet: Hypersonic distortion - time slow radius
  * - Gold: Celestial authority - reality anchor
@@ -433,7 +433,7 @@ export function createUmbraFluxMoveSet(): Map<string, UmbraFluxMove> {
 
   moves.set('side_special', {
     id: 'side_special',
-    name: 'Chaos Control',
+    name: 'Rift Control',
     type: 'special',
     damage: 0,
     knockbackAngle: 0,

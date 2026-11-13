@@ -438,7 +438,7 @@ export default function AdventureArena({ characterId, onBack, onMissionComplete 
   return (
     <KeyboardControls map={keyMap}>
       <div className="w-full h-full relative bg-[#050508]">
-        <Canvas shadows camera={{ position: [0, 12, 18], fov: 50 }}>
+        <Canvas dpr={[1, 2]} shadows camera={{ position: [0, 12, 18], fov: 50 }}>
           <color attach="background" args={['#050508']} />
           <fog attach="fog" args={['#050508', 30, 80]} />
           <ambientLight intensity={0.5} />

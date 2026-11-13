@@ -138,3 +138,6 @@ credentials.json
 .credentials
 .vercel
 .env*
+
+## Raw model backups from scripts/compress-models.sh
+models_raw_backup/

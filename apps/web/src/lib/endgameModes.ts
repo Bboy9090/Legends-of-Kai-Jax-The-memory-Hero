@@ -1,4 +1,4 @@
-// SUPER SMASH GRAND SAGA - 8 ENDGAME MODES
+// GRAND SAGA - 8 ENDGAME MODES
 
 export interface EndgameMode {
   id: string;

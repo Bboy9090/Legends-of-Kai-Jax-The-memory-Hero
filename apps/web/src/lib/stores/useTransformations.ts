@@ -31,12 +31,6 @@ export const useTransformations = create<TransformationState>((set, get) => ({
     // Default unlocks - base forms always available
     'jaxon': [0],
     'kaison': [0],
-    'marlo': [0],
-    'flynn': [0],
-    'sparky': [0],
-    'bubble': [0],
-    'novaknight': [0],
-    'speedy': [0],
   },
   activeTransformDuration: {},
   

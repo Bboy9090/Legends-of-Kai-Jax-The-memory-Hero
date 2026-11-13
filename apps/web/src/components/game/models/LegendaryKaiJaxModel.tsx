@@ -108,7 +108,7 @@ export default function LegendaryKaiJaxModel(props: LegendaryKaiJaxProps) {
     
     nebulaeTime.current += delta;
     
-    // === IDLE BREATHING (Disney-quality) ===
+    // === IDLE BREATHING (film-quality) ===
     if (!isAttacking) {
       const breathCycle = Math.sin(animTime * 2) * 0.05;
       bodyRef.current.scale.y = 1 + breathCycle;

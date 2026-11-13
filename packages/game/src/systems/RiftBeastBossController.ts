@@ -318,7 +318,7 @@ export const BossPresets = {
   }),
 
   /**
-   * Void-Blade Wraith (Meta Knight) - Book 2 Boss
+   * Void-Blade Wraith - Book 2 Boss
    */
   voidBladeWraith: (): BossConfig => ({
     id: 'VOID_BLADE',

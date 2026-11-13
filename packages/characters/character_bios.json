@@ -3,11 +3,11 @@
     {
       "id": "JAXON",
       "name": "Jaxon",
-      "dna": "Beastly Hedgehog-Lupine Hybrid",
+      "dna": "Beastly Quillback-Lupine Hybrid",
       "tails": 0,
       "quills": "Long, electricity-flowing quills (very feral looking)",
       "vibe": "Solo Velocity Fracture",
-      "archetype": "Sonic / Hedgehog Speedster",
+      "archetype": "Storm Fang Speedster",
       "personality": "Feral but calculated, smart, witty",
       "fur": "Charcoal-furred",
       "eyes": "Feral, amber",
@@ -26,13 +26,13 @@
     {
       "id": "KAISON",
       "name": "Kaison",
-      "dna": "Saiyan-Kitsune-Lupine (Young Fox/Tails/Wolf)",
+      "dna": "Kitsune-Lupine (Young Fox/Wolf)",
       "tails": 2,
       "tailDescriptions": [
         "Mechanical Energy Tail-Blades (can extend 2-to-9 configuration)"
       ],
       "vibe": "Star-Force Tactician",
-      "archetype": "Fox / Tails / Spider-Man hybrid",
+      "archetype": "Fox / Spider / Wolf Tactician",
       "personality": "Smart, witty, jokingly authorized banter",
       "fur": "Charcoal-furred with tactical jacket",
       "eyes": "Electric blue circuitry (processors)",
@@ -46,14 +46,14 @@
       "specialMoves": [
         "Sky-Anchor (Bungee): Star-Force web-tether to any point",
         "Chase-Badge Pulse: Sonar burst highlighting Memory Shards and hitboxes through walls",
-        "Web Control: Spider-Man-like mobility"
+        "Web Control: agile web-swinging mobility"
       ],
       "note": "Playable solo before fusion. Found as orphan by Bovarr with Jaxon."
     },
     {
       "id": "KAI_JAX",
       "name": "Kai-Jax",
-      "dna": "Star-Slime Chimera (Hedgehog-Kitsune-Lupine Fusion)",
+      "dna": "Star-Slime Chimera (Quillback-Kitsune-Lupine Fusion)",
       "tails": 3,
       "tailDescriptions": [
         "Tail 1 (Jax Strand - Velocity/Liquid Ink): Generates hard-light echoes, leaves after-images with physical interaction, speed-focused",
@@ -71,7 +71,7 @@
       "power": 6.8,
       "defense": 7.5,
       "transformations": [
-        "Solo Form 1: Jaxon Solo (Beastly Hedgehog)",
+        "Solo Form 1: Jaxon Solo (Beastly Quillback)",
         "Solo Form 2: Kaison Solo (Star-Force Kitsune)",
         "Fused Form: Kai-Jax (Star-Slime Chimera with 3 tails)"
       ],
@@ -84,7 +84,7 @@
       "dna": "Matte-White Lupine",
       "tails": 1,
       "vibe": "Will of Tomorrow",
-      "archetype": "Silver / Next-Gen Ascended",
+      "archetype": "Time Sage / Next-Gen Ascended",
       "eyes": "Dual-Pupil (Left sees past, Right sees future)",
       "fur": "Matte-White Metallic",
       "weight": 92,
@@ -121,7 +121,7 @@
       "name": "Boryx Zenith",
       "dna": "Draconic Ursine (Dragon-Bear)",
       "tails": 0,
-      "archetype": "Mario/Luigi/Bowser",
+      "archetype": "Guardian King Heavyweight",
       "vibe": "Guardian King",
       "height": "7ft",
       "aesthetic": "Bronx Heavyweight Boxer",
@@ -139,12 +139,12 @@
       "tails": 5,
       "tailDescriptions": [
         "Tail 1 (Blue): Sonic velocity - light-speed after-images",
-        "Tail 2 (Red): Shadow chaos control - teleportation anchors",
+        "Tail 2 (Red): Shadow rift control - teleportation anchors",
         "Tail 3 (Cyan): Silver psychokinesis - object manipulation",
         "Tail 4 (Violet): Hypersonic distortion - time slow radius",
         "Tail 5 (Gold): Celestial authority - reality anchor"
       ],
-      "archetype": "Sonic/Shadow/Silver/Amy/Metal Sonic",
+      "archetype": "Shadow Speedster / Celestial Rival",
       "vibe": "Velocity Wraith",
       "fur": "Matte-White Metallic with Iridescent Quills",
       "eyes": "Dual-Pupil (Past/Future Vision)",
@@ -158,12 +158,12 @@
     {
       "id": "VOX",
       "name": "Sentinel Vox",
-      "dna": "Saiyan-Kitsune (Buff Fox-Alien)",
+      "dna": "Kitsune (Buff Fox-Alien)",
       "tails": 2,
       "tailDescriptions": [
         "Mechanical Energy Tail-Blades (can extend 2-to-9 configuration)"
       ],
-      "archetype": "Fox/Tails/Samus/Falco",
+      "archetype": "Tactical Pilot",
       "vibe": "Star-Force Pilot / Tactical Commander",
       "features": "Tactical Star-Force Flight Jacket, Glowing Whisker-Scars",
       "weight": 95,
@@ -177,7 +177,7 @@
       "name": "Kiro Kong",
       "dna": "Augmented Ape-Kin",
       "tails": 0,
-      "archetype": "Donkey Kong/Diddy Kong/Dixie Kong",
+      "archetype": "Ape-Kin Brawler Trio",
       "vibe": "Primal Breaker",
       "features": "Impact-Dampening Stone Armor",
       "weight": 120,
@@ -199,73 +199,61 @@
   ],
   "expanded_roster": [
     {
-      "legacy": "Link / Zelda",
-      "beastKin": "VERDANT TALON / HYLIA-CORE",
+      "beastKin": "VERDANT TALON / SAGE-CORE",
       "class": "Lupine Knight / Vulpine Oracle",
       "archetype": "Melee/Magic Hybrid"
     },
     {
-      "legacy": "Pikachu / Ash",
       "beastKin": "VOLT-STRIKER / SYNAPSE COMMAND",
       "class": "Static-Rodent / Neural Catcher",
       "archetype": "Electric Speedster"
     },
     {
-      "legacy": "Captain Falcon",
       "beastKin": "AERO-CIRCUIT",
       "class": "Kinetic Falcon Pilot",
       "archetype": "Racing Brawler"
     },
     {
-      "legacy": "Meta Knight",
       "beastKin": "VOID-BLADE WRAITH",
       "class": "Armored Celestial Bat",
       "archetype": "Aerial Swordsman"
     },
     {
-      "legacy": "Rosalina / Luma",
       "beastKin": "COSMIC-MOTHER / STAR-SHARD",
       "class": "Galaxy-Ursine / Plasma-Kin",
       "archetype": "Puppet Master"
     },
     {
-      "legacy": "Waluigi / Wario",
       "beastKin": "GRIT-SCAVENGER",
       "class": "Lanky Hyena-Kin",
       "archetype": "Trickster"
     },
     {
-      "legacy": "Sephiroth / Ganondorf",
       "beastKin": "ONE-WINGED VOID / GANON-GRAVE",
       "class": "Seraph-Kin / Boar-Dragon Titan",
       "archetype": "Heavy Villain"
     },
     {
-      "legacy": "Ridley / Mother Brain",
       "beastKin": "CYBER-TERROR / CORE-MIND",
       "class": "Skeletal Draconic / Bio-Digital Brain",
       "archetype": "Boss Entity"
     },
     {
-      "legacy": "Wolf",
       "beastKin": "UMBRA-WOLF",
       "class": "Tactical Lupine Mercenary",
       "archetype": "Rival"
     },
     {
-      "legacy": "Knuckles",
       "beastKin": "FIST OF TERRA",
       "class": "Echidna-Titan",
       "archetype": "Tectonic Striker"
     },
     {
-      "legacy": "Mephiles",
       "beastKin": "THE QUIET ARCHITECT",
       "class": "Crystalline Void Entity",
       "archetype": "Final Boss (Books 4-6)"
     },
     {
-      "legacy": "Void King",
       "beastKin": "OMEGA-VOID",
       "class": "Sovereign of Stillness",
       "archetype": "Ultimate Antagonist (Books 7-9)"

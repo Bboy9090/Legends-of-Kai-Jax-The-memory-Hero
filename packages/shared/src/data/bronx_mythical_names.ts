@@ -4,7 +4,6 @@
  * Complete naming system for legendary beast hybrids:
  * - Bronx-inspired names
  * - Mythical reforged aesthetic
- * - No Super Smash references
  * - Cool, unique, memorable
  */
 

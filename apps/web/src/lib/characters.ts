@@ -128,9 +128,9 @@ const EXTRA_LEGENDS: Fighter[] = [
     role: "enemy",
   },
   {
-    id: "sparky",
-    name: "Sparky",
-    displayName: "SPARKY",
+    id: "static-imp",
+    name: "Static Imp",
+    displayName: "STATIC IMP",
     color: "#1a1800",
     accentColor: "#eab308",
     baseStats: { power: 80, speed: 85, defense: 77, gravity: 9.8 },

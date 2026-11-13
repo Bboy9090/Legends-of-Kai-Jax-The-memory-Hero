@@ -28,6 +28,18 @@ const BANTER_POOL = {
 export type BattlePhase = 'intro' | 'fighting' | 'ko' | 'paused' | 'results';
 
 import { useAudio } from "./useAudio";
+import {
+  classifyHit,
+  clampCritChance,
+  critMultiplier,
+  decayShake,
+  rollCrit,
+  tierForAttackType,
+  type HitKind,
+} from "../combatFeedback";
+import { pushDamagePopup } from "./useDamagePopups";
+import { playSfx } from "../sfx";
+import { getCharacterStats } from "../characterStats";
 import { useMissions } from "./useMissions";
 import { useDifficulty, getDamageTakenMultiplier } from "./useDifficulty";
 import { useRunner } from "./useRunner";
@@ -122,8 +134,8 @@ export interface BattleState {
   hitStop: number;
 
   // Floating damage numbers
-  damageNumbers: { id: number; x: number; y: number; amount: number; isPlayerHit: boolean }[];
-  addDamageNumber: (x: number, y: number, amount: number, isPlayerHit: boolean) => void;
+  damageNumbers: { id: number; x: number; y: number; amount: number; isPlayerHit: boolean; kind: HitKind }[];
+  addDamageNumber: (x: number, y: number, amount: number, isPlayerHit: boolean, kind?: HitKind) => void;
   
   // Score tracking
   playerWins: number;
@@ -216,7 +228,7 @@ export interface BattleState {
   moveOpponent: (x: number, y: number) => void;
   opponentJump: () => void;
   opponentAttack: (type: 'punch' | 'kick' | 'special') => void;
-  opponentTakeDamage: (damage: number, attackType?: 'punch' | 'kick' | 'special' | 'ultimate') => void;
+  opponentTakeDamage: (damage: number, attackType?: 'punch' | 'kick' | 'special' | 'ultimate', hitKind?: HitKind) => void;
   
   // ⚡ LEGENDARY SYNERGY & TRANSFORMATION
   addSynergy: (amount: number) => void;
@@ -342,7 +354,7 @@ export const useBattle = create<BattleState>((set, get) => ({
   screenShake: 0,
   screenFlash: null,
   hitStop: 0,
-  damageNumbers: [] as { id: number; x: number; y: number; amount: number; isPlayerHit: boolean }[],
+  damageNumbers: [] as { id: number; x: number; y: number; amount: number; isPlayerHit: boolean; kind: HitKind }[],
 
   playerWins: 0,
   opponentWins: 0,
@@ -581,7 +593,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     
     // Decay screen shake
     if (get().screenShake > 0) {
-      set({ screenShake: Math.max(0, get().screenShake - delta * 10) });
+      set({ screenShake: decayShake(get().screenShake, delta) });
     }
     
     if (newTime <= 0) {
@@ -695,7 +707,8 @@ export const useBattle = create<BattleState>((set, get) => ({
     const audio = useAudio.getState();
     if (type === 'punch') audio.playPunch();
     else if (type === 'kick') audio.playKick();
-    else if (type === 'special' || type === 'ultimate') audio.playSpecial();
+    else if (type === 'ultimate') playSfx('ultimate');
+    else if (type === 'special') audio.playSpecial();
   },
 
   attemptComboCancel: () => {
@@ -745,15 +758,24 @@ export const useBattle = create<BattleState>((set, get) => ({
 
       if (distance < range && !opponentInvulnerable) {
         const baseDamage = playerAttackType === 'ultimate' ? moves.ultimateDamage : playerAttackType === 'special' ? moves.specialDamage : move.damage;
-        const damage = Math.round(baseDamage * transformBonus);
-        get().opponentTakeDamage(damage, playerAttackType);
+        const heroStats = getCharacterStats(playerFighterId);
+        const isCrit = rollCrit(clampCritChance(heroStats?.critChance));
+        const hit = classifyHit({ tier: tierForAttackType(playerAttackType), isCrit, elemental: playerAttackType === 'special' });
+        const damage = Math.round(baseDamage * transformBonus * (isCrit ? critMultiplier(heroStats?.critDamage) : 1));
+        get().opponentTakeDamage(damage, playerAttackType, hit.kind);
         get().addToCombo(damage);
         get().addSynergy(playerAttackType === 'special' ? 15 : playerAttackType === 'kick' ? 10 : 5);
         get().addOverdrive(damage * 0.4);
         useMissions.getState().recordHit(playerAttackType);
         const crunchMult = playerAttackType === 'ultimate' ? 1.8 : playerAttackType === 'special' ? 1.4 : 1.1;
-        get().triggerHitStop(hitStopSecondsForMove(move) * crunchMult);
-        get().triggerScreenShake(Math.max(0.7, damage / 6) * crunchMult);
+        if (hit.hitStopSeconds > 0) {
+          // Tier 2 / Ultimate / Critical: fixed 50ms freeze and a damped shake.
+          get().triggerHitStop(hit.hitStopSeconds);
+          get().triggerScreenShake(hit.shakeIntensity);
+        } else {
+          get().triggerHitStop(hitStopSecondsForMove(move) * crunchMult);
+          get().triggerScreenShake(Math.max(0.7, damage / 6) * crunchMult);
+        }
         if (playerAttackType === 'ultimate') {
           get().triggerScreenFlash('#FFD700');
         }
@@ -983,7 +1005,7 @@ export const useBattle = create<BattleState>((set, get) => ({
     }
   },
   
-  opponentTakeDamage: (damage, attackType) => {
+  opponentTakeDamage: (damage, attackType, hitKind = 'normal') => {
     const { opponentInvulnerable, opponentHealth, battlePhase, opponentX, opponentY, damageDealt, stageCrackLevel } = get();
     if (opponentInvulnerable || battlePhase !== 'fighting') return;
     if (damage >= 15 || attackType === 'special' || attackType === 'ultimate') {
@@ -997,7 +1019,7 @@ export const useBattle = create<BattleState>((set, get) => ({
       opponentAttackElapsed: 0,
       opponentAttackHasHit: false,
     });
-    get().addDamageNumber(opponentX, opponentY, damage, false);
+    get().addDamageNumber(opponentX, opponentY, damage, false, hitKind);
     const newHealth = Math.max(0, opponentHealth - damage);
     const knockbackMult = attackType === 'ultimate' ? 0.1 : attackType === 'special' ? 0.08 : 0.06;
     const knockback = Math.min(1.2, damage * knockbackMult);
@@ -1219,12 +1241,13 @@ export const useBattle = create<BattleState>((set, get) => ({
     set({ hitStop: duration });
   },
 
-  addDamageNumber: (x, y, amount, isPlayerHit) => {
+  addDamageNumber: (x, y, amount, isPlayerHit, kind = 'normal') => {
     const id = ++_damageNumberId;
     const jitter = (Math.random() - 0.5) * 0.6;
     set((s) => ({
-      damageNumbers: [...s.damageNumbers, { id, x: x + jitter, y, amount, isPlayerHit }],
+      damageNumbers: [...s.damageNumbers, { id, x: x + jitter, y, amount, isPlayerHit, kind }],
     }));
+    pushDamagePopup({ x: x + jitter, y: y + 2.2, z: 0, amount, kind });
     setTimeout(() => {
       set((s) => ({
         damageNumbers: s.damageNumbers.filter((d) => d.id !== id),
@@ -1300,6 +1323,8 @@ export const useBattle = create<BattleState>((set, get) => ({
       });
       if (winner === 'player') {
         useAudio.getState().playVictory();
+      } else {
+        playSfx('defeat');
       }
     }, koDuration);
   },

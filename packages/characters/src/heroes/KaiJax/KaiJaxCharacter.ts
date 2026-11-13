@@ -4,7 +4,7 @@
  * Based on kai_jax.character.json (LOCKFILE - Single Source of Truth)
  * 
  * Kai-Jax: The Memory Hero
- * - Species: Wolf/Fox/Hedgehog/Spider hybrid
+ * - Species: Wolf/Fox/Quillback/Spider hybrid
  * - 9 Tails with independent roles
  * - Stance-shifting battlefield controller
  * - Scales from 1v1 to 1v20+ without rule changes
@@ -535,7 +535,7 @@ export const KAI_JAX_CONFIG = {
   
   // Anatomical spec
   anatomy: {
-    speciesComposite: ['wolf', 'fox', 'hedgehog', 'spider'],
+    speciesComposite: ['wolf', 'fox', 'quillback', 'spider'],
     bodyType: 'humanoid_beast',
     heightMultiplier: 1.15,
     build: 'athletic_sinewy_predator',

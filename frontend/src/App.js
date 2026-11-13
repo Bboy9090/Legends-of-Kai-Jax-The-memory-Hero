@@ -132,13 +132,6 @@ const HeroSection = ({ onNavigate }) => {
             >
               <Gamepad2 className="w-5 h-5 text-primary" /> PLAY GAME
             </Link>
-            <a 
-              href="/game/mission-demo.html"
-              className="btn-cyber flex items-center gap-2 bg-fire/20 border-fire hover:bg-fire/40 text-lg px-8 py-4"
-              data-testid="cta-play-combat-demo"
-            >
-              <Flame className="w-5 h-5 text-fire" /> COMBAT DEMO
-            </a>
             <button 
               onClick={() => onNavigate('play')} 
               className="btn-cyber flex items-center gap-2 bg-primary/20 border-primary hover:bg-primary/30 animate-pulse"
@@ -197,7 +190,7 @@ const CharacterCard = ({ character, onGenerateImage, isGenerating }) => {
 
   const handleGenerate = async () => {
     const prompts = {
-      kai: "Anthropomorphic hedgehog-fox beast warrior, bipedal, fiery orange fur on top with blackish-grey bottom, spiky wild hair, athletic muscular build, wearing a cool streetwear jacket, SHOOTING WEBS from hands, web graffiti tags on walls behind him, playful confident pose, hanging upside down from web hammock, electric sparks on webs, urban cyberpunk city alley background, game character art style, hyper detailed, dynamic action pose, 4K",
+      kai: "Anthropomorphic quillback-fox beast warrior, bipedal, fiery orange fur on top with blackish-grey bottom, spiky wild hair, athletic muscular build, wearing a cool streetwear jacket, SHOOTING WEBS from hands, web graffiti tags on walls behind him, playful confident pose, hanging upside down from web hammock, electric sparks on webs, urban cyberpunk city alley background, game character art style, hyper detailed, dynamic action pose, 4K",
       jax: "Anthropomorphic silver-blue fox beast warrior, bipedal, sleek elegant fur with frost patterns, magnificent fluffy tail, cool calculating cyan glowing eyes, ice crystals and lightning crackling around him, calm strategic pose, wearing tactical gear, cyberpunk city rooftop background, game character art style, hyper detailed, cool color palette, 4K",
       kaijax: "KAI-JAX THE MEMORY KING - towering dark shadowy beast fusion warrior, bipedal, GLOWING YELLOW EYES piercing through darkness, dark fur shifting between orange and blue, NINE MAGNIFICENT ELEMENTAL TAILS swirling (fire red, lightning blue, ice cyan, void purple, earth brown, water blue, nature green, light white, memory gold), heavy battle-worn armor, sovereign powerful stance, reality warping energy around him, dark apocalyptic cyberpunk city background, ultimate boss character art, hyper detailed, cinematic epic lighting, 4K",
       boryn: "Massive protective tiger beast father figure, bipedal, warm orange fur with battle scars, kind amber eyes, broad shoulders, sitting protectively watching over, warm street alley background with graffiti, fatherly presence, urban fantasy style, game character art, hyper detailed, warm golden lighting, 4K",

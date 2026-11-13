@@ -1,3 +1,4 @@
+import DamagePopups from "./DamagePopups";
 import { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useBattle } from "../../lib/stores/useBattle";
@@ -109,6 +110,7 @@ export default function BattleScene() {
       <AttackTrails />
       <EffectManager />
       <CameraEffects />
+      <DamagePopups />
 
       <fog attach="fog" args={[fogColor, 18, 55]} />
     </>

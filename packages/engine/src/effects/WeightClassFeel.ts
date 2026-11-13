@@ -15,11 +15,11 @@ export class WeightClassFeel {
   private particleSystem: ParticleSystem;
   
   // Weight class thresholds
-  private readonly SUPER_HEAVY = 120;   // Bowser-tier
-  private readonly HEAVY = 100;         // Captain Falcon-tier
-  private readonly MEDIUM = 80;         // Mario-tier
+  private readonly SUPER_HEAVY = 120;   // Super-heavy tier
+  private readonly HEAVY = 100;         // Heavy tier
+  private readonly MEDIUM = 80;         // Medium tier
   private readonly LIGHT = 60;          // Fox-tier
-  private readonly FEATHERWEIGHT = 50;  // Pikachu-tier
+  private readonly FEATHERWEIGHT = 50;  // Featherweight tier
 
   constructor(screenEffects: ScreenEffects, particleSystem: ParticleSystem) {
     this.screenEffects = screenEffects;

@@ -18,7 +18,7 @@ This audit evaluates the current state of hero models (Kai, Jax, Kai-Jax) regard
 *   **Status**: REPAIRED.
 
 ### 2. JAX (Shadow-Sonic)
-*   **Current Path**: `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb`
+*   **Current Path**: `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI.glb`
 *   **Rig Status**: ✅ **PASS** (Standard Biped detected).
 *   **Arms Detected**: ✅ PASS
 *   **Legs Detected**: ✅ PASS

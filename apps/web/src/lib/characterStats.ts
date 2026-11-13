@@ -146,7 +146,7 @@ export const JAX_DATA: CharacterData = {
   visualIdentity: {
     primaryColor: '#5aaeff',
     accentColor: '#ff8c00',
-    visualThemes: ['Electric Purple', 'Sonic Quills', 'Blur Effects', 'Thunder Trail'],
+    visualThemes: ['Electric Purple', 'Storm Quills', 'Blur Effects', 'Thunder Trail'],
     silhouette: 'feline-hybrid',
   },
   relationships: [

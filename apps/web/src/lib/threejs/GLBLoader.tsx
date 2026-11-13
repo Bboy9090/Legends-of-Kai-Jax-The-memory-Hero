@@ -8,6 +8,33 @@ import { useGLTF, useAnimations } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef, useMemo } from 'react';
 import * as THREE from 'three';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+
+/** Attach the Meshopt decoder so EXT_meshopt_compression GLBs decode natively (wasm is inlined, works offline). */
+export function attachMeshoptDecoder<T extends { setMeshoptDecoder(decoder: any): unknown }>(loader: T): T {
+  loader.setMeshoptDecoder(MeshoptDecoder);
+  return loader;
+}
+
+/** Canvas pixel-ratio cap shared by every <Canvas> to keep mobile GPU memory bounded. */
+export const CANVAS_DPR: [number, number] = [1, 2];
+
+// Cached GLB scenes are shared by clones, so GPU resources are released only when the last user unmounts.
+const liveInstances = new Map<string, number>();
+
+export function disposeObject3DResources(root: THREE.Object3D) {
+  root.traverse((obj) => {
+    const mesh = obj as THREE.Mesh;
+    mesh.geometry?.dispose();
+    const materials = Array.isArray(mesh.material) ? mesh.material : mesh.material ? [mesh.material] : [];
+    materials.forEach((material) => {
+      Object.values(material).forEach((value) => {
+        if (value instanceof THREE.Texture) value.dispose();
+      });
+      material.dispose();
+    });
+  });
+}
 
 export interface GLBModelConfig {
   path: string;
@@ -63,8 +90,22 @@ export function GLBModel({
   onAnimationComplete,
 }: GLBModelProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const { scene, animations } = useGLTF(config.path);
+  const { scene, animations } = useGLTF(config.path, true, true, attachMeshoptDecoder);
   const { actions, mixer } = useAnimations(animations, groupRef);
+
+  useEffect(() => {
+    const path = config.path;
+    liveInstances.set(path, (liveInstances.get(path) ?? 0) + 1);
+    return () => {
+      const remaining = (liveInstances.get(path) ?? 1) - 1;
+      if (remaining > 0) {
+        liveInstances.set(path, remaining);
+        return;
+      }
+      liveInstances.delete(path);
+      disposeObject3DResources(scene);
+    };
+  }, [config.path, scene]);
   const currentActionRef = useRef<THREE.AnimationAction | null>(null);
   const previousActionRef = useRef<string>('');
 
@@ -169,7 +210,7 @@ export function GLBModel({
  * Preload GLB models for better performance
  */
 export function preloadGLB(path: string) {
-  useGLTF.preload(path);
+  useGLTF.preload(path, true, true, attachMeshoptDecoder);
 }
 
 /**

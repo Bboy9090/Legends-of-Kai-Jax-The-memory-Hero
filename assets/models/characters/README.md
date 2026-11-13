@@ -12,7 +12,7 @@ characters/
 ├── lunara-solis/      # Oracle Sentinel (9-tail Kitsune)
 ├── umbra-flux/        # Velocity Wraith (5-tail Celestial Lupine)
 ├── boryx-zenith/      # Guardian King (Dragon-Bear)
-├── sentinel-vox/      # Star-Force Kitsune (Saiyan-Fox)
+├── sentinel-vox/      # Star-Force Kitsune (Fox)
 └── kiro-kong/         # Primal Breaker (Augmented Ape)
 ```
 

@@ -2,7 +2,7 @@
 ## STAR-FORCE KITSUNE
 
 **Character ID:** SENTINEL_VOX  
-**Species:** Saiyan-Kitsune (Buff Fox-Alien)  
+**Species:** Kitsune (Buff Fox-Alien)  
 **Height:** 5.5 feet (1.68 meters)
 
 ## Visual Description

@@ -3,7 +3,7 @@
  * 
  * Based on kai_jax.character.json (LOCKFILE)
  * 
- * The Memory Hero - Wolf/Fox/Hedgehog/Spider Hybrid with 9 Tails
+ * The Memory Hero - Wolf/Fox/Quillback/Spider Hybrid with 9 Tails
  * 
  * Archetype: Stance-shifting battlefield controller
  * Philosophy: "Mass, inertia, and recovery matter"
@@ -694,7 +694,7 @@ export const KAI_JAX_CHARACTER_DATA = {
   id: 'kai_jax',
   name: 'Kai-Jax',
   displayName: 'Kai-Jax, The Memory Hero',
-  description: 'Wolf/Fox/Hedgehog/Spider hybrid with 9 independent tails. Stance-shifting battlefield controller.',
+  description: 'Wolf/Fox/Quillback/Spider hybrid with 9 independent tails. Stance-shifting battlefield controller.',
   
   // Base stats aligned with JSON spec
   weight: 95, // Medium-heavy for crowd control
@@ -732,7 +732,7 @@ export const KAI_JAX_CHARACTER_DATA = {
   
   // Anatomy from JSON
   anatomy: {
-    speciesComposite: ['wolf', 'fox', 'hedgehog', 'spider'],
+    speciesComposite: ['wolf', 'fox', 'quillback', 'spider'],
     bodyType: 'humanoid_beast',
     heightMultiplier: 1.15,
     build: 'athletic_sinewy_predator',

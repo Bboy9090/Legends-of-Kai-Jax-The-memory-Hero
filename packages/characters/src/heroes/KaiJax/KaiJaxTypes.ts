@@ -4,7 +4,7 @@
  * Based on kai_jax.character.json (LOCKFILE)
  * Single source of truth for The Memory Hero
  * 
- * Kai-Jax: Wolf/Fox/Hedgehog/Spider hybrid with 9 tails
+ * Kai-Jax: Wolf/Fox/Quillback/Spider hybrid with 9 tails
  * Role: Stance-shifting battlefield controller
  * Scales: 1v1 to 1v20+
  */
@@ -56,7 +56,7 @@ export interface TailData {
  * Anatomy specification from JSON
  */
 export interface KaiJaxAnatomy {
-  speciesComposite: ['wolf', 'fox', 'hedgehog', 'spider'];
+  speciesComposite: ['wolf', 'fox', 'quillback', 'spider'];
   bodyType: 'humanoid_beast';
   heightMultiplier: 1.15;
   build: 'athletic_sinewy_predator';

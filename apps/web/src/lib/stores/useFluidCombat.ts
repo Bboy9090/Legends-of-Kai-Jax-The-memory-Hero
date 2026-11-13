@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { CharacterRole } from '../roster';
 
-// Spider-Man style fluid combat system
+// Acrobatic, web-swinging fluid combat system
 // - Auto-targeting nearest enemy
 // - Effortless combo chaining
 // - Attack canceling for smooth flow

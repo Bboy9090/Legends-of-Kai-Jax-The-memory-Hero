@@ -1,6 +1,6 @@
 """
 Sentinel Vox Blockout Generator - BEAST-KIN FORM
-Automatically creates the base blockout for Sentinel Vox (Saiyan-Kitsune - Buff Fox-Alien)
+Automatically creates the base blockout for Sentinel Vox (Kitsune - Buff Fox-Alien)
 
 Usage:
 1. Open Blender
@@ -22,7 +22,7 @@ bpy.ops.object.delete(use_global=False)
 # PHASE 1: CREATE BASE BODY (MUSCULAR FOX)
 # ============================================
 
-print("Creating Sentinel Vox base body (Saiyan-Kitsune - Beast-Kin Star-Force Pilot)...")
+print("Creating Sentinel Vox base body (Kitsune - Beast-Kin Star-Force Pilot)...")
 
 # Create muscular body (1.2x normal proportions)
 bpy.ops.mesh.primitive_uv_sphere_add(
@@ -174,7 +174,7 @@ body.name = "SentinelVox_Blockout"
 # PHASE 8: APPLY BEAST-KIN MATERIALS
 # ============================================
 
-print("Creating Beast-Kin materials (Saiyan-Kitsune)...")
+print("Creating Beast-Kin materials (Kitsune)...")
 
 # Body Material (Orange/White Fox Fur)
 body_mat = bpy.data.materials.new(name="MAT_SentinelVox_Body")
@@ -234,10 +234,10 @@ for area in bpy.context.screen.areas:
                 space.shading.use_scene_world = False
 
 print("\n" + "="*50)
-print("✅ SENTINEL VOX BLOCKOUT CREATED! (BEAST-KIN SAIYAN-KITSUNE)")
+print("✅ SENTINEL VOX BLOCKOUT CREATED! (BEAST-KIN KITSUNE)")
 print("="*50)
 print("\nWhat was created:")
-print("  ✓ Muscular body (1.2x proportions) - Saiyan-Kitsune")
+print("  ✓ Muscular body (1.2x proportions) - Kitsune")
 print("  ✓ Fox head")
 print("  ✓ Muscular arms")
 print("  ✓ Legs")

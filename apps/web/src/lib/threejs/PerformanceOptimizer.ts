@@ -177,7 +177,8 @@ export async function loadModelLazy(path: string): Promise<THREE.Group> {
   const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
   const { DRACOLoader } = await import('three/examples/jsm/loaders/DRACOLoader.js');
   
-  const loader = new GLTFLoader();
+  const { attachMeshoptDecoder } = await import('./GLBLoader');
+  const loader = attachMeshoptDecoder(new GLTFLoader());
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath('/draco/');
   loader.setDRACOLoader(dracoLoader);

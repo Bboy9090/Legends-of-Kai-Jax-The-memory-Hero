@@ -7,7 +7,7 @@ import * as THREE from 'three';
  * Beast-Kin Sovereignty: Genesis - Professional-Grade Character Animation
  * 
  * Features:
- * - 12-principles animation (Disney/Pixar quality)
+ * - 12-principles animation (feature-animation quality)
  * - Motion blur & frame blending
  * - Procedural secondary animation (hair, cloth, tails)
  * - Emotion-driven facial animation
@@ -36,7 +36,7 @@ export interface BoneAnimation {
   keyframes: KeyframeData[];
 }
 
-// Legendary easing functions (Disney-quality curves)
+// Legendary easing functions (film-quality curves)
 export const LegendaryEasing = {
   // Anticipation curve (overshoots then settles)
   anticipation: (t: number): number => {
@@ -57,8 +57,8 @@ export const LegendaryEasing = {
     return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
   },
   
-  // Smooth acceleration (Pixar curve)
-  pixarSmooth: (t: number): number => {
+  // Smooth acceleration (film curve)
+  filmSmooth: (t: number): number => {
     return t * t * (3 - 2 * t);
   },
   
@@ -151,7 +151,7 @@ export class FacialAnimationController {
   private emotionIntensity: number = 0;
   private blendSpeed: number = 5;
   
-  // Emotion presets (Disney-level expressiveness)
+  // Emotion presets (feature-film-level expressiveness)
   private emotions: Record<string, any> = {
     neutral: { eyeScale: 1.0, pupilSize: 1.0, mouthCurve: 0 },
     happy: { eyeScale: 1.2, pupilSize: 1.1, mouthCurve: 0.3, eyeSquint: 0.2 },

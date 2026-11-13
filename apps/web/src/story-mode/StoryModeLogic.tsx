@@ -341,6 +341,7 @@ export const StoryModeLogic = ({ heroConfig = DEFAULT_HERO }: StoryModeLogicProp
   return (
     <div style={{ position: "relative", width: "100vw", height: "100vh", inset: 0 }}>
       <Canvas
+        dpr={[1, 2]}
         style={{ width: '100%', height: '100%', display: 'block' }}
         shadows
         camera={{ position: [0, 6, 14], fov: 60, near: 0.1, far: 500 }}

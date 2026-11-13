@@ -22,7 +22,7 @@ export enum MissionType {
 
 export enum DNAType {
   FOX = 'fox',
-  HEDGEHOG = 'hedgehog',
+  QUILLBACK = 'quillback',
   WOLF = 'wolf',
   BIRD = 'bird',
   CAT = 'cat',

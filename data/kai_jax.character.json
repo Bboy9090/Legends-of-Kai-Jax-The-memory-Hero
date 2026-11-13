@@ -10,7 +10,7 @@
   },
 
   "anatomy": {
-    "species_composite": ["wolf", "fox", "hedgehog", "spider"],
+    "species_composite": ["wolf", "fox", "quillback", "spider"],
     "body_type": "humanoid_beast",
     "height_multiplier": 1.15,
     "build": "athletic_sinewy_predator",

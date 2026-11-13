@@ -7,7 +7,7 @@ import { getVoiceVolume, setVoiceVolume, isVoiceEnabled_, setVoiceEnabled } from
 
 export default function SettingsMenu() {
   const { setGameState } = useRunner();
-  const { isMuted, toggleMute } = useAudio();
+  const { isMuted, toggleMute, volume, setVolume } = useAudio();
   const [quality, setQuality] = useState<QualityPreference>(() => getQualityPreference());
   const [voiceVolume, setVoiceVolumeState] = useState(getVoiceVolume());
   const [voiceEnabled, setVoiceEnabledState] = useState(isVoiceEnabled_());
@@ -82,6 +82,24 @@ export default function SettingsMenu() {
                   `} />
                   {isMuted ? <VolumeX className="w-3 h-3 text-gray-900 absolute left-2.5 top-2.5" /> : <Volume2 className="w-3 h-3 text-blue-600 absolute right-2.5 top-2.5" />}
                 </button>
+              </div>
+              <div className="rounded-2xl border border-white/5 bg-white/5 p-4 sm:p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <p className="text-white font-bold text-lg">Master Volume</p>
+                  <span className="text-blue-400 font-bold" data-testid="master-volume-value">{Math.round(volume * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={Math.round(volume * 100)}
+                  onChange={(e) => setVolume(Number(e.target.value) / 100)}
+                  aria-label="Master volume"
+                  data-testid="master-volume-slider"
+                  disabled={isMuted}
+                  className="w-full accent-blue-500 disabled:opacity-40"
+                />
               </div>
             </div>
           </section>

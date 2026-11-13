@@ -11,7 +11,7 @@ import type { DistrictRoamMeta, EncounterSpec } from "../game/encounters/distric
 
 export type { EncounterSpec, DistrictRoamMeta };
 
-const MINION_POOL = ["hyena-scout", "rift-drone", "blazing-fox", "sparky", "velocity"] as const;
+const MINION_POOL = ["hyena-scout", "rift-drone", "blazing-fox", "static-imp", "velocity"] as const;
 
 /** Deterministic "random" unit in [0,1) from integers (platform-agnostic). */
 export function det01(a: number, b: number): number {

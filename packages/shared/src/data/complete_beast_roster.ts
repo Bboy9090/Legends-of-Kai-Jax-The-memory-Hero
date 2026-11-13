@@ -2,7 +2,6 @@
  * COMPLETE BEAST ROSTER - BRONX BORN MYTHICAL REFORGED
  * 
  * All 43+ characters redesigned as legendary beast hybrids:
- * - No Super Smash references
  * - All unique beast combinations
  * - Bronx-inspired names
  * - Coolest, most wanted hybrids
@@ -19,7 +18,7 @@ export const COMPLETE_BEAST_ROSTER: LegendaryBeast[] = [
     id: 'kaison',
     name: 'Kaison Storm',
     title: 'The Swift Guardian',
-    beastHybrid: 'Saiyan-Kitsune-Lupine (Fox-Wolf Hybrid)',
+    beastHybrid: 'Kitsune-Lupine (Fox-Wolf Hybrid)',
     description: 'Tactical fox-wolf hybrid with Star-Force web control and two mechanical energy tail-blades',
     visual: {
       primaryColor: '#FF8C00',
@@ -40,8 +39,8 @@ export const COMPLETE_BEAST_ROSTER: LegendaryBeast[] = [
     id: 'jaxon',
     name: 'Jaxon Blitz',
     title: 'The Unstoppable Force',
-    beastHybrid: 'Beastly Hedgehog-Lupine Hybrid',
-    description: 'Feral hedgehog-wolf hybrid with long electricity-flowing quills and extreme speed',
+    beastHybrid: 'Beastly Quillback-Lupine Hybrid',
+    description: 'Feral quillback-wolf hybrid with long electricity-flowing quills and extreme speed',
     visual: {
       primaryColor: '#0066FF',
       accentColor: '#00FF00',
@@ -61,7 +60,7 @@ export const COMPLETE_BEAST_ROSTER: LegendaryBeast[] = [
     id: 'kai-jax',
     name: 'Kai-Jax Echo',
     title: 'The Memory Hero | The Archive King',
-    beastHybrid: 'Star-Slime Chimera (Hedgehog-Kitsune-Lupine Fusion)',
+    beastHybrid: 'Star-Slime Chimera (Quillback-Kitsune-Lupine Fusion)',
     description: 'THE ULTIMATE FUSION - Three-tailed memory guardian',
     visual: {
       primaryColor: '#1a1a1a',

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { audioSystem, type SfxId } from "../../systems/AudioSystem";
 
 const STATUE_IDS = new Set(["marble-gladiator", "granite-colossus", "sandstone-sentinel"]);
 
@@ -107,6 +108,10 @@ interface AudioState {
   setHitSound: (a: HTMLAudioElement | null) => void;
   setSuccessSound: (a: HTMLAudioElement | null) => void;
   setMuted: (m: boolean) => void;
+  toggleMute: () => void;
+  /** 0..1 master volume for procedural SFX (persisted). */
+  volume: number;
+  setVolume: (v: number) => void;
   startBattleMusic: () => void;
   stopBattleMusic: () => void;
   playJump: () => void;
@@ -132,12 +137,49 @@ function tryPlay(a: HTMLAudioElement | null) {
   a.play().catch(() => {});
 }
 
+const SETTINGS_KEY = "kj-audio-settings";
+
+function loadSettings(): { muted: boolean; volume: number } {
+  try {
+    const raw = typeof localStorage !== "undefined" ? localStorage.getItem(SETTINGS_KEY) : null;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        muted: parsed?.muted === true,
+        volume: typeof parsed?.volume === "number" ? Math.max(0, Math.min(1, parsed.volume)) : 0.7,
+      };
+    }
+  } catch {
+    // Storage unavailable or corrupt: fall back to defaults.
+  }
+  return { muted: false, volume: 0.7 };
+}
+
+function saveSettings(muted: boolean, volume: number) {
+  try {
+    if (typeof localStorage !== "undefined") localStorage.setItem(SETTINGS_KEY, JSON.stringify({ muted, volume }));
+  } catch {
+    // Persisting is best-effort.
+  }
+}
+
+const initialSettings = loadSettings();
+audioSystem.setVolume(initialSettings.volume);
+
+function procedural(get: () => AudioState, id: SfxId) {
+  const { isMuted, volume } = get();
+  if (isMuted) return;
+  audioSystem.setVolume(volume);
+  audioSystem.play(id);
+}
+
 export const useAudio = create<AudioState>((set, get) => ({
   backgroundMusic: null,
   battleMusic: null,
   hitSound: null,
   successSound: null,
-  isMuted: false,
+  isMuted: initialSettings.muted,
+  volume: initialSettings.volume,
   battleIntensity: 0,
   setBattleIntensity: (battleIntensity) =>
     set({ battleIntensity: Math.max(0, Math.min(1, battleIntensity)) }),
@@ -145,16 +187,30 @@ export const useAudio = create<AudioState>((set, get) => ({
   setBattleMusic: (battleMusic) => set({ battleMusic }),
   setHitSound: (hitSound) => set({ hitSound }),
   setSuccessSound: (successSound) => set({ successSound }),
-  setMuted: (isMuted) => set({ isMuted }),
+  setMuted: (isMuted) => {
+    set({ isMuted });
+    if (isMuted) {
+      get().backgroundMusic?.pause();
+      get().battleMusic?.pause();
+    }
+    saveSettings(isMuted, get().volume);
+  },
+  toggleMute: () => get().setMuted(!get().isMuted),
+  setVolume: (v) => {
+    const volume = Math.max(0, Math.min(1, Number.isFinite(v) ? v : 0));
+    audioSystem.setVolume(volume);
+    set({ volume });
+    saveSettings(get().isMuted, volume);
+  },
   startBattleMusic: () => { if (!get().isMuted) tryPlay(get().battleMusic); },
   stopBattleMusic: () => { const b = get().battleMusic; if (b) b.pause(); },
-  playJump: () => tryPlay(get().hitSound),
-  playPunch: () => tryPlay(get().hitSound),
-  playKick: () => tryPlay(get().hitSound),
-  playSpecial: () => tryPlay(get().successSound),
-  playHit: () => tryPlay(get().hitSound),
-  playKO: () => tryPlay(get().hitSound),
-  playVictory: () => tryPlay(get().successSound),
+  playJump: () => { if (!get().isMuted) tryPlay(get().hitSound); },
+  playPunch: () => { if (!get().isMuted) tryPlay(get().hitSound); procedural(get, "strike"); },
+  playKick: () => { if (!get().isMuted) tryPlay(get().hitSound); procedural(get, "strike"); },
+  playSpecial: () => { if (!get().isMuted) tryPlay(get().successSound); procedural(get, "cast_t2"); },
+  playHit: () => { if (!get().isMuted) tryPlay(get().hitSound); procedural(get, "hit_light"); },
+  playKO: () => { if (!get().isMuted) tryPlay(get().hitSound); procedural(get, "ko"); },
+  playVictory: () => { if (!get().isMuted) tryPlay(get().successSound); procedural(get, "victory"); },
   playStoneMove: () => { if (!get().isMuted) playStoneGrind("move"); },
   playStoneAttack: () => { if (!get().isMuted) playStoneGrind("attack"); },
   playStoneHit: () => { if (!get().isMuted) playStoneGrind("hit"); },

@@ -11,6 +11,7 @@ import AdventureCamera from "./AdventureCamera";
 import AdventurePlayerController from "./AdventurePlayerController";
 import AdventureSessionGuard from "./AdventureSessionGuard";
 import AdventureEnemyAI from "./AdventureEnemyAI";
+import DamagePopups from "../DamagePopups";
 import Mission1EncounterBridge from "./Mission1EncounterBridge";
 import * as THREE from "three";
 import { MISSION6_ID } from "../../../lib/mission6";
@@ -472,6 +473,7 @@ export default function AdventureArena() {
       <AdventureSessionGuard />
       <AdventurePlayerController />
       <AdventureEnemyAI />
+      <DamagePopups />
       {missionId === MISSION6_ID && <Mission6MemoryNodes />}
       {missionId === "mission1" && <Mission1EncounterBridge />}
       {roamDistrictId ? <ScriptedEncounterSpawner roamSessionId={roamSessionId} /> : !missionId && !trainingSession && !isStoryMode ? <WaveSpawner roamSessionId={roamSessionId} /> : null}

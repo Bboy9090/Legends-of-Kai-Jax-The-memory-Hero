@@ -311,7 +311,7 @@ Model system: OptimizedBeastModel (uses MODEL_REGISTRY + fallback to stylized-be
 **TASK 2 Console Trace (Model Loading Pipeline):**
 
 Console logging shows complete model initialization:
-- ✅ Model file path resolved: `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb`
+- ✅ Model file path resolved: `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI.glb`
 - ✅ Scene cloned with 1 child object
 - ✅ Mesh found: 1 mesh detected
 - ✅ Material updated: materialsUpdated: 1

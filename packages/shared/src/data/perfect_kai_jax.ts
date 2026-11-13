@@ -29,7 +29,7 @@ export interface PerfectKaiJax {
       shoulderWidth: 1.5; // Broad, heroic shoulders
       waistWidth: 0.9; // Athletic waist
       limbLength: 1.2; // Perfect limb proportions
-      bodyDiameter: 1.0; // Spherical base (Kirby-esque)
+      bodyDiameter: 1.0; // Spherical base (round and compact)
     };
 
     // Perfect Color Palette

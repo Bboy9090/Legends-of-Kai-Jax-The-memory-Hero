@@ -36,7 +36,7 @@ Speculative aliases (`jax -> jaxon`, `kai -> kai-jax`, `kaxon -> kaison`) were a
 | Fighter ID | Name | Role / Category | Model Path | Status |
 |---|---|---|---|---|
 | `kai-jax` | Kai-Jax | The Memory Hero (Protagonist) | `/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb` | **Playable** |
-| `jaxon` | Jaxon | Hero / Rival | `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb` | **Playable** |
+| `jaxon` | Jaxon | Hero / Rival | `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI.glb` | **Playable** |
 | `kaison` | Kaison | Hero / Rival | `/models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb` | **Playable** |
 | `zephyr-veyl` | Zephyr Veyl | Future Original IP | Configured / Asset pending | **Coming Soon** |
 | `lyra-voss` | Lyra Voss | Future Original IP | Configured / Asset pending | **Coming Soon** |

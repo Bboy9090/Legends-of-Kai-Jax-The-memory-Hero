@@ -9,6 +9,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { attachMeshoptDecoder } from '../lib/threejs/GLBLoader';
 import { SkeletonUtils } from 'three/examples/jsm/Addons.js';
 
 export interface CharacterRig {
@@ -32,7 +33,7 @@ export interface CharacterRig {
   mixer: THREE.AnimationMixer | null;
 }
 
-const loader = new GLTFLoader();
+const loader = attachMeshoptDecoder(new GLTFLoader());
 
 function findByName(root: THREE.Object3D, name: string): THREE.Object3D | null {
   let hit: THREE.Object3D | null = null;

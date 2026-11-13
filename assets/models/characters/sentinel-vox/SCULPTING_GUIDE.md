@@ -26,7 +26,7 @@
 
 ## 🎨 Phase 2: Primary Forms (5-7 hours)
 
-### Step 2.1: Body Sculpting (Saiyan-Kitsune)
+### Step 2.1: Body Sculpting (Kitsune)
 
 **Create Muscular Form:**
 1. **Buff Build:**

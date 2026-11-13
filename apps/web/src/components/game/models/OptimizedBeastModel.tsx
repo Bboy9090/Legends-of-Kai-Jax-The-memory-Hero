@@ -10,6 +10,7 @@ import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { attachMeshoptDecoder } from '../../../lib/threejs/GLBLoader';
 import { useBattle } from '../../../lib/stores/useBattle';
 import { MODEL_REGISTRY } from '../../../assets/modelRegistry';
 import { getQualitySettings } from '../../../lib/threejs/PerformanceOptimizer';
@@ -197,7 +198,7 @@ export default function OptimizedBeastModel({
   useEffect(() => {
     if (requestedCompanionPaths.length === 0) return;
 
-    const loader = new GLTFLoader();
+    const loader = attachMeshoptDecoder(new GLTFLoader());
 
     const disposeCompanionScene = (root: THREE.Object3D) => {
       root.traverse((obj: any) => {

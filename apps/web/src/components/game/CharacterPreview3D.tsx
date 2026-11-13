@@ -47,6 +47,7 @@ export default function CharacterPreview3D({ fighter, preset = "auto" }: Charact
   return (
     <div className="w-full h-full">
       <Canvas
+        dpr={[1, 2]}
         camera={{
           position: [0, 1.5, 4],
           fov: 50

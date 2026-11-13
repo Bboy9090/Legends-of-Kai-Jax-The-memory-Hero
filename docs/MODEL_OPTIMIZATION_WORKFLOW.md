@@ -98,7 +98,7 @@ blender --background --python scripts/blender_optimize_models.py
 ```
 models/optimized/
   ├── Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX_optimized.glb (6.2 MB)
-  ├── Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI_optimized.glb (5.8 MB)
+  ├── Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI_optimized.glb (5.8 MB)
   ├── ... (other optimized models)
   ├── lod_low/
   │   ├── Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX_lod_low.glb (1.5 MB)

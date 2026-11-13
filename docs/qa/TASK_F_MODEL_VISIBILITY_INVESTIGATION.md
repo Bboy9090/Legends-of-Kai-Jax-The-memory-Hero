@@ -10,7 +10,7 @@
 ### Model Load Pipeline (Confirmed)
 ```
 [OptimizedBeastModel] Cloned scene: childrenCount: 1
-[OptimizedBeastModel] Trace: resolvedPath: /models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb
+[OptimizedBeastModel] Trace: resolvedPath: /models/Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI.glb
 [OptimizedBeastModel] Scene loaded: childrenCount: 1, animationCount: 2
 [OptimizedBeastModel] Mesh visibility update: meshesFound: 1, materialsUpdated: 1
 [OptimizedBeastModel] Bounding box: height: 1.7, isFinite: true
@@ -29,7 +29,7 @@
 
 ### 1. Model File Resolution
 **Status:** ✅ CONFIRMED WORKING
-- Path resolved: `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb`
+- Path resolved: `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI.glb`
 - File must exist and be loadable
 - **Conclusion:** No 404 error on GLB file (would fail here if missing)
 

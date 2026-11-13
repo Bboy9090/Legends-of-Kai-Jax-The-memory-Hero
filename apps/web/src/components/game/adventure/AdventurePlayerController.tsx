@@ -13,6 +13,17 @@ import * as THREE from "three";
 import { MOVEMENT_TUNING } from "../../../game/tuning/movementTuning";
 import { moveTowards } from "../../../game/movement/movementMath";
 import { MISSION6_ID, MISSION6_RESCUE_GAMEPAD_BUTTON, findRecoverableMemory, isGamepadRescueEdge } from "../../../lib/mission6";
+import {
+  classifyHit,
+  clampCritChance,
+  critMultiplier,
+  decayShake,
+  rollCrit,
+  tierForMoveKey,
+} from "../../../lib/combatFeedback";
+import { pushDamagePopup } from "../../../lib/stores/useDamagePopups";
+import { playSfx } from "../../../lib/sfx";
+import { getCharacterStats } from "../../../lib/characterStats";
 
 const adv = MOVEMENT_TUNING.adventure;
 const WALK_SPEED = adv.walkSpeed;
@@ -114,7 +125,7 @@ export default function AdventurePlayerController() {
       return;
     }
 
-    if (p.screenShake > 0) store.triggerScreenShake(Math.max(0, p.screenShake - delta * 8));
+    if (p.screenShake > 0) store.triggerScreenShake(decayShake(p.screenShake, delta));
 
     const touch = useTouchInput.getState();
     const touchAttacks = touch.consumeAttacks();
@@ -209,19 +220,28 @@ export default function AdventurePlayerController() {
           const elapsed = timing.totalTime - attackTimerRef.current;
           if (elapsed >= timing.startupTime && elapsed < timing.startupTime + timing.activeTime) {
             attackHitRef.current = true;
+            const heroStats = getCharacterStats(p.fighterId);
             enemies.forEach((enemy) => {
               if (enemy.isDead) return;
               const dx = p.posX - enemy.posX;
               const dz = p.posZ - enemy.posZ;
               const dist = Math.sqrt(dx * dx + dz * dz);
               if (dist <= PLAYER_HIT_RANGE) {
-                store.damageEnemy(enemy.id, currentMove.damage);
+                const isCrit = rollCrit(clampCritChance(heroStats?.critChance));
+                const moveKey = p.attackType as string;
+                const hit = classifyHit({ tier: tierForMoveKey(moveKey), isCrit, elemental: moveKey === "skill" });
+                const damage = Math.round(currentMove.damage * (isCrit ? critMultiplier(heroStats?.critDamage) : 1));
+                store.damageEnemy(enemy.id, damage);
+                pushDamagePopup({ x: enemy.posX, y: enemy.posY + 2.4, z: enemy.posZ, amount: damage, kind: hit.kind });
                 if (isStatueFighter(enemy.fighterId)) useAudio.getState().playStoneHit();
-                store.setHitStopTimer(currentMove.hitStopFrames / 60);
-                if (currentMove.hitStopFrames >= 6) {
-                  store.triggerScreenShake(currentMove.hitStopFrames * 0.12);
-                  store.triggerTimeScale(0.3, 0.08);
-                  store.triggerImpactFlash("#ffffff");
+                playSfx(hit.tier >= 2 ? "castT2" : isCrit ? "hitHeavy" : "strike");
+                if (hit.hitStopSeconds > 0) {
+                  // Tier 2 / Ultimate / Critical: fixed 50ms freeze plus a damped shake.
+                  store.setHitStopTimer(hit.hitStopSeconds);
+                  store.triggerScreenShake(hit.shakeIntensity);
+                  store.triggerImpactFlash(hit.kind === "critical" ? "#ffd24a" : hit.kind === "ultimate" ? "#b36bff" : "#ffffff");
+                } else {
+                  store.setHitStopTimer(currentMove.hitStopFrames / 60);
                 }
               }
             });

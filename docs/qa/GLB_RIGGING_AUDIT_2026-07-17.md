@@ -54,12 +54,12 @@ combatant) wasn't traced in this pass.
 
 ### The 13 rigged models
 
-`Meshy_AI_Animation_Running_withSkinKAIJAXVARIANTSHADOIWSonic.glb`,
+`Meshy_AI_Animation_Running_withSkinKAIJAXVARIANTSHADOWBLITZ.glb`,
 `Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb`,
 `Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb`,
 `Meshy_AI_Character_outputLIONBORAX.glb`,
 `Meshy_AI_Meshy_Merged_Animations4KAI.glb`,
-`Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb`, `boss.glb`,
+`Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI.glb`, `boss.glb`,
 `bosssss.glb`, `bossssss.glb`, `hyenaratvbill.glb`,
 `spidersnipervillain.glb`, plus `drone.glb` and `spidersdrone.glb`.
 

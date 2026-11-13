@@ -20,6 +20,7 @@ function BeastModelPanel({ fighterId }: { fighterId: string }) {
 
   return (
     <Canvas
+      dpr={[1, 2]}
       shadows
       style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
       camera={{ position: [0, 1.65, 5.5], fov: 42 }}

@@ -224,7 +224,7 @@ This C++ character loading system is designed to integrate with:
 
 ### Key Specifications
 
-- **Anatomy**: 9-tailed wolf/fox/hedgehog/spider hybrid
+- **Anatomy**: 9-tailed wolf/fox/quillback/spider hybrid
 - **Modeling**: 80K-120K triangles (LOD0), clean quad topology
 - **Rigging**: Physics-enabled tails (5-7 bones each)
 - **Combat**: Stance-shifting battlefield controller

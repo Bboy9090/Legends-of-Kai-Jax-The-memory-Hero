@@ -32,7 +32,7 @@
 | Fighter ID | Name | Canonical Role | Model Registry | Playable Status |
 |---|---|---|---|---|
 | `kai-jax` | Kai-Jax | The Memory Hero | `/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb` | **Playable** |
-| `jaxon` | Jaxon | Shadow Velocity Blitzer | `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb` | **Playable** |
+| `jaxon` | Jaxon | Shadow Velocity Blitzer | `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI.glb` | **Playable** |
 | `kaison` | Kaison | Spider Tactical Blade | `/models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb` | **Playable** |
 | `zephyr-veyl` | Zephyr Veyl | Future Original IP | Configured / Asset Pending | **Coming Soon** |
 | `lyra-voss` | Lyra Voss | Future Original IP | Configured / Asset Pending | **Coming Soon** |
@@ -45,7 +45,7 @@
 | Asset | Path / Identity | Creator / Source | License | Commercial Use | Release Status |
 |---|---|---|---|---|---|
 | Kai-Jax GLB | `/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb` | Meshy.ai | Custom Original IP | Allowed | **PASS** |
-| Jaxon GLB | `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWSONICJAXKAI.glb` | Meshy.ai | Custom Original IP | Allowed | **PASS** |
+| Jaxon GLB | `/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI.glb` | Meshy.ai | Custom Original IP | Allowed | **PASS** |
 | Kaison GLB | `/models/Meshy_AI_Animation_Walking_withSkinSPiDERKAIJAX9TIALS.glb` | Meshy.ai | Custom Original IP | Allowed | **PASS** |
 | Draco Decoder | `dist/assets/draco_decoder*.wasm` | Google Draco | Apache 2.0 | Allowed | **PASS** |
 | Fonts | `Bebas Neue`, `Inter` | Google Fonts | SIL Open Font License (OFL) | Allowed | **PASS** |

@@ -32,14 +32,14 @@ interface SquadState {
 }
 
 export const useSquad = create<SquadState>((set, get) => ({
-  // Default squad: Jaxon, Kaison, Marlo
-  squad: ['jaxon', 'kaison', 'marlo'],
+  // Default squad: Jaxon, Kaison, Kai-Jax
+  squad: ['jaxon', 'kaison', 'kai-jax'],
   activeHeroIndex: 0,
   
   squadMembers: [
     { heroId: 'jaxon', position: 0, transformationLevel: 0, healthPercent: 100, energyPercent: 100 },
     { heroId: 'kaison', position: 1, transformationLevel: 0, healthPercent: 100, energyPercent: 100 },
-    { heroId: 'marlo', position: 2, transformationLevel: 0, healthPercent: 100, energyPercent: 100 },
+    { heroId: 'kai-jax', position: 2, transformationLevel: 0, healthPercent: 100, energyPercent: 100 },
   ],
   
   synergyBonus: 0,
@@ -83,15 +83,15 @@ export const useSquad = create<SquadState>((set, get) => ({
     
     // Calculate synergy based on team composition
     // Speed + Power combo
-    const hasSpeed = squad.some(id => ['jaxon', 'kaison', 'speedy', 'midnight'].includes(id));
-    const hasPower = squad.some(id => ['marlo', 'kingspike'].includes(id));
+    const hasSpeed = squad.some(id => ['jaxon', 'kaison', 'volter', 'silver'].includes(id));
+    const hasPower = squad.some(id => ['kai-jax', 'boryn', 'borax'].includes(id));
     
     let bonus = 0;
     if (hasSpeed && hasPower) bonus += 20;
     
     // Twin heroes bonus
     if (squad.includes('jaxon') && squad.includes('kaison')) bonus += 30;
-    if (squad.includes('marlo') && squad.includes('leonardo')) bonus += 25;
+    if (squad.includes('boryn') && squad.includes('borax')) bonus += 25;
     
     set({ synergyBonus: Math.min(bonus, 100) });
   },

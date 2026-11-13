@@ -29,6 +29,7 @@
     "legacy:preview": "vite preview",
     "legacy:start": "NODE_ENV=production tsx server/index.ts",
     "db:push": "drizzle-kit push",
+    "optimize:models": "bash scripts/compress-models.sh",
     "validate:model": "python3 assets/models/characters/kai-jax/validate_model.py",
     "validate:registry": "node apps/web/scripts/validate-registry.mjs",
     "validate:roster": "tsx apps/web/scripts/validate-fighter-roster.ts",
