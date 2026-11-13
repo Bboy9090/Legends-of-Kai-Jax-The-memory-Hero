@@ -46,7 +46,7 @@ export const ACT_I_STORY_MISSIONS: StoryMission[] = [
     id: 'story_act1_m1',
     actNumber: 1,
     missionNumber: 1,
-    title: 'Awakening of the Memory Hero',
+    title: 'The City Bites Back',
     description: 'Kai-Jax awakens in the Cross Point Arena. The fragments of a thousand memories swirl around him as the Rift begins to tear.',
     introCutscene: [
       { speaker: 'System', text: 'One body online. Two inherited currents resonate beneath a single will.', side: 'right' },
@@ -302,7 +302,7 @@ export const ACT_III_STORY_MISSIONS: StoryMission[] = [
       { speaker: 'Kai-Jax', text: 'I am the design.', side: 'left', emotion: 'determined' }
     ],
     outroCutscene: [
-      { speaker: 'Kai-Jax', text: 'The path is clear. Voidonus, I am coming.', side: 'left' }
+      { speaker: 'Kai-Jax', text: 'The path is clear. Hollow Architect, I am coming.', side: 'left' }
     ],
     objectives: ['Win within 120s', 'Use 3 Specials'],
     difficulty: 9,
@@ -338,16 +338,16 @@ export const ACT_III_STORY_MISSIONS: StoryMission[] = [
     id: 'story_act3_m14',
     actNumber: 3,
     missionNumber: 14,
-    title: 'Voidonus Imperion: Final Duel',
+    title: 'Hollow Architect: Final Duel',
     description: 'The fate of all memories rests on this battle.',
     introCutscene: [
-      { speaker: 'Voidonus', text: 'I am the end of all stories. Your memory will be the first to burn.', side: 'right', emotion: 'angry' },
+      { speaker: 'Hollow Architect', text: 'I am the end of all stories. Your memory will be the first to burn.', side: 'right', emotion: 'angry' },
       { speaker: 'Kai-Jax', text: 'A hero is never forgotten. And a memory is never truly gone!', side: 'left', emotion: 'determined' }
     ],
     outroCutscene: [
       { speaker: 'Kai-Jax', text: 'It is done. The Weave is silent... and safe.', side: 'left' }
     ],
-    objectives: ['Defeat Voidonus Imperion', 'Win with >50% HP'],
+    objectives: ['Defeat Hollow Architect', 'Win with >50% HP'],
     difficulty: 10,
     arena: 'void_heart_citadel',
     bossId: 'voidonus-imperion',

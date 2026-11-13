@@ -250,9 +250,9 @@ export const STORY_ACTS: Record<ActNumber, StoryAct> = {
     fireMoments: [
       { id: 'circle_gathers', name: 'Gathering the Circle', description: 'Every ally answers the call at Nexus Haven.', rewardXP: 2200 },
       { id: 'first_wound', name: 'Where the Void Was Born', description: 'The Well-Defiler reveals the origin of the Void.', rewardXP: 2600 },
-      { id: 'last_memory', name: 'The Last Memory', description: 'Voidonus Imperion is remembered instead of destroyed.', rewardXP: 5000 }
+      { id: 'last_memory', name: 'The Last Memory', description: 'Hollow Architect is remembered instead of destroyed.', rewardXP: 5000 }
     ],
-    bossEncounters: ['Well-Defiler', 'Voidonus Imperion'],
+    bossEncounters: ['Well-Defiler', 'Hollow Architect'],
     gameplayTwist: 'The final boss ends by being remembered, not defeated.',
     difficultyRange: [9, 10],
     estimatedPlaytime: 240,

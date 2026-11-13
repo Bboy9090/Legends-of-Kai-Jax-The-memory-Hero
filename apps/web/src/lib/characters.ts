@@ -282,8 +282,8 @@ const EXTRA_LEGENDS: Fighter[] = [
   },
   {
     id: "voidonus",
-    name: "Voidonus",
-    displayName: "VOIDONUS",
+    name: "Hollow Architect",
+    displayName: "HOLLOW ARCHITECT",
     color: "#4c1d95",
     accentColor: "#000000",
     baseStats: { power: 96, speed: 85, defense: 92, gravity: 9.8 },

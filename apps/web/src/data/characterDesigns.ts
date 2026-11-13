@@ -63,7 +63,7 @@ const DESIGN_BY_ID: Record<string, CharacterDesign> = {
   },
   voidonus: {
     id: "voidonus" as any,
-    name: "VOIDONUS",
+    name: "HOLLOW ARCHITECT",
     primaryColor: "#4c1d95",
     accentColor: "#000000",
     features: ["dark_energy", "void_cloak"],

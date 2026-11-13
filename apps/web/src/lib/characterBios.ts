@@ -74,7 +74,7 @@ export const CHARACTER_BIOS: CharacterBio[] = [
       'Fast enough to get there first.'
     ],
     villainMatchups: [
-      { villainName: 'Voidonus Imperion', matchupType: 'disadvantage', reason: 'His crushing presence slows everything in reach, blunting speed' },
+      { villainName: 'Hollow Architect', matchupType: 'disadvantage', reason: 'His crushing presence slows everything in reach, blunting speed' },
       { villainName: 'Echo of Kai-Jax', matchupType: 'neutral', reason: 'A perfect copy of the fight: skill decides the winner' },
       { villainName: 'Rift General Prime', matchupType: 'advantage', reason: 'Speed lets him strike before the General\'s heavy swings land' }
     ]
@@ -122,7 +122,7 @@ export const CHARACTER_BIOS: CharacterBio[] = [
       'Patience is a weapon too.'
     ],
     villainMatchups: [
-      { villainName: 'Voidonus Imperion', matchupType: 'neutral', reason: 'Webs hold the Void\'s corruption briefly but cannot bind it' },
+      { villainName: 'Hollow Architect', matchupType: 'neutral', reason: 'Webs hold the Void\'s corruption briefly but cannot bind it' },
       { villainName: 'Echo of Kai-Jax', matchupType: 'disadvantage', reason: 'The Echo anticipates traps because it was built from the same memories' },
       { villainName: 'Rift General Prime', matchupType: 'advantage', reason: 'The General\'s fixed attack patterns are easy to snare' }
     ]
@@ -131,7 +131,7 @@ export const CHARACTER_BIOS: CharacterBio[] = [
 
 // VILLAIN MATCHUP CHART - Shows advantage/disadvantage against major threats
 export const VILLAIN_MATCHUP_CHART = {
-  'Voidonus Imperion': {
+  'Hollow Architect': {
     strongAgainst: ['jaxon'],
     weakAgainst: ['kaison'],
     description: 'The Void Emperor - his presence slows time and corrodes memory'

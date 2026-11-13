@@ -651,17 +651,17 @@ export const ACT_IX_STORY_MISSIONS: StoryMission[] = [
     actNumber: 9,
     missionNumber: 44,
     title: 'The Last Memory',
-    description: 'Voidonus Imperion returns as the whole forgotten memory. It does not want to win. It wants not to be alone.',
+    description: 'Hollow Architect returns as the whole forgotten memory. It does not want to win. It wants not to be alone.',
     introCutscene: [
-      { speaker: 'Voidonus Imperion', text: 'I REMEMBER BEING LOVED. THEN I REMEMBER NOTHING. NOTHING IS WHAT YOU ARE ASKING ME TO FORGIVE.', side: 'right', emotion: 'angry' },
+      { speaker: 'Hollow Architect', text: 'I REMEMBER BEING LOVED. THEN I REMEMBER NOTHING. NOTHING IS WHAT YOU ARE ASKING ME TO FORGIVE.', side: 'right', emotion: 'angry' },
       { speaker: 'Kai-Jax', text: 'I am not asking you to forgive. I am asking to remember you. All of it. Together.', side: 'left', emotion: 'determined' },
       { speaker: 'Jax', text: 'And if you swing at us anyway, we hit back. Kindly.', side: 'left', emotion: 'determined' }
     ],
     outroCutscene: [
-      { speaker: 'Voidonus Imperion', text: '...Somebody is holding my hand.', side: 'right', emotion: 'sad' },
+      { speaker: 'Hollow Architect', text: '...Somebody is holding my hand.', side: 'right', emotion: 'sad' },
       { speaker: 'Kai-Jax', text: 'We all are.', side: 'left', emotion: 'happy' }
     ],
-    objectives: ['Defeat Voidonus Imperion', 'Finish the fight with every ally still standing'],
+    objectives: ['Defeat Hollow Architect', 'Finish the fight with every ally still standing'],
     difficulty: 10,
     arena: 'void_tower',
     bossId: 'voidonus-imperion',
