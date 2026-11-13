@@ -13,6 +13,7 @@ export function currentProfile(): ProfileData {
     completedRoamDistrictIds: s.completedRoamDistrictIds,
     unlockedUpgrades: s.unlockedUpgrades,
     lastPlayedTitle: s.profiles[s.activeProfileIndex]?.lastPlayedTitle ?? null,
+    fusionUnlocked: s.profiles[s.activeProfileIndex]?.fusionUnlocked === true,
   };
 }
 

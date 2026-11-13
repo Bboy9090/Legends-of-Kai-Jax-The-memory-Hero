@@ -3,12 +3,14 @@ import { useFrame } from "@react-three/fiber";
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import OptimizedBeastModel from "../models/OptimizedBeastModel";
 import { getFighterById } from "../../../lib/characters";
+import { getHeroIdentity } from "../../../lib/heroVisualIdentity";
 import * as THREE from "three";
 import { getQualitySettings } from "../../../lib/threejs/PerformanceOptimizer";
 
 interface Props {
-  fighterId: string;
-  accentColor: string;
+  /** Defaults to the active hero in the adventure store, so the fused form swaps the model live. */
+  fighterId?: string;
+  accentColor?: string;
 }
 
 /**
@@ -51,7 +53,10 @@ function PlayerLocator({ accentColor }: { accentColor: string }) {
  * AdventureCharacter bridges useAdventure state into the battle-proven model
  * renderer while keeping the player visually locatable in Mission mode.
  */
-export default function AdventureCharacter({ fighterId, accentColor }: Props) {
+export default function AdventureCharacter({ fighterId: fighterIdProp, accentColor: accentProp }: Props) {
+  const storeFighterId = useAdventure((s) => s.player.fighterId);
+  const fighterId = fighterIdProp ?? storeFighterId;
+  const accentColor = accentProp ?? getHeroIdentity(fighterId)?.rimColor ?? "#ffffff";
   const groupRef = useRef<THREE.Group>(null);
 
   const isAttacking = useAdventure((s) => s.player.isAttacking);

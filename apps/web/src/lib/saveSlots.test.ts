@@ -5,7 +5,7 @@ const memory = (): SlotStorage & { data: Map<string, string> } => {
   const data = new Map<string, string>();
   return { data, getItem: (k) => data.get(k) ?? null, setItem: (k, v) => void data.set(k, v), removeItem: (k) => void data.delete(k) };
 };
-const profile = { totalScore: 900, campaignCompletedNodes: [], completedStoryMissionIds: ["story_act1_m1", "story_act1_m2"], storyLoot: ["a", "a"], completedRoamDistrictIds: [], unlockedUpgrades: [], lastPlayedTitle: null };
+const profile = { totalScore: 900, campaignCompletedNodes: [], completedStoryMissionIds: ["story_act1_m1", "story_act1_m2"], storyLoot: ["a", "a"], completedRoamDistrictIds: [], unlockedUpgrades: [], lastPlayedTitle: null, fusionUnlocked: false };
 
 describe("save slots", () => {
   it("has an autosave plus three manual slots", () => expect([...SAVE_SLOT_IDS]).toEqual(["autosave", "slot-1", "slot-2", "slot-3"]));

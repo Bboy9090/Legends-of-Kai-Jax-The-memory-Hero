@@ -139,10 +139,18 @@ test('completing a mission unlocks a hero: "NEW HERO UNLOCKED" modal with a 3D t
   await killAll(page);
   await expect.poll(() => page.evaluate(() => (window as Win).adventureStore.getState().waveCount), { timeout: 30_000 }).toBeGreaterThanOrEqual(2);
   await expect.poll(() => page.evaluate(() => (window as Win).adventureStore.getState().enemies.some((e: any) => !e.isDead)), { timeout: 15_000 }).toBe(true);
+
+  // Mission 1's final wave opens with the fusion awakening scene; watch it before finishing the fight.
+  const dialogue = page.getByTestId('dialogue-overlay');
+  await expect(dialogue).toBeVisible({ timeout: 15_000 });
+  for (let i = 0; i < 40 && (await dialogue.isVisible().catch(() => false)); i++) {
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(100);
+  }
+  await expect(dialogue).toBeHidden();
   await killAll(page);
 
   // Victory outro, then the results screen.
-  const dialogue = page.getByTestId('dialogue-overlay');
   await expect(dialogue).toBeVisible({ timeout: 30_000 });
   for (let i = 0; i < 40 && (await dialogue.isVisible().catch(() => false)); i++) {
     await page.keyboard.press('Enter');

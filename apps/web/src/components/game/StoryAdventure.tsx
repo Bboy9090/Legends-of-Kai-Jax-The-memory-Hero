@@ -10,6 +10,9 @@ import { identityForSpeaker, moodFromEmotion, type HeroMood } from "../../lib/he
 import { getBossConfig } from "../../lib/bossPhases";
 import HeroSilhouette from "./HeroSilhouette";
 import { BossEncounterHUD, useBossEncounter } from "./BossEncounter";
+import { useFusion, isFusionUnlocked } from "../../lib/stores/useFusion";
+import { useRunner } from "../../lib/stores/useRunner";
+import { FUSION, FUSION_AWAKENING_LINES } from "../../lib/fusion";
 
 interface StoryAdventureProps {
   missionId: string;
@@ -18,7 +21,7 @@ interface StoryAdventureProps {
   onBack: () => void;
 }
 
-type StoryPhase = "intro" | "playing" | "wave-transition" | "outro" | "results";
+type StoryPhase = "intro" | "playing" | "wave-transition" | "awakening" | "outro" | "results";
 
 function DialogueOverlay({
   lines,
@@ -402,6 +405,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
     console.log(`[StoryAdventure] startPlaying called, mission=${mission?.id}, enemyWaves=${mission?.enemyWaves.length}`);
     if (!mission) return;
     initAdventure(characterId, missionId, mission.arena || "cross_point_arena");
+    useFusion.getState().reset();
     setCurrentWave(0);
     if (waveDelayTimerRef.current) clearInterval(waveDelayTimerRef.current);
     waveDelayTimerRef.current = null;
@@ -423,6 +427,7 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
 
   const handleRetry = useCallback(() => {
     retryMissionAction();
+    useFusion.getState().reset();
     setCurrentWave(0);
     if (waveDelayTimerRef.current) clearInterval(waveDelayTimerRef.current);
     waveDelayTimerRef.current = null;
@@ -485,7 +490,12 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
             if (waveDelayTimerRef.current) clearInterval(waveDelayTimerRef.current);
             waveDelayTimerRef.current = null;
             spawnWave(nextWave);
-            setPhase("playing");
+            if (mission.id === FUSION.awakeningMissionId && nextWave === mission.enemyWaves.length - 1 && !isFusionUnlocked()) {
+              useAdventure.setState({ isPaused: true });
+              setPhase("awakening");
+            } else {
+              setPhase("playing");
+            }
           }, 100);
         } else if (outcome === "VICTORY") {
           setSuccess(true);
@@ -534,6 +544,18 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
         <WaveTransition
           waveNum={currentWave + 1}
           total={mission.enemyWaves.length}
+        />
+      )}
+
+      {phase === "awakening" && (
+        <DialogueOverlay
+          lines={FUSION_AWAKENING_LINES}
+          onComplete={() => {
+            useRunner.getState().unlockFusion();
+            useFusion.getState().fillCharge();
+            useAdventure.setState({ isPaused: false });
+            setPhase("playing");
+          }}
         />
       )}
 

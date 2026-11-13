@@ -1,3 +1,6 @@
+import { useFusion } from "../../../lib/stores/useFusion";
+import { useRunner } from "../../../lib/stores/useRunner";
+import { fusionStatus } from "../../../lib/fusion";
 import { useEffect, useRef, useState } from "react";
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useTouchInput } from "../../../lib/stores/useTouchInput";
@@ -134,7 +137,7 @@ function TouchButton({
   haptic = "light",
   style,
 }: {
-  action: "attack" | "heavy" | "skill" | "dodge";
+  action: "attack" | "heavy" | "skill" | "dodge" | "fusion";
   label: string;
   size?: number;
   color: string;
@@ -244,6 +247,34 @@ function PauseButton() {
   );
 }
 
+
+/** Fusion control: shows Locked / charge % / READY / remaining time, and is hidden when the hero cannot fuse. */
+function FusionButton() {
+  const fusion = useFusion();
+  const fighterId = useAdventure((st) => st.player.fighterId);
+  const unlocked = useRunner((st) => Boolean(st.profiles[st.activeProfileIndex]?.fusionUnlocked));
+  const status = fusionStatus(fusion, unlocked, fighterId);
+  if (status === "unavailable") return null;
+  const label =
+    status === "active" ? `${Math.ceil(fusion.timeLeft)}s`
+    : status === "locked" ? "LOCKED"
+    : status === "cooldown" ? `${Math.ceil(fusion.cooldown)}s`
+    : status === "ready" ? "FUSE"
+    : `${Math.floor(fusion.charge)}%`;
+  const ready = status === "ready" || status === "active";
+  return (
+    <div data-testid="fusion-control" data-status={status} data-charge={Math.floor(fusion.charge)} className="relative">
+      <TouchButton
+        action="fusion"
+        label={label}
+        size={54}
+        haptic="heavy"
+        color={ready ? "radial-gradient(circle at 35% 30%, rgba(255,214,120,.75), rgba(120,40,160,.95))" : "radial-gradient(circle at 35% 30%, rgba(120,120,140,.5), rgba(24,24,34,.94))"}
+      />
+    </div>
+  );
+}
+
 export default function AdventureTouchControls() {
   const isPaused = useAdventure((s) => s.isPaused);
   const [touchCapable] = useState(() => isTouchDevice());
@@ -306,6 +337,9 @@ export default function AdventureTouchControls() {
           color="radial-gradient(circle at 35% 30%, rgba(208,124,255,.55), rgba(50,18,72,.94))"
           style={{ position: "absolute", right: 8, bottom: 92 }}
         />
+        <div className="absolute" style={{ right: 8, bottom: 160 }}>
+          <FusionButton />
+        </div>
         <TouchButton
           action="dodge"
           label="DODGE"

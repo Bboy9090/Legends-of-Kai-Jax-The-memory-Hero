@@ -1,3 +1,4 @@
+import { getHeroIdentity } from "../../../lib/heroVisualIdentity";
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useRunner } from "../../../lib/stores/useRunner";
 import { getFighterById } from "../../../lib/characters";
@@ -307,8 +308,9 @@ export default function AdventureHUD() {
   const lastReward = useMissions((s) => s.lastReward);
 
   const aliveEnemies = enemies.filter((e) => !e.isDead).length;
-  const activeFighter = getFighterById(selectedCharacter || "kai-jax");
-  const heroName = activeFighter?.displayName || "KAI-JAX";
+  const activeFighterId = useAdventure((st) => st.player.fighterId);
+  const activeFighter = getFighterById(activeFighterId || selectedCharacter || "kai-jax");
+  const heroName = getHeroIdentity(activeFighterId || selectedCharacter || "kai-jax")?.displayName || activeFighter?.displayName || "KAI-JAX";
 
   if (isPaused) {
     return (

@@ -24,6 +24,8 @@ import {
 import { pushDamagePopup } from "../../../lib/stores/useDamagePopups";
 import { playSfx } from "../../../lib/sfx";
 import { getCharacterStats } from "../../../lib/characterStats";
+import { useFusion } from "../../../lib/stores/useFusion";
+import { FUSION, damageMultiplier, speedMultiplier } from "../../../lib/fusion";
 
 const adv = MOVEMENT_TUNING.adventure;
 const WALK_SPEED = adv.walkSpeed;
@@ -130,6 +132,10 @@ export default function AdventurePlayerController() {
     const touch = useTouchInput.getState();
     const touchAttacks = touch.consumeAttacks();
 
+    // Fusion: advance its timers, and toggle on F / the fusion button.
+    useFusion.getState().tick(delta);
+    if (justPressed("KeyF") || touchAttacks.includes("fusion")) useFusion.getState().toggle();
+
     if (p.staminaRegenDelay > 0) store.setStaminaRegenDelay(Math.max(0, p.staminaRegenDelay - delta));
     if (p.invulnTimer > 0) store.setInvulnTimer(Math.max(0, p.invulnTimer - delta));
 
@@ -176,7 +182,7 @@ export default function AdventurePlayerController() {
     store.setAutoTargetId(targetId);
 
     const isRunning = keys["ShiftLeft"] || keys["ShiftRight"] || padPressed(10);
-    const moveSpeed = isRunning ? RUN_SPEED : WALK_SPEED;
+    const moveSpeed = (isRunning ? RUN_SPEED : WALK_SPEED) * speedMultiplier(useFusion.getState());
 
     let inputX = 0;
     let inputZ = 0;
@@ -230,8 +236,9 @@ export default function AdventurePlayerController() {
                 const isCrit = rollCrit(clampCritChance(heroStats?.critChance));
                 const moveKey = p.attackType as string;
                 const hit = classifyHit({ tier: tierForMoveKey(moveKey), isCrit, elemental: moveKey === "skill" });
-                const damage = Math.round(currentMove.damage * (isCrit ? critMultiplier(heroStats?.critDamage) : 1));
+                const damage = Math.round(currentMove.damage * (isCrit ? critMultiplier(heroStats?.critDamage) : 1) * damageMultiplier(useFusion.getState()));
                 store.damageEnemy(enemy.id, damage);
+                useFusion.getState().addCharge(FUSION.hitCharge);
                 pushDamagePopup({ x: enemy.posX, y: enemy.posY + 2.4, z: enemy.posZ, amount: damage, kind: hit.kind });
                 if (isStatueFighter(enemy.fighterId)) useAudio.getState().playStoneHit();
                 playSfx(hit.tier >= 2 ? "castT2" : isCrit ? "hitHeavy" : "strike");

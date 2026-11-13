@@ -45,6 +45,8 @@ export interface ProfileData {
   completedRoamDistrictIds: string[];
   unlockedUpgrades: string[];
   lastPlayedTitle: string | null;
+  /** Canon gate: Kai-Jax fusion is awakened in Mission 1 and stays unlocked for this profile. */
+  fusionUnlocked: boolean;
 }
 
 interface RunnerState {
@@ -68,6 +70,8 @@ interface RunnerState {
   // Profile Actions
   switchProfile: (index: number) => void;
   resetProfile: (index: number) => void;
+  /** Awaken Kai-Jax fusion for the active profile (idempotent). */
+  unlockFusion: () => void;
   /** Overwrite the active profile (progress fields + stored copy) from a validated snapshot, e.g. a loaded save slot. */
   restoreActiveProfile: (profile: ProfileData) => void;
   
@@ -93,6 +97,7 @@ const DEFAULT_PROFILE: ProfileData = {
   completedRoamDistrictIds: [],
   unlockedUpgrades: [],
   lastPlayedTitle: null,
+  fusionUnlocked: false,
 };
 
 const RUNNER_SAVE_VERSION = 1;
@@ -165,6 +170,7 @@ export function normalizeProfile(profile?: Partial<ProfileData>): ProfileData {
     completedRoamDistrictIds: Array.isArray(profile?.completedRoamDistrictIds) ? profile!.completedRoamDistrictIds! : [],
     unlockedUpgrades: Array.isArray(profile?.unlockedUpgrades) ? profile!.unlockedUpgrades! : [],
     lastPlayedTitle: typeof profile?.lastPlayedTitle === "string" ? profile.lastPlayedTitle : null,
+    fusionUnlocked: profile?.fusionUnlocked === true,
   };
 }
 
@@ -310,6 +316,14 @@ export const useRunner = create<RunnerState>()(
           trainingSession: false,
           selectedCharacter: "kai-jax",
         });
+      },
+
+      unlockFusion: () => {
+        const { activeProfileIndex, profiles } = get();
+        if (profiles[activeProfileIndex]?.fusionUnlocked) return;
+        const next = [...profiles] as [ProfileData, ProfileData, ProfileData];
+        next[activeProfileIndex] = { ...next[activeProfileIndex], fusionUnlocked: true };
+        set({ profiles: next });
       },
 
       restoreActiveProfile: (profile) => {

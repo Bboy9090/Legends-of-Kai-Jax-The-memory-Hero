@@ -1,3 +1,5 @@
+import { useFusion } from "../../../lib/stores/useFusion";
+import { FUSION } from "../../../lib/fusion";
 import { pushDamagePopup } from "../../../lib/stores/useDamagePopups";
 import { playSfx } from "../../../lib/sfx";
 import { useEffect, useRef, Suspense, useMemo } from "react";
@@ -383,6 +385,8 @@ export default function AdventureEnemyAI() {
           attackStateTimers.current[enemy.id] = ATTACK_ACTIVE_SEC;
 
           const wasVulnerable = player.invulnTimer <= 0;
+          // An attack that lands while the player is mid-dodge is a clean evade and feeds the fusion gauge.
+          if (!wasVulnerable && player.dodgeTimer > 0) useFusion.getState().addCharge(FUSION.dodgeCharge);
           adv.damagePlayer(tierConfig.damage);
           if (wasVulnerable) {
             adv.setInvulnTimer(POST_HIT_INVULN_SEC);
