@@ -3,6 +3,7 @@
  * Shows boss information, phases, mechanics, and strategies
  */
 
+import { readableOnDark } from '../../lib/contrast';
 import React, { useState } from 'react';
 import { getBossEncounter, ALL_BOSSES, type BossEncounter } from '../../lib/bossEncounters';
 import { AlertTriangle, Zap, Shield, Clock, Skull } from 'lucide-react';
@@ -33,7 +34,7 @@ export default function BossEncounterDisplay({ bossId, showGrid = false, compact
     return (
       <div className="border border-[#ff6347]/40 bg-black/45 p-2">
         <div className="flex items-center gap-2 text-xs">
-          <Skull className="h-3 w-3" style={{ color: boss.visualIdentity.primaryColor }} />
+          <Skull className="h-3 w-3" style={{ color: readableOnDark(boss.visualIdentity.primaryColor) }} />
           <span className="uppercase text-[#efcf91]">{boss.name}</span>
           <span className="ml-auto text-[9px]" style={{ color: getDifficultyColor(boss.difficulty) }}>
             ★ {boss.difficulty}/10
@@ -78,7 +79,7 @@ export default function BossEncounterDisplay({ bossId, showGrid = false, compact
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
-                    <div className="text-xs uppercase tracking-[0.1em]" style={{ color: b.visualIdentity.primaryColor }}>
+                    <div className="text-xs uppercase tracking-[0.1em]" style={{ color: readableOnDark(b.visualIdentity.primaryColor) }}>
                       {b.displayName}
                     </div>
                     <div className="mt-1 text-[9px] text-[#8f816d]">{b.faction}</div>
@@ -124,7 +125,7 @@ export default function BossEncounterDisplay({ bossId, showGrid = false, compact
                 </div>
                 <div
                   className="mt-1 text-2xl uppercase tracking-[0.08em]"
-                  style={{ color: boss.visualIdentity.primaryColor }}
+                  style={{ color: readableOnDark(boss.visualIdentity.primaryColor) }}
                 >
                   {boss.displayName}
                 </div>

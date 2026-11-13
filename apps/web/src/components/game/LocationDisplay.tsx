@@ -3,6 +3,7 @@
  * Shows environment and location information
  */
 
+import { readableOnDark } from '../../lib/contrast';
 import React, { useState } from 'react';
 import { getLocation, ALL_LOCATIONS, type Location } from '../../lib/locations';
 import { MapPin, Shield, Skull, TrendingUp } from 'lucide-react';
@@ -151,7 +152,7 @@ export default function LocationDisplay({ locationId, showGrid = false, compact 
                 </div>
                 {location.faction && (
                   <div className="mt-2 text-[10px] text-[#bbb0a0]">
-                    Faction: <span style={{ color: location.accentColor }}>{location.faction}</span>
+                    Faction: <span style={{ color: readableOnDark(location.accentColor) }}>{location.faction}</span>
                   </div>
                 )}
               </div>

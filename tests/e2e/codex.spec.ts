@@ -32,6 +32,20 @@ test('phone: menu -> Legends Archive -> Game Codex (tabs, portraits) -> back', a
   await expect.poll(() => page.evaluate(() => Array.from(document.querySelectorAll('button img')).filter((i) => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth > 0).length), { timeout: 15_000 }).toBeGreaterThanOrEqual(3);
   await page.getByRole('button', { name: 'Abilities', exact: true }).click();
   await page.getByRole('button', { name: 'Bosses', exact: true }).click();
+
+  // Every boss name is legible: the colour the browser actually paints has >= 4.5:1 contrast on the black page.
+  const names = await page.evaluate(() => {
+    const lum = (rgb: number[]) => { const l = rgb.map((v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
+    const wanted = ['ashen enforcer', 'erasure stalker', 'rift general'];
+    return wanted.map((name) => {
+      const el = Array.from(document.querySelectorAll('div,span')).find((e) => e.children.length === 0 && (e.textContent ?? '').trim().toLowerCase() === name) as HTMLElement | undefined;
+      if (!el) return { name, ratio: 0 };
+      const rgb = (getComputedStyle(el).color.match(/\d+/g) ?? []).slice(0, 3).map(Number);
+      const l = lum(rgb);
+      return { name, ratio: (l + 0.05) / (0 + 0.05) };
+    });
+  });
+  for (const n of names) expect(n.ratio, `${n.name} contrast`).toBeGreaterThanOrEqual(4.5);
   fs.mkdirSync(OUT, { recursive: true });
   await page.screenshot({ path: `${OUT}22-game-codex.png` });
 

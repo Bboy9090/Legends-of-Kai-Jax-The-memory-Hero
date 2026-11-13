@@ -3,6 +3,7 @@
  * Shows character statistics, lore, and detailed information
  */
 
+import { readableOnDark } from '../../lib/contrast';
 import React from 'react';
 import { getCharacterData } from '../../lib/characterStats';
 import { Heart, Zap, Shield, Flame } from 'lucide-react';
@@ -45,7 +46,7 @@ export default function CharacterStatsDisplay({ characterId, showLore = true }: 
                 {faction}
               </div>
               <div className="mt-1 text-2xl uppercase tracking-[0.08em]" style={{
-                color: characterData.visualIdentity.primaryColor,
+                color: readableOnDark(characterData.visualIdentity.primaryColor),
               }}>
                 {characterData.displayName}
               </div>
@@ -53,7 +54,7 @@ export default function CharacterStatsDisplay({ characterId, showLore = true }: 
             <div className="text-right flex flex-col items-end gap-2">
               <div className="inline-block px-2 py-1 bg-black/40 border border-[#735a35]/50 rounded">
                 <div className="text-[9px] uppercase tracking-[0.1em]" style={{
-                  color: characterData.visualIdentity.accentColor,
+                  color: readableOnDark(characterData.visualIdentity.accentColor),
                 }}>
                   {rarity}
                 </div>
