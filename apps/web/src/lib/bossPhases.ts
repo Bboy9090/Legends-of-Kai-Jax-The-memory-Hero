@@ -46,7 +46,7 @@ interface Row {
 
 // HP climbs monotonically across the campaign: 600 (Act I) to 4,500 (Act IX finale).
 const ROWS: Row[] = [
-  { id: "story_act1_m4", name: "Void Stalker", fighter: "void-stalker", hp: 600, scale: 1.0, tint: "#7c3aed", aura: "void", auraColor: "#a78bfa", weapon: "claws", weaponColor: "#c4b5fd", heavy: 18, radius: 3.6 },
+  { id: "story_act1_m4", name: "Erasure Stalker", fighter: "void-stalker", hp: 600, scale: 1.0, tint: "#7c3aed", aura: "void", auraColor: "#a78bfa", weapon: "claws", weaponColor: "#c4b5fd", heavy: 18, radius: 3.6 },
   { id: "story_act1_m5", name: "Rift General Valos", fighter: "rift-general", hp: 1200, scale: 1.15, tint: "#ef4444", aura: "embers", auraColor: "#fb923c", weapon: "blade", weaponColor: "#f87171", heavy: 20, radius: 4.0 },
   { id: "story_act2_m7", name: "The Third Voice", fighter: "synergy-hunter", hp: 1500, scale: 1.05, tint: "#22d3ee", aura: "static", auraColor: "#67e8f9", weapon: "orb", weaponColor: "#22d3ee", heavy: 22, radius: 4.0 },
   { id: "story_act2_m10", name: "Well-Defiler", fighter: "well-defiler", hp: 1900, scale: 1.2, tint: "#10b981", aura: "memory", auraColor: "#6ee7b7", weapon: "orb", weaponColor: "#34d399", heavy: 24, radius: 4.2 },

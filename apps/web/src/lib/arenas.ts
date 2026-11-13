@@ -44,15 +44,15 @@ export const ARENAS: Arena[] = [
     description: 'Chaotic dimensional boundary where reality tears. Volatile and dangerous.',
     groundColor: '#1A0033', // Deep purple-black
     skyColor: '#330066', // Cosmic purple
-    platformColor: '#4D0099', // Void purple
+    platformColor: '#4D0099', // Erasure purple
     accentColor: '#FF00FF', // Magenta rift energy
     unlocked: true
   },
   {
     id: 'void_heart_citadel',
-    name: 'Void Heart Citadel',
-    displayName: 'Void Heart Citadel',
-    description: 'The epicenter of the Void. Dark, corrupted, and apocalyptic. The final battle awaits.',
+    name: 'Erasure Heart Citadel',
+    displayName: 'Erasure Heart Citadel',
+    description: 'The epicenter of the Erasure. Dark, corrupted, and apocalyptic. The final battle awaits.',
     groundColor: '#0D0D0D', // Nearly black
     skyColor: '#1A0000', // Deep crimson
     platformColor: '#330000', // Blood red

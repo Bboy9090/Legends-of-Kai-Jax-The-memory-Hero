@@ -152,7 +152,7 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
 
-  // Puff — Void Wisp wildcard
+  // Puff — Erasure Wisp wildcard
   puff: {
     path: "/models/shadow_panther.glb",
     scale: 3.2,

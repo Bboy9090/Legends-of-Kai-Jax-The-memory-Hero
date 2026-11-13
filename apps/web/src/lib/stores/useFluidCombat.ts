@@ -241,7 +241,7 @@ export const CHARACTER_KITS: Record<string, SignatureKit> = {
     effectColor: '#8B4513'
   },
   'puff': {
-    specialName: 'Void Inhale',
+    specialName: 'Erasure Inhale',
     specialDescription: 'Absorbs the essence of the target',
     specialType: 'melee',
     specialDamage: 50,

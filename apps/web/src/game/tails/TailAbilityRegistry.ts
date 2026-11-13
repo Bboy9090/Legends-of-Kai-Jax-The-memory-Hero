@@ -28,7 +28,7 @@ export const NINE_TAIL_SLOTS: readonly TailAbilityDefinition[] = [
   { id: "tail-tide", docIndex: 5, displayName: "Tide", elementHint: "water", phase: "spec_only", implementationNotes: "Spec only" },
   { id: "tail-thorn", docIndex: 6, displayName: "Thorn", elementHint: "nature", phase: "spec_only", implementationNotes: "Spec only" },
   { id: "tail-prism", docIndex: 7, displayName: "Prism", elementHint: "light", phase: "spec_only", implementationNotes: "Spec only" },
-  { id: "tail-void", docIndex: 8, displayName: "Void (Memory)", elementHint: "memory", phase: "spec_only", implementationNotes: "Closest thematic match to fusion / memory hybrid" },
+  { id: "tail-void", docIndex: 8, displayName: "Erasure (Memory)", elementHint: "memory", phase: "spec_only", implementationNotes: "Closest thematic match to fusion / memory hybrid" },
 ];
 
 /** Jaxon/Kaison → Kai-Jax fusion: wired via synergy + triggerTransformation in useBattle. */

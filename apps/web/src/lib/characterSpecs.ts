@@ -4,7 +4,7 @@
 export interface CharacterLoreSpec {
   id: string;
   loreTitle: string;
-  elementalAffinity: 'Memory' | 'Void' | 'Time' | 'Lightning' | 'Earth' | 'Wind' | 'Fire' | 'Celestial' | 'Iron';
+  elementalAffinity: 'Memory' | 'Erasure' | 'Time' | 'Lightning' | 'Earth' | 'Wind' | 'Fire' | 'Celestial' | 'Iron';
   memoryStrandColor: string;
   originSector: string;
   signatureAbility: string;
@@ -31,7 +31,7 @@ export const CHARACTER_SPECS: Record<string, CharacterLoreSpec> = {
     memoryStrandColor: '#a855f7',
     originSector: 'Voltage District',
     signatureAbility: 'Electric Dash',
-    backstory: 'A high-speed survivor of the first Rift tear. Jaxon uses his lightning-quick reflexes to outrun the Void.',
+    backstory: 'A high-speed survivor of the first Rift tear. Jaxon uses his lightning-quick reflexes to outrun the Erasure.',
     visualThemes: ['Electric Purple', 'Storm Quills', 'Blur Effects']
   },
 
@@ -53,7 +53,7 @@ export const CHARACTER_SPECS: Record<string, CharacterLoreSpec> = {
     memoryStrandColor: '#c0c0c0',
     originSector: 'Chronos Spire',
     signatureAbility: 'Temporal Anchor',
-    backstory: 'A traveler from a timeline consumed by the Void. He seeks to stabilize the Weave before it is too late.',
+    backstory: 'A traveler from a timeline consumed by the Erasure. He seeks to stabilize the Weave before it is too late.',
     visualThemes: ['Platinum', 'Clockwork Gears', 'Silver Mist']
   },
 
@@ -92,13 +92,13 @@ export const CHARACTER_SPECS: Record<string, CharacterLoreSpec> = {
 
   'puff': {
     id: 'puff',
-    loreTitle: 'The Void Wisp',
-    elementalAffinity: 'Void',
+    loreTitle: 'The Erasure Wisp',
+    elementalAffinity: 'Erasure',
     memoryStrandColor: '#d74894',
     originSector: 'Ethereal Abyss',
-    signatureAbility: 'Void Inhale',
+    signatureAbility: 'Erasure Inhale',
     backstory: 'A mysterious entity from the Rift that mimics the abilities of those it encounters.',
-    visualThemes: ['Magenta', 'Void Mist', 'Ethereal Glow']
+    visualThemes: ['Magenta', 'Erasure Mist', 'Ethereal Glow']
   },
 
   'borgos': {
@@ -108,7 +108,7 @@ export const CHARACTER_SPECS: Record<string, CharacterLoreSpec> = {
     memoryStrandColor: '#228b22',
     originSector: 'Rust Citadel',
     signatureAbility: 'Iron Shell',
-    backstory: 'A warlord who seeks to harness the Void to build an empire of eternal steel.',
+    backstory: 'A warlord who seeks to harness the Erasure to build an empire of eternal steel.',
     visualThemes: ['Forest Green', 'Rusty Metal', 'Spiked Armor']
   }
 };

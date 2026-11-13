@@ -51,12 +51,12 @@ export const ACT_I_STORY_MISSIONS: StoryMission[] = [
     introCutscene: [
       { speaker: 'System', text: 'One body online. Two inherited currents resonate beneath a single will.', side: 'right' },
       { speaker: 'Kai-Jax', text: 'I move as one. Beneath my thoughts, Myrr’Kai and Pyraxis stir like distant thunder.', side: 'left', emotion: 'determined' },
-      { speaker: 'System', text: 'WARNING: Void energy detected in the lower sectors. Engagement required.', side: 'right' }
+      { speaker: 'System', text: 'WARNING: Erasure energy detected in the lower sectors. Engagement required.', side: 'right' }
     ],
     outroCutscene: [
       { speaker: 'Kai-Jax', text: 'I can feel the Rift pulsing. This is just the beginning.', side: 'left' }
     ],
-    objectives: ['Defeat the first wave of Void remnants', 'Synchronize with the Arena core'],
+    objectives: ['Defeat the first wave of Erasure remnants', 'Synchronize with the Arena core'],
     difficulty: 1,
     arena: 'bronx_streets',
     requiredCharacters: ['kai-jax'],
@@ -92,7 +92,7 @@ export const ACT_I_STORY_MISSIONS: StoryMission[] = [
     actNumber: 1,
     missionNumber: 3,
     title: 'The Broken Bracket',
-    description: 'The tournament bracket glitches. Reality tears. Void creatures pour through.',
+    description: 'The tournament bracket glitches. Reality tears. Erasure creatures pour through.',
     introCutscene: [
       { speaker: 'Announcer', text: 'What is— ERROR — REALITY FAILURE —', side: 'right', emotion: 'angry' },
       { speaker: 'Kaison', text: 'It\'s starting. The Rift is here!', side: 'left', emotion: 'determined' }
@@ -100,7 +100,7 @@ export const ACT_I_STORY_MISSIONS: StoryMission[] = [
     outroCutscene: [
       { speaker: 'Kaison', text: 'The arena is lost. We need to find the others.', side: 'left' }
     ],
-    objectives: ['Defeat all 20 Void Grunts across both waves', 'Survive the Rift assault'],
+    objectives: ['Defeat all 20 Erasure Grunts across both waves', 'Survive the Rift assault'],
     difficulty: 3,
     arena: 'memory_vault',
     storyBeat: 'INCITING INCIDENT: The tournament is invaded. Reality is under attack.',
@@ -112,11 +112,11 @@ export const ACT_I_STORY_MISSIONS: StoryMission[] = [
     id: 'story_act1_m4',
     actNumber: 1,
     missionNumber: 4,
-    title: 'The Void Stalker',
+    title: 'The Erasure Stalker',
     description: 'A shadow moves through the Bronx ruins. It hunts the Memory Hero.',
     introCutscene: [
       { speaker: 'Jaxon', text: 'I see it. Something fast.', side: 'right', emotion: 'determined' },
-      { speaker: 'Void Stalker', text: '...memory... mine...', side: 'left', emotion: 'angry' }
+      { speaker: 'Erasure Stalker', text: '...memory... mine...', side: 'left', emotion: 'angry' }
     ],
     outroCutscene: [
       { speaker: 'Jaxon', text: 'It retreated into the Rift. We need more power.', side: 'right' }
@@ -161,10 +161,10 @@ export const ACT_II_STORY_MISSIONS: StoryMission[] = [
     actNumber: 2,
     missionNumber: 6,
     title: 'Shadows of the Ashblock',
-    description: 'After the fall of Cross Point, the heroes defend survivors sheltering in Ashblock and recover memories threatened by the spreading Void.',
+    description: 'After the fall of Cross Point, the heroes defend survivors sheltering in Ashblock and recover memories threatened by the spreading Erasure.',
     introCutscene: [
       { speaker: 'Narrator', text: 'Cross Point has fallen. The Rift remains open, and survivors of the retreat are taking shelter among Ashblock\'s ruins.', side: 'left', emotion: 'neutral' },
-      { speaker: 'Kai-Jax', text: 'We could not close the breach, but we can hold this ground. I can feel another shard nearby. Three memories are trapped in these streets. We bring each one home before the Void takes them.', side: 'left', emotion: 'determined' }
+      { speaker: 'Kai-Jax', text: 'We could not close the breach, but we can hold this ground. I can feel another shard nearby. Three memories are trapped in these streets. We bring each one home before the Erasure takes them.', side: 'left', emotion: 'determined' }
     ],
     outroCutscene: [
       { speaker: 'Narrator', text: 'The three memories are safe, but Cross Point remains lost. Ashblock becomes the survivors\' new defensive line, not a reclaimed victory.', side: 'left', emotion: 'neutral' },
@@ -172,7 +172,7 @@ export const ACT_II_STORY_MISSIONS: StoryMission[] = [
       { speaker: 'Kai-Jax', text: 'One step closer to restoring the Weave.', side: 'left' },
       { speaker: 'Kai-Jax', text: 'And... I can hear Kai and Jax more clearly now. Those memories warned them of different dangers. I need to listen to both before we face what comes next.', side: 'left', emotion: 'determined' }
     ],
-    objectives: ['Contain the Void outbreak', 'Rescue 3 Trapped Memories'],
+    objectives: ['Contain the Erasure outbreak', 'Rescue 3 Trapped Memories'],
     difficulty: 5,
     arena: 'rift_frontier',
     storyBeat: 'ACT II OPEN: After losing Cross Point, the survivors retreat to Ashblock. Recovering three threatened memories foreshadows the need for Kai, Jax, and Kai-Jax to coordinate their distinct voices without physical separation.',
@@ -209,7 +209,7 @@ export const ACT_II_STORY_MISSIONS: StoryMission[] = [
     actNumber: 2,
     missionNumber: 8,
     title: 'The Ghostly Echo',
-    description: 'Deep in the Void Tower, a shadow of Kai-Jax\'s father appears.',
+    description: 'Deep in the Erasure Tower, a shadow of Kai-Jax\'s father appears.',
     introCutscene: [
       { speaker: 'Kai-Jax', text: 'Father? Is that you?', side: 'left', emotion: 'sad' },
       { speaker: 'Ghostly Echo', text: 'Memory is a cage, Kai. I will set you free.', side: 'right', emotion: 'angry' }
@@ -220,7 +220,7 @@ export const ACT_II_STORY_MISSIONS: StoryMission[] = [
     objectives: ['Survive the spectral onslaught', 'Don\'t use special moves'],
     difficulty: 7,
     arena: 'rift_frontier',
-    storyBeat: 'Psychological warfare from the Void, testing the hero\'s resolve.',
+    storyBeat: 'Psychological warfare from the Erasure, testing the hero\'s resolve.',
     rewards: { xp: 500, currency: 400, loot: ['Spectral Shard'] },
     gameplayType: 'survival',
     enemyWaves: [{ type: 'void-wraith', count: 8 }, { type: 'void-wraith', count: 12, delay: 5 }]
@@ -230,14 +230,14 @@ export const ACT_II_STORY_MISSIONS: StoryMission[] = [
     actNumber: 2,
     missionNumber: 9,
     title: 'The Core\'s Defense',
-    description: 'The resistance pushes back against the Void occupation at the Skyforge Plateau.',
+    description: 'The resistance pushes back against the Erasure occupation at the Skyforge Plateau.',
     introCutscene: [
       { speaker: 'Silver', text: 'The timeline is shifting. We must act now.', side: 'right' }
     ],
     outroCutscene: [
       { speaker: 'Silver', text: 'Well fought. The echo remains.', side: 'right' }
     ],
-    objectives: ['Secure the sector', 'Destroy the Void Disruptors'],
+    objectives: ['Secure the sector', 'Destroy the Erasure Disruptors'],
     difficulty: 7,
     arena: 'rift_frontier',
     storyBeat: 'Systematic reclamation of stolen memory nodes.',
@@ -258,7 +258,7 @@ export const ACT_II_STORY_MISSIONS: StoryMission[] = [
     outroCutscene: [
       { speaker: 'Narrator', text: 'The well is stabilized, but at a great cost. The path to the Rift Citadel is open.', side: 'left' }
     ],
-    objectives: ['Defeat 3 waves of Elite Void', 'Repair the Core', 'Defeat the Well Defiler'],
+    objectives: ['Defeat 3 waves of Elite Erasure', 'Repair the Core', 'Defeat the Well Defiler'],
     difficulty: 8,
     arena: 'rift_frontier',
     bossId: 'well-defiler',
@@ -281,12 +281,12 @@ export const ACT_III_STORY_MISSIONS: StoryMission[] = [
       { speaker: 'Kai-Jax', text: 'No turning back now.', side: 'left', emotion: 'determined' }
     ],
     outroCutscene: [
-      { speaker: 'Kai-Jax', text: 'Forward, into the heart of the Void.', side: 'left' }
+      { speaker: 'Kai-Jax', text: 'Forward, into the heart of the Erasure.', side: 'left' }
     ],
     objectives: ['Destroy the Rift Pylons', 'Breach the Citadel Gates'],
     difficulty: 8,
     arena: 'void_heart_citadel',
-    storyBeat: 'Elite-level combat against the Void\'s last stand.',
+    storyBeat: 'Elite-level combat against the Erasure\'s last stand.',
     rewards: { xp: 800, currency: 600, loot: ['Citadel Key'] },
     gameplayType: 'combat',
     enemyWaves: [{ type: 'void-legion', count: 8 }, { type: 'void-elite', count: 6, delay: 5 }]
@@ -296,7 +296,7 @@ export const ACT_III_STORY_MISSIONS: StoryMission[] = [
     actNumber: 3,
     missionNumber: 12,
     title: 'The General\'s Fall',
-    description: 'The final General of the Void stands between you and the Emperor.',
+    description: 'The final General of the Erasure stands between you and the Emperor.',
     introCutscene: [
       { speaker: 'Rift General Prime', text: 'You are but a glitch in the grand design.', side: 'right', emotion: 'angry' },
       { speaker: 'Kai-Jax', text: 'I am the design.', side: 'left', emotion: 'determined' }
@@ -319,7 +319,7 @@ export const ACT_III_STORY_MISSIONS: StoryMission[] = [
     actNumber: 3,
     missionNumber: 13,
     title: 'Ascension to the Ashen Expanse',
-    description: 'A perilous climb to the heart of the Void Emperor\'s domain.',
+    description: 'A perilous climb to the heart of the Erasure Emperor\'s domain.',
     introCutscene: [
       { speaker: 'Kaison', text: 'The air is thick with pure dark matter. Keep your guard up!', side: 'right', emotion: 'determined' }
     ],
@@ -351,7 +351,7 @@ export const ACT_III_STORY_MISSIONS: StoryMission[] = [
     difficulty: 10,
     arena: 'void_heart_citadel',
     bossId: 'voidonus-imperion',
-    storyBeat: 'GRAND FINALE: The Memory Hero faces the Void Emperor without becoming a sovereign.',
+    storyBeat: 'GRAND FINALE: The Memory Hero faces the Erasure Emperor without becoming a sovereign.',
     rewards: { xp: 2500, currency: 2500, loot: ['God-Tier Soul'] },
     gameplayType: 'boss',
     enemyWaves: [{ type: 'void-god-guard', count: 3 }]
@@ -363,7 +363,7 @@ export const ACT_III_STORY_MISSIONS: StoryMission[] = [
     title: 'Epilogue: Unity\'s Dawn',
     description: 'The dawn breaks. Reality is restored.',
     introCutscene: [
-      { speaker: 'Narrator', text: 'The Void recedes. Light returns to the Bronx. The memories of millions are restored.', side: 'left' },
+      { speaker: 'Narrator', text: 'The Erasure recedes. Light returns to the Bronx. The memories of millions are restored.', side: 'left' },
       { speaker: 'Kai-Jax', text: 'We did it, Jaxon. We did it, Kaison.', side: 'left', emotion: 'happy' }
     ],
     outroCutscene: [

@@ -69,12 +69,12 @@ export const STORY_ACTS: Record<ActNumber, StoryAct> = {
       {
         id: 'kai_jax_first_fusion',
         name: 'The First Fusion',
-        description: 'Kai-Jax is born from necessity to drive back the first Void wave.',
+        description: 'Kai-Jax is born from necessity to drive back the first Erasure wave.',
         rewardXP: 1200,
         unlocksAbility: 'fusion_strike'
       }
     ],
-    bossEncounters: ['Void Warden', 'Rift Commander'],
+    bossEncounters: ['Erasure Warden', 'Rift Commander'],
     gameplayTwist: 'The UI shifts from standard military protocol to a distorted "Rift-Vision" as the act progresses.',
     difficultyRange: [1, 3],
     estimatedPlaytime: 120,
@@ -83,7 +83,7 @@ export const STORY_ACTS: Record<ActNumber, StoryAct> = {
 
   2: {
     number: 2,
-    title: 'The Void Eclipse',
+    title: 'The Erasure Eclipse',
     bookRef: 'Book 2: Darkness',
     description: 'The main champions are pulled into the Rift. The secondary protectors must hold the Bronx and Brooklyn sectors.',
     playstyles: ['Wave defense', 'Rescue missions', 'Scrap gathering', 'Civic protection'],
@@ -108,7 +108,7 @@ export const STORY_ACTS: Record<ActNumber, StoryAct> = {
         unlocksAbility: 'healing_wind'
       }
     ],
-    bossEncounters: ['Echo Stalker', 'Void Crawler', 'Grid Destroyer'],
+    bossEncounters: ['Echo Stalker', 'Erasure Crawler', 'Grid Destroyer'],
     gameplayTwist: 'You play as the "Beast Heroes" — high power but unstable control.',
     difficultyRange: [2, 5],
     estimatedPlaytime: 180,
@@ -120,8 +120,8 @@ export const STORY_ACTS: Record<ActNumber, StoryAct> = {
     number: 3,
     title: 'Restoration of the Weave',
     bookRef: 'Book 3: Resonance',
-    description: 'Silver Chronos arrives from a dead future to help rescue Jaxon and Kaison from the Void.',
-    playstyles: ['Time-loop puzzles', 'Void-space combat', 'Rescue sequences', 'Strand stitching'],
+    description: 'Silver Chronos arrives from a dead future to help rescue Jaxon and Kaison from the Erasure.',
+    playstyles: ['Time-loop puzzles', 'Erasure-space combat', 'Rescue sequences', 'Strand stitching'],
     fireMoments: [
       {
         id: 'silver_arrival',
@@ -138,7 +138,7 @@ export const STORY_ACTS: Record<ActNumber, StoryAct> = {
         unlocksAbility: 'zenith_ascension'
       }
     ],
-    bossEncounters: ['Void Echo Solaris', 'Time Eater'],
+    bossEncounters: ['Erasure Echo Solaris', 'Time Eater'],
     gameplayTwist: 'Temporal mechanics allow you to rewind mistakes, but each use costs Memory Energy.',
     difficultyRange: [3, 6],
     estimatedPlaytime: 200,
@@ -150,7 +150,7 @@ export const STORY_ACTS: Record<ActNumber, StoryAct> = {
     number: 4,
     title: 'The Hollow Dawn',
     bookRef: 'Book 4: Aftermath',
-    description: 'The Void is gone but the restored memories fit badly. Hollows scavenge the gaps while a hidden buyer feeds stolen shards to the Rift Warden.',
+    description: 'The Erasure is gone but the restored memories fit badly. Hollows scavenge the gaps while a hidden buyer feeds stolen shards to the Rift Warden.',
     playstyles: ['Stealth', 'Base defense', 'Consent-based rescue', 'Boss duel'],
     fireMoments: [
       { id: 'mirek_tunnels', name: 'The Underguide', description: 'Mirek leads the team through the black-market tunnels.', rewardXP: 750 },
@@ -173,7 +173,7 @@ export const STORY_ACTS: Record<ActNumber, StoryAct> = {
     playstyles: ['Wave survival', 'Mercy mechanics', 'Platforming', 'Guardian bosses'],
     fireMoments: [
       { id: 'selene_omen', name: 'The Oracle\'s Omen', description: 'Selene recognizes the tower from her visions.', rewardXP: 900 },
-      { id: 'moss_wound', name: 'A Wound, Not a Monster', description: 'Old Moss reveals that the Void began as an untended memory.', rewardXP: 1000 },
+      { id: 'moss_wound', name: 'A Wound, Not a Monster', description: 'Old Moss reveals that the Erasure began as an untended memory.', rewardXP: 1000 },
       { id: 'mirror_door', name: 'The Mirror Door', description: 'The Hundredth Floor opens on an Echo that knows the team.', rewardXP: 1800 }
     ],
     bossEncounters: ['Marble Gladiator', 'Granite Colossus'],
@@ -245,11 +245,11 @@ export const STORY_ACTS: Record<ActNumber, StoryAct> = {
     number: 9,
     title: 'The Last Memory',
     bookRef: 'Book 9: The Last Gate',
-    description: 'The full Circle marches to the Last Gate and finds the origin of the Void: a forgotten memory that only wanted not to be alone.',
+    description: 'The full Circle marches to the Last Gate and finds the origin of the Erasure: a forgotten memory that only wanted not to be alone.',
     playstyles: ['Full-roster team combat', 'Long-form survival', 'Final boss', 'Epilogue'],
     fireMoments: [
       { id: 'circle_gathers', name: 'Gathering the Circle', description: 'Every ally answers the call at Nexus Haven.', rewardXP: 2200 },
-      { id: 'first_wound', name: 'Where the Void Was Born', description: 'The Well-Defiler reveals the origin of the Void.', rewardXP: 2600 },
+      { id: 'first_wound', name: 'Where the Erasure Was Born', description: 'The Well-Defiler reveals the origin of the Erasure.', rewardXP: 2600 },
       { id: 'last_memory', name: 'The Last Memory', description: 'Hollow Architect is remembered instead of destroyed.', rewardXP: 5000 }
     ],
     bossEncounters: ['Well-Defiler', 'Hollow Architect'],
@@ -277,7 +277,7 @@ export const GAME_MODES: Record<GameModeType, GameMode> = {
   gauntlet: {
     id: 'gauntlet',
     name: 'Zenith Gauntlet',
-    description: 'One hundred floors of increasingly powerful Void remnants and Echo clones.',
+    description: 'One hundred floors of increasingly powerful Erasure remnants and Echo clones.',
     icon: '🥇',
     unlockCondition: 'Complete Act 5',
     isActive: true,

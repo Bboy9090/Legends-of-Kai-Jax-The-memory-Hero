@@ -41,7 +41,7 @@ export const CHARACTER_VARIANTS: CharacterVariant[] = [
   {
     id: 'kai-jax-void',
     fighterId: 'kai-jax',
-    name: 'Void Archive',
+    name: 'Erasure Archive',
     description: 'Kai-Jax steeped in Rift energy — obsidian fur, violet glow.',
     rarity: 'epic',
     colorSwaps: [

@@ -78,7 +78,7 @@ export const KAI_JAX_MOVESET: MoveSet = {
     {
       id: 'kj_heavy_1',
       inputSequence: ['heavy'],
-      name: 'Void Crush',
+      name: 'Erasure Crush',
       description: 'Heavy strike with knockdown potential',
       damage: 28,
       knockback: 4,
@@ -127,7 +127,7 @@ export const KAI_JAX_MOVESET: MoveSet = {
   dash: {
     id: 'kj_dash',
     inputSequence: ['dash'],
-    name: 'Void Phase',
+    name: 'Erasure Phase',
     description: 'Quick dash with invulnerability frames',
     damage: 0,
     knockback: 0,
@@ -193,7 +193,7 @@ export const KAI_JAX_MOVESET: MoveSet = {
     {
       id: 'kj_combo_2',
       inputSequence: ['heavy', 'special'],
-      name: 'Void Execution',
+      name: 'Erasure Execution',
       description: 'Crushing blow followed by nine-tail sweep',
       damage: 50,
       knockback: 5,

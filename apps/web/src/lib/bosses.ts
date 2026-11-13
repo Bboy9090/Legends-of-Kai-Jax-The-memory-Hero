@@ -51,7 +51,7 @@ export interface Boss {
 // ============ ACT I BOSSES ============
 export const VOID_GORGON: Boss = {
   id: 'void_gorgon',
-  name: 'Void-Gorgon',
+  name: 'Erasure-Gorgon',
   title: 'First Rift General',
   description: 'A corrupted being born from the Rift. Teleports between dimensions and strikes without warning.',
   healthPool: 800,
@@ -73,7 +73,7 @@ export const VOID_GORGON: Boss = {
         },
         {
           id: 'void_spike',
-          name: 'Void Spike',
+          name: 'Erasure Spike',
           description: 'Launches energy spike from ground',
           damage: 50,
           windupFrames: 30,
@@ -96,7 +96,7 @@ export const VOID_GORGON: Boss = {
   rewards: {
     xp: 500,
     currency: 300,
-    loot: ['General Seal I', 'Rift Shard', 'Void Core'],
+    loot: ['General Seal I', 'Rift Shard', 'Erasure Core'],
   },
   cinematic: {
     introScene: 'void_gorgon_intro',
@@ -108,7 +108,7 @@ export const JAXON_ECHO: Boss = {
   id: 'jaxon_echo',
   name: 'Echo of Jaxon',
   title: 'Rift Reflection',
-  description: 'A twisted mirror image of Jaxon Swift from a timeline consumed by the Void.',
+  description: 'A twisted mirror image of Jaxon Swift from a timeline consumed by the Erasure.',
   healthPool: 600,
   phases: [
     {
@@ -152,7 +152,7 @@ export const JAXON_ECHO: Boss = {
 // ============ FINAL BOSS ============
 export const VOID_KING: Boss = {
   id: 'void_king',
-  name: 'The Void King',
+  name: 'The Erasure King',
   title: 'Architect of Entropy',
   description: 'The entity responsible for the collapse of the Memory Weave. True final boss.',
   healthPool: 2500,
@@ -160,7 +160,7 @@ export const VOID_KING: Boss = {
     {
       phaseNumber: 1,
       healthPercentage: 100,
-      description: 'Void Form - The King materializes',
+      description: 'Erasure Form - The King materializes',
       attacks: [
         {
           id: 'oblivion_strike',
@@ -187,7 +187,7 @@ export const VOID_KING: Boss = {
   rewards: {
     xp: 5000,
     currency: 2000,
-    loot: ['Void Core', 'Infinity Strand'],
+    loot: ['Erasure Core', 'Infinity Strand'],
     character: 'lunara'
   },
   cinematic: {

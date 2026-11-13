@@ -16,14 +16,14 @@ export const ACT_IV_STORY_MISSIONS: StoryMission[] = [
     actNumber: 4,
     missionNumber: 16,
     title: 'The Morning After',
-    description: 'The Void is gone, but the restored memories do not fit the people who hold them. Hollows scavenge the gaps.',
+    description: 'The Erasure is gone, but the restored memories do not fit the people who hold them. Hollows scavenge the gaps.',
     introCutscene: [
       { speaker: 'Narrator', text: 'Light has returned to the Bronx. A mother calls her son by the wrong name and neither of them knows why.', side: 'left' },
       { speaker: 'Kai', text: 'We gave everything back. Why does it feel like we gave it back out of order?', side: 'left', emotion: 'sad' },
       { speaker: 'Jax', text: 'Because something is feeding on the seams. Look — the street is moving.', side: 'right', emotion: 'determined' }
     ],
     outroCutscene: [
-      { speaker: 'Kai-Jax', text: 'The Void left a hollow behind. Hollows need tending, not just hunting.', side: 'left', emotion: 'determined' }
+      { speaker: 'Kai-Jax', text: 'The Erasure left a hollow behind. Hollows need tending, not just hunting.', side: 'left', emotion: 'determined' }
     ],
     objectives: ['Drive off the Hollow scavengers', 'Protect the memory carriers'],
     difficulty: 5,
@@ -81,7 +81,7 @@ export const ACT_IV_STORY_MISSIONS: StoryMission[] = [
     actNumber: 4,
     missionNumber: 19,
     title: 'The Sealed Name',
-    description: 'Miri\'s name was locked inside a Void relic. It can only be opened with her consent, and only while the team holds the guards back.',
+    description: 'Miri\'s name was locked inside a Erasure relic. It can only be opened with her consent, and only while the team holds the guards back.',
     introCutscene: [
       { speaker: 'Miri', text: 'Nobody opens that without my word. Not to save me. Not even to help me.', side: 'right', emotion: 'determined' },
       { speaker: 'Kai-Jax', text: 'Then we wait for your word. Tell us when.', side: 'left' },
@@ -199,7 +199,7 @@ export const ACT_V_STORY_MISSIONS: StoryMission[] = [
     description: 'A garden has grown inside the tower, fed by living memory. Old Moss walks its roots.',
     introCutscene: [
       { speaker: 'Old Moss', text: 'I was old when this tower was a seed. It was a hurt memory once. Someone left it untended.', side: 'right', emotion: 'sad' },
-      { speaker: 'Kai', text: 'Then the Void was never really an enemy. It was a wound.', side: 'left' }
+      { speaker: 'Kai', text: 'Then the Erasure was never really an enemy. It was a wound.', side: 'left' }
     ],
     outroCutscene: [
       { speaker: 'Old Moss', text: 'Remember that when you reach the top. Wounds are not defeated. They are tended.', side: 'right' }
@@ -207,7 +207,7 @@ export const ACT_V_STORY_MISSIONS: StoryMission[] = [
     objectives: ['Cross the overgrown floor', 'Defend the root-heart from the Hollows'],
     difficulty: 7,
     arena: 'jungle_temple',
-    storyBeat: 'Old Moss joins and plants the central theme of the endgame: the Void is a grief, not a species.',
+    storyBeat: 'Old Moss joins and plants the central theme of the endgame: the Erasure is a grief, not a species.',
     rewards: { xp: 1000, currency: 800, loot: ['Living Root'], unlocks: ['old-moss'] },
     gameplayType: 'platforming',
     enemyWaves: [{ type: 'void-wraith', count: 6 }, { type: 'void-brute', count: 3, delay: 5 }]
@@ -366,7 +366,7 @@ export const ACT_VII_STORY_MISSIONS: StoryMission[] = [
     outroCutscene: [
       { speaker: 'Kai-Jax', text: 'Then we call everyone who ever carried a thread.', side: 'left', emotion: 'determined' }
     ],
-    objectives: ['Stabilize three failing nodes', 'Survive the Void surge'],
+    objectives: ['Stabilize three failing nodes', 'Survive the Erasure surge'],
     difficulty: 8,
     arena: 'rift_citadel',
     storyBeat: 'The war\'s last crisis is not an enemy. It is a collapse.',
@@ -628,8 +628,8 @@ export const ACT_IX_STORY_MISSIONS: StoryMission[] = [
     id: 'story_act9_m43',
     actNumber: 9,
     missionNumber: 43,
-    title: 'Where the Void Was Born',
-    description: 'Behind the Gate lies the first wound: the place a forgotten memory turned to grief and became the Void.',
+    title: 'Where the Erasure Was Born',
+    description: 'Behind the Gate lies the first wound: the place a forgotten memory turned to grief and became the Erasure.',
     introCutscene: [
       { speaker: 'Old Moss', text: 'It was never a monster. It was a memory nobody wanted to carry, left alone until it learned to hate.', side: 'right', emotion: 'sad' },
       { speaker: 'Well-Defiler', text: 'I... am... what is left... when no one remembers...', side: 'left', emotion: 'sad' }
@@ -641,7 +641,7 @@ export const ACT_IX_STORY_MISSIONS: StoryMission[] = [
     difficulty: 10,
     arena: 'ashen_expanse',
     bossId: 'well-defiler',
-    storyBeat: 'The origin of the Void is revealed: a forgotten memory, not a conqueror.',
+    storyBeat: 'The origin of the Erasure is revealed: a forgotten memory, not a conqueror.',
     rewards: { xp: 2600, currency: 1900, loot: ['Wound Shard'] },
     gameplayType: 'boss',
     enemyWaves: [{ type: 'void-wraith', count: 10 }, { type: 'void-god-guard', count: 4, delay: 5 }]
@@ -677,7 +677,7 @@ export const ACT_IX_STORY_MISSIONS: StoryMission[] = [
     title: 'Epilogue: Every Memory Kept',
     description: 'A new season begins in the Bronx. Every memory has an owner, and none of them are alone.',
     introCutscene: [
-      { speaker: 'Narrator', text: 'The sky is quiet. The Void is a name in a history book, and a garden at the edge of the Ashen Expanse.', side: 'left' },
+      { speaker: 'Narrator', text: 'The sky is quiet. The Erasure is a name in a history book, and a garden at the edge of the Ashen Expanse.', side: 'left' },
       { speaker: 'Kai-Jax', text: 'Kai, Jax, and me. Three voices. Still disagreeing. Still here.', side: 'left', emotion: 'happy' }
     ],
     outroCutscene: [

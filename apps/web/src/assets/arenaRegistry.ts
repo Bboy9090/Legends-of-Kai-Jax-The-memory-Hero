@@ -116,7 +116,7 @@ export const ARENA_REGISTRY: Record<string, ArenaConfig> = {
     iosPerformanceTier: 'low',
     musicMood: 'heavy-metal',
   },
-  // M6 canonical arena: Void-infected Ashblock streets, not a fallback.
+  // M6 canonical arena: Erasure-infected Ashblock streets, not a fallback.
   rift_frontier: {
     id: 'rift_frontier',
     displayName: 'Ashblock Rift Frontier',

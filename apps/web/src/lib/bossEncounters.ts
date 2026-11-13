@@ -164,16 +164,16 @@ export const ASHEN_ENFORCER: BossEncounter = {
   lore: 'Once a soldier of honor, this Enforcer was enhanced by the Fang Syndicate with experimental war machine technology. The heat from the reactor slowly burns away their humanity.',
 };
 
-// ============ VOID STALKER BOSS ============
+// ============ ERASURE STALKER BOSS ============
 
 export const VOID_STALKER: BossEncounter = {
   id: 'void-stalker',
-  name: 'Void Stalker',
-  displayName: 'VOID STALKER',
+  name: 'Erasure Stalker',
+  displayName: 'ERASURE STALKER',
   title: 'Shadow from the Rift',
   description: 'A being of pure shadow that hunts the Memory Hero across timelines',
   location: 'memory-vault',
-  faction: 'VOID',
+  faction: 'ERASURE',
   difficulty: 8,
   health: 520,
   maxHealth: 520,
@@ -200,7 +200,7 @@ export const VOID_STALKER: BossEncounter = {
     {
       id: 'stalker-phase-2',
       healthThreshold: 50,
-      description: 'Void corruption intensifies',
+      description: 'Erasure corruption intensifies',
       abilities: ['void-strike', 'shadow-dash', 'void-explosion'],
       attackPattern: 'aggressive',
       visualChanges: ['more-void-energy', 'increased-darkness'],
@@ -218,7 +218,7 @@ export const VOID_STALKER: BossEncounter = {
     },
     {
       id: 'void-corruption',
-      name: 'Void Corruption',
+      name: 'Erasure Corruption',
       description: 'Spreads void energy that damages and slows',
       damageType: 'void',
       effect: 'Debuff: reduced speed and damage',
@@ -236,7 +236,7 @@ export const VOID_STALKER: BossEncounter = {
   abilityIds: ['void-strike', 'shadow-dash', 'void-explosion', 'void-ultimate'],
   enrageTimer: 150,
   enragePower: {
-    name: 'Void Ascendance',
+    name: 'Erasure Ascendance',
     description: 'The Stalker grows stronger from void energy',
     damageMultiplier: 1.8,
     speedMultiplier: 1.5,
@@ -247,10 +247,10 @@ export const VOID_STALKER: BossEncounter = {
   rewards: {
     xp: 3000,
     currency: 2000,
-    loot: ['Shadow Essence', 'Void Fragment', 'Corrupt Memory'],
+    loot: ['Shadow Essence', 'Erasure Fragment', 'Corrupt Memory'],
     uniqueDrops: ['Stalker\'s Cloak'],
   },
-  lore: 'The Void Stalker is a hunter sent from the Rift itself. It was created to eliminate the Memory Hero before he could threaten the Void\'s plans for this world.',
+  lore: 'The Erasure Stalker is a hunter sent from the Rift itself. It was created to eliminate the Memory Hero before he could threaten the Erasure\'s plans for this world.',
 };
 
 // ============ RIFT GENERAL BOSS ============
@@ -259,10 +259,10 @@ export const RIFT_GENERAL: BossEncounter = {
   id: 'rift-general',
   name: 'Rift General',
   displayName: 'RIFT GENERAL',
-  title: 'Commander of the Void Invasion',
+  title: 'Commander of the Erasure Invasion',
   description: 'An ancient general commanding the assault from beyond reality',
   location: 'memory-vault',
-  faction: 'VOID',
+  faction: 'ERASURE',
   difficulty: 10,
   health: 800,
   maxHealth: 800,
@@ -308,7 +308,7 @@ export const RIFT_GENERAL: BossEncounter = {
   mechanics: [
     {
       id: 'void-summon',
-      name: 'Void Summon',
+      name: 'Erasure Summon',
       description: 'Calls forth void creatures to fight alongside',
       damageType: 'void',
       effect: 'Summons 3-5 void minions',
@@ -334,8 +334,8 @@ export const RIFT_GENERAL: BossEncounter = {
   abilityIds: ['void-lance', 'command-strike', 'generals-order', 'reality-rift', 'apocalypse-beam'],
   enrageTimer: 180,
   enragePower: {
-    name: 'Void Supremacy',
-    description: 'The General unlocks the full power of the Void',
+    name: 'Erasure Supremacy',
+    description: 'The General unlocks the full power of the Erasure',
     damageMultiplier: 2.0,
     speedMultiplier: 1.4,
   },
@@ -346,10 +346,10 @@ export const RIFT_GENERAL: BossEncounter = {
   rewards: {
     xp: 5000,
     currency: 4000,
-    loot: ['Void Core', 'General\'s Insignia', 'Reality Fragment'],
-    uniqueDrops: ['Void General\'s Crown'],
+    loot: ['Erasure Core', 'General\'s Insignia', 'Reality Fragment'],
+    uniqueDrops: ['Erasure General\'s Crown'],
   },
-  lore: 'The Rift General is an ancient commander who has conquered countless worlds. It sees this reality as another conquest, another dominion to add to the Void\'s eternal expansion.',
+  lore: 'The Rift General is an ancient commander who has conquered countless worlds. It sees this reality as another conquest, another dominion to add to the Erasure\'s eternal expansion.',
 };
 
 // ============ BOSS REGISTRY ============

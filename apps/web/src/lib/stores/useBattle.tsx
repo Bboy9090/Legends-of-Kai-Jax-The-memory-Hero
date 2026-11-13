@@ -6,7 +6,7 @@ const BANTER_POOL = {
     "Predictable. Try something else.",
     "Is that the best the Memory Hero can do?",
     "Your speed is lacking. I expected more.",
-    "The Void consumes all. Even your memories.",
+    "The Erasure consumes all. Even your memories.",
     "You're fighting a losing war, little hero.",
   ],
   smirk: [

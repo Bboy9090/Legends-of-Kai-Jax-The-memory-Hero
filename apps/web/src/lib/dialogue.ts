@@ -153,7 +153,7 @@ export const fighterDialogue: Record<string, Dialogue> = {
   voidonus: {
     preFight: {
       taunts: [
-        "All will return to the void.",
+        "All will return to the Erasure.",
         "Hope is a candle. I am the wind.",
         "Your light ends now.",
         "I eat worlds.",
@@ -161,8 +161,8 @@ export const fighterDialogue: Record<string, Dialogue> = {
       ],
       responses: ["…", "Come.", "Break.", "Fade.", "End."],
     },
-    victory: { quotes: ["Consumed.", "Silence.", "Nothing remains.", "End.", "Void eternal."] },
-    defeat: { quotes: ["The void… waits.", "Not finished.", "Again.", "You delay the end.", "I return."] },
+    victory: { quotes: ["Consumed.", "Silence.", "Nothing remains.", "End.", "Erasure eternal."] },
+    defeat: { quotes: ["The Erasure… waits.", "Not finished.", "Again.", "You delay the end.", "I return."] },
   },
 };
 

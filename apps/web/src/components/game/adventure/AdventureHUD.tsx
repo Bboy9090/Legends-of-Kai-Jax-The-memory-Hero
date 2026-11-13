@@ -482,9 +482,9 @@ export default function AdventureHUD() {
             data-nearest-distance={Math.min(999, ...enemies.filter(e => !e.isDead).map(e => Math.hypot(e.posX - player.posX, e.posZ - player.posZ))).toFixed(2)}
             className="mt-2 text-[9px] text-purple-200/75"
           >
-            Void pressure: {enemies.filter(e => !e.isDead && e.isAggro).length} active threats
+            Erasure pressure: {enemies.filter(e => !e.isDead && e.isAggro).length} active threats
           </div>
-          <div className="mt-2 text-[9px] text-slate-400">Defeat Void guards to unseal nodes. Move close: press E, LB/L1, or tap Rescue.</div>
+          <div className="mt-2 text-[9px] text-slate-400">Defeat Erasure guards to unseal nodes. Move close: press E, LB/L1, or tap Rescue.</div>
         </div>
       )}
 

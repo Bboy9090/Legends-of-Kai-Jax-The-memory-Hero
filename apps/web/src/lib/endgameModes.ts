@@ -145,7 +145,7 @@ export const ENDGAME_MODES: EndgameMode[] = [
     name: 'Celestial Trials',
     description: 'Battle the original celestial beings in their true forms. For expert players only.',
     icon: '🌟',
-    unlockRequirement: 'Beat Void King 5 times',
+    unlockRequirement: 'Beat Erasure King 5 times',
     difficulty: 'godlike',
     rewards: {
       xpPerRun: 15000,
@@ -162,18 +162,18 @@ export const ENDGAME_MODES: EndgameMode[] = [
   },
   {
     id: 'void_king_rematch',
-    name: 'Void King Rematch (Ultra)',
-    description: 'Face the Void King again with enhanced power. Hardest challenge in the game.',
+    name: 'Erasure King Rematch (Ultra)',
+    description: 'Face the Erasure King again with enhanced power. Hardest challenge in the game.',
     icon: '⚫',
-    unlockRequirement: 'Beat Void King on godlike difficulty',
+    unlockRequirement: 'Beat Erasure King on godlike difficulty',
     difficulty: 'godlike',
     rewards: {
       xpPerRun: 20000,
       currencyPerRun: 10000,
-      specialDrops: ['Void Core Prime', 'Reality Fragment', 'Ultimate Power']
+      specialDrops: ['Erasure Core Prime', 'Reality Fragment', 'Ultimate Power']
     },
     mechanics: [
-      'Void King has 6 phases instead of 4',
+      'Erasure King has 6 phases instead of 4',
       'Uses attacks from all previous bosses',
       'Terrain constantly shifts',
       'Requires perfect team composition',

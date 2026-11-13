@@ -12,7 +12,7 @@ import type { GLTF } from "three-stdlib";
  * Sectors:
  * 1) The Awakening (Tutorial)
  * 2) The Fractured Crossing (open zone)
- * 3) The Corruption (Void Boss Arena)
+ * 3) The Corruption (Erasure Boss Arena)
  */
 export type ObjectiveStatus = "PENDING" | "COMPLETE";
 
@@ -42,7 +42,7 @@ interface StoryState {
 export const useStoryStore = create<StoryState>((set) => ({
   currentLevel: 1,
   objectiveStatus: "PENDING",
-  dialogue: "System Initialized. Welcome to the Void.",
+  dialogue: "System Initialized. Welcome to the Erasure.",
   actName: "ACT I: THE AWAKENING",
   completeObjective: () =>
     set({
@@ -62,7 +62,7 @@ export const useStoryStore = create<StoryState>((set) => ({
 
       if (next === 3) {
         name = "ACT III: THE CORRUPTION";
-        text = "WARNING: Void Energy Spiking.";
+        text = "WARNING: Erasure Energy Spiking.";
       }
 
       return {

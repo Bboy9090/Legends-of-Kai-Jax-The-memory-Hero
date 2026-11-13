@@ -20,7 +20,7 @@ describe("Mission 5 → 6 → 7 canonical narrative handoff", () => {
     expect(handoff).toMatch(/survivors.*retreat.*Ashblock/i);
     expect(order).toMatch(/could not close the breach/i);
     expect(order).toMatch(/three memories.*trapped/i);
-    expect(order).toMatch(/Void takes them/i);
+    expect(order).toMatch(/Erasure takes them/i);
   });
 
   it("plants M7's distinct-voices tension without new bodily fusion", () => {
@@ -39,7 +39,7 @@ describe("Mission 5 → 6 → 7 canonical narrative handoff", () => {
     expect(m6.id).toBe("story_act2_m6");
     expect(m6.missionNumber).toBe(6);
     expect(m6.arena).toBe("rift_frontier");
-    expect(m6.objectives).toEqual(["Contain the Void outbreak", "Rescue 3 Trapped Memories"]);
+    expect(m6.objectives).toEqual(["Contain the Erasure outbreak", "Rescue 3 Trapped Memories"]);
     expect(m6.enemyWaves).toEqual([
       { type: "void-grunt", count: 6 },
       { type: "void-scout", count: 8, delay: 3 },

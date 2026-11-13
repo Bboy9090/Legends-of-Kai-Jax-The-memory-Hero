@@ -111,7 +111,7 @@ export const CHARACTER_SIDE_QUESTS: Quest[] = [
     objectives: [
       { id: 'obj_1', description: 'Complete 3 Jaxon missions', completed: false },
       { id: 'obj_2', description: 'Achieve 5-hit combo with Jaxon', completed: false, progress: 0, target: 5 },
-      { id: 'obj_3', description: 'Defeat Void Stalker', completed: false },
+      { id: 'obj_3', description: 'Defeat Erasure Stalker', completed: false },
     ],
     reward: { xp: 600, currency: 450, unlocks: ['jaxon-legend'] },
     characterAssociation: 'jaxon',

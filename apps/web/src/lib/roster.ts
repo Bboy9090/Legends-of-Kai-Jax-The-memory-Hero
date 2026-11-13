@@ -48,7 +48,7 @@ export const CORE_HEROES: Character[] = [
     ultimates: { 
       level1: 'Nexus Shatter', 
       level2: 'Eternal Memory', 
-      level3: 'Void Purge', 
+      level3: 'Erasure Purge', 
       level4: 'Universal Synchronization' 
     },
     synergies: ['jaxon', 'kaison', 'silver'],
@@ -165,14 +165,14 @@ export const VOID_HEROES: Character[] = [
   {
     id: 'puff',
     name: 'Puff',
-    title: 'The Void Wisp',
+    title: 'The Erasure Wisp',
     role: 'Wildcard',
     stats: { health: 70, attack: 70, defense: 75, speed: 80, special: 90, stamina: 95 },
     baseDamage: 42,
-    transformations: ['Mimic Form', 'Void Consumption', 'Ethereal Nova'],
-    abilities: ['Void Inhale', 'Echo Copy', 'Shadow Float', 'Dark Matter'],
+    transformations: ['Mimic Form', 'Erasure Consumption', 'Ethereal Nova'],
+    abilities: ['Erasure Inhale', 'Echo Copy', 'Shadow Float', 'Dark Matter'],
     ultimates: { 
-      level1: 'Void Blast', 
+      level1: 'Erasure Blast', 
       level2: 'Shadow Swallows', 
       level3: 'Abyssal Maw', 
       level4: 'Existence Erasure' 

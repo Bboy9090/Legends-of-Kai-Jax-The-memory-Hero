@@ -36,7 +36,7 @@ export const CHARACTER_BIOS: CharacterBio[] = [
     title: 'The Storm Fang - Living Lightning',
     shortBio: 'Fastest of the Storm Ronin. Turns speed into pressure and pressure into openings.',
     extendedBio: 'Jaxon is speed with a conscience. Trained in the Storm Ronin Order, he reads a fight a half-second early and uses that margin to protect whoever is slowest on his team. His Storm Current strand answers to his mood: calm, it hums; angry, it breaks the sky.',
-    originStory: 'Jaxon grew up in the Bronx sectors, running errands for the neighbors who raised him. When the first Rift breach opened, his Storm Current awakened in the middle of a street full of strangers, and he ran through the Void-touched crowd pulling people out. That night he learned the lesson the Storm Ronin Order would later put into words: speed is only worth having if it arrives in time for someone else.',
+    originStory: 'Jaxon grew up in the Bronx sectors, running errands for the neighbors who raised him. When the first Rift breach opened, his Storm Current awakened in the middle of a street full of strangers, and he ran through the Erasure-touched crowd pulling people out. That night he learned the lesson the Storm Ronin Order would later put into words: speed is only worth having if it arrives in time for someone else.',
     specialty: 'Speed assaults, mobility, multi-target pressure',
     transformations: [
       {
@@ -122,7 +122,7 @@ export const CHARACTER_BIOS: CharacterBio[] = [
       'Patience is a weapon too.'
     ],
     villainMatchups: [
-      { villainName: 'Hollow Architect', matchupType: 'neutral', reason: 'Webs hold the Void\'s corruption briefly but cannot bind it' },
+      { villainName: 'Hollow Architect', matchupType: 'neutral', reason: 'Webs hold the Erasure\'s corruption briefly but cannot bind it' },
       { villainName: 'Echo of Kai-Jax', matchupType: 'disadvantage', reason: 'The Echo anticipates traps because it was built from the same memories' },
       { villainName: 'Rift General Prime', matchupType: 'advantage', reason: 'The General\'s fixed attack patterns are easy to snare' }
     ]
@@ -134,7 +134,7 @@ export const VILLAIN_MATCHUP_CHART = {
   'Hollow Architect': {
     strongAgainst: ['jaxon'],
     weakAgainst: ['kaison'],
-    description: 'The Void Emperor - his presence slows time and corrodes memory'
+    description: 'The Erasure Emperor - his presence slows time and corrodes memory'
   },
   'Echo of Kai-Jax': {
     strongAgainst: ['kaison'],

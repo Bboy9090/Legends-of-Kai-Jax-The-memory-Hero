@@ -58,7 +58,7 @@ describe('KJ-007C — Corruption Brute', () => {
   });
 });
 
-describe('KJ-007D — Void Stalker Elite', () => {
+describe('KJ-007D — Erasure Stalker Elite', () => {
   it('teleports near player without spawning directly inside player', () => {
     const stalker = createVoidStalker('s1', { x: 10, y: 0, z: 0 });
     const ai = new EnemyStateMachine(stalker);
@@ -75,7 +75,7 @@ describe('KJ-007D — Void Stalker Elite', () => {
   });
 });
 
-describe('KJ-007E — Void Stalker Prime Boss', () => {
+describe('KJ-007E — Erasure Stalker Prime Boss', () => {
   it('triggers Phase 2 transition at 60% health', () => {
     const boss = createVoidStalkerPrime('boss-1', { x: 5, y: 0, z: 0 });
     const ai = new EnemyStateMachine(boss);

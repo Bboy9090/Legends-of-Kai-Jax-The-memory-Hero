@@ -13,9 +13,9 @@ describe('Mission 4 & 5 Comprehensive Verification', () => {
     useAdventure.getState().reset();
   });
 
-  // ============= Mission 4: Void Stalker Overkill & Retreat =============
+  // ============= Mission 4: Erasure Stalker Overkill & Retreat =============
 
-  describe('Mission 4: Void Stalker Overkill Floor Protection', () => {
+  describe('Mission 4: Erasure Stalker Overkill Floor Protection', () => {
     it('clamps void-stalker health to exactly 10% floor when massive overkill applied', () => {
       useAdventure.getState().initAdventure('kai-jax', 'story_act1_m4', 'arena');
       useAdventure.setState({

@@ -324,10 +324,10 @@ export default function GameCodex({ initialTab = 'characters', characterId }: Ga
               <div className="border border-[#8b6e3d]/45 bg-black/45 p-4 rounded text-sm text-[#bbb0a0] leading-6 space-y-4">
                 <div>
                   <h3 className="text-[#efcf91] uppercase tracking-[0.08em] mb-2 font-bold">
-                    The Rift & The Void
+                    The Rift & The Erasure
                   </h3>
                   <p>
-                    Reality itself has begun to tear. A phenomenon known as "The Rift" has emerged, bringing with it an existential threat called The Void. This alien force corrupts everything it touches, spreading across dimensions and consuming worlds.
+                    Reality itself has begun to tear. A phenomenon known as "The Rift" has emerged, bringing with it an existential threat called The Erasure. This alien force corrupts everything it touches, spreading across dimensions and consuming worlds.
                   </p>
                 </div>
 
@@ -345,7 +345,7 @@ export default function GameCodex({ initialTab = 'characters', characterId }: Ga
                     The Raging City
                   </h3>
                   <p>
-                    At the epicenter of the conflict stands the Raging City, divided among powerful factions. The Fang Syndicate, the Anti-Sabertooth Covenant, the Memory Cult, and the Ronin Order all vie for control while the Void gnaws at reality's edges. Only through unity can they hope to survive.
+                    At the epicenter of the conflict stands the Raging City, divided among powerful factions. The Fang Syndicate, the Anti-Sabertooth Covenant, the Memory Cult, and the Ronin Order all vie for control while the Erasure gnaws at reality's edges. Only through unity can they hope to survive.
                   </p>
                 </div>
 
@@ -354,7 +354,7 @@ export default function GameCodex({ initialTab = 'characters', characterId }: Ga
                     Your Mission
                   </h3>
                   <p>
-                    As Kai-Jax or one of the legendary heroes, you must journey through the Raging City, master your abilities, unite the factions, and confront The Rift General before all reality collapses into the Void.
+                    As Kai-Jax or one of the legendary heroes, you must journey through the Raging City, master your abilities, unite the factions, and confront The Rift General before all reality collapses into the Erasure.
                   </p>
                 </div>
               </div>

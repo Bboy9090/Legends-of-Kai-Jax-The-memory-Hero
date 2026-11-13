@@ -17,7 +17,7 @@ describe('Mission Progression Integration', () => {
 
   // ============= Mission 4: Victory & Failure Gating =============
 
-  describe('Mission 4: Void Stalker Progression Gating', () => {
+  describe('Mission 4: Erasure Stalker Progression Gating', () => {
     it('continues if objectives not yet active', () => {
       useAdventure.getState().initAdventure('kai-jax', 'story_act1_m4', 'arena');
       useAdventure.setState({

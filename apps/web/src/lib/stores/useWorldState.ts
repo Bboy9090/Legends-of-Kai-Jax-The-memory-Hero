@@ -72,7 +72,7 @@ export const useWorldState = create<WorldState>((set, get) => ({
     { id: 'nexus-haven', name: 'Nexus Haven', description: 'Last bastion of hope', discovered: true, questsCompleted: 0, totalQuests: 5 },
     { id: 'emerald-frontier', name: 'Emerald Frontier', description: 'Where speed meets courage', discovered: false, questsCompleted: 0, totalQuests: 8 },
     { id: 'skyforge-plateau', name: 'Skyforge Plateau', description: 'Floating forges above the clouds', discovered: false, questsCompleted: 0, totalQuests: 6 },
-    { id: 'ashen-expanse', name: 'Ashen Expanse Ruins', description: 'Scattered tech across the void', discovered: false, questsCompleted: 0, totalQuests: 7 },
+    { id: 'ashen-expanse', name: 'Ashen Expanse Ruins', description: 'Scattered tech across the Erasure', discovered: false, questsCompleted: 0, totalQuests: 7 },
   ],
   
   activeRifts: [],

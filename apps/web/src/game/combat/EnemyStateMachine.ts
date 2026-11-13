@@ -2,7 +2,7 @@
  * Mission 1 enemy runtime state machine.
  *
  * Deterministic, side-effect-contained enemy simulation for Memory Wisp, Rift Drone,
- * Corruption Brute, Void Stalker, and Void Stalker Prime. Runtime snapshots are deep
+ * Corruption Brute, Erasure Stalker, and Erasure Stalker Prime. Runtime snapshots are deep
  * copies so rendering/debug tooling cannot accidentally mutate simulation state.
  */
 
@@ -540,7 +540,7 @@ export function createCorruptionBrute(id: string, initialPosition: Position3D): 
 export function createVoidStalker(id: string, initialPosition: Position3D): EnemyContract {
   return {
     id,
-    name: 'Void Stalker',
+    name: 'Erasure Stalker',
     type: 'VOID_STALKER',
     position: { ...initialPosition },
     stats: {
@@ -573,7 +573,7 @@ export function createVoidStalker(id: string, initialPosition: Position3D): Enem
 export function createVoidStalkerPrime(id: string, initialPosition: Position3D): EnemyContract {
   return {
     id,
-    name: 'Void Stalker Prime',
+    name: 'Erasure Stalker Prime',
     type: 'VOID_STALKER_PRIME',
     position: { ...initialPosition },
     stats: {

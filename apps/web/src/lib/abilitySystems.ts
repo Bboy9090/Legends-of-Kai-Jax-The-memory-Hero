@@ -706,14 +706,14 @@ export const OLD_MOSS_POWER_MATRIX: PowerMatrix = {
 export const SABLE_NINE_POWER_MATRIX: PowerMatrix = {
   characterId: 'sable-nine',
   abilities: [
-    { id: 'sable-nine-ability-1', name: 'Shadow Strike', description: 'Strike from the void-touched shadows', element: 'Void', tier: 1, cooldown: 3, manaCost: 30, damage: 65, visualEffect: 'shadow-strike', animation: 'void-strike' },
+    { id: 'sable-nine-ability-1', name: 'Shadow Strike', description: 'Strike from the Erasure-touched shadows', element: 'Erasure', tier: 1, cooldown: 3, manaCost: 30, damage: 65, visualEffect: 'shadow-strike', animation: 'void-strike' },
     { id: 'sable-nine-ability-2', name: 'Prophecy Sight', description: 'See and strike at weak points', element: 'Memory', tier: 1, cooldown: 3, manaCost: 25, damage: 50, visualEffect: 'prophecy-glow', animation: 'sight-strike' },
     { id: 'sable-nine-ability-3', name: 'Rival\'s Edge', description: 'Strike with the power of rivalry', element: 'Physical', tier: 2, cooldown: 4, manaCost: 45, damage: 80, visualEffect: 'rival-clash', animation: 'rivalry-strike' },
     {
       id: 'sable-nine-ability-4',
       name: 'Umbral Rift Step',
       description: 'Slip through a rift and cut down from behind',
-      element: 'Void',
+      element: 'Erasure',
       tier: 2,
       cooldown: 5,
       manaCost: 50,
@@ -726,7 +726,7 @@ export const SABLE_NINE_POWER_MATRIX: PowerMatrix = {
     { id: 'sable-nine-passive-1', name: 'Rival Shade', description: 'Embody the spirit of competition', effect: 'Gain 35% critical strike chance' },
     { id: 'sable-nine-passive-2', name: 'Prophecy Connection', description: 'Connected to dangerous visions', effect: 'Increase attack speed by 20%' },
   ],
-  ultimate: { id: 'sable-nine-ultimate', name: 'Void Prophecy', description: 'Strike with knowledge of doom', damage: 240, duration: 6, cooldown: 17, visualEffect: 'void-prophecy' },
+  ultimate: { id: 'sable-nine-ultimate', name: 'Erasure Prophecy', description: 'Strike with knowledge of doom', damage: 240, duration: 6, cooldown: 17, visualEffect: 'void-prophecy' },
 };
 
 // ============ POWER MATRIX REGISTRY ============

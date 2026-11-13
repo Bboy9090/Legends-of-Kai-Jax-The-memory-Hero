@@ -61,7 +61,7 @@ export const ACT_I_MISSIONS: Mission[] = [
     missionNumber: 3,
     name: 'The Memory Hero Rises',
     description: 'Jaxon and Kaison reach 50% synergy. The first partial fusion of Kai-Jax emerges.',
-    objectives: ['Activate partial fusion', 'Defeat the Void Warden'],
+    objectives: ['Activate partial fusion', 'Defeat the Erasure Warden'],
     difficulty: 2,
     rewards: { xp: 150, currency: 75, loot: ['Memory Core'] },
     isBoss: false,
