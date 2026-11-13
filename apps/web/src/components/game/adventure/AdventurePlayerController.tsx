@@ -29,6 +29,7 @@ import { FUSION, damageMultiplier, speedMultiplier } from "../../../lib/fusion";
 import { useCombo } from "../../../lib/stores/useCombo";
 import { parryWindowFor } from "../../../lib/parry";
 import { useAccessibility } from "../../../lib/stores/useAccessibility";
+import { useDefenseStats } from "../../../lib/stores/useDefenseStats";
 
 const adv = MOVEMENT_TUNING.adventure;
 const WALK_SPEED = adv.walkSpeed;
@@ -313,6 +314,7 @@ export default function AdventurePlayerController() {
       store.setDodgeTimer(DODGE.duration);
       store.setInvulnTimer(DODGE.iFrames / 60);
       store.setParryTimer(parryWindowFor(useAccessibility.getState().parryTiming));
+      useDefenseStats.getState().notePress();
       dodgeDirRef.current = hasInput ? { x: worldX, z: worldZ } : { x: -Math.sin(p.rotY), z: -Math.cos(p.rotY) };
       rememberInputs();
       return;

@@ -1,6 +1,8 @@
 import { useFusion } from "../../../lib/stores/useFusion";
 import { FUSION } from "../../../lib/fusion";
 import { useCombo } from "../../../lib/stores/useCombo";
+import { useDefenseStats } from "../../../lib/stores/useDefenseStats";
+import { DODGE } from "../../../game/tuning/adventureTuning";
 import { PARRY, resolveIncomingStrike } from "../../../lib/parry";
 import { pushDamagePopup } from "../../../lib/stores/useDamagePopups";
 import { playSfx } from "../../../lib/sfx";
@@ -383,6 +385,12 @@ export default function AdventureEnemyAI() {
           }
 
           const outcome = resolveIncomingStrike(player);
+
+          // Seconds since the dodge was pressed (sim time), for parries and evades.
+          const sincePress = Math.max(0, DODGE.duration - player.dodgeTimer);
+          if (outcome === "parry" || outcome === "evade" || outcome === "hit") {
+            useDefenseStats.getState().noteStrike(outcome, sincePress);
+          }
 
           if (outcome === "parry") {
             // Deflected: the enemy reels, the player is rewarded, and the combo stays alive.

@@ -1,5 +1,6 @@
 import { useRunner } from "../../lib/stores/useRunner";
 import { useAudio } from "../../lib/stores/useAudio";
+import DefenseStatsPanel from "./DefenseStatsPanel";
 import { usePWAInstall } from "../../hooks/usePWAInstall";
 import { useMusic } from "../../lib/stores/useMusic";
 import { useAccessibility } from "../../lib/stores/useAccessibility";
@@ -110,6 +111,8 @@ export default function SettingsMenu() {
               </div>
             </div>
           </section>
+
+          <DefenseStatsPanel />
 
           {/* Install Section */}
           {pwa.canInstall || pwa.ios ? (

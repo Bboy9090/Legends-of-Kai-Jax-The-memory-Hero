@@ -153,6 +153,7 @@ test('dodge opens a parry window; strikes inside it parry, later ones evade, the
   page.on('pageerror', (e) => errors.push(e.message));
   await boot(page, 'kai-jax');
   const id = await firstEnemy(page);
+  await page.evaluate(() => (window as any).defenseStats.getState().reset());
 
   // 1) A real dodge starts the parry window, and it ends before the dodge's i-frames do.
   await parkExcept(page, null);
@@ -238,6 +239,33 @@ test('dodge opens a parry window; strikes inside it parry, later ones evade, the
   await page.evaluate((id) => (window as Win).adventureStore.setState((s) => ({ player: { ...s.player, parryTimer: 0, dodgeTimer: 0, invulnTimer: 0 }, enemies: s.enemies.map((e: any) => (e.id === id ? { ...e, stunTimer: 0, aiState: 'chase', isAggro: true, posX: s.player.posX + 1.5, posZ: s.player.posZ } : e)) })), id);
   await expect.poll(async () => (await playerFlags(page)).health, { timeout: 20_000 }).toBeLessThan(hp0);
   expect((await combo(page)).count).toBe(0); // the landed strike broke the combo (the HIT outcome)
+
+  // ---- Defense stats counted every outcome, persisted them, and show them in Settings ----
+  const stats = await page.evaluate(() => (window as any).defenseStats.getState().stats.byTiming.standard);
+  expect(stats.dodges).toBeGreaterThanOrEqual(1); // the real Space press
+  expect(stats.parry).toBeGreaterThanOrEqual(1);
+  expect(stats.evade).toBeGreaterThanOrEqual(1);
+  expect(stats.hitNoDodge + stats.hitMistimed).toBeGreaterThanOrEqual(1);
+  expect(stats.delayHistogram.reduce((a: number, b: number) => a + b, 0)).toBe(stats.parry + stats.evade); // every parry/evade has a delay
+  const stored = JSON.parse(await page.evaluate(() => localStorage.getItem('kaijax_defense_stats_v1')!));
+  expect(stored.byTiming.standard).toEqual(stats);
+
+  await page.evaluate(() => (window as Win).runnerStore.setState({ gameState: 'settings' }));
+  const panel = page.getByTestId('defense-standard');
+  await panel.scrollIntoViewIfNeeded();
+  const strikes = stats.parry + stats.evade + stats.hitNoDodge + stats.hitMistimed;
+  await expect(panel).toHaveAttribute('data-strikes', String(strikes));
+  const expectedParry = Math.round((stats.parry / strikes) * 1000) / 10;
+  await expect(page.getByTestId('defense-standard-parry')).toHaveText(`${expectedParry}%`);
+  await expect(page.getByTestId('defense-generous')).toContainText('No strikes recorded yet');
+  await shot(page, '21-defense-stats');
+
+  await page.getByTestId('defense-reset').click();
+  await expect(page.getByTestId('defense-reset-confirm')).toBeVisible(); // needs a second tap
+  expect(await page.evaluate(() => (window as any).defenseStats.getState().stats.byTiming.standard.parry)).toBe(stats.parry);
+  await page.getByTestId('defense-reset-confirm').click();
+  await expect(panel).toHaveAttribute('data-strikes', '0');
+  expect(JSON.parse(await page.evaluate(() => localStorage.getItem('kaijax_defense_stats_v1')!)).byTiming.standard).toMatchObject({ parry: 0, evade: 0, hitNoDodge: 0, hitMistimed: 0, dodges: 0 });
   expect(errors).toEqual([]);
 });
 

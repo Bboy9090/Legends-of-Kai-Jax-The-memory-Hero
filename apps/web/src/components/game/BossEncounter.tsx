@@ -5,6 +5,8 @@ import { playSfx } from "../../lib/sfx";
 import { useFusion } from "../../lib/stores/useFusion";
 import { useCombo } from "../../lib/stores/useCombo";
 import { PARRY } from "../../lib/parry";
+import { useDefenseStats } from "../../lib/stores/useDefenseStats";
+import { DODGE } from "../../game/tuning/adventureTuning";
 import {
   COUNTER_DAMAGE_MULTIPLIER,
   PHASE_ROAR_SEC,
@@ -107,6 +109,7 @@ export function useBossEncounter(config: BossConfig | undefined, active: boolean
             useAdventure.setState((s) => ({ enemies: s.enemies.map((e) => (e.id === boss.id ? { ...e, bossStage: "telegraph" } : e)) }));
             break;
           case "heavyHit": {
+            useDefenseStats.getState().noteStrike("hit");
             adv.damagePlayer(config.heavy.damage);
             adv.setInvulnTimer(POST_HIT_INVULN_SEC);
             adv.triggerScreenShake(1.2);
@@ -119,6 +122,7 @@ export function useBossEncounter(config: BossConfig | undefined, active: boolean
             playSfx("whoosh");
             adv.triggerScreenShake(0.6);
             // A dodge timed into the opening of the window is a parry: bigger reward, combo stays alive.
+            useDefenseStats.getState().noteStrike(player.parryTimer > 0 ? "parry" : "evade", Math.max(0, DODGE.duration - player.dodgeTimer));
             if (player.parryTimer > 0) {
               useFusion.getState().addCharge(PARRY.fusionCharge);
               useCombo.getState().parry();
