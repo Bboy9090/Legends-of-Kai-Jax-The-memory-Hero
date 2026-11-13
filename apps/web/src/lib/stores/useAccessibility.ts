@@ -49,6 +49,7 @@ const pick = (st: AccessibilityState): AccessibilitySettings => ({
   hudOpacity: st.hudOpacity,
   hudEdgeOffset: st.hudEdgeOffset,
   hapticsEnabled: st.hapticsEnabled,
+  parryTiming: st.parryTiming,
 });
 
 const withAlias = (s: AccessibilitySettings) => ({ ...s, reduceMotion: s.reducedMotion });

@@ -165,6 +165,13 @@ export default function SettingsMenu() {
                   <option value="large">Large</option>
                 </select>
               </label>
+              <label className="flex items-center justify-between gap-3">
+                <span>Parry timing</span>
+                <select data-testid="a11y-parry-timing" className="rounded bg-black/60 px-2 py-1" value={a11y.parryTiming} onChange={(e) => a11y.update({ parryTiming: e.target.value as "standard" | "generous" })}>
+                  <option value="standard">Standard</option>
+                  <option value="generous">Generous</option>
+                </select>
+              </label>
               {([
                 ["hudButtonScale", "Touch button size", 0.8, 1.4, 0.05],
                 ["hudOpacity", "Touch control opacity", 0.4, 1, 0.05],

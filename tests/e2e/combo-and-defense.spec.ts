@@ -241,6 +241,44 @@ test('dodge opens a parry window; strikes inside it parry, later ones evade, the
   expect(errors).toEqual([]);
 });
 
+test('parry timing: standard opens a 0.10s window, generous 0.16s, and the setting persists', async ({ page }) => {
+  test.setTimeout(180_000);
+  await boot(page, 'kai-jax');
+  await parkExcept(page, null);
+
+  const dodgeAndMeasure = async () => {
+    await page.evaluate(() => (window as Win).adventureStore.setState((s) => ({ player: { ...s.player, stamina: 100, parryTimer: 0, dodgeTimer: 0, invulnTimer: 0 } })));
+    await page.evaluate(() => {
+      const log: number[] = [];
+      (window as any).__parryPeak = log;
+      const tick = () => { log.push((window as Win).adventureStore.getState().player.parryTimer); if (log.length < 600 && !(log.some((x) => x > 0) && log[log.length - 1] === 0)) requestAnimationFrame(tick); };
+      requestAnimationFrame(tick);
+    });
+    await tap(page, 'Space');
+    await page.waitForFunction(() => { const l = (window as any).__parryPeak as number[]; return l.some((x) => x > 0) && l[l.length - 1] === 0; }, null, { timeout: 15_000 });
+    return Math.max(...((await page.evaluate(() => (window as any).__parryPeak)) as number[]));
+  };
+
+  const standard = await dodgeAndMeasure();
+  expect(standard).toBeGreaterThan(0.05);
+  expect(standard).toBeLessThanOrEqual(0.1);
+
+  // Persist the option and relaunch: the controller must pick it up from storage like a real player's next session.
+  await page.evaluate(() => localStorage.setItem('kaijax_a11y_v2', JSON.stringify({ parryTiming: 'generous' })));
+  await boot(page, 'kai-jax');
+  await parkExcept(page, null);
+  const generous = await dodgeAndMeasure();
+  expect(generous).toBeGreaterThan(0.1);
+  expect(generous).toBeLessThanOrEqual(0.16);
+  expect(generous).toBeGreaterThan(standard);
+
+  // Persisted for next launch, and shown in Settings.
+  await page.evaluate(() => (window as Win).runnerStore.setState({ gameState: 'settings' }));
+  await expect(page.getByTestId('a11y-parry-timing')).toHaveValue('generous');
+  await page.getByTestId('a11y-parry-timing').selectOption('standard');
+  expect(JSON.parse(await page.evaluate(() => localStorage.getItem('kaijax_a11y_v2')!))).toMatchObject({ parryTiming: 'standard' });
+});
+
 test('camera: the hero and the partner are both on screen, and the hero is a sensible size (phone portrait)', async ({ page }) => {
   await boot(page, 'kai');
   await expect.poll(async () => page.evaluate(() => (window as Win).companionStore.getState().hero)).toBe('jax');

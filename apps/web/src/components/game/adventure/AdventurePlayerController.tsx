@@ -27,7 +27,8 @@ import { getCharacterStats } from "../../../lib/characterStats";
 import { useFusion } from "../../../lib/stores/useFusion";
 import { FUSION, damageMultiplier, speedMultiplier } from "../../../lib/fusion";
 import { useCombo } from "../../../lib/stores/useCombo";
-import { PARRY } from "../../../lib/parry";
+import { parryWindowFor } from "../../../lib/parry";
+import { useAccessibility } from "../../../lib/stores/useAccessibility";
 
 const adv = MOVEMENT_TUNING.adventure;
 const WALK_SPEED = adv.walkSpeed;
@@ -311,7 +312,7 @@ export default function AdventurePlayerController() {
       store.setCombatState(CombatState.DODGING);
       store.setDodgeTimer(DODGE.duration);
       store.setInvulnTimer(DODGE.iFrames / 60);
-      store.setParryTimer(PARRY.window);
+      store.setParryTimer(parryWindowFor(useAccessibility.getState().parryTiming));
       dodgeDirRef.current = hasInput ? { x: worldX, z: worldZ } : { x: -Math.sin(p.rotY), z: -Math.cos(p.rotY) };
       rememberInputs();
       return;

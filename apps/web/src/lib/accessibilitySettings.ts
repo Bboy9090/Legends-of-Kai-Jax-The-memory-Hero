@@ -4,6 +4,8 @@
  */
 export type ColorblindMode = "none" | "protanopia" | "deuteranopia" | "tritanopia";
 export type SubtitleScale = "normal" | "large";
+/** How forgiving the dodge-parry timing is (see lib/parry.ts). */
+export type ParryTiming = "standard" | "generous";
 
 export interface AccessibilitySettings {
   reducedMotion: boolean;
@@ -16,6 +18,7 @@ export interface AccessibilitySettings {
   /** 0–48 px extra inset from the screen edge for touch controls. */
   hudEdgeOffset: number;
   hapticsEnabled: boolean;
+  parryTiming: ParryTiming;
 }
 
 export const DEFAULT_ACCESSIBILITY: AccessibilitySettings = {
@@ -26,6 +29,7 @@ export const DEFAULT_ACCESSIBILITY: AccessibilitySettings = {
   hudOpacity: 0.9,
   hudEdgeOffset: 0,
   hapticsEnabled: true,
+  parryTiming: "standard",
 };
 
 export const COLORBLIND_MODES: readonly ColorblindMode[] = ["none", "protanopia", "deuteranopia", "tritanopia"];
@@ -46,6 +50,7 @@ export function normalizeAccessibility(raw: unknown): AccessibilitySettings {
     hudOpacity: clamp(o.hudOpacity, 0.4, 1, d.hudOpacity),
     hudEdgeOffset: Math.round(clamp(o.hudEdgeOffset, 0, 48, d.hudEdgeOffset)),
     hapticsEnabled: typeof o.hapticsEnabled === "boolean" ? o.hapticsEnabled : d.hapticsEnabled,
+    parryTiming: o.parryTiming === "generous" ? "generous" : "standard",
   };
 }
 
