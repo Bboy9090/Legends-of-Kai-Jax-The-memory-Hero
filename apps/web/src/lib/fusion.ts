@@ -10,7 +10,8 @@ export const FUSION = {
   duration: 22,
   cooldown: 14,
   hitCharge: 7,
-  dodgeCharge: 22,
+  /** Gauge for a clean evade; a parry pays PARRY.fusionCharge (see lib/parry.ts). */
+  dodgeCharge: 8,
   damageMult: 1.4,
   speedMult: 1.18,
   burst: { damage: 65, radius: 6.5, stun: 2 },

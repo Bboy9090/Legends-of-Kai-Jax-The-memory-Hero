@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { detRand11, type AdventureCameraMode } from "../../../lib/cameraModes";
 import { useAccessibility } from "../../../lib/stores/useAccessibility";
 import { CAMERA_TUNING } from "../../../game/tuning/cameraTuning";
+import { framedFov, framingScale } from "../../../lib/cameraFraming";
 
 const adv = CAMERA_TUNING.adventure;
 const CAM_HEIGHT = adv.camHeight;
@@ -27,6 +28,8 @@ function resolveAdventureCameraMode(p: {
 
 export default function AdventureCamera() {
   const { camera } = useThree();
+  // Test hook (like the exposed stores): lets E2E project world positions to the screen.
+  if (typeof window !== "undefined") (window as unknown as { adventureCamera?: unknown }).adventureCamera = camera;
   const reduceMotion = useAccessibility((s) => s.reduceMotion);
   const targetRef = useRef(new THREE.Vector3());
   const idealLookRef = useRef(new THREE.Vector3());
@@ -126,6 +129,15 @@ export default function AdventureCamera() {
       dynamicHeight += adv.lowHpHeightBonus;
     }
 
+    // Tall phone screens only show a sliver of width at this distance: pull back (keeping the viewing
+    // angle) until the hero and the people beside the hero are all in frame.
+    const aspect = state.size.width / Math.max(1, state.size.height);
+    const baseFov = mode === "exploration" ? 47 : mode === "lockOn" ? 50 : 49;
+    const fovTarget = framedFov(baseFov, aspect);
+    const framing = framingScale(dynamicDist, fovTarget, aspect);
+    dynamicDist *= framing;
+    dynamicHeight *= framing;
+
     const modeK = 1 - Math.exp(-Math.max(3, MODE_BLEND) * delta);
     smoothDistRef.current = THREE.MathUtils.lerp(
       smoothDistRef.current,
@@ -154,7 +166,7 @@ export default function AdventureCamera() {
     posRef.current.lerp(idealPos, cameraK);
 
     if ("fov" in camera && typeof camera.fov === "number") {
-      const targetFov = mode === "exploration" ? 47 : mode === "lockOn" ? 50 : 49;
+      const targetFov = fovTarget;
       camera.fov = THREE.MathUtils.lerp(
         camera.fov,
         targetFov,

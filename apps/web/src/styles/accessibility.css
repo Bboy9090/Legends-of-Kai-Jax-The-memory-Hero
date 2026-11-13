@@ -43,3 +43,69 @@
   transform: scale(var(--kj-hud-scale));
   transform-origin: bottom right;
 }
+
+/* ---- Combo meter -------------------------------------------------------------------------------- */
+:root {
+  --kj-combo-strike: #e2e8f0;
+  --kj-combo-memory: #a78bfa;
+  --kj-combo-storm: #38bdf8;
+  --kj-combo-pyraxis: #fb923c;
+  --kj-combo-apex: #fde047;
+  --kj-combo-warn: #fbbf24;
+  --kj-combo-broken: #94a3b8;
+}
+/* Colorblind-safe palettes: ranks separated by lightness as well as hue (and always named + scaled). */
+:root[data-cb="protanopia"],
+:root[data-cb="deuteranopia"] {
+  --kj-combo-strike: #cbd5e1;
+  --kj-combo-memory: #818cf8;
+  --kj-combo-storm: #22d3ee;
+  --kj-combo-pyraxis: #f59e0b;
+  --kj-combo-apex: #fef9c3;
+  --kj-combo-warn: #ffffff;
+}
+:root[data-cb="tritanopia"] {
+  --kj-combo-strike: #e2e8f0;
+  --kj-combo-memory: #f472b6;
+  --kj-combo-storm: #2dd4bf;
+  --kj-combo-pyraxis: #f97316;
+  --kj-combo-apex: #fda4af;
+  --kj-combo-warn: #ffffff;
+}
+
+.kj-combo {
+  right: max(0.75rem, env(safe-area-inset-right));
+  top: 11.9rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  --kj-combo-color: var(--kj-combo-strike);
+  color: var(--kj-combo-color);
+}
+@media (min-width: 640px) {
+  .kj-combo { top: 7.25rem; right: max(1.25rem, env(safe-area-inset-right)); }
+  .kj-combo-heritage { display: block; }
+}
+.kj-combo[data-rank="memory-rhythm"] { --kj-combo-color: var(--kj-combo-memory); }
+.kj-combo[data-rank="storm-surge"] { --kj-combo-color: var(--kj-combo-storm); }
+.kj-combo[data-rank="pyraxis-frenzy"] { --kj-combo-color: var(--kj-combo-pyraxis); }
+.kj-combo[data-rank="convergence-apex"] { --kj-combo-color: var(--kj-combo-apex); }
+.kj-combo[data-rank="broken"] { --kj-combo-color: var(--kj-combo-broken); }
+
+.kj-combo-pop { will-change: transform; display: inline-flex; flex-direction: column; align-items: flex-end; min-width: 8.5rem; }
+.kj-combo-row { display: flex; align-items: baseline; gap: 0.35rem; line-height: 1; }
+.kj-combo-count { font-family: "Bebas Neue", Impact, sans-serif; font-weight: 900; font-size: 2.1rem; text-shadow: 0 0 12px color-mix(in srgb, var(--kj-combo-color) 55%, transparent), 0 2px 0 rgba(0,0,0,.85); }
+.kj-combo-x { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.22em; opacity: 0.85; }
+.kj-combo-time { min-width: 2.6ch; font-size: 0.62rem; font-weight: 700; opacity: 0.8; }
+.kj-combo-label { font-size: 0.64rem; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; text-shadow: 0 1px 0 rgba(0,0,0,.85); }
+.kj-combo-heritage { display: none; font-size: 0.5rem; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.65; }
+.kj-combo-bar { margin-top: 0.3rem; width: 100%; height: 4px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.14); overflow: hidden; }
+.kj-combo-bar-fill { height: 100%; width: 100%; transform-origin: 0 50%; background: var(--kj-combo-color); will-change: transform; }
+/* Warning: amber tint plus a stripe pattern and a text cue, so it never relies on colour alone. */
+.kj-combo[data-warning="true"] .kj-combo-bar-fill {
+  background: repeating-linear-gradient(135deg, var(--kj-combo-warn) 0 5px, rgba(0,0,0,.35) 5px 9px);
+}
+.kj-combo-fading { display: none; margin-top: 0.15rem; font-size: 0.5rem; font-weight: 900; letter-spacing: 0.22em; color: var(--kj-combo-warn); }
+.kj-combo[data-warning="true"] .kj-combo-fading { display: block; }
+.kj-combo-broken { display: flex; flex-direction: column; align-items: flex-end; text-decoration: line-through; text-decoration-thickness: 2px; }
+.kj-combo-broken .kj-combo-label { font-size: 0.8rem; }
+.kj-combo-lost { font-size: 0.55rem; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.8; text-decoration: none; }

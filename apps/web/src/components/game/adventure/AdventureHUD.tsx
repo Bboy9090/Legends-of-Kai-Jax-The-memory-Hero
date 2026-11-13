@@ -1,3 +1,4 @@
+import ComboMeter from "./ComboMeter";
 import { getHeroIdentity } from "../../../lib/heroVisualIdentity";
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useRunner } from "../../../lib/stores/useRunner";
@@ -72,26 +73,6 @@ function StaminaBar({ current, max }: { current: number; max: number }) {
   );
 }
 
-function ComboDisplay({ step, state }: { step: number; state: CombatState }) {
-  if (step <= 0 || state !== CombatState.ATTACKING) return null;
-  const comboNum = step + 1;
-  return (
-    <div className="absolute top-1/4 right-8 text-right">
-      <div
-        className="text-5xl font-black text-transparent bg-clip-text animate-pulse"
-        style={{
-          backgroundImage: "linear-gradient(135deg, #00f2ff, #7f00ff)",
-        }}
-      >
-        {comboNum}x
-      </div>
-      <div className="text-sm font-bold text-cyan-300 tracking-widest">
-        COMBO
-      </div>
-    </div>
-  );
-}
-
 function AutoTargetIndicator({ targetId, enemies }: { targetId: string | null; enemies: any[] }) {
   if (!targetId) return null;
   const target = enemies.find((e: any) => e.id === targetId);
@@ -102,7 +83,7 @@ function AutoTargetIndicator({ targetId, enemies }: { targetId: string | null; e
   const label = isBoss ? "⚠ BOSS" : "TARGET";
   const accent = isBoss ? "#f59e0b" : "#ef4444";
   return (
-    <div className="absolute top-[14.5rem] left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 sm:top-20">
+    <div className="absolute top-[14.5rem] left-3 flex flex-col items-start gap-1 sm:left-1/2 sm:top-20 sm:-translate-x-1/2 sm:items-center">
       {/* Attack telegraph warning — enemy is winding up */}
       {isTelegraphing && (
         <div className="text-[11px] font-black uppercase tracking-widest text-amber-300 animate-pulse">
@@ -496,7 +477,7 @@ export default function AdventureHUD() {
         </div>
       )}
 
-      <ComboDisplay step={player.comboStep} state={player.combatState} />
+      <ComboMeter />
       <CombatStateLabel state={player.combatState} />
       <AutoTargetIndicator targetId={player.autoTargetId} enemies={enemies} />
 

@@ -1,3 +1,4 @@
+import { useCombo } from "./useCombo";
 import { create } from "zustand";
 import { CombatState } from "../../game/combat/stateEnums";
 import { MISSION6_ID, freshMission6Memories, isMemoryInRange, unlockMission6Memories, type TrappedMemory } from "../mission6";
@@ -31,6 +32,8 @@ export interface AdventurePlayerState {
   comboTimer: number;
   dodgeTimer: number;
   invulnTimer: number;
+  /** Seconds left in the parry window opened by a dodge. */
+  parryTimer: number;
   hitStunTimer: number;
   hitStopTimer: number;
   staminaRegenDelay: number;
@@ -143,6 +146,7 @@ interface AdventureState {
   setComboTimer: (time: number) => void;
   setDodgeTimer: (time: number) => void;
   setInvulnTimer: (time: number) => void;
+  setParryTimer: (time: number) => void;
   setHitStunTimer: (time: number) => void;
   setHitStopTimer: (time: number) => void;
   setStaminaRegenDelay: (time: number) => void;
@@ -198,6 +202,7 @@ const defaultPlayer: AdventurePlayerState = {
   comboTimer: 0,
   dodgeTimer: 0,
   invulnTimer: 0,
+  parryTimer: 0,
   hitStunTimer: 0,
   hitStopTimer: 0,
   staminaRegenDelay: 0,
@@ -300,15 +305,20 @@ export const useAdventure = create<AdventureState>((set, get) => ({
     const { trainingSession } = (typeof window !== "undefined" ? (window as any).runnerStore?.getState() : null) || { trainingSession: false };
     
     if (p.invulnTimer > 0 || trainingSession) return;
+    // Unparried, undodged damage ends the combo on the spot: count, attack chain and decay timer all go to zero.
+    useCombo.getState().breakNow();
     if (p.superArmor) {
       set((s) => ({
-        player: { ...s.player, health: Math.max(0, s.player.health - amount * 0.5) },
+        player: { ...s.player, health: Math.max(0, s.player.health - amount * 0.5), combo: 0, comboStep: 0, comboTimer: 0 },
       }));
       return;
     }
     set((s) => ({
       player: {
         ...s.player,
+        combo: 0,
+        comboStep: 0,
+        comboTimer: 0,
         health: Math.max(0, s.player.health - amount),
         combatState: CombatState.HITSTUN,
         hitStunTimer: 0.3,
@@ -366,6 +376,9 @@ export const useAdventure = create<AdventureState>((set, get) => ({
 
   setInvulnTimer: (invulnTimer) =>
     set((s) => ({ player: { ...s.player, invulnTimer } })),
+
+  setParryTimer: (parryTimer) =>
+    set((s) => ({ player: { ...s.player, parryTimer } })),
 
   setHitStunTimer: (hitStunTimer) =>
     set((s) => ({ player: { ...s.player, hitStunTimer } })),
@@ -486,7 +499,8 @@ export const useAdventure = create<AdventureState>((set, get) => ({
   removeEnemy: (id) =>
     set((s) => ({ enemies: s.enemies.filter((e) => e.id !== id) })),
 
-  initAdventure: (characterId, missionId, arenaId) =>
+  initAdventure: (characterId, missionId, arenaId) => {
+    useCombo.getState().reset();
     set({
       player: { ...defaultPlayer, fighterId: characterId },
       enemies: [],
@@ -502,9 +516,11 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       encounterIndex: 0,
       districtCompleted: false,
       checkpointBetweenEncounters: true,
-    }),
+    });
+  },
 
   startDistrictRoam: (districtId, characterId) => {
+    useCombo.getState().reset();
     const sid = get().roamSessionId + 1;
     set({
       player: { ...defaultPlayer, fighterId: characterId },
@@ -543,7 +559,8 @@ export const useAdventure = create<AdventureState>((set, get) => ({
 
   togglePause: () => set((s) => ({ isPaused: !s.isPaused })),
 
-  reset: () =>
+  reset: () => {
+    useCombo.getState().reset();
     set({
       player: { ...defaultPlayer },
       enemies: [],
@@ -559,8 +576,10 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       encounterIndex: 0,
       districtCompleted: false,
       checkpointBetweenEncounters: true,
-    }),
+    });
+  },
   retryMission: () => {
+    useCombo.getState().reset();
     const state = get();
     set({
       player: { ...defaultPlayer, fighterId: state.player.fighterId },

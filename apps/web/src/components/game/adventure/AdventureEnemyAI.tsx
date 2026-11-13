@@ -1,5 +1,7 @@
 import { useFusion } from "../../../lib/stores/useFusion";
 import { FUSION } from "../../../lib/fusion";
+import { useCombo } from "../../../lib/stores/useCombo";
+import { PARRY, resolveIncomingStrike } from "../../../lib/parry";
 import { pushDamagePopup } from "../../../lib/stores/useDamagePopups";
 import { playSfx } from "../../../lib/sfx";
 import { useEffect, useRef, Suspense, useMemo } from "react";
@@ -380,15 +382,33 @@ export default function AdventureEnemyAI() {
             return;
           }
 
+          const outcome = resolveIncomingStrike(player);
+
+          if (outcome === "parry") {
+            // Deflected: the enemy reels, the player is rewarded, and the combo stays alive.
+            adv.setEnemyAttacking(enemy.id, false);
+            adv.setEnemyAIState(enemy.id, "stun");
+            adv.setEnemyStun(enemy.id, PARRY.enemyStagger);
+            recoveryTimers.current[enemy.id] = ATTACK_RECOVERY_SEC;
+            activeThreats = Math.max(0, activeThreats - 1);
+            useFusion.getState().addCharge(PARRY.fusionCharge);
+            useCombo.getState().parry();
+            pushDamagePopup({ x: player.posX, y: player.posY + 2.4, z: player.posZ, amount: 0, kind: "critical", text: "PARRY!" });
+            playSfx("block");
+            adv.triggerScreenShake(0.5);
+            adv.triggerImpactFlash("#ffd24a");
+            return;
+          }
+
           adv.setEnemyAIState(enemy.id, "attack");
           adv.setEnemyAttacking(enemy.id, true);
           attackStateTimers.current[enemy.id] = ATTACK_ACTIVE_SEC;
 
-          const wasVulnerable = player.invulnTimer <= 0;
-          // An attack that lands while the player is mid-dodge is a clean evade and feeds the fusion gauge.
-          if (!wasVulnerable && player.dodgeTimer > 0) useFusion.getState().addCharge(FUSION.dodgeCharge);
-          adv.damagePlayer(tierConfig.damage);
-          if (wasVulnerable) {
+          if (outcome === "evade") {
+            useFusion.getState().addCharge(FUSION.dodgeCharge);
+            pushDamagePopup({ x: player.posX, y: player.posY + 2.4, z: player.posZ, amount: 0, kind: "elemental", text: "EVADED" });
+          } else if (outcome === "hit") {
+            adv.damagePlayer(tierConfig.damage);
             adv.setInvulnTimer(POST_HIT_INVULN_SEC);
             pushDamagePopup({ x: player.posX, y: player.posY + 2.4, z: player.posZ, amount: tierConfig.damage, kind: "normal" });
             playSfx("hitLight");

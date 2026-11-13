@@ -36,8 +36,8 @@ export default function DamagePopups() {
                 userSelect: "none",
               }}
             >
-              {style.label ? <div style={{ fontSize: "0.55em", lineHeight: 1 }}>{style.label}</div> : null}
-              {Math.round(popup.amount)}
+              {style.label && !popup.text ? <div style={{ fontSize: "0.55em", lineHeight: 1 }}>{style.label}</div> : null}
+              {popup.text ?? Math.round(popup.amount)}
             </div>
           </Html>
         );

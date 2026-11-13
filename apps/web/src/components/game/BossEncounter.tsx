@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useAdventure } from "../../lib/stores/useAdventure";
 import { pushDamagePopup } from "../../lib/stores/useDamagePopups";
 import { playSfx } from "../../lib/sfx";
+import { useFusion } from "../../lib/stores/useFusion";
+import { useCombo } from "../../lib/stores/useCombo";
+import { PARRY } from "../../lib/parry";
 import {
   COUNTER_DAMAGE_MULTIPLIER,
   PHASE_ROAR_SEC,
@@ -115,6 +118,13 @@ export function useBossEncounter(config: BossConfig | undefined, active: boolean
           case "heavyWhiff":
             playSfx("whoosh");
             adv.triggerScreenShake(0.6);
+            // A dodge timed into the opening of the window is a parry: bigger reward, combo stays alive.
+            if (player.parryTimer > 0) {
+              useFusion.getState().addCharge(PARRY.fusionCharge);
+              useCombo.getState().parry();
+              pushDamagePopup({ x: player.posX, y: player.posY + 2.4, z: player.posZ, amount: 0, kind: "critical", text: "PARRY!" });
+              playSfx("block");
+            }
             break;
           case "counterOpen":
             adv.setEnemyAIState(boss.id, "stun");

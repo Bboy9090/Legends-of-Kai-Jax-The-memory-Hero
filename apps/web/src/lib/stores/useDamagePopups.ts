@@ -8,6 +8,8 @@ export interface DamagePopup {
   z: number;
   amount: number;
   kind: HitKind;
+  /** When set, shown instead of the number (e.g. PARRY!). */
+  text?: string;
 }
 
 interface DamagePopupState {

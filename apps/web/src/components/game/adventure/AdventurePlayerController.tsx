@@ -26,6 +26,8 @@ import { playSfx } from "../../../lib/sfx";
 import { getCharacterStats } from "../../../lib/characterStats";
 import { useFusion } from "../../../lib/stores/useFusion";
 import { FUSION, damageMultiplier, speedMultiplier } from "../../../lib/fusion";
+import { useCombo } from "../../../lib/stores/useCombo";
+import { PARRY } from "../../../lib/parry";
 
 const adv = MOVEMENT_TUNING.adventure;
 const WALK_SPEED = adv.walkSpeed;
@@ -138,6 +140,14 @@ export default function AdventurePlayerController() {
 
     if (p.staminaRegenDelay > 0) store.setStaminaRegenDelay(Math.max(0, p.staminaRegenDelay - delta));
     if (p.invulnTimer > 0) store.setInvulnTimer(Math.max(0, p.invulnTimer - delta));
+    if (p.parryTimer > 0) store.setParryTimer(Math.max(0, p.parryTimer - delta));
+
+    // The combo timer runs on real time (not the 50ms-clamped simulation step), so 3.5s is 3.5s even on a slow
+    // GPU. It does not advance while paused because this controller returns early then; a tab that was hidden
+    // is capped so it cannot cost more than half a second.
+    useCombo.getState().tick(Math.min(rawDelta, 0.5));
+    const comboCount = useCombo.getState().state.count;
+    if (p.combo !== comboCount) useAdventure.setState((s) => ({ player: { ...s.player, combo: comboCount } }));
 
     if (p.hitStunTimer > 0) {
       store.setHitStunTimer(Math.max(0, p.hitStunTimer - delta));
@@ -227,12 +237,14 @@ export default function AdventurePlayerController() {
           if (elapsed >= timing.startupTime && elapsed < timing.startupTime + timing.activeTime) {
             attackHitRef.current = true;
             const heroStats = getCharacterStats(p.fighterId);
+            let connected = false;
             enemies.forEach((enemy) => {
               if (enemy.isDead) return;
               const dx = p.posX - enemy.posX;
               const dz = p.posZ - enemy.posZ;
               const dist = Math.sqrt(dx * dx + dz * dz);
               if (dist <= PLAYER_HIT_RANGE) {
+                connected = true;
                 const isCrit = rollCrit(clampCritChance(heroStats?.critChance));
                 const moveKey = p.attackType as string;
                 const hit = classifyHit({ tier: tierForMoveKey(moveKey), isCrit, elemental: moveKey === "skill" });
@@ -251,6 +263,8 @@ export default function AdventurePlayerController() {
                 // Tier 1 / basic non-crit hits intentionally get no freeze and no shake.
               }
             });
+            // One landed strike is one combo hit, however many enemies it caught.
+            if (connected) useCombo.getState().hit();
           }
         }
       }
@@ -297,6 +311,7 @@ export default function AdventurePlayerController() {
       store.setCombatState(CombatState.DODGING);
       store.setDodgeTimer(DODGE.duration);
       store.setInvulnTimer(DODGE.iFrames / 60);
+      store.setParryTimer(PARRY.window);
       dodgeDirRef.current = hasInput ? { x: worldX, z: worldZ } : { x: -Math.sin(p.rotY), z: -Math.cos(p.rotY) };
       rememberInputs();
       return;

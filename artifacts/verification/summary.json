@@ -2,7 +2,7 @@
   "viewport": "390x844",
   "enemyHpBefore": 300,
   "enemyHpAfter": 291,
-  "arenaLitFraction": 0.279,
+  "arenaLitFraction": 0.09,
   "damagePopupText": "5",
   "problems": [],
   "liveWebglContextLosses": []
