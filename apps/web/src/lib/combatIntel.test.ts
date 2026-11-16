@@ -1,13 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { getBossEncounter } from './bossEncounters';
-import { abilitiesFor, activeBossPhase, matrixIdFor, phaseNumber, resolveBoss, ultimateState } from './combatIntel';
+import { abilitiesFor, activeBossPhase, matrixIdFor, phaseNumber, resolveBoss, ultimateState, verifiedBossIds } from './combatIntel';
 
-const ashen = getBossEncounter('ashen-enforcer')!;
+const ashen = getBossEncounter('ashen-enforcer')!; // phase maths is identity-independent
 
 describe('combatIntel boss phases', () => {
-  it('maps the Ashen Tiger fighter onto the Ashen Enforcer encounter', () => {
-    expect(resolveBoss('ashen-tiger')?.id).toBe('ashen-enforcer');
+  it('only verifies bosses named by a story mission AND backed by encounter data', () => {
+    expect(verifiedBossIds()).toEqual(['rift-general', 'void-stalker']);
     expect(resolveBoss('void-stalker')?.id).toBe('void-stalker');
+    expect(resolveBoss('rift-general')?.id).toBe('rift-general');
+  });
+
+  it('does not infer identity from similar names', () => {
+    expect(resolveBoss('ashen-tiger')).toBeNull(); // not linked to the Ashen Enforcer anywhere in the game
+    expect(resolveBoss('ashen-enforcer')).toBeNull(); // has an encounter but no mission names it as boss
+    expect(resolveBoss('rift-general-prime')).toBeNull(); // mission boss without encounter data
     expect(resolveBoss('kai')).toBeNull();
     expect(resolveBoss('')).toBeNull();
   });

@@ -50,3 +50,4 @@ export const useTouchInput = create<TouchInputState>((set, get) => ({
 
   setIsTouchDevice: (val) => set({ isTouchDevice: val }),
 }));
+if (typeof window !== "undefined") (window as any).useTouchInput = useTouchInput;

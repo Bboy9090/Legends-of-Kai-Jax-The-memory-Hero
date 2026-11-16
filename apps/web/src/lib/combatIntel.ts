@@ -6,10 +6,21 @@
 import { getBossEncounter, type BossEncounter, type BossPhase } from './bossEncounters';
 import { getCharacterAbilities, getCharacterUltimate, type Ability } from './abilitySystems';
 
-/** Battle fighter ids that are backed by a boss encounter definition. */
-const FIGHTER_TO_BOSS: Record<string, string> = {
-  'ashen-tiger': 'ashen-enforcer',
-};
+import { ACT_I_STORY_MISSIONS, ACT_II_STORY_MISSIONS, ACT_III_STORY_MISSIONS } from './story_missions';
+
+/**
+ * A boss identity is "verified" only when a story mission names it as its `bossId` AND an encounter definition
+ * with that exact id exists. Name similarity (e.g. "ashen-tiger" vs "ashen-enforcer") is NOT evidence: nothing in
+ * the game links those, so no banner is shown for such fighters.
+ */
+export function verifiedBossIds(): string[] {
+  const missionBosses = new Set(
+    [...ACT_I_STORY_MISSIONS, ...ACT_II_STORY_MISSIONS, ...ACT_III_STORY_MISSIONS]
+      .map((m) => (m as { bossId?: string }).bossId)
+      .filter((id): id is string => Boolean(id)),
+  );
+  return [...missionBosses].filter((id) => getBossEncounter(id) !== undefined).sort();
+}
 
 /** Fighter ids that differ from the power-matrix ids. */
 const FIGHTER_TO_MATRIX: Record<string, string> = {
@@ -18,8 +29,7 @@ const FIGHTER_TO_MATRIX: Record<string, string> = {
 };
 
 export function resolveBoss(fighterId: string): BossEncounter | null {
-  const id = FIGHTER_TO_BOSS[fighterId] ?? fighterId;
-  return getBossEncounter(id) ?? null;
+  return verifiedBossIds().includes(fighterId) ? (getBossEncounter(fighterId) ?? null) : null;
 }
 
 export function matrixIdFor(fighterId: string): string {

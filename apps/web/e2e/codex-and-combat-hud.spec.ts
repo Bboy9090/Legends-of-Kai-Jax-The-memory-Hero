@@ -117,7 +117,7 @@ async function startBattle(page: Page, opponent: string, viewport = { width: 102
 }
 
 test.describe('Combat HUD reconciliation', () => {
-  test('boss fight: single HUD, live phase banner, ability strip and ultimate readiness', async ({ page }) => {
+  test('versus fight: single HUD, ability strip and live ultimate readiness (no banner for unverified boss identities)', async ({ page }) => {
     test.setTimeout(300_000);
     await startBattle(page, 'ashen-tiger');
 
@@ -127,18 +127,8 @@ test.describe('Combat HUD reconciliation', () => {
       await expect(page.getByText(dup)).toHaveCount(0);
     }
 
-    const banner = page.getByTestId('combat-intel-boss');
-    await expect(banner).toContainText(/ASHEN ENFORCER · Phase 1\/3/);
-
-    const setOpponentPct = (pct: number) =>
-      page.evaluate((p) => {
-        const s = (window as any).battleStore;
-        s.setState({ opponentHealth: (s.getState().maxHealth * p) / 100 });
-      }, pct);
-    await setOpponentPct(45);
-    await expect(banner).toContainText(/Phase 2\/3/);
-    await setOpponentPct(10);
-    await expect(banner).toContainText(/Phase 3\/3/);
+    // Ashen Tiger has no verified link to an encounter definition, so no phase banner may appear.
+    await expect(page.getByTestId('combat-intel-boss')).toHaveCount(0);
 
     const abilityButtons = page.getByTestId('combat-intel-ability');
     expect(await abilityButtons.count()).toBeGreaterThan(0);
@@ -162,8 +152,6 @@ test.describe('Combat HUD reconciliation', () => {
     const hits = (a: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }) =>
       a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
     const strip = await rect(page.getByTestId('combat-intel-abilities'));
-    const bannerBox = await rect(banner);
-    expect(hits(strip, bannerBox)).toBe(false);
     for (const label of [/^Overdrive$/i, /^Stamina$/i, /ultimate ready/i]) {
       const target = page.getByText(label).first();
       const box = (await target.count())
@@ -189,17 +177,11 @@ test.describe('Combat HUD reconciliation', () => {
     await expect(page.getByTestId('combat-intel')).toHaveCount(0);
   });
 
-  test('mobile 390x844: boss banner fits, ability strip stays out of the touch controls', async ({ page }) => {
+  test('mobile 390x844: no horizontal overflow and the ability strip stays out of the touch controls', async ({ page }) => {
     test.setTimeout(120_000);
     await startBattle(page, 'ashen-tiger', { width: 390, height: 844 });
-    const banner = page.getByTestId('combat-intel-boss');
-    await expect(banner).toBeVisible();
-    const box = (await banner.boundingBox())!;
-    expect(box.x).toBeGreaterThanOrEqual(0);
-    expect(box.x + box.width).toBeLessThanOrEqual(390);
     await expect(page.getByTestId('combat-intel-abilities')).toBeHidden();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow).toBeLessThanOrEqual(1);
-    await page.screenshot({ path: 'test-results/combat-hud-boss-mobile.png' });
   });
 });

@@ -9,12 +9,12 @@
  * All values come from the battle store (or props, for tests/storybook).
  */
 import { useMemo, useState } from 'react';
-import { AlertTriangle, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import BossPhaseBanner from './BossPhaseBanner';
 import { useBattle } from '../../lib/stores/useBattle';
 import {
   abilitiesFor,
   activeBossPhase,
-  phaseNumber,
   resolveBoss,
   ultimateState,
 } from '../../lib/combatIntel';
@@ -66,22 +66,11 @@ export default function EnhancedCombatHUD(props: EnhancedCombatHUDProps) {
   return (
     <div className="pointer-events-none absolute inset-0 z-20" data-testid="combat-intel">
       {boss && phase && (
-        <div
+        <BossPhaseBanner
+          boss={boss}
+          healthPct={healthPct}
           className="absolute left-1/2 top-[84px] sm:top-[96px] -translate-x-1/2 max-w-[min(92vw,420px)]"
-          data-testid="combat-intel-boss"
-          role="status"
-          aria-live="polite"
-        >
-          <div className="kj-vision-hud flex items-start gap-2 px-3 py-2">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" aria-hidden="true" />
-            <div className="min-w-0">
-              <div className="text-[10px] uppercase tracking-[0.12em] text-amber-200/90">
-                {boss.displayName} · Phase {phaseNumber(boss, phase)}/{boss.phases.length}
-              </div>
-              <div className="text-[11px] sm:text-xs text-slate-200 leading-snug">{phase.description}</div>
-            </div>
-          </div>
-        </div>
+        />
       )}
 
       {(abilities.length > 0 || ultimate) && (
@@ -128,7 +117,7 @@ export default function EnhancedCombatHUD(props: EnhancedCombatHUDProps) {
               <div className="text-xs uppercase tracking-[0.1em] text-[#efcf91]">{selected.name}</div>
               <div className="mt-1 text-slate-300">{selected.description}</div>
               <div className="mt-1 font-mono text-slate-400">
-                Tier {selected.tier} · {selected.damage} dmg · {selected.cooldown}s cooldown
+                Tier {selected.tier} · {selected.damage} dmg (reference data; live readiness is shown on the ultimate only)
               </div>
             </div>
           )}
