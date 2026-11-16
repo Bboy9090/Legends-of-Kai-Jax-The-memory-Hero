@@ -58,6 +58,7 @@ interface CommandHubModalProps {
   onLoadSlot: (slotId: string) => void;
   onDeleteSlot: (slotId: string) => void;
   onStartPatrol: () => void;
+  onSwitchDistrict?: (districtId: 'ashblock-heights' | 'sector-7') => void;
   onOpenLegal: (docId: 'privacy' | 'terms') => void;
   canonManifest: CanonVaultManifest;
   onOpenCanonDrive: () => void;
@@ -81,6 +82,7 @@ export const CommandHubModal: React.FC<CommandHubModalProps> = ({
   onLoadSlot,
   onDeleteSlot,
   onStartPatrol,
+  onSwitchDistrict,
   onOpenLegal,
   canonManifest,
   onOpenCanonDrive,
@@ -652,6 +654,17 @@ export const CommandHubModal: React.FC<CommandHubModalProps> = ({
                               Authority: {spec.visualAuthority === 'direct_visual_sheet' ? 'Direct Canon Sheet' : 'Composite Sheets (Disclosed)'}
                             </div>
                           </>
+                        )}
+                        {(d.id === 'ashblock-heights' || d.id === 'sector-7') && onSwitchDistrict && (
+                          <button
+                            onClick={() => {
+                              onSwitchDistrict(d.id as 'ashblock-heights' | 'sector-7');
+                              onClose();
+                            }}
+                            className="mt-2 w-full rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/50 text-amber-200 font-semibold py-1.5 text-xs transition"
+                          >
+                            Deploy to {d.name}
+                          </button>
                         )}
                       </div>
                     </div>

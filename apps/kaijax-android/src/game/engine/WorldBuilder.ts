@@ -98,6 +98,7 @@ export interface AshblockWorld {
   setEnvironmentMode: (mode: EnvironmentMode) => void;
   setQualityTier: (tier: 'low' | 'balanced' | 'high') => void;
   updateVisuals: (elapsed: number, dt?: number, cameraPos?: THREE.Vector3) => void;
+  dispose?: () => void;
 }
 
 export type DistrictWorld = AshblockWorld;
@@ -1166,6 +1167,50 @@ export function buildAshblockHeights(
   });
   const duskMotes = new THREE.Points(moteGeo, moteMat);
   reconstructedGroup.add(duskMotes);
+
+  // Wave 4 Visual Art Direction Upgrade: Merged Storefront Neon Strips, Alley Curb Glow & Rooftop Vents
+  const amberNeonGeos: THREE.BufferGeometry[] = [];
+  const violetNeonGeos: THREE.BufferGeometry[] = [];
+  const roofVentGeos: THREE.BufferGeometry[] = [];
+  for (const nz of [4, -8, -18, -28, -38]) {
+    amberNeonGeos.push(
+      makeTranslatedBoxGeo(0.18, 0.14, 4.6, -10.3, 3.65, nz),
+      makeTranslatedBoxGeo(0.18, 0.14, 4.6, 10.3, 3.65, nz)
+    );
+    violetNeonGeos.push(
+      makeTranslatedBoxGeo(0.14, 0.12, 3.8, -10.5, 0.28, nz),
+      makeTranslatedBoxGeo(0.14, 0.12, 3.8, 10.5, 0.28, nz)
+    );
+  }
+  for (const [vx, vy, vz] of [
+    [-19.5, 13.8, 2],
+    [-19.2, 13.8, -22],
+    [19.5, 13.8, -6],
+    [19.2, 13.8, -30],
+    [-16.5, 13.8, -58],
+    [16.5, 13.8, -66],
+  ] as [number, number, number][]) {
+    roofVentGeos.push(
+      makeTranslatedBoxGeo(1.4, 2.2, 1.4, vx, vy, vz),
+      makeTranslatedBoxGeo(1.8, 0.3, 1.8, vx, vy + 1.15, vz)
+    );
+  }
+  const mergedAmberNeon = buildMergedStaticMesh(
+    amberNeonGeos,
+    new THREE.MeshBasicMaterial({ color: 0xf59e0b }),
+    false,
+    false
+  );
+  const mergedVioletNeon = buildMergedStaticMesh(
+    violetNeonGeos,
+    new THREE.MeshBasicMaterial({ color: 0xa855f7 }),
+    false,
+    false
+  );
+  const mergedRoofVents = buildMergedStaticMesh(roofVentGeos, darkMetalMat, false, false);
+  if (mergedAmberNeon) reconstructedGroup.add(mergedAmberNeon);
+  if (mergedVioletNeon) reconstructedGroup.add(mergedVioletNeon);
+  if (mergedRoofVents) reconstructedGroup.add(mergedRoofVents);
 
   // -------------------------------------------------------------------------
   // 10. Sanctuary Brazier, Disrupted Memory Site, Civilians & Destructible Crates

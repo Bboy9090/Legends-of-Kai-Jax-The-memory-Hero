@@ -556,6 +556,15 @@ export default function App() {
           onLoadSlot={handleLoadSlot}
           onDeleteSlot={handleDeleteSlot}
           onStartPatrol={() => engineRef.current?.spawnPatrolSkirmish()}
+          onSwitchDistrict={(districtId) => {
+            if (screen !== 'playing') {
+              setScreen('playing');
+              engineRef.current?.setTitleShowcase(false);
+            }
+            engineRef.current?.switchDistrict(districtId);
+            engineRef.current?.setPaused(false);
+            showToast(districtId === 'sector-7' ? 'Deployed to Sector-7: Ironvein Yards' : 'Returned to Ashblock Heights');
+          }}
           onOpenLegal={(doc) => setLegalDoc(doc)}
           canonManifest={canonManifest}
           onOpenCanonDrive={() => setCanonDriveOpen(true)}

@@ -9,6 +9,7 @@ import {
   GLBCharacterInstance,
   preloadGlbAssets,
 } from '../engine/GLBCharacterController.ts';
+import { buildSector7District } from '../engine/Sector7Builder.ts';
 import {
   bestTextOn,
   contrastRatio,
@@ -974,6 +975,31 @@ import('../data/characterAssetRegistry.ts').then(
   inst.dispose();
   stubShadow.dispose();
 
-  console.log('ALL P1, P1-C, P1-E, P1-G, P1-I, P1-J, P1-K, P1-L, P1-M & WAVE 3 ACCEPTANCE TESTS PASSED (25/25 suites)');
+  // 26. Wave 4 Sector-7 District Builder & Clean Disposal Gate
+  const s7Scene = new THREE.Scene();
+  const s7StubTex = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
+  const s7World = buildSector7District(s7Scene, {
+    asphaltMap: s7StubTex as unknown as THREE.CanvasTexture,
+    asphaltRoughness: s7StubTex as unknown as THREE.CanvasTexture,
+    sidewalkMap: s7StubTex as unknown as THREE.CanvasTexture,
+    buildingFacadeMap: s7StubTex as unknown as THREE.CanvasTexture,
+    buildingWarmOchreMap: s7StubTex as unknown as THREE.CanvasTexture,
+    containerMap: s7StubTex as unknown as THREE.CanvasTexture,
+    awningMap: s7StubTex as unknown as THREE.CanvasTexture,
+    muralUnityMap: s7StubTex as unknown as THREE.CanvasTexture,
+    billboardTrustMap: s7StubTex as unknown as THREE.CanvasTexture,
+    graffitiMemoryMap: s7StubTex as unknown as THREE.CanvasTexture,
+    bannerRoarMap: s7StubTex as unknown as THREE.CanvasTexture,
+    signMarketMap: s7StubTex as unknown as THREE.CanvasTexture,
+    contactShadowMap: s7StubTex as unknown as THREE.CanvasTexture,
+    dispose: () => s7StubTex.dispose(),
+  });
+  assert.equal(s7World.webAnchors.length, 6, 'Sector-7 must provide 6 viaduct/gantry web anchors');
+  assert.equal(s7World.environmentalHazards.length, 4, 'Sector-7 must provide 4 Kar-Voth Arc Transformers');
+  assert.equal(s7World.walkableZones.length, 7, 'Sector-7 must provide 7 elevated cargo/viaduct zones');
+  s7World.dispose();
+  s7StubTex.dispose();
+
+  console.log('ALL P1, P1-C, P1-E, P1-G, P1-I, P1-J, P1-K, P1-L, P1-M, WAVE 3 & WAVE 4 TESTS PASSED (26/26 suites)');
 });
 
