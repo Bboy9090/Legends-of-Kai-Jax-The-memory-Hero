@@ -16,10 +16,11 @@ import {
   isValidVaultAssetId,
   localUrlToVaultPath,
   pickApproved,
-  requireLocalAdmin,
   resolveInside,
   sanitizeFileName,
 } from './security.js';
+
+import { createAdmin, type AdminOptions } from './admin.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -316,6 +317,10 @@ export interface ServerConfig {
   /** Shared secret for vault mutation / reconstruction routes (KAIJAX_ADMIN_TOKEN). */
   adminToken?: string;
   production: boolean;
+  /** Optional JSON-lines audit file for admin actions (never contains secrets). */
+  auditLogPath?: string;
+  /** Test hooks for session timing / login throttling. */
+  adminTuning?: Pick<AdminOptions, 'idleTtlMs' | 'absoluteTtlMs' | 'maxSessions' | 'now' | 'loginLimit' | 'loginWindowMs'>;
   /** Test hook: how headless Blender is launched. */
   runBlender?: (args: string[]) => Promise<void>;
   /** Disable limiter windows' real durations in tests by overriding limits. */
@@ -358,7 +363,9 @@ export function buildApp(cfg: ServerConfig) {
   const mutateLimiter = rateLimit({ ...limiterBase, windowMs, limit: cfg.limits?.mutate ?? 20 });
   /** Blender / Meshy: minutes of CPU per call. */
   const heavyLimiter = rateLimit({ ...limiterBase, windowMs: heavyWindowMs, limit: cfg.limits?.heavy ?? 4 });
-  const adminOnly = requireLocalAdmin({ adminToken: cfg.adminToken, production: cfg.production });
+  const admin = createAdmin({ adminToken: cfg.adminToken, production: cfg.production, auditLogPath: cfg.auditLogPath, ...cfg.adminTuning });
+  const adminOnly = admin.guard;
+  app.use('/api/admin', admin.router);
   const importGate = new ConcurrencyGate(1);
   const reconstructGate = new ConcurrencyGate(1);
   const runBlender =
@@ -1221,5 +1228,5 @@ export function buildApp(cfg: ServerConfig) {
     }
   });
 
-  return app;
+  return Object.assign(app, { admin });
 }

@@ -1,4 +1,3 @@
-import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { NextFunction, Request, Response } from 'express';
@@ -89,60 +88,6 @@ export function isPlainFile(p: string): boolean {
   } catch {
     return false;
   }
-}
-
-/* ------------------------------------------------------------------ */
-/* Authentication                                                      */
-/* ------------------------------------------------------------------ */
-
-export interface AuthOptions {
-  /** Shared secret expected in the `x-kaijax-admin-token` header. */
-  adminToken?: string;
-  /** When true (production) a missing token disables protected routes instead of allowing loopback. */
-  production: boolean;
-}
-
-function safeEqual(a: string, b: string): boolean {
-  const ab = crypto.createHash('sha256').update(a).digest();
-  const bb = crypto.createHash('sha256').update(b).digest();
-  return crypto.timingSafeEqual(ab, bb);
-}
-
-function isLoopbackRequest(req: Request): boolean {
-  if (req.headers['x-forwarded-for'] || req.headers['forwarded']) return false; // came through a proxy
-  const addr = req.socket.remoteAddress || '';
-  return addr === '127.0.0.1' || addr === '::1' || addr === '::ffff:127.0.0.1';
-}
-
-/**
- * Guards routes that mutate the local vault or run local tooling (Blender, unzip, Meshy).
- *  - With KAIJAX_ADMIN_TOKEN set: the header token is required everywhere.
- *  - Without a token, development (NODE_ENV !== production): only direct loopback requests are allowed,
- *    which keeps `npm run dev` working with zero setup.
- *  - Without a token in production: the routes are disabled (503).
- */
-export function requireLocalAdmin(options: AuthOptions) {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const expected = options.adminToken?.trim();
-    if (expected) {
-      const provided = req.header('x-kaijax-admin-token') || '';
-      if (provided && safeEqual(provided, expected)) {
-        next();
-        return;
-      }
-      res.status(401).json({ error: 'Admin token required for this route.' });
-      return;
-    }
-    if (options.production) {
-      res.status(503).json({ error: 'This route is disabled: set KAIJAX_ADMIN_TOKEN to enable it in production.' });
-      return;
-    }
-    if (isLoopbackRequest(req)) {
-      next();
-      return;
-    }
-    res.status(403).json({ error: 'This route only accepts local requests unless KAIJAX_ADMIN_TOKEN is configured.' });
-  };
 }
 
 /* ------------------------------------------------------------------ */
