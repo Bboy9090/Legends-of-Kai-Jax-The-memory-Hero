@@ -262,12 +262,19 @@ export default function LoreHub() {
 
           <div className="flex items-center gap-4">
             <button
+              onClick={() => setGameState("codex")}
+              data-testid="lore-open-codex"
+              className="hidden md:inline-flex px-4 py-1.5 border border-amber-400/50 hover:bg-amber-400/15 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-amber-200 transition-all"
+            >
+              Game Codex
+            </button>
+            <button
               onClick={() => setGameState("menu")}
               className="hidden md:inline-flex px-4 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 ttransition-all"
             >
               Exit to Menu
             </button>
-            <button className="md:hidden text-white" onClick={() => setMobileOpen(!mobileOpen)}>
+            <button className="md:hidden text-white" aria-label={mobileOpen ? "Close menu" : "Open menu"} aria-expanded={mobileOpen} onClick={() => setMobileOpen(!mobileOpen)}>
               {mobileOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
             </button>
           </div>
@@ -286,6 +293,14 @@ export default function LoreHub() {
               </button>
             ))}
             <button
+              onClick={() => { setMobileOpen(false); setGameState("codex"); }}
+              data-testid="lore-open-codex-mobile"
+              className="block w-full text-left px-6 py-3 uppercase tracking-widest text-xs text-amber-200"
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+            >
+              Game Codex
+            </button>
+            <button
               onClick={() => { setMobileOpen(false); setGameState("menu"); }}
               className="block w-full text-left px-6 py-3 uppercase tracking-widest text-xs text-blue-400"
             >
@@ -296,7 +311,7 @@ export default function LoreHub() {
       </nav>
 
       <main className="pt-24 sm:pt-16">
-        {section === "home" && <HeroSection onNavigate={setSection} onPlayGame={handlePlayGame} />}
+        {section === "home" && <HeroSection onNavigate={setSection} onPlayGame={handlePlayGame} onOpenCodex={() => setGameState("codex")} />}
         {section === "characters" && <CharactersSection />}
         {section === "tails" && <TailsSection />}
         {section === "story" && <StorySection />}
@@ -315,7 +330,7 @@ export default function LoreHub() {
   );
 }
 
-function HeroSection({ onNavigate, onPlayGame }: { onNavigate: (s: Section) => void; onPlayGame: () => void }) {
+function HeroSection({ onNavigate, onPlayGame, onOpenCodex }: { onNavigate: (s: Section) => void; onPlayGame: () => void; onOpenCodex: () => void }) {
   return (
     <section className="min-h-screen flex items-center justify-center relative">
       <div className="absolute inset-0 overflow-hidden">
@@ -383,6 +398,14 @@ function HeroSection({ onNavigate, onPlayGame }: { onNavigate: (s: Section) => v
               style={{ border: "1px solid rgba(0,242,255,0.3)", background: "rgba(0,242,255,0.05)", minHeight: "44px" }}
             >
               <Swords className="w-4 h-4 text-cyan-400" /> Combat
+            </button>
+            <button
+              onClick={onOpenCodex}
+              data-testid="lore-open-codex-hero"
+              className="flex items-center gap-2 px-6 py-3 min-h-11 rounded-lg font-bold text-sm text-white/80 transition-all hover:text-white hover:scale-[1.02] whitespace-nowrap"
+              style={{ border: "1px solid rgba(239,207,145,0.45)", background: "rgba(239,207,145,0.06)", minHeight: "44px" }}
+            >
+              <BookOpen className="w-4 h-4 text-amber-200" /> Game Codex
             </button>
           </div>
         </div>

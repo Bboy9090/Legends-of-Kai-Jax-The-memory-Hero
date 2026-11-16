@@ -1,3 +1,4 @@
+import EnhancedCombatHUD from "./EnhancedCombatHUD";
 import { useBattle } from "../../lib/stores/useBattle";
 import { useGame } from "../../lib/stores/useGame";
 import { useRunner } from "../../lib/stores/useRunner";
@@ -1060,6 +1061,9 @@ export default function BattleUI() {
           </div>
         </div>
       )}
+
+      {/* Supplemental boss-phase + ability reference (no duplicate bars) */}
+      <EnhancedCombatHUD />
 
       {/* Mission HUD */}
       {activeMission && <MissionHUD />}
