@@ -9,11 +9,12 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 
-const SECRET = 'wave8-throwaway-secret-' + Math.random().toString(36).slice(2) + 'abcdef';
-const PORT = 3150 + Math.floor(Math.random() * 40);
-const CDP_PORT = 9420 + Math.floor(Math.random() * 40);
+const SECRET = 'wave8-throwaway-secret-' + crypto.randomBytes(12).toString('hex');
+const PORT = 3150 + crypto.randomInt(0, 40);
+const CDP_PORT = 9420 + crypto.randomInt(0, 40);
 const OUT = path.resolve(process.argv[2] || 'docs/production/captures/wave8-admin');
 fs.mkdirSync(OUT, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -36,6 +37,14 @@ await new Promise((r) => (ws.onopen = r));
 let id = 1; const pend = new Map();
 ws.onmessage = (e) => { const m = JSON.parse(e.data); if (m.id && pend.has(m.id)) { pend.get(m.id)(m); pend.delete(m.id); } };
 const send = (method, params = {}) => new Promise((resolve) => { const i = id++; pend.set(i, resolve); ws.send(JSON.stringify({ id: i, method, params })); });
+let globalId = null;
+/** Call a function declaration in the page with JSON arguments (nothing is spliced into code strings). */
+const call = async (functionDeclaration, ...args) => {
+  if (!globalId) globalId = (await send('Runtime.evaluate', { expression: 'globalThis' })).result.result.objectId;
+  const r = await send('Runtime.callFunctionOn', { objectId: globalId, functionDeclaration, arguments: args.map((value) => ({ value })), returnByValue: true, awaitPromise: true });
+  if (r.result?.exceptionDetails) throw new Error(JSON.stringify(r.result.exceptionDetails).slice(0, 400));
+  return r.result?.result?.value;
+};
 const ev = async (expression) => { const r = await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }); if (r.result?.exceptionDetails) throw new Error(JSON.stringify(r.result.exceptionDetails).slice(0, 400)); return r.result?.result?.value; };
 
 await send('Emulation.setDeviceMetricsOverride', { width: 1100, height: 700, deviceScaleFactor: 1, mobile: false });
@@ -45,17 +54,17 @@ await sleep(1500);
 await ev(`window.__admin = import('/src/services/adminSession.ts').then(m => (window.__m = m, true))`);
 
 report.checks.status = await ev(`window.__m.fetchAdminStatus().then(s => ({ mode: s.mode, authenticated: s.authenticated, hasCsrf: !!s.csrf }))`);
-report.checks.unauthenticatedMutationRefused = await ev(`fetch(${JSON.stringify(PROBE_URL)}, { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(async r => ({ status: r.status, code: (await r.json()).code }))`);
+report.checks.unauthenticatedMutationRefused = await call(`function (url) { return fetch(url, { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(async r => ({ status: r.status, code: (await r.json()).code })); }`, PROBE_URL);
 
 // Kick off a mutation through adminFetch: the real dialog must appear.
-await ev(`window.__pending = window.__m.adminFetch(${JSON.stringify(PROBE_URL)}, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.status); true`);
+await call(`function (url) { window.__pending = window.__m.adminFetch(url, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.status); return true; }`, PROBE_URL);
 await until(() => ev(`Boolean(document.querySelector('[data-testid="admin-login"]'))`), 15000);
 report.checks.dialogShown = true;
 report.checks.dialogFocusedInput = await ev(`document.activeElement?.id === 'admin-secret'`);
 const shot = async (name) => { const { result } = await send('Page.captureScreenshot', { format: 'jpeg', quality: 80 }); fs.writeFileSync(path.join(OUT, name), Buffer.from(result.data, 'base64')); };
 await shot('admin-01-dialog.jpg');
 
-const type = (value) => ev(`(() => { const i = document.getElementById('admin-secret'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, ${JSON.stringify(value)}); i.dispatchEvent(new Event('input', { bubbles: true })); return true; })()`);
+const type = (value) => call(`function (value) { const i = document.getElementById('admin-secret'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, value); i.dispatchEvent(new Event('input', { bubbles: true })); return true; }`, value);
 await type('definitely-wrong');
 await ev(`document.querySelector('[data-testid="admin-login"] button[type=submit]').click()`);
 await until(() => ev(`Boolean(document.querySelector('[data-testid="admin-login"] [role=alert]'))`), 15000);
@@ -72,13 +81,13 @@ const cookies = (await send('Network.getCookies', { urls: [`http://127.0.0.1:${P
 const c = cookies.find((x) => x.name === 'kj_admin');
 report.checks.cookieFlags = c ? { httpOnly: c.httpOnly, sameSite: c.sameSite, path: c.path, secure: c.secure } : null;
 report.checks.statusAfterLogin = await ev(`window.__m.fetchAdminStatus().then(s => ({ authenticated: s.authenticated, hasCsrf: !!s.csrf }))`);
-report.checks.mutationWithoutCsrfRefused = await ev(`fetch(${JSON.stringify(PROBE_URL)}, { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.status)`);
-report.checks.secretNotInBrowserStorage = await ev(`!JSON.stringify([localStorage, sessionStorage, document.documentElement.outerHTML]).includes(${JSON.stringify(SECRET)})`);
+report.checks.mutationWithoutCsrfRefused = await call(`function (url) { return fetch(url, { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.status); }`, PROBE_URL);
+report.checks.secretNotInBrowserStorage = await call(`function (secret) { return !JSON.stringify([localStorage, sessionStorage, document.documentElement.outerHTML]).includes(secret); }`, SECRET);
 const bundleText = await (await fetch(`http://127.0.0.1:${PORT}/src/services/adminSession.ts`)).text();
 const appText = await (await fetch(`http://127.0.0.1:${PORT}/src/App.tsx`)).text();
 report.checks.secretNotInServedClientCode = !bundleText.includes(SECRET) && !appText.includes(SECRET) && !/KAIJAX_ADMIN_TOKEN/.test(bundleText + appText);
 await ev(`window.__m.adminLogout().then(() => true)`);
-report.checks.afterLogoutRefused = await ev(`fetch(${JSON.stringify(PROBE_URL)}, { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.status)`);
+report.checks.afterLogoutRefused = await call(`function (url) { return fetch(url, { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.status); }`, PROBE_URL);
 
 const c1 = report.checks;
 report.pass = c1.status.mode === 'token' && c1.unauthenticatedMutationRefused.status === 401 && c1.dialogShown && c1.dialogFocusedInput && c1.dialogStillOpenAfterWrong && c1.retriedMutationStatus === 404 && c1.dialogClosedAfterLogin && c1.cookieVisibleToJs === false && c1.cookieFlags?.httpOnly === true && c1.cookieFlags?.sameSite === 'Strict' && c1.mutationWithoutCsrfRefused === 403 && c1.secretNotInBrowserStorage && c1.secretNotInServedClientCode && c1.afterLogoutRefused === 401;

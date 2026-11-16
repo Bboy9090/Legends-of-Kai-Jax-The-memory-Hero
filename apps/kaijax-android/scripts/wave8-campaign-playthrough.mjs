@@ -14,6 +14,7 @@
  * Usage: node scripts/wave8-campaign-playthrough.mjs [--app URL] [--cdp URL] [--out DIR]
  *        [--districts a,b,c] [--max-seconds N] [--label name] [--mobile]
  */
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
@@ -94,6 +95,19 @@ class CDP {
       this.ws.send(JSON.stringify({ id, method, params }));
     });
   }
+  /** Run a function declaration in the page with JSON-serialisable arguments (no string-built code). */
+  async call(functionDeclaration, ...args) {
+    if (!this.globalId) this.globalId = (await this.send('Runtime.evaluate', { expression: 'globalThis' })).result.objectId;
+    const r = await this.send('Runtime.callFunctionOn', {
+      objectId: this.globalId,
+      functionDeclaration,
+      arguments: args.map((value) => ({ value })),
+      returnByValue: true,
+      awaitPromise: true,
+    });
+    if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description || r.exceptionDetails.text);
+    return r.result.value;
+  }
   async eval(expression, timeoutMs = 120000) {
     const r = await this.send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true }, timeoutMs);
     if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description || r.exceptionDetails.text);
@@ -105,7 +119,7 @@ async function connect() {
   let proc = null;
   let base = CDP_URL;
   if (!base) {
-    const port = 9360 + Math.floor(Math.random() * 40);
+    const port = 9360 + crypto.randomInt(0, 40);
     const bin =
       process.env.CHROME_BIN ||
       ['/opt/pw-browsers/chromium-1243/chrome-linux64/chrome', '/opt/pw-browsers/chromium-1228/chrome-linux64/chrome'].find((p) =>
@@ -402,7 +416,7 @@ async function main() {
       report.districts[id] = rec;
       console.error(`\n=== ${id} ===`);
       for (let attempt = 1; attempt <= 3; attempt++) {
-        await cdp.eval(`(() => { const e = window.__KAIJAX_ENGINE__; if (${JSON.stringify(id)} === 'ashblock-heights') { e.save = { ...e.save, missionStageIndex: 0, missionCompleted: false }; e.isVictory = false; } window.__w8.staleVictoryOnEntry = !!e.isVictory; e.switchDistrict(${JSON.stringify(id)}); window.__w8.resetCounters(); window.__w8.hook(); })()`);
+        await cdp.call(`function (districtId) { const e = window.__KAIJAX_ENGINE__; if (districtId === 'ashblock-heights') { e.save = { ...e.save, missionStageIndex: 0, missionCompleted: false }; e.isVictory = false; } window.__w8.staleVictoryOnEntry = !!e.isVictory; e.switchDistrict(districtId); window.__w8.resetCounters(); window.__w8.hook(); }`, id);
         const diag = await cdp.eval(`(() => { const d = window.__KAIJAX_ENGINE__.getQualificationDiagnostics(); return { district: window.__KAIJAX_ENGINE__.activeDistrictId, walkableZones: d.walkableZonesCount, anchors: d.webTraversal.anchorsTotal, anchorsAttached: d.webTraversal.allAnchorsGeometryAttached, civilians: (window.__KAIJAX_ENGINE__.world.civilians || []).map(c => ({ name: c.name, pos: c.position.toArray().map(v => +v.toFixed(1)) })), memorySitePos: window.__KAIJAX_ENGINE__.world.memorySitePos?.toArray?.(), alleyGatePos: window.__KAIJAX_ENGINE__.world.alleyGatePos?.toArray?.(), walkableTops: (window.__KAIJAX_ENGINE__.world.colliders || []).filter(c => c.walkableTop).map(c => [c.minX, c.maxX, c.minZ, c.maxZ, c.maxY].map(v => +v.toFixed(1))), enemies: d.aliveEnemies.map(e => ({id:e.id, kind:e.kind, hp:e.hp})) }; })()`);
         if (attempt === 1) {
           rec.entry = diag;
@@ -438,7 +452,7 @@ async function main() {
           const status = await cdp.eval(`(() => { const e = window.__KAIJAX_ENGINE__; const b = e.enemies.find(x => x.kind === 'boss' || String(x.id).startsWith('boss-')); return { dead: window.__w8.state.dead, bossDead: !!b && b.state === 'dead', steps: window.__w8.state.step, isVictory: !!e.isVictory }; })()`);
           if (status.dead || (status.bossDead && (id !== 'ashblock-heights' || status.isVictory))) done = true;
         }
-        const outcome = await cdp.eval(`(() => {
+        const outcome = await cdp.call(`function (districtId) { return (() => {
           const e = window.__KAIJAX_ENGINE__; const w = window.__w8;
           const boss = e.enemies.find(x => x.kind === 'boss' || String(x.id).startsWith('boss-'));
           return {
@@ -447,7 +461,7 @@ async function main() {
             missionStage: e.save?.missionStageIndex ?? null,
             civiliansRescued: e.world?.civilians ? e.world.civilians.filter(c => c.rescued).length + '/' + e.world.civilians.length : null,
             memorySiteDone: !!e.world?.memorySiteReconstructed, alleyGateOpen: !!e.world?.alleyGateOpen,
-            bossDefeated: !!boss && boss.state === 'dead' && (${JSON.stringify(id)} !== 'ashblock-heights' || !!e.isVictory),
+            bossDefeated: !!boss && boss.state === 'dead' && (districtId !== 'ashblock-heights' || !!e.isVictory),
             playerDied: !!w.state.dead,
             isVictory: !!e.isVictory,
             stageReached: e.districtStageIndex,
@@ -456,7 +470,7 @@ async function main() {
             completedDistricts: e.save?.completedDistricts ?? [],
             final: w.snapshot(),
           };
-        })()`);
+        })(); }`, id);
         const wallSeconds = +((Date.now() - start) / 1000).toFixed(1);
         const phases = [...new Set(timeline.filter((t) => t.boss).map((t) => t.boss.phase))];
         rec.attempts.push({ attempt, wallSeconds, ...outcome, bossPhasesObserved: phases, timeline });

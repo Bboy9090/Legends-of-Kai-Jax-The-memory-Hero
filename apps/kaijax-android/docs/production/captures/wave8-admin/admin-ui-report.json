@@ -1,5 +1,5 @@
 {
-  "secretLength": 40,
+  "secretLength": 47,
   "checks": {
     "status": {
       "mode": "token",
