@@ -174,6 +174,13 @@ export interface HeroProgression {
   equipped: Record<EquipSlot, string>;
 }
 
+export type PlayableDistrictId =
+  | 'ashblock-heights'
+  | 'sector-7'
+  | 'neon-ward'
+  | 'iron-market'
+  | 'undercrown';
+
 export interface SaveSlotData {
   version: number;
   slotId: string;
@@ -185,6 +192,7 @@ export interface SaveSlotData {
   traversalTier: TraversalTier;
   missionStageIndex: number;
   missionCompleted: boolean;
+  completedDistricts?: string[];
   checkpointPos: [number, number, number];
   rescuedCivilians: number;
   reconstructedSites: number;

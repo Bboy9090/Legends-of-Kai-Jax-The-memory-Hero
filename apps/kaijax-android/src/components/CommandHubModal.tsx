@@ -36,7 +36,14 @@ import {
 import { DISTRICT_PRODUCTION_SPECS } from '../game/data/districtSpecifications';
 import { readableOnDark } from '../game/accessibility/contrast';
 import { computeHeroStats, SAVE_SLOTS } from '../game/save/SaveManager';
-import { CharacterModelVersion, EnvironmentMode, EquipSlot, GameSettings, SaveSlotData } from '../game/types';
+import {
+  CharacterModelVersion,
+  EnvironmentMode,
+  EquipSlot,
+  GameSettings,
+  PlayableDistrictId,
+  SaveSlotData,
+} from '../game/types';
 
 export type HubTab = 'missions' | 'skills' | 'gear' | 'map' | 'canon' | 'settings';
 
@@ -58,7 +65,7 @@ interface CommandHubModalProps {
   onLoadSlot: (slotId: string) => void;
   onDeleteSlot: (slotId: string) => void;
   onStartPatrol: () => void;
-  onSwitchDistrict?: (districtId: 'ashblock-heights' | 'sector-7' | 'neon-ward') => void;
+  onSwitchDistrict?: (districtId: PlayableDistrictId) => void;
   onOpenLegal: (docId: 'privacy' | 'terms') => void;
   canonManifest: CanonVaultManifest;
   onOpenCanonDrive: () => void;
@@ -645,6 +652,24 @@ export const CommandHubModal: React.FC<CommandHubModalProps> = ({
                     >
                       Deploy: Neon Ward (Provisional)
                     </button>
+                    <button
+                      onClick={() => {
+                        onSwitchDistrict('iron-market');
+                        onClose();
+                      }}
+                      className="rounded-lg bg-orange-500/20 hover:bg-orange-500/35 border border-orange-400/60 px-3 py-1.5 text-xs font-semibold text-orange-200 transition"
+                    >
+                      Deploy: Iron Market
+                    </button>
+                    <button
+                      onClick={() => {
+                        onSwitchDistrict('undercrown');
+                        onClose();
+                      }}
+                      className="rounded-lg bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-400/60 px-3 py-1.5 text-xs font-semibold text-cyan-200 transition"
+                    >
+                      Deploy: Undercrown
+                    </button>
                   </div>
                 )}
               </div>
@@ -686,17 +711,22 @@ export const CommandHubModal: React.FC<CommandHubModalProps> = ({
                             </div>
                           </>
                         )}
-                        {(d.id === 'ashblock-heights' || d.id === 'sector-7' || d.id === 'neon-ward') && onSwitchDistrict && (
-                          <button
-                            onClick={() => {
-                              onSwitchDistrict(d.id as 'ashblock-heights' | 'sector-7' | 'neon-ward');
-                              onClose();
-                            }}
-                            className="mt-2 w-full rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/50 text-amber-200 font-semibold py-1.5 text-xs transition"
-                          >
-                            Deploy to {d.name}
-                          </button>
-                        )}
+                        {(d.id === 'ashblock-heights' ||
+                          d.id === 'sector-7' ||
+                          d.id === 'neon-ward' ||
+                          d.id === 'iron-market' ||
+                          d.id === 'undercrown') &&
+                          onSwitchDistrict && (
+                            <button
+                              onClick={() => {
+                                onSwitchDistrict(d.id as PlayableDistrictId);
+                                onClose();
+                              }}
+                              className="mt-2 w-full rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/50 text-amber-200 font-semibold py-1.5 text-xs transition"
+                            >
+                              Deploy to {d.name}
+                            </button>
+                          )}
                       </div>
                     </div>
                   );

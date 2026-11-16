@@ -3,10 +3,14 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { AudioEngine } from '../audio/AudioEngine';
 import { HERO_ABILITIES } from '../data/abilitiesData';
 import {
+  CAMPAIGN_DISTRICT_VICTORY_DIALOGUE,
   FUSION_AWAKENING_DIALOGUE,
   MISSION_1_STEPS,
   MISSION_1_VICTORY_DIALOGUE,
   MISSION_2_STEPS,
+  MISSION_3_STEPS,
+  MISSION_4_STEPS,
+  MISSION_5_STEPS,
   SECTOR7_VICTORY_DIALOGUE,
 } from '../data/missionsData';
 import {
@@ -74,6 +78,7 @@ import {
   GameSettings,
   HeroId,
   HudSnapshot,
+  PlayableDistrictId,
   SaveSlotData,
 } from '../types';
 import { COSMETIC_PRESETS } from '../data/itemsData';
@@ -81,13 +86,16 @@ import { ArticulatedEnemyRig, ArticulatedHeroRig, createEnemyRig, createHeroRig 
 import { CharacterMotionSample, GLBCharacterInstance } from './GLBCharacterController';
 import { EnemyModelId } from '../data/enemyAssetRegistry';
 import { createProceduralTextures, WorldTextureSet } from './ProceduralTextures';
+import { buildIronMarketDistrict } from './IronMarketBuilder';
 import { buildNeonWardDistrict } from './NeonWardBuilder';
 import { buildSector7District } from './Sector7Builder';
+import { buildUndercrownDistrict } from './UndercrownBuilder';
 import { AshblockWorld, buildAshblockHeights } from './WorldBuilder';
 
 function resolveEnemyModelId(id: string, kind: EnemyArchetype): EnemyModelId {
   if (id === 'boss-architect-scout') return 'architect_scout';
   if (id === 'boss-neon-prince') return 'neon_prince';
+  if (id === 'boss-undercrown-sentinel') return 'undercrown_sentinel';
   if (id === 'boss-enforcer' || kind === 'boss') return 'fang_enforcer';
   if (id === 'e-rift-1' || id === 'patrol-5' || id === 'boss-blood-broker') return 'blood_broker';
   if (kind === 'dodger' || kind === 'assassin') return 'syndicate_stalker';
@@ -184,7 +192,8 @@ export class GameEngine {
   private camera: THREE.PerspectiveCamera;
   private textures: WorldTextureSet;
   private world: AshblockWorld;
-  public activeDistrictId: 'ashblock-heights' | 'sector-7' | 'neon-ward' = 'ashblock-heights';
+  public activeDistrictId: PlayableDistrictId = 'ashblock-heights';
+  public districtStageIndex = 0;
   public sector7StageIndex = 0;
   public sector7Completed = false;
   private audio: AudioEngine;
@@ -844,8 +853,9 @@ export class GameEngine {
     this.lockedEnemyId = null;
   }
 
-  public switchDistrict(districtId: 'ashblock-heights' | 'sector-7' | 'neon-ward'): void {
+  public switchDistrict(districtId: PlayableDistrictId): void {
     this.activeDistrictId = districtId;
+    this.districtStageIndex = 0;
     this.clearEnemies();
     this.world.dispose?.();
     if (districtId === 'sector-7') {
@@ -873,6 +883,34 @@ export class GameEngine {
       this.spawnEnemy('nw-stalker-1', 'Mirage Stalker', 'dodger', 0, new THREE.Vector3(-6, 0, -14));
       this.spawnEnemy('nw-marksman-1', 'Neon Sniper', 'marksman', 0, new THREE.Vector3(6, 0, -20));
       this.spawnEnemy('boss-neon-prince', 'Neon Prince', 'boss', 1, new THREE.Vector3(0, 0, -68));
+      this.world.alleyGateOpen = true;
+      this.world.alleyGateBarrier.visible = false;
+      this.borynGlb.root.position.copy(this.world.borynMentorPos);
+      this.boraxGlb.root.position.copy(this.world.boraxMentorPos);
+      this.audio.setMood('combat');
+    } else if (districtId === 'iron-market') {
+      this.world = buildIronMarketDistrict(this.scene, this.textures, this.settings.environmentMode ?? 'reconstructed');
+      this.world.setQualityTier(this.settings.graphicsQuality);
+      this.playerPos.set(0, 0, 6);
+      this.playerVel.set(0, 0, 0);
+      this.companionPos.set(2, 0, 7);
+      this.spawnEnemy('im-enforcer-1', 'Debt Collector Bruiser', 'bruiser', 0, new THREE.Vector3(-6, 0, -16));
+      this.spawnEnemy('im-shield-1', 'Forge Shield Warden', 'shield', 0, new THREE.Vector3(6, 0, -20));
+      this.spawnEnemy('boss-blood-broker', 'Blood Broker', 'assassin', 1, new THREE.Vector3(0, 0, -68));
+      this.world.alleyGateOpen = true;
+      this.world.alleyGateBarrier.visible = false;
+      this.borynGlb.root.position.copy(this.world.borynMentorPos);
+      this.boraxGlb.root.position.copy(this.world.boraxMentorPos);
+      this.audio.setMood('combat');
+    } else if (districtId === 'undercrown') {
+      this.world = buildUndercrownDistrict(this.scene, this.textures, this.settings.environmentMode ?? 'reconstructed');
+      this.world.setQualityTier(this.settings.graphicsQuality);
+      this.playerPos.set(0, 0, 6);
+      this.playerVel.set(0, 0, 0);
+      this.companionPos.set(2, 0, 7);
+      this.spawnEnemy('uc-stalker-1', 'Chasm Stalker', 'dodger', 0, new THREE.Vector3(-6, 0, -16));
+      this.spawnEnemy('uc-marksman-1', 'Vault Marksman', 'marksman', 0, new THREE.Vector3(6, 0, -22));
+      this.spawnEnemy('boss-undercrown-sentinel', 'Undercrown Sentinel', 'boss', 1, new THREE.Vector3(0, 0, -68));
       this.world.alleyGateOpen = true;
       this.world.alleyGateBarrier.visible = false;
       this.borynGlb.root.position.copy(this.world.borynMentorPos);
@@ -2364,15 +2402,33 @@ export class GameEngine {
 
     // Check Mission Stage Transitions
     const aliveInStage = this.enemies.some((other) => other.stageTag === e.stageTag && other.state !== 'dead');
-    if (this.activeDistrictId === 'sector-7') {
+    if (this.activeDistrictId !== 'ashblock-heights') {
       if (!aliveInStage && e.stageTag < 2) {
-        this.sector7StageIndex = Math.max(this.sector7StageIndex, e.stageTag + 1);
-      } else if (e.id === 'boss-architect-scout') {
-        this.sector7Completed = true;
-        this.sector7StageIndex = 2;
+        this.districtStageIndex = Math.max(this.districtStageIndex, e.stageTag + 1);
+        if (this.activeDistrictId === 'sector-7') {
+          this.sector7StageIndex = this.districtStageIndex;
+        }
+      }
+      if (
+        e.id === 'boss-architect-scout' ||
+        e.id === 'boss-neon-prince' ||
+        e.id === 'boss-blood-broker' ||
+        e.id === 'boss-undercrown-sentinel'
+      ) {
+        if (this.activeDistrictId === 'sector-7') {
+          this.sector7Completed = true;
+          this.sector7StageIndex = 2;
+        }
+        const completed = Array.from(
+          new Set([...(this.save.completedDistricts ?? []), this.activeDistrictId])
+        );
+        this.save = { ...this.save, completedDistricts: completed };
+        this.callbacks.onSaveProgress({ completedDistricts: completed }, true);
         this.audio.setMood('victory');
         this.callbacks.onGrantRewards(280, { 'Storm Capacitor': 2, 'Ash Scrap': 3 }, 1);
-        this.callbacks.onTriggerDialogue(SECTOR7_VICTORY_DIALOGUE);
+        this.callbacks.onTriggerDialogue(
+          this.activeDistrictId === 'sector-7' ? SECTOR7_VICTORY_DIALOGUE : CAMPAIGN_DISTRICT_VICTORY_DIALOGUE
+        );
       }
       return;
     }
@@ -3727,7 +3783,13 @@ export class GameEngine {
     const step =
       this.activeDistrictId === 'sector-7'
         ? MISSION_2_STEPS[Math.min(this.sector7StageIndex, MISSION_2_STEPS.length - 1)]
-        : MISSION_1_STEPS[Math.min(this.save.missionStageIndex, MISSION_1_STEPS.length - 1)];
+        : this.activeDistrictId === 'neon-ward'
+          ? MISSION_3_STEPS[Math.min(this.districtStageIndex, MISSION_3_STEPS.length - 1)]
+          : this.activeDistrictId === 'iron-market'
+            ? MISSION_4_STEPS[Math.min(this.districtStageIndex, MISSION_4_STEPS.length - 1)]
+            : this.activeDistrictId === 'undercrown'
+              ? MISSION_5_STEPS[Math.min(this.districtStageIndex, MISSION_5_STEPS.length - 1)]
+              : MISSION_1_STEPS[Math.min(this.save.missionStageIndex, MISSION_1_STEPS.length - 1)];
 
     let interactPrompt: string | null = null;
     for (const civ of this.world.civilians) {
@@ -3829,21 +3891,25 @@ export class GameEngine {
       bossPhase: boss ? boss.phase : 1,
       bossTelegraph:
         boss && boss.state === 'windup'
-          ? boss.id === 'boss-neon-prince'
+          ? boss.id === 'boss-undercrown-sentinel'
             ? boss.unblockableWindup
-              ? 'MIRAGE PRISM OVERLOAD — EVADE!'
-              : 'NEON BLITZ SLASH — PARRY!'
-            : boss.id === 'boss-architect-scout'
+              ? 'SUBTERRANEAN SURGE SLAM — EVADE!'
+              : 'BASTION HALBERD SWEEP — PARRY!'
+            : boss.id === 'boss-neon-prince'
               ? boss.unblockableWindup
-                ? 'ORBITAL RAIL LOCK — EVADE!'
-                : 'SNIPER BURST — PARRY OR CLOSE IN!'
-              : boss.id === 'e-rift-1' || boss.id === 'boss-blood-broker'
+                ? 'MIRAGE PRISM OVERLOAD — EVADE!'
+                : 'NEON BLITZ SLASH — PARRY!'
+              : boss.id === 'boss-architect-scout'
                 ? boss.unblockableWindup
-                  ? 'BLOOD DEBT NOVA — EVADE!'
-                  : 'CRIMSON LEDGER DASH — PARRY!'
-                : boss.unblockableWindup
-                  ? 'UNBLOCKABLE OVERDRIVE SLAM — EVADE!'
-                  : 'HAMMER SWEEP — PARRY OR BLOCK!'
+                  ? 'ORBITAL RAIL LOCK — EVADE!'
+                  : 'SNIPER BURST — PARRY OR CLOSE IN!'
+                : boss.id === 'e-rift-1' || boss.id === 'boss-blood-broker'
+                  ? boss.unblockableWindup
+                    ? 'BLOOD DEBT NOVA — EVADE!'
+                    : 'CRIMSON LEDGER DASH — PARRY!'
+                  : boss.unblockableWindup
+                    ? 'UNBLOCKABLE OVERDRIVE SLAM — EVADE!'
+                    : 'HAMMER SWEEP — PARRY OR BLOCK!'
           : null,
       interactPrompt,
       canWebSwing,

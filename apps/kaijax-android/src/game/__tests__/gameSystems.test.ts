@@ -9,8 +9,10 @@ import {
   GLBCharacterInstance,
   preloadGlbAssets,
 } from '../engine/GLBCharacterController.ts';
+import { buildIronMarketDistrict } from '../engine/IronMarketBuilder.ts';
 import { buildNeonWardDistrict } from '../engine/NeonWardBuilder.ts';
 import { buildSector7District } from '../engine/Sector7Builder.ts';
+import { buildUndercrownDistrict } from '../engine/UndercrownBuilder.ts';
 import {
   bestTextOn,
   contrastRatio,
@@ -1022,8 +1024,69 @@ import('../data/characterAssetRegistry.ts').then(
   assert.equal(nwWorld.environmentalHazards.length, 4, 'Neon Ward must provide 4 Overloaded Neon Signboard hazards');
   assert.equal(nwWorld.walkableZones.length, 7, 'Neon Ward must provide 7 elevated sign-cage/skywalk zones');
   nwWorld.dispose();
+
+  // 28. Wave 6 Five-District Cross-Disposal, Iron Market, Undercrown & Progression Persistence
+  const texStub = {
+    asphaltMap: s7StubTex as unknown as THREE.CanvasTexture,
+    asphaltRoughness: s7StubTex as unknown as THREE.CanvasTexture,
+    sidewalkMap: s7StubTex as unknown as THREE.CanvasTexture,
+    buildingFacadeMap: s7StubTex as unknown as THREE.CanvasTexture,
+    buildingWarmOchreMap: s7StubTex as unknown as THREE.CanvasTexture,
+    containerMap: s7StubTex as unknown as THREE.CanvasTexture,
+    awningMap: s7StubTex as unknown as THREE.CanvasTexture,
+    muralUnityMap: s7StubTex as unknown as THREE.CanvasTexture,
+    billboardTrustMap: s7StubTex as unknown as THREE.CanvasTexture,
+    graffitiMemoryMap: s7StubTex as unknown as THREE.CanvasTexture,
+    bannerRoarMap: s7StubTex as unknown as THREE.CanvasTexture,
+    signMarketMap: s7StubTex as unknown as THREE.CanvasTexture,
+    contactShadowMap: s7StubTex as unknown as THREE.CanvasTexture,
+    dispose: () => s7StubTex.dispose(),
+  };
+  const crossScene = new THREE.Scene();
+  for (let cycle = 0; cycle < 2; cycle++) {
+    const a = buildAshblockHeights(crossScene, texStub, 'reconstructed');
+    assert.ok(crossScene.children.length > 0);
+    a.dispose?.();
+    assert.equal(crossScene.children.length, 0, 'Ashblock Heights dispose() must leave zero scene children');
+
+    const s7 = buildSector7District(crossScene, texStub);
+    s7.dispose();
+    assert.equal(crossScene.children.length, 0, 'Sector-7 dispose() must leave zero scene children');
+
+    const nw = buildNeonWardDistrict(crossScene, texStub);
+    nw.dispose();
+    assert.equal(crossScene.children.length, 0, 'Neon Ward dispose() must leave zero scene children');
+
+    const im = buildIronMarketDistrict(crossScene, texStub);
+    assert.equal(im.webAnchors.length, 6);
+    assert.equal(im.environmentalHazards.length, 4);
+    assert.equal(im.civilians.length, 2);
+    im.dispose();
+    assert.equal(crossScene.children.length, 0, 'Iron Market dispose() must leave zero scene children');
+
+    const uc = buildUndercrownDistrict(crossScene, texStub);
+    assert.equal(uc.webAnchors.length, 6);
+    assert.equal(uc.environmentalHazards.length, 4);
+    uc.dispose();
+    assert.equal(crossScene.children.length, 0, 'Undercrown dispose() must leave zero scene children');
+  }
+  const w6Save = createNewSave('slot-2', 'Wave 6 Progression', 'kai');
+  w6Save.completedDistricts = ['ashblock-heights', 'sector-7', 'neon-ward', 'iron-market', 'undercrown'];
+  const w6Store = new Map<string, string>();
+  const mockLs = {
+    getItem: (k: string) => w6Store.get(k) ?? null,
+    setItem: (k: string, v: string) => {
+      w6Store.set(k, v);
+    },
+    removeItem: (k: string) => {
+      w6Store.delete(k);
+    },
+  } as unknown as Storage;
+  saveToSlot('slot-2', w6Save, mockLs);
+  const loadedW6 = loadFromSlot('slot-2', mockLs);
+  assert.deepEqual(loadedW6?.completedDistricts, w6Save.completedDistricts);
   s7StubTex.dispose();
 
-  console.log('ALL P1, P1-C, P1-E, P1-G, P1-I, P1-J, P1-K, P1-L, P1-M, WAVE 3, WAVE 4 & WAVE 5 TESTS PASSED (27/27 suites)');
+  console.log('ALL P1, P1-C, P1-E, P1-G, P1-I, P1-J, P1-K, P1-L, P1-M, WAVE 3, 4, 5 & 6 TESTS PASSED (28/28 suites)');
 });
 

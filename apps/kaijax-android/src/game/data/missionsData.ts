@@ -206,3 +206,69 @@ export const SECTOR7_VICTORY_DIALOGUE = [
     text: 'Then Neon Ward is our next stop—or we can regroup back at Ashblock Heights anytime.',
   },
 ];
+
+export const MISSION_3_STEPS: MissionStep[] = [
+  {
+    id: 'nw-plaza',
+    title: '01. Mirage Boulevard',
+    objective: 'Clear the Neon Court stalkers and disrupt their broadcast relays.',
+    hint: 'Use Overloaded Neon Signboards for environmental takedowns and Web Zip between sign-cages.',
+    targetPos: [0, 0, -20],
+  },
+  {
+    id: 'nw-boss',
+    title: '02. The Neon Prince',
+    objective: 'Defeat Neon Prince in the Broadcast Atrium.',
+    hint: 'Parry Neon Blitz Slash and evade Mirage Prism Overload.',
+    targetPos: [0, 0, -68],
+  },
+];
+
+export const MISSION_4_STEPS: MissionStep[] = [
+  {
+    id: 'im-bazaar',
+    title: '01. Forge Keep Bazaar',
+    objective: 'Free the Iron Market captives and clear the Syndicate debt enforcers.',
+    hint: 'Use Molten Forge Vents to break enemy armor along the slag channels.',
+    targetPos: [0, 0, -24],
+  },
+  {
+    id: 'im-boss',
+    title: '02. Blood Broker Pit',
+    objective: 'Defeat Blood Broker in the Octagonal Fang Pit.',
+    hint: 'Parry Crimson Ledger Dash and evade Blood Debt Nova at 50% HP.',
+    targetPos: [0, 0, -68],
+  },
+];
+
+export const MISSION_5_STEPS: MissionStep[] = [
+  {
+    id: 'uc-chasm',
+    title: '01. Fracture Pit Descent',
+    objective: 'Cross the derailed transit viaducts and neutralize the Undercrown vanguard.',
+    hint: 'Web Zip across chasm anchors and trigger Subterranean Surge Conduits.',
+    targetPos: [0, 0, -30],
+  },
+  {
+    id: 'uc-boss',
+    title: '02. Undercrown Sentinel',
+    objective: 'Defeat the Undercrown Sentinel guarding the pre-city vault.',
+    hint: 'Break its bronze bastion guard with Heavy Strikes and Storm Pressure.',
+    targetPos: [0, 0, -68],
+  },
+];
+
+export const CAMPAIGN_DISTRICT_VICTORY_DIALOGUE = [
+  {
+    speaker: 'Kai',
+    role: 'Memory-Web Heir',
+    portraitHero: 'kai' as const,
+    text: 'Another district ward is broken—the memory threads across Raging City are reconnecting.',
+  },
+  {
+    speaker: 'Jax',
+    role: 'Storm Fang',
+    portraitHero: 'jax' as const,
+    text: 'Our lineage is waking up across every sector. Let\'s check the Raging City map for our next target.',
+  },
+];

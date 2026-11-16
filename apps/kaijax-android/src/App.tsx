@@ -568,7 +568,11 @@ export default function App() {
                 ? 'Deployed to Sector-7: Ironvein Yards'
                 : districtId === 'neon-ward'
                   ? 'Deployed to Neon Ward (Provisional)'
-                  : 'Returned to Ashblock Heights'
+                  : districtId === 'iron-market'
+                    ? 'Deployed to Iron Market: Forge Keeps'
+                    : districtId === 'undercrown'
+                      ? 'Deployed to Undercrown: Fracture Pit'
+                      : 'Returned to Ashblock Heights'
             );
           }}
           onOpenLegal={(doc) => setLegalDoc(doc)}
