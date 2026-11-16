@@ -9,10 +9,13 @@ import {
   GLBCharacterInstance,
   preloadGlbAssets,
 } from '../engine/GLBCharacterController.ts';
+import { buildErasureFieldsDistrict } from '../engine/ErasureFieldsBuilder.ts';
 import { buildIronMarketDistrict } from '../engine/IronMarketBuilder.ts';
+import { buildMemoryNexusDistrict } from '../engine/MemoryNexusBuilder.ts';
 import { buildNeonWardDistrict } from '../engine/NeonWardBuilder.ts';
 import { buildSector7District } from '../engine/Sector7Builder.ts';
 import { buildUndercrownDistrict } from '../engine/UndercrownBuilder.ts';
+import { buildZenithSpiresDistrict } from '../engine/ZenithSpiresBuilder.ts';
 import {
   bestTextOn,
   contrastRatio,
@@ -81,7 +84,13 @@ import {
   FOUR_HERITAGES,
 } from '../data/canonData.ts';
 import { COSMETIC_PRESETS } from '../data/itemsData.ts';
-import { MISSION_1_STEPS } from '../data/missionsData.ts';
+import {
+  FINAL_CAMPAIGN_VICTORY_DIALOGUE,
+  MISSION_1_STEPS,
+  MISSION_6_STEPS,
+  MISSION_7_STEPS,
+  MISSION_8_STEPS,
+} from '../data/missionsData.ts';
 import { createEnemyRig, createHeroRig } from '../engine/CharacterBuilder.ts';
 import { OFFLINE_LEGAL_DOCS } from '../legal/offlineLegal.ts';
 import {
@@ -1087,6 +1096,90 @@ import('../data/characterAssetRegistry.ts').then(
   assert.deepEqual(loadedW6?.completedDistricts, w6Save.completedDistricts);
   s7StubTex.dispose();
 
-  console.log('ALL P1, P1-C, P1-E, P1-G, P1-I, P1-J, P1-K, P1-L, P1-M, WAVE 3, 4, 5 & 6 TESTS PASSED (28/28 suites)');
+  // 29. Wave 7: Districts 6-8 (Zenith Spires, Erasure Fields, Memory Nexus), 8-District Cycling & Campaign Completion
+  const w7StubTex = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
+  const w7TexStub = {
+    asphaltMap: w7StubTex as unknown as THREE.CanvasTexture,
+    asphaltRoughness: w7StubTex as unknown as THREE.CanvasTexture,
+    sidewalkMap: w7StubTex as unknown as THREE.CanvasTexture,
+    buildingFacadeMap: w7StubTex as unknown as THREE.CanvasTexture,
+    buildingWarmOchreMap: w7StubTex as unknown as THREE.CanvasTexture,
+    containerMap: w7StubTex as unknown as THREE.CanvasTexture,
+    awningMap: w7StubTex as unknown as THREE.CanvasTexture,
+    muralUnityMap: w7StubTex as unknown as THREE.CanvasTexture,
+    billboardTrustMap: w7StubTex as unknown as THREE.CanvasTexture,
+    graffitiMemoryMap: w7StubTex as unknown as THREE.CanvasTexture,
+    bannerRoarMap: w7StubTex as unknown as THREE.CanvasTexture,
+    signMarketMap: w7StubTex as unknown as THREE.CanvasTexture,
+    contactShadowMap: w7StubTex as unknown as THREE.CanvasTexture,
+    dispose: () => w7StubTex.dispose(),
+  };
+  const w7Scene = new THREE.Scene();
+  for (let cycle = 0; cycle < 2; cycle++) {
+    const a = buildAshblockHeights(w7Scene, w7TexStub, 'reconstructed');
+    a.dispose?.();
+    assert.equal(w7Scene.children.length, 0, 'Ashblock Heights dispose() must leave zero scene children');
+
+    const s7 = buildSector7District(w7Scene, w7TexStub);
+    s7.dispose();
+    assert.equal(w7Scene.children.length, 0, 'Sector-7 dispose() must leave zero scene children');
+
+    const nw = buildNeonWardDistrict(w7Scene, w7TexStub);
+    nw.dispose();
+    assert.equal(w7Scene.children.length, 0, 'Neon Ward dispose() must leave zero scene children');
+
+    const im = buildIronMarketDistrict(w7Scene, w7TexStub);
+    im.dispose();
+    assert.equal(w7Scene.children.length, 0, 'Iron Market dispose() must leave zero scene children');
+
+    const uc = buildUndercrownDistrict(w7Scene, w7TexStub);
+    uc.dispose();
+    assert.equal(w7Scene.children.length, 0, 'Undercrown dispose() must leave zero scene children');
+
+    const zs = buildZenithSpiresDistrict(w7Scene, w7TexStub);
+    assert.equal(zs.webAnchors.length, 6, 'Zenith Spires must define 6 web anchors');
+    assert.equal(zs.environmentalHazards.length, 4, 'Zenith Spires must define 4 Lightning Conductor Pylons');
+    assert.equal(zs.walkableZones.length, 7, 'Zenith Spires must define 7 walkable zones');
+    zs.dispose();
+    assert.equal(w7Scene.children.length, 0, 'Zenith Spires dispose() must leave zero scene children');
+
+    const ef = buildErasureFieldsDistrict(w7Scene, w7TexStub);
+    assert.equal(ef.webAnchors.length, 6, 'Erasure Fields must define 6 web anchors');
+    assert.equal(ef.environmentalHazards.length, 4, 'Erasure Fields must define 4 Amnesia Resonance Pulses');
+    assert.equal(ef.walkableZones.length, 7, 'Erasure Fields must define 7 walkable zones');
+    ef.dispose();
+    assert.equal(w7Scene.children.length, 0, 'Erasure Fields dispose() must leave zero scene children');
+
+    const mn = buildMemoryNexusDistrict(w7Scene, w7TexStub);
+    assert.equal(mn.webAnchors.length, 6, 'Memory Nexus must define 6 web anchors');
+    assert.equal(mn.environmentalHazards.length, 4, 'Memory Nexus must define 4 Temporal Thread Fractures');
+    assert.equal(mn.walkableZones.length, 7, 'Memory Nexus must define 7 walkable zones');
+    mn.dispose();
+    assert.equal(w7Scene.children.length, 0, 'Memory Nexus dispose() must leave zero scene children');
+  }
+
+  assert.ok(MISSION_6_STEPS.length >= 2, 'MISSION_6_STEPS must define Zenith Spires objectives');
+  assert.ok(MISSION_7_STEPS.length >= 2, 'MISSION_7_STEPS must define Erasure Fields objectives');
+  assert.ok(MISSION_8_STEPS.length >= 2, 'MISSION_8_STEPS must define Memory Nexus objectives');
+  assert.ok(FINAL_CAMPAIGN_VICTORY_DIALOGUE.length >= 2, 'FINAL_CAMPAIGN_VICTORY_DIALOGUE must define campaign finale lines');
+
+  const w7Save = createNewSave('slot-3', 'Wave 7 Full Campaign', 'kai');
+  w7Save.completedDistricts = [
+    'ashblock-heights',
+    'sector-7',
+    'neon-ward',
+    'iron-market',
+    'undercrown',
+    'zenith-spires',
+    'erasure-fields',
+    'memory-nexus',
+  ];
+  saveToSlot('slot-3', w7Save, mockLs);
+  const loadedW7 = loadFromSlot('slot-3', mockLs);
+  assert.deepEqual(loadedW7?.completedDistricts, w7Save.completedDistricts);
+  assert.equal(loadedW7?.completedDistricts?.length, 8, 'All 8 canonical districts must persist in SaveSlotData');
+  w7StubTex.dispose();
+
+  console.log('ALL P1, P1-C, P1-E, P1-G, P1-I, P1-J, P1-K, P1-L, P1-M, WAVE 3, 4, 5, 6 & 7 TESTS PASSED (29/29 suites)');
 });
 

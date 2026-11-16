@@ -4,6 +4,7 @@ import { AudioEngine } from '../audio/AudioEngine';
 import { HERO_ABILITIES } from '../data/abilitiesData';
 import {
   CAMPAIGN_DISTRICT_VICTORY_DIALOGUE,
+  FINAL_CAMPAIGN_VICTORY_DIALOGUE,
   FUSION_AWAKENING_DIALOGUE,
   MISSION_1_STEPS,
   MISSION_1_VICTORY_DIALOGUE,
@@ -11,6 +12,9 @@ import {
   MISSION_3_STEPS,
   MISSION_4_STEPS,
   MISSION_5_STEPS,
+  MISSION_6_STEPS,
+  MISSION_7_STEPS,
+  MISSION_8_STEPS,
   SECTOR7_VICTORY_DIALOGUE,
 } from '../data/missionsData';
 import {
@@ -86,16 +90,22 @@ import { ArticulatedEnemyRig, ArticulatedHeroRig, createEnemyRig, createHeroRig 
 import { CharacterMotionSample, GLBCharacterInstance } from './GLBCharacterController';
 import { EnemyModelId } from '../data/enemyAssetRegistry';
 import { createProceduralTextures, WorldTextureSet } from './ProceduralTextures';
+import { buildErasureFieldsDistrict } from './ErasureFieldsBuilder';
 import { buildIronMarketDistrict } from './IronMarketBuilder';
+import { buildMemoryNexusDistrict } from './MemoryNexusBuilder';
 import { buildNeonWardDistrict } from './NeonWardBuilder';
 import { buildSector7District } from './Sector7Builder';
 import { buildUndercrownDistrict } from './UndercrownBuilder';
 import { AshblockWorld, buildAshblockHeights } from './WorldBuilder';
+import { buildZenithSpiresDistrict } from './ZenithSpiresBuilder';
 
 function resolveEnemyModelId(id: string, kind: EnemyArchetype): EnemyModelId {
   if (id === 'boss-architect-scout') return 'architect_scout';
   if (id === 'boss-neon-prince') return 'neon_prince';
   if (id === 'boss-undercrown-sentinel') return 'undercrown_sentinel';
+  if (id === 'boss-borax-zenith') return 'borax_zenith';
+  if (id === 'boss-erasure-choir') return 'erasure_choir';
+  if (id === 'boss-hollow-architect') return 'hollow_architect';
   if (id === 'boss-enforcer' || kind === 'boss') return 'fang_enforcer';
   if (id === 'e-rift-1' || id === 'patrol-5' || id === 'boss-blood-broker') return 'blood_broker';
   if (kind === 'dodger' || kind === 'assassin') return 'syndicate_stalker';
@@ -911,6 +921,48 @@ export class GameEngine {
       this.spawnEnemy('uc-stalker-1', 'Chasm Stalker', 'dodger', 0, new THREE.Vector3(-6, 0, -16));
       this.spawnEnemy('uc-marksman-1', 'Vault Marksman', 'marksman', 0, new THREE.Vector3(6, 0, -22));
       this.spawnEnemy('boss-undercrown-sentinel', 'Undercrown Sentinel', 'boss', 1, new THREE.Vector3(0, 0, -68));
+      this.world.alleyGateOpen = true;
+      this.world.alleyGateBarrier.visible = false;
+      this.borynGlb.root.position.copy(this.world.borynMentorPos);
+      this.boraxGlb.root.position.copy(this.world.boraxMentorPos);
+      this.audio.setMood('combat');
+    } else if (districtId === 'zenith-spires') {
+      this.world = buildZenithSpiresDistrict(this.scene, this.textures, this.settings.environmentMode ?? 'reconstructed');
+      this.world.setQualityTier(this.settings.graphicsQuality);
+      this.playerPos.set(0, 0, 6);
+      this.playerVel.set(0, 0, 0);
+      this.companionPos.set(2, 0, 7);
+      this.spawnEnemy('zs-warden-1', 'Tribunal Shield Warden', 'shield', 0, new THREE.Vector3(-6, 0, -16));
+      this.spawnEnemy('zs-marksman-1', 'Spire Sentinel', 'marksman', 0, new THREE.Vector3(6, 0, -22));
+      this.spawnEnemy('boss-borax-zenith', 'Borax Zenith', 'boss', 1, new THREE.Vector3(0, 0, -68));
+      this.world.alleyGateOpen = true;
+      this.world.alleyGateBarrier.visible = false;
+      this.borynGlb.root.position.copy(this.world.borynMentorPos);
+      this.boraxGlb.root.position.copy(this.world.boraxMentorPos);
+      this.audio.setMood('combat');
+    } else if (districtId === 'erasure-fields') {
+      this.world = buildErasureFieldsDistrict(this.scene, this.textures, this.settings.environmentMode ?? 'reconstructed');
+      this.world.setQualityTier(this.settings.graphicsQuality);
+      this.playerPos.set(0, 0, 6);
+      this.playerVel.set(0, 0, 0);
+      this.companionPos.set(2, 0, 7);
+      this.spawnEnemy('ef-husk-1', 'Memory Husk Stalker', 'dodger', 0, new THREE.Vector3(-6, 0, -16));
+      this.spawnEnemy('ef-husk-2', 'Static Marksman', 'marksman', 0, new THREE.Vector3(6, 0, -22));
+      this.spawnEnemy('boss-erasure-choir', 'Erasure Choir', 'boss', 1, new THREE.Vector3(0, 0, -68));
+      this.world.alleyGateOpen = true;
+      this.world.alleyGateBarrier.visible = false;
+      this.borynGlb.root.position.copy(this.world.borynMentorPos);
+      this.boraxGlb.root.position.copy(this.world.boraxMentorPos);
+      this.audio.setMood('combat');
+    } else if (districtId === 'memory-nexus') {
+      this.world = buildMemoryNexusDistrict(this.scene, this.textures, this.settings.environmentMode ?? 'reconstructed');
+      this.world.setQualityTier(this.settings.graphicsQuality);
+      this.playerPos.set(0, 0, 6);
+      this.playerVel.set(0, 0, 0);
+      this.companionPos.set(2, 0, 7);
+      this.spawnEnemy('mn-guard-1', 'Nexus Bruiser', 'bruiser', 0, new THREE.Vector3(-6, 0, -16));
+      this.spawnEnemy('mn-guard-2', 'Thread Stalker', 'dodger', 0, new THREE.Vector3(6, 0, -22));
+      this.spawnEnemy('boss-hollow-architect', 'Hollow Architect', 'boss', 1, new THREE.Vector3(0, 0, -68));
       this.world.alleyGateOpen = true;
       this.world.alleyGateBarrier.visible = false;
       this.borynGlb.root.position.copy(this.world.borynMentorPos);
@@ -2413,7 +2465,10 @@ export class GameEngine {
         e.id === 'boss-architect-scout' ||
         e.id === 'boss-neon-prince' ||
         e.id === 'boss-blood-broker' ||
-        e.id === 'boss-undercrown-sentinel'
+        e.id === 'boss-undercrown-sentinel' ||
+        e.id === 'boss-borax-zenith' ||
+        e.id === 'boss-erasure-choir' ||
+        e.id === 'boss-hollow-architect'
       ) {
         if (this.activeDistrictId === 'sector-7') {
           this.sector7Completed = true;
@@ -2425,9 +2480,17 @@ export class GameEngine {
         this.save = { ...this.save, completedDistricts: completed };
         this.callbacks.onSaveProgress({ completedDistricts: completed }, true);
         this.audio.setMood('victory');
-        this.callbacks.onGrantRewards(280, { 'Storm Capacitor': 2, 'Ash Scrap': 3 }, 1);
+        this.callbacks.onGrantRewards(
+          e.id === 'boss-hollow-architect' ? 500 : 280,
+          { 'Storm Capacitor': 2, 'Ash Scrap': 3 },
+          1
+        );
         this.callbacks.onTriggerDialogue(
-          this.activeDistrictId === 'sector-7' ? SECTOR7_VICTORY_DIALOGUE : CAMPAIGN_DISTRICT_VICTORY_DIALOGUE
+          e.id === 'boss-hollow-architect'
+            ? FINAL_CAMPAIGN_VICTORY_DIALOGUE
+            : this.activeDistrictId === 'sector-7'
+              ? SECTOR7_VICTORY_DIALOGUE
+              : CAMPAIGN_DISTRICT_VICTORY_DIALOGUE
         );
       }
       return;
@@ -3789,7 +3852,13 @@ export class GameEngine {
             ? MISSION_4_STEPS[Math.min(this.districtStageIndex, MISSION_4_STEPS.length - 1)]
             : this.activeDistrictId === 'undercrown'
               ? MISSION_5_STEPS[Math.min(this.districtStageIndex, MISSION_5_STEPS.length - 1)]
-              : MISSION_1_STEPS[Math.min(this.save.missionStageIndex, MISSION_1_STEPS.length - 1)];
+              : this.activeDistrictId === 'zenith-spires'
+                ? MISSION_6_STEPS[Math.min(this.districtStageIndex, MISSION_6_STEPS.length - 1)]
+                : this.activeDistrictId === 'erasure-fields'
+                  ? MISSION_7_STEPS[Math.min(this.districtStageIndex, MISSION_7_STEPS.length - 1)]
+                  : this.activeDistrictId === 'memory-nexus'
+                    ? MISSION_8_STEPS[Math.min(this.districtStageIndex, MISSION_8_STEPS.length - 1)]
+                    : MISSION_1_STEPS[Math.min(this.save.missionStageIndex, MISSION_1_STEPS.length - 1)];
 
     let interactPrompt: string | null = null;
     for (const civ of this.world.civilians) {
@@ -3891,25 +3960,37 @@ export class GameEngine {
       bossPhase: boss ? boss.phase : 1,
       bossTelegraph:
         boss && boss.state === 'windup'
-          ? boss.id === 'boss-undercrown-sentinel'
+          ? boss.id === 'boss-hollow-architect'
             ? boss.unblockableWindup
-              ? 'SUBTERRANEAN SURGE SLAM — EVADE!'
-              : 'BASTION HALBERD SWEEP — PARRY!'
-            : boss.id === 'boss-neon-prince'
+              ? 'REALITY SHIFT COLLAPSE — EVADE!'
+              : 'ARCHITECT BLADE — PARRY!'
+            : boss.id === 'boss-erasure-choir'
               ? boss.unblockableWindup
-                ? 'MIRAGE PRISM OVERLOAD — EVADE!'
-                : 'NEON BLITZ SLASH — PARRY!'
-              : boss.id === 'boss-architect-scout'
+                ? 'AMNESIA CHORUS — EVADE!'
+                : 'STATIC RESONANCE — PARRY!'
+              : boss.id === 'boss-borax-zenith'
                 ? boss.unblockableWindup
-                  ? 'ORBITAL RAIL LOCK — EVADE!'
-                  : 'SNIPER BURST — PARRY OR CLOSE IN!'
-                : boss.id === 'e-rift-1' || boss.id === 'boss-blood-broker'
+                  ? 'JUDGMENT STORM — EVADE!'
+                  : 'SOVEREIGN LION CLEAVE — PARRY!'
+                : boss.id === 'boss-undercrown-sentinel'
                   ? boss.unblockableWindup
-                    ? 'BLOOD DEBT NOVA — EVADE!'
-                    : 'CRIMSON LEDGER DASH — PARRY!'
-                  : boss.unblockableWindup
-                    ? 'UNBLOCKABLE OVERDRIVE SLAM — EVADE!'
-                    : 'HAMMER SWEEP — PARRY OR BLOCK!'
+                    ? 'SUBTERRANEAN SURGE SLAM — EVADE!'
+                    : 'BASTION HALBERD SWEEP — PARRY!'
+                  : boss.id === 'boss-neon-prince'
+                    ? boss.unblockableWindup
+                      ? 'MIRAGE PRISM OVERLOAD — EVADE!'
+                      : 'NEON BLITZ SLASH — PARRY!'
+                    : boss.id === 'boss-architect-scout'
+                      ? boss.unblockableWindup
+                        ? 'ORBITAL RAIL LOCK — EVADE!'
+                        : 'SNIPER BURST — PARRY OR CLOSE IN!'
+                      : boss.id === 'e-rift-1' || boss.id === 'boss-blood-broker'
+                        ? boss.unblockableWindup
+                          ? 'BLOOD DEBT NOVA — EVADE!'
+                          : 'CRIMSON LEDGER DASH — PARRY!'
+                        : boss.unblockableWindup
+                          ? 'UNBLOCKABLE OVERDRIVE SLAM — EVADE!'
+                          : 'HAMMER SWEEP — PARRY OR BLOCK!'
           : null,
       interactPrompt,
       canWebSwing,

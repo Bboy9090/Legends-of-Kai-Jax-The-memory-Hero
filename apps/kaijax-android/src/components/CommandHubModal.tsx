@@ -670,6 +670,33 @@ export const CommandHubModal: React.FC<CommandHubModalProps> = ({
                     >
                       Deploy: Undercrown
                     </button>
+                    <button
+                      onClick={() => {
+                        onSwitchDistrict('zenith-spires');
+                        onClose();
+                      }}
+                      className="rounded-lg bg-yellow-500/20 hover:bg-yellow-500/35 border border-yellow-400/60 px-3 py-1.5 text-xs font-semibold text-yellow-200 transition"
+                    >
+                      Deploy: Zenith Spires
+                    </button>
+                    <button
+                      onClick={() => {
+                        onSwitchDistrict('erasure-fields');
+                        onClose();
+                      }}
+                      className="rounded-lg bg-purple-500/20 hover:bg-purple-500/35 border border-purple-400/60 px-3 py-1.5 text-xs font-semibold text-purple-200 transition"
+                    >
+                      Deploy: Erasure Fields
+                    </button>
+                    <button
+                      onClick={() => {
+                        onSwitchDistrict('memory-nexus');
+                        onClose();
+                      }}
+                      className="rounded-lg bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/60 px-3 py-1.5 text-xs font-semibold text-emerald-200 transition"
+                    >
+                      Deploy: Memory Nexus
+                    </button>
                   </div>
                 )}
               </div>
@@ -711,22 +738,17 @@ export const CommandHubModal: React.FC<CommandHubModalProps> = ({
                             </div>
                           </>
                         )}
-                        {(d.id === 'ashblock-heights' ||
-                          d.id === 'sector-7' ||
-                          d.id === 'neon-ward' ||
-                          d.id === 'iron-market' ||
-                          d.id === 'undercrown') &&
-                          onSwitchDistrict && (
-                            <button
-                              onClick={() => {
-                                onSwitchDistrict(d.id as PlayableDistrictId);
-                                onClose();
-                              }}
-                              className="mt-2 w-full rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/50 text-amber-200 font-semibold py-1.5 text-xs transition"
-                            >
-                              Deploy to {d.name}
-                            </button>
-                          )}
+                        {onSwitchDistrict && (
+                          <button
+                            onClick={() => {
+                              onSwitchDistrict(d.id as PlayableDistrictId);
+                              onClose();
+                            }}
+                            className="mt-2 w-full rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/50 text-amber-200 font-semibold py-1.5 text-xs transition"
+                          >
+                            {save.completedDistricts?.includes(d.id) ? `Replay ${d.name} ✓` : `Deploy to ${d.name}`}
+                          </button>
+                        )}
                       </div>
                     </div>
                   );

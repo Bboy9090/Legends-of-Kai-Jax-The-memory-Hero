@@ -112,7 +112,7 @@ export interface CosmeticPreset {
 export interface DialogueLine {
   speaker: string;
   role: string;
-  portraitHero?: HeroId | 'bovar' | 'enforcer' | 'civilian';
+  portraitHero?: HeroId | 'bovar' | 'borax' | 'enforcer' | 'civilian';
   text: string;
 }
 
@@ -179,7 +179,10 @@ export type PlayableDistrictId =
   | 'sector-7'
   | 'neon-ward'
   | 'iron-market'
-  | 'undercrown';
+  | 'undercrown'
+  | 'zenith-spires'
+  | 'erasure-fields'
+  | 'memory-nexus';
 
 export interface SaveSlotData {
   version: number;

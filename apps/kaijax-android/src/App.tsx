@@ -572,7 +572,13 @@ export default function App() {
                     ? 'Deployed to Iron Market: Forge Keeps'
                     : districtId === 'undercrown'
                       ? 'Deployed to Undercrown: Fracture Pit'
-                      : 'Returned to Ashblock Heights'
+                      : districtId === 'zenith-spires'
+                        ? 'Deployed to Zenith Spires: Skyfall Spines'
+                        : districtId === 'erasure-fields'
+                          ? 'Deployed to Erasure Fields (Provisional)'
+                          : districtId === 'memory-nexus'
+                            ? 'Deployed to Memory Nexus: Library of Threads'
+                            : 'Returned to Ashblock Heights'
             );
           }}
           onOpenLegal={(doc) => setLegalDoc(doc)}

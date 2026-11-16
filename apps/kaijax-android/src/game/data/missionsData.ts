@@ -272,3 +272,69 @@ export const CAMPAIGN_DISTRICT_VICTORY_DIALOGUE = [
     text: 'Our lineage is waking up across every sector. Let\'s check the Raging City map for our next target.',
   },
 ];
+
+export const MISSION_6_STEPS: MissionStep[] = [
+  {
+    id: 'zs-spires',
+    title: '01. Skyfall Spines Ascent',
+    objective: 'Cross the Storm Ronin Nave and neutralize the Zenith Tribunal vanguard.',
+    hint: 'Web Zip across golden spire anchors and overload Lightning Conductor Pylons.',
+    targetPos: [0, 0, -28],
+  },
+  {
+    id: 'zs-boss',
+    title: '02. Borax Zenith',
+    objective: 'Confront Borax Zenith at the Apex Tribunal Terrace.',
+    hint: 'Parry his Sovereign Lion Cleave and evade Judgment Storm.',
+    targetPos: [0, 0, -68],
+  },
+];
+
+export const MISSION_7_STEPS: MissionStep[] = [
+  {
+    id: 'ef-plains',
+    title: '01. Ash Plains Crossing',
+    objective: 'Survive the Erasure static storms and shatter the Choir vanguard.',
+    hint: 'Trigger Amnesia Resonance Pulses to break Choir shields.',
+    targetPos: [0, 0, -30],
+  },
+  {
+    id: 'ef-boss',
+    title: '02. Erasure Choir',
+    objective: 'Silence the Erasure Choir at the Cathedral Plinth.',
+    hint: 'Use Kai-Jax three-tail convergence to resist Memory Erasure resonance.',
+    targetPos: [0, 0, -68],
+  },
+];
+
+export const MISSION_8_STEPS: MissionStep[] = [
+  {
+    id: 'mn-library',
+    title: '01. Library of Threads',
+    objective: 'Cross the Four-Bloodline Pillars into the Memory Nexus core.',
+    hint: 'Channel all four heritages and use Temporal Thread Fractures against the vanguard.',
+    targetPos: [0, 0, -28],
+  },
+  {
+    id: 'mn-boss',
+    title: '02. The Hollow Architect',
+    objective: 'Defeat the Hollow Architect and restore the Memory of Raging City.',
+    hint: 'Unleash Kai-Jax Fusion [F] and Duo Finishers to shatter Reality Shift.',
+    targetPos: [0, 0, -68],
+  },
+];
+
+export const FINAL_CAMPAIGN_VICTORY_DIALOGUE = [
+  {
+    speaker: 'Kai-Jax',
+    role: 'The Memory Hero (Three-Tail Convergence)',
+    portraitHero: 'kaijax' as const,
+    text: 'The Hollow Architect has fallen. The Memory Nexus remembers every bloodline—Myrr\'Kai, Pyraxis, Kar-Voth, and Thryxen stand unbroken.',
+  },
+  {
+    speaker: 'Borax',
+    role: 'The Law · Elder Mentor',
+    portraitHero: 'borax' as const,
+    text: 'You carried the city across eight districts and forged your own path. Raging City is finally free.',
+  },
+];
