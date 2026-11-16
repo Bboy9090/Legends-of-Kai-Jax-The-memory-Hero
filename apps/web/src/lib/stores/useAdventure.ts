@@ -122,6 +122,12 @@ interface AdventureState {
   waveCount: number;
   enemiesDefeated: number;
   isPaused: boolean;
+  /** One-off character pose: the mission result (victory/defeat) or the fusion roar. */
+  pose: "victory" | "defeat" | "roar" | null;
+  setPose: (pose: "victory" | "defeat" | "roar" | null) => void;
+  /** True while a story dialogue or results screen is up, so on-screen game controls stay out of its way. */
+  inCutscene: boolean;
+  setInCutscene: (v: boolean) => void;
   /** When set, open-world uses scripted district encounters instead of infinite waves */
   roamDistrictId: CampaignNodeId | null;
   /** Bumps when starting a new district patrol (spawner resets) */
@@ -255,6 +261,10 @@ export const useAdventure = create<AdventureState>((set, get) => ({
   waveCount: 0,
   enemiesDefeated: 0,
   isPaused: false,
+  pose: null,
+  setPose: (pose) => set({ pose }),
+  inCutscene: false,
+  setInCutscene: (inCutscene) => set({ inCutscene }),
   roamDistrictId: null,
   roamSessionId: 0,
   encounterIndex: 0,
@@ -518,6 +528,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       waveCount: 0,
       enemiesDefeated: 0,
       isPaused: false,
+      pose: null,
       roamDistrictId: null,
       roamSessionId: 0,
       encounterIndex: 0,
@@ -539,6 +550,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       waveCount: 0,
       enemiesDefeated: 0,
       isPaused: false,
+      pose: null,
       roamDistrictId: districtId,
       roamSessionId: sid,
       encounterIndex: 0,
@@ -578,6 +590,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       waveCount: 0,
       enemiesDefeated: 0,
       isPaused: false,
+      pose: null,
       roamDistrictId: null,
       roamSessionId: 0,
       encounterIndex: 0,
@@ -595,6 +608,7 @@ export const useAdventure = create<AdventureState>((set, get) => ({
       waveCount: 1,
       enemiesDefeated: 0,
       isPaused: false,
+      pose: null,
     });
   },
 }));

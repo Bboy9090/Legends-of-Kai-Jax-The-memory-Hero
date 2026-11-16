@@ -69,6 +69,7 @@ export default function AdventureCharacter({ fighterId: fighterIdProp, accentCol
   const posY = useAdventure((s) => s.player.posY);
   const combatState = useAdventure((s) => s.player.combatState);
   const parryFlash = useAdventure((s) => s.player.parryFlashTimer > 0);
+  const pose = useAdventure((s) => s.pose);
   const velocityX = useAdventure((s) => s.player.velocityX);
   const velocityZ = useAdventure((s) => s.player.velocityZ);
 
@@ -107,6 +108,7 @@ export default function AdventureCharacter({ fighterId: fighterIdProp, accentCol
           attackType={attackType}
           isInvulnerable={invulnTimer > 0}
           hitAnim={hitStunTimer > 0 ? 1 : 0}
+          pose={pose}
           locomotionState={
             parryFlash ? "parry"
             : combatState === CombatState.DODGING ? "dodge"

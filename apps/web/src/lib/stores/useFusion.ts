@@ -61,6 +61,9 @@ export const useFusion = create<FusionStore>((set, get) => ({
 
     if (event === "started") {
       setFighter(FUSION.formId);
+      // The new form announces itself with its roar clip.
+      useAdventure.getState().setPose("roar");
+      setTimeout(() => { if (useAdventure.getState().pose === "roar") useAdventure.getState().setPose(null); }, 1000);
       const p = useAdventure.getState().player;
       adv.triggerScreenShake(1.2);
       adv.triggerImpactFlash("#a855f7");

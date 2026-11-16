@@ -12,17 +12,17 @@ type Win = typeof window & {
 };
 const shot = async (page: Page, name: string) => { fs.mkdirSync(OUT, { recursive: true }); await page.screenshot({ path: `${OUT}${name}.png` }); };
 
-async function toBattle(page: Page, hero: string) {
+async function toBattle(page: Page, hero: string, mission = 'story_act1_m1') {
   await page.goto('/');
   await page.waitForFunction(() => Boolean((window as Win).runnerStore?.persist?.hasHydrated?.()), null, { timeout: 30_000 });
   await page.getByTestId('game-intro').waitFor({ state: 'detached', timeout: 30_000 }).catch(() => {});
-  await page.evaluate((hero) => {
+  await page.evaluate(({ hero, mission }) => {
     const w = window as Win;
     const r = w.runnerStore.getState();
     w.runnerStore.setState({ profiles: r.profiles.map((p: any, i: number) => (i === r.activeProfileIndex ? { ...p, fusionUnlocked: true } : p)), completedStoryMissionIds: [] });
     const s = w.runnerStore.getState();
-    s.setCharacter(hero); s.setActiveStoryMission('story_act1_m1'); s.setGameState('story-mode');
-  }, hero);
+    s.setCharacter(hero); s.setActiveStoryMission(mission); s.setGameState('story-mode');
+  }, { hero, mission });
   await page.getByRole('button', { name: 'Engage Mission' }).click({ timeout: 30_000 });
   const dialogue = page.getByTestId('dialogue-overlay');
   for (let i = 0; i < 60 && (await dialogue.isVisible().catch(() => false)); i++) { await page.keyboard.press('Enter'); await page.waitForTimeout(100); }
@@ -71,9 +71,33 @@ test('the partner has its own rig and clips, and fusion swaps to the three-tail 
   await page.evaluate(() => (window as Win).fusionStore.getState().fillCharge());
   await hold(page, 'KeyF', 140); await page.keyboard.up('KeyF');
   await expect.poll(() => page.evaluate(() => (window as Win).adventureStore.getState().player.fighterId)).toBe('kai-jax');
-  await expect.poll(() => clip(page, 'kai-jax'), { timeout: 15_000 }).toBe('idle');
+  await expect.poll(() => clip(page, 'kai-jax'), { timeout: 5_000, intervals: [40] }).toBe('roar'); // the fused form roars
+  await expect.poll(() => clip(page, 'kai-jax'), { timeout: 8_000 }).toBe('idle'); // then settles into its stance
   await page.waitForTimeout(1200);
   await shot(page, '24-rigged-kaijax-fused');
+  expect(errors).toEqual([]);
+});
+
+test('the hero celebrates a win and collapses on a loss', async ({ page }) => {
+  test.setTimeout(180_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  // Mission 2 has no scripted interruption, so clearing both waves reaches the victory outro directly.
+  await toBattle(page, 'kai', 'story_act1_m2');
+  const killAll = () => page.evaluate(() => { const s = (window as Win).adventureStore.getState(); s.enemies.filter((e: any) => !e.isDead).forEach((e: any) => s.damageEnemy(e.id, 999999)); });
+  await killAll();
+  await expect.poll(() => page.evaluate(() => (window as Win).adventureStore.getState().waveCount), { timeout: 30_000 }).toBeGreaterThanOrEqual(2);
+  await expect.poll(() => page.evaluate(() => (window as Win).adventureStore.getState().enemies.some((e: any) => !e.isDead)), { timeout: 15_000 }).toBe(true);
+  await killAll();
+  await expect(page.getByTestId('dialogue-overlay')).toBeVisible({ timeout: 30_000 });
+  await expect.poll(() => clip(page, 'kai'), { timeout: 10_000 }).toBe('victory');
+  await shot(page, '26-rigged-victory');
+
+  // A loss: drop the hero to zero health in a fresh mission.
+  await toBattle(page, 'kai', 'story_act1_m2');
+  await page.evaluate(() => (window as Win).adventureStore.setState((s) => ({ player: { ...s.player, health: 0 } })));
+  await expect(page.getByTestId('dialogue-overlay')).toBeVisible({ timeout: 30_000 });
+  await expect.poll(() => clip(page, 'kai'), { timeout: 10_000 }).toBe('defeat');
   expect(errors).toEqual([]);
 });
 

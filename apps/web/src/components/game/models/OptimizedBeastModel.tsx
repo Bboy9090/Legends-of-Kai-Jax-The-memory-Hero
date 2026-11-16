@@ -56,7 +56,7 @@ interface OptimizedBeastModelProps {
   attackType?: 'light1' | 'light2' | 'light3' | 'heavy' | 'skill' | 'punch' | 'kick' | 'special' | 'ultimate' | null;
   locomotionState?: 'neutral' | 'dodge' | 'block' | 'parry' | 'hitstun' | 'airborne';
   /** Plays the victory / defeat clip on rigged models. */
-  pose?: 'victory' | 'defeat' | null;
+  pose?: 'victory' | 'defeat' | 'roar' | null;
   scale?: number;
 }
 

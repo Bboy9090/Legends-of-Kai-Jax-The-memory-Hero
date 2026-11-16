@@ -44,6 +44,12 @@ describe("rigged clip selection", () => {
     expect(selectClip({ ...base, locomotion: "dodge" })).toMatchObject({ loop: "once", kind: "reaction" });
   });
 
+  it("a roar pose plays the roar clip once, ahead of moving or idling", () => {
+    expect(pick({ pose: "roar", isMoving: true })).toBe("roar");
+    expect(selectClip({ ...base, pose: "roar" })).toMatchObject({ clip: "roar", loop: "once" });
+    expect(selectClip({ ...base, available: ["Walking", "Running"], pose: "roar" })).toBeNull(); // legacy models have no roar
+  });
+
   it("victory and defeat poses", () => {
     expect(pick({ pose: "victory" })).toBe("victory");
     expect(selectClip({ ...base, pose: "defeat" })).toMatchObject({ clip: "defeat", loop: "once" });

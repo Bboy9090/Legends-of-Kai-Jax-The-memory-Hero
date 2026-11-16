@@ -30,7 +30,7 @@ function TurntableModel({ path, identity }: { path: string; identity: HeroVisual
     const scale = size.y > 0.01 ? TARGET_HEIGHT / size.y : 1;
     root.scale.setScalar(scale);
     root.position.set(-((box.min.x + box.max.x) / 2) * scale, -box.min.y * scale, -((box.min.z + box.max.z) / 2) * scale);
-    return applyRimLight(root, { color: identity.rimColor, strength: 1.4, power: 2.4 });
+    return applyRimLight(root, { color: identity.rimColor, strength: 0.9, power: 4.5 });
   }, [root, identity.rimColor]);
 
   useFrame((_, delta) => {
@@ -85,8 +85,8 @@ export default function HeroTurntable({ heroId, className }: HeroTurntableProps)
   return (
     <div className={className} data-testid="hero-turntable" data-source={path ? "model" : "emblem"}>
       <Canvas dpr={CANVAS_DPR} camera={{ position, fov }} gl={{ antialias: true, alpha: true }} onCreated={({ camera }) => camera.lookAt(...target)}>
-        <ambientLight intensity={0.55} />
-        <directionalLight position={[3, 5, 4]} intensity={1.4} />
+        <ambientLight intensity={1.0} />
+        <directionalLight position={[3, 5, 4]} intensity={2.4} />
         <directionalLight position={[-4, 2, -3]} intensity={0.9} color={identity.rimColor} />
         <Aura3D color={identity.primaryColor} accent={identity.accentColor} intensity={identity.aura.intensity} radius={1.25} />
         <Suspense fallback={null}>

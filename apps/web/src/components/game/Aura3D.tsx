@@ -24,7 +24,7 @@ export function Aura3D({ color, accent, intensity = 1, radius = 1.2, pulse = 0 }
     const t = state.clock.elapsedTime;
     if (ringA.current) { ringA.current.rotation.y += delta * 0.9; ringA.current.position.y = 0.2 + (Math.sin(t * 1.4) + 1) * 0.1; }
     if (ringB.current) { ringB.current.rotation.y -= delta * 0.6; ringB.current.position.y = 1.1 + (Math.sin(t * 1.1 + 1) + 1) * 0.12; }
-    if (light.current) light.current.intensity = (1.2 + Math.sin(t * 3) * 0.3 + pulse * 3) * intensity;
+    if (light.current) light.current.intensity = (0.7 + Math.sin(t * 3) * 0.2 + pulse * 3) * intensity;
   });
 
   const additive = { transparent: true, blending: THREE.AdditiveBlending, depthWrite: false } as const;
@@ -32,14 +32,15 @@ export function Aura3D({ color, accent, intensity = 1, radius = 1.2, pulse = 0 }
     <group>
       <mesh ref={ringA} rotation={[Math.PI / 2 - 0.5, 0, 0]}>
         <torusGeometry args={[radius, 0.03, 8, 64]} />
-        <meshBasicMaterial color={color} opacity={0.65 * intensity} {...additive} />
+        <meshBasicMaterial color={color} opacity={0.4 * intensity} {...additive} />
       </mesh>
       <mesh ref={ringB} rotation={[Math.PI / 2 - 0.35, 0.3, 0]}>
         <torusGeometry args={[radius * 0.78, 0.022, 8, 64]} />
-        <meshBasicMaterial color={accent ?? color} opacity={0.55 * intensity} {...additive} />
+        <meshBasicMaterial color={accent ?? color} opacity={0.32 * intensity} {...additive} />
       </mesh>
       <Sparkles count={Math.round(24 * intensity)} scale={[radius * 2, 2.6, radius * 2]} position={[0, 1.2, 0]} size={3} speed={0.6} color={accent ?? color} />
-      <pointLight ref={light} position={[0, 1.3, 0.6]} color={color} distance={7} decay={2} />
+      {/* Behind the character: it outlines the silhouette instead of washing the front of the model in the aura colour. */}
+      <pointLight ref={light} position={[0, 1.3, -0.9]} color={color} distance={7} decay={2} />
     </group>
   );
 }

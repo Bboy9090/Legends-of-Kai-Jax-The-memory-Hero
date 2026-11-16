@@ -401,6 +401,18 @@ export default function StoryAdventure({ missionId, characterId, onComplete, onB
     useAdventure.setState({ waveCount: waveIndex + 1 });
   }, [mission, spawnEnemies, bossConfigRef]);
 
+  // Hide the touch controls whenever dialogue or the results screen is covering the bottom of the screen.
+  useEffect(() => {
+    const covered = phase === "intro" || phase === "outro" || phase === "awakening" || phase === "results";
+    useAdventure.getState().setInCutscene(covered);
+    return () => useAdventure.getState().setInCutscene(false);
+  }, [phase]);
+
+  // The hero celebrates a win or collapses on a loss while the outro plays.
+  useEffect(() => {
+    if (phase === "outro") useAdventure.getState().setPose(success ? "victory" : "defeat");
+  }, [phase, success]);
+
   const startPlaying = useCallback(() => {
     console.log(`[StoryAdventure] startPlaying called, mission=${mission?.id}, enemyWaves=${mission?.enemyWaves.length}`);
     if (!mission) return;

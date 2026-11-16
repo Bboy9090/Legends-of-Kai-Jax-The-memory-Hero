@@ -9,7 +9,7 @@
  */
 export type AttackKind = "light1" | "light2" | "light3" | "heavy" | "skill" | "punch" | "kick" | "special" | "ultimate" | null;
 export type LocomotionPose = "neutral" | "dodge" | "block" | "parry" | "hitstun" | "airborne";
-export type ClipPose = "victory" | "defeat" | null;
+export type ClipPose = "victory" | "defeat" | "roar" | null;
 
 export interface ClipRequest {
   available: readonly string[];
@@ -60,6 +60,7 @@ export function selectClip(r: ClipRequest): ClipChoice | null {
   if (isRiggedClipSet(available)) {
     if (r.pose === "victory" && has(available, "victory")) return { clip: "victory", loop: "repeat", kind: "idle" };
     if (r.pose === "defeat" && has(available, "defeat")) return { clip: "defeat", loop: "once", kind: "reaction" };
+    if (r.pose === "roar" && has(available, "roar")) return { clip: "roar", loop: "once", kind: "attack" };
     // Reactions outrank everything else: being hit or dodging must read instantly.
     if (r.locomotion === "hitstun") return { clip: "hit_reaction", loop: "once", kind: "reaction" };
     if (r.locomotion === "parry") return { clip: "parry", loop: "once", kind: "reaction" };

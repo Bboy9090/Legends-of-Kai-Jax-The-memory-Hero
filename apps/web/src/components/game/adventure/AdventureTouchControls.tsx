@@ -299,7 +299,8 @@ export default function AdventureTouchControls() {
   // While paused, unmount the interactive layer entirely so it can't sit
   // under (or leak input past) the pause overlay - each control's own
   // cleanup below releases any touch it was mid-tracking.
-  if (isPaused) return null;
+  const inCutscene = useAdventure((st) => st.inCutscene);
+  if (isPaused || inCutscene) return null;
 
   const safeBottom = "calc(1rem + var(--kj-hud-edge) + env(safe-area-inset-bottom))";
   const safeLeft = "calc(1rem + var(--kj-hud-edge) + env(safe-area-inset-left))";
