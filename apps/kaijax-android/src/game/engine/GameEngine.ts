@@ -77,8 +77,17 @@ import {
 import { COSMETIC_PRESETS } from '../data/itemsData';
 import { ArticulatedEnemyRig, ArticulatedHeroRig, createEnemyRig, createHeroRig } from './CharacterBuilder';
 import { CharacterMotionSample, GLBCharacterInstance } from './GLBCharacterController';
+import { EnemyModelId } from '../data/enemyAssetRegistry';
 import { createProceduralTextures, WorldTextureSet } from './ProceduralTextures';
 import { AshblockWorld, buildAshblockHeights } from './WorldBuilder';
+
+function resolveEnemyModelId(id: string, kind: EnemyArchetype): EnemyModelId {
+  if (id === 'boss-enforcer' || kind === 'boss') return 'fang_enforcer';
+  if (id === 'e-rift-1' || id === 'patrol-5' || id === 'boss-blood-broker') return 'blood_broker';
+  if (kind === 'dodger' || kind === 'assassin') return 'syndicate_stalker';
+  if (kind === 'marksman') return 'syndicate_marksman';
+  return 'syndicate_brawler';
+}
 
 interface EnemyEntity {
   id: string;
@@ -86,6 +95,8 @@ interface EnemyEntity {
   kind: EnemyArchetype;
   stageTag: number;
   rig: ArticulatedEnemyRig;
+  glb: GLBCharacterInstance;
+  motionSample: CharacterMotionSample;
   pos: THREE.Vector3;
   vel: THREE.Vector3;
   hp: number;
@@ -817,6 +828,8 @@ export class GameEngine {
   private clearEnemies(): void {
     for (const e of this.enemies) {
       this.scene.remove(e.rig.root);
+      this.scene.remove(e.glb.root);
+      e.glb.dispose();
     }
     this.enemies = [];
     this.lockedEnemyId = null;
@@ -846,7 +859,7 @@ export class GameEngine {
       this.spawnEnemy('e-alley-1', 'Alley Shield Defender', 'shield', 1, new THREE.Vector3(-12, 0, -17));
       this.spawnEnemy('e-alley-2', 'Roof Dodger', 'dodger', 1, new THREE.Vector3(14.5, 3.3, -29));
     } else if (stage === 2) {
-      this.spawnEnemy('e-rift-1', 'Memory Wraith Assassin', 'assassin', 2, new THREE.Vector3(12, 0, -35));
+      this.spawnEnemy('e-rift-1', 'Blood Broker', 'assassin', 2, new THREE.Vector3(12, 0, -35));
       this.spawnEnemy('e-rift-2', 'Syndicate Marksman', 'marksman', 2, new THREE.Vector3(17, 0, -40));
     } else if (stage === 3) {
       this.spawnEnemy('e-gate-1', 'Gate Heavy Bruiser', 'bruiser', 3, new THREE.Vector3(-3.2, 0, -43));
@@ -871,7 +884,31 @@ export class GameEngine {
   ): void {
     const rig = createEnemyRig(kind, this.textures.contactShadowMap);
     rig.root.position.copy(pos);
+    // Hide blocky procedural body meshes so only the telegraph ring is drawn while GLB loads
+    rig.root.traverse((obj) => {
+      if (obj !== rig.root && obj !== rig.telegraphRing && (obj as THREE.Mesh).isMesh) {
+        obj.visible = false;
+      }
+    });
     this.scene.add(rig.root);
+
+    const modelId = resolveEnemyModelId(id, kind);
+    const glb = new GLBCharacterInstance(modelId, this.textures.contactShadowMap);
+    glb.root.position.copy(pos);
+    this.scene.add(glb.root);
+
+    const maxAniso = this.renderer.capabilities.getMaxAnisotropy();
+    const castShadows = !this.isSoftwareGl && this.settings.graphicsQuality !== 'low';
+    const preferLod1 = this.isSoftwareGl || this.settings.graphicsQuality === 'low';
+    const modelVer = this.settings.characterModelVersion ?? 'p1i_reconstructed';
+    void glb.loadForQuality(
+      this.settings.graphicsQuality,
+      maxAniso,
+      castShadows,
+      preferLod1,
+      modelVer === 'procedural_fallback',
+      modelVer
+    );
 
     const cfg = ARCHETYPE_CONFIGS[kind];
 
@@ -881,6 +918,8 @@ export class GameEngine {
       kind,
       stageTag,
       rig,
+      glb,
+      motionSample: createMotionSample(false),
       pos: pos.clone(),
       vel: new THREE.Vector3(),
       hp: cfg.maxHp,
@@ -3145,8 +3184,15 @@ export class GameEngine {
     for (const e of this.enemies) {
       if (e.state === 'dead') {
         e.deadTimer -= dt;
-        e.rig.root.scale.setScalar(Math.max(0.01, e.deadTimer / 0.7));
-        if (e.deadTimer <= 0) e.rig.root.visible = false;
+        const scale = Math.max(0.01, e.deadTimer / 0.7);
+        e.rig.root.scale.setScalar(scale);
+        e.glb.root.scale.setScalar(scale);
+        e.motionSample.isDefeat = true;
+        e.glb.update(dt, elapsed, e.motionSample);
+        if (e.deadTimer <= 0) {
+          e.rig.root.visible = false;
+          e.glb.root.visible = false;
+        }
         continue;
       }
 
@@ -3245,9 +3291,29 @@ export class GameEngine {
         this.moveWithColliders(e.pos, e.vel, dt, false);
       }
       e.rig.root.position.copy(e.pos);
+      e.glb.root.position.copy(e.pos);
+      e.glb.root.rotation.y = e.rig.root.rotation.y;
+      e.glb.setHitFlash(e.hitFlash);
 
-      // Animate enemy limbs
+      // Animate enemy GLB + fallback limbs
       const moveAmt = Math.hypot(e.vel.x, e.vel.z);
+      e.motionSample.planarSpeed = moveAmt;
+      e.motionSample.sprinting = moveAmt > 4.2;
+      e.motionSample.grounded = e.pos.y <= 0.15;
+      e.motionSample.verticalVel = e.vel.y;
+      e.motionSample.hurtActive = e.state === 'stagger' || e.hitFlash > 0.08;
+      e.motionSample.attackActive = e.state === 'attack';
+      e.motionSample.attackType =
+        e.state === 'attack' || e.state === 'windup'
+          ? e.unblockableWindup || e.kind === 'boss'
+            ? 'heavy'
+            : 'light'
+          : 'none';
+      e.motionSample.comboStep = (e.attackPattern % 3) + 1;
+      e.motionSample.thryxenActive = e.state === 'windup' && e.unblockableWindup;
+      e.motionSample.isDefeat = false;
+      e.glb.update(dt, elapsed, e.motionSample);
+
       const stride = Math.sin(elapsed * 9) * Math.min(1, moveAmt / 4) * 0.45;
       e.rig.leftLeg.rotation.x = stride;
       e.rig.rightLeg.rotation.x = -stride;

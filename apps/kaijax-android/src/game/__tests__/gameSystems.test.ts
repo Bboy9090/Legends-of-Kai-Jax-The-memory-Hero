@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {
+  ENEMY_ASSET_REGISTRY,
+  EnemyModelId,
+  resolveEnemyFallbackChain,
+} from '../data/enemyAssetRegistry.ts';
+import {
+  GLBCharacterInstance,
+  preloadGlbAssets,
+} from '../engine/GLBCharacterController.ts';
+import {
   bestTextOn,
   contrastRatio,
   darkenForText,
@@ -935,6 +944,36 @@ import('../data/characterAssetRegistry.ts').then(
   assert.ok(/envMapIntensity:\s*0\.16/.test(worldSrc), 'Ashblock asphalt material must restrain twilight specular blowout');
   assert.ok(worldSrc.includes('Open-sightline top safety rail'), 'Rooftop safety rails must use open-sightline stanchions so mentors remain visible');
 
-  console.log('ALL P1, P1-C, P1-E, P1-G, P1-I, P1-J, P1-K, P1-L & P1-M GAME SYSTEMS ACCEPTANCE TESTS PASSED (24/24 suites)');
+  // 25. Wave 3 Villain GLB Registry, LOD Chain & Zero-Placeholder Preload Gate
+  const requiredVillains: EnemyModelId[] = [
+    'fang_enforcer',
+    'blood_broker',
+    'syndicate_brawler',
+    'syndicate_stalker',
+    'syndicate_marksman',
+    'architect_scout',
+    'neon_prince',
+    'undercrown_sentinel',
+    'borax_zenith',
+    'erasure_choir',
+    'hollow_architect',
+  ];
+  for (const vid of requiredVillains) {
+    assert.ok(ENEMY_ASSET_REGISTRY[vid], `Missing enemy asset registry entry: ${vid}`);
+    const lodChain = resolveEnemyFallbackChain(vid, 'low', true);
+    assert.equal(lodChain[0], ENEMY_ASSET_REGISTRY[vid].lod1GlbUrl);
+    const masterChain = resolveEnemyFallbackChain(vid, 'high', false);
+    assert.equal(masterChain[0], ENEMY_ASSET_REGISTRY[vid].masterGlbUrl);
+  }
+  const emptyPreload = await preloadGlbAssets([]);
+  assert.equal(emptyPreload.ready, true);
+  const dummyFallback = new THREE.Group();
+  const stubShadow = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
+  const inst = new GLBCharacterInstance('fang_enforcer', stubShadow, dummyFallback);
+  assert.equal(dummyFallback.visible, false, 'Procedural fallback must remain hidden while approved GLBs load');
+  inst.dispose();
+  stubShadow.dispose();
+
+  console.log('ALL P1, P1-C, P1-E, P1-G, P1-I, P1-J, P1-K, P1-L, P1-M & WAVE 3 ACCEPTANCE TESTS PASSED (25/25 suites)');
 });
 

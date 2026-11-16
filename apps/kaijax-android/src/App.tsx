@@ -11,6 +11,10 @@ import { EQUIPMENT_CATALOG } from './game/data/itemsData';
 import { MISSION_1_STEPS } from './game/data/missionsData';
 import { GameEngine } from './game/engine/GameEngine';
 import {
+  GlbPreloadSnapshot,
+  preloadCoreAshblockAssets,
+} from './game/engine/GLBCharacterController';
+import {
   createNewSave,
   deleteSlot,
   grantHeroXp,
@@ -117,6 +121,14 @@ export default function App() {
   const [legalDoc, setLegalDoc] = useState<'privacy' | 'terms' | null>(null);
   const [hud, setHud] = useState<HudSnapshot>(INITIAL_HUD);
   const [toast, setToast] = useState<string | null>(null);
+  const [preloadSnap, setPreloadSnap] = useState<GlbPreloadSnapshot>({
+    total: 0,
+    loaded: 0,
+    ready: false,
+    elapsedMs: 0,
+  });
+  const [enteringWorld, setEnteringWorld] = useState(false);
+  const preloadPromiseRef = useRef<Promise<GlbPreloadSnapshot> | null>(null);
 
   // Dialogue Queue State
   const [dialogueQueue, setDialogueQueue] = useState<DialogueLine[] | null>(null);
@@ -220,6 +232,14 @@ export default function App() {
     engine.setTitleShowcase(true);
     engineRef.current = engine;
 
+    const preferLod1 = engine.getPerformanceMetrics().isSoftwareGl || settings.graphicsQuality === 'low';
+    preloadPromiseRef.current = preloadCoreAshblockAssets(
+      settings.graphicsQuality,
+      preferLod1,
+      settings.characterModelVersion ?? 'p1i_reconstructed',
+      (snap) => setPreloadSnap(snap)
+    );
+
     return () => {
       engine.dispose();
       audio.dispose();
@@ -289,9 +309,14 @@ export default function App() {
     return () => mq.removeEventListener('change', handleMotionChange);
   }, []);
 
-  const handleStartGame = (fresh: boolean, selectedHero?: 'kai' | 'jax') => {
+  const handleStartGame = async (fresh: boolean, selectedHero?: 'kai' | 'jax') => {
     audioRef.current?.unlock();
     audioRef.current?.playSfx('ui');
+    if (preloadPromiseRef.current && !preloadSnap.ready) {
+      setEnteringWorld(true);
+      await preloadPromiseRef.current;
+      setEnteringWorld(false);
+    }
     let targetSave = saveRef.current;
     if (fresh) {
       targetSave = saveToSlot(
@@ -482,6 +507,27 @@ export default function App() {
           onAdvance={handleAdvanceDialogue}
           onSkip={handleSkipDialogue}
         />
+      )}
+
+      {/* Preload Gate Overlay (prevents blocky placeholder pop-in on slow devices) */}
+      {enteringWorld && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md text-white">
+          <div className="text-xs uppercase tracking-[0.25em] text-amber-400 font-semibold mb-2">
+            Ashblock Heights · Act I
+          </div>
+          <div className="text-xl font-bold mb-4">Streaming Certified 3D Rigs...</div>
+          <div className="w-64 h-2 rounded-full bg-slate-800 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-amber-400 to-violet-500 transition-all duration-150"
+              style={{
+                width: `${preloadSnap.total > 0 ? Math.round((preloadSnap.loaded / preloadSnap.total) * 100) : 100}%`,
+              }}
+            />
+          </div>
+          <div className="mt-2 text-xs text-slate-300">
+            {preloadSnap.loaded} / {preloadSnap.total} GLBs cached
+          </div>
+        </div>
       )}
 
       {/* Command Hub / Pause / Progression / Canon Bible / Settings */}

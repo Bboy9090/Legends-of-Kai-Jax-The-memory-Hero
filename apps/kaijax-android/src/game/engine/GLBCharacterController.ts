@@ -8,7 +8,14 @@ import {
   resolveCharacterFallbackChain,
   RosterCharacterId,
 } from '../data/characterAssetRegistry';
+import {
+  ENEMY_ASSET_REGISTRY,
+  EnemyModelId,
+  resolveEnemyFallbackChain,
+} from '../data/enemyAssetRegistry';
 import { CharacterModelVersion, GraphicsQuality } from '../types';
+
+export type GlbEntityId = RosterCharacterId | EnemyModelId;
 
 THREE.Cache.enabled = true;
 
@@ -75,6 +82,89 @@ export function clearCharacterGltfCache(): void {
   gltfCache.clear();
 }
 
+export interface GlbPreloadSnapshot {
+  total: number;
+  loaded: number;
+  ready: boolean;
+  elapsedMs: number;
+}
+
+const preloadState: GlbPreloadSnapshot = {
+  total: 0,
+  loaded: 0,
+  ready: false,
+  elapsedMs: 0,
+};
+
+export function getGlbPreloadSnapshot(): GlbPreloadSnapshot {
+  return { ...preloadState };
+}
+
+export async function preloadGlbAssets(
+  urls: string[],
+  onProgress?: (snap: GlbPreloadSnapshot) => void
+): Promise<GlbPreloadSnapshot> {
+  const uniqueUrls = Array.from(new Set(urls.filter(Boolean)));
+  const t0 = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  preloadState.total = uniqueUrls.length;
+  preloadState.loaded = 0;
+  preloadState.ready = uniqueUrls.length === 0;
+  preloadState.elapsedMs = 0;
+  onProgress?.({ ...preloadState });
+
+  await Promise.all(
+    uniqueUrls.map(async (url) => {
+      try {
+        await fetchCachedGltf(url);
+      } catch {
+        // Individual fallback URLs are handled per instance
+      } finally {
+        preloadState.loaded += 1;
+        preloadState.elapsedMs = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - t0;
+        if (preloadState.loaded >= preloadState.total) {
+          preloadState.ready = true;
+        }
+        onProgress?.({ ...preloadState });
+      }
+    })
+  );
+  return { ...preloadState };
+}
+
+export async function preloadCoreAshblockAssets(
+  quality: GraphicsQuality,
+  preferLod1 = false,
+  modelVersion: CharacterModelVersion = 'p1i_reconstructed',
+  onProgress?: (snap: GlbPreloadSnapshot) => void
+): Promise<GlbPreloadSnapshot> {
+  if (modelVersion === 'procedural_fallback') {
+    preloadState.total = 0;
+    preloadState.loaded = 0;
+    preloadState.ready = true;
+    preloadState.elapsedMs = 0;
+    onProgress?.({ ...preloadState });
+    return { ...preloadState };
+  }
+  const heroIds: RosterCharacterId[] = ['kai', 'jax', 'kaijax', 'boryn', 'borax'];
+  const enemyIds: EnemyModelId[] = [
+    'fang_enforcer',
+    'blood_broker',
+    'syndicate_brawler',
+    'syndicate_stalker',
+    'syndicate_marksman',
+  ];
+  const urls: string[] = [];
+  for (const h of heroIds) {
+    const chain = resolveCharacterFallbackChain(h, quality, preferLod1, modelVersion);
+    if (chain[0]) urls.push(chain[0]);
+  }
+  for (const e of enemyIds) {
+    const chain = resolveEnemyFallbackChain(e, quality, preferLod1);
+    if (chain[0]) urls.push(chain[0]);
+  }
+  return preloadGlbAssets(urls, onProgress);
+}
+
 const LOOPING_CLIPS = new Set<CharacterAnimClipName>([
   'idle',
   'breathing',
@@ -86,7 +176,7 @@ const LOOPING_CLIPS = new Set<CharacterAnimClipName>([
 ]);
 
 export class GLBCharacterInstance {
-  public readonly characterId: RosterCharacterId;
+  public readonly characterId: GlbEntityId;
   public readonly root: THREE.Group;
   public status: AssetLoadStatus = 'idle';
   public loadedUrl: string | null = null;
@@ -126,7 +216,7 @@ export class GLBCharacterInstance {
   private loadGeneration = 0;
 
   constructor(
-    characterId: RosterCharacterId,
+    characterId: GlbEntityId,
     contactShadowTex: THREE.Texture,
     fallbackNode?: THREE.Object3D
   ) {
@@ -146,9 +236,11 @@ export class GLBCharacterInstance {
     this.shadowPlane.position.y = 0.024;
     this.root.add(this.shadowPlane);
 
-    // Subtle canonical heritage ring at feet
-    const auraHex =
-      characterId === 'jax'
+    // Subtle canonical heritage / faction ring at feet
+    const enemyEntry = ENEMY_ASSET_REGISTRY[characterId as EnemyModelId];
+    const auraHex = enemyEntry
+      ? new THREE.Color(enemyEntry.accentHex).getHex()
+      : characterId === 'jax'
         ? 0x38bdf8
         : characterId === 'kaijax'
           ? 0xa855f7
@@ -162,7 +254,7 @@ export class GLBCharacterInstance {
       new THREE.MeshBasicMaterial({
         color: auraHex,
         transparent: true,
-        opacity: characterId === 'kaijax' ? 0.62 : 0.28,
+        opacity: characterId === 'kaijax' ? 0.62 : enemyEntry?.isBoss ? 0.45 : 0.28,
         side: THREE.DoubleSide,
         depthWrite: false,
       })
@@ -173,8 +265,10 @@ export class GLBCharacterInstance {
 
     if (fallbackNode) {
       this.fallbackNode = fallbackNode;
+      // Hide procedural fallback by default so outdated blocky placeholders do not pop in while GLBs load
+      this.fallbackNode.visible = false;
       this.root.add(fallbackNode);
-      this.status = 'fallback';
+      this.status = 'idle';
     }
   }
 
@@ -188,8 +282,9 @@ export class GLBCharacterInstance {
   ): Promise<AssetLoadStatus> {
     if (this.disposed) return 'error';
 
-    const entry = CHARACTER_ASSET_REGISTRY[this.characterId];
-    if (!entry || entry.visualAuthorityStatus === 'awaiting_visual_approval') {
+    const isEnemy = this.characterId in ENEMY_ASSET_REGISTRY;
+    const heroEntry = !isEnemy ? CHARACTER_ASSET_REGISTRY[this.characterId as RosterCharacterId] : null;
+    if (!isEnemy && (!heroEntry || heroEntry.visualAuthorityStatus === 'awaiting_visual_approval')) {
       this.status = 'awaiting_approval';
       return this.status;
     }
@@ -202,7 +297,9 @@ export class GLBCharacterInstance {
       return this.status;
     }
 
-    const urlChain = resolveCharacterFallbackChain(this.characterId, quality, preferLod1, modelVersion);
+    const urlChain = isEnemy
+      ? resolveEnemyFallbackChain(this.characterId as EnemyModelId, quality, preferLod1)
+      : resolveCharacterFallbackChain(this.characterId as RosterCharacterId, quality, preferLod1, modelVersion);
     if (urlChain.length === 0) {
       this.detachLoadedModel();
       this.loadedUrl = null;
@@ -218,6 +315,7 @@ export class GLBCharacterInstance {
 
     const gen = ++this.loadGeneration;
     this.status = 'loading';
+    if (this.fallbackNode) this.fallbackNode.visible = false;
 
     try {
       let cached: CachedGltfEntry | null = null;
@@ -701,6 +799,17 @@ export class GLBCharacterInstance {
       g.dispose();
     }
     this.clonedGeometries = [];
+  }
+
+  public setHitFlash(amount: number): void {
+    const k = THREE.MathUtils.clamp(amount, 0, 1);
+    for (const mat of this.clonedMaterials) {
+      if (k > 0.01) {
+        mat.emissiveIntensity = 1.0 + k * 2.2;
+      } else {
+        mat.emissiveIntensity = 1.0;
+      }
+    }
   }
 
   public dispose(): void {
