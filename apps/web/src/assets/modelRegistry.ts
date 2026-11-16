@@ -38,41 +38,22 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
   // ============================================================
 
   "kai-jax": {
-    // Primary protagonist: The Memory Hero (Animated version)
-    path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
-    animationPaths: {
-      run: "/models/Meshy_AI_Animation_Running_withSkin9TAILSKAIJAX.glb",
-      kick: [
-        "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb",
-        "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb",
-      ],
-    },
+    // Rigged master (3-tail Kai-Jax rig: ember/storm/memory), 19 authored clips.
+    path: "/models/characters/kaijax_master.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   kai_jax: {
-    path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
-    animationPaths: {
-      run: "/models/Meshy_AI_Animation_Running_withSkin9TAILSKAIJAX.glb",
-      kick: [
-        "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb",
-        "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb",
-      ],
-    },
+    // Rigged master (3-tail Kai-Jax rig: ember/storm/memory), 19 authored clips.
+    path: "/models/characters/kaijax_master.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   kaijax: {
-    path: "/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb",
-    animationPaths: {
-      run: "/models/Meshy_AI_Animation_Running_withSkin9TAILSKAIJAX.glb",
-      kick: [
-        "/models/Meshy_AI_Animation_Lunge_Spin_Kick_withSkin9TAILSKAIJAX.glb",
-        "/models/Meshy_AI_Animation_Step_in_High_Kick_withSkin9TAILSKAIJAX.glb",
-      ],
-    },
+    // Rigged master (3-tail Kai-Jax rig: ember/storm/memory), 19 authored clips.
+    path: "/models/characters/kaijax_master.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
@@ -86,7 +67,8 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
   jax: {
-    path: "/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI.glb",
+    // Rigged master (mane rig), 19 authored clips. Jaxon keeps its own legacy file.
+    path: "/models/characters/jax_master.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
@@ -100,15 +82,8 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
     rotation: [0, Math.PI, 0],
   },
   kai: {
-    path: "/models/Meshy_AI_Character_outputSPiDERKAIJAX9TIALS.glb",
-    animationPaths: {
-      walk: "/models/Meshy_AI_Animation_Walking_onlySPiDERKAIJAX9TIALS.glb",
-      run: "/models/Meshy_AI_Animation_Running_onlySPiDERKAIJAX9TIALS.glb",
-      // Do not attach the 9-tail Kai-Jax kick donors here. Their 24 joint
-      // names match, but their bind/rest transforms do not match Spider-Kai's
-      // skeleton. Kai uses the articulated procedural kick until a compatible
-      // Spider-Kai kick donor is authored.
-    },
+    // Rigged master (4 spider limbs), 19 authored clips.
+    path: "/models/characters/kai_master.glb",
     scale: 3.5,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
@@ -124,13 +99,15 @@ export const MODEL_REGISTRY: Record<string, GLBModelConfig> = {
 
   // Borax / Boryn — Lion guardian lineage
   borax: {
-    path: "/models/Borax.glb",
+    // Rigged master, 19 authored clips.
+    path: "/models/characters/borax_master.glb",
     scale: 3.8,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],
   },
   boryn: {
-    path: "/models/BORYN.glb",
+    // Rigged master, 19 authored clips.
+    path: "/models/characters/boryn_master.glb",
     scale: 3.8,
     position: [0, 0, 0],
     rotation: [0, Math.PI, 0],

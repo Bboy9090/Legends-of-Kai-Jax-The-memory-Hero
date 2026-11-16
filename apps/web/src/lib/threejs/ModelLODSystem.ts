@@ -17,10 +17,10 @@ export interface LODModelConfig {
  * Update after running Blender optimization script
  */
 export const LOD_MODEL_REGISTRY: Record<string, LODModelConfig> = {
+  // The rigged Kai-Jax master is already ~24K triangles; no further LOD variants are authored for it.
   'kai-jax': {
-    standard: '/models/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX.glb',
-    optimized: '/models/optimized/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX_optimized.glb',
-    lodLow: '/models/optimized/lod_low/Meshy_AI_Animation_Walking_withSkin9TAILSKAIJAX_lod_low.glb',
+    standard: '/models/characters/kaijax_master.glb',
+    optimized: '/models/characters/kaijax_master.glb',
   },
   jaxon: {
     standard: '/models/Meshy_AI_Meshy_Merged_AnimationsSHADOWBLITZJAXKAI.glb',

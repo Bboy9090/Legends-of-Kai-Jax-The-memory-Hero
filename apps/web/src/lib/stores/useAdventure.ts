@@ -34,6 +34,8 @@ export interface AdventurePlayerState {
   invulnTimer: number;
   /** Seconds left in the parry window opened by a dodge. */
   parryTimer: number;
+  /** Seconds left of the "parried!" reaction pose after a parry lands. */
+  parryFlashTimer: number;
   hitStunTimer: number;
   hitStopTimer: number;
   staminaRegenDelay: number;
@@ -147,6 +149,7 @@ interface AdventureState {
   setDodgeTimer: (time: number) => void;
   setInvulnTimer: (time: number) => void;
   setParryTimer: (time: number) => void;
+  setParryFlashTimer: (time: number) => void;
   setHitStunTimer: (time: number) => void;
   setHitStopTimer: (time: number) => void;
   setStaminaRegenDelay: (time: number) => void;
@@ -203,6 +206,7 @@ const defaultPlayer: AdventurePlayerState = {
   dodgeTimer: 0,
   invulnTimer: 0,
   parryTimer: 0,
+  parryFlashTimer: 0,
   hitStunTimer: 0,
   hitStopTimer: 0,
   staminaRegenDelay: 0,
@@ -379,6 +383,9 @@ export const useAdventure = create<AdventureState>((set, get) => ({
 
   setParryTimer: (parryTimer) =>
     set((s) => ({ player: { ...s.player, parryTimer } })),
+
+  setParryFlashTimer: (parryFlashTimer) =>
+    set((s) => ({ player: { ...s.player, parryFlashTimer } })),
 
   setHitStunTimer: (hitStunTimer) =>
     set((s) => ({ player: { ...s.player, hitStunTimer } })),

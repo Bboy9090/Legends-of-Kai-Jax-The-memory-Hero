@@ -126,6 +126,7 @@ export function useBossEncounter(config: BossConfig | undefined, active: boolean
             if (player.parryTimer > 0) {
               useFusion.getState().addCharge(PARRY.fusionCharge);
               useCombo.getState().parry();
+              adv.setParryFlashTimer(0.4);
               pushDamagePopup({ x: player.posX, y: player.posY + 2.4, z: player.posZ, amount: 0, kind: "critical", text: "PARRY!" });
               playSfx("block");
             }

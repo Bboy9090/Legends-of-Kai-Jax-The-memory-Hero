@@ -4,6 +4,7 @@
  * Mobile/Tablet/PC optimized Three.js character model
  */
 
+import { isRiggedClipSet, selectClip, type AttackKind } from '../../../lib/animationClips';
 import { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
@@ -54,6 +55,8 @@ interface OptimizedBeastModelProps {
   locomotionSpeed?: number;
   attackType?: 'light1' | 'light2' | 'light3' | 'heavy' | 'skill' | 'punch' | 'kick' | 'special' | 'ultimate' | null;
   locomotionState?: 'neutral' | 'dodge' | 'block' | 'parry' | 'hitstun' | 'airborne';
+  /** Plays the victory / defeat clip on rigged models. */
+  pose?: 'victory' | 'defeat' | null;
   scale?: number;
 }
 
@@ -86,6 +89,7 @@ export default function OptimizedBeastModel({
   locomotionSpeed,
   attackType = null,
   locomotionState = 'neutral',
+  pose = null,
   scale = 2.5,
 }: OptimizedBeastModelProps) {
   const groupRef = useRef<THREE.Group>(null!);
@@ -524,59 +528,37 @@ export default function OptimizedBeastModel({
   useEffect(() => {
     if (!actions || Object.keys(actions).length === 0) return;
 
-    // Determine desired animation based on state
-    let targetAction = 'idle';
-    if (isAttacking) {
-      targetAction = 'attack';
-    } else if (isMoving) {
-      // Prefer 'walk' over 'run' for natural arm movement
-      targetAction = isRunning ? 'run' : 'walk';
-    }
-
     const available = Object.keys(actions);
 
-    // Only play a baked clip when it semantically matches the requested
-    // state. Never use available[0]: a random idle/root-motion clip would hide
-    // the articulated procedural fallback and recreate the skating-statue bug.
-    let match: string | undefined;
-    if (targetAction === 'walk') {
-      match = available.find(n => /walk|locomotion/i.test(n));
-    } else if (targetAction === 'run') {
-      match = available.find(n => /run|sprint/i.test(n));
-    } else if (targetAction === 'attack') {
-      const attackPattern =
-        attackType === 'kick' || attackType === 'heavy'
-          ? /kick|heavy/i
-          : attackType === 'special' || attackType === 'skill'
-            ? /special|skill|slash|strike/i
-            : attackType === 'ultimate'
-              ? /ultimate|super|finisher/i
-              : /punch|jab|light|attack/i;
-      // Never cross-fallback between attack families. If Kai has authored
-      // Kick clips but no authored Punch clip, a punch must use the articulated
-      // procedural fallback instead of incorrectly playing a kick animation.
-      const matches = available.filter(n => attackPattern.test(n));
-      if ((attackType === 'kick' || attackType === 'heavy') && matches.length > 1) {
-        if (!animationSelectionAttackRef.current) {
-          match = matches[kickVariantRef.current % matches.length];
-          kickVariantRef.current = (kickVariantRef.current + 1) % matches.length;
-        } else {
-          match = activeActionRef.current
-            ? matches.find(name => actions[name] === activeActionRef.current) ?? matches[0]
-            : matches[0];
-        }
-      } else {
-        match = matches[0];
-      }
-    } else {
-      match = available.find(n => /idle|breath|stand/i.test(n));
+    // Pick the authored clip for this state. Rigged masters carry 19 named clips; older models fall back to name
+    // matching. No match means the articulated procedural pose runs instead (never an arbitrary first clip, which
+    // would recreate the skating-statue bug).
+    const startingAttack = isAttacking && !animationSelectionAttackRef.current;
+    const variant = animationSelectionAttackRef.current ? Math.max(0, kickVariantRef.current - 1) : kickVariantRef.current;
+    const selection = selectClip({
+      available,
+      isAttacking,
+      attackType: attackType as AttackKind,
+      isMoving,
+      isRunning,
+      locomotion: locomotionState,
+      pose,
+      variant,
+    });
+    if (startingAttack && selection && !isRiggedClipSet(available) && (attackType === 'kick' || attackType === 'heavy')) {
+      kickVariantRef.current += 1;
     }
+    const match = selection?.clip;
+    const targetAction: 'idle' | 'walk' | 'run' | 'attack' =
+      selection?.kind === 'walk' || selection?.kind === 'run' || selection?.kind === 'attack' ? selection.kind : 'idle';
+    const playOnce = selection?.loop === 'once';
 
     if (typeof window !== 'undefined') {
       const w = window as any;
       w.__KAI_JAX_ANIMATION_PROBE__ ??= {};
       w.__KAI_JAX_ANIMATION_PROBE__[beast.id] = {
         requested: targetAction,
+        locomotion: locomotionState,
         attackType: isAttacking ? attackType : null,
         selectedClip: match ?? null,
         authored: Boolean(match),
@@ -600,7 +582,7 @@ export default function OptimizedBeastModel({
 
         next.reset();
         next.setEffectiveTimeScale(targetAction === 'walk' || targetAction === 'run' ? locomotionRate : 1);
-        if (targetAction === 'attack') {
+        if (playOnce) {
           next.setLoop(THREE.LoopOnce, 1);
           next.clampWhenFinished = true;
         } else {
@@ -630,7 +612,7 @@ export default function OptimizedBeastModel({
       deformationSampleRef.current = { frames: 0, motion: 0, last: null };
       skinDeformationSampleRef.current = { frames: 0, motion: 0, last: null };
     }
-  }, [actions, isAttacking, isMoving, isRunning, locomotionRate, attackType, beast.id]);
+  }, [actions, isAttacking, isMoving, isRunning, locomotionRate, attackType, beast.id, locomotionState, pose]);
 
   // Hit animation and effects
   useFrame((state, rawDelta) => {

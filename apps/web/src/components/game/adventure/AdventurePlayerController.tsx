@@ -143,6 +143,7 @@ export default function AdventurePlayerController() {
     if (p.staminaRegenDelay > 0) store.setStaminaRegenDelay(Math.max(0, p.staminaRegenDelay - delta));
     if (p.invulnTimer > 0) store.setInvulnTimer(Math.max(0, p.invulnTimer - delta));
     if (p.parryTimer > 0) store.setParryTimer(Math.max(0, p.parryTimer - delta));
+    if (p.parryFlashTimer > 0) store.setParryFlashTimer(Math.max(0, p.parryFlashTimer - delta));
 
     // The combo timer runs on real time (not the 50ms-clamped simulation step), so 3.5s is 3.5s even on a slow
     // GPU. It does not advance while paused because this controller returns early then; a tab that was hidden

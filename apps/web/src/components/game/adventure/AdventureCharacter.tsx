@@ -1,3 +1,4 @@
+import { CombatState } from "../../../game/combat/stateEnums";
 import { useRef, Suspense } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useAdventure } from "../../../lib/stores/useAdventure";
@@ -66,6 +67,8 @@ export default function AdventureCharacter({ fighterId: fighterIdProp, accentCol
   const attackType = useAdventure((s) => s.player.attackType);
   const invulnTimer = useAdventure((s) => s.player.invulnTimer);
   const posY = useAdventure((s) => s.player.posY);
+  const combatState = useAdventure((s) => s.player.combatState);
+  const parryFlash = useAdventure((s) => s.player.parryFlashTimer > 0);
   const velocityX = useAdventure((s) => s.player.velocityX);
   const velocityZ = useAdventure((s) => s.player.velocityZ);
 
@@ -104,6 +107,13 @@ export default function AdventureCharacter({ fighterId: fighterIdProp, accentCol
           attackType={attackType}
           isInvulnerable={invulnTimer > 0}
           hitAnim={hitStunTimer > 0 ? 1 : 0}
+          locomotionState={
+            parryFlash ? "parry"
+            : combatState === CombatState.DODGING ? "dodge"
+            : combatState === CombatState.HITSTUN || hitStunTimer > 0 ? "hitstun"
+            : posY > 0.3 ? "airborne"
+            : "neutral"
+          }
         />
       </Suspense>
 

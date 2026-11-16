@@ -28,7 +28,8 @@ describe('core character asset authority', () => {
   });
 
   it('does not accept shared legacy files as proof of approved identity art', () => {
-    expect(MODEL_REGISTRY.jax.path).toBe(MODEL_REGISTRY.jaxon.path);
+    // Jax now has its own rigged master; Jaxon keeps the legacy file and must never be mistaken for Jax art.
+    expect(MODEL_REGISTRY.jax.path).not.toBe(MODEL_REGISTRY.jaxon.path);
     expect(hasApprovedCurrentAsset('jax')).toBe(false);
     expect(hasApprovedCurrentAsset('jaxon')).toBe(false);
   });
