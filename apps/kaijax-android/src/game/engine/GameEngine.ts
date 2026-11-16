@@ -866,6 +866,11 @@ export class GameEngine {
   public switchDistrict(districtId: PlayableDistrictId): void {
     this.activeDistrictId = districtId;
     this.districtStageIndex = 0;
+    // Travel always starts a fresh encounter: a previous defeat/victory must not leak into the new district
+    // (input handlers early-return while isGameOver, and isVictory suppresses the combat music mood).
+    this.isGameOver = false;
+    this.isVictory = false;
+    this.comboState = createInitialComboState();
     this.clearEnemies();
     this.world.dispose?.();
     if (districtId === 'sector-7') {
@@ -2414,10 +2419,16 @@ export class GameEngine {
           this.duoSynergy = { ...this.duoSynergy, meter: 100 };
           this.save = { ...this.save, fusionUnlocked: true };
           this.callbacks.onSaveProgress({ fusionUnlocked: true });
-          this.paused = true;
-          this.callbacks.onTriggerDialogue(FUSION_AWAKENING_DIALOGUE, () => {
-            this.paused = false;
-          });
+          if (this.activeDistrictId === 'ashblock-heights') {
+            // The Fang Enforcer scene is Mission 1 canon and must only play against the Ashblock boss.
+            this.paused = true;
+            this.callbacks.onTriggerDialogue(FUSION_AWAKENING_DIALOGUE, () => {
+              this.paused = false;
+            });
+          } else {
+            // Fresh save that skipped ahead via the hub: awaken fusion without replaying the wrong cutscene.
+            this.pushFloatingLabel(this.playerPos, 'THREE-TAIL CONVERGENCE AWAKENED — PRESS FUSION', '#A78BFA');
+          }
         }
       }
 
