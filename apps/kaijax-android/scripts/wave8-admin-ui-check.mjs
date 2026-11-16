@@ -17,6 +17,8 @@ const CDP_PORT = 9420 + Math.floor(Math.random() * 40);
 const OUT = path.resolve(process.argv[2] || 'docs/production/captures/wave8-admin');
 fs.mkdirSync(OUT, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// Harmless admin-guarded route: an authorized call reaches the handler and answers 404 for a missing asset without writing anything.
+const PROBE_URL = '/api/canon-drive/asset/wave8-probe-nonexistent';
 const report = { secretLength: SECRET.length, checks: {} };
 
 const server = spawn('npx', ['tsx', 'server.ts'], { env: { ...process.env, PORT: String(PORT), KAIJAX_ADMIN_TOKEN: SECRET, NODE_ENV: 'development', KAIJAX_ADMIN_AUDIT_LOG: path.join(OUT, 'admin-audit.sample.log') }, stdio: 'ignore' });
@@ -43,10 +45,10 @@ await sleep(1500);
 await ev(`window.__admin = import('/src/services/adminSession.ts').then(m => (window.__m = m, true))`);
 
 report.checks.status = await ev(`window.__m.fetchAdminStatus().then(s => ({ mode: s.mode, authenticated: s.authenticated, hasCsrf: !!s.csrf }))`);
-report.checks.unauthenticatedMutationRefused = await ev(`fetch('/api/canon-drive/clear', { method: 'POST', credentials: 'same-origin' }).then(async r => ({ status: r.status, code: (await r.json()).code }))`);
+report.checks.unauthenticatedMutationRefused = await ev(`fetch(${JSON.stringify(PROBE_URL)}, { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(async r => ({ status: r.status, code: (await r.json()).code }))`);
 
 // Kick off a mutation through adminFetch: the real dialog must appear.
-await ev(`window.__pending = window.__m.adminFetch('/api/canon-drive/clear', { method: 'POST' }).then(r => r.status); true`);
+await ev(`window.__pending = window.__m.adminFetch(${JSON.stringify(PROBE_URL)}, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.status); true`);
 await until(() => ev(`Boolean(document.querySelector('[data-testid="admin-login"]'))`), 15000);
 report.checks.dialogShown = true;
 report.checks.dialogFocusedInput = await ev(`document.activeElement?.id === 'admin-secret'`);
@@ -70,16 +72,16 @@ const cookies = (await send('Network.getCookies', { urls: [`http://127.0.0.1:${P
 const c = cookies.find((x) => x.name === 'kj_admin');
 report.checks.cookieFlags = c ? { httpOnly: c.httpOnly, sameSite: c.sameSite, path: c.path, secure: c.secure } : null;
 report.checks.statusAfterLogin = await ev(`window.__m.fetchAdminStatus().then(s => ({ authenticated: s.authenticated, hasCsrf: !!s.csrf }))`);
-report.checks.mutationWithoutCsrfRefused = await ev(`fetch('/api/canon-drive/clear', { method: 'POST', credentials: 'same-origin' }).then(r => r.status)`);
+report.checks.mutationWithoutCsrfRefused = await ev(`fetch(${JSON.stringify(PROBE_URL)}, { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.status)`);
 report.checks.secretNotInBrowserStorage = await ev(`!JSON.stringify([localStorage, sessionStorage, document.documentElement.outerHTML]).includes(${JSON.stringify(SECRET)})`);
 const bundleText = await (await fetch(`http://127.0.0.1:${PORT}/src/services/adminSession.ts`)).text();
 const appText = await (await fetch(`http://127.0.0.1:${PORT}/src/App.tsx`)).text();
 report.checks.secretNotInServedClientCode = !bundleText.includes(SECRET) && !appText.includes(SECRET) && !/KAIJAX_ADMIN_TOKEN/.test(bundleText + appText);
 await ev(`window.__m.adminLogout().then(() => true)`);
-report.checks.afterLogoutRefused = await ev(`fetch('/api/canon-drive/clear', { method: 'POST', credentials: 'same-origin' }).then(r => r.status)`);
+report.checks.afterLogoutRefused = await ev(`fetch(${JSON.stringify(PROBE_URL)}, { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.status)`);
 
 const c1 = report.checks;
-report.pass = c1.status.mode === 'token' && c1.unauthenticatedMutationRefused.status === 401 && c1.dialogShown && c1.dialogFocusedInput && c1.dialogStillOpenAfterWrong && c1.retriedMutationStatus === 200 && c1.dialogClosedAfterLogin && c1.cookieVisibleToJs === false && c1.cookieFlags?.httpOnly === true && c1.cookieFlags?.sameSite === 'Strict' && c1.mutationWithoutCsrfRefused === 403 && c1.secretNotInBrowserStorage && c1.secretNotInServedClientCode && c1.afterLogoutRefused === 401;
+report.pass = c1.status.mode === 'token' && c1.unauthenticatedMutationRefused.status === 401 && c1.dialogShown && c1.dialogFocusedInput && c1.dialogStillOpenAfterWrong && c1.retriedMutationStatus === 404 && c1.dialogClosedAfterLogin && c1.cookieVisibleToJs === false && c1.cookieFlags?.httpOnly === true && c1.cookieFlags?.sameSite === 'Strict' && c1.mutationWithoutCsrfRefused === 403 && c1.secretNotInBrowserStorage && c1.secretNotInServedClientCode && c1.afterLogoutRefused === 401;
 fs.writeFileSync(path.join(OUT, 'admin-ui-report.json'), JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));
 cleanup();

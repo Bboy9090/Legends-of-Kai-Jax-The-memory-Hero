@@ -21,6 +21,7 @@ async function createServer() {
     appRoot: __dirname,
     adminToken: process.env.KAIJAX_ADMIN_TOKEN,
     production,
+    auditLogPath: process.env.KAIJAX_ADMIN_AUDIT_LOG || path.join(__dirname, 'data', 'admin-audit.log'),
   });
 
   // Mount Vite middleware in dev (with HMR & WebSocket server disabled for Cloud Run / iframe stability), or serve static dist/ in production

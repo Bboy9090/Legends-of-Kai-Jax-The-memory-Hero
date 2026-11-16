@@ -14,7 +14,7 @@
     "dialogFocusedInput": true,
     "wrongSecretMessage": "Invalid admin credentials.",
     "dialogStillOpenAfterWrong": true,
-    "retriedMutationStatus": 200,
+    "retriedMutationStatus": 404,
     "dialogClosedAfterLogin": true,
     "cookieVisibleToJs": false,
     "cookieFlags": {
