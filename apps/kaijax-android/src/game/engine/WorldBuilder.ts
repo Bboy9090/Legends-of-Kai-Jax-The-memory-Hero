@@ -195,10 +195,14 @@ function buildMergedStaticMesh(
 }
 
 export function buildAshblockHeights(
-  scene: THREE.Scene,
+  outerScene: THREE.Scene,
   textures: WorldTextureSet,
   initialMode: EnvironmentMode = 'reconstructed'
 ): AshblockWorld {
+  const scene = new THREE.Group();
+  scene.name = 'Ashblock_District_Root';
+  outerScene.add(scene);
+
   const colliders: BoxCollider[] = [];
   const walkableZones: WalkableZoneSummary[] = [];
   const webAnchors: WebAnchor[] = [];
@@ -1410,6 +1414,9 @@ export function buildAshblockHeights(
           civ.group.children[0].position.y = 0.78 + Math.abs(Math.sin(elapsed * 3.5)) * 0.08;
         }
       }
+    },
+    dispose: () => {
+      outerScene.remove(scene);
     },
   };
 

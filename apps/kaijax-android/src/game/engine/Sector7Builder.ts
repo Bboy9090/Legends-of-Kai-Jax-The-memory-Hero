@@ -139,6 +139,31 @@ export function buildSector7District(
     });
   }
 
+  // 2b. Wave 5 Visual Fidelity Upgrade: Switching Yard Rail Tracks, Gantry Crane Span & Tunnel Chevrons
+  const railGeo = track(new THREE.BoxGeometry(0.18, 0.08, 128));
+  for (const rx of [-2.2, 2.2, -5.8, 5.8]) {
+    const rail = new THREE.Mesh(railGeo, rustSteelMat);
+    rail.position.set(rx, 0.04, -40);
+    rootGroup.add(rail);
+  }
+  const tieGeo = track(new THREE.BoxGeometry(13.2, 0.05, 0.32));
+  const tieMat = track(new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9 }));
+  for (let tz = 10; tz >= -86; tz -= 3.2) {
+    const tie = new THREE.Mesh(tieGeo, tieMat);
+    tie.position.set(0, 0.025, tz);
+    rootGroup.add(tie);
+  }
+  // Overhead Gantry Crane Truss & Hoist Columns
+  const gantryBridge = new THREE.Mesh(track(new THREE.BoxGeometry(38, 1.3, 2.4)), rustSteelMat);
+  gantryBridge.position.set(0, 12.4, -22);
+  const gantryTrim = new THREE.Mesh(track(new THREE.BoxGeometry(38, 0.22, 2.5)), amberEmissiveMat);
+  gantryTrim.position.set(0, 11.7, -22);
+  const gantryLegL = new THREE.Mesh(track(new THREE.BoxGeometry(1.4, 12.8, 1.4)), rustSteelMat);
+  gantryLegL.position.set(-18.5, 6.4, -22);
+  const gantryLegR = new THREE.Mesh(track(new THREE.BoxGeometry(1.4, 12.8, 1.4)), rustSteelMat);
+  gantryLegR.position.set(18.5, 6.4, -22);
+  rootGroup.add(gantryBridge, gantryTrim, gantryLegL, gantryLegR);
+
   // 3. Service Tunnel 7B Portal & Barrier (z = -48)
   const portalArchMat = track(new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.7, roughness: 0.4 }));
   const portalL = new THREE.Mesh(track(new THREE.BoxGeometry(4, 10, 4)), portalArchMat);
