@@ -1,0 +1,581 @@
+{
+  "operation": "OPERATION KAI-JAX — P1-L: ASHBLOCK HEIGHTS PREMIUM WORLD RECONSTRUCTION",
+  "certifiedAt": "2026-11-15T04:53:47.436Z",
+  "captures": [
+    "docs/production/captures/p1l/01_p1l_modular_kit_12assets.png",
+    "docs/production/captures/p1l/02a_p1l_legacy_street.png",
+    "docs/production/captures/p1l/02b_p1l_reconstructed_street.png",
+    "docs/production/captures/p1l/03_p1l_rooftop_skybridge_network.png",
+    "docs/production/captures/p1l/04_p1l_bloodward_dojo_sanctuary.png",
+    "docs/production/captures/p1l/05_p1l_alley_market_and_gatehouse.png",
+    "docs/production/captures/p1l/06_p1l_geometry_attached_webswing.png",
+    "docs/production/captures/p1l/07a_p1l_legacy_boss_courtyard.png",
+    "docs/production/captures/p1l/07b_p1l_reconstructed_boss_courtyard.png",
+    "docs/production/captures/p1l/08_p1l_boss_arena_combat_takedown.png",
+    "docs/production/captures/p1l/09_p1l_mobile_844x390_perf_hud.png",
+    "docs/production/captures/p1l/02_p1l_street_ref_before_after.png",
+    "docs/production/captures/p1l/07_p1l_boss_courtyard_ref_before_after.png"
+  ],
+  "worldComparison": {
+    "legacyStreet": {
+      "activeHero": "kai",
+      "isFused": false,
+      "characterModelVersion": "p1i_reconstructed",
+      "environmentMode": "legacy",
+      "qualityTier": "balanced",
+      "modularKitLoadedCount": 12,
+      "modularKitExpectedCount": 12,
+      "instancedPropCount": 133,
+      "deduplicatedMaterialCount": 11,
+      "walkableZonesCount": 23,
+      "activeClips": {
+        "kai": "idle",
+        "jax": "idle",
+        "kaijax": "idle"
+      },
+      "kaiJaxSecondaryBones": {
+        "tailBones": 12,
+        "physicalTailChains": 3,
+        "spiderBones": 12,
+        "maneBones": 7
+      },
+      "webTraversal": {
+        "isSwinging": false,
+        "activeWebAnchorId": null,
+        "activeWebAttachmentType": null,
+        "anchorsTotal": 10,
+        "allAnchorsGeometryAttached": true
+      },
+      "environmentalTakedownsCount": 0,
+      "loadedCharacterGlbs": {
+        "kai": {
+          "status": "ready",
+          "url": "/models/characters/kai_lod1.glb",
+          "tris": 9211,
+          "bones": 37
+        },
+        "jax": {
+          "status": "ready",
+          "url": "/models/characters/jax_lod1.glb",
+          "tris": 9211,
+          "bones": 32
+        },
+        "kaijax": {
+          "status": "ready",
+          "url": "/models/characters/kaijax_lod1.glb",
+          "tris": 10526,
+          "bones": 56
+        },
+        "boryn": {
+          "status": "ready",
+          "url": "/models/characters/boryn_lod1.glb",
+          "tris": 8648,
+          "bones": 29
+        },
+        "borax": {
+          "status": "ready",
+          "url": "/models/characters/borax_lod1.glb",
+          "tris": 9212,
+          "bones": 29
+        }
+      },
+      "playerPos": [
+        0,
+        0,
+        13.5
+      ],
+      "companionPos": [
+        1.91,
+        0,
+        14.82
+      ],
+      "grounded": true,
+      "comboCount": 0,
+      "duoSynergy": 30,
+      "activeFinisher": null,
+      "bufferedAction": null,
+      "aliveEnemies": [
+        {
+          "id": "e-row-1",
+          "kind": "brawler",
+          "hp": 135,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            -2.93,
+            0,
+            -7.48
+          ]
+        },
+        {
+          "id": "e-row-2",
+          "kind": "dodger",
+          "hp": 98,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            3.4,
+            0,
+            -11.29
+          ]
+        },
+        {
+          "id": "e-row-3",
+          "kind": "marksman",
+          "hp": 88,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            0,
+            0,
+            -18
+          ]
+        }
+      ],
+      "characterGlbStatus": {
+        "kai": "ready",
+        "jax": "ready",
+        "kaijax": "ready",
+        "boryn": "ready",
+        "borax": "ready"
+      },
+      "perf": {
+        "fpsEstimate": 0,
+        "onePercentLowFps": 57,
+        "drawCalls": 109,
+        "activeTriangles": 42298,
+        "geometries": 236,
+        "textures": 37,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    },
+    "reconstructedStreet": {
+      "activeHero": "kai",
+      "isFused": false,
+      "characterModelVersion": "p1i_reconstructed",
+      "environmentMode": "reconstructed",
+      "qualityTier": "high",
+      "modularKitLoadedCount": 12,
+      "modularKitExpectedCount": 12,
+      "instancedPropCount": 133,
+      "deduplicatedMaterialCount": 11,
+      "walkableZonesCount": 23,
+      "activeClips": {
+        "kai": "idle",
+        "jax": "idle",
+        "kaijax": "idle"
+      },
+      "kaiJaxSecondaryBones": {
+        "tailBones": 12,
+        "physicalTailChains": 3,
+        "spiderBones": 12,
+        "maneBones": 7
+      },
+      "webTraversal": {
+        "isSwinging": false,
+        "activeWebAnchorId": null,
+        "activeWebAttachmentType": null,
+        "anchorsTotal": 10,
+        "allAnchorsGeometryAttached": true
+      },
+      "environmentalTakedownsCount": 0,
+      "loadedCharacterGlbs": {
+        "kai": {
+          "status": "ready",
+          "url": "/models/characters/kai_lod1.glb",
+          "tris": 9211,
+          "bones": 37
+        },
+        "jax": {
+          "status": "ready",
+          "url": "/models/characters/jax_lod1.glb",
+          "tris": 9211,
+          "bones": 32
+        },
+        "kaijax": {
+          "status": "ready",
+          "url": "/models/characters/kaijax_lod1.glb",
+          "tris": 10526,
+          "bones": 56
+        },
+        "boryn": {
+          "status": "ready",
+          "url": "/models/characters/boryn_lod1.glb",
+          "tris": 8648,
+          "bones": 29
+        },
+        "borax": {
+          "status": "ready",
+          "url": "/models/characters/borax_lod1.glb",
+          "tris": 9212,
+          "bones": 29
+        }
+      },
+      "playerPos": [
+        0,
+        0,
+        13.5
+      ],
+      "companionPos": [
+        1.91,
+        0,
+        14.82
+      ],
+      "grounded": true,
+      "comboCount": 0,
+      "duoSynergy": 30,
+      "activeFinisher": null,
+      "bufferedAction": null,
+      "aliveEnemies": [
+        {
+          "id": "e-row-1",
+          "kind": "brawler",
+          "hp": 135,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            -2.81,
+            0,
+            -6.63
+          ]
+        },
+        {
+          "id": "e-row-2",
+          "kind": "dodger",
+          "hp": 98,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            3.24,
+            0,
+            -10.12
+          ]
+        },
+        {
+          "id": "e-row-3",
+          "kind": "marksman",
+          "hp": 88,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            0,
+            0,
+            -18
+          ]
+        }
+      ],
+      "characterGlbStatus": {
+        "kai": "ready",
+        "jax": "ready",
+        "kaijax": "ready",
+        "boryn": "ready",
+        "borax": "ready"
+      },
+      "perf": {
+        "fpsEstimate": 0,
+        "onePercentLowFps": 57,
+        "drawCalls": 142,
+        "activeTriangles": 66008,
+        "geometries": 248,
+        "textures": 41,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    }
+  },
+  "performanceProfile": {
+    "assetLoadDurationMs": 15594,
+    "viewport": [
+      844,
+      390
+    ],
+    "visibleButtons": 17,
+    "outOfBoundsButtons": 0,
+    "explorationBalanced": {
+      "fpsEstimate": 60,
+      "onePercentLowFps": 60,
+      "drawCalls": 54,
+      "activeTriangles": 60832,
+      "geometries": 121,
+      "textures": 40,
+      "adaptiveScaleApplied": false,
+      "isSoftwareGl": true
+    },
+    "tiers": {
+      "low": {
+        "fpsEstimate": 60,
+        "onePercentLowFps": 60,
+        "drawCalls": 152,
+        "activeTriangles": 62800,
+        "geometries": 220,
+        "textures": 40,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true,
+        "cpuSimAvgMs": 0.473,
+        "renderSubmitMs": 7.5
+      },
+      "balanced": {
+        "fpsEstimate": 60,
+        "onePercentLowFps": 60,
+        "drawCalls": 167,
+        "activeTriangles": 66124,
+        "geometries": 221,
+        "textures": 40,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true,
+        "cpuSimAvgMs": 1.51,
+        "renderSubmitMs": 10.5
+      },
+      "high": {
+        "fpsEstimate": 60,
+        "onePercentLowFps": 60,
+        "drawCalls": 159,
+        "activeTriangles": 66060,
+        "geometries": 221,
+        "textures": 40,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true,
+        "cpuSimAvgMs": 1.417,
+        "renderSubmitMs": 7
+      }
+    },
+    "androidPackagingConfig": {
+      "gitignoreExcludesAndroidPublic": true,
+      "capacitorWebDirDist": true,
+      "androidGradlePresent": true,
+      "ashblockPublicGlbCount": 12
+    }
+  },
+  "regression12Checks": [
+    {
+      "id": 1,
+      "item": "Character selection & spawning (5 Meshy GLBs + 12 Modular World GLBs)",
+      "passed": true,
+      "metrics": {
+        "assetLoadDurationMs": 15594,
+        "modularKitLoadedCount": 12,
+        "deduplicatedMaterialCount": 11,
+        "instancedPropCount": 133,
+        "characters": {
+          "kai": "ready",
+          "jax": "ready",
+          "kaijax": "ready",
+          "boryn": "ready",
+          "borax": "ready"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "item": "Street traversal & grounded sprinting",
+      "passed": true,
+      "metrics": {
+        "playerPos": [
+          0,
+          0,
+          3.13
+        ],
+        "clip": "sprint"
+      }
+    },
+    {
+      "id": 3,
+      "item": "Continuous rooftop ascent, walkable skybridge crossing & Bloodward Loft companion access",
+      "passed": true,
+      "metrics": {
+        "westStepElevations": [
+          1.8,
+          3.65,
+          5.35,
+          7.05
+        ],
+        "endPlayerPos": [
+          19.64,
+          7.05,
+          -27
+        ],
+        "companionPos": [
+          11.83,
+          7.05,
+          -25.92
+        ],
+        "groundedOnLoft": true
+      }
+    },
+    {
+      "id": 4,
+      "item": "Web swinging attached strictly to physical world geometry (10 anchors)",
+      "passed": true,
+      "metrics": {
+        "isSwinging": true,
+        "activeWebAnchorId": "wb-south-skybridge",
+        "activeWebAttachmentType": "skybridge_truss_girder",
+        "anchorsTotal": 10,
+        "allAnchorsGeometryAttached": true
+      }
+    },
+    {
+      "id": 5,
+      "item": "Enemy encounters, free-flow combo chains & perfect parry counterplay",
+      "passed": true,
+      "metrics": {
+        "combo": 2,
+        "parried": true,
+        "aliveCount": 3
+      }
+    },
+    {
+      "id": 6,
+      "item": "Contextual Syndicate Arc Relay environmental takedowns",
+      "passed": true,
+      "metrics": {
+        "ok": true,
+        "totalTriggered": 1
+      }
+    },
+    {
+      "id": 7,
+      "item": "Cooperative Duo Synergy meter & synchronized Duo Finishers",
+      "passed": true,
+      "metrics": {
+        "started": true,
+        "duoFinishersUsed": 1
+      }
+    },
+    {
+      "id": 8,
+      "item": "Mission 1 completion & Kai-Jax strictly-3-tail Fusion in Boss Courtyard",
+      "passed": true,
+      "metrics": {
+        "isFused": true,
+        "activeHero": "kaijax",
+        "kaiJaxBones": {
+          "tailBones": 12,
+          "physicalTailChains": 3,
+          "spiderBones": 12,
+          "maneBones": 7
+        },
+        "missionCompleted": true,
+        "isVictory": true
+      }
+    },
+    {
+      "id": 9,
+      "item": "Save/reload continuity across full page reload",
+      "passed": true,
+      "metrics": {
+        "missionCompleted": true,
+        "fusionUnlocked": true,
+        "memorySiteReconstructed": true,
+        "alleyGateOpen": true,
+        "modularKitLoadedCount": 12
+      }
+    },
+    {
+      "id": 10,
+      "item": "Reconstructed / Legacy live environment switching",
+      "passed": true,
+      "metrics": {
+        "legacyMode": "legacy",
+        "reconMode": "reconstructed",
+        "legacyDrawCalls": 27,
+        "reconDrawCalls": 48
+      }
+    },
+    {
+      "id": 11,
+      "item": "Android asset packaging config & Mobile 844x390 Low/Balanced/High performance budget",
+      "passed": true,
+      "metrics": {
+        "viewport": [
+          844,
+          390
+        ],
+        "visibleButtons": 17,
+        "outOfBoundsButtons": 0,
+        "explorationBalanced": {
+          "fpsEstimate": 60,
+          "onePercentLowFps": 60,
+          "drawCalls": 54,
+          "activeTriangles": 60832,
+          "geometries": 121,
+          "textures": 40,
+          "adaptiveScaleApplied": false,
+          "isSoftwareGl": true
+        },
+        "tiers": {
+          "low": {
+            "fpsEstimate": 60,
+            "onePercentLowFps": 60,
+            "drawCalls": 152,
+            "activeTriangles": 62800,
+            "geometries": 220,
+            "textures": 40,
+            "adaptiveScaleApplied": false,
+            "isSoftwareGl": true,
+            "cpuSimAvgMs": 0.473,
+            "renderSubmitMs": 7.5
+          },
+          "balanced": {
+            "fpsEstimate": 60,
+            "onePercentLowFps": 60,
+            "drawCalls": 167,
+            "activeTriangles": 66124,
+            "geometries": 221,
+            "textures": 40,
+            "adaptiveScaleApplied": false,
+            "isSoftwareGl": true,
+            "cpuSimAvgMs": 1.51,
+            "renderSubmitMs": 10.5
+          },
+          "high": {
+            "fpsEstimate": 60,
+            "onePercentLowFps": 60,
+            "drawCalls": 159,
+            "activeTriangles": 66060,
+            "geometries": 221,
+            "textures": 40,
+            "adaptiveScaleApplied": false,
+            "isSoftwareGl": true,
+            "cpuSimAvgMs": 1.417,
+            "renderSubmitMs": 7
+          }
+        },
+        "androidPackagingConfig": {
+          "gitignoreExcludesAndroidPublic": true,
+          "capacitorWebDirDist": true,
+          "androidGradlePresent": true,
+          "ashblockPublicGlbCount": 12
+        }
+      }
+    },
+    {
+      "id": 12,
+      "item": "Zero missing textures, GLBs, HTTP 404s, or runtime errors",
+      "passed": true,
+      "metrics": {
+        "httpFailures": [],
+        "consoleErrors": [],
+        "pageExceptions": []
+      }
+    }
+  ],
+  "runtimeIntegrity": {
+    "httpFailures": [],
+    "consoleErrors": [],
+    "pageExceptions": []
+  }
+}

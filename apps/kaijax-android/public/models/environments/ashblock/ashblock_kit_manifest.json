@@ -1,0 +1,178 @@
+{
+  "operation": "KAI-JAX P1-L \u2014 ASHBLOCK HEIGHTS 12-PIECE MODULAR PBR KIT",
+  "pipeline": "Operation Kai-Jax P1-L Y-Up Binary glTF 2.0 PBR + Normal + Baked-AO Compiler",
+  "visualAuthoritySheets": [
+    "ChatGPT_Image_Aug_3__2026__04_56_26_PM__2__d438c610.png",
+    "ChatGPT_Image_Aug_3__2026__04_56_26_PM__5__d2fb286b.png",
+    "ChatGPT_Image_Aug_3__2026__04_56_25_PM__1__f9d37a6e.png",
+    "ChatGPT_Image_Aug_3__2026__04_56_28_PM__9__e5b27b30.png"
+  ],
+  "pbrMaps": [
+    "BaseColor+BakedAO (512x512)",
+    "MetallicRoughness+Occlusion (512x512)",
+    "TangentSpaceNormal (512x512)",
+    "Emissive (512x512)"
+  ],
+  "runtimeMaterialDeduplicated": true,
+  "assetCount": 12,
+  "totalTrianglesPerKitSet": 3820,
+  "totalBytes": 791948,
+  "assets": [
+    {
+      "assetId": "ashblock_tenement_facade",
+      "file": "ashblock_tenement_facade.glb",
+      "bytes": 81236,
+      "sha256": "5fe5b930100a8f1f9dfb112b4512244b85aed1e156d01902b44ceabe4e47b0fb",
+      "vertexCount": 1104,
+      "triangleCount": 552,
+      "dimensionsMeters": {
+        "widthX": 10.2,
+        "heightY": 18.49,
+        "depthZ": 7.25
+      }
+    },
+    {
+      "assetId": "ashblock_tenement_corner_setback",
+      "file": "ashblock_tenement_corner_setback.glb",
+      "bytes": 68280,
+      "sha256": "4ac1db2c201e1312152bc67884ff86a41e5e3478c47f8d56d0a99fa8c1f7eb57",
+      "vertexCount": 736,
+      "triangleCount": 352,
+      "dimensionsMeters": {
+        "widthX": 10.5,
+        "heightY": 18.75,
+        "depthZ": 5.975
+      }
+    },
+    {
+      "assetId": "ashblock_alley_shopfront_row",
+      "file": "ashblock_alley_shopfront_row.glb",
+      "bytes": 56044,
+      "sha256": "519a23a3125770e6da73ccce28a319b5ebcbc80f9d7ee41e09bc2e106e36466e",
+      "vertexCount": 384,
+      "triangleCount": 192,
+      "dimensionsMeters": {
+        "widthX": 9.3,
+        "heightY": 8.045,
+        "depthZ": 5.249
+      }
+    },
+    {
+      "assetId": "ashblock_skybridge_truss",
+      "file": "ashblock_skybridge_truss.glb",
+      "bytes": 98044,
+      "sha256": "cb4d20a7eea597e4d1b0fdd9e394adc183dd7b6d8f92d3584c1c94e4f95f445a",
+      "vertexCount": 1584,
+      "triangleCount": 792,
+      "dimensionsMeters": {
+        "widthX": 36.36,
+        "heightY": 3.35,
+        "depthZ": 3.55
+      }
+    },
+    {
+      "assetId": "ashblock_fire_escape_tower",
+      "file": "ashblock_fire_escape_tower.glb",
+      "bytes": 56876,
+      "sha256": "7d0aa1d1548bce06fdb2867c6b719b36082148d686e79bcc6fed0c6190fbee24",
+      "vertexCount": 408,
+      "triangleCount": 204,
+      "dimensionsMeters": {
+        "widthX": 3.45,
+        "heightY": 7.91,
+        "depthZ": 6.508
+      }
+    },
+    {
+      "assetId": "ashblock_rooftop_watertower",
+      "file": "ashblock_rooftop_watertower.glb",
+      "bytes": 71644,
+      "sha256": "67d108fec5324ce6debc1b17a1114d74ebbf1c9f47c88415ae58f3e6c3aa7f56",
+      "vertexCount": 840,
+      "triangleCount": 360,
+      "dimensionsMeters": {
+        "widthX": 3.585,
+        "heightY": 6.805,
+        "depthZ": 2.96
+      }
+    },
+    {
+      "assetId": "ashblock_rooftop_mech_cluster",
+      "file": "ashblock_rooftop_mech_cluster.glb",
+      "bytes": 60480,
+      "sha256": "913d865ee809ad6aacefca3047490b59333b4ce81e994f6168b9894d6f1b43f9",
+      "vertexCount": 516,
+      "triangleCount": 228,
+      "dimensionsMeters": {
+        "widthX": 4.4,
+        "heightY": 6.11,
+        "depthZ": 3.2
+      }
+    },
+    {
+      "assetId": "ashblock_bloodward_dojo",
+      "file": "ashblock_bloodward_dojo.glb",
+      "bytes": 74068,
+      "sha256": "3fcbc6625809f3448b0faa12bfb8a5c3ce1588cfa42e6c1f8b62d948b7abb8a7",
+      "vertexCount": 908,
+      "triangleCount": 404,
+      "dimensionsMeters": {
+        "widthX": 9.0,
+        "heightY": 5.31,
+        "depthZ": 7.2
+      }
+    },
+    {
+      "assetId": "ashblock_syndicate_relay",
+      "file": "ashblock_syndicate_relay.glb",
+      "bytes": 63840,
+      "sha256": "03998df43342765e5e7c87b48598a8c4754608f00409f8d568a899cdea3261a3",
+      "vertexCount": 616,
+      "triangleCount": 256,
+      "dimensionsMeters": {
+        "widthX": 1.96,
+        "heightY": 3.345,
+        "depthZ": 1.96
+      }
+    },
+    {
+      "assetId": "ashblock_market_awning_stall",
+      "file": "ashblock_market_awning_stall.glb",
+      "bytes": 50168,
+      "sha256": "86f50e1b527be17d0a9955fe6f35038c5c3ea3589596bf9de9be0cce74823a9c",
+      "vertexCount": 216,
+      "triangleCount": 108,
+      "dimensionsMeters": {
+        "widthX": 3.85,
+        "heightY": 2.922,
+        "depthZ": 2.723
+      }
+    },
+    {
+      "assetId": "ashblock_syndicate_gatehouse",
+      "file": "ashblock_syndicate_gatehouse.glb",
+      "bytes": 54360,
+      "sha256": "5bbd7c5c3a186e32d072b3948f65014d561565163cb3a032937b5c27f2497873",
+      "vertexCount": 336,
+      "triangleCount": 168,
+      "dimensionsMeters": {
+        "widthX": 18.6,
+        "heightY": 7.525,
+        "depthZ": 4.065
+      }
+    },
+    {
+      "assetId": "ashblock_courtyard_stronghold_arena",
+      "file": "ashblock_courtyard_stronghold_arena.glb",
+      "bytes": 56908,
+      "sha256": "d65b65bd17b8d451d67048a84a0cdde071d21014eba447f35250db1e783c3b90",
+      "vertexCount": 408,
+      "triangleCount": 204,
+      "dimensionsMeters": {
+        "widthX": 22.0,
+        "heightY": 13.347,
+        "depthZ": 9.113
+      }
+    }
+  ]
+}

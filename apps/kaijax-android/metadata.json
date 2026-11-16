@@ -1,0 +1,6 @@
+{
+  "name": "Legends of Kai-Jax: The Memory Hero",
+  "description": "A third-person 3D mobile action RPG adapting Legends of Kai-Jax across the Raging City, featuring dual-hero combat, web traversal, storm abilities, and canon-gated fusion.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
