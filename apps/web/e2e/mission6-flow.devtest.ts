@@ -7,7 +7,10 @@ import { expect, test } from "@playwright/test";
  * Not included in the production/headless physical gameplay smoke lane.
  */
 test("M6-C real mission UI: waves, timed transition, rescues, results and persisted reward", async ({ page }) => {
-  test.setTimeout(360_000);
+  // Wall-clock budget only. This dev-integration test drives real typewriter dialogue under software WebGL and
+  // measured 5.8-5.9 min against the former 6 min cap, so runner jitter alone could fail it. Assertions and
+  // per-step timeouts are unchanged.
+  test.setTimeout(540_000);
   const pageErrors: string[] = [];
   page.on("pageerror", (err) => pageErrors.push(err.message));
   await page.goto("/");
