@@ -24,6 +24,7 @@ overrides:
   '@xmldom/xmldom@<0.8.15': 0.8.15
   brace-expansion@>=2.0.0 <2.1.7: 2.1.7
   tar@>=7.0.0 <7.5.21: 7.5.23
+  '@types/three': 0.185.1
 
 importers:
 
@@ -227,8 +228,8 @@ importers:
         specifier: ^4.3.3
         version: 4.3.5(vite@8.3.8(@types/node@22.19.7)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.1))
       '@types/three':
-        specifier: ^0.187.0
-        version: 0.187.0
+        specifier: 0.185.1
+        version: 0.185.1
       '@vitejs/plugin-react':
         specifier: ^6.1.1
         version: 6.3.0(vite@8.3.8(@types/node@22.19.7)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.1))
@@ -415,7 +416,7 @@ importers:
         specifier: ^18.2.22
         version: 18.3.7(@types/react@18.3.27)
       '@types/three':
-        specifier: ^0.185.1
+        specifier: 0.185.1
         version: 0.185.1
       '@vitejs/plugin-react':
         specifier: ^5.2.0
@@ -5367,13 +5368,13 @@ packages:
   maath@0.10.8:
     resolution: {integrity: sha512-tRvbDF0Pgqz+9XUa4jjfgAQ8/aPKmQdWXilFu2tMy4GWj4NOsx99HlULO4IeREfbO3a0sA145DZYyvXPkybm0g==}
     peerDependencies:
-      '@types/three': '>=0.134.0'
+      '@types/three': 0.185.1
       three: '>=0.134.0'
 
   maath@0.6.0:
     resolution: {integrity: sha512-dSb2xQuP7vDnaYqfoKzlApeRcR2xtN8/f7WV/TMAkBC8552TwTLtOO0JTcSygkYMjNDPoo6V01jTw/aPi4JrMw==}
     peerDependencies:
-      '@types/three': '>=0.144.0'
+      '@types/three': 0.185.1
       three: '>=0.144.0'
 
   magic-string@0.30.21:
@@ -6360,7 +6361,7 @@ packages:
   stats-gl@2.4.2:
     resolution: {integrity: sha512-g5O9B0hm9CvnM36+v7SFl39T7hmAlv541tU81ME8YeSb3i1CIP5/QdDeSB3A0la0bKNHpxpwxOVRo2wFTYEosQ==}
     peerDependencies:
-      '@types/three': '*'
+      '@types/three': 0.185.1
       three: '*'
 
   stats.js@0.17.0:

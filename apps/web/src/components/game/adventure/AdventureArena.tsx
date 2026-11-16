@@ -453,7 +453,13 @@ function Mission6MemoryNodes() {
   );
 }
 
-export default function AdventureArena() {
+interface AdventureArenaProps {
+  /** Fighter driven by the player in this roam/adventure session. */
+  characterId: string;
+  accentColor: string;
+}
+
+export default function AdventureArena({ characterId, accentColor }: AdventureArenaProps) {
   const arenaId = useAdventure((s) => s.arenaId);
   const roamDistrictId = useAdventure((s) => s.roamDistrictId);
   const roamSessionId = useAdventure((s) => s.roamSessionId);
@@ -467,7 +473,7 @@ export default function AdventureArena() {
       <ArenaLighting config={arena} />
       <ArenaGround config={arena} />
       <ArenaEnvironment config={arena} />
-      <AdventureCharacter />
+      <AdventureCharacter fighterId={characterId} accentColor={accentColor} />
       <AdventureCamera />
       <AdventureSessionGuard />
       <AdventurePlayerController />

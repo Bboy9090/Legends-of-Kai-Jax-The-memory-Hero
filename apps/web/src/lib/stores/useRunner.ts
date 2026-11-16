@@ -53,6 +53,8 @@ interface RunnerState {
   selectedCharacter: string | null;
   activeStoryMissionId: string | null;
   trainingSession: boolean;
+  /** Campaign node being played right now (runtime only: never persisted, cleared on profile switch/reset). */
+  campaignCurrentNode: CampaignNodeId | null;
   
   // Persistent Profile Management
   activeProfileIndex: number;
@@ -62,6 +64,7 @@ interface RunnerState {
   setGameState: (s: GameState) => void;
   setCharacter: (id: string | null) => void;
   setTrainingSession: (v: boolean) => void;
+  setCampaignCurrentNode: (nodeId: CampaignNodeId | null) => void;
   setActiveStoryMission: (id: string | null) => void;
   addScore: (points: number) => void;
   
@@ -198,6 +201,7 @@ export const useRunner = create<RunnerState>()(
       selectedCharacter: "kai-jax",
       activeStoryMissionId: null,
       trainingSession: false,
+      campaignCurrentNode: null,
       
       // Profiles Initial
       activeProfileIndex: 0,
@@ -221,6 +225,7 @@ export const useRunner = create<RunnerState>()(
           ...(!["playing", "adventure"].includes(gameState) ? { trainingSession: false } : {}),
         }),
       setTrainingSession: (trainingSession) => set({ trainingSession }),
+      setCampaignCurrentNode: (campaignCurrentNode) => set({ campaignCurrentNode }),
       setCharacter: (selectedCharacter) => set({ selectedCharacter }),
       setActiveStoryMission: (activeStoryMissionId) => set({ activeStoryMissionId }),
       
@@ -306,6 +311,7 @@ export const useRunner = create<RunnerState>()(
           // Runtime mission/session context must never leak between save slots.
           activeStoryMissionId: null,
           trainingSession: false,
+          campaignCurrentNode: null,
           selectedCharacter: "kai-jax",
         });
       },
@@ -323,6 +329,7 @@ export const useRunner = create<RunnerState>()(
             storyLoot: DEFAULT_PROFILE.storyLoot,
             completedRoamDistrictIds: DEFAULT_PROFILE.completedRoamDistrictIds,
             unlockedUpgrades: DEFAULT_PROFILE.unlockedUpgrades,
+            campaignCurrentNode: null,
           });
         } else {
           set({ profiles: newProfiles });

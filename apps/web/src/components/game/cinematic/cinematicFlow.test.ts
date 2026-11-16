@@ -4,6 +4,7 @@
 import { describe, it, expect } from "vitest";
 import {
   INITIAL_FLOW,
+  type FlowState,
   advanceFlow,
   onCombatComplete,
   skipCurrentBeat,
@@ -38,33 +39,33 @@ describe("cinematicFlow", () => {
   });
 
   it("onCombatComplete moves combat → payoff (beat 4)", () => {
-    let s = { encounterIndex: 0, beatIndex: 3, phase: "combat" as const };
+    let s: FlowState = { encounterIndex: 0, beatIndex: 3, phase: "combat" };
     s = onCombatComplete(s);
     expect(s.beatIndex).toBe(4);
     expect(s.phase).toBe("payoff");
   });
 
   it("advanceFlow from payoff jumps to next encounter (beat 0, playing_beat)", () => {
-    let s = { encounterIndex: 0, beatIndex: 4, phase: "payoff" as const };
+    let s: FlowState = { encounterIndex: 0, beatIndex: 4, phase: "payoff" };
     s = advanceFlow(s, ASHBLOCK_SCRIPTS);
     expect(s).toEqual({ encounterIndex: 1, beatIndex: 0, phase: "playing_beat" });
   });
 
   it("advanceFlow from final payoff transitions to done", () => {
     const last = ASHBLOCK_SCRIPTS.length - 1;
-    let s = { encounterIndex: last, beatIndex: 4, phase: "payoff" as const };
+    let s: FlowState = { encounterIndex: last, beatIndex: 4, phase: "payoff" };
     s = advanceFlow(s, ASHBLOCK_SCRIPTS);
     expect(s.phase).toBe("done");
   });
 
   it("skip during playing_beat jumps to combat without losing encounter context", () => {
-    let s = { encounterIndex: 1, beatIndex: 0, phase: "playing_beat" as const };
+    let s: FlowState = { encounterIndex: 1, beatIndex: 0, phase: "playing_beat" };
     s = skipCurrentBeat(s, ASHBLOCK_SCRIPTS);
     expect(s).toEqual({ encounterIndex: 1, beatIndex: 3, phase: "combat" });
   });
 
   it("skip during payoff advances to next encounter", () => {
-    let s = { encounterIndex: 0, beatIndex: 4, phase: "payoff" as const };
+    let s: FlowState = { encounterIndex: 0, beatIndex: 4, phase: "payoff" };
     s = skipCurrentBeat(s, ASHBLOCK_SCRIPTS);
     expect(s.encounterIndex).toBe(1);
     expect(s.phase).toBe("playing_beat");

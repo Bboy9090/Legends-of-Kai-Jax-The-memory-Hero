@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ATTACK_TYPE_TO_MOVE, COMBAT_RANGES, MOVES } from "./moveData";
+import { ATTACK_TYPE_TO_MOVE, COMBAT_RANGES, MOVES, type MoveData } from "./moveData";
 
 describe("certified combat contract", () => {
   it("keeps practical Versus contact ranges ordered and readable", () => {
@@ -20,7 +20,7 @@ describe("certified combat contract", () => {
     const heavy = MOVES.heavy;
     const skill = MOVES.skill;
 
-    const total = (move: typeof light1) => move.startup + move.active + move.recovery;
+    const total = (move: Pick<MoveData, "startup" | "active" | "recovery">) => move.startup + move.active + move.recovery;
     expect(total(light1)).toBeLessThan(total(heavy));
     expect(total(light2)).toBeLessThan(total(skill));
     expect(light1.cancelAt).toBeGreaterThan(0);

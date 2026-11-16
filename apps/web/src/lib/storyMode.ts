@@ -45,7 +45,8 @@ export interface GameMode {
 
 // ============ STORY ACTS ============
 
-export const STORY_ACTS: Record<ActNumber, StoryAct> = {
+// Only acts that have authored content are present; look up with `STORY_ACTS[n]` and handle undefined.
+export const STORY_ACTS: Partial<Record<ActNumber, StoryAct>> = {
   1: {
     number: 1,
     title: 'The Zenith Protocol',

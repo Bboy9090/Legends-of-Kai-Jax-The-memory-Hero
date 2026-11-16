@@ -313,12 +313,9 @@ export default function CinematicPostFX({
       composer.addPass(vignette);
 
       // Film grain (very subtle)
-      const film = new FilmPass(
-        0.22, // noise intensity
-        0.04, // scanline intensity
-        720, // scanline count
-        false
-      );
+      // three r15x+ FilmPass is (intensity, grayscale). The legacy 4-arg call passed 0.04 as `grayscale`
+      // (truthy), which would have desaturated the whole frame.
+      const film = new FilmPass(0.22, false);
       filmRef.current = film;
       composer.addPass(film);
 
@@ -498,8 +495,7 @@ export default function CinematicPostFX({
 
       const film = filmRef.current as any;
       if (film?.uniforms) {
-        if (film.uniforms["nIntensity"]) film.uniforms["nIntensity"].value = 0.12 + spike * 0.12;
-        if (film.uniforms["sIntensity"]) film.uniforms["sIntensity"].value = 0.02 + spike * 0.03;
+        if (film.uniforms["intensity"]) film.uniforms["intensity"].value = 0.12 + spike * 0.12;
       }
 
       const rays = raysRef.current as any;

@@ -1,0 +1,9 @@
+--------- beginning of main
+11-16 04:22:12.739 12596 12692 E chromium: [ERROR:gpu/command_buffer/service/gles2_cmd_decoder.cc:5738] [.WebGL-0x5d000531600]GL ERROR :GL_INVALID_VALUE : glGenerateMipmap: <- error from previous GL command
+11-16 04:22:14.978 12596 12692 E chromium: [ERROR:gpu/command_buffer/service/gles2_cmd_decoder.cc:5738] [.WebGL-0x5d000531600]GL ERROR :GL_INVALID_VALUE : glGenerateMipmap: <- error from previous GL command
+11-16 04:22:15.063 12596 12692 E chromium: [ERROR:gpu/command_buffer/service/gles2_cmd_decoder.cc:5738] [.WebGL-0x5d000531600]GL ERROR :GL_INVALID_VALUE : glGenerateMipmap: <- error from previous GL command
+11-16 04:22:15.136 12596 12692 E chromium: [ERROR:gpu/command_buffer/service/gles2_cmd_decoder.cc:5738] [.WebGL-0x5d000531600]GL ERROR :GL_INVALID_VALUE : glGenerateMipmap: <- error from previous GL command
+11-16 04:27:03.470 12596 12692 E chromium: [ERROR:gpu/command_buffer/service/gles2_cmd_decoder.cc:5738] [.WebGL-0x5d002d10400]GL ERROR :GL_INVALID_VALUE : glGenerateMipmap: <- error from previous GL command
+11-16 04:27:05.336 12596 12692 E chromium: [ERROR:gpu/command_buffer/service/gles2_cmd_decoder.cc:5738] [.WebGL-0x5d002d10400]GL ERROR :GL_INVALID_VALUE : glGenerateMipmap: <- error from previous GL command
+11-16 04:27:05.420 12596 12692 E chromium: [ERROR:gpu/command_buffer/service/gles2_cmd_decoder.cc:5738] [.WebGL-0x5d002d10400]GL ERROR :GL_INVALID_VALUE : glGenerateMipmap: <- error from previous GL command
+11-16 04:27:05.453 12596 12692 E chromium: [ERROR:gpu/command_buffer/service/gles2_cmd_decoder.cc:5738] [.WebGL-0x5d002d10400]GL ERROR :GL_INVALID_VALUE : glGenerateMipmap: <- error from previous GL command

@@ -306,27 +306,27 @@ describe('Mission Progression Integration', () => {
           posX: 0, posY: 0, posZ: 0, rotY: 0,
           health: 0, maxHealth: 400,
           isDead: true, isAggro: false, isAttacking: false,
-          aiState: 'death', telegraphTimer: 0,
+          aiState: 'idle', telegraphTimer: 0,
           patrolTargetX: 0, patrolTargetZ: 0, stunTimer: 0,
         }],
         objectives: {
           status: 'ACTIVE',
           civilianRegistry: [
-            { id: 'civ_01', posX: -5, posY: 0, posZ: 10, health: 100 },
-            { id: 'civ_02', posX: -8, posY: 0, posZ: 12, health: 100 },
+            { id: 'civ_01', posX: -5, posY: 0, posZ: 10, health: 100, maxHealth: 100 },
+            { id: 'civ_02', posX: -8, posY: 0, posZ: 12, health: 100, maxHealth: 100 },
           ],
           milestones: { generalDefeated: true, chaseTargetEscaped: false, stalkerIntercepted: false },
+          memoryRescues: [],
         },
-        currentWaveIndex: 2,
-        totalWavesCount: 3,
       });
 
+      // Wave counters are inputs to the gate (the store does not hold them): final wave = index 2 of 3.
       const outcome = evaluateCampaignProgressionGating({
         missionId: 'story_act1_m5',
         enemies: useAdventure.getState().enemies,
         objectives: useAdventure.getState().objectives,
-        currentWaveIndex: useAdventure.getState().currentWaveIndex,
-        totalWavesCount: useAdventure.getState().totalWavesCount,
+        currentWaveIndex: 2,
+        totalWavesCount: 3,
       });
 
       expect(outcome).toBe('VICTORY');

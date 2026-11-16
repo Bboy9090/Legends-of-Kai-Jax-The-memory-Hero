@@ -11,6 +11,10 @@ const sampleMove: MoveData = {
   staminaCost: 5,
   knockback: 1.5,
   hitStopFrames: 3,
+  hitstunFrames: 12,
+  blockstunFrames: 8,
+  launchAngleDeg: 0,
+  hitLevel: "medium",
 };
 
 describe("frameTiming", () => {

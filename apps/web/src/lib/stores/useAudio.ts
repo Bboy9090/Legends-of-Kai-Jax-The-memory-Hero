@@ -107,6 +107,8 @@ interface AudioState {
   setHitSound: (a: HTMLAudioElement | null) => void;
   setSuccessSound: (a: HTMLAudioElement | null) => void;
   setMuted: (m: boolean) => void;
+  /** Flip mute; muting immediately pauses any playing music elements. */
+  toggleMute: () => void;
   startBattleMusic: () => void;
   stopBattleMusic: () => void;
   playJump: () => void;
@@ -146,6 +148,14 @@ export const useAudio = create<AudioState>((set, get) => ({
   setHitSound: (hitSound) => set({ hitSound }),
   setSuccessSound: (successSound) => set({ successSound }),
   setMuted: (isMuted) => set({ isMuted }),
+  toggleMute: () => {
+    const next = !get().isMuted;
+    set({ isMuted: next });
+    if (next) {
+      get().backgroundMusic?.pause();
+      get().battleMusic?.pause();
+    }
+  },
   startBattleMusic: () => { if (!get().isMuted) tryPlay(get().battleMusic); },
   stopBattleMusic: () => { const b = get().battleMusic; if (b) b.pause(); },
   playJump: () => tryPlay(get().hitSound),
