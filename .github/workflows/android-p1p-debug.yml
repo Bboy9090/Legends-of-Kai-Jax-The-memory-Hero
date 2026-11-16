@@ -123,15 +123,17 @@ jobs:
           printf 'source_sha=%s\nartifact_kind=DEBUG_CI_QA_ONLY\nrelease_signed=false\nstore_approved=false\nphysical_device_qualified=false\n' "${EXPECTED_SHA}" > release-ci/QA-QUALIFICATION.txt
           cat release-ci/QA-QUALIFICATION.txt
 
-      - name: Upload Debug APK CI artifacts
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
-        with:
-          name: kai-jax-p1p-debug-apk
-          path: |
-            source/apps/kaijax-android/release-ci/Legends-of-Kai-Jax-p1p-debug.apk
-            source/apps/kaijax-android/release-ci/SHA256SUMS.txt
-            source/apps/kaijax-android/release-ci/apksigner-verify.txt
-            source/apps/kaijax-android/release-ci/apk-embedded-assets.txt
-            source/apps/kaijax-android/release-ci/QA-QUALIFICATION.txt
-          retention-days: 14
-          if-no-files-found: error
+      - name: Summarize Debug APK CI artifacts
+        working-directory: source/apps/kaijax-android
+        run: |
+          set -euo pipefail
+          ls -lh release-ci/
+          cat release-ci/SHA256SUMS.txt
+          cat release-ci/QA-QUALIFICATION.txt
+          {
+            echo "### Android Debug CI (P1-P Vertical Slice)"
+            echo '```'
+            cat release-ci/SHA256SUMS.txt
+            cat release-ci/QA-QUALIFICATION.txt
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
