@@ -1,4 +1,6 @@
+import { Capacitor } from '@capacitor/core';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AdminLoginDialog } from './components/AdminLoginDialog';
 import { CanonDriveModal } from './components/CanonDriveModal';
 import { CommandHubModal, HubTab } from './components/CommandHubModal';
 import { DialogueOverlay } from './components/DialogueOverlay';
@@ -6,6 +8,7 @@ import { GameHUD } from './components/GameHUD';
 import { OfflineLegalModal } from './components/OfflineLegalModal';
 import { TitleScreen } from './components/TitleScreen';
 import { AudioEngine } from './game/audio/AudioEngine';
+import { registerAdminPrompt } from './services/adminSession';
 import { CanonVaultManifest, fetchLocalCanonManifest } from './services/googleDriveAuth';
 import { EQUIPMENT_CATALOG } from './game/data/itemsData';
 import { MISSION_1_STEPS } from './game/data/missionsData';
@@ -113,6 +116,8 @@ export default function App() {
   const [hubOpen, setHubOpen] = useState(false);
   const [hubTab, setHubTab] = useState<HubTab>('missions');
   const [canonDriveOpen, setCanonDriveOpen] = useState(false);
+  // Administrator sign-in prompt (asset import / reconstruction). Resolves true once the server accepted the login.
+  const [adminPrompt, setAdminPrompt] = useState<((ok: boolean) => void) | null>(null);
   const [canonManifest, setCanonManifest] = useState<CanonVaultManifest>({
     updatedAt: '',
     sourceAccount: '',
@@ -248,6 +253,20 @@ export default function App() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    registerAdminPrompt(() => new Promise<boolean>((resolve) => setAdminPrompt(() => resolve)));
+    return () => registerAdminPrompt(null);
+  }, []);
+
+  // The Android/iOS app is a static bundle with no admin server: vault and reconstruction tools are web-dev only.
+  const openCanonDrive = useCallback(() => {
+    if (Capacitor.isNativePlatform()) {
+      showToast('Admin asset tools are only available on the development server.');
+      return;
+    }
+    setCanonDriveOpen(true);
+  }, [showToast]);
 
   // Register Android Capacitor & browser visibility lifecycle handlers
   useEffect(() => {
@@ -476,7 +495,7 @@ export default function App() {
           onContinue={(hero) => handleStartGame(false, hero)}
           onNewCampaign={(hero) => handleStartGame(true, hero)}
           onOpenHub={(t) => handleOpenHub(t)}
-          onOpenCanonDrive={() => setCanonDriveOpen(true)}
+          onOpenCanonDrive={openCanonDrive}
           onOpenLegal={(doc) => setLegalDoc(doc)}
         />
       )}
@@ -583,7 +602,16 @@ export default function App() {
           }}
           onOpenLegal={(doc) => setLegalDoc(doc)}
           canonManifest={canonManifest}
-          onOpenCanonDrive={() => setCanonDriveOpen(true)}
+          onOpenCanonDrive={openCanonDrive}
+        />
+      )}
+
+      {adminPrompt && (
+        <AdminLoginDialog
+          onResult={(ok) => {
+            adminPrompt(ok);
+            setAdminPrompt(null);
+          }}
         />
       )}
 

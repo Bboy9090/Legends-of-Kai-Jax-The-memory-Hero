@@ -1,0 +1,36 @@
+{
+  "secretLength": 40,
+  "checks": {
+    "status": {
+      "mode": "token",
+      "authenticated": false,
+      "hasCsrf": false
+    },
+    "unauthenticatedMutationRefused": {
+      "status": 401,
+      "code": "admin_auth_required"
+    },
+    "dialogShown": true,
+    "dialogFocusedInput": true,
+    "wrongSecretMessage": "Invalid admin credentials.",
+    "dialogStillOpenAfterWrong": true,
+    "retriedMutationStatus": 200,
+    "dialogClosedAfterLogin": true,
+    "cookieVisibleToJs": false,
+    "cookieFlags": {
+      "httpOnly": true,
+      "sameSite": "Strict",
+      "path": "/api",
+      "secure": false
+    },
+    "statusAfterLogin": {
+      "authenticated": true,
+      "hasCsrf": true
+    },
+    "mutationWithoutCsrfRefused": 403,
+    "secretNotInBrowserStorage": true,
+    "secretNotInServedClientCode": true,
+    "afterLogoutRefused": 401
+  },
+  "pass": true
+}

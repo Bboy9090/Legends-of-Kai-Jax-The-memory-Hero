@@ -1,3 +1,4 @@
+import { adminFetch } from '../services/adminSession';
 import React, { useEffect, useState } from 'react';
 import {
   BookOpen,
@@ -130,7 +131,7 @@ export const CommandHubModal: React.FC<CommandHubModalProps> = ({
     const reader = new FileReader();
     reader.onload = async () => {
       try {
-        const resp = await fetch('/api/character-pipeline/import-glb', {
+        const resp = await adminFetch('/api/character-pipeline/import-glb', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -163,7 +164,7 @@ export const CommandHubModal: React.FC<CommandHubModalProps> = ({
     setPipelineBusyId(characterId);
     setPipelineMessage(`Submitting ${characterId.toUpperCase()} 3-view plates to Meshy API...`);
     try {
-      const resp = await fetch('/api/character-pipeline/meshy/reconstruct', {
+      const resp = await adminFetch('/api/character-pipeline/meshy/reconstruct', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ characterId }),

@@ -1,3 +1,4 @@
+import { adminFetch, isAdminDenial } from './adminSession';
 import { getApps, initializeApp } from 'firebase/app';
 import {
   getAuth,
@@ -341,6 +342,9 @@ export async function findKaiJaxArtPackages(customQuery = ''): Promise<ArtPackag
     },
   });
 
+  if (await isAdminDenial(res)) {
+    throw new Error('Administrator sign-in is required to import into the local vault.');
+  }
   if (res.status === 401 || res.status === 403) {
     cachedAccessToken = null;
     throw new Error('NEEDS_AUTH');
@@ -374,6 +378,9 @@ export async function browseGoogleDriveFolder(options?: {
     },
   });
 
+  if (await isAdminDenial(res)) {
+    throw new Error('Administrator sign-in is required to import into the local vault.');
+  }
   if (res.status === 401 || res.status === 403) {
     cachedAccessToken = null;
     throw new Error('NEEDS_AUTH');
@@ -413,7 +420,7 @@ export async function importDriveAssetsToRigPipeline(
     throw new Error('NEEDS_AUTH');
   }
 
-  const res = await fetch('/api/canon-drive/import', {
+  const res = await adminFetch('/api/canon-drive/import', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -422,6 +429,9 @@ export async function importDriveAssetsToRigPipeline(
     body: JSON.stringify({ items }),
   });
 
+  if (await isAdminDenial(res)) {
+    throw new Error('Administrator sign-in is required to import into the local vault.');
+  }
   if (res.status === 401 || res.status === 403) {
     cachedAccessToken = null;
     throw new Error('NEEDS_AUTH');
@@ -439,7 +449,7 @@ export async function updateLocalCanonAssetTag(
   category: CanonAssetCategory,
   subjectTag: string
 ): Promise<CanonVaultManifest> {
-  const res = await fetch(`/api/canon-drive/asset/${encodeURIComponent(driveId)}`, {
+  const res = await adminFetch(`/api/canon-drive/asset/${encodeURIComponent(driveId)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ category, subjectTag }),
@@ -451,7 +461,7 @@ export async function updateLocalCanonAssetTag(
 }
 
 export async function removeLocalCanonAsset(driveId: string): Promise<CanonVaultManifest> {
-  const res = await fetch(`/api/canon-drive/asset/${encodeURIComponent(driveId)}`, {
+  const res = await adminFetch(`/api/canon-drive/asset/${encodeURIComponent(driveId)}`, {
     method: 'DELETE',
   });
   if (!res.ok) {
@@ -461,7 +471,7 @@ export async function removeLocalCanonAsset(driveId: string): Promise<CanonVault
 }
 
 export async function clearLocalCanonVault(): Promise<CanonVaultManifest> {
-  const res = await fetch('/api/canon-drive/clear', {
+  const res = await adminFetch('/api/canon-drive/clear', {
     method: 'POST',
   });
   if (!res.ok) {
