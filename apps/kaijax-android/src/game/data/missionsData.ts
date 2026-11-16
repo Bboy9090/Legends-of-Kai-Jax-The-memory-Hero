@@ -167,3 +167,42 @@ export const MISSION_1_VICTORY_DIALOGUE = [
     text: 'I felt that surge from three blocks away. Catch your breath, boys—Sector-7 scouts already know the gate fell. Rest at Ashblock and prepare.',
   },
 ];
+
+export const MISSION_2_STEPS: MissionStep[] = [
+  {
+    id: 's7-recon',
+    title: '01. Ironvein Recon',
+    objective: 'Clear the Ironvein Freight Yard vanguard and dodge automated searchlight sweeps.',
+    hint: 'Use Kar-Voth Arc Transformers for environmental takedowns or Web Zip onto the freight stacks.',
+    targetPos: [0, 0, -20],
+  },
+  {
+    id: 's7-tunnel-gate',
+    title: '02. Breach Tunnel 7B',
+    objective: 'Defeat the Tunnel 7B Bruiser and overload the Service Tunnel gate.',
+    hint: 'Press Interact (E) at the Tunnel 7B Portal (z = -48) once the vanguard falls.',
+    targetPos: [0, 0, -48],
+  },
+  {
+    id: 's7-boss',
+    title: '03. The Architect Scout',
+    objective: 'Defeat the Architect Scout inside the Sector 7B Substation.',
+    hint: 'Use Web Zip to close distance during sniper reloads and parry Orbital Rail Lock.',
+    targetPos: [0, 0, -68],
+  },
+];
+
+export const SECTOR7_VICTORY_DIALOGUE = [
+  {
+    speaker: 'Kai',
+    role: 'Memory-Web Heir',
+    portraitHero: 'kai' as const,
+    text: 'The Architect Scout\'s relay is offline. Their telemetry was feeding straight into Neon Ward.',
+  },
+  {
+    speaker: 'Jax',
+    role: 'Storm Fang',
+    portraitHero: 'jax' as const,
+    text: 'Then Neon Ward is our next stop—or we can regroup back at Ashblock Heights anytime.',
+  },
+];

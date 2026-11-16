@@ -9,6 +9,7 @@ import {
   GLBCharacterInstance,
   preloadGlbAssets,
 } from '../engine/GLBCharacterController.ts';
+import { buildNeonWardDistrict } from '../engine/NeonWardBuilder.ts';
 import { buildSector7District } from '../engine/Sector7Builder.ts';
 import {
   bestTextOn,
@@ -998,8 +999,31 @@ import('../data/characterAssetRegistry.ts').then(
   assert.equal(s7World.environmentalHazards.length, 4, 'Sector-7 must provide 4 Kar-Voth Arc Transformers');
   assert.equal(s7World.walkableZones.length, 7, 'Sector-7 must provide 7 elevated cargo/viaduct zones');
   s7World.dispose();
+
+  // 27. Wave 5 Neon Ward District Builder & Sector-7 Mission Sequence
+  const nwScene = new THREE.Scene();
+  const nwWorld = buildNeonWardDistrict(nwScene, {
+    asphaltMap: s7StubTex as unknown as THREE.CanvasTexture,
+    asphaltRoughness: s7StubTex as unknown as THREE.CanvasTexture,
+    sidewalkMap: s7StubTex as unknown as THREE.CanvasTexture,
+    buildingFacadeMap: s7StubTex as unknown as THREE.CanvasTexture,
+    buildingWarmOchreMap: s7StubTex as unknown as THREE.CanvasTexture,
+    containerMap: s7StubTex as unknown as THREE.CanvasTexture,
+    awningMap: s7StubTex as unknown as THREE.CanvasTexture,
+    muralUnityMap: s7StubTex as unknown as THREE.CanvasTexture,
+    billboardTrustMap: s7StubTex as unknown as THREE.CanvasTexture,
+    graffitiMemoryMap: s7StubTex as unknown as THREE.CanvasTexture,
+    bannerRoarMap: s7StubTex as unknown as THREE.CanvasTexture,
+    signMarketMap: s7StubTex as unknown as THREE.CanvasTexture,
+    contactShadowMap: s7StubTex as unknown as THREE.CanvasTexture,
+    dispose: () => s7StubTex.dispose(),
+  });
+  assert.equal(nwWorld.webAnchors.length, 6, 'Neon Ward must provide 6 cantilevered sign-cage web anchors');
+  assert.equal(nwWorld.environmentalHazards.length, 4, 'Neon Ward must provide 4 Overloaded Neon Signboard hazards');
+  assert.equal(nwWorld.walkableZones.length, 7, 'Neon Ward must provide 7 elevated sign-cage/skywalk zones');
+  nwWorld.dispose();
   s7StubTex.dispose();
 
-  console.log('ALL P1, P1-C, P1-E, P1-G, P1-I, P1-J, P1-K, P1-L, P1-M, WAVE 3 & WAVE 4 TESTS PASSED (26/26 suites)');
+  console.log('ALL P1, P1-C, P1-E, P1-G, P1-I, P1-J, P1-K, P1-L, P1-M, WAVE 3, WAVE 4 & WAVE 5 TESTS PASSED (27/27 suites)');
 });
 

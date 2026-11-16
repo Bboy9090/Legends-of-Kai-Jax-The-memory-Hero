@@ -563,7 +563,13 @@ export default function App() {
             }
             engineRef.current?.switchDistrict(districtId);
             engineRef.current?.setPaused(false);
-            showToast(districtId === 'sector-7' ? 'Deployed to Sector-7: Ironvein Yards' : 'Returned to Ashblock Heights');
+            showToast(
+              districtId === 'sector-7'
+                ? 'Deployed to Sector-7: Ironvein Yards'
+                : districtId === 'neon-ward'
+                  ? 'Deployed to Neon Ward (Provisional)'
+                  : 'Returned to Ashblock Heights'
+            );
           }}
           onOpenLegal={(doc) => setLegalDoc(doc)}
           canonManifest={canonManifest}

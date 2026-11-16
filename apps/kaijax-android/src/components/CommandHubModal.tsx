@@ -58,7 +58,7 @@ interface CommandHubModalProps {
   onLoadSlot: (slotId: string) => void;
   onDeleteSlot: (slotId: string) => void;
   onStartPatrol: () => void;
-  onSwitchDistrict?: (districtId: 'ashblock-heights' | 'sector-7') => void;
+  onSwitchDistrict?: (districtId: 'ashblock-heights' | 'sector-7' | 'neon-ward') => void;
   onOpenLegal: (docId: 'privacy' | 'terms') => void;
   canonManifest: CanonVaultManifest;
   onOpenCanonDrive: () => void;
@@ -614,8 +614,39 @@ export const CommandHubModal: React.FC<CommandHubModalProps> = ({
               <div>
                 <h3 className="font-display text-2xl font-bold text-white">The Raging City — Eight-District Streamable Architecture</h3>
                 <p className="text-xs text-slate-300 mt-1">
-                  Wave 1 (Ashblock Heights) is reconstructed with modular PBR GLB architecture, geometry-attached skybridge web anchors, and interactive Arc Relays. Districts 2–8 carry reconciled canon production specs across Waves 2–3.
+                  Wave 1 (Ashblock Heights) is reconstructed with modular PBR GLB architecture. Wave 2 (Sector-7) and Wave 5 provisional (Neon Ward) are playable below.
                 </p>
+                {onSwitchDistrict && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => {
+                        onSwitchDistrict('ashblock-heights');
+                        onClose();
+                      }}
+                      className="rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/60 px-3 py-1.5 text-xs font-semibold text-amber-200 transition"
+                    >
+                      Deploy: Ashblock Heights
+                    </button>
+                    <button
+                      onClick={() => {
+                        onSwitchDistrict('sector-7');
+                        onClose();
+                      }}
+                      className="rounded-lg bg-sky-500/20 hover:bg-sky-500/35 border border-sky-400/60 px-3 py-1.5 text-xs font-semibold text-sky-200 transition"
+                    >
+                      Deploy: Sector-7
+                    </button>
+                    <button
+                      onClick={() => {
+                        onSwitchDistrict('neon-ward');
+                        onClose();
+                      }}
+                      className="rounded-lg bg-fuchsia-500/20 hover:bg-fuchsia-500/35 border border-fuchsia-400/60 px-3 py-1.5 text-xs font-semibold text-fuchsia-200 transition"
+                    >
+                      Deploy: Neon Ward (Provisional)
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -655,10 +686,10 @@ export const CommandHubModal: React.FC<CommandHubModalProps> = ({
                             </div>
                           </>
                         )}
-                        {(d.id === 'ashblock-heights' || d.id === 'sector-7') && onSwitchDistrict && (
+                        {(d.id === 'ashblock-heights' || d.id === 'sector-7' || d.id === 'neon-ward') && onSwitchDistrict && (
                           <button
                             onClick={() => {
-                              onSwitchDistrict(d.id as 'ashblock-heights' | 'sector-7');
+                              onSwitchDistrict(d.id as 'ashblock-heights' | 'sector-7' | 'neon-ward');
                               onClose();
                             }}
                             className="mt-2 w-full rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/50 text-amber-200 font-semibold py-1.5 text-xs transition"
