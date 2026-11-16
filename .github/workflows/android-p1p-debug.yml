@@ -63,7 +63,9 @@ jobs:
         working-directory: source/apps/kaijax-android
         run: |
           set -euo pipefail
-          if [ -f "data/checkpoints/p1p-certified/SHA256SUMS.txt" ]; then
+          if [ -f "data/checkpoints/p1p-wave7-certified/SHA256SUMS.txt" ]; then
+            sha256sum -c data/checkpoints/p1p-wave7-certified/SHA256SUMS.txt
+          elif [ -f "data/checkpoints/p1p-certified/SHA256SUMS.txt" ]; then
             sha256sum -c data/checkpoints/p1p-certified/SHA256SUMS.txt
           else
             sha256sum -c data/checkpoints/p1n-certified/SHA256SUMS.txt
