@@ -1,0 +1,101 @@
+{
+  "errors": [],
+  "models": {
+    "fang_enforcer": {
+      "tris": 2948,
+      "joints": 28,
+      "clips": 19,
+      "height": 2.45
+    },
+    "blood_broker": {
+      "tris": 2656,
+      "joints": 28,
+      "clips": 19,
+      "height": 2.09
+    },
+    "architect_scout": {
+      "tris": 2548,
+      "joints": 28,
+      "clips": 19,
+      "height": 2.01
+    },
+    "neon_prince": {
+      "tris": 2804,
+      "joints": 28,
+      "clips": 19,
+      "height": 2.13
+    },
+    "undercrown_sentinel": {
+      "tris": 2756,
+      "joints": 28,
+      "clips": 19,
+      "height": 2.57
+    },
+    "borax_zenith": {
+      "tris": 2996,
+      "joints": 28,
+      "clips": 19,
+      "height": 2.29
+    },
+    "erasure_choir": {
+      "tris": 2508,
+      "joints": 28,
+      "clips": 19,
+      "height": 2.16
+    },
+    "hollow_architect": {
+      "tris": 2696,
+      "joints": 28,
+      "clips": 19,
+      "height": 2.67
+    },
+    "syndicate_brawler": {
+      "tris": 2852,
+      "joints": 28,
+      "clips": 19,
+      "height": 2.07
+    },
+    "syndicate_marksman": {
+      "tris": 2452,
+      "joints": 28,
+      "clips": 19,
+      "height": 1.93
+    },
+    "syndicate_stalker": {
+      "tris": 2548,
+      "joints": 28,
+      "clips": 19,
+      "height": 1.85
+    },
+    "kai": {
+      "tris": 22087,
+      "joints": 37,
+      "clips": 19,
+      "height": 2.08
+    },
+    "jax": {
+      "tris": 22087,
+      "joints": 32,
+      "clips": 19,
+      "height": 1.94
+    },
+    "kaijax": {
+      "tris": 23967,
+      "joints": 56,
+      "clips": 19,
+      "height": 2.28
+    },
+    "boryn": {
+      "tris": 20675,
+      "joints": 29,
+      "clips": 19,
+      "height": 2.12
+    },
+    "borax": {
+      "tris": 22082,
+      "joints": 29,
+      "clips": 19,
+      "height": 2.2
+    }
+  }
+}

@@ -4,6 +4,8 @@
 **Branch:** `integration/p1p-unified-reconciliation`  
 **Canon Governance:** All new/reconstructed villain models remain **PROVISIONAL (`awaiting_visual_approval`)** until the project owner approves their character sheets.
 
+> **CORRECTION (Wave 8, 2026-11-16).** The "Visual Evaluation" column below describes the villain models in terms (e.g. "massive sabertooth brute with spiked pauldrons") that the renders do not support. Wave 8 re-rendered every villain under one neutral light and compared the three with a named reference in the library: all three mismatch (palette, species, silhouette). The models are ~2.5K-triangle box-robot placeholders. See `WAVE8_RELEASE_QUALIFICATION.md` §5 and `captures/wave8-villain-art/`. Statuses remain **PROVISIONAL**; nothing here is approved.
+
 ---
 
 ## 1. Character & Villain Visual Comparison Matrix

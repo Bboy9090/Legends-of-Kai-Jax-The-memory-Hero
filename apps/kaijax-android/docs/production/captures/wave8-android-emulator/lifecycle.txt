@@ -1,0 +1,18 @@
+Android emulator lifecycle check (sdk_gphone64_x86_64, Android 17, WebView 145.0.7632.218, package com.bobbyblanco.legendsofkaijax)
+Source: /tmp/kj_w8_lifecycle.txt on the test Mac, copied verbatim apart from line order (the log of two overlapping runs interleaved).
+State read over CDP from window.__KAIJAX_ENGINE__ / localStorage.
+
+A  running app after the 8-district run:
+   visibility=visible paused=false completedDistricts=[sector-7,neon-ward,iron-market,undercrown,zenith-spires,erasure-fields,memory-nexus]
+   fusionUnlocked=true saveKeys=[kaijax_save_v1_autosave, kaijax_save_v1_autosave_bak] hasGl=true glLost=false
+
+HOME key pressed, then MainActivity brought back to the front
+B  after HOME -> resume:
+   visibility=visible paused=false  completedDistricts identical  fusionUnlocked=true  glLost=false  (engine ready in 68 ms)
+
+am force-stop; pid empty; am start -W  -> LaunchState: COLD, TotalTime: 7496 ms   (first-ever launch after install: 19913 ms)
+C  after force-stop -> cold relaunch, WITHOUT pm clear:
+   completedDistricts identical (7 districts)  fusionUnlocked=true  both save slots present  glLost=false  (engine ready)
+   crash buffer lines: 0
+
+Not covered: the state *while* backgrounded (the app was not sampled between HOME and resume), low-memory kill, rotation, phone-call interruption, real-device GL behaviour.
