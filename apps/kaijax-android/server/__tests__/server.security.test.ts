@@ -64,6 +64,14 @@ afterEach(async () => {
   while (open.length) await open.pop()!.close();
 });
 
+function isDriveHost(input: unknown): boolean {
+  try {
+    return new URL(String(input)).hostname === 'www.googleapis.com';
+  } catch {
+    return false;
+  }
+}
+
 const TOKEN = 'unit-test-admin-token';
 const adminHeaders = { 'x-kaijax-admin-token': TOKEN, 'content-type': 'application/json' };
 const GOOGLE_HEADERS = { authorization: 'Bearer ya29.fake-google-token', 'content-type': 'application/json' };
@@ -268,7 +276,7 @@ describe('path and identifier hardening', () => {
     const realFetch = globalThis.fetch;
     let driveCalls = 0;
     globalThis.fetch = (async (input: unknown, init?: unknown) => {
-      if (String(input).includes('googleapis.com')) {
+      if (isDriveHost(input)) {
         driveCalls += 1;
         return new Response(JSON.stringify({ user: { emailAddress: 'a@b.c' }, files: [] }), { status: 200 });
       }
@@ -331,7 +339,7 @@ describe('Drive search escaping', () => {
     const queries: string[] = [];
     globalThis.fetch = (async (input: unknown, init?: unknown) => {
       const url = String(input);
-      if (url.includes('googleapis.com')) {
+      if (isDriveHost(url)) {
         const q = new URL(url).searchParams.get('q');
         if (q) queries.push(q);
         return new Response(JSON.stringify({ user: { emailAddress: 'a@b.c' }, files: [] }), { status: 200 });
@@ -489,7 +497,7 @@ describe('authorized workflows', () => {
     const realFetch = globalThis.fetch;
     globalThis.fetch = (async (input: unknown, init?: unknown) => {
       const url = String(input);
-      if (!url.includes('googleapis.com')) return realFetch(input as RequestInfo, init as RequestInit);
+      if (!isDriveHost(url)) return realFetch(input as RequestInfo, init as RequestInit);
       if (url.includes('/about')) return new Response(JSON.stringify({ user: { emailAddress: 'a@b.c' } }), { status: 200 });
       if (url.includes('alt=media')) return new Response(zipBytes, { status: 200 });
       return new Response(JSON.stringify({ id: 'zip123456', name: 'art.zip', mimeType: 'application/zip', size: String(zipBytes.length) }), { status: 200 });
