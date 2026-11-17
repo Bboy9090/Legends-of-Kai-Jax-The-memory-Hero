@@ -35,10 +35,23 @@ test('Training performs a live session pause/resume cycle and keeps training aut
   await expect(page.getByRole('heading', { name: /^PAUSED$/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Resume$/i })).toBeVisible();
 
-  await page.getByRole('button', { name: /^Resume$/i }).evaluate((element) => {
-    (element as HTMLButtonElement).click();
+  // Use one in-page DOM read+click instead of a second Playwright locator
+  // resolution. On slow software WebGL runners the transient pause overlay
+  // can rerender between toBeVisible and locator.evaluate, causing a 90s hang.
+  // This invokes the real Resume button handler, NOT direct store mutation.
+  const resumeAction = await page.evaluate(() => {
+    const pausedBefore = (window as any).useAdventure?.getState?.().isPaused;
+    const button = Array.from(document.querySelectorAll('button'))
+      .find((candidate) => candidate.textContent?.trim() === 'Resume');
+    if (!button) return { clicked: false, pausedBefore };
+    button.click();
+    return { clicked: true, pausedBefore };
   });
-  await page.waitForFunction(() => (window as any).useAdventure?.getState?.().isPaused === false);
+  expect(resumeAction).toEqual({ clicked: true, pausedBefore: true });
+  await expect.poll(
+    async () => page.evaluate(() => (window as any).useAdventure?.getState?.().isPaused),
+    { timeout: 10_000, intervals: [100, 250, 500] },
+  ).toBe(false);
   await expect(page.getByRole('heading', { name: /^PAUSED$/i })).toBeHidden();
 
   const state = await page.evaluate(() => ({
