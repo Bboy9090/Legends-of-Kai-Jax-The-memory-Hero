@@ -107,19 +107,42 @@ test("M6-C real mission UI: waves, timed transition, rescues, results and persis
   // Text types in character-by-character; assert the stable transmission overlay.
   await expect(page.getByText("Transmission Active", { exact: true })).toBeVisible({ timeout: 30000 });
   console.log("M6_DEV_CHECKPOINT_OUTRO", JSON.stringify(await getProgress()));
-  const missionOutroLines = 4;
-  // The cinematic overlay already implements Space/Enter as the real live
-  // dialogue action. Unlike locator.click(), keyboard input does not wait
-  // for moving WebGL layers to satisfy pointer hit-testing/actionability.
-  // Preserve every story beat, the typewriter completion step, and the
-  // resulting mission/reward assertions; do not skip or force mission state.
-  for (let beat = 0; beat < missionOutroLines; beat++) {
+  // Canonical Act II Mission 6 outro, asserted in order so a fast/slow
+  // typewriter cannot accidentally skip or duplicate a narrative beat.
+  const missionOutroLines = [
+    "The three memories are safe, but Cross Point remains lost. Ashblock becomes the survivors' new defensive line, not a reclaimed victory.",
+    "Move the rescued families behind the barricades. Keep a watch on the Rift approach and assign escorts to anyone still arriving from Cross Point. We hold Ashblock until everyone is accounted for.",
+    "One step closer to restoring the Weave.",
+    "And... I can hear Kai and Jax more clearly now. Those memories warned them of different dangers. I need to listen to both before we face what comes next.",
+  ];
+  const overlay = page.getByTestId("story-dialogue-overlay");
+  for (const [beat, canonicalLine] of missionOutroLines.entries()) {
+    await expect(overlay).toHaveAttribute("data-line-index", String(beat), { timeout: 30000 });
     await expect(page.getByText("Transmission Active", { exact: true })).toBeVisible({ timeout: 15000 });
-    await page.keyboard.press("Space");
+
+    // If the line is still typing, reveal it using the actual React overlay
+    // onClick handler. If it has already finished naturally, do not click:
+    // an unconditional first Space/click would prematurely advance a beat.
+    if ((await overlay.getAttribute("data-typing")) === "true") {
+      await page.evaluate(() => {
+        const element = document.querySelector<HTMLElement>('[data-testid="story-dialogue-overlay"]');
+        if (!element) throw new Error("Mission 6 dialogue overlay missing during reveal");
+        element.click();
+      });
+    }
+    await expect(overlay).toHaveAttribute("data-typing", "false", { timeout: 30000 });
+    await expect(page.getByText(canonicalLine, { exact: true })).toBeVisible({ timeout: 30000 });
     await expect(
-      page.getByText(beat === missionOutroLines - 1 ? "Click to engage" : "Ready for next phase", { exact: true }),
-    ).toBeVisible({ timeout: 30000 });
-    await page.keyboard.press("Space");
+      page.getByText(beat === missionOutroLines.length - 1 ? "Click to engage" : "Ready for next phase", { exact: true }),
+    ).toBeVisible({ timeout: 15000 });
+
+    // Advance exactly once through the real UI, without WebGL hit-test
+    // delays, store mutation, or bypassing mission-completion callbacks.
+    await page.evaluate(() => {
+      const element = document.querySelector<HTMLElement>('[data-testid="story-dialogue-overlay"]');
+      if (!element) throw new Error("Mission 6 dialogue overlay missing during advance");
+      element.click();
+    });
   }
   await expect(page.getByRole("heading", { name: "Mission Complete" })).toBeVisible({ timeout: 12000 });
   await expect(page.getByTestId("story-mission-loot-reward")).toContainText("Ashblock Memory");
