@@ -222,6 +222,10 @@ export default function App() {
     const audio = new AudioEngine(settings);
     audioRef.current = audio;
 
+    // Debug-only: install the texture probe before GameEngine builds PMREM/world
+    // materials; the previous post-constructor hook missed initial GL errors.
+    let gpuTextureProbe: GlTextureProbeHandle | null = null;
+    const enableGpuProbe = new URLSearchParams(window.location.search).get('gpuProbe') === '1';
     const engine = new GameEngine(canvasHostRef.current, saveRef.current, settings, audio, {
       onHudUpdate: (snap) => setHud(snap),
       onTriggerDialogue: triggerDialogue,
@@ -234,17 +238,8 @@ export default function App() {
           return next;
         });
       },
-    });
-    engine.setTitleShowcase(true);
-    engineRef.current = engine;
-
-    // Opt-in only: ?gpuProbe=1 records bounded WebGL texture-operation errors.
-    // Do not use this during FPS benchmarking; getError() consumes the GL error queue.
-    let gpuTextureProbe: GlTextureProbeHandle | null = null;
-    if (new URLSearchParams(window.location.search).get('gpuProbe') === '1') {
-      const canvas = canvasHostRef.current.querySelector('canvas');
-      const gl = canvas?.getContext('webgl2');
-      if (gl) {
+    }, enableGpuProbe ? (gl) => {
+      try {
         gpuTextureProbe = installWebGLTextureProbe(gl, (anomaly) => {
           console.warn('[Kai-Jax GPU probe] WebGL error observed after texture call', anomaly);
         });
@@ -253,10 +248,12 @@ export default function App() {
           console.warn('[Kai-Jax GPU probe] Incomplete texture hook coverage; zero errors cannot certify graphics.', coverage.unavailableMethods);
         }
         (window as unknown as Record<string, unknown>).__KAIJAX_GPU_PROBE__ = gpuTextureProbe;
-      } else {
-        console.warn('[Kai-Jax GPU probe] Existing WebGL2 context not available.');
+      } catch (error) {
+        console.warn('[Kai-Jax GPU probe] Diagnostic setup failed; continuing without instrumentation.', error);
       }
-    }
+    } : undefined);
+    engine.setTitleShowcase(true);
+    engineRef.current = engine;
 
     const preferLod1 = engine.getPerformanceMetrics().isSoftwareGl || settings.graphicsQuality === 'low';
     preloadPromiseRef.current = preloadCoreAshblockAssets(

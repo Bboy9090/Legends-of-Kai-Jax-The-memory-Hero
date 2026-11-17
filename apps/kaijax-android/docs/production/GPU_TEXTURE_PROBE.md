@@ -39,9 +39,12 @@ PMREM render targets, browser GL state, or device drivers.
 - No model binaries, image contents, URL strings or textures are modified.
 - The probe only records numeric GL enums, reported image dimensions,
   source object type and a bounded recent-op buffer (12 operations, 32 errors).
-- It is installed on the existing WebGL2 context after engine construction.
-  **It cannot observe constructor-time initialisation** (including initial
-  PMREM/renderer creation), nor does it inspect all GL operations.
+- The optional constructor hook now attaches to Three.js's WebGL2 context
+  **immediately after renderer construction and before setSize, PMREM,
+  procedural textures and world setup**. This covers initial scene texture
+  operations that were missed by the previous post-constructor hook. It does
+  not capture GL calls inside Three.js WebGLRenderer's constructor or calls
+  outside the watched API.
 - On unmount the original WebGL methods are restored. If installing the
   wrappers is refused by the host WebGL implementation, the snapshot reports
   unavailable hooks and flags insufficient core coverage rather than quietly
