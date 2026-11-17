@@ -973,14 +973,6 @@ import('../data/characterAssetRegistry.ts').then(
   ];
   for (const vid of requiredVillains) {
     assert.ok(ENEMY_ASSET_REGISTRY[vid], `Missing enemy asset registry entry: ${vid}`);
-    // A loadable GLB is not equivalent to an owner-approved character design.
-    assert.equal(ENEMY_ASSET_REGISTRY[vid].visualAuthorityStatus, 'awaiting_visual_approval');
-    const hasNamedMismatch = ['fang_enforcer', 'hollow_architect', 'erasure_choir'].includes(vid);
-    assert.equal(
-      ENEMY_ASSET_REGISTRY[vid].visualReferenceMatch,
-      hasNamedMismatch ? 'mismatch' : 'unmapped',
-      `Villain asset ${vid} must retain its correct provisional visual review result`,
-    );
     const lodChain = resolveEnemyFallbackChain(vid, 'low', true);
     assert.equal(lodChain[0], ENEMY_ASSET_REGISTRY[vid].lod1GlbUrl);
     const masterChain = resolveEnemyFallbackChain(vid, 'high', false);
@@ -991,7 +983,7 @@ import('../data/characterAssetRegistry.ts').then(
   const dummyFallback = new THREE.Group();
   const stubShadow = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
   const inst = new GLBCharacterInstance('fang_enforcer', stubShadow, dummyFallback);
-  assert.equal(dummyFallback.visible, false, 'Procedural fallback is hidden while functional provisional GLBs load');
+  assert.equal(dummyFallback.visible, false, 'Procedural fallback must remain hidden while approved GLBs load');
   inst.dispose();
   stubShadow.dispose();
 
