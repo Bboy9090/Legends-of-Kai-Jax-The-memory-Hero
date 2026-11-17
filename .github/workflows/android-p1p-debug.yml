@@ -86,6 +86,20 @@ jobs:
           node scripts/validate-character-glbs.mjs
           npx tsx scripts/validate-p1p-world-and-saves.mjs
 
+      - name: Audit embedded GLB texture dimensions and buffer-view integrity
+        working-directory: source/apps/kaijax-android
+        run: |
+          set -euo pipefail
+          node --test scripts/__tests__/audit-glb-textures.test.mjs
+          node scripts/audit-glb-textures.mjs --strict --json | tee glb-texture-audit.json
+          {
+            echo '### Embedded GLB Texture Audit (static metadata, not GPU certification)'
+            echo 'The audit checks binary image bounds and dimensions. Runtime WebGL uploads, procedural textures and physical GPU errors remain separately unverified.'
+            echo '\`\`\`json'
+            cat glb-texture-audit.json
+            echo '\`\`\`'
+          } >> "${GITHUB_STEP_SUMMARY}"
+
       - name: Build Vite bundle and sync Capacitor 8 Android assets
         working-directory: source/apps/kaijax-android
         run: |
