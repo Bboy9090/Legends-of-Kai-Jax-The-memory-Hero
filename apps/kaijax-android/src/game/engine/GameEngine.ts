@@ -363,9 +363,7 @@ export class GameEngine {
     initialSave: SaveSlotData,
     initialSettings: GameSettings,
     audio: AudioEngine,
-    callbacks: EngineCallbacks,
-    /** Optional diagnostic hook, invoked before the first scene texture/PMREM pass. */
-    onRendererContextReady?: (gl: WebGL2RenderingContext) => void
+    callbacks: EngineCallbacks
   ) {
     this.container = container;
     this.save = initialSave;
@@ -396,9 +394,6 @@ export class GameEngine {
       antialias: !this.isSoftwareGl && initialSettings.graphicsQuality !== 'low',
       powerPreference: 'high-performance',
     });
-    // Opt-in only: let diagnostic capture initial PMREM, world, and texture uploads.
-    // Without the hook the normal renderer state and error queue are unchanged.
-    onRendererContextReady?.(this.renderer.getContext());
     this.renderer.setSize(width, height);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
