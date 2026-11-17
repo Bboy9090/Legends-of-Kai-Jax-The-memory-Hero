@@ -47,6 +47,7 @@ export default function EnhancedCombatHUD(props: EnhancedCombatHUDProps) {
   const active = props.active ?? store.battlePhase === 'fighting';
 
   const [selected, setSelected] = useState<Ability | null>(null);
+  const [mobileExpanded, setMobileExpanded] = useState(false);
 
   const boss = useMemo(() => resolveBoss(opponentId), [opponentId]);
   const healthPct = maxHealth > 0 ? (opponentHealth / maxHealth) * 100 : 0;
@@ -74,13 +75,30 @@ export default function EnhancedCombatHUD(props: EnhancedCombatHUDProps) {
       )}
 
       {(abilities.length > 0 || ultimate) && (
-        <div
-          className={`pointer-events-auto absolute left-1/2 hidden -translate-x-1/2 sm:block ${
-            boss && phase ? 'top-[156px]' : 'top-[100px]'
-          }`}
-          data-testid="combat-intel-abilities"
-        >
-          <div role="toolbar" aria-label="Combat abilities" className="kj-vision-hud flex items-center gap-1.5 p-1.5">
+        <>
+          {/* On phones, reveal this reference strip on demand instead of hiding it completely. */}
+          <button
+            type="button"
+            data-testid="combat-intel-mobile-toggle"
+            aria-controls="combat-intel-mobile-panel"
+            aria-expanded={mobileExpanded}
+            onClick={() => setMobileExpanded((expanded) => !expanded)}
+            className={`pointer-events-auto absolute left-1/2 z-20 min-h-[36px] -translate-x-1/2 border border-[#735a35]/70 bg-black/85 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#efcf91] sm:hidden ${
+              boss && phase ? 'top-[165px]' : 'top-[104px]'
+            }`}
+          >
+            Combat Intel · {abilities.length} abilities {mobileExpanded ? '▲' : '▼'}
+          </button>
+          <div
+            id="combat-intel-mobile-panel"
+            className={`pointer-events-auto absolute left-1/2 z-20 max-h-[min(42dvh,220px)] w-[min(94vw,520px)] -translate-x-1/2 overflow-y-auto sm:max-h-none sm:w-auto sm:overflow-visible ${
+              mobileExpanded ? 'block' : 'hidden'
+            } sm:block ${
+              boss && phase ? 'top-[205px] sm:top-[156px]' : 'top-[145px] sm:top-[100px]'
+            }`}
+            data-testid="combat-intel-abilities"
+          >
+          <div role="toolbar" aria-label="Combat ability references" className="kj-vision-hud flex max-w-full items-center gap-1.5 overflow-x-auto overscroll-x-contain p-1.5 sm:overflow-visible">
             {abilities.slice(0, 4).map((ability) => (
               <button
                 key={ability.id}
@@ -89,7 +107,7 @@ export default function EnhancedCombatHUD(props: EnhancedCombatHUDProps) {
                 onClick={() => toggle(ability)}
                 title={ability.description}
                 data-testid="combat-intel-ability"
-                className="min-h-[36px] border border-[#735a35]/60 bg-black/50 px-2 py-1 text-[10px] uppercase tracking-[0.08em] text-[#efcf91] hover:bg-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#efcf91]"
+                className="min-h-[36px] shrink-0 whitespace-nowrap border border-[#735a35]/60 bg-black/50 px-2 py-1 text-[10px] uppercase tracking-[0.08em] text-[#efcf91] hover:bg-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#efcf91]"
               >
                 {ability.name}
               </button>
@@ -98,7 +116,7 @@ export default function EnhancedCombatHUD(props: EnhancedCombatHUDProps) {
               <span
                 data-testid="combat-intel-ultimate"
                 data-ready={ultimate.ready ? 'true' : 'false'}
-                className={`inline-flex min-h-[36px] items-center gap-1 border px-2 py-1 text-[10px] uppercase tracking-[0.08em] ${
+                className={`inline-flex min-h-[36px] shrink-0 items-center gap-1 whitespace-nowrap border px-2 py-1 text-[10px] uppercase tracking-[0.08em] ${
                   ultimate.ready
                     ? 'border-amber-300 bg-amber-400/20 text-amber-200'
                     : 'border-[#735a35]/50 bg-black/40 text-slate-300'
@@ -121,7 +139,8 @@ export default function EnhancedCombatHUD(props: EnhancedCombatHUDProps) {
               </div>
             </div>
           )}
-        </div>
+          </div>
+        </>
       )}
     </div>
   );
