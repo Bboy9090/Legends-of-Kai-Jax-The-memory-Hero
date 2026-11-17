@@ -108,11 +108,18 @@ test("M6-C real mission UI: waves, timed transition, rescues, results and persis
   await expect(page.getByText("Transmission Active", { exact: true })).toBeVisible({ timeout: 30000 });
   console.log("M6_DEV_CHECKPOINT_OUTRO", JSON.stringify(await getProgress()));
   const missionOutroLines = 4;
-  // Four narrative beats follow the Ashblock tactical handover. Each click
-  // first completes the typewriter, then advances via the real UI handler.
+  // The cinematic overlay already implements Space/Enter as the real live
+  // dialogue action. Unlike locator.click(), keyboard input does not wait
+  // for moving WebGL layers to satisfy pointer hit-testing/actionability.
+  // Preserve every story beat, the typewriter completion step, and the
+  // resulting mission/reward assertions; do not skip or force mission state.
   for (let beat = 0; beat < missionOutroLines; beat++) {
-    await page.getByText("Transmission Active", { exact: true }).click();
-    await page.getByText(beat === missionOutroLines - 1 ? "Click to engage" : "Ready for next phase", { exact: true }).click({ timeout: 30000 });
+    await expect(page.getByText("Transmission Active", { exact: true })).toBeVisible({ timeout: 15000 });
+    await page.keyboard.press("Space");
+    await expect(
+      page.getByText(beat === missionOutroLines - 1 ? "Click to engage" : "Ready for next phase", { exact: true }),
+    ).toBeVisible({ timeout: 30000 });
+    await page.keyboard.press("Space");
   }
   await expect(page.getByRole("heading", { name: "Mission Complete" })).toBeVisible({ timeout: 12000 });
   await expect(page.getByTestId("story-mission-loot-reward")).toContainText("Ashblock Memory");
