@@ -18,6 +18,10 @@ export interface EnemyAssetManifestEntry {
   displayName: string;
   districtId: string;
   isBoss: boolean;
+  /** Provisional until a project-owner visual approval is recorded. */
+  visualAuthorityStatus: 'approved' | 'awaiting_visual_approval';
+  /** Review of the SAME-NAMED reference, not a similarly named inferred sheet. */
+  visualReferenceMatch: 'matched' | 'mismatch' | 'unmapped';
   masterGlbUrl: string;
   lod1GlbUrl: string;
   maxTrianglesMaster: number;
@@ -25,9 +29,17 @@ export interface EnemyAssetManifestEntry {
   accentHex: string;
 }
 
+/**
+ * Wave 8 visual QA: all eleven villain models are functional placeholders.
+ * Three mismatched their same-named concept sheets; the rest lack confirmed
+ * same-named reference mapping. Structural GLB validation is NOT art approval.
+ * See docs/production/WAVE8_RELEASE_QUALIFICATION.md §5 and issue #395.
+ */
 export const ENEMY_ASSET_REGISTRY: Record<EnemyModelId, EnemyAssetManifestEntry> = {
   fang_enforcer: {
     id: 'fang_enforcer',
+    visualAuthorityStatus: 'awaiting_visual_approval',
+    visualReferenceMatch: 'mismatch',
     displayName: 'Fang Enforcer',
     districtId: 'ashblock-heights',
     isBoss: true,
@@ -39,6 +51,8 @@ export const ENEMY_ASSET_REGISTRY: Record<EnemyModelId, EnemyAssetManifestEntry>
   },
   blood_broker: {
     id: 'blood_broker',
+    visualAuthorityStatus: 'awaiting_visual_approval',
+    visualReferenceMatch: 'unmapped',
     displayName: 'Blood Broker',
     districtId: 'iron-market',
     isBoss: true,
@@ -50,6 +64,8 @@ export const ENEMY_ASSET_REGISTRY: Record<EnemyModelId, EnemyAssetManifestEntry>
   },
   syndicate_brawler: {
     id: 'syndicate_brawler',
+    visualAuthorityStatus: 'awaiting_visual_approval',
+    visualReferenceMatch: 'unmapped',
     displayName: 'Syndicate Brawler',
     districtId: 'ashblock-heights',
     isBoss: false,
@@ -61,6 +77,8 @@ export const ENEMY_ASSET_REGISTRY: Record<EnemyModelId, EnemyAssetManifestEntry>
   },
   syndicate_stalker: {
     id: 'syndicate_stalker',
+    visualAuthorityStatus: 'awaiting_visual_approval',
+    visualReferenceMatch: 'unmapped',
     displayName: 'Syndicate Stalker',
     districtId: 'ashblock-heights',
     isBoss: false,
@@ -72,6 +90,8 @@ export const ENEMY_ASSET_REGISTRY: Record<EnemyModelId, EnemyAssetManifestEntry>
   },
   syndicate_marksman: {
     id: 'syndicate_marksman',
+    visualAuthorityStatus: 'awaiting_visual_approval',
+    visualReferenceMatch: 'unmapped',
     displayName: 'Syndicate Marksman',
     districtId: 'ashblock-heights',
     isBoss: false,
@@ -83,6 +103,8 @@ export const ENEMY_ASSET_REGISTRY: Record<EnemyModelId, EnemyAssetManifestEntry>
   },
   architect_scout: {
     id: 'architect_scout',
+    visualAuthorityStatus: 'awaiting_visual_approval',
+    visualReferenceMatch: 'unmapped',
     displayName: 'Architect Scout',
     districtId: 'sector-7',
     isBoss: true,
@@ -94,6 +116,8 @@ export const ENEMY_ASSET_REGISTRY: Record<EnemyModelId, EnemyAssetManifestEntry>
   },
   neon_prince: {
     id: 'neon_prince',
+    visualAuthorityStatus: 'awaiting_visual_approval',
+    visualReferenceMatch: 'unmapped',
     displayName: 'Neon Prince',
     districtId: 'neon-ward',
     isBoss: true,
@@ -105,6 +129,8 @@ export const ENEMY_ASSET_REGISTRY: Record<EnemyModelId, EnemyAssetManifestEntry>
   },
   undercrown_sentinel: {
     id: 'undercrown_sentinel',
+    visualAuthorityStatus: 'awaiting_visual_approval',
+    visualReferenceMatch: 'unmapped',
     displayName: 'Undercrown Sentinel',
     districtId: 'undercrown',
     isBoss: true,
@@ -116,6 +142,8 @@ export const ENEMY_ASSET_REGISTRY: Record<EnemyModelId, EnemyAssetManifestEntry>
   },
   borax_zenith: {
     id: 'borax_zenith',
+    visualAuthorityStatus: 'awaiting_visual_approval',
+    visualReferenceMatch: 'unmapped',
     displayName: 'Borax Zenith',
     districtId: 'zenith-spires',
     isBoss: true,
@@ -127,6 +155,8 @@ export const ENEMY_ASSET_REGISTRY: Record<EnemyModelId, EnemyAssetManifestEntry>
   },
   erasure_choir: {
     id: 'erasure_choir',
+    visualAuthorityStatus: 'awaiting_visual_approval',
+    visualReferenceMatch: 'mismatch',
     displayName: 'Erasure Choir',
     districtId: 'erasure-fields',
     isBoss: true,
@@ -138,6 +168,8 @@ export const ENEMY_ASSET_REGISTRY: Record<EnemyModelId, EnemyAssetManifestEntry>
   },
   hollow_architect: {
     id: 'hollow_architect',
+    visualAuthorityStatus: 'awaiting_visual_approval',
+    visualReferenceMatch: 'mismatch',
     displayName: 'Hollow Architect',
     districtId: 'memory-nexus',
     isBoss: true,
