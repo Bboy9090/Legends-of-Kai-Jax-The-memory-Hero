@@ -177,9 +177,45 @@ test.describe('Combat HUD reconciliation', () => {
     await expect(page.getByTestId('combat-intel')).toHaveCount(0);
   });
 
-  test('mobile 390x844: no horizontal overflow and the ability strip stays out of the touch controls', async ({ page }) => {
+  test('mobile 390x844: Combat Intel opens on demand, is keyboard accessible, and fits the viewport', async ({ page }) => {
     test.setTimeout(120_000);
     await startBattle(page, 'ashen-tiger', { width: 390, height: 844 });
+    const toggle = page.getByTestId('combat-intel-mobile-toggle');
+    const panel = page.getByTestId('combat-intel-abilities');
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(panel).toBeHidden();
+
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(panel).toBeVisible();
+    const bounds = await panel.boundingBox();
+    expect(bounds).not.toBeNull();
+    expect(bounds!.x).toBeGreaterThanOrEqual(0);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
+    const abilities = page.getByTestId('combat-intel-ability');
+    expect(await abilities.count()).toBeGreaterThan(0);
+    await abilities.first().click();
+    await expect(page.getByTestId('combat-intel-ability-detail')).toBeVisible();
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(panel).toBeHidden();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
+
+  test('narrow phone 360x640: the collapsed Combat Intel trigger fits without covering the controls', async ({ page }) => {
+    test.setTimeout(120_000);
+    await startBattle(page, 'ashen-tiger', { width: 360, height: 640 });
+    const toggle = page.getByTestId('combat-intel-mobile-toggle');
+    await expect(toggle).toBeVisible();
+    const bounds = await toggle.boundingBox();
+    expect(bounds).not.toBeNull();
+    expect(bounds!.x).toBeGreaterThanOrEqual(0);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(360);
+    expect(bounds!.y + bounds!.height).toBeLessThan(640 - 120);
     await expect(page.getByTestId('combat-intel-abilities')).toBeHidden();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow).toBeLessThanOrEqual(1);
