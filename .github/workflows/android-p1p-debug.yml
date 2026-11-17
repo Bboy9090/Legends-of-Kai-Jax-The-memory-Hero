@@ -95,9 +95,9 @@ jobs:
           {
             echo '### Embedded GLB Texture Audit (static metadata, not GPU certification)'
             echo 'The audit checks binary image bounds and dimensions. Runtime WebGL uploads, procedural textures and physical GPU errors remain separately unverified.'
-            echo '\`\`\`json'
+            echo "~~~json"
             cat glb-texture-audit.json
-            echo '\`\`\`'
+            echo "~~~"
           } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Build Vite bundle and sync Capacitor 8 Android assets
