@@ -39,14 +39,27 @@ PMREM render targets, browser GL state, or device drivers.
 - No model binaries, image contents, URL strings or textures are modified.
 - The probe only records numeric GL enums, reported image dimensions,
   source object type and a bounded recent-op buffer (12 operations, 32 errors).
-- It is installed on the existing WebGL2 context after engine construction.
-  **It cannot observe constructor-time initialisation** (including initial
-  PMREM/renderer creation), nor does it inspect all GL operations.
+- When `?gpuProbe=1` is enabled, a **scoped canvas.getContext interception**
+  attaches immediately after Three.js receives its first WebGL2 context,
+  before its texture initialization proceeds; the original canvas method
+  is restored synchronously even if the engine constructor fails. If the
+  host blocks interception, the existing post-constructor diagnostic is used.
+  Calls made before context creation and unobserved GL operations remain outside
+  coverage. A zero-error snapshot does **not** certify a working GPU.
 - On unmount the original WebGL methods are restored. If installing the
   wrappers is refused by the host WebGL implementation, the snapshot reports
   unavailable hooks and flags insufficient core coverage rather than quietly
   indicating success.
 - Physical Adreno and Mali qualification remains an independent release gate.
+
+## Runtime qualification constraints
+
+The scoped interception runs ONLY on the opt-in diagnostic URL and is
+removed after the synchronous engine constructor returns. The ordinary
+gameplay path never patches the canvas prototype. In the diagnostic mode,
+getError() is consumed after selected texture calls, which may alter
+third-party error reporting and affect performance. Never use these sessions
+for FPS benchmarking, release timing or final device qualification.
 
 ## Repeatable automated checks
 

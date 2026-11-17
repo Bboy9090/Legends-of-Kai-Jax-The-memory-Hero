@@ -13,6 +13,7 @@ import { CanonVaultManifest, fetchLocalCanonManifest } from './services/googleDr
 import { EQUIPMENT_CATALOG } from './game/data/itemsData';
 import { MISSION_1_STEPS } from './game/data/missionsData';
 import { GameEngine } from './game/engine/GameEngine';
+import { withEarlyWebGL2ContextCapture } from './game/engine/EarlyWebGLContextCapture';
 import { installWebGLTextureProbe, type GlTextureProbeHandle } from './game/engine/WebGLTextureProbe';
 import {
   GlbPreloadSnapshot,
@@ -222,7 +223,22 @@ export default function App() {
     const audio = new AudioEngine(settings);
     audioRef.current = audio;
 
-    const engine = new GameEngine(canvasHostRef.current, saveRef.current, settings, audio, {
+    const enableGpuProbe = new URLSearchParams(window.location.search).get('gpuProbe') === '1';
+    let gpuTextureProbe: GlTextureProbeHandle | null = null;
+
+    const attachGpuProbe = (gl: WebGL2RenderingContext) => {
+      if (gpuTextureProbe) return;
+      gpuTextureProbe = installWebGLTextureProbe(gl, (anomaly) => {
+        console.warn('[Kai-Jax GPU probe] Error observed after texture operation', anomaly);
+      });
+      const coverage = gpuTextureProbe.snapshot();
+      if (!coverage.coreHooksReady) {
+        console.warn('[Kai-Jax GPU probe] Incomplete hook coverage; no errors does not prove clean graphics.', coverage.unavailableMethods);
+      }
+      (window as unknown as Record<string, unknown>).__KAIJAX_GPU_PROBE__ = gpuTextureProbe;
+    };
+
+    const constructEngine = () => new GameEngine(canvasHostRef.current!, saveRef.current, settings, audio, {
       onHudUpdate: (snap) => setHud(snap),
       onTriggerDialogue: triggerDialogue,
       onSaveProgress: commitSave,
@@ -235,29 +251,23 @@ export default function App() {
         });
       },
     });
+    // Only the diagnostic URL temporarily intercepts canvas.getContext.
+    // The wrapper is removed immediately after constructor return or throw.
+    const engine = enableGpuProbe
+      ? withEarlyWebGL2ContextCapture(constructEngine, attachGpuProbe, (reason) => console.warn('[Kai-Jax GPU probe]', reason))
+      : constructEngine();
     engine.setTitleShowcase(true);
     engineRef.current = engine;
 
-    // Opt-in only: ?gpuProbe=1 records bounded WebGL texture-operation errors.
-    // Do not use this during FPS benchmarking; getError() consumes the GL error queue.
-    let gpuTextureProbe: GlTextureProbeHandle | null = null;
-    if (new URLSearchParams(window.location.search).get('gpuProbe') === '1') {
-      const canvas = canvasHostRef.current.querySelector('canvas');
-      const gl = canvas?.getContext('webgl2');
+    // Fallback only if the host does not permit early canvas instrumentation.
+    // Probe-disabled sessions never inspect gl.getError or patch canvas APIs.
+    if (enableGpuProbe && !gpuTextureProbe) {
+      const gl = canvasHostRef.current.querySelector('canvas')?.getContext('webgl2');
       if (gl) {
-        gpuTextureProbe = installWebGLTextureProbe(gl, (anomaly) => {
-          console.warn('[Kai-Jax GPU probe] WebGL error observed after texture call', anomaly);
-        });
-        const coverage = gpuTextureProbe.snapshot();
-        if (!coverage.coreHooksReady) {
-          console.warn('[Kai-Jax GPU probe] Incomplete texture hook coverage; zero errors cannot certify graphics.', coverage.unavailableMethods);
-        }
-        (window as unknown as Record<string, unknown>).__KAIJAX_GPU_PROBE__ = gpuTextureProbe;
-      } else {
-        console.warn('[Kai-Jax GPU probe] Existing WebGL2 context not available.');
-      }
+        try { attachGpuProbe(gl); }
+        catch { console.warn('[Kai-Jax GPU probe] Late diagnostic attachment failed.'); }
+      } else console.warn('[Kai-Jax GPU probe] WebGL2 context unavailable.');
     }
-
     const preferLod1 = engine.getPerformanceMetrics().isSoftwareGl || settings.graphicsQuality === 'low';
     preloadPromiseRef.current = preloadCoreAshblockAssets(
       settings.graphicsQuality,
