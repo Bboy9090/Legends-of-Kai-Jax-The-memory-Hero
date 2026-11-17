@@ -33,8 +33,18 @@ test("M6-C real mission UI: waves, timed transition, rescues, results and persis
   // certification. This avoids coupling gamepad qualification to text typing
   // frame timing before the controller is even installed.
   for (let beat = 0; beat < 2; beat++) {
-    await page.getByText("Transmission Active", { exact: true }).click();
-    await page.getByText(beat === 0 ? "Ready for next phase" : "Click to engage", { exact: true }).click({ timeout: 30000 });
+    const intro = page.getByTestId("story-dialogue-overlay");
+    await expect(intro).toHaveAttribute("data-line-index", String(beat), { timeout: 30000 });
+    // The live Space handler skips typewriter animation without WebGL
+    // hit-testing; it preserves the original line and completion callbacks.
+    if ((await intro.getAttribute("data-typing")) === "true") {
+      await page.keyboard.press("Space");
+    }
+    await expect(intro).toHaveAttribute("data-typing", "false", { timeout: 30000 });
+    await expect(
+      page.getByText(beat === 0 ? "Ready for next phase" : "Click to engage", { exact: true }),
+    ).toBeVisible({ timeout: 30000 });
+    await page.keyboard.press("Space");
   }
   await expect(page.getByTestId("mission6-memory-hud")).toBeVisible({ timeout: 45000 });
 
@@ -154,31 +164,33 @@ test("M6-C real mission UI: waves, timed transition, rescues, results and persis
   await expect(page.getByText("+350 Gold", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Continue" }).click();
 
-  await expect.poll(async () => page.evaluate(() => {
-    const r = (window as any).runnerStore.getState();
-    return r.completedStoryMissionIds.includes("story_act2_m6") ? r.totalScore : -1;
-  }), { timeout: 30000 }).toBe(850);
-
-  const final = await page.evaluate(() => {
-    const r = (window as any).runnerStore.getState();
-    const raw = window.localStorage.getItem("kai-jax-save");
-    const persisted = raw ? JSON.parse(raw) : null;
-    return {
-      screen: r.gameState,
-      loot: r.storyLoot,
-      missionCompleted: r.completedStoryMissionIds.includes("story_act2_m6"),
-      score: r.totalScore,
-      persistedLoot: persisted?.state?.profiles?.[0]?.storyLoot,
-    };
-  });
-  console.log("M6_COMPLETE_UI_CERTIFICATION", JSON.stringify({ ...final, elapsed }));
-  expect(final).toEqual({
+  // Use one exact-state poll after Continue, not two separate DevTools
+  // roundtrips competing with software WebGL. This preserves the completed
+  // mission ID, exact score, loot and persisted-save assertions.
+  let finalReceipt = "";
+  await expect.poll(async () => {
+    const final = await page.evaluate(() => {
+      const r = (window as any).runnerStore.getState();
+      const raw = window.localStorage.getItem("kai-jax-save");
+      const persisted = raw ? JSON.parse(raw) : null;
+      return {
+        screen: r.gameState,
+        loot: r.storyLoot,
+        missionCompleted: r.completedStoryMissionIds.includes("story_act2_m6"),
+        score: r.totalScore,
+        persistedLoot: persisted?.state?.profiles?.[0]?.storyLoot,
+      };
+    });
+    finalReceipt = JSON.stringify({ ...final, elapsed });
+    return final;
+  }, { timeout: 30000 }).toEqual({
     screen: "campaign-map",
     loot: ["Ashblock Memory"],
     missionCompleted: true,
     score: 850,
     persistedLoot: ["Ashblock Memory"],
   });
+  console.log("M6_COMPLETE_UI_CERTIFICATION", finalReceipt);
   expect(pageErrors).toEqual([]);
 });
 
@@ -197,8 +209,18 @@ test("M6-D virtual standard gamepad LB/L1 rescues unlocked memory through the li
   await page.getByRole("button", { name: "Engage Mission" }).click();
   await expect(page.getByText("Transmission Active", { exact: true })).toBeVisible({ timeout: 30000 });
   for (let beat = 0; beat < 2; beat++) {
-    await page.getByText("Transmission Active", { exact: true }).click();
-    await page.getByText(beat === 0 ? "Ready for next phase" : "Click to engage", { exact: true }).click({ timeout: 30000 });
+    const intro = page.getByTestId("story-dialogue-overlay");
+    await expect(intro).toHaveAttribute("data-line-index", String(beat), { timeout: 30000 });
+    // The live Space handler skips typewriter animation without WebGL
+    // hit-testing; it preserves the original line and completion callbacks.
+    if ((await intro.getAttribute("data-typing")) === "true") {
+      await page.keyboard.press("Space");
+    }
+    await expect(intro).toHaveAttribute("data-typing", "false", { timeout: 30000 });
+    await expect(
+      page.getByText(beat === 0 ? "Ready for next phase" : "Click to engage", { exact: true }),
+    ).toBeVisible({ timeout: 30000 });
+    await page.keyboard.press("Space");
   }
   await expect(page.getByTestId("mission6-memory-hud")).toBeVisible({ timeout: 45000 });
 
