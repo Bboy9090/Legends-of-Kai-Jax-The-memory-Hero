@@ -6,7 +6,7 @@ function fakeGl() {
   let nextError = 0;
   const operations: string[] = [];
   const gl = {
-    NO_ERROR: 0,
+    NO_ERROR: 0 as const,
     getError() { const current = nextError; nextError = 0; return current; },
     bindTexture(_target: number) { operations.push('bindTexture'); },
     texImage2D(_target: number, _level: number, _internalFormat: number,
