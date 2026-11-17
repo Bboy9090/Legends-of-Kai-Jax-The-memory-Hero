@@ -13,6 +13,7 @@ import { CanonVaultManifest, fetchLocalCanonManifest } from './services/googleDr
 import { EQUIPMENT_CATALOG } from './game/data/itemsData';
 import { MISSION_1_STEPS } from './game/data/missionsData';
 import { GameEngine } from './game/engine/GameEngine';
+import { installWebGLTextureProbe, type GlTextureProbeHandle } from './game/engine/WebGLTextureProbe';
 import {
   GlbPreloadSnapshot,
   preloadCoreAshblockAssets,
@@ -237,6 +238,22 @@ export default function App() {
     engine.setTitleShowcase(true);
     engineRef.current = engine;
 
+    // Opt-in only: ?gpuProbe=1 records bounded WebGL texture-operation errors.
+    // Do not use this during FPS benchmarking; getError() consumes the GL error queue.
+    let gpuTextureProbe: GlTextureProbeHandle | null = null;
+    if (new URLSearchParams(window.location.search).get('gpuProbe') === '1') {
+      const canvas = canvasHostRef.current.querySelector('canvas');
+      const gl = canvas?.getContext('webgl2');
+      if (gl) {
+        gpuTextureProbe = installWebGLTextureProbe(gl, (anomaly) => {
+          console.warn('[Kai-Jax GPU probe] WebGL error observed after texture call', anomaly);
+        });
+        (window as unknown as Record<string, unknown>).__KAIJAX_GPU_PROBE__ = gpuTextureProbe;
+      } else {
+        console.warn('[Kai-Jax GPU probe] Existing WebGL2 context not available.');
+      }
+    }
+
     const preferLod1 = engine.getPerformanceMetrics().isSoftwareGl || settings.graphicsQuality === 'low';
     preloadPromiseRef.current = preloadCoreAshblockAssets(
       settings.graphicsQuality,
@@ -246,6 +263,10 @@ export default function App() {
     );
 
     return () => {
+      gpuTextureProbe?.uninstall();
+      if ((window as unknown as Record<string, unknown>).__KAIJAX_GPU_PROBE__ === gpuTextureProbe) {
+        delete (window as unknown as Record<string, unknown>).__KAIJAX_GPU_PROBE__;
+      }
       engine.dispose();
       audio.dispose();
       engineRef.current = null;
