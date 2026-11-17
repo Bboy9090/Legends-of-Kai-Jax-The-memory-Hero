@@ -9,6 +9,7 @@ function fakeGl() {
     NO_ERROR: 0 as const,
     getError() { const current = nextError; nextError = 0; return current; },
     bindTexture(_target: number) { operations.push('bindTexture'); },
+    texParameteri(_target: number, _parameter: number, _value: number) { operations.push('texParameteri'); },
     texImage2D(_target: number, _level: number, _internalFormat: number,
       _width: number, _height: number, _border: number, _format: number,
       _type: number, _pixels: Uint8Array | null) { operations.push('texImage2D'); },
@@ -34,6 +35,8 @@ test('opt-in WebGL probe logs bounded metadata without image pixels', () => {
   assert.deepEqual(operations, ['bindTexture', 'texImage2D', 'generateMipmap']);
   assert.equal(result.operationsObserved, 3);
   assert.equal(result.errorsObserved, 1);
+  assert.equal(result.coreHooksReady, true, 'Core texture operations must be instrumented');
+  assert.deepEqual(result.unavailableMethods.includes('texImage2D'), false);
   assert.deepEqual(observed, [1281]);
   assert.equal(result.anomalies[0].afterOperation.operation, 'texImage2D');
   assert.equal(result.anomalies[0].afterOperation.width, 128);
@@ -67,5 +70,22 @@ test('probe never claims an error was caused by the immediately preceding operat
   const event = probe.snapshot().anomalies[0];
   assert.equal(event.afterOperation.operation, 'generateMipmap');
   assert.equal(event.precedingOperations[0].operation, 'bindTexture');
+  probe.uninstall();
+});
+
+test('reports partial hook coverage instead of silently claiming a clean GPU session', () => {
+  const { gl } = fakeGl();
+  const unpatchable = gl.texImage2D;
+  Object.defineProperty(gl, 'texImage2D', {
+    value: unpatchable,
+    writable: false,
+    configurable: false,
+  });
+  const probe = installWebGLTextureProbe(gl);
+  const result = probe.snapshot();
+  assert.equal(result.coreHooksReady, false);
+  assert.ok(result.unavailableMethods.includes('texImage2D'));
+  assert.ok(!result.hookedMethods.includes('texImage2D'));
+  assert.equal(result.errorsObserved, 0);
   probe.uninstall();
 });

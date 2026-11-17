@@ -26,6 +26,11 @@ export interface GlTextureAnomaly {
 export interface GlTextureProbeSnapshot {
   operationsObserved: number;
   errorsObserved: number;
+  /** Hooks actually installed; an empty anomaly list is inconclusive without coverage. */
+  hookedMethods: string[];
+  unavailableMethods: string[];
+  /** Minimal coverage of binding, upload, sampling parameters and mipmap creation. */
+  coreHooksReady: boolean;
   anomalies: GlTextureAnomaly[];
 }
 
@@ -136,6 +141,10 @@ export function installWebGLTextureProbe(
     snapshot: () => ({
       operationsObserved,
       errorsObserved,
+      hookedMethods: installed.map((entry) => entry.method),
+      unavailableMethods: WATCHED.filter((method) => !installed.some((entry) => entry.method === method)),
+      coreHooksReady: ['bindTexture', 'texImage2D', 'texParameteri', 'generateMipmap']
+        .every((method) => installed.some((entry) => entry.method === method)),
       anomalies: anomalies.map((entry) => ({
         errorCode: entry.errorCode,
         afterOperation: { ...entry.afterOperation },

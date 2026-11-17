@@ -23,10 +23,13 @@ PMREM render targets, browser GL state, or device drivers.
 3. Save the returned JSON with the **WebView version**, device/GPU/driver,
    affected district and exact reproduction sequence. Do **not** include
    credentials, local personal paths or player saves in an issue attachment.
-4. Compare the **first** error with the preceding calls and recorded
+4. Verify `coreHooksReady === true` first and inspect `hookedMethods` /
+   `unavailableMethods`. When core hooks could not be installed, **zero
+   recorded errors does not establish a clean GPU session**.
+5. Compare the **first** error with the preceding calls and recorded
    dimensions. The JSON field is deliberately named `afterOperation`, not
    `causedBy`: WebGL errors may be from an earlier command.
-5. Repeat with the flag absent to compare normal rendering. The probe is
+6. Repeat with the flag absent to compare normal rendering. The probe is
    diagnostic-only: it calls `getError()` after selected texture operations,
    which consumes error state and may change performance and third-party
    debugging behavior. **Never use probe-enabled runs for FPS benchmarks.**
@@ -40,8 +43,9 @@ PMREM render targets, browser GL state, or device drivers.
   **It cannot observe constructor-time initialisation** (including initial
   PMREM/renderer creation), nor does it inspect all GL operations.
 - On unmount the original WebGL methods are restored. If installing the
-  wrappers is refused by the host WebGL implementation, the probe cannot
-  provide full coverage. This must be reported, not assumed away.
+  wrappers is refused by the host WebGL implementation, the snapshot reports
+  unavailable hooks and flags insufficient core coverage rather than quietly
+  indicating success.
 - Physical Adreno and Mali qualification remains an independent release gate.
 
 ## Repeatable automated checks

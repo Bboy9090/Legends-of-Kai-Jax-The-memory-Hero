@@ -248,6 +248,10 @@ export default function App() {
         gpuTextureProbe = installWebGLTextureProbe(gl, (anomaly) => {
           console.warn('[Kai-Jax GPU probe] WebGL error observed after texture call', anomaly);
         });
+        const coverage = gpuTextureProbe.snapshot();
+        if (!coverage.coreHooksReady) {
+          console.warn('[Kai-Jax GPU probe] Incomplete texture hook coverage; zero errors cannot certify graphics.', coverage.unavailableMethods);
+        }
         (window as unknown as Record<string, unknown>).__KAIJAX_GPU_PROBE__ = gpuTextureProbe;
       } else {
         console.warn('[Kai-Jax GPU probe] Existing WebGL2 context not available.');
