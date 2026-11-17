@@ -103,7 +103,26 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace --no-daemon
+          # Maven Central occasionally replies HTTP 429 on uncached hosted runners.
+          # Retry ONLY that transient dependency-download failure; never hide build errors.
+          for attempt in 1 2 3; do
+            echo "::group::Gradle assembleDebug (attempt ${attempt}/3)"
+            if ./gradlew assembleDebug --stacktrace --no-daemon 2>&1 | tee gradle-debug-build.log; then
+              echo "::endgroup::"
+              break
+            fi
+            echo "::endgroup::"
+            if ! grep -Eq 'Received status code 429|Too Many Requests|HTTP 429' gradle-debug-build.log; then
+              echo "::error::Gradle failed for a non-rate-limit reason; no retry."
+              exit 1
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Gradle dependency download still rate-limited after 3 attempts."
+              exit 1
+            fi
+            echo "::warning::Transient Maven HTTP 429; retrying Gradle after a bounded backoff."
+            sleep $((attempt * 30))
+          done
           test -s app/build/outputs/apk/debug/app-debug.apk
 
       - name: Verify APK signature, embedded assets, and SHA-256
