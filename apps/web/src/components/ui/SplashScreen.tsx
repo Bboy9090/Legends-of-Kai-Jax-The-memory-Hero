@@ -20,7 +20,7 @@ export default function SplashScreen({
   title = BRAND.title,
   subtitle = BRAND.subtitle,
   duration = 1500,
-  backgroundImage = '/brand/kai-jax-vs-architect.png',
+  backgroundImage = '/branding/kaijax-splash.webp',
 }: SplashScreenProps) {
   const [phase, setPhase] = useState<'enter' | 'hold' | 'exit' | 'done'>('enter');
 
