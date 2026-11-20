@@ -27,6 +27,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
   const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
   const isOnline = useOnlineStatus();
   const [showIOSGuide, setShowIOSGuide] = useState(false);
+  const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
   const [selectedHero, setSelectedHero] = useState<'kai' | 'jax'>(
     () => latestSave?.activeHero ?? 'kai'
   );
@@ -34,12 +35,12 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
   return (
     <div className="fixed inset-0 z-20 flex flex-col justify-between p-3 sm:p-6 lg:p-8 safe-area-pad pointer-events-none">
       {/* Top Bar: Clean Single-Row Navigation */}
-      <header className="flex items-center justify-between gap-4 pointer-events-auto">
+      <header className="flex flex-wrap items-center justify-between gap-2 min-w-0 pointer-events-auto">
         <div className="text-sm font-medium tracking-wide text-slate-200 whitespace-nowrap shrink-0">
           Act I · Ashblock Heights
         </div>
 
-        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+        <nav aria-label="Game and account actions" className="flex items-center gap-2.5 sm:gap-3 max-w-full overflow-x-auto pb-1">
           {!isOnline && (
             <span className="inline-flex items-center gap-1.5 text-xs text-amber-300 bg-[#131620]/95 border border-amber-500/40 px-3 py-1.5 rounded-lg whitespace-nowrap shrink-0">
               <WifiOff className="w-3.5 h-3.5" />
@@ -59,11 +60,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
 
           {!isInstalled && !isInstallable && isIOS && (
             <button
-              onClick={install}
-              onClickCapture={(e) => {
-                e.stopPropagation();
-                setShowIOSGuide(true);
-              }}
+              onClick={() => setShowIOSGuide(true)}
               className="min-h-[40px] sm:min-h-[44px] inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-[#131620]/95 border border-slate-600 hover:border-slate-400 text-slate-100 text-xs font-semibold transition-colors whitespace-nowrap shrink-0"
             >
               <Download className="w-4 h-4" />
@@ -96,7 +93,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
           >
             <Settings className="w-4 h-4" />
           </button>
-        </div>
+        </nav>
       </header>
 
       {/* Hero Title, Lead Predator Selection & Primary Actions anchored cleanly at bottom-left */}
@@ -116,10 +113,12 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
           <div className="text-xs font-semibold text-slate-300 mb-1.5 [@media(max-height:500px)]:mb-1">
             Select Lead Predator (Switch brothers anytime in combat)
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2" role="group" aria-label="Choose lead character">
             <button
               type="button"
               onClick={() => setSelectedHero('kai')}
+              aria-pressed={selectedHero === 'kai'}
+              aria-label="Play as Kai, spider and memory abilities"
               className={`min-h-[44px] [@media(max-height:500px)]:min-h-[40px] rounded-xl border px-3 py-1.5 text-left transition-colors ${
                 selectedHero === 'kai'
                   ? 'bg-[#171326] border-violet-400 text-white'
@@ -135,6 +134,8 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             <button
               type="button"
               onClick={() => setSelectedHero('jax')}
+              aria-pressed={selectedHero === 'jax'}
+              aria-label="Play as Jax, storm and guard break abilities"
               className={`min-h-[44px] [@media(max-height:500px)]:min-h-[40px] rounded-xl border px-3 py-1.5 text-left transition-colors ${
                 selectedHero === 'jax'
                   ? 'bg-[#101c2a] border-sky-400 text-white'
@@ -173,7 +174,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
                   Continue as {selectedHero === 'kai' ? 'Kai' : 'Jax'}
                 </button>
                 <button
-                  onClick={() => onNewCampaign(selectedHero)}
+                  onClick={() => setShowNewGameConfirm(true)}
                   className="min-h-[44px] [@media(max-height:500px)]:min-h-[40px] inline-flex items-center gap-2 px-4 py-2 [@media(max-height:500px)]:py-1.5 rounded-xl bg-[#131620] hover:bg-slate-800 border border-slate-600 text-slate-100 font-medium text-sm [@media(max-height:500px)]:text-xs transition-colors whitespace-nowrap shrink-0"
                 >
                   <RotateCcw className="w-4 h-4" />
@@ -217,16 +218,49 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
         </div>
       </div>
 
+      {/* Replacing the autosave is destructive; explicit confirmation preserves
+          player progress against accidental taps on small screens. */}
+      {showNewGameConfirm && hasExistingSave && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 pointer-events-auto"
+          role="presentation" onKeyDown={(event) => { if (event.key === 'Escape') setShowNewGameConfirm(false); }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="new-campaign-title"
+            className="w-full max-w-sm rounded-2xl bg-[#131620] border border-amber-500/60 p-5 shadow-2xl">
+            <h2 id="new-campaign-title" className="font-display text-2xl font-bold text-white">Start a new campaign?</h2>
+            <p className="mt-2 text-sm text-slate-200 leading-relaxed">
+              This replaces your current autosave. Manual slots remain available in Settings and Saves.
+            </p>
+            <p className="mt-2 text-xs text-amber-300">
+              {latestSave ? `Current autosave: ${latestSave.label}` : 'Current autosave will be replaced'}
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <button type="button" autoFocus onClick={() => setShowNewGameConfirm(false)}
+                className="min-h-[44px] px-4 rounded-xl border border-slate-500 text-white font-semibold">
+                Keep My Progress
+              </button>
+              <button type="button" onClick={() => {
+                setShowNewGameConfirm(false);
+                onNewCampaign(selectedHero);
+              }} className="min-h-[44px] px-4 rounded-xl bg-amber-500 text-slate-950 font-bold">
+                Replace Autosave
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* iOS Install Modal */}
       {showIOSGuide && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 pointer-events-auto">
-          <div className="w-full max-w-sm rounded-2xl bg-[#131620] border border-slate-700 p-6 shadow-2xl">
-            <h2 className="font-display text-2xl font-bold text-white">Install on iPhone or iPad</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 pointer-events-auto"
+          onKeyDown={(event) => { if (event.key === 'Escape') setShowIOSGuide(false); }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="ios-install-title"
+            className="w-full max-w-sm rounded-2xl bg-[#131620] border border-slate-700 p-6 shadow-2xl">
+            <h2 id="ios-install-title" className="font-display text-2xl font-bold text-white">Install on iPhone or iPad</h2>
             <p className="mt-2 text-sm text-slate-300 leading-relaxed">
               1. Tap the <strong>Share</strong> icon in Safari&apos;s toolbar.<br />
               2. Scroll down and tap <strong>Add to Home Screen</strong> for full offline standalone play.
             </p>
             <button
+              autoFocus
               onClick={() => setShowIOSGuide(false)}
               className="mt-5 w-full min-h-[44px] rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm transition-colors"
             >
