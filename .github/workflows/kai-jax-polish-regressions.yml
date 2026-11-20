@@ -33,7 +33,7 @@ jobs:
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git"
           git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin "${COMMIT_SHA}"
           git sparse-checkout init --no-cone
-          git sparse-checkout set 'apps/kaijax-android/src/**' 'apps/kaijax-android/package.json' 'apps/kaijax-android/package-lock.json' 'apps/kaijax-android/tsconfig.json'
+          git sparse-checkout set 'apps/kaijax-android/src/**' 'apps/kaijax-android/package.json' 'apps/kaijax-android/package-lock.json' 'apps/kaijax-android/tsconfig.json' 'apps/kaijax-android/firebase-applet-config.json'
           git checkout --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
           test -s apps/kaijax-android/src/game/__tests__/polishWave9.test.ts
