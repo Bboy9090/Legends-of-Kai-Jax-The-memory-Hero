@@ -154,6 +154,42 @@ export default function App() {
   legalDocRef.current = legalDoc;
   dialogueQueueRef.current = dialogueQueue;
 
+  // Wave 7 GameHUD is SHA-certified and cannot be edited. Its integration
+  // boundary releases movement when WebView loses focus, a joystick's pointer
+  // capture disappears, or an overlay removes the active touch surface.
+  useEffect(() => {
+    const stopMovement = () => engineRef.current?.setTouchMove(0, 0);
+    const stopControls = () => {
+      stopMovement();
+      engineRef.current?.setTouchSprint(false);
+    };
+    const onLostCapture = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest('[aria-label="Movement Joystick"]')) {
+        stopMovement();
+      }
+    };
+    const onVisibilityChange = () => {
+      if (document.hidden) stopControls();
+    };
+    window.addEventListener('lostpointercapture', onLostCapture, true);
+    window.addEventListener('blur', stopControls);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('lostpointercapture', onLostCapture, true);
+      window.removeEventListener('blur', stopControls);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      stopControls();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (screen !== 'playing' || hubOpen || dialogueQueue) {
+      engineRef.current?.setTouchMove(0, 0);
+      if (screen !== 'playing' || hubOpen) engineRef.current?.setTouchSprint(false);
+    }
+  }, [screen, hubOpen, dialogueQueue]);
+
   useEffect(() => {
     fetchLocalCanonManifest().then(setCanonManifest).catch(() => undefined);
   }, []);
