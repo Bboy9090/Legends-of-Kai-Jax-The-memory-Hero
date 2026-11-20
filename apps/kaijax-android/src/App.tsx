@@ -128,7 +128,7 @@ export default function App() {
   const [legalDoc, setLegalDoc] = useState<'privacy' | 'terms' | null>(null);
   const [hud, setHud] = useState<HudSnapshot>(INITIAL_HUD);
   const [toast, setToast] = useState<string | null>(null);
-  const toastTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const toastTimerRef = useRef<number | null>(null);
   const [preloadSnap, setPreloadSnap] = useState<GlbPreloadSnapshot>({
     total: 0,
     loaded: 0,
