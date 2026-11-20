@@ -138,3 +138,40 @@ input:focus-visible {
 }
 
 
+
+/* Honor accessibility preferences in the DOM overlay without changing game
+   simulation timing. Keep focus indicators and state changes immediate. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: 3px solid #ffcf57;
+    outline-offset: 3px;
+  }
+}
+
+[role="button"]:focus-visible,
+[tabindex]:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+/* Never strand horizontal launch actions outside small portrait screens.
+   Content may scroll while the underlying WebGL canvas stays touch-locked. */
+nav[aria-label="Game and account actions"] {
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
