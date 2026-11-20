@@ -128,6 +128,7 @@ export default function App() {
   const [legalDoc, setLegalDoc] = useState<'privacy' | 'terms' | null>(null);
   const [hud, setHud] = useState<HudSnapshot>(INITIAL_HUD);
   const [toast, setToast] = useState<string | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [preloadSnap, setPreloadSnap] = useState<GlbPreloadSnapshot>({
     total: 0,
     loaded: 0,
@@ -195,8 +196,18 @@ export default function App() {
   }, []);
 
   const showToast = useCallback((msg: string) => {
+    // Repeated progress or reward notifications must never be cleared early
+    // by the timer of an older message.
+    if (toastTimerRef.current !== null) window.clearTimeout(toastTimerRef.current);
     setToast(msg);
-    window.setTimeout(() => setToast((cur) => (cur === msg ? null : cur)), 2800);
+    toastTimerRef.current = window.setTimeout(() => {
+      setToast(null);
+      toastTimerRef.current = null;
+    }, 2800);
+  }, []);
+
+  useEffect(() => () => {
+    if (toastTimerRef.current !== null) window.clearTimeout(toastTimerRef.current);
   }, []);
 
   const commitSave = useCallback((patch: Partial<SaveSlotData>, silent = false) => {
@@ -601,16 +612,22 @@ export default function App() {
 
       {/* Preload Gate Overlay (prevents blocky placeholder pop-in on slow devices) */}
       {enteringWorld && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md text-white">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md text-white"
+          role="status" aria-live="polite" aria-label="Loading character models">
           <div className="text-xs uppercase tracking-[0.25em] text-amber-400 font-semibold mb-2">
             Ashblock Heights · Act I
           </div>
           <div className="text-xl font-bold mb-4">Streaming Certified 3D Rigs...</div>
-          <div className="w-64 h-2 rounded-full bg-slate-800 overflow-hidden">
+          <div className="w-64 h-2 rounded-full bg-slate-800 overflow-hidden"
+            role="progressbar"
+            aria-label="Character models ready"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={preloadSnap.total > 0 ? Math.min(100, Math.round(preloadSnap.loaded / preloadSnap.total * 100)) : 0}>
             <div
               className="h-full bg-gradient-to-r from-amber-400 to-violet-500 transition-all duration-150"
               style={{
-                width: `${preloadSnap.total > 0 ? Math.round((preloadSnap.loaded / preloadSnap.total) * 100) : 100}%`,
+                width: `${preloadSnap.total > 0 ? Math.min(100, Math.round((preloadSnap.loaded / preloadSnap.total) * 100)) : 0}%`,
               }}
             />
           </div>
