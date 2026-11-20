@@ -1,0 +1,34 @@
+name: Candidate Wave 9 Safe Art ZIP Tests
+
+on:
+  push:
+    branches: ['hardening/p1p-wave9-safe-art-zip']
+  pull_request:
+    branches: ['integration/p1p-unified-reconciliation']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wave9-safe-art-zip-candidate
+  cancel-in-progress: true
+
+jobs:
+  safe-zip-and-server:
+    name: ZIP32 security and canon-drive server tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install frozen workspace dependencies
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          pnpm install --frozen-lockfile
+      - name: Run ZIP and full server security tests
+        run: pnpm -C apps/kaijax-android test:server
