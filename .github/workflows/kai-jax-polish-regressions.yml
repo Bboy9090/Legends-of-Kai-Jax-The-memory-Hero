@@ -1,0 +1,48 @@
+name: Kai-Jax Gameplay Polish Regression Gate
+
+on:
+  push:
+    branches:
+      - integration/p1p-unified-reconciliation
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kaijax-polish-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  save-ux-regressions:
+    name: Save, Input and UX Type Safety
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Materialize exact production workspace and test sources
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git"
+          git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin "${COMMIT_SHA}"
+          git sparse-checkout init --no-cone
+          git sparse-checkout set 'apps/kaijax-android/src/**' 'apps/kaijax-android/package.json' 'apps/kaijax-android/package-lock.json' 'apps/kaijax-android/tsconfig.json'
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+          test -s apps/kaijax-android/src/game/__tests__/polishWave9.test.ts
+      - name: Install isolated Android/web application dependencies
+        working-directory: apps/kaijax-android
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+      - name: Certify Save Recovery and 20-wave UX checks
+        working-directory: apps/kaijax-android
+        run: |
+          set -euo pipefail
+          npm run lint
+          npx tsx --test src/game/__tests__/polishWave9.test.ts
