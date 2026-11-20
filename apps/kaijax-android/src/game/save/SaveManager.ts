@@ -32,8 +32,23 @@ export function computeSaveChecksum(serializedPayload: string): string {
 
 function getStorageSafe(customStorage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>) {
   if (customStorage) return customStorage;
-  if (typeof localStorage !== 'undefined') return localStorage;
-  return null;
+  // Android private mode, embedded WebViews, and locked-down browsers may
+  // throw SecurityError even when the localStorage property is accessed.
+  try {
+    return typeof localStorage !== 'undefined' ? localStorage : null;
+  } catch {
+    return null;
+  }
+}
+
+function finiteRange(value: unknown, fallback: number, min: number, max: number): number {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.max(min, Math.min(max, value))
+    : fallback;
+}
+
+function finiteNonnegativeInt(value: unknown, fallback: number, max: number): number {
+  return Math.floor(finiteRange(value, fallback, 0, max));
 }
 
 function prefersReducedMotionDefault(): boolean {
@@ -157,6 +172,10 @@ export function validateSavePayload(raw: unknown): boolean {
     if (!Array.isArray(obj.checkpointPos) || obj.checkpointPos.length !== 3) return false;
     if (!obj.checkpointPos.every((n) => typeof n === 'number' && Number.isFinite(n))) return false;
   }
+  if ('heroes' in obj && (!obj.heroes || typeof obj.heroes !== 'object' || Array.isArray(obj.heroes))) return false;
+  if ('materials' in obj && (!obj.materials || typeof obj.materials !== 'object' || Array.isArray(obj.materials))) return false;
+  if ('inventoryIds' in obj && (!Array.isArray(obj.inventoryIds) || !obj.inventoryIds.every((x) => typeof x === 'string'))) return false;
+  if ('unlockedCosmeticIds' in obj && (!Array.isArray(obj.unlockedCosmeticIds) || !obj.unlockedCosmeticIds.every((x) => typeof x === 'string'))) return false;
   return true;
 }
 
@@ -176,6 +195,26 @@ export function migrateSaveData(raw: unknown, slotId: string): SaveSlotData {
       ? [obj.checkpointPos[0], obj.checkpointPos[1], obj.checkpointPos[2]]
       : base.checkpointPos;
 
+  const cleanHero = (rawHero: Partial<HeroProgression> | undefined, fallback: HeroProgression): HeroProgression => {
+    const equipped = rawHero?.equipped;
+    return {
+      ...fallback,
+      ...rawHero,
+      level: finiteNonnegativeInt(rawHero?.level, fallback.level, 1000) || 1,
+      xp: finiteNonnegativeInt(rawHero?.xp, fallback.xp, 1_000_000_000),
+      xpToNext: Math.max(1, finiteNonnegativeInt(rawHero?.xpToNext, fallback.xpToNext, 1_000_000_000)),
+      skillPoints: finiteNonnegativeInt(rawHero?.skillPoints, fallback.skillPoints, 100_000),
+      unlockedSkills: Array.isArray(rawHero?.unlockedSkills)
+        ? rawHero.unlockedSkills.filter((id): id is string => typeof id === 'string')
+        : fallback.unlockedSkills,
+      equipped: {
+        weapon: typeof equipped?.weapon === 'string' ? equipped.weapon : fallback.equipped.weapon,
+        armor: typeof equipped?.armor === 'string' ? equipped.armor : fallback.equipped.armor,
+        relic: typeof equipped?.relic === 'string' ? equipped.relic : fallback.equipped.relic,
+      },
+    };
+  };
+
   return {
     ...base,
     ...obj,
@@ -189,24 +228,21 @@ export function migrateSaveData(raw: unknown, slotId: string): SaveSlotData {
       ...(obj.combatStats ?? {}),
     },
     heroes: {
-      kai: {
-        ...base.heroes.kai,
-        ...(obj.heroes?.kai ?? {}),
-        equipped: {
-          ...base.heroes.kai.equipped,
-          ...(obj.heroes?.kai?.equipped ?? {}),
-        },
-      },
-      jax: {
-        ...base.heroes.jax,
-        ...(obj.heroes?.jax ?? {}),
-        equipped: {
-          ...base.heroes.jax.equipped,
-          ...(obj.heroes?.jax?.equipped ?? {}),
-        },
-      },
+      kai: cleanHero(obj.heroes?.kai, base.heroes.kai),
+      jax: cleanHero(obj.heroes?.jax, base.heroes.jax),
     },
-    materials: { ...base.materials, ...(obj.materials ?? {}) },
+    inventoryIds: Array.isArray(obj.inventoryIds)
+      ? obj.inventoryIds.filter((id): id is string => typeof id === 'string')
+      : base.inventoryIds,
+    unlockedCosmeticIds: Array.isArray(obj.unlockedCosmeticIds)
+      ? obj.unlockedCosmeticIds.filter((id): id is string => typeof id === 'string')
+      : base.unlockedCosmeticIds,
+    materials: Object.fromEntries(
+      Object.entries({ ...base.materials, ...(obj.materials ?? {}) }).map(([key, value]) => [
+        key,
+        finiteNonnegativeInt(value, base.materials[key] ?? 0, 1_000_000_000),
+      ])
+    ),
   };
 }
 
@@ -219,12 +255,35 @@ export function loadSettings(
     const raw = store.getItem(SETTINGS_KEY);
     if (!raw) return DEFAULT_SETTINGS;
     const parsed = JSON.parse(raw) as Partial<GameSettings>;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return DEFAULT_SETTINGS;
+    const rawBindings = parsed.gamepadBindings &&
+      typeof parsed.gamepadBindings === 'object' && !Array.isArray(parsed.gamepadBindings)
+        ? parsed.gamepadBindings
+        : {};
+    const validBindingEntries = Object.fromEntries(
+      Object.entries(rawBindings)
+        .filter(([key, value]) => key in DEFAULT_GAMEPAD_BINDINGS &&
+          Number.isInteger(value) && (value as number) >= 0 && (value as number) <= 31)
+    );
     return {
       ...DEFAULT_SETTINGS,
       ...parsed,
+      graphicsQuality: ['low', 'balanced', 'high'].includes(String(parsed.graphicsQuality))
+        ? parsed.graphicsQuality! : DEFAULT_SETTINGS.graphicsQuality,
+      targetFps: parsed.targetFps === 30 ? 30 : 60,
+      masterVolume: finiteRange(parsed.masterVolume, DEFAULT_SETTINGS.masterVolume, 0, 1),
+      musicVolume: finiteRange(parsed.musicVolume, DEFAULT_SETTINGS.musicVolume, 0, 1),
+      sfxVolume: finiteRange(parsed.sfxVolume, DEFAULT_SETTINGS.sfxVolume, 0, 1),
+      touchSensitivity: finiteRange(parsed.touchSensitivity, DEFAULT_SETTINGS.touchSensitivity, 0.2, 3),
+      hudButtonScale: finiteRange(parsed.hudButtonScale, DEFAULT_SETTINGS.hudButtonScale, 0.65, 1.5),
+      hudOpacity: finiteRange(parsed.hudOpacity, DEFAULT_SETTINGS.hudOpacity, 0.35, 1),
+      hudEdgeOffset: finiteRange(parsed.hudEdgeOffset, DEFAULT_SETTINGS.hudEdgeOffset, 0, 80),
+      hudVerticalOffset: finiteRange(parsed.hudVerticalOffset, DEFAULT_SETTINGS.hudVerticalOffset ?? 10, 0, 80),
+      hudCompactMode: parsed.hudCompactMode === 'compact' || parsed.hudCompactMode === 'expanded'
+        ? parsed.hudCompactMode : 'auto',
       gamepadBindings: {
         ...DEFAULT_GAMEPAD_BINDINGS,
-        ...(parsed.gamepadBindings ?? {}),
+        ...validBindingEntries,
       },
     };
   } catch {
@@ -331,8 +390,15 @@ export function loadFromSlotWithRecovery(
   const primaryKey = `${SAVE_PREFIX}${slotId}`;
   const backupKey = `${SAVE_PREFIX}${slotId}${BACKUP_SUFFIX}`;
 
-  const rawPrimary = store.getItem(primaryKey);
-  const rawBackup = store.getItem(backupKey);
+  let rawPrimary: string | null = null;
+  let rawBackup: string | null = null;
+  try {
+    rawPrimary = store.getItem(primaryKey);
+    rawBackup = store.getItem(backupKey);
+  } catch {
+    // Restricted storage must not crash boot or erase the current in-memory save.
+    return { slotId, status: 'empty', data: null };
+  }
 
   if (!rawPrimary && !rawBackup) {
     return { slotId, status: 'empty', data: null };
@@ -446,19 +512,22 @@ export function computeHeroStats(hero: 'kai' | 'jax', prog: HeroProgression) {
 }
 
 export function grantHeroXp(prog: HeroProgression, amount: number): { updated: HeroProgression; leveledUp: boolean } {
-  let xp = prog.xp + amount;
-  let level = prog.level;
-  let xpToNext = prog.xpToNext;
-  let skillPoints = prog.skillPoints;
+  const award = finiteNonnegativeInt(amount, 0, 1_000_000);
+  let xp = finiteNonnegativeInt(prog.xp, 0, 1_000_000_000) + award;
+  let level = Math.max(1, finiteNonnegativeInt(prog.level, 1, 1000));
+  let xpToNext = Math.max(1, finiteNonnegativeInt(prog.xpToNext, 100, 1_000_000_000));
+  let skillPoints = finiteNonnegativeInt(prog.skillPoints, 0, 100_000);
   let leveledUp = false;
 
-  while (xp >= xpToNext) {
+  // Corrupt or legacy zero thresholds must never hang the main game thread.
+  while (xp >= xpToNext && level < 1000) {
     xp -= xpToNext;
     level += 1;
-    skillPoints += 1;
-    xpToNext = Math.round(xpToNext * 1.35);
+    skillPoints = Math.min(100_000, skillPoints + 1);
+    xpToNext = Math.min(1_000_000_000, Math.max(xpToNext + 1, Math.round(xpToNext * 1.35)));
     leveledUp = true;
   }
+  xp = Math.min(xp, Math.max(0, xpToNext - 1));
 
   return {
     leveledUp,
