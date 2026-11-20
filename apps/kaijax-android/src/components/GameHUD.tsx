@@ -77,25 +77,6 @@ export const GameHUD: React.FC<GameHUDProps> = ({
     }
   };
 
-  // Release transient controls when story dialogue, clean-view mode, or route changes
-  // remove the joystick while a finger is still held down. Android WebView
-  // does not guarantee a pointerup after a touch target unmounts.
-  useEffect(() => {
-    if (!dialogueOpen && !zenHidden) return;
-    joyPointerId.current = null;
-    camLast.current = null;
-    setJoyKnob({ x: 0, y: 0, active: false });
-    setSprintLocked(false);
-    engineRef.current?.setTouchMove(0, 0);
-    engineRef.current?.setTouchSprint(false);
-  }, [dialogueOpen, zenHidden, engineRef]);
-
-  // Leaving the game must never carry virtual movement into the next screen.
-  useEffect(() => () => {
-    engineRef.current?.setTouchMove(0, 0);
-    engineRef.current?.setTouchSprint(false);
-  }, [engineRef]);
-
   // Virtual Joystick Handlers (PointerId-isolated for reliable simultaneous multi-touch)
   const onJoyDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.stopPropagation();
@@ -134,8 +115,6 @@ export const GameHUD: React.FC<GameHUDProps> = ({
 
   // Touch Camera Drag Handlers
   const onCamDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Only one camera pointer owns orbit; a second finger must not steal it.
-    if (camLast.current && camLast.current.id !== e.pointerId) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     camLast.current = { id: e.pointerId, x: e.clientX, y: e.clientY };
   };
@@ -187,7 +166,6 @@ export const GameHUD: React.FC<GameHUDProps> = ({
         onPointerMove={onCamMove}
         onPointerUp={onCamUp}
         onPointerCancel={onCamUp}
-        onLostPointerCapture={onCamUp}
         className="absolute inset-0 pointer-events-auto"
         aria-label="Camera orbit touch area"
       />
@@ -545,7 +523,6 @@ export const GameHUD: React.FC<GameHUDProps> = ({
             onPointerMove={onJoyMove}
             onPointerUp={onJoyUp}
             onPointerCancel={onJoyUp}
-            onLostPointerCapture={onJoyUp}
             className={`relative ${
               isCompact ? 'w-24 h-24' : 'w-28 h-28 sm:w-32 sm:h-32'
             } rounded-full bg-[#0a0d14]/78 border-2 border-slate-500/65 flex items-center justify-center touch-none shadow-lg`}
