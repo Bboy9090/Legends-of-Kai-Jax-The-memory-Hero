@@ -1,247 +1,146 @@
 /**
- * ENHANCED COMBAT HUD
- * Integrated battle UI with abilities, character stats, and boss mechanics
+ * ENHANCED COMBAT HUD ("Combat Intel")
+ *
+ * Supplemental layer mounted by BattleUI during a fight. It deliberately does NOT draw
+ * health, combo, stamina, synergy or overdrive bars — BattleUI owns those — so the screen
+ * never shows two copies of the same readout. It adds what BattleUI lacks:
+ *   - boss phase banner, driven by the opponent's live health
+ *   - the fighter's ability reference strip, with live ultimate readiness
+ * All values come from the battle store (or props, for tests/storybook).
  */
+import { useMemo, useState } from 'react';
+import { Sparkles } from 'lucide-react';
+import BossPhaseBanner from './BossPhaseBanner';
+import { useBattle } from '../../lib/stores/useBattle';
+import {
+  abilitiesFor,
+  activeBossPhase,
+  resolveBoss,
+  ultimateState,
+} from '../../lib/combatIntel';
+import type { Ability } from '../../lib/abilitySystems';
 
-import React, { useState } from 'react';
-import { getCharacterPowerMatrix, getCharacterAbilities, type Ability } from '../../lib/abilitySystems';
-import { getCharacterData, getCharacterStats } from '../../lib/characterStats';
-import { getBossEncounter, type BossEncounter } from '../../lib/bossEncounters';
-import { Heart, Zap, Shield, AlertTriangle, Target } from 'lucide-react';
+const NATIVE_ULTIMATE = ['kai-jax', 'kaijax', 'kai_jax', 'kai', 'jax', 'boryn'];
 
-interface EnhancedCombatHUDProps {
-  playerId: string;
-  bossId?: string;
-  playerHealth?: number;
-  playerMaxHealth?: number;
-  bossHealth?: number;
-  bossMaxHealth?: number;
-  mana?: number;
-  maxMana?: number;
+export interface EnhancedCombatHUDProps {
+  /** Overrides, mainly for tests. Defaults come from the live battle store. */
+  playerId?: string;
+  opponentId?: string;
+  opponentHealth?: number;
+  maxHealth?: number;
+  overdrive?: number;
+  maxOverdrive?: number;
+  transformed?: boolean;
+  active?: boolean;
   onAbilitySelected?: (abilityId: string) => void;
 }
 
-export default function EnhancedCombatHUD({
-  playerId,
-  bossId,
-  playerHealth = 100,
-  playerMaxHealth = 100,
-  bossHealth = 100,
-  bossMaxHealth = 100,
-  mana = 100,
-  maxMana = 100,
-  onAbilitySelected,
-}: EnhancedCombatHUDProps) {
-  const [selectedAbility, setSelectedAbility] = useState<Ability | null>(null);
-  const playerData = getCharacterData(playerId);
-  const playerStats = getCharacterStats(playerId);
-  const playerAbilities = getCharacterAbilities(playerId);
-  const boss = bossId ? getBossEncounter(bossId) : null;
-  const currentHealthPct = (bossHealth / bossMaxHealth) * 100;
-  const bossPhaseThreshold = boss && boss.phases ? (() => {
-    const sortedPhases = [...boss.phases].sort((a, b) => b.healthThreshold - a.healthThreshold);
-    const activePhase = sortedPhases.find(p => currentHealthPct >= p.healthThreshold) || sortedPhases[sortedPhases.length - 1];
-    return activePhase?.description || null;
-  })() : null;
+export default function EnhancedCombatHUD(props: EnhancedCombatHUDProps) {
+  const store = useBattle();
+  const playerId = props.playerId ?? store.playerFighterId;
+  const opponentId = props.opponentId ?? store.opponentFighterId;
+  const opponentHealth = props.opponentHealth ?? store.opponentHealth;
+  const maxHealth = props.maxHealth ?? store.maxHealth;
+  const overdrive = props.overdrive ?? store.playerOverdrive;
+  const maxOverdrive = props.maxOverdrive ?? store.maxOverdrive;
+  const transformed = props.transformed ?? store.playerTransformed;
+  const active = props.active ?? store.battlePhase === 'fighting';
 
-  const playerHealthPct = (playerHealth / playerMaxHealth) * 100;
-  const bossHealthPct = (bossHealth / bossMaxHealth) * 100;
-  const manaPct = (mana / maxMana) * 100;
+  const [selected, setSelected] = useState<Ability | null>(null);
+  const [mobileExpanded, setMobileExpanded] = useState(false);
 
-  if (!playerData || !playerStats) {
-    return null;
-  }
+  const boss = useMemo(() => resolveBoss(opponentId), [opponentId]);
+  const healthPct = maxHealth > 0 ? (opponentHealth / maxHealth) * 100 : 0;
+  const phase = boss ? activeBossPhase(boss, healthPct) : null;
+  const abilities = useMemo(() => abilitiesFor(playerId), [playerId]);
+  const ultimate = ultimateState(playerId, overdrive, maxOverdrive, transformed, NATIVE_ULTIMATE.includes(playerId));
+
+  if (!active) return null;
+  if (!boss && abilities.length === 0 && !ultimate) return null;
+
+  const toggle = (ability: Ability) => {
+    const next = selected?.id === ability.id ? null : ability;
+    setSelected(next);
+    if (next) props.onAbilitySelected?.(next.id);
+  };
 
   return (
-    <div className="fixed inset-0 pointer-events-none">
-      {/* PLAYER STATS - TOP LEFT */}
-      <div className="absolute top-4 left-4 w-80 z-30 pointer-events-auto">
-        <div className="border border-[#22d3ee]/40 bg-black/60 backdrop-blur p-3 rounded-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div className="text-xs uppercase tracking-[0.1em]" style={{ color: playerData.visualIdentity.primaryColor }}>
-              {playerData.displayName}
-            </div>
-            <div className="text-[10px] text-[#8f816d]">
-              Lv. {Math.floor(playerStats.attack / 10) + 1}
-            </div>
-          </div>
-
-          {/* HEALTH BAR */}
-          <div className="mb-2">
-            <div className="flex justify-between mb-1 text-[9px]">
-              <span className="text-[#8f816d]">HP</span>
-              <span className="text-[#d6c9b5]">{Math.ceil(playerHealth)}/{playerMaxHealth}</span>
-            </div>
-            <div className="h-3 bg-black/50 border border-[#735a35]/50 overflow-hidden rounded-sm">
-              <div
-                className="h-full bg-gradient-to-r from-[#ff6347] to-[#ff8c00]"
-                style={{ width: `${playerHealthPct}%` }}
-              />
-            </div>
-          </div>
-
-          {/* MANA BAR */}
-          <div className="mb-3">
-            <div className="flex justify-between mb-1 text-[9px]">
-              <span className="text-[#8f816d]">Mana</span>
-              <span className="text-[#d6c9b5]">{Math.ceil(mana)}/{maxMana}</span>
-            </div>
-            <div className="h-3 bg-black/50 border border-[#735a35]/50 overflow-hidden rounded-sm">
-              <div
-                className="h-full bg-gradient-to-r from-[#5aaeff] to-[#00f2ff]"
-                style={{ width: `${manaPct}%` }}
-              />
-            </div>
-          </div>
-
-          {/* QUICK STATS */}
-          <div className="grid grid-cols-3 gap-1 text-[9px] pt-2 border-t border-[#735a35]/50">
-            <div className="flex items-center gap-1">
-              <Zap className="h-3 w-3 text-[#ffed4e]" />
-              <span className="text-[#8f816d]">ATK</span>
-              <span className="text-[#d6c9b5]">{playerStats.attack}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Shield className="h-3 w-3 text-[#22d3ee]" />
-              <span className="text-[#8f816d]">DEF</span>
-              <span className="text-[#d6c9b5]">{playerStats.defense}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Target className="h-3 w-3 text-[#d46cff]" />
-              <span className="text-[#8f816d]">SPD</span>
-              <span className="text-[#d6c9b5]">{playerStats.speed}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* BOSS STATUS - TOP RIGHT */}
-      {boss && (
-        <div className="absolute top-4 right-4 w-80 z-30 pointer-events-auto">
-          <div className="border border-[#ff6347]/40 bg-black/60 backdrop-blur p-3 rounded-sm">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <div className="text-[9px] uppercase tracking-[0.08em] text-[#8f816d]">
-                  Boss Encounter
-                </div>
-                <div className="text-xs uppercase tracking-[0.1em]" style={{ color: boss.visualIdentity.primaryColor }}>
-                  {boss.displayName}
-                </div>
-              </div>
-              <AlertTriangle className="h-5 w-5" style={{ color: boss.visualIdentity.primaryColor }} />
-            </div>
-
-            {/* BOSS HEALTH */}
-            <div className="mb-2">
-              <div className="flex justify-between mb-1 text-[9px]">
-                <span className="text-[#8f816d]">Boss HP</span>
-                <span className="text-[#ff6347]">{Math.ceil(bossHealth)}/{bossMaxHealth}</span>
-              </div>
-              <div className="h-4 bg-black/50 border border-[#ff6347]/50 overflow-hidden rounded-sm">
-                <div
-                  className="h-full bg-gradient-to-r from-[#ff6347] to-[#ff0000]"
-                  style={{ width: `${bossHealthPct}%` }}
-                />
-              </div>
-            </div>
-
-            {/* PHASE INFO */}
-            {bossPhaseThreshold && (
-              <div className="mb-2 text-[9px] bg-black/40 border border-[#ff6347]/30 p-2 rounded-sm">
-                <div className="text-[#8f816d]">Current Phase</div>
-                <div className="text-[#ff6347] text-[10px] font-bold mt-1">
-                  {bossPhaseThreshold}
-                </div>
-              </div>
-            )}
-
-            {/* BOSS STATS */}
-            <div className="grid grid-cols-2 gap-1 text-[9px] pt-2 border-t border-[#ff6347]/30">
-              <div className="flex items-center gap-1">
-                <Zap className="h-3 w-3 text-[#ffed4e]" />
-                <span className="text-[#8f816d]">ATK</span>
-                <span className="text-[#ff6347]">{boss.attack}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Shield className="h-3 w-3 text-[#ff8c00]" />
-                <span className="text-[#8f816d]">DEF</span>
-                <span className="text-[#ff8c00]">{boss.defense}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="pointer-events-none absolute inset-0 z-20" data-testid="combat-intel">
+      {boss && phase && (
+        <BossPhaseBanner
+          boss={boss}
+          healthPct={healthPct}
+          className="absolute left-1/2 top-[84px] sm:top-[96px] -translate-x-1/2 max-w-[min(92vw,420px)]"
+        />
       )}
 
-      {/* ABILITIES - BOTTOM */}
-      {playerAbilities.length > 0 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
-          <div className="flex gap-2 mb-2 justify-center">
-            <div className="text-[9px] uppercase tracking-[0.08em] text-[#a48c65] text-center">
-              Combat Abilities
-            </div>
-          </div>
-          <div className="flex gap-2 bg-black/60 backdrop-blur border border-[#8b6e3d]/40 p-2 rounded-sm">
-            {playerAbilities.map((ability) => (
+      {(abilities.length > 0 || ultimate) && (
+        <>
+          {/* On phones, reveal this reference strip on demand instead of hiding it completely. */}
+          <button
+            type="button"
+            data-testid="combat-intel-mobile-toggle"
+            aria-controls="combat-intel-mobile-panel"
+            aria-expanded={mobileExpanded}
+            onClick={() => setMobileExpanded((expanded) => !expanded)}
+            className={`pointer-events-auto absolute left-1/2 z-20 min-h-[36px] -translate-x-1/2 border border-[#735a35]/70 bg-black/85 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#efcf91] sm:hidden ${
+              boss && phase ? 'top-[165px]' : 'top-[104px]'
+            }`}
+          >
+            Combat Intel · {abilities.length} abilities {mobileExpanded ? '▲' : '▼'}
+          </button>
+          <div
+            id="combat-intel-mobile-panel"
+            className={`pointer-events-auto absolute left-1/2 z-20 max-h-[min(42dvh,220px)] w-[min(94vw,520px)] -translate-x-1/2 overflow-y-auto sm:max-h-none sm:w-auto sm:overflow-visible ${
+              mobileExpanded ? 'block' : 'hidden'
+            } sm:block ${
+              boss && phase ? 'top-[205px] sm:top-[156px]' : 'top-[145px] sm:top-[100px]'
+            }`}
+            data-testid="combat-intel-abilities"
+          >
+          <div role="toolbar" aria-label="Combat ability references" className="kj-vision-hud flex max-w-full items-center gap-1.5 overflow-x-auto overscroll-x-contain p-1.5 sm:overflow-visible">
+            {abilities.slice(0, 4).map((ability) => (
               <button
                 key={ability.id}
-                onClick={() => {
-                  setSelectedAbility(ability);
-                  onAbilitySelected?.(ability.id);
-                }}
-                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-sm transition border ${
-                  selectedAbility?.id === ability.id
-                    ? 'border-[#efcf91] bg-black/80'
-                    : 'border-[#735a35]/50 bg-black/40 hover:bg-black/60'
-                }`}
+                type="button"
+                aria-pressed={selected?.id === ability.id}
+                onClick={() => toggle(ability)}
                 title={ability.description}
+                data-testid="combat-intel-ability"
+                className="min-h-[36px] shrink-0 whitespace-nowrap border border-[#735a35]/60 bg-black/50 px-2 py-1 text-[10px] uppercase tracking-[0.08em] text-[#efcf91] hover:bg-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#efcf91]"
               >
-                <div className="text-[8px] uppercase tracking-[0.08em] text-[#efcf91] text-center">
-                  {ability.name.split(' ')[0]}
-                </div>
-                <div className="text-[7px] text-[#8f816d]">CD: {ability.cooldown}s</div>
-                <div className="text-[7px] text-[#d6c9b5]">
-                  {ability.manaCost < maxMana ? '✓' : '✗'}
-                </div>
+                {ability.name}
               </button>
             ))}
+            {ultimate && (
+              <span
+                data-testid="combat-intel-ultimate"
+                data-ready={ultimate.ready ? 'true' : 'false'}
+                className={`inline-flex min-h-[36px] shrink-0 items-center gap-1 whitespace-nowrap border px-2 py-1 text-[10px] uppercase tracking-[0.08em] ${
+                  ultimate.ready
+                    ? 'border-amber-300 bg-amber-400/20 text-amber-200'
+                    : 'border-[#735a35]/50 bg-black/40 text-slate-300'
+                }`}
+              >
+                <Sparkles className="h-3 w-3" aria-hidden="true" />
+                {ultimate.name} · {ultimate.ready ? 'READY' : `${Math.floor(ultimate.percent)}%`}
+              </span>
+            )}
           </div>
-        </div>
-      )}
-
-      {/* SELECTED ABILITY INFO */}
-      {selectedAbility && (
-        <div className="absolute bottom-32 right-4 z-30 pointer-events-auto">
-          <div className="border border-[#8b6e3d]/45 bg-black/60 backdrop-blur p-3 rounded-sm w-72">
-            <div className="mb-2">
-              <div className="text-xs uppercase tracking-[0.1em]" style={{ color: selectedAbility.element === 'Lightning' ? '#5aaeff' : '#00f2ff' }}>
-                {selectedAbility.name}
-              </div>
-              <div className="text-[10px] text-[#bbb0a0] mt-1">
-                {selectedAbility.description}
+          {selected && (
+            <div
+              className="kj-vision-hud mt-2 max-w-[320px] mx-auto px-3 py-2 text-[11px] text-slate-200"
+              data-testid="combat-intel-ability-detail"
+            >
+              <div className="text-xs uppercase tracking-[0.1em] text-[#efcf91]">{selected.name}</div>
+              <div className="mt-1 text-slate-300">{selected.description}</div>
+              <div className="mt-1 font-mono text-slate-400">
+                Tier {selected.tier} · {selected.damage} dmg (reference data; live readiness is shown on the ultimate only)
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-[9px] pt-2 border-t border-[#735a35]/50">
-              <div className="flex items-center gap-1">
-                <span className="text-[#8f816d]">Damage:</span>
-                <span className="text-[#d6c9b5]">{selectedAbility.damage}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-[#8f816d]">Cooldown:</span>
-                <span className="text-[#d6c9b5]">{selectedAbility.cooldown}s</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-[#8f816d]">Mana:</span>
-                <span className={mana >= selectedAbility.manaCost ? 'text-[#55e6c1]' : 'text-[#ff6347]'}>
-                  {selectedAbility.manaCost}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-[#8f816d]">Tier:</span>
-                <span className="text-[#d6c9b5]">{selectedAbility.tier}</span>
-              </div>
-            </div>
+          )}
           </div>
-        </div>
+        </>
       )}
     </div>
   );

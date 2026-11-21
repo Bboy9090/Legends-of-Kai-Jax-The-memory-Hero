@@ -1,0 +1,170 @@
+{
+  "glbFile": "jax_master.glb",
+  "blenderVersion": "3.4.1",
+  "status": "PASS",
+  "armatureBoneCount": 32,
+  "vertexGroupCount": 32,
+  "uvLayerCount": 1,
+  "shapeKeys": [
+    "blink",
+    "snarl",
+    "roar",
+    "pain",
+    "focus"
+  ],
+  "sockets": [
+    "socket_head",
+    "socket_hitbox_L",
+    "socket_hitbox_R",
+    "socket_relic",
+    "socket_weapon_L",
+    "socket_weapon_R"
+  ],
+  "importedActionClipCount": 19,
+  "allExtremePosesFinite": true,
+  "maxDegenerateTriangles": 0,
+  "maxP99PoseEdgeStretch": 2.026,
+  "maxExtremePoseEdgeStretch": 10.0544,
+  "extremePoses": {
+    "rest_a_pose": {
+      "vertexCount": 21307,
+      "triangleCount": 22087,
+      "allVerticesFinite": true,
+      "degenerateTriangles": 0,
+      "p99EdgeStretchRatio": 1.4276,
+      "maxEdgeStretchRatio": 4.5355,
+      "boundsBlenderZUp": {
+        "min": [
+          -0.4341,
+          -0.3447,
+          0.0003
+        ],
+        "max": [
+          0.4337,
+          0.344,
+          1.9395
+        ]
+      }
+    },
+    "shoulder_raise_65deg": {
+      "vertexCount": 21307,
+      "triangleCount": 22087,
+      "allVerticesFinite": true,
+      "degenerateTriangles": 0,
+      "p99EdgeStretchRatio": 1.9342,
+      "maxEdgeStretchRatio": 7.8289,
+      "boundsBlenderZUp": {
+        "min": [
+          -0.4341,
+          -0.5288,
+          0.0003
+        ],
+        "max": [
+          0.4337,
+          0.344,
+          1.9395
+        ]
+      }
+    },
+    "elbow_deep_flex_95deg": {
+      "vertexCount": 21307,
+      "triangleCount": 22087,
+      "allVerticesFinite": true,
+      "degenerateTriangles": 0,
+      "p99EdgeStretchRatio": 1.5609,
+      "maxEdgeStretchRatio": 3.928,
+      "boundsBlenderZUp": {
+        "min": [
+          -0.4341,
+          -0.3447,
+          0.0003
+        ],
+        "max": [
+          0.4337,
+          0.344,
+          1.9395
+        ]
+      }
+    },
+    "combat_high_kick_hip_knee": {
+      "vertexCount": 21307,
+      "triangleCount": 22087,
+      "allVerticesFinite": true,
+      "degenerateTriangles": 0,
+      "p99EdgeStretchRatio": 1.8095,
+      "maxEdgeStretchRatio": 10.0544,
+      "boundsBlenderZUp": {
+        "min": [
+          -0.4376,
+          -0.5302,
+          -0.0484
+        ],
+        "max": [
+          0.4489,
+          0.4229,
+          1.9395
+        ]
+      }
+    },
+    "sabertooth_roar_jaw_ears": {
+      "vertexCount": 21307,
+      "triangleCount": 22087,
+      "allVerticesFinite": true,
+      "degenerateTriangles": 0,
+      "p99EdgeStretchRatio": 1.4636,
+      "maxEdgeStretchRatio": 4.5355,
+      "boundsBlenderZUp": {
+        "min": [
+          -0.4341,
+          -0.345,
+          0.0003
+        ],
+        "max": [
+          0.4337,
+          0.344,
+          1.9395
+        ]
+      }
+    },
+    "supernatural_appendage_sweep": {
+      "vertexCount": 21307,
+      "triangleCount": 22087,
+      "allVerticesFinite": true,
+      "degenerateTriangles": 0,
+      "p99EdgeStretchRatio": 1.9313,
+      "maxEdgeStretchRatio": 8.0106,
+      "boundsBlenderZUp": {
+        "min": [
+          -0.4341,
+          -0.3447,
+          0.0003
+        ],
+        "max": [
+          0.4337,
+          0.344,
+          1.9591
+        ]
+      }
+    },
+    "full_combat_guard_crouch": {
+      "vertexCount": 21307,
+      "triangleCount": 22087,
+      "allVerticesFinite": true,
+      "degenerateTriangles": 0,
+      "p99EdgeStretchRatio": 2.026,
+      "maxEdgeStretchRatio": 7.1963,
+      "boundsBlenderZUp": {
+        "min": [
+          -0.4358,
+          -0.5762,
+          0.0218
+        ],
+        "max": [
+          0.5153,
+          0.1935,
+          1.882
+        ]
+      }
+    }
+  }
+}

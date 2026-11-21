@@ -1,0 +1,635 @@
+{
+  "certifiedAt": "2026-11-15T02:02:11.204Z",
+  "blenderAutorigSmoke": {
+    "characterId": "kai",
+    "masterGlb": "/tmp/kaijax-autorig-cert-MCAsLJ/kai_master.glb",
+    "lod1Glb": "/tmp/kaijax-autorig-cert-MCAsLJ/kai_lod1.glb",
+    "masterTris": 9211,
+    "lod1Tris": 9211,
+    "masterBytes": 3737176,
+    "lod1Bytes": 3737124
+  },
+  "serverPipelineStatus": {
+    "meshyConfigured": true,
+    "blenderAvailable": true,
+    "blenderVersion": "3.4.1",
+    "characters": {
+      "kai": {
+        "p1i": true,
+        "p1g": true,
+        "meshy": true,
+        "multiviewSheet": true
+      },
+      "jax": {
+        "p1i": true,
+        "p1g": true,
+        "meshy": true,
+        "multiviewSheet": true
+      },
+      "kaijax": {
+        "p1i": true,
+        "p1g": true,
+        "meshy": true,
+        "multiviewSheet": true
+      },
+      "boryn": {
+        "p1i": true,
+        "p1g": true,
+        "meshy": true,
+        "multiviewSheet": true
+      },
+      "borax": {
+        "p1i": true,
+        "p1g": true,
+        "meshy": true,
+        "multiviewSheet": true
+      }
+    }
+  },
+  "viteWebSocketErrors": [],
+  "appConsoleErrors": [],
+  "appPageExceptions": [],
+  "studioCaptures": [
+    "p1i_kai_4view_master.png",
+    "p1i_kai_compare_vs_p1g.png",
+    "p1i_jax_4view_master.png",
+    "p1i_jax_compare_vs_p1g.png",
+    "p1i_kaijax_4view_master.png",
+    "p1i_kaijax_compare_vs_p1g.png",
+    "p1i_boryn_4view_master.png",
+    "p1i_boryn_compare_vs_p1g.png",
+    "p1i_borax_4view_master.png",
+    "p1i_borax_compare_vs_p1g.png",
+    "p1i_lineup_5heroes.png"
+  ],
+  "versionSwitchVerification": {
+    "p1gMastered": {
+      "kai": {
+        "status": "ready",
+        "url": "/models/characters/p1g/kai_lod1.glb",
+        "tris": 5761,
+        "bones": 37
+      },
+      "jax": {
+        "status": "ready",
+        "url": "/models/characters/p1g/jax_lod1.glb",
+        "tris": 6135,
+        "bones": 32
+      },
+      "kaijax": {
+        "status": "ready",
+        "url": "/models/characters/p1g/kaijax_lod1.glb",
+        "tris": 7675,
+        "bones": 56
+      },
+      "boryn": {
+        "status": "ready",
+        "url": "/models/characters/p1g/boryn_lod1.glb",
+        "tris": 4590,
+        "bones": 29
+      },
+      "borax": {
+        "status": "ready",
+        "url": "/models/characters/p1g/borax_lod1.glb",
+        "tris": 5285,
+        "bones": 29
+      }
+    },
+    "proceduralFallback": {
+      "kai": {
+        "status": "fallback",
+        "url": null,
+        "tris": 5761,
+        "bones": 37
+      },
+      "jax": {
+        "status": "fallback",
+        "url": null,
+        "tris": 6135,
+        "bones": 32
+      },
+      "kaijax": {
+        "status": "fallback",
+        "url": null,
+        "tris": 7675,
+        "bones": 56
+      },
+      "boryn": {
+        "status": "fallback",
+        "url": null,
+        "tris": 4590,
+        "bones": 29
+      },
+      "borax": {
+        "status": "fallback",
+        "url": null,
+        "tris": 5285,
+        "bones": 29
+      }
+    },
+    "p1iMobileLod1": {
+      "kai": {
+        "status": "ready",
+        "url": "/models/characters/kai_lod1.glb",
+        "tris": 9211,
+        "bones": 37
+      },
+      "jax": {
+        "status": "ready",
+        "url": "/models/characters/jax_lod1.glb",
+        "tris": 9211,
+        "bones": 32
+      },
+      "kaijax": {
+        "status": "ready",
+        "url": "/models/characters/kaijax_lod1.glb",
+        "tris": 10526,
+        "bones": 56
+      },
+      "boryn": {
+        "status": "ready",
+        "url": "/models/characters/boryn_lod1.glb",
+        "tris": 8648,
+        "bones": 29
+      },
+      "borax": {
+        "status": "ready",
+        "url": "/models/characters/borax_lod1.glb",
+        "tris": 9212,
+        "bones": 29
+      }
+    },
+    "p1iMasterRestored": {
+      "kai": {
+        "status": "ready",
+        "url": "/models/characters/kai_lod1.glb",
+        "tris": 9211,
+        "bones": 37
+      },
+      "jax": {
+        "status": "ready",
+        "url": "/models/characters/jax_lod1.glb",
+        "tris": 9211,
+        "bones": 32
+      },
+      "kaijax": {
+        "status": "ready",
+        "url": "/models/characters/kaijax_lod1.glb",
+        "tris": 10526,
+        "bones": 56
+      },
+      "boryn": {
+        "status": "ready",
+        "url": "/models/characters/boryn_lod1.glb",
+        "tris": 8648,
+        "bones": 29
+      },
+      "borax": {
+        "status": "ready",
+        "url": "/models/characters/borax_lod1.glb",
+        "tris": 9212,
+        "bones": 29
+      }
+    }
+  },
+  "gameplaySnapshots": {
+    "titleShowcase": {
+      "activeHero": "kai",
+      "isFused": false,
+      "characterModelVersion": "p1i_reconstructed",
+      "loadedCharacterGlbs": {
+        "kai": {
+          "status": "ready",
+          "url": "/models/characters/kai_lod1.glb",
+          "tris": 9211,
+          "bones": 37
+        },
+        "jax": {
+          "status": "ready",
+          "url": "/models/characters/jax_lod1.glb",
+          "tris": 9211,
+          "bones": 32
+        },
+        "kaijax": {
+          "status": "ready",
+          "url": "/models/characters/kaijax_lod1.glb",
+          "tris": 10526,
+          "bones": 56
+        },
+        "boryn": {
+          "status": "ready",
+          "url": "/models/characters/boryn_lod1.glb",
+          "tris": 8648,
+          "bones": 29
+        },
+        "borax": {
+          "status": "ready",
+          "url": "/models/characters/borax_lod1.glb",
+          "tris": 9212,
+          "bones": 29
+        }
+      },
+      "playerPos": [
+        0,
+        0,
+        8
+      ],
+      "companionPos": [
+        2.2,
+        0,
+        9.5
+      ],
+      "grounded": true,
+      "comboCount": 0,
+      "duoSynergy": 0,
+      "activeFinisher": null,
+      "bufferedAction": null,
+      "aliveEnemies": [
+        {
+          "id": "e-row-1",
+          "kind": "brawler",
+          "hp": 135,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            -3,
+            0,
+            -8
+          ]
+        },
+        {
+          "id": "e-row-2",
+          "kind": "dodger",
+          "hp": 98,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            3.5,
+            0,
+            -12
+          ]
+        },
+        {
+          "id": "e-row-3",
+          "kind": "marksman",
+          "hp": 88,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            0,
+            0,
+            -18
+          ]
+        }
+      ],
+      "characterGlbStatus": {
+        "kai": "ready",
+        "jax": "ready",
+        "kaijax": "ready",
+        "boryn": "ready",
+        "borax": "ready"
+      },
+      "perf": {
+        "fpsEstimate": 0,
+        "onePercentLowFps": 60,
+        "drawCalls": 275,
+        "activeTriangles": 47390,
+        "geometries": 301,
+        "textures": 35,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    },
+    "kaiCombat": {
+      "activeHero": "kai",
+      "isFused": false,
+      "characterModelVersion": "p1i_reconstructed",
+      "loadedCharacterGlbs": {
+        "kai": {
+          "status": "ready",
+          "url": "/models/characters/kai_lod1.glb",
+          "tris": 9211,
+          "bones": 37
+        },
+        "jax": {
+          "status": "ready",
+          "url": "/models/characters/jax_lod1.glb",
+          "tris": 9211,
+          "bones": 32
+        },
+        "kaijax": {
+          "status": "ready",
+          "url": "/models/characters/kaijax_lod1.glb",
+          "tris": 10526,
+          "bones": 56
+        },
+        "boryn": {
+          "status": "ready",
+          "url": "/models/characters/boryn_lod1.glb",
+          "tris": 8648,
+          "bones": 29
+        },
+        "borax": {
+          "status": "ready",
+          "url": "/models/characters/borax_lod1.glb",
+          "tris": 9212,
+          "bones": 29
+        }
+      },
+      "playerPos": [
+        -2.63,
+        0,
+        -5.96
+      ],
+      "companionPos": [
+        -0.76,
+        0,
+        -4.49
+      ],
+      "grounded": true,
+      "comboCount": 0,
+      "duoSynergy": 70,
+      "activeFinisher": null,
+      "bufferedAction": null,
+      "aliveEnemies": [
+        {
+          "id": "e-row-1",
+          "kind": "brawler",
+          "hp": 135,
+          "shieldHp": 0,
+          "state": "windup",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            -3,
+            0,
+            -8
+          ]
+        },
+        {
+          "id": "e-row-2",
+          "kind": "dodger",
+          "hp": 98,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            3.43,
+            0,
+            -11.93
+          ]
+        },
+        {
+          "id": "e-row-3",
+          "kind": "marksman",
+          "hp": 88,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            -0.01,
+            0,
+            -17.95
+          ]
+        }
+      ],
+      "characterGlbStatus": {
+        "kai": "ready",
+        "jax": "ready",
+        "kaijax": "ready",
+        "boryn": "ready",
+        "borax": "ready"
+      },
+      "perf": {
+        "fpsEstimate": 0,
+        "onePercentLowFps": 60,
+        "drawCalls": 254,
+        "activeTriangles": 46764,
+        "geometries": 394,
+        "textures": 35,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    },
+    "jaxSwitch": {
+      "activeHero": "jax",
+      "isFused": false,
+      "characterModelVersion": "p1i_reconstructed",
+      "loadedCharacterGlbs": {
+        "kai": {
+          "status": "ready",
+          "url": "/models/characters/kai_lod1.glb",
+          "tris": 9211,
+          "bones": 37
+        },
+        "jax": {
+          "status": "ready",
+          "url": "/models/characters/jax_lod1.glb",
+          "tris": 9211,
+          "bones": 32
+        },
+        "kaijax": {
+          "status": "ready",
+          "url": "/models/characters/kaijax_lod1.glb",
+          "tris": 10526,
+          "bones": 56
+        },
+        "boryn": {
+          "status": "ready",
+          "url": "/models/characters/boryn_lod1.glb",
+          "tris": 8648,
+          "bones": 29
+        },
+        "borax": {
+          "status": "ready",
+          "url": "/models/characters/borax_lod1.glb",
+          "tris": 9212,
+          "bones": 29
+        }
+      },
+      "playerPos": [
+        -0.79,
+        0.41,
+        -4.65
+      ],
+      "companionPos": [
+        -2.66,
+        0,
+        -6.01
+      ],
+      "grounded": false,
+      "comboCount": 2,
+      "duoSynergy": 98,
+      "activeFinisher": null,
+      "bufferedAction": null,
+      "aliveEnemies": [
+        {
+          "id": "e-row-1",
+          "kind": "brawler",
+          "hp": 27,
+          "shieldHp": 0,
+          "state": "stagger",
+          "wallPinned": false,
+          "juggled": true,
+          "pos": [
+            -3.14,
+            0.49,
+            -8.22
+          ]
+        },
+        {
+          "id": "e-row-2",
+          "kind": "dodger",
+          "hp": 98,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            3.34,
+            0,
+            -11.8
+          ]
+        },
+        {
+          "id": "e-row-3",
+          "kind": "marksman",
+          "hp": 88,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            -0.02,
+            0,
+            -17.86
+          ]
+        }
+      ],
+      "characterGlbStatus": {
+        "kai": "ready",
+        "jax": "ready",
+        "kaijax": "ready",
+        "boryn": "ready",
+        "borax": "ready"
+      },
+      "perf": {
+        "fpsEstimate": 0,
+        "onePercentLowFps": 60,
+        "drawCalls": 309,
+        "activeTriangles": 47190,
+        "geometries": 395,
+        "textures": 35,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    },
+    "kaijaxFusion": {
+      "activeHero": "kaijax",
+      "isFused": true,
+      "characterModelVersion": "p1i_reconstructed",
+      "loadedCharacterGlbs": {
+        "kai": {
+          "status": "ready",
+          "url": "/models/characters/kai_lod1.glb",
+          "tris": 9211,
+          "bones": 37
+        },
+        "jax": {
+          "status": "ready",
+          "url": "/models/characters/jax_lod1.glb",
+          "tris": 9211,
+          "bones": 32
+        },
+        "kaijax": {
+          "status": "ready",
+          "url": "/models/characters/kaijax_lod1.glb",
+          "tris": 10526,
+          "bones": 56
+        },
+        "boryn": {
+          "status": "ready",
+          "url": "/models/characters/boryn_lod1.glb",
+          "tris": 8648,
+          "bones": 29
+        },
+        "borax": {
+          "status": "ready",
+          "url": "/models/characters/borax_lod1.glb",
+          "tris": 9212,
+          "bones": 29
+        }
+      },
+      "playerPos": [
+        -0.85,
+        1.06,
+        -4.97
+      ],
+      "companionPos": [
+        -2.66,
+        0,
+        -6.01
+      ],
+      "grounded": false,
+      "comboCount": 3,
+      "duoSynergy": 98,
+      "activeFinisher": null,
+      "bufferedAction": null,
+      "aliveEnemies": [
+        {
+          "id": "e-row-2",
+          "kind": "dodger",
+          "hp": 98,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            3.1,
+            0,
+            -11.43
+          ]
+        },
+        {
+          "id": "e-row-3",
+          "kind": "marksman",
+          "hp": 88,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            -0.04,
+            0,
+            -17.61
+          ]
+        }
+      ],
+      "characterGlbStatus": {
+        "kai": "ready",
+        "jax": "ready",
+        "kaijax": "ready",
+        "boryn": "ready",
+        "borax": "ready"
+      },
+      "perf": {
+        "fpsEstimate": 0,
+        "onePercentLowFps": 60,
+        "drawCalls": 307,
+        "activeTriangles": 38856,
+        "geometries": 398,
+        "textures": 40,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    }
+  }
+}

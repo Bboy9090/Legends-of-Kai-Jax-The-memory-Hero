@@ -1,0 +1,992 @@
+{
+  "certifiedAt": "2026-11-15T03:11:54.889Z",
+  "captures": [
+    "docs/production/captures/p1j-p1k/01_p1j_before_after_kai_jax_grounding.png",
+    "docs/production/captures/p1j-p1k/02_p1j_kaijax_3tails_action_poses.png",
+    "docs/production/captures/p1j-p1k/03_p1k_modular_kit_6assets.png",
+    "docs/production/captures/p1j-p1k/04a_p1k_ashblock_legacy_street.png",
+    "docs/production/captures/p1j-p1k/04b_p1k_ashblock_reconstructed_street.png",
+    "docs/production/captures/p1j-p1k/05_step01_street_sprint_traversal.png",
+    "docs/production/captures/p1j-p1k/06_step02_rooftop_bloodward_overlook.png",
+    "docs/production/captures/p1j-p1k/07_step03_geometry_attached_skybridge_webswing.png",
+    "docs/production/captures/p1j-p1k/08_step05_syndicate_relay_environmental_takedown.png",
+    "docs/production/captures/p1j-p1k/09_step09_duo_finisher_synchronized.png",
+    "docs/production/captures/p1j-p1k/10_step10_kaijax_3tail_boss_courtyard.png",
+    "docs/production/captures/p1j-p1k/11_mobile_844x390_hud_combat_noclip.png",
+    "docs/production/captures/p1j-p1k/04_p1k_ref_vs_legacy_vs_reconstructed.png"
+  ],
+  "animationGroundingMetrics": {
+    "preUpgradeP1IKai": {
+      "ability_cast": {
+        "duration": 0.75,
+        "minSoleY": -0.0875,
+        "maxSoleY": 0.0003,
+        "worstGroundPenetrationM": 0.0875
+      },
+      "attack_1": {
+        "duration": 0.333,
+        "minSoleY": -0.1201,
+        "maxSoleY": 0.0023,
+        "worstGroundPenetrationM": 0.1201
+      },
+      "attack_2": {
+        "duration": 0.333,
+        "minSoleY": -0.1201,
+        "maxSoleY": 0.0023,
+        "worstGroundPenetrationM": 0.1201
+      },
+      "attack_3": {
+        "duration": 0.5,
+        "minSoleY": -0.1917,
+        "maxSoleY": 0.0023,
+        "worstGroundPenetrationM": 0.1917
+      },
+      "breathing": {
+        "duration": 2.167,
+        "minSoleY": -0.058,
+        "maxSoleY": -0.0191,
+        "worstGroundPenetrationM": 0.058
+      },
+      "defeat": {
+        "duration": 1.083,
+        "minSoleY": -0.3337,
+        "maxSoleY": 0.0049,
+        "worstGroundPenetrationM": 0.3337
+      },
+      "dodge": {
+        "duration": 0.417,
+        "minSoleY": -0.2712,
+        "maxSoleY": 0.0066,
+        "worstGroundPenetrationM": 0.2712
+      },
+      "fall": {
+        "duration": 0.417,
+        "minSoleY": -0.0435,
+        "maxSoleY": 0.0159,
+        "worstGroundPenetrationM": 0.0435
+      },
+      "heavy_strike": {
+        "duration": 0.5,
+        "minSoleY": -0.1917,
+        "maxSoleY": 0.0023,
+        "worstGroundPenetrationM": 0.1917
+      },
+      "hit_reaction": {
+        "duration": 0.417,
+        "minSoleY": -0.0576,
+        "maxSoleY": 0.0003,
+        "worstGroundPenetrationM": 0.0576
+      },
+      "idle": {
+        "duration": 2.167,
+        "minSoleY": -0.0541,
+        "maxSoleY": -0.023,
+        "worstGroundPenetrationM": 0.0541
+      },
+      "jump": {
+        "duration": 0.417,
+        "minSoleY": 0.0034,
+        "maxSoleY": 0.2502,
+        "worstGroundPenetrationM": 0
+      },
+      "landing": {
+        "duration": 0.417,
+        "minSoleY": -0.1405,
+        "maxSoleY": 0.0049,
+        "worstGroundPenetrationM": 0.1405
+      },
+      "parry": {
+        "duration": 0.417,
+        "minSoleY": -0.1062,
+        "maxSoleY": 0.0003,
+        "worstGroundPenetrationM": 0.1062
+      },
+      "roar": {
+        "duration": 0.75,
+        "minSoleY": -0.0875,
+        "maxSoleY": 0.0003,
+        "worstGroundPenetrationM": 0.0875
+      },
+      "run": {
+        "duration": 0.667,
+        "minSoleY": -0.0194,
+        "maxSoleY": 0.2247,
+        "worstGroundPenetrationM": 0.0194
+      },
+      "sprint": {
+        "duration": 0.5,
+        "minSoleY": 0.0256,
+        "maxSoleY": 0.4147,
+        "worstGroundPenetrationM": 0
+      },
+      "victory": {
+        "duration": 2,
+        "minSoleY": -0.0243,
+        "maxSoleY": 0.0249,
+        "worstGroundPenetrationM": 0.0243
+      },
+      "walk": {
+        "duration": 0.958,
+        "minSoleY": -0.0377,
+        "maxSoleY": 0.0245,
+        "worstGroundPenetrationM": 0.0377
+      }
+    },
+    "postUpgradeP1JKai": {
+      "ability_cast": {
+        "duration": 0.75,
+        "minSoleY": 0.0269,
+        "maxSoleY": 0.035,
+        "worstGroundPenetrationM": 0
+      },
+      "attack_1": {
+        "duration": 0.375,
+        "minSoleY": -0.1021,
+        "maxSoleY": 0.0178,
+        "worstGroundPenetrationM": 0.1021
+      },
+      "attack_2": {
+        "duration": 0.375,
+        "minSoleY": -0.0933,
+        "maxSoleY": 0.0178,
+        "worstGroundPenetrationM": 0.0933
+      },
+      "attack_3": {
+        "duration": 0.5,
+        "minSoleY": -0.1045,
+        "maxSoleY": 0.0178,
+        "worstGroundPenetrationM": 0.1045
+      },
+      "breathing": {
+        "duration": 2.083,
+        "minSoleY": 0.0114,
+        "maxSoleY": 0.0198,
+        "worstGroundPenetrationM": 0
+      },
+      "defeat": {
+        "duration": 1.083,
+        "minSoleY": -0.3674,
+        "maxSoleY": 0.0053,
+        "worstGroundPenetrationM": 0.3674
+      },
+      "dodge": {
+        "duration": 0.417,
+        "minSoleY": -0.0971,
+        "maxSoleY": 0.031,
+        "worstGroundPenetrationM": 0.0971
+      },
+      "fall": {
+        "duration": 0.417,
+        "minSoleY": -0.1177,
+        "maxSoleY": -0.0474,
+        "worstGroundPenetrationM": 0.1177
+      },
+      "heavy_strike": {
+        "duration": 0.5,
+        "minSoleY": -0.102,
+        "maxSoleY": 0.0178,
+        "worstGroundPenetrationM": 0.102
+      },
+      "hit_reaction": {
+        "duration": 0.417,
+        "minSoleY": 0.0046,
+        "maxSoleY": 0.0294,
+        "worstGroundPenetrationM": 0
+      },
+      "idle": {
+        "duration": 2.375,
+        "minSoleY": 0.0112,
+        "maxSoleY": 0.0193,
+        "worstGroundPenetrationM": 0
+      },
+      "jump": {
+        "duration": 0.417,
+        "minSoleY": -0.1095,
+        "maxSoleY": 0.131,
+        "worstGroundPenetrationM": 0.1095
+      },
+      "landing": {
+        "duration": 0.417,
+        "minSoleY": 0.0278,
+        "maxSoleY": 0.0411,
+        "worstGroundPenetrationM": 0
+      },
+      "parry": {
+        "duration": 0.417,
+        "minSoleY": -0.0208,
+        "maxSoleY": 0.0309,
+        "worstGroundPenetrationM": 0.0208
+      },
+      "roar": {
+        "duration": 0.75,
+        "minSoleY": 0.0269,
+        "maxSoleY": 0.035,
+        "worstGroundPenetrationM": 0
+      },
+      "run": {
+        "duration": 0.583,
+        "minSoleY": -0.0961,
+        "maxSoleY": 0.05,
+        "worstGroundPenetrationM": 0.0961
+      },
+      "sprint": {
+        "duration": 0.458,
+        "minSoleY": -0.0986,
+        "maxSoleY": 0.0591,
+        "worstGroundPenetrationM": 0.0986
+      },
+      "victory": {
+        "duration": 2,
+        "minSoleY": -0.063,
+        "maxSoleY": -0.0276,
+        "worstGroundPenetrationM": 0.063
+      },
+      "walk": {
+        "duration": 0.875,
+        "minSoleY": -0.1244,
+        "maxSoleY": -0.0149,
+        "worstGroundPenetrationM": 0.1244
+      }
+    },
+    "postUpgradeP1JJax": {
+      "ability_cast": {
+        "duration": 0.75,
+        "minSoleY": 0.0298,
+        "maxSoleY": 0.0377,
+        "worstGroundPenetrationM": 0
+      },
+      "attack_1": {
+        "duration": 0.375,
+        "minSoleY": -0.0959,
+        "maxSoleY": 0.0314,
+        "worstGroundPenetrationM": 0.0959
+      },
+      "attack_2": {
+        "duration": 0.375,
+        "minSoleY": -0.0865,
+        "maxSoleY": 0.0314,
+        "worstGroundPenetrationM": 0.0865
+      },
+      "attack_3": {
+        "duration": 0.5,
+        "minSoleY": -0.0985,
+        "maxSoleY": 0.0314,
+        "worstGroundPenetrationM": 0.0985
+      },
+      "breathing": {
+        "duration": 2.083,
+        "minSoleY": 0.0207,
+        "maxSoleY": 0.0286,
+        "worstGroundPenetrationM": 0
+      },
+      "defeat": {
+        "duration": 1.083,
+        "minSoleY": -0.3654,
+        "maxSoleY": 0.0075,
+        "worstGroundPenetrationM": 0.3654
+      },
+      "dodge": {
+        "duration": 0.417,
+        "minSoleY": -0.0903,
+        "maxSoleY": 0.0342,
+        "worstGroundPenetrationM": 0.0903
+      },
+      "fall": {
+        "duration": 0.417,
+        "minSoleY": -0.1082,
+        "maxSoleY": -0.0353,
+        "worstGroundPenetrationM": 0.1082
+      },
+      "heavy_strike": {
+        "duration": 0.5,
+        "minSoleY": -0.0958,
+        "maxSoleY": 0.0314,
+        "worstGroundPenetrationM": 0.0958
+      },
+      "hit_reaction": {
+        "duration": 0.417,
+        "minSoleY": 0.0184,
+        "maxSoleY": 0.0331,
+        "worstGroundPenetrationM": 0
+      },
+      "idle": {
+        "duration": 2.375,
+        "minSoleY": 0.0205,
+        "maxSoleY": 0.0283,
+        "worstGroundPenetrationM": 0
+      },
+      "jump": {
+        "duration": 0.417,
+        "minSoleY": -0.1003,
+        "maxSoleY": 0.1488,
+        "worstGroundPenetrationM": 0.1003
+      },
+      "landing": {
+        "duration": 0.417,
+        "minSoleY": 0.0308,
+        "maxSoleY": 0.0454,
+        "worstGroundPenetrationM": 0
+      },
+      "parry": {
+        "duration": 0.417,
+        "minSoleY": -0.0079,
+        "maxSoleY": 0.0361,
+        "worstGroundPenetrationM": 0.0079
+      },
+      "roar": {
+        "duration": 0.75,
+        "minSoleY": 0.0298,
+        "maxSoleY": 0.0377,
+        "worstGroundPenetrationM": 0
+      },
+      "run": {
+        "duration": 0.583,
+        "minSoleY": -0.0868,
+        "maxSoleY": 0.0554,
+        "worstGroundPenetrationM": 0.0868
+      },
+      "sprint": {
+        "duration": 0.458,
+        "minSoleY": -0.0926,
+        "maxSoleY": 0.0527,
+        "worstGroundPenetrationM": 0.0926
+      },
+      "victory": {
+        "duration": 2,
+        "minSoleY": -0.0521,
+        "maxSoleY": -0.0156,
+        "worstGroundPenetrationM": 0.0521
+      },
+      "walk": {
+        "duration": 0.875,
+        "minSoleY": -0.1192,
+        "maxSoleY": -0.004,
+        "worstGroundPenetrationM": 0.1192
+      }
+    }
+  },
+  "kaiJaxGroundingMetrics": {
+    "ability_cast": {
+      "duration": 0.75,
+      "minSoleY": 0.0303,
+      "maxSoleY": 0.0407,
+      "worstGroundPenetrationM": 0
+    },
+    "attack_1": {
+      "duration": 0.375,
+      "minSoleY": -0.1143,
+      "maxSoleY": 0.0231,
+      "worstGroundPenetrationM": 0.1143
+    },
+    "attack_2": {
+      "duration": 0.375,
+      "minSoleY": -0.1046,
+      "maxSoleY": 0.0231,
+      "worstGroundPenetrationM": 0.1046
+    },
+    "attack_3": {
+      "duration": 0.5,
+      "minSoleY": -0.1171,
+      "maxSoleY": 0.0231,
+      "worstGroundPenetrationM": 0.1171
+    },
+    "breathing": {
+      "duration": 2.083,
+      "minSoleY": 0.0145,
+      "maxSoleY": 0.0234,
+      "worstGroundPenetrationM": 0
+    },
+    "defeat": {
+      "duration": 1.083,
+      "minSoleY": -0.4079,
+      "maxSoleY": 0.0034,
+      "worstGroundPenetrationM": 0.4079
+    },
+    "dodge": {
+      "duration": 0.417,
+      "minSoleY": -0.1088,
+      "maxSoleY": 0.0384,
+      "worstGroundPenetrationM": 0.1088
+    },
+    "fall": {
+      "duration": 0.417,
+      "minSoleY": -0.1296,
+      "maxSoleY": -0.0504,
+      "worstGroundPenetrationM": 0.1296
+    },
+    "heavy_strike": {
+      "duration": 0.5,
+      "minSoleY": -0.1143,
+      "maxSoleY": 0.0231,
+      "worstGroundPenetrationM": 0.1143
+    },
+    "hit_reaction": {
+      "duration": 0.417,
+      "minSoleY": 0.0087,
+      "maxSoleY": 0.0315,
+      "worstGroundPenetrationM": 0
+    },
+    "idle": {
+      "duration": 2.375,
+      "minSoleY": 0.0142,
+      "maxSoleY": 0.0234,
+      "worstGroundPenetrationM": 0
+    },
+    "jump": {
+      "duration": 0.417,
+      "minSoleY": -0.1209,
+      "maxSoleY": 0.1496,
+      "worstGroundPenetrationM": 0.1209
+    },
+    "landing": {
+      "duration": 0.417,
+      "minSoleY": 0.0283,
+      "maxSoleY": 0.0458,
+      "worstGroundPenetrationM": 0
+    },
+    "parry": {
+      "duration": 0.417,
+      "minSoleY": -0.0205,
+      "maxSoleY": 0.0334,
+      "worstGroundPenetrationM": 0.0205
+    },
+    "roar": {
+      "duration": 0.75,
+      "minSoleY": 0.0303,
+      "maxSoleY": 0.0407,
+      "worstGroundPenetrationM": 0
+    },
+    "run": {
+      "duration": 0.583,
+      "minSoleY": -0.1045,
+      "maxSoleY": 0.0754,
+      "worstGroundPenetrationM": 0.1045
+    },
+    "sprint": {
+      "duration": 0.458,
+      "minSoleY": -0.1101,
+      "maxSoleY": 0.0439,
+      "worstGroundPenetrationM": 0.1101
+    },
+    "victory": {
+      "duration": 2,
+      "minSoleY": -0.0667,
+      "maxSoleY": -0.0271,
+      "worstGroundPenetrationM": 0.0667
+    },
+    "walk": {
+      "duration": 0.875,
+      "minSoleY": -0.1385,
+      "maxSoleY": -0.0163,
+      "worstGroundPenetrationM": 0.1385
+    }
+  },
+  "worldComparison": {
+    "legacyStreet": {
+      "activeHero": "kai",
+      "isFused": false,
+      "characterModelVersion": "p1i_reconstructed",
+      "environmentMode": "legacy",
+      "modularKitLoadedCount": 6,
+      "activeClips": {
+        "kai": "idle",
+        "jax": "idle",
+        "kaijax": "idle"
+      },
+      "kaiJaxSecondaryBones": {
+        "tailBones": 12,
+        "physicalTailChains": 3,
+        "spiderBones": 12,
+        "maneBones": 7
+      },
+      "webTraversal": {
+        "isSwinging": false,
+        "activeWebAnchorId": null,
+        "activeWebAttachmentType": null,
+        "anchorsTotal": 7,
+        "allAnchorsGeometryAttached": true
+      },
+      "environmentalTakedownsCount": 0,
+      "loadedCharacterGlbs": {
+        "kai": {
+          "status": "ready",
+          "url": "/models/characters/kai_lod1.glb",
+          "tris": 9211,
+          "bones": 37
+        },
+        "jax": {
+          "status": "ready",
+          "url": "/models/characters/jax_lod1.glb",
+          "tris": 9211,
+          "bones": 32
+        },
+        "kaijax": {
+          "status": "ready",
+          "url": "/models/characters/kaijax_lod1.glb",
+          "tris": 10526,
+          "bones": 56
+        },
+        "boryn": {
+          "status": "ready",
+          "url": "/models/characters/boryn_lod1.glb",
+          "tris": 8648,
+          "bones": 29
+        },
+        "borax": {
+          "status": "ready",
+          "url": "/models/characters/borax_lod1.glb",
+          "tris": 9212,
+          "bones": 29
+        }
+      },
+      "playerPos": [
+        0,
+        0,
+        13.5
+      ],
+      "companionPos": [
+        1.91,
+        0,
+        14.83
+      ],
+      "grounded": true,
+      "comboCount": 0,
+      "duoSynergy": 30,
+      "activeFinisher": null,
+      "bufferedAction": null,
+      "aliveEnemies": [
+        {
+          "id": "e-row-1",
+          "kind": "brawler",
+          "hp": 135,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            -2.96,
+            0,
+            -7.7
+          ]
+        },
+        {
+          "id": "e-row-2",
+          "kind": "dodger",
+          "hp": 98,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            3.44,
+            0,
+            -11.59
+          ]
+        },
+        {
+          "id": "e-row-3",
+          "kind": "marksman",
+          "hp": 88,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            0,
+            0,
+            -18
+          ]
+        }
+      ],
+      "characterGlbStatus": {
+        "kai": "ready",
+        "jax": "ready",
+        "kaijax": "ready",
+        "boryn": "ready",
+        "borax": "ready"
+      },
+      "perf": {
+        "fpsEstimate": 0,
+        "onePercentLowFps": 46,
+        "drawCalls": 277,
+        "activeTriangles": 47424,
+        "geometries": 427,
+        "textures": 35,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    },
+    "reconstructedStreet": {
+      "activeHero": "kai",
+      "isFused": false,
+      "characterModelVersion": "p1i_reconstructed",
+      "environmentMode": "reconstructed",
+      "modularKitLoadedCount": 6,
+      "activeClips": {
+        "kai": "idle",
+        "jax": "idle",
+        "kaijax": "idle"
+      },
+      "kaiJaxSecondaryBones": {
+        "tailBones": 12,
+        "physicalTailChains": 3,
+        "spiderBones": 12,
+        "maneBones": 7
+      },
+      "webTraversal": {
+        "isSwinging": false,
+        "activeWebAnchorId": null,
+        "activeWebAttachmentType": null,
+        "anchorsTotal": 7,
+        "allAnchorsGeometryAttached": true
+      },
+      "environmentalTakedownsCount": 0,
+      "loadedCharacterGlbs": {
+        "kai": {
+          "status": "ready",
+          "url": "/models/characters/kai_lod1.glb",
+          "tris": 9211,
+          "bones": 37
+        },
+        "jax": {
+          "status": "ready",
+          "url": "/models/characters/jax_lod1.glb",
+          "tris": 9211,
+          "bones": 32
+        },
+        "kaijax": {
+          "status": "ready",
+          "url": "/models/characters/kaijax_lod1.glb",
+          "tris": 10526,
+          "bones": 56
+        },
+        "boryn": {
+          "status": "ready",
+          "url": "/models/characters/boryn_lod1.glb",
+          "tris": 8648,
+          "bones": 29
+        },
+        "borax": {
+          "status": "ready",
+          "url": "/models/characters/borax_lod1.glb",
+          "tris": 9212,
+          "bones": 29
+        }
+      },
+      "playerPos": [
+        0,
+        0,
+        13.5
+      ],
+      "companionPos": [
+        1.91,
+        0,
+        14.83
+      ],
+      "grounded": true,
+      "comboCount": 0,
+      "duoSynergy": 30,
+      "activeFinisher": null,
+      "bufferedAction": null,
+      "aliveEnemies": [
+        {
+          "id": "e-row-1",
+          "kind": "brawler",
+          "hp": 135,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            -2.88,
+            0,
+            -7.16
+          ]
+        },
+        {
+          "id": "e-row-2",
+          "kind": "dodger",
+          "hp": 98,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            3.34,
+            0,
+            -10.85
+          ]
+        },
+        {
+          "id": "e-row-3",
+          "kind": "marksman",
+          "hp": 88,
+          "shieldHp": 0,
+          "state": "chase",
+          "wallPinned": false,
+          "juggled": false,
+          "pos": [
+            0,
+            0,
+            -18
+          ]
+        }
+      ],
+      "characterGlbStatus": {
+        "kai": "ready",
+        "jax": "ready",
+        "kaijax": "ready",
+        "boryn": "ready",
+        "borax": "ready"
+      },
+      "perf": {
+        "fpsEstimate": 0,
+        "onePercentLowFps": 46,
+        "drawCalls": 322,
+        "activeTriangles": 65224,
+        "geometries": 433,
+        "textures": 47,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    }
+  },
+  "route12StepResults": [
+    {
+      "step": "1 & 2 — Load Reconstructed District & Traverse/Sprint Street",
+      "passed": true,
+      "metrics": {
+        "modularKitLoadedCount": 6,
+        "playerPos": [
+          0,
+          0,
+          2.13
+        ],
+        "kaiClip": "sprint",
+        "drawCalls": 319,
+        "activeTriangles": 64874
+      }
+    },
+    {
+      "step": "3 — Climb / Zip to Elevated Rooftop Perch (Bloodward Loft Overlook)",
+      "passed": true,
+      "metrics": {
+        "rooftopPos": [
+          14,
+          3.3,
+          -28
+        ],
+        "zipLaunch": {
+          "velY": 8.8,
+          "anchorId": "anchor-3",
+          "attachmentType": "skybridge_truss_girder"
+        }
+      }
+    },
+    {
+      "step": "4 — Geometry-Attached Steel Skybridge Web Swing",
+      "passed": true,
+      "metrics": {
+        "isSwinging": true,
+        "activeWebAnchorId": "anchor-0",
+        "activeWebAttachmentType": "skybridge_truss_girder",
+        "anchorsTotal": 7,
+        "allAnchorsGeometryAttached": true
+      }
+    },
+    {
+      "step": "5 — Enter 3-Enemy Free-Flow Encounter & Chain Combo",
+      "passed": true,
+      "metrics": {
+        "initialEnemies": 3,
+        "comboCount": 2,
+        "postDiagCombo": 2
+      }
+    },
+    {
+      "step": "6 — Interactive Syndicate Arc Relay Environmental Takedown",
+      "passed": true,
+      "metrics": {
+        "ok": true,
+        "count": 1
+      }
+    },
+    {
+      "step": "7 — Perfect Parry & Counterattack",
+      "passed": true,
+      "metrics": {
+        "beforeParries": 0,
+        "parries": 1,
+        "counterOpen": true
+      }
+    },
+    {
+      "step": "8 — Web Pull & Surface Wall Pin into Aerial Combo",
+      "passed": true,
+      "metrics": {
+        "snaredAfterPull": true,
+        "wallPins": 0,
+        "airborne": true,
+        "juggled": false
+      }
+    },
+    {
+      "step": "9 — Companion Switch/Assist & Jax Storm-Step Mobility",
+      "passed": true,
+      "metrics": {
+        "activeHero": "jax",
+        "velMag": 16.5,
+        "velY": 3.6,
+        "companionDist": 4.35
+      }
+    },
+    {
+      "step": "10 — Synchronized Duo Finisher & Camera Recovery",
+      "passed": true,
+      "metrics": {
+        "accepted": true,
+        "finisherId": "thunderweb-execution",
+        "used": 1
+      }
+    },
+    {
+      "step": "11 & 12 — Save to Slot, Full Browser Reload & World-State Restoration",
+      "passed": true,
+      "metrics": {
+        "missionCompleted": true,
+        "fusionUnlocked": true,
+        "rescuedCivilians": 0,
+        "memorySiteReconstructed": true,
+        "alleyGateOpen": true,
+        "modularKitLoadedCount": 6,
+        "environmentMode": "reconstructed"
+      }
+    }
+  ],
+  "combat9StepResults": [
+    {
+      "step": "1 — Movement & Grounded Sprinting",
+      "passed": true,
+      "kaiClip": "sprint",
+      "playerPos": [
+        0,
+        0,
+        2.13
+      ]
+    },
+    {
+      "step": "2 — 3-Enemy Free-Flow Encounter & Light/Heavy Combo",
+      "passed": true,
+      "comboCount": 2
+    },
+    {
+      "step": "3 — Perfect Parry & Counterattack",
+      "passed": true,
+      "parryCount": 1,
+      "counterWindowOpened": true
+    },
+    {
+      "step": "4 — Web Pull / Wall Pin into Aerial Launcher & Air Combo",
+      "passed": true,
+      "metrics": {
+        "snaredAfterPull": true,
+        "wallPins": 0,
+        "airborne": true,
+        "juggled": false
+      }
+    },
+    {
+      "step": "5 — Jax Switch, Companion Assist & Storm-Step Mobility",
+      "passed": true,
+      "metrics": {
+        "activeHero": "jax",
+        "velMag": 16.5,
+        "velY": 3.6,
+        "companionDist": 4.35
+      }
+    },
+    {
+      "step": "6 — Duo Synergy & Synchronized Duo Finisher",
+      "passed": true,
+      "metrics": {
+        "accepted": true,
+        "finisherId": "thunderweb-execution",
+        "used": 1
+      }
+    },
+    {
+      "step": "7 — Kai-Jax 3-Tail Fusion Awakening & Secondary Bone Verification",
+      "passed": true,
+      "metrics": {
+        "isFused": true,
+        "activeHero": "kaijax",
+        "stage": 4,
+        "gateOpen": true,
+        "memoryReconstructed": true,
+        "kaiJaxBones": {
+          "tailBones": 12,
+          "physicalTailChains": 3,
+          "spiderBones": 12,
+          "maneBones": 7
+        }
+      }
+    },
+    {
+      "step": "8 — Mission 1 Boss Victory & Progression Unlock",
+      "passed": true,
+      "metrics": {
+        "missionCompleted": true,
+        "isVictory": true
+      }
+    },
+    {
+      "step": "9 — Save Persistence & Reload Integrity",
+      "passed": true,
+      "metrics": {
+        "missionCompleted": true,
+        "fusionUnlocked": true,
+        "rescuedCivilians": 0,
+        "memorySiteReconstructed": true,
+        "alleyGateOpen": true,
+        "modularKitLoadedCount": 6,
+        "environmentMode": "reconstructed"
+      }
+    }
+  ],
+  "legacyModeRegression": {
+    "passed": true,
+    "modeDuringTest": "legacy",
+    "alivePatrolEnemies": 5,
+    "anchorsValid": true
+  },
+  "mobile844x390HudAndPerf": {
+    "passed": true,
+    "viewport": [
+      844,
+      390
+    ],
+    "visibleButtonCount": 17,
+    "clippedButtons": [],
+    "highPresetPerf": {
+      "fpsEstimate": 0,
+      "onePercentLowFps": 60,
+      "drawCalls": 310,
+      "activeTriangles": 58992,
+      "geometries": 544,
+      "textures": 47,
+      "adaptiveScaleApplied": false,
+      "isSoftwareGl": true
+    },
+    "mobileLod1Perf": {
+      "kaiLod1Tris": 9211,
+      "jaxLod1Tris": 9211,
+      "drawCalls": 310,
+      "activeTriangles": 58992
+    }
+  },
+  "runtimeErrors": {
+    "viteWebSocketErrors": [],
+    "consoleErrors": [],
+    "pageExceptions": []
+  }
+}

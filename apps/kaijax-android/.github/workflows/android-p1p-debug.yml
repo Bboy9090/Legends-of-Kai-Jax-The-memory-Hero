@@ -1,0 +1,143 @@
+name: Android Debug CI (P1-P Vertical Slice)
+
+on:
+  push:
+    branches:
+      - "integration/p1p-ai-studio-source"
+  pull_request:
+    branches:
+      - "main"
+      - "integration/p1p-ai-studio-source"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-p1p-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-debug-build:
+    name: Verify Source, Build & Debug APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout exact commit without unpinned external actions
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          git clone --no-checkout "https://github.com/${REPOSITORY}.git" source
+          cd source
+          git checkout --detach "${COMMIT_SHA}"
+          test "$(git rev-parse HEAD)" = "${COMMIT_SHA}"
+
+      - name: Configure pinned JDK 21 and Node 22 toolchain
+        run: |
+          set -euo pipefail
+          test -n "${JAVA_HOME_21_X64:-}"
+          test -x "${JAVA_HOME_21_X64}/bin/java"
+          echo "JAVA_HOME=${JAVA_HOME_21_X64}" >> "${GITHUB_ENV}"
+          echo "${JAVA_HOME_21_X64}/bin" >> "${GITHUB_PATH}"
+          node --version
+          npm --version
+
+      - name: Ensure pinned Android SDK platform 36 and build-tools 36.0.0
+        run: |
+          set -euo pipefail
+          export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          export ANDROID_SDK_ROOT="${ANDROID_HOME}"
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+          echo "ANDROID_SDK_ROOT=${ANDROID_HOME}" >> "${GITHUB_ENV}"
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          test -x "${SDKMANAGER}"
+          yes | "${SDKMANAGER}" --licenses >/dev/null || true
+          "${SDKMANAGER}" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+          echo "${ANDROID_HOME}/platform-tools" >> "${GITHUB_PATH}"
+          echo "${ANDROID_HOME}/build-tools/36.0.0" >> "${GITHUB_PATH}"
+
+      - name: Verify P1-P SHA-256 checkpoint integrity
+        working-directory: source
+        run: |
+          set -euo pipefail
+          if [ -f "data/checkpoints/p1p-certified/SHA256SUMS.txt" ]; then
+            sha256sum -c data/checkpoints/p1p-certified/SHA256SUMS.txt
+          else
+            sha256sum -c data/checkpoints/p1n-certified/SHA256SUMS.txt
+          fi
+
+      - name: Install dependencies (reproducible lockfile order)
+        working-directory: source
+        run: |
+          set -euo pipefail
+          if [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f bun.lock ] && command -v bun >/dev/null 2>&1; then
+            bun install --frozen-lockfile
+          else
+            npm install
+          fi
+
+      - name: Run TypeScript, unit tests, GLB, world & save regression checks
+        working-directory: source
+        run: |
+          set -euo pipefail
+          npm run lint
+          npm test
+          node scripts/validate-character-glbs.mjs
+          npx tsx scripts/validate-p1p-world-and-saves.mjs
+
+      - name: Build Vite bundle and sync Capacitor 8 Android assets
+        working-directory: source
+        run: |
+          set -euo pipefail
+          npm run build
+          npx cap sync android
+          CHAR_SYNCED="$(find android/app/src/main/assets/public/models/characters -maxdepth 1 -name '*.glb' | wc -l)"
+          WORLD_SYNCED="$(find android/app/src/main/assets/public/models/environments/ashblock -maxdepth 1 -name '*.glb' | wc -l)"
+          echo "Synced Character GLBs: ${CHAR_SYNCED} | Synced Ashblock GLBs: ${WORLD_SYNCED}"
+          test "${CHAR_SYNCED}" -eq 10
+          test "${WORLD_SYNCED}" -eq 12
+
+      - name: Compile Android Debug APK (Gradle 8.14.3 / AGP 8.13.0)
+        working-directory: source/android
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace --no-daemon
+          test -s app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Verify APK signature, embedded assets, and SHA-256
+        working-directory: source
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p release-ci
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          cp "${APK}" release-ci/Legends-of-Kai-Jax-p1p-debug.apk
+          apksigner verify --verbose --print-certs release-ci/Legends-of-Kai-Jax-p1p-debug.apk | tee release-ci/apksigner-verify.txt
+          unzip -l release-ci/Legends-of-Kai-Jax-p1p-debug.apk | grep -E "models/characters/.*\.glb|models/environments/ashblock/|ashblock_kit_manifest\.json|capacitor\.config\.json" | tee release-ci/apk-embedded-assets.txt
+          CHAR_IN_APK="$(grep -c "assets/public/models/characters/.*\.glb$" release-ci/apk-embedded-assets.txt || true)"
+          WORLD_IN_APK="$(grep -c "assets/public/models/environments/ashblock/.*\.glb$" release-ci/apk-embedded-assets.txt || true)"
+          test "${CHAR_IN_APK}" -ge 10
+          test "${WORLD_IN_APK}" -ge 12
+          sha256sum release-ci/Legends-of-Kai-Jax-p1p-debug.apk | tee release-ci/SHA256SUMS.txt
+          printf 'source_sha=%s\nartifact_kind=DEBUG_CI_QA_ONLY\nrelease_signed=false\nstore_approved=false\nphysical_device_qualified=false\n' "${EXPECTED_SHA}" > release-ci/QA-QUALIFICATION.txt
+          cat release-ci/QA-QUALIFICATION.txt
+
+      - name: Upload Debug APK CI artifacts
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: kai-jax-p1p-debug-apk
+          path: |
+            source/release-ci/Legends-of-Kai-Jax-p1p-debug.apk
+            source/release-ci/SHA256SUMS.txt
+            source/release-ci/apksigner-verify.txt
+            source/release-ci/apk-embedded-assets.txt
+            source/release-ci/QA-QUALIFICATION.txt
+          retention-days: 14
+          if-no-files-found: error

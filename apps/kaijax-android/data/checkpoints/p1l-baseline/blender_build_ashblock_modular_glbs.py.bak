@@ -1,0 +1,534 @@
+#!/usr/bin/env python3
+"""
+OPERATION KAI-JAX — P1-K WAVE 1: ASHBLOCK HEIGHTS MODULAR .GLB ENVIRONMENT KIT COMPILER
+Headless Blender 3.4.1 Asset Pipeline
+
+Generates 6 modular, UV-mapped, PBR-textured, mobile-budget .glb architectural & interactive kit pieces
+governed by the official Visual Library sheets:
+  - d438c610.png: ASHBLOCK HEIGHTS (weathered tenements, corrugated rooftop shanties, wooden water tower,
+                  steel truss pedestrian skybridges, red street-market awnings)
+  - d2fb286b.png: BLOODWARD LOFT (Boryn's rooftop corrugated dojo sanctuary, makiwara posts, warm interior)
+  - f9d37a6e.png: THE RAGING CITY (Beast-Kin market stalls, viaduct steelwork, rooftop silhouettes)
+  - e5b27b30.png: FANG SYNDICATE STRONGHOLD (high-voltage magenta/crimson Syndicate relay pylons)
+
+Outputs to: /app/applet/public/models/environments/ashblock/
+"""
+
+import hashlib
+import json
+import math
+from pathlib import Path
+
+import bmesh
+import bpy
+import mathutils
+import numpy as np
+
+for _alias, _builtin in [
+    ("bool", bool),
+    ("int", int),
+    ("float", float),
+    ("complex", complex),
+    ("object", object),
+    ("str", str),
+]:
+    if not hasattr(np, _alias):
+        setattr(np, _alias, _builtin)
+
+OUT_DIR = Path("/app/applet/public/models/environments/ashblock")
+OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def make_atlas_images():
+    """
+    Synthesizes a 512x512 4x4 PBR material atlas (BaseColor + Emissive) for Ashblock Heights:
+      Row 0 (bottom in Blender V=0..0.25): [0] Weathered Ochre Brick | [1] Rust-Red Tenement Brick | [2] Dark Concrete Cornice | [3] Rusted Corrugated Iron
+      Row 1 (V=0.25..0.50):                [0] Riveted Structural Steel | [1] Weathered Stave Wood | [2] Dojo Tatami/Timber | [3] Crimson Awning / Banner
+      Row 2 (V=0.50..0.75):                [0] Warm Lit Tenement Window | [1] Cool Dusk Glass Window | [2] Syndicate Warning Metal | [3] Syndicate Arc Coil (Cyan/Magenta)
+      Row 3 (V=0.75..1.00):                [0] Rope Makiwara Wrap | [1] Crate Stamped Wood | [2] Warm Lantern Core | [3] Web-Anchor Beacon Ring
+    """
+    size = 512
+    tile = size // 4
+    yy, xx = np.mgrid[0:size, 0:size]
+    row = yy // tile
+    col = xx // tile
+    u = (xx % tile) / float(tile)
+    v = (yy % tile) / float(tile)
+
+    noise = np.sin(xx * 12.9898 + yy * 78.233) * 43758.5453
+    noise = noise - np.floor(noise)
+
+    base = np.zeros((size, size, 4), dtype=np.float32)
+    base[:, :, 3] = 1.0
+    emis = np.zeros((size, size, 4), dtype=np.float32)
+    emis[:, :, 3] = 1.0
+
+    def set_tile(r, c, rgb, em=(0.0, 0.0, 0.0), pat=None):
+        mask = (row == r) & (col == c)
+        for ch in range(3):
+            val = rgb[ch] + (noise - 0.5) * 0.06
+            if pat is not None:
+                val = val * pat
+            base[mask, ch] = np.clip(val[mask], 0.02, 1.0)
+            emis[mask, ch] = em[ch]
+
+    # Brick mortar pattern
+    brick_row = np.floor(v * 10.0)
+    brick_u = (u * 5.0 + (brick_row % 2.0) * 0.5) % 1.0
+    brick_v = (v * 10.0) % 1.0
+    mortar = np.where((brick_u < 0.07) | (brick_v < 0.10), 0.72, 1.0) - v * 0.10
+
+    # Corrugated iron ribs
+    corrug = 0.84 + 0.18 * np.sin(u * math.pi * 24.0)
+
+    # Steel truss plate rivets
+    steel_pat = 0.88 + 0.10 * np.cos(u * math.pi * 8.0) * np.cos(v * math.pi * 8.0)
+
+    # Wood staves
+    stave_pat = 0.85 + 0.15 * np.sin(u * math.pi * 18.0)
+
+    # Window mullion panes
+    win_frame = np.where((u < 0.10) | (u > 0.90) | (v < 0.10) | (v > 0.90) | (np.abs(u - 0.5) < 0.04) | (np.abs(v - 0.5) < 0.04), 0.22, 1.0)
+
+    set_tile(0, 0, (0.48, 0.34, 0.24), pat=mortar)       # Weathered Ochre Brick
+    set_tile(0, 1, (0.44, 0.23, 0.19), pat=mortar)       # Rust-Red Tenement Brick
+    set_tile(0, 2, (0.28, 0.27, 0.29), pat=steel_pat)    # Concrete Cornice / Trim
+    set_tile(0, 3, (0.42, 0.24, 0.17), pat=corrug)       # Rusted Corrugated Sheet
+
+    set_tile(1, 0, (0.20, 0.23, 0.28), pat=steel_pat)    # Riveted Structural Steel
+    set_tile(1, 1, (0.36, 0.25, 0.17), pat=stave_pat)    # Watertower Stave Wood
+    set_tile(1, 2, (0.46, 0.36, 0.23), pat=stave_pat)    # Bloodward Dojo Timber/Mat
+    set_tile(1, 3, (0.62, 0.15, 0.14), pat=corrug)       # Crimson Market Awning / Crest
+
+    set_tile(2, 0, (0.95, 0.68, 0.32), em=(0.88, 0.52, 0.18), pat=win_frame)  # Warm Lit Window
+    set_tile(2, 1, (0.20, 0.28, 0.40), em=(0.04, 0.07, 0.12), pat=win_frame)  # Cool Dusk Window
+    set_tile(2, 2, (0.16, 0.15, 0.22), pat=steel_pat)                         # Syndicate Dark Armor
+    set_tile(2, 3, (0.32, 0.82, 0.98), em=(0.28, 0.78, 1.00), pat=corrug)     # High-Voltage Arc Coil
+
+    set_tile(3, 0, (0.64, 0.52, 0.34), pat=corrug)                            # Rope Makiwara Wrap
+    set_tile(3, 1, (0.42, 0.30, 0.19), pat=steel_pat)                         # Market Supply Crate
+    set_tile(3, 2, (1.00, 0.76, 0.38), em=(1.00, 0.66, 0.24))                 # Warm Lantern Core
+    set_tile(3, 3, (0.76, 0.48, 1.00), em=(0.68, 0.38, 0.98))                 # Web-Anchor Structural Collar
+
+    # mask emissive on window frames so mullions stay dark
+    for wc, em_rgb in [(0, (0.88, 0.52, 0.18)), (1, (0.04, 0.07, 0.12))]:
+        m = (row == 2) & (col == wc)
+        for ch in range(3):
+            emis[m, ch] = em_rgb[ch] * np.where(win_frame[m] < 0.5, 0.0, 1.0)
+
+    img_base = bpy.data.images.new("ashblock_atlas_base", width=size, height=size, alpha=False)
+    img_base.pixels.foreach_set(base.ravel())
+    img_base.pack()
+
+    img_emis = bpy.data.images.new("ashblock_atlas_emis", width=size, height=size, alpha=False)
+    img_emis.pixels.foreach_set(emis.ravel())
+    img_emis.pack()
+
+    mat = bpy.data.materials.new(name="Ashblock_Modular_PBR")
+    mat.use_nodes = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+
+    out_node = nt.nodes.new("ShaderNodeOutputMaterial")
+    bsdf = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    bsdf.inputs["Roughness"].default_value = 0.78
+    bsdf.inputs["Metallic"].default_value = 0.18
+
+    tex_base = nt.nodes.new("ShaderNodeTexImage")
+    tex_base.image = img_base
+
+    tex_emis = nt.nodes.new("ShaderNodeTexImage")
+    tex_emis.image = img_emis
+
+    nt.links.new(tex_base.outputs["Color"], bsdf.inputs["Base Color"])
+    if "Emission" in bsdf.inputs:
+        nt.links.new(tex_emis.outputs["Color"], bsdf.inputs["Emission"])
+    elif "Emission Color" in bsdf.inputs:
+        nt.links.new(tex_emis.outputs["Color"], bsdf.inputs["Emission Color"])
+    if "Emission Strength" in bsdf.inputs:
+        bsdf.inputs["Emission Strength"].default_value = 1.35
+
+    nt.links.new(bsdf.outputs["BSDF"], out_node.inputs["Surface"])
+    return mat
+
+
+def add_box(bm, uv_layer, center, size, tile_rc, rot_euler=(0.0, 0.0, 0.0)):
+    """Adds a box in Blender Z-up coordinates (X=width, Y=depth, Z=height) mapped into the 4x4 UV tile."""
+    ret = bmesh.ops.create_cube(bm, size=1.0)
+    verts = ret["verts"]
+    scale_mat = (
+        mathutils.Matrix.Scale(size[0], 4, (1, 0, 0))
+        @ mathutils.Matrix.Scale(size[1], 4, (0, 1, 0))
+        @ mathutils.Matrix.Scale(size[2], 4, (0, 0, 1))
+    )
+    rot_mat = mathutils.Euler(rot_euler, "XYZ").to_matrix().to_4x4()
+    trans_mat = mathutils.Matrix.Translation(center)
+    xf = trans_mat @ rot_mat @ scale_mat
+
+    bmesh.ops.transform(bm, matrix=xf, verts=verts)
+
+    r, c = tile_rc
+    u0, v0 = c * 0.25 + 0.015, r * 0.25 + 0.015
+    span = 0.22
+    vert_set = set(verts)
+    for face in bm.faces:
+        if all(v in vert_set for v in face.verts):
+            n = face.normal
+            for loop in face.loops:
+                co = loop.vert.co
+                if abs(n.z) > 0.7:
+                    lu = (co.x * 0.25) % 1.0
+                    lv = (co.y * 0.25) % 1.0
+                elif abs(n.x) > 0.7:
+                    lu = (co.y * 0.25) % 1.0
+                    lv = (co.z * 0.25) % 1.0
+                else:
+                    lu = (co.x * 0.25) % 1.0
+                    lv = (co.z * 0.25) % 1.0
+                loop[uv_layer].uv = (u0 + lu * span, v0 + lv * span)
+
+
+def add_cylinder(bm, uv_layer, center, radius_bottom, radius_top, depth_z, segs, tile_rc, rot_euler=(0.0, 0.0, 0.0)):
+    ret = bmesh.ops.create_cone(
+        bm,
+        cap_ends=True,
+        cap_tris=True,
+        segments=segs,
+        radius1=radius_bottom,
+        radius2=radius_top,
+        depth=depth_z,
+    )
+    verts = ret["verts"]
+    rot_mat = mathutils.Euler(rot_euler, "XYZ").to_matrix().to_4x4()
+    xf = mathutils.Matrix.Translation(center) @ rot_mat
+    bmesh.ops.transform(bm, matrix=xf, verts=verts)
+
+    r, c = tile_rc
+    u0, v0 = c * 0.25 + 0.015, r * 0.25 + 0.015
+    span = 0.22
+    vert_set = set(verts)
+    for face in bm.faces:
+        if all(v in vert_set for v in face.verts):
+            for loop in face.loops:
+                co = loop.vert.co
+                ang = (math.atan2(co.y - center[1], co.x - center[0]) / (2.0 * math.pi)) + 0.5
+                vz = ((co.z - (center[2] - depth_z * 0.5)) / max(0.05, depth_z)) % 1.0
+                loop[uv_layer].uv = (u0 + (ang % 1.0) * span, v0 + vz * span)
+
+
+def finalize_and_export_glb(name: str, bm: bmesh.types.BMesh, mat, out_filename: str):
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    mesh = bpy.data.meshes.new(name + "_Mesh")
+    bm.to_mesh(mesh)
+    bm.free()
+
+    mesh.materials.append(mat)
+    for poly in mesh.polygons:
+        poly.use_smooth = False
+
+    # Remove any prior scene mesh objects, keep shared material & packed atlas images
+    for obj in list(bpy.data.objects):
+        bpy.data.objects.remove(obj, do_unlink=True)
+
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    bpy.context.view_layer.objects.active = obj
+    obj.select_set(True)
+
+    out_path = OUT_DIR / out_filename
+    bpy.context.scene.render.image_settings.quality = 86
+    bpy.ops.export_scene.gltf(
+        filepath=str(out_path),
+        use_selection=True,
+        export_format="GLB",
+        export_yup=True,
+        export_texcoords=True,
+        export_normals=True,
+        export_materials="EXPORT",
+        export_image_format="JPEG",
+    )
+
+    mesh.calc_loop_triangles()
+    tri_count = len(mesh.loop_triangles)
+    v_count = len(mesh.vertices)
+    raw = out_path.read_bytes()
+    sha256 = hashlib.sha256(raw).hexdigest()
+
+    xs = [v.co.x for v in mesh.vertices]
+    ys = [v.co.y for v in mesh.vertices]
+    zs = [v.co.z for v in mesh.vertices]
+
+    info = {
+        "assetId": name,
+        "file": out_filename,
+        "bytes": len(raw),
+        "sha256": sha256,
+        "vertexCount": v_count,
+        "triangleCount": tri_count,
+        "dimensionsMeters": {
+            "widthX": round(max(xs) - min(xs), 3),
+            "heightY": round(max(zs) - min(zs), 3),
+            "depthZ": round(max(ys) - min(ys), 3),
+        },
+    }
+    print(f"[ASHBLOCK_GLB] {out_filename:36s} | tris={tri_count:4d} | {(len(raw)/1024.0):6.1f} KB")
+    return info
+
+
+def build_tenement_facade(mat):
+    """
+    Multi-story Ashblock Heights residential tenement tower (10m x 16m x 9m, origin at ground center Z=0):
+      - Lower rust-brick podium, upper weathered ochre brick stories, concrete floor belt courses & stepped cornice
+      - Recessed warm & cool windows across front/side faces
+      - Exterior iron fire-escape balcony landings + AC units
+      - Rooftop corrugated shanty shed + parapet wall (matching d438c610.png!)
+    """
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.new("UVMap")
+
+    # Lower podium (0..4.2m) & upper main mass (4.2..15.6m)
+    add_box(bm, uv, (0.0, 0.0, 2.1), (10.0, 9.0, 4.2), (0, 1))
+    add_box(bm, uv, (0.0, 0.0, 9.9), (9.7, 8.7, 11.4), (0, 0))
+
+    # Concrete belt ledges & crown parapet cornice
+    for hz in (4.2, 8.0, 11.8, 15.65):
+        add_box(bm, uv, (0.0, 0.0, hz), (10.25, 9.25, 0.34), (0, 2))
+    # Rooftop parapet walls
+    add_box(bm, uv, (0.0, -4.45, 16.1), (10.1, 0.32, 0.65), (0, 2))
+    add_box(bm, uv, (0.0, 4.45, 16.1), (10.1, 0.32, 0.65), (0, 2))
+    add_box(bm, uv, (-4.9, 0.0, 16.1), (0.32, 8.9, 0.65), (0, 2))
+    add_box(bm, uv, (4.9, 0.0, 16.1), (0.32, 8.9, 0.65), (0, 2))
+
+    # Front (-Y in Blender -> +Z in glTF!) & Rear (+Y) window bays + sills + AC units
+    for side_y in (-4.38, 4.38):
+        s_dir = -1.0 if side_y < 0 else 1.0
+        for floor_i, fz in enumerate((2.4, 6.1, 9.9, 13.6)):
+            for col_i, wx in enumerate((-3.1, 0.0, 3.1)):
+                is_warm = ((floor_i + col_i) % 2 == 0)
+                win_tile = (2, 0) if is_warm else (2, 1)
+                add_box(bm, uv, (wx, side_y + s_dir * 0.04, fz), (1.35, 0.14, 1.85), win_tile)
+                add_box(bm, uv, (wx, side_y + s_dir * 0.14, fz - 0.98), (1.55, 0.28, 0.16), (0, 2))
+                if (floor_i + col_i) % 3 == 0:
+                    # Exterior AC condenser unit under window
+                    add_box(bm, uv, (wx + 0.35, side_y + s_dir * 0.32, fz - 1.28), (0.68, 0.46, 0.48), (1, 0))
+
+    # Exterior iron fire-escape balconies + diagonal stair flights on front face (-Y)
+    for fz in (5.1, 8.9, 12.7):
+        add_box(bm, uv, (1.55, -4.95, fz), (3.6, 1.05, 0.14), (1, 0))
+        add_box(bm, uv, (1.55, -5.45, fz + 0.45), (3.6, 0.08, 0.85), (1, 0))
+    add_box(bm, uv, (1.55, -5.10, 7.0), (0.65, 0.14, 4.1), (1, 0), rot_euler=(0.0, 0.52, 0.0))
+    add_box(bm, uv, (1.55, -5.10, 10.8), (0.65, 0.14, 4.1), (1, 0), rot_euler=(0.0, -0.52, 0.0))
+
+    # Rusted corrugated rooftop shanty penthouse (signature Ashblock silhouette in d438c610.png)
+    add_box(bm, uv, (-1.6, 0.6, 16.95), (4.4, 3.6, 2.4), (0, 3))
+    add_box(bm, uv, (-1.6, 0.6, 18.28), (4.9, 4.1, 0.22), (0, 3), rot_euler=(0.10, 0.0, 0.0))
+    add_box(bm, uv, (-1.6, -1.22, 16.85), (1.1, 0.12, 1.5), (2, 0))
+
+    return finalize_and_export_glb("ashblock_tenement_facade", bm, mat, "ashblock_tenement_facade.glb")
+
+
+def build_skybridge_truss(mat):
+    """
+    Full-span structural steel pedestrian skybridge (34m span across X=-17..+17, origin at center underside Z=0):
+      - Physically connects West & East Ashblock tenements!
+      - Provides a dedicated reinforced central Web-Anchor Structural Collar at (0, 0, 0) + quarter-span nodes
+        so Kai's web lines ALWAYS attach to solid overhead structural steel rather than empty air!
+    """
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.new("UVMap")
+
+    span = 34.0
+    deck_w = 2.4
+    truss_h = 2.35
+
+    # Bottom chords, top chords & grated deck walkway
+    add_box(bm, uv, (0.0, 0.0, 0.16), (span, deck_w, 0.22), (1, 0))
+    for sy in (-deck_w * 0.5, deck_w * 0.5):
+        add_box(bm, uv, (0.0, sy, 0.15), (span, 0.22, 0.28), (1, 0))
+        add_box(bm, uv, (0.0, sy, truss_h), (span, 0.22, 0.26), (1, 0))
+
+        # Vertical posts & Pratt diagonal bracing every 4.25m
+        n_bays = 8
+        bay_w = span / n_bays
+        for i in range(n_bays + 1):
+            px = -span * 0.5 + i * bay_w
+            add_box(bm, uv, (px, sy, truss_h * 0.5), (0.20, 0.18, truss_h), (1, 0))
+            if i < n_bays:
+                mx = px + bay_w * 0.5
+                ang = 0.76 if (i % 2 == 0) else -0.76
+                add_box(bm, uv, (mx, sy, truss_h * 0.5), (0.14, 0.12, 3.05), (1, 0), rot_euler=(0.0, ang, 0.0))
+
+    # Top lateral tie beams + end wall mounting brackets
+    for px in (-16.8, -12.6, -8.4, -4.2, 0.0, 4.2, 8.4, 12.6, 16.8):
+        add_box(bm, uv, (px, 0.0, truss_h), (0.22, deck_w + 0.2, 0.20), (1, 0))
+    for ex in (-16.85, 16.85):
+        add_box(bm, uv, (ex, 0.0, truss_h * 0.45), (0.45, deck_w + 1.1, truss_h + 0.9), (0, 2))
+
+    # Physical Underside Web-Anchor Structural Girder & Glowing Anchor Collar at (0, 0, -0.18)
+    add_box(bm, uv, (0.0, 0.0, -0.14), (2.2, deck_w + 0.35, 0.34), (1, 0))
+    add_cylinder(bm, uv, (0.0, 0.0, -0.36), 0.42, 0.34, 0.26, 12, (3, 3))
+    # Warm utility cage lights along skybridge
+    for lx in (-8.4, 8.4):
+        add_box(bm, uv, (lx, 0.0, truss_h - 0.18), (0.45, 0.45, 0.24), (3, 2))
+
+    return finalize_and_export_glb("ashblock_skybridge_truss", bm, mat, "ashblock_skybridge_truss.glb")
+
+
+def build_rooftop_watertower(mat):
+    """
+    Iconic Ashblock Heights wooden stave rooftop water tower (d438c610.png & f9d37a6e.png):
+      - Braced steel trestle legs (0..2.8m), stave barrel tank (2.8..5.6m), conical cap (5.6..6.7m)
+      - Cantilevered steel hoist davit arm extending +1.9m for physical rooftop web-zip/swing anchor!
+    """
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.new("UVMap")
+
+    # 4 splayed steel trestle legs + cross-tie platform
+    for sx in (-1.05, 1.05):
+        for sy in (-1.05, 1.05):
+            add_box(
+                bm,
+                uv,
+                (sx * 0.85, sy * 0.85, 1.45),
+                (0.18, 0.18, 3.0),
+                (1, 0),
+                rot_euler=(sy * 0.10, -sx * 0.10, 0.0),
+            )
+    add_box(bm, uv, (0.0, 0.0, 1.45), (2.05, 0.12, 0.14), (1, 0))
+    add_box(bm, uv, (0.0, 0.0, 1.45), (0.12, 2.05, 0.14), (1, 0))
+    add_cylinder(bm, uv, (0.0, 0.0, 2.85), 1.55, 1.55, 0.22, 16, (1, 0))
+
+    # Wooden stave tank + 3 iron tension hoops + conical roof
+    add_cylinder(bm, uv, (0.0, 0.0, 4.25), 1.38, 1.32, 2.75, 16, (1, 1))
+    for hz in (3.25, 4.20, 5.15):
+        add_cylinder(bm, uv, (0.0, 0.0, hz), 1.42, 1.42, 0.10, 16, (1, 0))
+    add_cylinder(bm, uv, (0.0, 0.0, 6.15), 1.58, 0.08, 1.15, 16, (0, 3))
+
+    # Cantilevered steel hoist davit arm (+X = +1.95m at Z = 5.35m) for physical rooftop web attachment
+    add_box(bm, uv, (1.15, 0.0, 5.35), (2.10, 0.18, 0.20), (1, 0))
+    add_cylinder(bm, uv, (1.95, 0.0, 5.12), 0.26, 0.20, 0.28, 10, (3, 3))
+
+    return finalize_and_export_glb("ashblock_rooftop_watertower", bm, mat, "ashblock_rooftop_watertower.glb")
+
+
+def build_bloodward_dojo(mat):
+    """
+    BLOODWARD LOFT (d2fb286b.png) — Boryn's rooftop corrugated dojo sanctuary on East Ashblock Heights:
+      - Timber & brick base platform, corrugated rusted gable roof, crimson Beast-Kin crest banner,
+        warm glowing open dojo doorway, and twin rope-wrapped makiwara striking posts out front!
+    """
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.new("UVMap")
+
+    # Raised wooden training deck
+    add_box(bm, uv, (0.0, 0.0, 0.14), (7.4, 6.8, 0.28), (1, 2))
+
+    # Dojo main timber/brick walls (centered toward rear +Y so front training porch faces -Y -> +Z in glTF)
+    add_box(bm, uv, (0.0, 0.9, 1.85), (6.4, 4.4, 3.2), (1, 1))
+    # Warm glowing interior doorway + side lattice shoji windows
+    add_box(bm, uv, (0.0, -1.32, 1.50), (1.85, 0.14, 2.35), (2, 0))
+    for wx in (-2.05, 2.05):
+        add_box(bm, uv, (wx, -1.32, 1.85), (1.10, 0.12, 1.20), (2, 0))
+
+    # Crimson Bloodward Crest Banner above doorway (d2fb286b.png)
+    add_box(bm, uv, (0.0, -1.38, 3.02), (2.6, 0.14, 0.62), (1, 3))
+
+    # Corrugated iron pitched gable roof
+    add_box(bm, uv, (-1.75, 0.85, 3.85), (3.85, 5.0, 0.20), (0, 3), rot_euler=(0.0, -0.34, 0.0))
+    add_box(bm, uv, (1.75, 0.85, 3.85), (3.85, 5.0, 0.20), (0, 3), rot_euler=(0.0, 0.34, 0.0))
+
+    # Twin rope-wrapped makiwara striking posts + warm porch lanterns on front deck
+    for mx in (-2.2, 2.2):
+        add_cylinder(bm, uv, (mx, -2.35, 1.15), 0.22, 0.20, 2.05, 12, (3, 0))
+        add_box(bm, uv, (mx, -1.45, 2.75), (0.28, 0.28, 0.38), (3, 2))
+
+    return finalize_and_export_glb("ashblock_bloodward_dojo", bm, mat, "ashblock_bloodward_dojo.glb")
+
+
+def build_syndicate_relay(mat):
+    """
+    Interactive Environmental Takedown Prop: Fang Syndicate High-Voltage Arc Relay Pylon (e5b27b30.png):
+      - Heavy armored base + glowing cyan/magenta capacitor coils + protective steel cage.
+      - Players can yank or slam enemies into this relay for high-voltage AoE shock takedowns!
+    """
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.new("UVMap")
+
+    # Armored octagonal/stepped plinth
+    add_box(bm, uv, (0.0, 0.0, 0.28), (1.95, 1.55, 0.56), (2, 2))
+    add_box(bm, uv, (0.0, 0.0, 1.35), (1.35, 1.05, 1.65), (2, 2))
+
+    # Twin glowing high-voltage arc coils
+    for cx in (-0.42, 0.42):
+        add_cylinder(bm, uv, (cx, 0.0, 1.65), 0.28, 0.26, 1.85, 12, (2, 3))
+        for hz in (1.05, 1.65, 2.25):
+            add_cylinder(bm, uv, (cx, 0.0, hz), 0.36, 0.36, 0.10, 12, (1, 0))
+
+    # Warning crossbar & arc horn antennas
+    add_box(bm, uv, (0.0, 0.0, 2.68), (1.65, 0.36, 0.22), (1, 3))
+    for cx in (-0.55, 0.55):
+        add_cylinder(bm, uv, (cx, 0.0, 3.02), 0.06, 0.03, 0.55, 8, (2, 3))
+
+    return finalize_and_export_glb("ashblock_syndicate_relay", bm, mat, "ashblock_syndicate_relay.glb")
+
+
+def build_market_awning_stall(mat):
+    """
+    Beast-Kin Street Market Stall (d438c610.png & f9d37a6e.png):
+      - Crimson sloped awning canopy, timber frame posts, merchant counter, stacked wooden crates & warm lantern.
+    """
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.new("UVMap")
+
+    # 4 corner timber posts
+    for px in (-1.75, 1.75):
+        for py in (-1.05, 1.05):
+            add_box(bm, uv, (px, py, 1.45), (0.14, 0.14, 2.90), (1, 1))
+
+    # Merchant counter & stacked crates
+    add_box(bm, uv, (0.0, -0.75, 0.52), (3.3, 0.72, 1.04), (1, 2))
+    add_box(bm, uv, (-1.05, 0.55, 0.42), (0.85, 0.85, 0.84), (3, 1))
+    add_box(bm, uv, (-0.95, 0.55, 1.12), (0.68, 0.68, 0.60), (3, 1), rot_euler=(0.0, 0.0, 0.22))
+    add_box(bm, uv, (1.05, 0.50, 0.48), (0.95, 0.80, 0.96), (3, 1))
+
+    # Sloped crimson awning + hanging warm lantern
+    add_box(bm, uv, (0.0, -0.10, 2.92), (3.85, 2.65, 0.16), (1, 3), rot_euler=(0.22, 0.0, 0.0))
+    add_box(bm, uv, (1.45, -1.18, 2.38), (0.30, 0.30, 0.42), (3, 2))
+
+    return finalize_and_export_glb("ashblock_market_awning_stall", bm, mat, "ashblock_market_awning_stall.glb")
+
+
+def main():
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    mat = make_atlas_images()
+
+    manifest_assets = [
+        build_tenement_facade(mat),
+        build_skybridge_truss(mat),
+        build_rooftop_watertower(mat),
+        build_bloodward_dojo(mat),
+        build_syndicate_relay(mat),
+        build_market_awning_stall(mat),
+    ]
+
+    manifest = {
+        "operation": "KAI-JAX P1-K WAVE 1 — ASHBLOCK HEIGHTS MODULAR KIT",
+        "blenderVersion": bpy.app.version_string,
+        "visualAuthoritySheets": [
+            "ChatGPT_Image_Aug_3__2026__04_56_26_PM__2__d438c610.png",
+            "ChatGPT_Image_Aug_3__2026__04_56_26_PM__5__d2fb286b.png",
+            "ChatGPT_Image_Aug_3__2026__04_56_25_PM__1__f9d37a6e.png",
+            "ChatGPT_Image_Aug_3__2026__04_56_28_PM__9__e5b27b30.png",
+        ],
+        "assetCount": len(manifest_assets),
+        "totalTrianglesPerKitSet": sum(a["triangleCount"] for a in manifest_assets),
+        "totalBytes": sum(a["bytes"] for a in manifest_assets),
+        "assets": manifest_assets,
+    }
+    manifest_path = OUT_DIR / "ashblock_kit_manifest.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2))
+    print(f"[ASHBLOCK_KIT_COMPLETE] {len(manifest_assets)} modular GLBs -> {manifest_path}")
+
+
+if __name__ == "__main__":
+    main()

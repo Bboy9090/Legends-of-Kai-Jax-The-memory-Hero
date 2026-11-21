@@ -1,0 +1,182 @@
+{
+  "operation": "OPERATION KAI-JAX — P1-M: ASHBLOCK HEIGHTS FINAL GAMEPLAY, VISUAL & ANDROID QUALIFICATION",
+  "executedAt": "2026-11-15T17:25:58.643Z",
+  "captures": [
+    "docs/production/captures/p1m/04_p1m_pendulum_swing.png",
+    "docs/production/captures/p1m/05_p1m_zip_landing.png",
+    "docs/production/captures/p1m/06_p1m_combat_wall_pin.png",
+    "docs/production/captures/p1m/07_p1m_kaijax_3tail_deformation.png",
+    "docs/production/captures/p1m/01a_p1m_legacy_street.png",
+    "docs/production/captures/p1m/01b_p1m_street.png",
+    "docs/production/captures/p1m/02b_p1m_bloodward_dojo.png",
+    "docs/production/captures/p1m/03a_p1m_legacy_courtyard.png",
+    "docs/production/captures/p1m/03b_p1m_stronghold_courtyard.png",
+    "docs/production/captures/p1m/08_p1m_mobile_844x390_multitouch_hud.png",
+    "docs/production/captures/p1m/01_p1m_street_before_after.png",
+    "docs/production/captures/p1m/02_p1m_bloodward_ref_comparison.png",
+    "docs/production/captures/p1m/03_p1m_courtyard_before_after.png"
+  ],
+  "priority1GameplayFeel": {
+    "accelBrake": {
+      "accelCurve": [
+        {
+          "frame": 3,
+          "speed": 7.39
+        },
+        {
+          "frame": 6,
+          "speed": 10.18
+        },
+        {
+          "frame": 12,
+          "speed": 11.63
+        },
+        {
+          "frame": 20,
+          "speed": 11.85
+        }
+      ],
+      "brakeCurve": [
+        {
+          "frame": 4,
+          "speed": 4.22
+        },
+        {
+          "frame": 8,
+          "speed": 1.5
+        },
+        {
+          "frame": 16,
+          "speed": 0.19
+        }
+      ],
+      "peakSprintSpeed": 11.85,
+      "stopSpeedFrame16": 0.19
+    },
+    "jumpFeel": {
+      "preJumpSpeed": 11.84,
+      "sprintJumpHoriz": 13.2,
+      "sprintJumpVy": 10.3,
+      "jumpInputResponseMs": 0.6,
+      "bufferedSet": true,
+      "bufferedAutoJumped": true,
+      "coyoteJumpVy": 10.3
+    },
+    "swingMetrics": {
+      "attached": true,
+      "ropeLen": 5.92,
+      "midArcSpeed": 7.61,
+      "diag": {
+        "isSwinging": true,
+        "zipActive": false,
+        "swingPeakSpeed": 8.2,
+        "zipCompletedCount": 0,
+        "dodgeCancelCount": 0,
+        "lastInputResponseMs": 0.9,
+        "activeWebAnchorId": "wb-south-skybridge",
+        "activeWebAttachmentType": "skybridge_truss_girder",
+        "anchorsTotal": 10,
+        "allAnchorsGeometryAttached": true
+      },
+      "releaseVel": 14.77,
+      "swingPeakSpeed": 8.203298604449314
+    },
+    "zipMetrics": {
+      "started": true,
+      "midZipPos": [
+        8.96,
+        3.89,
+        -18.48
+      ],
+      "zipCompletedCount": 1,
+      "landedY": 5.35,
+      "grounded": true
+    },
+    "combatMetrics": {
+      "slamLanded": true,
+      "dodgeCancelCount": 1,
+      "parried": true,
+      "parryResponseMs": 0.5,
+      "wallPinned": true,
+      "wallPinsCount": 1,
+      "companionSep": 3.66
+    },
+    "fusionAndDuo": {
+      "duoTriggeredByChord": true,
+      "duoFinishersUsed": 1,
+      "fusedHero": "kaijax",
+      "tailBones": 12,
+      "physicalTailChains": 3,
+      "clipDuringSprint": "sprint",
+      "unfusedCheck": {
+        "isFused": false,
+        "activeHeroAfterUnfuse": "kai",
+        "kaiVisible": true,
+        "jaxVisible": true,
+        "kaiJaxHidden": true
+      }
+    }
+  },
+  "priority2VisualFidelity": {
+    "beaconHiddenCloseToBossArena": true,
+    "all12ModularGlbsLoaded": true
+  },
+  "priority3MobileAndPerformance": {
+    "initialLoadMs": 11776,
+    "multiTouchResult": {
+      "foundControls": true,
+      "touchMoveWhileHeld": {
+        "x": 0.2,
+        "y": 0.98
+      },
+      "attackTriggeredDuringJoy": true,
+      "moveStillHeld": true,
+      "moveResetAfterRelease": true,
+      "outOfBoundsButtons": 0,
+      "visibleButtons": 17
+    },
+    "perfTiers": {
+      "low": {
+        "fpsEstimate": 0,
+        "onePercentLowFps": 60,
+        "drawCalls": 154,
+        "activeTriangles": 63402,
+        "geometries": 392,
+        "textures": 46,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true,
+        "cpuSimAvgMs": 0.292,
+        "renderSubmitMs": 112.4
+      },
+      "balanced": {
+        "fpsEstimate": 0,
+        "onePercentLowFps": 60,
+        "drawCalls": 163,
+        "activeTriangles": 66946,
+        "geometries": 392,
+        "textures": 46,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true,
+        "cpuSimAvgMs": 0.725,
+        "renderSubmitMs": 4.9
+      },
+      "high": {
+        "fpsEstimate": 0,
+        "onePercentLowFps": 60,
+        "drawCalls": 163,
+        "activeTriangles": 66946,
+        "geometries": 392,
+        "textures": 46,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true,
+        "cpuSimAvgMs": 0.658,
+        "renderSubmitMs": 6.5
+      }
+    }
+  },
+  "runtimeIntegrity": {
+    "httpFailures": [],
+    "consoleErrors": [],
+    "pageExceptions": []
+  }
+}

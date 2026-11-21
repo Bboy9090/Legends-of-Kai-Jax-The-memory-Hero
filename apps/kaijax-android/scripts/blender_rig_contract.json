@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "1.0.0-p1g",
+  "engineTarget": "Three.js r183 + Capacitor Android WebView",
+  "coordinateSystem": {
+    "upAxis": "+Y",
+    "forwardAxis": "+Z",
+    "unitScaleMeters": 1.0,
+    "groundingMinY": 0.0,
+    "groundingToleranceMeters": 0.025
+  },
+  "characters": {
+    "kai": {
+      "standingHeightMeters": 1.82,
+      "physicalTails": 0,
+      "spiderLimbs": 4,
+      "stormManeCrests": 0,
+      "authoritativeSheets": ["078f6bfc.png"]
+    },
+    "jax": {
+      "standingHeightMeters": 1.94,
+      "physicalTails": 0,
+      "spiderLimbs": 0,
+      "stormManeCrests": 7,
+      "authoritativeSheets": ["078f6bfc.png", "16464786.png"]
+    },
+    "kaijax": {
+      "standingHeightMeters": 2.08,
+      "physicalTails": 3,
+      "tailRootBones": ["tail_ember_01", "tail_storm_01", "tail_memory_01"],
+      "spiderLimbs": 4,
+      "stormManeCrests": 7,
+      "authoritativeSheets": ["078f6bfc.png"]
+    },
+    "boryn": {
+      "standingHeightMeters": 2.10,
+      "physicalTails": 1,
+      "tailRootBones": ["tail_01"],
+      "spiderLimbs": 0,
+      "stormManeCrests": 0,
+      "authoritativeSheets": ["078f6bfc.png", "3e003001.png"]
+    },
+    "borax": {
+      "standingHeightMeters": 2.16,
+      "physicalTails": 1,
+      "tailRootBones": ["tail_01"],
+      "spiderLimbs": 0,
+      "stormManeCrests": 0,
+      "authoritativeSheets": ["078f6bfc.png", "3e003001.png"]
+    },
+    "bovar": {
+      "visualAuthorityStatus": "awaiting_visual_approval",
+      "exportAllowed": false
+    }
+  },
+  "requiredSockets": [
+    "socket_weapon_L",
+    "socket_weapon_R",
+    "socket_relic",
+    "socket_hitbox_L",
+    "socket_hitbox_R",
+    "socket_head"
+  ],
+  "requiredMorphTargets": ["blink", "snarl", "roar", "pain", "focus"],
+  "requiredClips": [
+    "idle",
+    "breathing",
+    "walk",
+    "run",
+    "sprint",
+    "jump",
+    "fall",
+    "landing",
+    "dodge",
+    "attack_1",
+    "attack_2",
+    "attack_3",
+    "heavy_strike",
+    "parry",
+    "hit_reaction",
+    "roar",
+    "ability_cast",
+    "victory",
+    "defeat"
+  ],
+  "budgets": {
+    "master": { "minTriangles": 9000, "maxTriangles": 24000, "textureSize": 2048 },
+    "lod1": { "minTriangles": 3500, "maxTriangles": 9500, "textureSize": 1024 }
+  }
+}

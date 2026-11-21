@@ -1,0 +1,5 @@
+
+> react-example@0.0.0 test
+> tsx src/game/__tests__/gameSystems.test.ts
+
+ALL P1, P1-C, P1-E, P1-G & P1-I GAME SYSTEMS ACCEPTANCE TESTS PASSED (19/19 suites)

@@ -3,13 +3,14 @@
  * Comprehensive reference guide integrating all game systems
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useRunner } from '../../lib/stores/useRunner';
 import AbilityDisplay from './AbilityDisplay';
 import CharacterStatsDisplay from './CharacterStatsDisplay';
 import LocationDisplay from './LocationDisplay';
 import BossEncounterDisplay from './BossEncounterDisplay';
 import { getCharacterData } from '../../lib/characterStats';
-import { BookOpen, Users, MapPin, Skull, Zap, Target } from 'lucide-react';
+import { ArrowLeft, BookOpen, Users, MapPin, Skull, Zap, Target } from 'lucide-react';
 
 type CodexTab = 'characters' | 'abilities' | 'locations' | 'bosses' | 'mechanics' | 'lore';
 
@@ -21,6 +22,47 @@ interface GameCodexProps {
 export default function GameCodex({ initialTab = 'characters', characterId }: GameCodexProps) {
   const [activeTab, setActiveTab] = useState<CodexTab>(initialTab);
   const [selectedCharacterId, setSelectedCharacterId] = useState<string>(characterId || 'kai-jax');
+  const setGameState = useRunner((s) => s.setGameState);
+  const backRef = useRef<HTMLButtonElement>(null);
+  const goBack = () => setGameState('lore-hub');
+
+  // Keyboard + controller navigation: Escape / gamepad B (or Back) returns to the Lore Hub.
+  useEffect(() => {
+    backRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setGameState('lore-hub');
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    let raf = 0;
+    let wasPressed = false;
+    const poll = () => {
+      const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
+      let pressed = false;
+      for (const pad of pads) {
+        if (pad && (pad.buttons[1]?.pressed || pad.buttons[8]?.pressed)) pressed = true;
+      }
+      if (pressed && !wasPressed) setGameState('lore-hub');
+      wasPressed = pressed;
+      raf = requestAnimationFrame(poll);
+    };
+    raf = requestAnimationFrame(poll);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      cancelAnimationFrame(raf);
+    };
+  }, [setGameState]);
+
+  const onTabKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft' && e.key !== 'Home' && e.key !== 'End') return;
+    e.preventDefault();
+    const last = tabs.length - 1;
+    const next = e.key === 'Home' ? 0 : e.key === 'End' ? last : (index + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    setActiveTab(tabs[next].id);
+    requestAnimationFrame(() => document.getElementById(`codex-tab-${tabs[next].id}`)?.focus());
+  };
 
   const tabs: Array<{ id: CodexTab; label: string; icon: React.ReactNode }> = [
     { id: 'characters', label: 'Characters', icon: <Users className="h-4 w-4" /> },
@@ -32,11 +74,21 @@ export default function GameCodex({ initialTab = 'characters', characterId }: Ga
   ];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden flex flex-col bg-black">
+    <div className="fixed inset-0 z-50 overflow-hidden flex flex-col bg-black" data-testid="game-codex">
       {/* HEADER */}
       <div className="border-b border-[#7d6136]/55 px-5 py-4">
         <div className="flex items-center justify-between gap-4">
-          <div>
+          <button
+            ref={backRef}
+            type="button"
+            onClick={goBack}
+            data-testid="codex-back"
+            aria-label="Back to Lore Hub"
+            className="inline-flex min-h-[44px] items-center gap-2 border border-[#8b6e3d]/70 bg-black/60 px-3 text-xs uppercase tracking-[0.1em] text-[#efcf91] hover:bg-black/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#efcf91]"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back
+          </button>
+          <div className="min-w-0 flex-1">
             <h1 className="text-2xl uppercase tracking-[0.08em] text-[#efcf91]">
               Game Codex
             </h1>
@@ -49,10 +101,15 @@ export default function GameCodex({ initialTab = 'characters', characterId }: Ga
       </div>
 
       {/* TAB NAVIGATION */}
-      <div className="border-b border-[#7d6136]/55 bg-black/50 backdrop-blur px-5 py-3 flex gap-1 overflow-x-auto">
-        {tabs.map((tab) => (
+      <div role="tablist" aria-label="Codex sections" className="border-b border-[#7d6136]/55 bg-black/50 backdrop-blur px-5 py-3 flex gap-1 overflow-x-auto">
+        {tabs.map((tab, index) => (
           <button
             key={tab.id}
+            id={`codex-tab-${tab.id}`}
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            tabIndex={activeTab === tab.id ? 0 : -1}
+            onKeyDown={(e) => onTabKeyDown(e, index)}
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-3 py-1 rounded-sm text-xs uppercase tracking-[0.08em] transition ${
               activeTab === tab.id

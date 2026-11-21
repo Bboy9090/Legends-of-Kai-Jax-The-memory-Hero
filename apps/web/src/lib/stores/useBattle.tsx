@@ -174,6 +174,8 @@ export interface BattleState {
   playerResonance: number; // defensive/parry energy
   
   triggerBanter: (source: 'player' | 'opponent', type: 'taunt' | 'smirk' | 'encourage', situation?: string) => void;
+  /** Current in-battle taunt/smirk/encourage line (auto-clears after 2.5 s). */
+  battleBanter: { source: 'player' | 'opponent'; type: 'taunt' | 'smirk' | 'encourage'; text: string } | null;
 
   /** Formal duel combat FSM (player posture): FREE | ATTACKING | DODGING | BLOCKING | PARRY_WINDOW | HITSTUN | GUARD_BROKEN */
   playerCombatState: BattleCombatState;
@@ -384,8 +386,8 @@ export const useBattle = create<BattleState>((set, get) => ({
   playerDread: 0,
   playerResonance: 100,
 
-  playerCombatState: 'FREE',
-  opponentCombatState: 'FREE',
+  playerCombatState: BattleCombatState.FREE,
+  opponentCombatState: BattleCombatState.FREE,
   battleBanter: null,
 
   playerCombo: 0,

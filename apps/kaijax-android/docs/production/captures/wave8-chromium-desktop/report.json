@@ -1,0 +1,4707 @@
+{
+  "operation": "OPERATION KAI-JAX — WAVE 8 CAMPAIGN PLAYTHROUGH",
+  "target": "chromium-desktop",
+  "appUrl": "http://127.0.0.1:3000",
+  "startedAt": "2026-11-16T09:15:50.838Z",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "districts": {
+    "ashblock-heights": {
+      "id": "ashblock-heights",
+      "attempts": [
+        {
+          "attempt": 1,
+          "wallSeconds": 4.7,
+          "aliveEnemies": [],
+          "playerPos": [
+            -7.1,
+            0,
+            -77.7
+          ],
+          "missionStage": 4,
+          "civiliansRescued": "2/2",
+          "memorySiteDone": true,
+          "alleyGateOpen": true,
+          "bossDefeated": true,
+          "playerDied": false,
+          "isVictory": true,
+          "stageReached": 0,
+          "counters": {
+            "interacts": 4,
+            "jumps": 10,
+            "parries": 2,
+            "dodges": 0,
+            "abilityUses": 11,
+            "heroSwitches": 0
+          },
+          "events": {
+            "dialogueBlocks": [
+              2,
+              2,
+              2,
+              3,
+              4,
+              3
+            ],
+            "rewards": [
+              {
+                "xp": 20,
+                "items": {
+                  "Ash Scrap": 1
+                }
+              },
+              {
+                "xp": 45,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 48,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 42,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 58,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 48,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 65,
+                "items": {
+                  "Ash Scrap": 2
+                }
+              },
+              {
+                "xp": 65,
+                "items": {
+                  "Ash Scrap": 2
+                }
+              },
+              {
+                "xp": 140,
+                "items": {
+                  "Ash Scrap": 2,
+                  "Memory Shard": 1
+                },
+                "shards": 1
+              },
+              {
+                "xp": 42,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 95,
+                "items": {
+                  "Myrr'Kai Thread": 2
+                },
+                "shards": 1
+              },
+              {
+                "xp": 20,
+                "items": {
+                  "Myrr'Kai Thread": 1
+                }
+              },
+              {
+                "xp": 58,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 42,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 68,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 260,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 300,
+                "items": {
+                  "Pyraxis Ember": 3,
+                  "Storm Capacitor": 3,
+                  "Myrr'Kai Thread": 2
+                }
+              }
+            ],
+            "saveKeys": [
+              [
+                "traversalTier",
+                "checkpointPos"
+              ],
+              [
+                "missionStageIndex"
+              ],
+              [
+                "rescuedCivilians"
+              ],
+              [
+                "traversalMastery"
+              ],
+              [
+                "traversalMastery"
+              ],
+              [
+                "traversalMastery"
+              ],
+              [
+                "rescuedCivilians"
+              ],
+              [
+                "missionStageIndex"
+              ],
+              [
+                "duoSynergySaved",
+                "combatStats"
+              ],
+              [
+                "reconstructedSites",
+                "traversalTier",
+                "checkpointPos"
+              ],
+              [
+                "missionStageIndex"
+              ],
+              [
+                "duoSynergySaved",
+                "combatStats"
+              ],
+              [
+                "checkpointPos",
+                "traversalTier"
+              ],
+              [
+                "missionStageIndex"
+              ],
+              [
+                "duoSynergySaved",
+                "combatStats"
+              ],
+              [
+                "fusionUnlocked"
+              ],
+              [
+                "missionCompleted",
+                "unlockedCosmeticIds",
+                "combatMastery"
+              ]
+            ]
+          },
+          "completedDistricts": [],
+          "final": {
+            "step": 1682,
+            "simSeconds": 28,
+            "hero": "kai",
+            "pos": [
+              -7.1,
+              0,
+              -77.7
+            ],
+            "kaiHp": 230,
+            "jaxHp": 265,
+            "alive": 0,
+            "stage": 0,
+            "combo": 12,
+            "boss": {
+              "id": "boss-enforcer",
+              "hp": 0,
+              "maxHp": 780,
+              "phase": 2,
+              "armor": 0,
+              "state": "dead"
+            }
+          },
+          "bossPhasesObserved": [
+            1,
+            2
+          ],
+          "timeline": [
+            {
+              "step": 60,
+              "simSeconds": 1,
+              "hero": "kai",
+              "pos": [
+                -2.3,
+                0,
+                -4.2
+              ],
+              "kaiHp": 140,
+              "jaxHp": 175,
+              "alive": 3,
+              "stage": 0,
+              "combo": 3,
+              "boss": null
+            },
+            {
+              "step": 120,
+              "simSeconds": 2,
+              "hero": "kai",
+              "pos": [
+                -0.6,
+                0,
+                -8.8
+              ],
+              "kaiHp": 140,
+              "jaxHp": 175,
+              "alive": 1,
+              "stage": 0,
+              "combo": 5,
+              "boss": null
+            },
+            {
+              "step": 180,
+              "simSeconds": 3,
+              "hero": "kai",
+              "pos": [
+                -4.7,
+                0,
+                -13.2
+              ],
+              "kaiHp": 158,
+              "jaxHp": 193,
+              "alive": 2,
+              "stage": 0,
+              "combo": 7,
+              "boss": null
+            },
+            {
+              "step": 240,
+              "simSeconds": 4,
+              "hero": "kai",
+              "pos": [
+                -10.4,
+                0,
+                -15
+              ],
+              "kaiHp": 158,
+              "jaxHp": 193,
+              "alive": 2,
+              "stage": 0,
+              "combo": 7,
+              "boss": null
+            },
+            {
+              "step": 300,
+              "simSeconds": 5,
+              "hero": "kai",
+              "pos": [
+                -10.4,
+                0,
+                -14.9
+              ],
+              "kaiHp": 158,
+              "jaxHp": 193,
+              "alive": 2,
+              "stage": 0,
+              "combo": 8,
+              "boss": null
+            },
+            {
+              "step": 360,
+              "simSeconds": 6,
+              "hero": "kai",
+              "pos": [
+                -10.8,
+                0,
+                -10.3
+              ],
+              "kaiHp": 158,
+              "jaxHp": 193,
+              "alive": 2,
+              "stage": 0,
+              "combo": 8,
+              "boss": null
+            },
+            {
+              "step": 420,
+              "simSeconds": 7,
+              "hero": "kai",
+              "pos": [
+                -17.3,
+                0,
+                -11.1
+              ],
+              "kaiHp": 158,
+              "jaxHp": 193,
+              "alive": 2,
+              "stage": 0,
+              "combo": 8,
+              "boss": null
+            },
+            {
+              "step": 480,
+              "simSeconds": 8,
+              "hero": "kai",
+              "pos": [
+                -21,
+                0,
+                -16.5
+              ],
+              "kaiHp": 158,
+              "jaxHp": 193,
+              "alive": 1,
+              "stage": 0,
+              "combo": 10,
+              "boss": null
+            },
+            {
+              "step": 540,
+              "simSeconds": 9,
+              "hero": "kai",
+              "pos": [
+                -14.9,
+                0,
+                -15.3
+              ],
+              "kaiHp": 158,
+              "jaxHp": 193,
+              "alive": 0,
+              "stage": 0,
+              "combo": 11,
+              "boss": null
+            },
+            {
+              "step": 600,
+              "simSeconds": 10,
+              "hero": "kai",
+              "pos": [
+                -9.5,
+                4.4,
+                -14.7
+              ],
+              "kaiHp": 158,
+              "jaxHp": 193,
+              "alive": 0,
+              "stage": 0,
+              "combo": 11,
+              "boss": null
+            },
+            {
+              "step": 660,
+              "simSeconds": 11,
+              "hero": "kai",
+              "pos": [
+                -1.2,
+                8.7,
+                -14.3
+              ],
+              "kaiHp": 176,
+              "jaxHp": 211,
+              "alive": 0,
+              "stage": 0,
+              "combo": 11,
+              "boss": null
+            },
+            {
+              "step": 720,
+              "simSeconds": 12,
+              "hero": "kai",
+              "pos": [
+                7.1,
+                8,
+                -12.5
+              ],
+              "kaiHp": 176,
+              "jaxHp": 211,
+              "alive": 0,
+              "stage": 0,
+              "combo": 11,
+              "boss": null
+            },
+            {
+              "step": 780,
+              "simSeconds": 13,
+              "hero": "kai",
+              "pos": [
+                12.4,
+                5.1,
+                -16.9
+              ],
+              "kaiHp": 176,
+              "jaxHp": 211,
+              "alive": 0,
+              "stage": 0,
+              "combo": 0,
+              "boss": null
+            },
+            {
+              "step": 840,
+              "simSeconds": 14,
+              "hero": "kai",
+              "pos": [
+                13,
+                7,
+                -24
+              ],
+              "kaiHp": 176,
+              "jaxHp": 211,
+              "alive": 0,
+              "stage": 0,
+              "combo": 0,
+              "boss": null
+            },
+            {
+              "step": 900,
+              "simSeconds": 15,
+              "hero": "kai",
+              "pos": [
+                14.5,
+                7,
+                -32
+              ],
+              "kaiHp": 176,
+              "jaxHp": 211,
+              "alive": 0,
+              "stage": 0,
+              "combo": 0,
+              "boss": null
+            },
+            {
+              "step": 960,
+              "simSeconds": 16,
+              "hero": "kai",
+              "pos": [
+                6.2,
+                1.3,
+                -34.4
+              ],
+              "kaiHp": 176,
+              "jaxHp": 211,
+              "alive": 2,
+              "stage": 0,
+              "combo": 2,
+              "boss": null
+            },
+            {
+              "step": 1020,
+              "simSeconds": 17,
+              "hero": "kai",
+              "pos": [
+                7.7,
+                0,
+                -34.1
+              ],
+              "kaiHp": 176,
+              "jaxHp": 211,
+              "alive": 2,
+              "stage": 0,
+              "combo": 2,
+              "boss": null
+            },
+            {
+              "step": 1080,
+              "simSeconds": 18,
+              "hero": "kai",
+              "pos": [
+                11.8,
+                0,
+                -34.9
+              ],
+              "kaiHp": 172,
+              "jaxHp": 211,
+              "alive": 1,
+              "stage": 0,
+              "combo": 0,
+              "boss": null
+            },
+            {
+              "step": 1140,
+              "simSeconds": 19,
+              "hero": "kai",
+              "pos": [
+                16.6,
+                0,
+                -39.8
+              ],
+              "kaiHp": 172,
+              "jaxHp": 211,
+              "alive": 3,
+              "stage": 0,
+              "combo": 2,
+              "boss": null
+            },
+            {
+              "step": 1200,
+              "simSeconds": 20,
+              "hero": "kai",
+              "pos": [
+                9.7,
+                0,
+                -42.4
+              ],
+              "kaiHp": 208,
+              "jaxHp": 247,
+              "alive": 3,
+              "stage": 0,
+              "combo": 2,
+              "boss": null
+            },
+            {
+              "step": 1260,
+              "simSeconds": 21,
+              "hero": "kai",
+              "pos": [
+                2,
+                0,
+                -42.5
+              ],
+              "kaiHp": 212,
+              "jaxHp": 247,
+              "alive": 2,
+              "stage": 0,
+              "combo": 6,
+              "boss": null
+            },
+            {
+              "step": 1320,
+              "simSeconds": 22,
+              "hero": "kai",
+              "pos": [
+                -3.5,
+                0,
+                -45
+              ],
+              "kaiHp": 212,
+              "jaxHp": 247,
+              "alive": 1,
+              "stage": 0,
+              "combo": 8,
+              "boss": null
+            },
+            {
+              "step": 1380,
+              "simSeconds": 23,
+              "hero": "kai",
+              "pos": [
+                -2,
+                0,
+                -41.5
+              ],
+              "kaiHp": 212,
+              "jaxHp": 247,
+              "alive": 0,
+              "stage": 0,
+              "combo": 9,
+              "boss": null
+            },
+            {
+              "step": 1440,
+              "simSeconds": 24,
+              "hero": "kai",
+              "pos": [
+                -0.6,
+                0,
+                -52.9
+              ],
+              "kaiHp": 212,
+              "jaxHp": 247,
+              "alive": 1,
+              "stage": 0,
+              "combo": 9,
+              "boss": {
+                "id": "boss-enforcer",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 1500,
+              "simSeconds": 25,
+              "hero": "kai",
+              "pos": [
+                -0.3,
+                0,
+                -64.2
+              ],
+              "kaiHp": 212,
+              "jaxHp": 247,
+              "alive": 1,
+              "stage": 0,
+              "combo": 0,
+              "boss": {
+                "id": "boss-enforcer",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 1560,
+              "simSeconds": 26,
+              "hero": "kai",
+              "pos": [
+                -1.4,
+                0,
+                -71
+              ],
+              "kaiHp": 212,
+              "jaxHp": 247,
+              "alive": 1,
+              "stage": 0,
+              "combo": 3,
+              "boss": {
+                "id": "boss-enforcer",
+                "hp": 659,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 18,
+                "state": "stagger"
+              }
+            },
+            {
+              "step": 1620,
+              "simSeconds": 27,
+              "hero": "kai",
+              "pos": [
+                -3.1,
+                0,
+                -73.3
+              ],
+              "kaiHp": 212,
+              "jaxHp": 247,
+              "alive": 1,
+              "stage": 0,
+              "combo": 8,
+              "boss": {
+                "id": "boss-enforcer",
+                "hp": 282,
+                "maxHp": 780,
+                "phase": 2,
+                "armor": 0,
+                "state": "stagger"
+              }
+            },
+            {
+              "step": 1680,
+              "simSeconds": 28,
+              "hero": "kai",
+              "pos": [
+                -7.1,
+                0,
+                -77.9
+              ],
+              "kaiHp": 212,
+              "jaxHp": 247,
+              "alive": 1,
+              "stage": 0,
+              "combo": 11,
+              "boss": {
+                "id": "boss-enforcer",
+                "hp": 71,
+                "maxHp": 780,
+                "phase": 2,
+                "armor": 0,
+                "state": "stagger"
+              }
+            }
+          ]
+        }
+      ],
+      "entry": {
+        "district": "ashblock-heights",
+        "walkableZones": 23,
+        "anchors": 10,
+        "anchorsAttached": true,
+        "civilians": [
+          {
+            "name": "Ashblock Medic",
+            "pos": [
+              -15.5,
+              0.2,
+              -16
+            ]
+          },
+          {
+            "name": "Rooftop Machinist",
+            "pos": [
+              14.5,
+              3.3,
+              -32
+            ]
+          }
+        ],
+        "memorySitePos": [
+          15.5,
+          0.22,
+          -38
+        ],
+        "alleyGatePos": [
+          0,
+          0,
+          -48
+        ],
+        "walkableTops": [
+          [
+            -21.2,
+            -12.4,
+            -34,
+            -21,
+            7
+          ],
+          [
+            12.4,
+            21.2,
+            -30.8,
+            -19.3,
+            7
+          ],
+          [
+            -13.9,
+            -10.9,
+            -15.2,
+            -12,
+            1.8
+          ],
+          [
+            -14.4,
+            -11.2,
+            -19.2,
+            -15.6,
+            3.6
+          ],
+          [
+            -14.9,
+            -11.5,
+            -23.1,
+            -19.3,
+            5.3
+          ],
+          [
+            10.7,
+            13.7,
+            -15.2,
+            -12,
+            1.8
+          ],
+          [
+            10.8,
+            14,
+            -19.2,
+            -15.6,
+            3.6
+          ],
+          [
+            11.1,
+            14.5,
+            -22.6,
+            -19,
+            5.3
+          ],
+          [
+            12.3,
+            16.7,
+            -34.6,
+            -26.4,
+            3.3
+          ],
+          [
+            -14.8,
+            14.8,
+            -28.6,
+            -25.4,
+            7
+          ],
+          [
+            -15.2,
+            -11.6,
+            -46.1,
+            -34.9,
+            5.2
+          ],
+          [
+            11.6,
+            15.2,
+            -46.1,
+            -34.9,
+            5.2
+          ],
+          [
+            -14.5,
+            14.5,
+            -49.7,
+            -46.3,
+            5.2
+          ],
+          [
+            -7.2,
+            -4.4,
+            -7.3,
+            -5.7,
+            1.4
+          ],
+          [
+            4.7,
+            7.7,
+            -24.4,
+            -22.6,
+            1.4
+          ],
+          [
+            -17.1,
+            -13.7,
+            -62.6,
+            -58.4,
+            1.8
+          ],
+          [
+            -17.2,
+            -13.6,
+            -77.3,
+            -62.8,
+            3.5
+          ],
+          [
+            13.7,
+            17.1,
+            -62.6,
+            -58.4,
+            1.8
+          ],
+          [
+            13.6,
+            17.2,
+            -77.3,
+            -62.8,
+            3.5
+          ],
+          [
+            -11.2,
+            -8,
+            -65,
+            -63,
+            1.6
+          ],
+          [
+            8,
+            11.2,
+            -65,
+            -63,
+            1.6
+          ],
+          [
+            -11.5,
+            -8.1,
+            -80,
+            -78,
+            1.6
+          ],
+          [
+            8.1,
+            11.5,
+            -80,
+            -78,
+            1.6
+          ]
+        ],
+        "enemies": [
+          {
+            "id": "e-row-1",
+            "kind": "brawler",
+            "hp": 135
+          },
+          {
+            "id": "e-row-2",
+            "kind": "dodger",
+            "hp": 98
+          },
+          {
+            "id": "e-row-3",
+            "kind": "marksman",
+            "hp": 88
+          }
+        ]
+      },
+      "screenshots": [
+        "ashblock-heights-01-entry.jpg",
+        "ashblock-heights-02-boss-engaged.jpg",
+        "ashblock-heights-03-boss-defeated.jpg"
+      ],
+      "victoryDialogueClicks": 3,
+      "afterDefeat": {
+        "completedDistricts": [],
+        "rewards": [
+          {
+            "xp": 20,
+            "items": {
+              "Ash Scrap": 1
+            }
+          },
+          {
+            "xp": 45,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 48,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 42,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 58,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 48,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 65,
+            "items": {
+              "Ash Scrap": 2
+            }
+          },
+          {
+            "xp": 65,
+            "items": {
+              "Ash Scrap": 2
+            }
+          },
+          {
+            "xp": 140,
+            "items": {
+              "Ash Scrap": 2,
+              "Memory Shard": 1
+            },
+            "shards": 1
+          },
+          {
+            "xp": 42,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 95,
+            "items": {
+              "Myrr'Kai Thread": 2
+            },
+            "shards": 1
+          },
+          {
+            "xp": 20,
+            "items": {
+              "Myrr'Kai Thread": 1
+            }
+          },
+          {
+            "xp": 58,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 42,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 68,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 260,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 300,
+            "items": {
+              "Pyraxis Ember": 3,
+              "Storm Capacitor": 3,
+              "Myrr'Kai Thread": 2
+            }
+          }
+        ],
+        "dialogueBlocks": [
+          2,
+          2,
+          2,
+          3,
+          4,
+          3
+        ]
+      },
+      "cleared": true,
+      "perf": {
+        "fpsEstimate": 2,
+        "onePercentLowFps": 2,
+        "drawCalls": 63,
+        "activeTriangles": 67285,
+        "geometries": 143,
+        "textures": 74,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    },
+    "sector-7": {
+      "id": "sector-7",
+      "attempts": [
+        {
+          "attempt": 1,
+          "wallSeconds": 0.8,
+          "aliveEnemies": [],
+          "playerPos": [
+            3.6,
+            0,
+            -49.3
+          ],
+          "missionStage": 4,
+          "civiliansRescued": "0/0",
+          "memorySiteDone": false,
+          "alleyGateOpen": true,
+          "bossDefeated": true,
+          "playerDied": false,
+          "isVictory": false,
+          "stageReached": 2,
+          "counters": {
+            "interacts": 0,
+            "jumps": 0,
+            "parries": 0,
+            "dodges": 0,
+            "abilityUses": 4,
+            "heroSwitches": 0
+          },
+          "events": {
+            "dialogueBlocks": [
+              2
+            ],
+            "rewards": [
+              {
+                "xp": 42,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 48,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 68,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 260,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 280,
+                "items": {
+                  "Storm Capacitor": 2,
+                  "Ash Scrap": 3
+                },
+                "shards": 1
+              }
+            ],
+            "saveKeys": [
+              [
+                "duoSynergySaved",
+                "combatStats"
+              ],
+              [
+                "completedDistricts"
+              ]
+            ]
+          },
+          "completedDistricts": [
+            "sector-7"
+          ],
+          "final": {
+            "step": 653,
+            "simSeconds": 10.9,
+            "hero": "kai",
+            "pos": [
+              3.6,
+              0,
+              -49.3
+            ],
+            "kaiHp": 266,
+            "jaxHp": 301,
+            "alive": 0,
+            "stage": 2,
+            "combo": 15,
+            "boss": {
+              "id": "boss-architect-scout",
+              "hp": 0,
+              "maxHp": 780,
+              "phase": 2,
+              "armor": 0,
+              "state": "dead"
+            }
+          },
+          "bossPhasesObserved": [
+            1,
+            2
+          ],
+          "timeline": [
+            {
+              "step": 60,
+              "simSeconds": 1,
+              "hero": "kai",
+              "pos": [
+                -2.4,
+                0,
+                -2.9
+              ],
+              "kaiHp": 230,
+              "jaxHp": 265,
+              "alive": 4,
+              "stage": 0,
+              "combo": 0,
+              "boss": {
+                "id": "boss-architect-scout",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 120,
+              "simSeconds": 2,
+              "hero": "kai",
+              "pos": [
+                -4.3,
+                0,
+                -10.5
+              ],
+              "kaiHp": 230,
+              "jaxHp": 265,
+              "alive": 3,
+              "stage": 0,
+              "combo": 2,
+              "boss": {
+                "id": "boss-architect-scout",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 180,
+              "simSeconds": 3,
+              "hero": "kai",
+              "pos": [
+                1.8,
+                0,
+                -12.1
+              ],
+              "kaiHp": 230,
+              "jaxHp": 265,
+              "alive": 2,
+              "stage": 1,
+              "combo": 3,
+              "boss": {
+                "id": "boss-architect-scout",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 240,
+              "simSeconds": 4,
+              "hero": "kai",
+              "pos": [
+                1,
+                0,
+                -23.9
+              ],
+              "kaiHp": 230,
+              "jaxHp": 265,
+              "alive": 2,
+              "stage": 1,
+              "combo": 3,
+              "boss": {
+                "id": "boss-architect-scout",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 300,
+              "simSeconds": 5,
+              "hero": "kai",
+              "pos": [
+                1.2,
+                0,
+                -30.4
+              ],
+              "kaiHp": 248,
+              "jaxHp": 283,
+              "alive": 1,
+              "stage": 2,
+              "combo": 6,
+              "boss": {
+                "id": "boss-architect-scout",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 360,
+              "simSeconds": 6,
+              "hero": "kai",
+              "pos": [
+                1.1,
+                0,
+                -41
+              ],
+              "kaiHp": 248,
+              "jaxHp": 283,
+              "alive": 1,
+              "stage": 2,
+              "combo": 6,
+              "boss": {
+                "id": "boss-architect-scout",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 420,
+              "simSeconds": 7,
+              "hero": "kai",
+              "pos": [
+                0.6,
+                0,
+                -52.9
+              ],
+              "kaiHp": 248,
+              "jaxHp": 283,
+              "alive": 1,
+              "stage": 2,
+              "combo": 6,
+              "boss": {
+                "id": "boss-architect-scout",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 480,
+              "simSeconds": 8,
+              "hero": "kai",
+              "pos": [
+                0.3,
+                0,
+                -61.2
+              ],
+              "kaiHp": 248,
+              "jaxHp": 283,
+              "alive": 1,
+              "stage": 2,
+              "combo": 7,
+              "boss": {
+                "id": "boss-architect-scout",
+                "hp": 747,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 169,
+                "state": "windup"
+              }
+            },
+            {
+              "step": 540,
+              "simSeconds": 9,
+              "hero": "kai",
+              "pos": [
+                1.1,
+                0,
+                -56.5
+              ],
+              "kaiHp": 248,
+              "jaxHp": 283,
+              "alive": 1,
+              "stage": 2,
+              "combo": 10,
+              "boss": {
+                "id": "boss-architect-scout",
+                "hp": 541,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 0,
+                "state": "stagger"
+              }
+            },
+            {
+              "step": 600,
+              "simSeconds": 10,
+              "hero": "kai",
+              "pos": [
+                0.2,
+                0,
+                -52
+              ],
+              "kaiHp": 248,
+              "jaxHp": 283,
+              "alive": 1,
+              "stage": 2,
+              "combo": 12,
+              "boss": {
+                "id": "boss-architect-scout",
+                "hp": 208,
+                "maxHp": 780,
+                "phase": 2,
+                "armor": 0,
+                "state": "stagger"
+              }
+            }
+          ]
+        }
+      ],
+      "entry": {
+        "district": "sector-7",
+        "walkableZones": 7,
+        "anchors": 6,
+        "anchorsAttached": true,
+        "civilians": [],
+        "memorySitePos": [
+          10,
+          0,
+          -28
+        ],
+        "alleyGatePos": [
+          0,
+          0,
+          -48
+        ],
+        "walkableTops": [
+          [
+            -15,
+            -9,
+            -17,
+            -7,
+            3.6
+          ],
+          [
+            9,
+            15,
+            -21,
+            -11,
+            3.6
+          ],
+          [
+            -15.5,
+            -8.5,
+            -32,
+            -20,
+            7.2
+          ],
+          [
+            8.5,
+            15.5,
+            -36,
+            -24,
+            7.2
+          ],
+          [
+            -14,
+            14,
+            -38.6,
+            -33.4,
+            8.1
+          ],
+          [
+            -16.8,
+            -11.3,
+            -75,
+            -57,
+            6.4
+          ],
+          [
+            11.3,
+            16.8,
+            -75,
+            -57,
+            6.4
+          ]
+        ],
+        "enemies": [
+          {
+            "id": "s7-recon-1",
+            "kind": "marksman",
+            "hp": 88
+          },
+          {
+            "id": "s7-recon-2",
+            "kind": "dodger",
+            "hp": 98
+          },
+          {
+            "id": "s7-gate-1",
+            "kind": "bruiser",
+            "hp": 215
+          },
+          {
+            "id": "boss-architect-scout",
+            "kind": "boss",
+            "hp": 780
+          }
+        ]
+      },
+      "screenshots": [
+        "sector-7-01-entry.jpg",
+        "sector-7-02-boss-engaged.jpg",
+        "sector-7-03-boss-defeated.jpg"
+      ],
+      "victoryDialogueClicks": 2,
+      "afterDefeat": {
+        "completedDistricts": [
+          "sector-7"
+        ],
+        "rewards": [
+          {
+            "xp": 42,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 48,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 68,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 260,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 280,
+            "items": {
+              "Storm Capacitor": 2,
+              "Ash Scrap": 3
+            },
+            "shards": 1
+          }
+        ],
+        "dialogueBlocks": [
+          2
+        ]
+      },
+      "cleared": true,
+      "perf": {
+        "fpsEstimate": 4,
+        "onePercentLowFps": 2,
+        "drawCalls": 49,
+        "activeTriangles": 37840,
+        "geometries": 162,
+        "textures": 83,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    },
+    "neon-ward": {
+      "id": "neon-ward",
+      "attempts": [
+        {
+          "attempt": 1,
+          "wallSeconds": 0.6,
+          "aliveEnemies": [],
+          "playerPos": [
+            5.1,
+            0,
+            -47.4
+          ],
+          "missionStage": 4,
+          "civiliansRescued": "0/0",
+          "memorySiteDone": false,
+          "alleyGateOpen": true,
+          "bossDefeated": true,
+          "playerDied": false,
+          "isVictory": false,
+          "stageReached": 2,
+          "counters": {
+            "interacts": 0,
+            "jumps": 0,
+            "parries": 0,
+            "dodges": 0,
+            "abilityUses": 18,
+            "heroSwitches": 0
+          },
+          "events": {
+            "dialogueBlocks": [
+              2
+            ],
+            "rewards": [
+              {
+                "xp": 48,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 42,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 260,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 280,
+                "items": {
+                  "Storm Capacitor": 2,
+                  "Ash Scrap": 3
+                },
+                "shards": 1
+              }
+            ],
+            "saveKeys": [
+              [
+                "duoSynergySaved",
+                "combatStats"
+              ],
+              [
+                "completedDistricts"
+              ]
+            ]
+          },
+          "completedDistricts": [
+            "sector-7",
+            "neon-ward"
+          ],
+          "final": {
+            "step": 644,
+            "simSeconds": 10.7,
+            "hero": "kai",
+            "pos": [
+              5.1,
+              0,
+              -47.4
+            ],
+            "kaiHp": 266,
+            "jaxHp": 301,
+            "alive": 0,
+            "stage": 2,
+            "combo": 11,
+            "boss": {
+              "id": "boss-neon-prince",
+              "hp": 0,
+              "maxHp": 780,
+              "phase": 2,
+              "armor": 0,
+              "state": "dead"
+            }
+          },
+          "bossPhasesObserved": [
+            1,
+            2
+          ],
+          "timeline": [
+            {
+              "step": 60,
+              "simSeconds": 1,
+              "hero": "kai",
+              "pos": [
+                -3.1,
+                0,
+                -4.5
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 3,
+              "stage": 0,
+              "combo": 0,
+              "boss": {
+                "id": "boss-neon-prince",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 120,
+              "simSeconds": 2,
+              "hero": "kai",
+              "pos": [
+                -5.7,
+                0,
+                -11.2
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 2,
+              "stage": 0,
+              "combo": 2,
+              "boss": {
+                "id": "boss-neon-prince",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 180,
+              "simSeconds": 3,
+              "hero": "kai",
+              "pos": [
+                -2.6,
+                0,
+                -11.9
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 2,
+              "stage": 0,
+              "combo": 2,
+              "boss": {
+                "id": "boss-neon-prince",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 240,
+              "simSeconds": 4,
+              "hero": "kai",
+              "pos": [
+                2.9,
+                0,
+                -17
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 1,
+              "stage": 1,
+              "combo": 4,
+              "boss": {
+                "id": "boss-neon-prince",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 300,
+              "simSeconds": 5,
+              "hero": "kai",
+              "pos": [
+                2.2,
+                0,
+                -28.9
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 1,
+              "stage": 1,
+              "combo": 4,
+              "boss": {
+                "id": "boss-neon-prince",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 360,
+              "simSeconds": 6,
+              "hero": "kai",
+              "pos": [
+                1.6,
+                0,
+                -40.7
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 1,
+              "stage": 1,
+              "combo": 4,
+              "boss": {
+                "id": "boss-neon-prince",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 420,
+              "simSeconds": 7,
+              "hero": "kai",
+              "pos": [
+                0.9,
+                0,
+                -52.6
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 1,
+              "stage": 1,
+              "combo": 4,
+              "boss": {
+                "id": "boss-neon-prince",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 480,
+              "simSeconds": 8,
+              "hero": "kai",
+              "pos": [
+                0.4,
+                0,
+                -61.7
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 1,
+              "stage": 1,
+              "combo": 2,
+              "boss": {
+                "id": "boss-neon-prince",
+                "hp": 694,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 135,
+                "state": "stagger"
+              }
+            },
+            {
+              "step": 540,
+              "simSeconds": 9,
+              "hero": "kai",
+              "pos": [
+                -0.6,
+                0,
+                -58
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 1,
+              "stage": 1,
+              "combo": 5,
+              "boss": {
+                "id": "boss-neon-prince",
+                "hp": 501,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 0,
+                "state": "stagger"
+              }
+            },
+            {
+              "step": 600,
+              "simSeconds": 10,
+              "hero": "kai",
+              "pos": [
+                1.8,
+                0,
+                -52.6
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 1,
+              "stage": 1,
+              "combo": 9,
+              "boss": {
+                "id": "boss-neon-prince",
+                "hp": 165,
+                "maxHp": 780,
+                "phase": 2,
+                "armor": 0,
+                "state": "stagger"
+              }
+            }
+          ]
+        }
+      ],
+      "entry": {
+        "district": "neon-ward",
+        "walkableZones": 7,
+        "anchors": 6,
+        "anchorsAttached": true,
+        "civilians": [],
+        "memorySitePos": [
+          0,
+          0,
+          -32
+        ],
+        "alleyGatePos": [
+          0,
+          0,
+          -48
+        ],
+        "walkableTops": [
+          [
+            -15.5,
+            -9.5,
+            -16.5,
+            -7.5,
+            6.4
+          ],
+          [
+            9.5,
+            15.5,
+            -18.5,
+            -9.5,
+            6.4
+          ],
+          [
+            -13,
+            13,
+            -28.4,
+            -23.6,
+            7.3
+          ],
+          [
+            -16.3,
+            -9.8,
+            -43,
+            -33,
+            8.8
+          ],
+          [
+            9.8,
+            16.3,
+            -43,
+            -33,
+            8.8
+          ],
+          [
+            -17,
+            -12,
+            -75,
+            -57,
+            6.8
+          ],
+          [
+            12,
+            17,
+            -75,
+            -57,
+            6.8
+          ]
+        ],
+        "enemies": [
+          {
+            "id": "nw-stalker-1",
+            "kind": "dodger",
+            "hp": 98
+          },
+          {
+            "id": "nw-marksman-1",
+            "kind": "marksman",
+            "hp": 88
+          },
+          {
+            "id": "boss-neon-prince",
+            "kind": "boss",
+            "hp": 780
+          }
+        ]
+      },
+      "screenshots": [
+        "neon-ward-01-entry.jpg",
+        "neon-ward-02-boss-engaged.jpg",
+        "neon-ward-03-boss-defeated.jpg"
+      ],
+      "victoryDialogueClicks": 2,
+      "afterDefeat": {
+        "completedDistricts": [
+          "sector-7",
+          "neon-ward"
+        ],
+        "rewards": [
+          {
+            "xp": 48,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 42,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 260,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 280,
+            "items": {
+              "Storm Capacitor": 2,
+              "Ash Scrap": 3
+            },
+            "shards": 1
+          }
+        ],
+        "dialogueBlocks": [
+          2
+        ]
+      },
+      "cleared": true,
+      "perf": {
+        "fpsEstimate": 5,
+        "onePercentLowFps": 2,
+        "drawCalls": 26,
+        "activeTriangles": 37304,
+        "geometries": 174,
+        "textures": 91,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    },
+    "iron-market": {
+      "id": "iron-market",
+      "attempts": [
+        {
+          "attempt": 1,
+          "wallSeconds": 0.7,
+          "aliveEnemies": [],
+          "playerPos": [
+            -1,
+            0,
+            -59.9
+          ],
+          "missionStage": 4,
+          "civiliansRescued": "0/2",
+          "memorySiteDone": false,
+          "alleyGateOpen": true,
+          "bossDefeated": true,
+          "playerDied": false,
+          "isVictory": false,
+          "stageReached": 2,
+          "counters": {
+            "interacts": 0,
+            "jumps": 0,
+            "parries": 1,
+            "dodges": 0,
+            "abilityUses": 17,
+            "heroSwitches": 0
+          },
+          "events": {
+            "dialogueBlocks": [
+              2
+            ],
+            "rewards": [
+              {
+                "xp": 68,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 58,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 140,
+                "items": {
+                  "Ash Scrap": 2,
+                  "Memory Shard": 1
+                },
+                "shards": 1
+              },
+              {
+                "xp": 280,
+                "items": {
+                  "Storm Capacitor": 2,
+                  "Ash Scrap": 3
+                },
+                "shards": 1
+              }
+            ],
+            "saveKeys": [
+              [
+                "duoSynergySaved",
+                "combatStats"
+              ],
+              [
+                "completedDistricts"
+              ]
+            ]
+          },
+          "completedDistricts": [
+            "sector-7",
+            "neon-ward",
+            "iron-market"
+          ],
+          "final": {
+            "step": 602,
+            "simSeconds": 10,
+            "hero": "kai",
+            "pos": [
+              -1,
+              0,
+              -59.9
+            ],
+            "kaiHp": 284,
+            "jaxHp": 319,
+            "alive": 0,
+            "stage": 2,
+            "combo": 4,
+            "boss": {
+              "id": "boss-blood-broker",
+              "hp": 0,
+              "maxHp": 300,
+              "phase": 2,
+              "armor": 0,
+              "state": "dead"
+            }
+          },
+          "bossPhasesObserved": [
+            1,
+            2
+          ],
+          "timeline": [
+            {
+              "step": 60,
+              "simSeconds": 1,
+              "hero": "kai",
+              "pos": [
+                -3,
+                0,
+                -5
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 3,
+              "stage": 0,
+              "combo": 0,
+              "boss": {
+                "id": "boss-blood-broker",
+                "hp": 300,
+                "maxHp": 300,
+                "phase": 1,
+                "armor": 90,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 120,
+              "simSeconds": 2,
+              "hero": "kai",
+              "pos": [
+                -5,
+                0,
+                -12.3
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 3,
+              "stage": 0,
+              "combo": 3,
+              "boss": {
+                "id": "boss-blood-broker",
+                "hp": 300,
+                "maxHp": 300,
+                "phase": 1,
+                "armor": 90,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 180,
+              "simSeconds": 3,
+              "hero": "kai",
+              "pos": [
+                -2.3,
+                0,
+                -11.8
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 2,
+              "stage": 0,
+              "combo": 4,
+              "boss": {
+                "id": "boss-blood-broker",
+                "hp": 300,
+                "maxHp": 300,
+                "phase": 1,
+                "armor": 90,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 240,
+              "simSeconds": 4,
+              "hero": "kai",
+              "pos": [
+                -0.9,
+                0,
+                -12.8
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 2,
+              "stage": 0,
+              "combo": 4,
+              "boss": {
+                "id": "boss-blood-broker",
+                "hp": 300,
+                "maxHp": 300,
+                "phase": 1,
+                "armor": 90,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 300,
+              "simSeconds": 5,
+              "hero": "kai",
+              "pos": [
+                -2.2,
+                0,
+                -11.9
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 1,
+              "stage": 1,
+              "combo": 6,
+              "boss": {
+                "id": "boss-blood-broker",
+                "hp": 300,
+                "maxHp": 300,
+                "phase": 1,
+                "armor": 90,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 360,
+              "simSeconds": 6,
+              "hero": "kai",
+              "pos": [
+                -0.7,
+                0,
+                -21.9
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 1,
+              "stage": 1,
+              "combo": 6,
+              "boss": {
+                "id": "boss-blood-broker",
+                "hp": 300,
+                "maxHp": 300,
+                "phase": 1,
+                "armor": 90,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 420,
+              "simSeconds": 7,
+              "hero": "kai",
+              "pos": [
+                -0.5,
+                0,
+                -33.7
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 1,
+              "stage": 1,
+              "combo": 6,
+              "boss": {
+                "id": "boss-blood-broker",
+                "hp": 300,
+                "maxHp": 300,
+                "phase": 1,
+                "armor": 90,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 480,
+              "simSeconds": 8,
+              "hero": "kai",
+              "pos": [
+                -0.3,
+                0,
+                -45.6
+              ],
+              "kaiHp": 266,
+              "jaxHp": 301,
+              "alive": 1,
+              "stage": 1,
+              "combo": 6,
+              "boss": {
+                "id": "boss-blood-broker",
+                "hp": 300,
+                "maxHp": 300,
+                "phase": 1,
+                "armor": 90,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 540,
+              "simSeconds": 9,
+              "hero": "kai",
+              "pos": [
+                -0.2,
+                0,
+                -57
+              ],
+              "kaiHp": 284,
+              "jaxHp": 319,
+              "alive": 1,
+              "stage": 1,
+              "combo": 0,
+              "boss": {
+                "id": "boss-blood-broker",
+                "hp": 300,
+                "maxHp": 300,
+                "phase": 1,
+                "armor": 90,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 600,
+              "simSeconds": 10,
+              "hero": "kai",
+              "pos": [
+                -0.8,
+                0,
+                -60.2
+              ],
+              "kaiHp": 284,
+              "jaxHp": 319,
+              "alive": 1,
+              "stage": 1,
+              "combo": 3,
+              "boss": {
+                "id": "boss-blood-broker",
+                "hp": 32,
+                "maxHp": 300,
+                "phase": 2,
+                "armor": 0,
+                "state": "stagger"
+              }
+            }
+          ]
+        }
+      ],
+      "entry": {
+        "district": "iron-market",
+        "walkableZones": 7,
+        "anchors": 6,
+        "anchorsAttached": true,
+        "civilians": [
+          {
+            "name": "Forge Apprentice",
+            "pos": [
+              -11,
+              0,
+              -24
+            ]
+          },
+          {
+            "name": "Bazaar Merchant",
+            "pos": [
+              11,
+              0,
+              -26
+            ]
+          }
+        ],
+        "memorySitePos": [
+          0,
+          0,
+          -32
+        ],
+        "alleyGatePos": [
+          0,
+          0,
+          -48
+        ],
+        "walkableTops": [
+          [
+            -16,
+            -10,
+            -17,
+            -7,
+            3.8
+          ],
+          [
+            10,
+            16,
+            -19,
+            -9,
+            3.8
+          ],
+          [
+            -14,
+            14,
+            -30.4,
+            -25.6,
+            7.3
+          ],
+          [
+            -16.5,
+            -10.5,
+            -44,
+            -32,
+            7.2
+          ],
+          [
+            10.5,
+            16.5,
+            -44,
+            -32,
+            7.2
+          ],
+          [
+            -17,
+            -12,
+            -75,
+            -57,
+            6
+          ],
+          [
+            12,
+            17,
+            -75,
+            -57,
+            6
+          ]
+        ],
+        "enemies": [
+          {
+            "id": "im-enforcer-1",
+            "kind": "bruiser",
+            "hp": 215
+          },
+          {
+            "id": "im-shield-1",
+            "kind": "shield",
+            "hp": 145
+          },
+          {
+            "id": "boss-blood-broker",
+            "kind": "assassin",
+            "hp": 300
+          }
+        ]
+      },
+      "screenshots": [
+        "iron-market-01-entry.jpg",
+        "iron-market-02-boss-engaged.jpg",
+        "iron-market-03-boss-defeated.jpg"
+      ],
+      "victoryDialogueClicks": 2,
+      "afterDefeat": {
+        "completedDistricts": [
+          "sector-7",
+          "neon-ward",
+          "iron-market"
+        ],
+        "rewards": [
+          {
+            "xp": 68,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 58,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 140,
+            "items": {
+              "Ash Scrap": 2,
+              "Memory Shard": 1
+            },
+            "shards": 1
+          },
+          {
+            "xp": 280,
+            "items": {
+              "Storm Capacitor": 2,
+              "Ash Scrap": 3
+            },
+            "shards": 1
+          }
+        ],
+        "dialogueBlocks": [
+          2
+        ]
+      },
+      "cleared": true,
+      "perf": {
+        "fpsEstimate": 5,
+        "onePercentLowFps": 2,
+        "drawCalls": 22,
+        "activeTriangles": 46511,
+        "geometries": 181,
+        "textures": 99,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    },
+    "undercrown": {
+      "id": "undercrown",
+      "attempts": [
+        {
+          "attempt": 1,
+          "wallSeconds": 0.7,
+          "aliveEnemies": [],
+          "playerPos": [
+            -0.3,
+            0,
+            -60.2
+          ],
+          "missionStage": 4,
+          "civiliansRescued": "0/0",
+          "memorySiteDone": false,
+          "alleyGateOpen": true,
+          "bossDefeated": true,
+          "playerDied": false,
+          "isVictory": false,
+          "stageReached": 2,
+          "counters": {
+            "interacts": 0,
+            "jumps": 0,
+            "parries": 1,
+            "dodges": 0,
+            "abilityUses": 16,
+            "heroSwitches": 0
+          },
+          "events": {
+            "dialogueBlocks": [
+              2
+            ],
+            "rewards": [
+              {
+                "xp": 48,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 42,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 260,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 280,
+                "items": {
+                  "Storm Capacitor": 2,
+                  "Ash Scrap": 3
+                },
+                "shards": 1
+              }
+            ],
+            "saveKeys": [
+              [
+                "duoSynergySaved",
+                "combatStats"
+              ],
+              [
+                "completedDistricts"
+              ]
+            ]
+          },
+          "completedDistricts": [
+            "sector-7",
+            "neon-ward",
+            "iron-market",
+            "undercrown"
+          ],
+          "final": {
+            "step": 531,
+            "simSeconds": 8.8,
+            "hero": "kai",
+            "pos": [
+              -0.3,
+              0,
+              -60.2
+            ],
+            "kaiHp": 280,
+            "jaxHp": 319,
+            "alive": 0,
+            "stage": 2,
+            "combo": 8,
+            "boss": {
+              "id": "boss-undercrown-sentinel",
+              "hp": 0,
+              "maxHp": 780,
+              "phase": 2,
+              "armor": 0,
+              "state": "dead"
+            }
+          },
+          "bossPhasesObserved": [
+            1,
+            2
+          ],
+          "timeline": [
+            {
+              "step": 60,
+              "simSeconds": 1,
+              "hero": "kai",
+              "pos": [
+                -2.9,
+                0,
+                -5
+              ],
+              "kaiHp": 284,
+              "jaxHp": 319,
+              "alive": 3,
+              "stage": 0,
+              "combo": 0,
+              "boss": {
+                "id": "boss-undercrown-sentinel",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 120,
+              "simSeconds": 2,
+              "hero": "kai",
+              "pos": [
+                -1.6,
+                0,
+                -10.3
+              ],
+              "kaiHp": 284,
+              "jaxHp": 319,
+              "alive": 2,
+              "stage": 0,
+              "combo": 2,
+              "boss": {
+                "id": "boss-undercrown-sentinel",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 180,
+              "simSeconds": 3,
+              "hero": "kai",
+              "pos": [
+                4.2,
+                0,
+                -17
+              ],
+              "kaiHp": 280,
+              "jaxHp": 319,
+              "alive": 2,
+              "stage": 0,
+              "combo": 1,
+              "boss": {
+                "id": "boss-undercrown-sentinel",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 240,
+              "simSeconds": 4,
+              "hero": "kai",
+              "pos": [
+                3.4,
+                0,
+                -26.6
+              ],
+              "kaiHp": 280,
+              "jaxHp": 319,
+              "alive": 1,
+              "stage": 1,
+              "combo": 2,
+              "boss": {
+                "id": "boss-undercrown-sentinel",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 300,
+              "simSeconds": 5,
+              "hero": "kai",
+              "pos": [
+                2.4,
+                0,
+                -38.4
+              ],
+              "kaiHp": 280,
+              "jaxHp": 319,
+              "alive": 1,
+              "stage": 1,
+              "combo": 2,
+              "boss": {
+                "id": "boss-undercrown-sentinel",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 360,
+              "simSeconds": 6,
+              "hero": "kai",
+              "pos": [
+                1.5,
+                0,
+                -50.2
+              ],
+              "kaiHp": 280,
+              "jaxHp": 319,
+              "alive": 1,
+              "stage": 1,
+              "combo": 2,
+              "boss": {
+                "id": "boss-undercrown-sentinel",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 420,
+              "simSeconds": 7,
+              "hero": "kai",
+              "pos": [
+                0.4,
+                0,
+                -63.2
+              ],
+              "kaiHp": 280,
+              "jaxHp": 319,
+              "alive": 1,
+              "stage": 1,
+              "combo": 1,
+              "boss": {
+                "id": "boss-undercrown-sentinel",
+                "hp": 727,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 103,
+                "state": "windup"
+              }
+            },
+            {
+              "step": 480,
+              "simSeconds": 8,
+              "hero": "kai",
+              "pos": [
+                -0.2,
+                0,
+                -61.6
+              ],
+              "kaiHp": 280,
+              "jaxHp": 319,
+              "alive": 1,
+              "stage": 1,
+              "combo": 5,
+              "boss": {
+                "id": "boss-undercrown-sentinel",
+                "hp": 267,
+                "maxHp": 780,
+                "phase": 2,
+                "armor": 0,
+                "state": "stagger"
+              }
+            }
+          ]
+        }
+      ],
+      "entry": {
+        "district": "undercrown",
+        "walkableZones": 7,
+        "anchors": 6,
+        "anchorsAttached": true,
+        "civilians": [],
+        "memorySitePos": [
+          0,
+          0,
+          -34
+        ],
+        "alleyGatePos": [
+          0,
+          0,
+          -48
+        ],
+        "walkableTops": [
+          [
+            -13.6,
+            -9.4,
+            -20,
+            -8,
+            3.6
+          ],
+          [
+            9.4,
+            13.6,
+            -24,
+            -12,
+            3.6
+          ],
+          [
+            -14,
+            14,
+            -32.8,
+            -27.3,
+            7.7
+          ],
+          [
+            -16.3,
+            -10.8,
+            -44,
+            -36,
+            8.4
+          ],
+          [
+            10.8,
+            16.3,
+            -44,
+            -36,
+            8.4
+          ],
+          [
+            -17,
+            -12,
+            -75,
+            -57,
+            6.8
+          ],
+          [
+            12,
+            17,
+            -75,
+            -57,
+            6.8
+          ]
+        ],
+        "enemies": [
+          {
+            "id": "uc-stalker-1",
+            "kind": "dodger",
+            "hp": 98
+          },
+          {
+            "id": "uc-marksman-1",
+            "kind": "marksman",
+            "hp": 88
+          },
+          {
+            "id": "boss-undercrown-sentinel",
+            "kind": "boss",
+            "hp": 780
+          }
+        ]
+      },
+      "screenshots": [
+        "undercrown-01-entry.jpg",
+        "undercrown-02-boss-engaged.jpg",
+        "undercrown-03-boss-defeated.jpg"
+      ],
+      "victoryDialogueClicks": 2,
+      "afterDefeat": {
+        "completedDistricts": [
+          "sector-7",
+          "neon-ward",
+          "iron-market",
+          "undercrown"
+        ],
+        "rewards": [
+          {
+            "xp": 48,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 42,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 260,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 280,
+            "items": {
+              "Storm Capacitor": 2,
+              "Ash Scrap": 3
+            },
+            "shards": 1
+          }
+        ],
+        "dialogueBlocks": [
+          2
+        ]
+      },
+      "cleared": true,
+      "perf": {
+        "fpsEstimate": 5,
+        "onePercentLowFps": 2,
+        "drawCalls": 19,
+        "activeTriangles": 37272,
+        "geometries": 178,
+        "textures": 107,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    },
+    "zenith-spires": {
+      "id": "zenith-spires",
+      "attempts": [
+        {
+          "attempt": 1,
+          "wallSeconds": 0.8,
+          "aliveEnemies": [],
+          "playerPos": [
+            12.6,
+            0,
+            -55.6
+          ],
+          "missionStage": 4,
+          "civiliansRescued": "0/0",
+          "memorySiteDone": false,
+          "alleyGateOpen": true,
+          "bossDefeated": true,
+          "playerDied": false,
+          "isVictory": false,
+          "stageReached": 2,
+          "counters": {
+            "interacts": 0,
+            "jumps": 0,
+            "parries": 2,
+            "dodges": 0,
+            "abilityUses": 21,
+            "heroSwitches": 0
+          },
+          "events": {
+            "dialogueBlocks": [
+              2
+            ],
+            "rewards": [
+              {
+                "xp": 58,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 42,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 260,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 280,
+                "items": {
+                  "Storm Capacitor": 2,
+                  "Ash Scrap": 3
+                },
+                "shards": 1
+              }
+            ],
+            "saveKeys": [
+              [
+                "duoSynergySaved",
+                "combatStats"
+              ],
+              [
+                "duoSynergySaved",
+                "combatStats"
+              ],
+              [
+                "completedDistricts"
+              ]
+            ]
+          },
+          "completedDistricts": [
+            "sector-7",
+            "neon-ward",
+            "iron-market",
+            "undercrown",
+            "zenith-spires"
+          ],
+          "final": {
+            "step": 608,
+            "simSeconds": 10.1,
+            "hero": "kai",
+            "pos": [
+              12.6,
+              0,
+              -55.6
+            ],
+            "kaiHp": 298,
+            "jaxHp": 337,
+            "alive": 0,
+            "stage": 2,
+            "combo": 9,
+            "boss": {
+              "id": "boss-borax-zenith",
+              "hp": 0,
+              "maxHp": 780,
+              "phase": 2,
+              "armor": 0,
+              "state": "dead"
+            }
+          },
+          "bossPhasesObserved": [
+            1,
+            2
+          ],
+          "timeline": [
+            {
+              "step": 60,
+              "simSeconds": 1,
+              "hero": "kai",
+              "pos": [
+                -3,
+                0,
+                -5
+              ],
+              "kaiHp": 280,
+              "jaxHp": 319,
+              "alive": 3,
+              "stage": 0,
+              "combo": 0,
+              "boss": {
+                "id": "boss-borax-zenith",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 120,
+              "simSeconds": 2,
+              "hero": "kai",
+              "pos": [
+                -5.2,
+                0,
+                -13.1
+              ],
+              "kaiHp": 280,
+              "jaxHp": 319,
+              "alive": 3,
+              "stage": 0,
+              "combo": 1,
+              "boss": {
+                "id": "boss-borax-zenith",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 180,
+              "simSeconds": 3,
+              "hero": "kai",
+              "pos": [
+                5.3,
+                0,
+                -18.6
+              ],
+              "kaiHp": 280,
+              "jaxHp": 319,
+              "alive": 1,
+              "stage": 1,
+              "combo": 3,
+              "boss": {
+                "id": "boss-borax-zenith",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 240,
+              "simSeconds": 4,
+              "hero": "kai",
+              "pos": [
+                5,
+                0,
+                -30
+              ],
+              "kaiHp": 280,
+              "jaxHp": 319,
+              "alive": 1,
+              "stage": 1,
+              "combo": 3,
+              "boss": {
+                "id": "boss-borax-zenith",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 300,
+              "simSeconds": 5,
+              "hero": "kai",
+              "pos": [
+                3.5,
+                0,
+                -41.8
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 3,
+              "boss": {
+                "id": "boss-borax-zenith",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 360,
+              "simSeconds": 6,
+              "hero": "kai",
+              "pos": [
+                1.9,
+                0,
+                -53.6
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 3,
+              "boss": {
+                "id": "boss-borax-zenith",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 420,
+              "simSeconds": 7,
+              "hero": "kai",
+              "pos": [
+                1,
+                0,
+                -60.8
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 2,
+              "boss": {
+                "id": "boss-borax-zenith",
+                "hp": 682,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 72,
+                "state": "windup"
+              }
+            },
+            {
+              "step": 480,
+              "simSeconds": 8,
+              "hero": "kai",
+              "pos": [
+                1.6,
+                0,
+                -62.7
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 5,
+              "boss": {
+                "id": "boss-borax-zenith",
+                "hp": 339,
+                "maxHp": 780,
+                "phase": 2,
+                "armor": 0,
+                "state": "stagger"
+              }
+            },
+            {
+              "step": 540,
+              "simSeconds": 9,
+              "hero": "kai",
+              "pos": [
+                5.5,
+                0,
+                -59.5
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 8,
+              "boss": {
+                "id": "boss-borax-zenith",
+                "hp": 57,
+                "maxHp": 780,
+                "phase": 2,
+                "armor": 0,
+                "state": "stagger"
+              }
+            },
+            {
+              "step": 600,
+              "simSeconds": 10,
+              "hero": "kai",
+              "pos": [
+                11.6,
+                0,
+                -56.2
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 8,
+              "boss": {
+                "id": "boss-borax-zenith",
+                "hp": 51,
+                "maxHp": 780,
+                "phase": 2,
+                "armor": 0,
+                "state": "windup"
+              }
+            }
+          ]
+        }
+      ],
+      "entry": {
+        "district": "zenith-spires",
+        "walkableZones": 7,
+        "anchors": 6,
+        "anchorsAttached": true,
+        "civilians": [],
+        "memorySitePos": [
+          0,
+          0,
+          -34
+        ],
+        "alleyGatePos": [
+          0,
+          0,
+          -48
+        ],
+        "walkableTops": [
+          [
+            -15.8,
+            -10.3,
+            -19,
+            -9,
+            5.6
+          ],
+          [
+            10.3,
+            15.8,
+            -19,
+            -9,
+            5.6
+          ],
+          [
+            -14,
+            14,
+            -30.5,
+            -25.5,
+            7.4
+          ],
+          [
+            -16,
+            -11,
+            -48,
+            -36,
+            9
+          ],
+          [
+            11,
+            16,
+            -48,
+            -36,
+            9
+          ],
+          [
+            -17.3,
+            -12.8,
+            -75,
+            -57,
+            7.6
+          ],
+          [
+            12.8,
+            17.3,
+            -75,
+            -57,
+            7.6
+          ]
+        ],
+        "enemies": [
+          {
+            "id": "zs-warden-1",
+            "kind": "shield",
+            "hp": 145
+          },
+          {
+            "id": "zs-marksman-1",
+            "kind": "marksman",
+            "hp": 88
+          },
+          {
+            "id": "boss-borax-zenith",
+            "kind": "boss",
+            "hp": 780
+          }
+        ]
+      },
+      "screenshots": [
+        "zenith-spires-01-entry.jpg",
+        "zenith-spires-02-boss-engaged.jpg",
+        "zenith-spires-03-boss-defeated.jpg"
+      ],
+      "victoryDialogueClicks": 2,
+      "afterDefeat": {
+        "completedDistricts": [
+          "sector-7",
+          "neon-ward",
+          "iron-market",
+          "undercrown",
+          "zenith-spires"
+        ],
+        "rewards": [
+          {
+            "xp": 58,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 42,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 260,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 280,
+            "items": {
+              "Storm Capacitor": 2,
+              "Ash Scrap": 3
+            },
+            "shards": 1
+          }
+        ],
+        "dialogueBlocks": [
+          2
+        ]
+      },
+      "cleared": true,
+      "perf": {
+        "fpsEstimate": 4,
+        "onePercentLowFps": 2,
+        "drawCalls": 24,
+        "activeTriangles": 37536,
+        "geometries": 186,
+        "textures": 115,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    },
+    "erasure-fields": {
+      "id": "erasure-fields",
+      "attempts": [
+        {
+          "attempt": 1,
+          "wallSeconds": 0.5,
+          "aliveEnemies": [],
+          "playerPos": [
+            -3.2,
+            0,
+            -65.8
+          ],
+          "missionStage": 4,
+          "civiliansRescued": "0/0",
+          "memorySiteDone": false,
+          "alleyGateOpen": true,
+          "bossDefeated": true,
+          "playerDied": false,
+          "isVictory": false,
+          "stageReached": 2,
+          "counters": {
+            "interacts": 0,
+            "jumps": 0,
+            "parries": 1,
+            "dodges": 0,
+            "abilityUses": 13,
+            "heroSwitches": 0
+          },
+          "events": {
+            "dialogueBlocks": [
+              2
+            ],
+            "rewards": [
+              {
+                "xp": 48,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 42,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 260,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 280,
+                "items": {
+                  "Storm Capacitor": 2,
+                  "Ash Scrap": 3
+                },
+                "shards": 1
+              }
+            ],
+            "saveKeys": [
+              [
+                "duoSynergySaved",
+                "combatStats"
+              ],
+              [
+                "duoSynergySaved",
+                "combatStats"
+              ],
+              [
+                "completedDistricts"
+              ]
+            ]
+          },
+          "completedDistricts": [
+            "sector-7",
+            "neon-ward",
+            "iron-market",
+            "undercrown",
+            "zenith-spires",
+            "erasure-fields"
+          ],
+          "final": {
+            "step": 558,
+            "simSeconds": 9.3,
+            "hero": "kai",
+            "pos": [
+              -3.2,
+              0,
+              -65.8
+            ],
+            "kaiHp": 298,
+            "jaxHp": 337,
+            "alive": 0,
+            "stage": 2,
+            "combo": 9,
+            "boss": {
+              "id": "boss-erasure-choir",
+              "hp": 0,
+              "maxHp": 780,
+              "phase": 2,
+              "armor": 0,
+              "state": "dead"
+            }
+          },
+          "bossPhasesObserved": [
+            1,
+            2
+          ],
+          "timeline": [
+            {
+              "step": 60,
+              "simSeconds": 1,
+              "hero": "kai",
+              "pos": [
+                -4.4,
+                0,
+                -9.2
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 3,
+              "stage": 0,
+              "combo": 0,
+              "boss": {
+                "id": "boss-erasure-choir",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 120,
+              "simSeconds": 2,
+              "hero": "kai",
+              "pos": [
+                -5.4,
+                0,
+                -8.4
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 2,
+              "stage": 0,
+              "combo": 1,
+              "boss": {
+                "id": "boss-erasure-choir",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 180,
+              "simSeconds": 3,
+              "hero": "kai",
+              "pos": [
+                1.2,
+                0,
+                -16.6
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 2,
+              "boss": {
+                "id": "boss-erasure-choir",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 240,
+              "simSeconds": 4,
+              "hero": "kai",
+              "pos": [
+                0.9,
+                0,
+                -28.4
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 2,
+              "boss": {
+                "id": "boss-erasure-choir",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 300,
+              "simSeconds": 5,
+              "hero": "kai",
+              "pos": [
+                0.6,
+                0,
+                -40.3
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 2,
+              "boss": {
+                "id": "boss-erasure-choir",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 360,
+              "simSeconds": 6,
+              "hero": "kai",
+              "pos": [
+                0.4,
+                0,
+                -52.2
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 0,
+              "boss": {
+                "id": "boss-erasure-choir",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 420,
+              "simSeconds": 7,
+              "hero": "kai",
+              "pos": [
+                0.2,
+                0,
+                -61.1
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 2,
+              "boss": {
+                "id": "boss-erasure-choir",
+                "hp": 679,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 126,
+                "state": "windup"
+              }
+            },
+            {
+              "step": 480,
+              "simSeconds": 8,
+              "hero": "kai",
+              "pos": [
+                -5.7,
+                0,
+                -66.6
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 5,
+              "boss": {
+                "id": "boss-erasure-choir",
+                "hp": 394,
+                "maxHp": 780,
+                "phase": 2,
+                "armor": 0,
+                "state": "stagger"
+              }
+            },
+            {
+              "step": 540,
+              "simSeconds": 9,
+              "hero": "kai",
+              "pos": [
+                -2.2,
+                0,
+                -64.5
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 8,
+              "boss": {
+                "id": "boss-erasure-choir",
+                "hp": 12,
+                "maxHp": 780,
+                "phase": 2,
+                "armor": 0,
+                "state": "stagger"
+              }
+            }
+          ]
+        }
+      ],
+      "entry": {
+        "district": "erasure-fields",
+        "walkableZones": 7,
+        "anchors": 6,
+        "anchorsAttached": true,
+        "civilians": [],
+        "memorySitePos": [
+          0,
+          0,
+          -34
+        ],
+        "alleyGatePos": [
+          0,
+          0,
+          -48
+        ],
+        "walkableTops": [
+          [
+            -15,
+            -9,
+            -18.5,
+            -9.5,
+            4.4
+          ],
+          [
+            9,
+            15,
+            -22.5,
+            -13.5,
+            4.4
+          ],
+          [
+            -13,
+            13,
+            -32.3,
+            -27.8,
+            7
+          ],
+          [
+            -16,
+            -11,
+            -49,
+            -39,
+            8
+          ],
+          [
+            11,
+            16,
+            -49,
+            -39,
+            8
+          ],
+          [
+            -17,
+            -12,
+            -75,
+            -57,
+            6.4
+          ],
+          [
+            12,
+            17,
+            -75,
+            -57,
+            6.4
+          ]
+        ],
+        "enemies": [
+          {
+            "id": "ef-husk-1",
+            "kind": "dodger",
+            "hp": 98
+          },
+          {
+            "id": "ef-husk-2",
+            "kind": "marksman",
+            "hp": 88
+          },
+          {
+            "id": "boss-erasure-choir",
+            "kind": "boss",
+            "hp": 780
+          }
+        ]
+      },
+      "screenshots": [
+        "erasure-fields-01-entry.jpg",
+        "erasure-fields-02-boss-engaged.jpg",
+        "erasure-fields-03-boss-defeated.jpg"
+      ],
+      "victoryDialogueClicks": 2,
+      "afterDefeat": {
+        "completedDistricts": [
+          "sector-7",
+          "neon-ward",
+          "iron-market",
+          "undercrown",
+          "zenith-spires",
+          "erasure-fields"
+        ],
+        "rewards": [
+          {
+            "xp": 48,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 42,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 260,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 280,
+            "items": {
+              "Storm Capacitor": 2,
+              "Ash Scrap": 3
+            },
+            "shards": 1
+          }
+        ],
+        "dialogueBlocks": [
+          2
+        ]
+      },
+      "cleared": true,
+      "perf": {
+        "fpsEstimate": 5,
+        "onePercentLowFps": 2,
+        "drawCalls": 19,
+        "activeTriangles": 46471,
+        "geometries": 190,
+        "textures": 123,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    },
+    "memory-nexus": {
+      "id": "memory-nexus",
+      "attempts": [
+        {
+          "attempt": 1,
+          "wallSeconds": 0.6,
+          "aliveEnemies": [],
+          "playerPos": [
+            4.7,
+            0,
+            -60.8
+          ],
+          "missionStage": 4,
+          "civiliansRescued": "0/0",
+          "memorySiteDone": false,
+          "alleyGateOpen": true,
+          "bossDefeated": true,
+          "playerDied": false,
+          "isVictory": false,
+          "stageReached": 2,
+          "counters": {
+            "interacts": 0,
+            "jumps": 0,
+            "parries": 1,
+            "dodges": 0,
+            "abilityUses": 18,
+            "heroSwitches": 0
+          },
+          "events": {
+            "dialogueBlocks": [
+              2
+            ],
+            "rewards": [
+              {
+                "xp": 68,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 48,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 260,
+                "items": {
+                  "Ash Scrap": 1
+                },
+                "shards": 0
+              },
+              {
+                "xp": 500,
+                "items": {
+                  "Storm Capacitor": 2,
+                  "Ash Scrap": 3
+                },
+                "shards": 1
+              }
+            ],
+            "saveKeys": [
+              [
+                "duoSynergySaved",
+                "combatStats"
+              ],
+              [
+                "duoSynergySaved",
+                "combatStats"
+              ],
+              [
+                "completedDistricts"
+              ]
+            ]
+          },
+          "completedDistricts": [
+            "sector-7",
+            "neon-ward",
+            "iron-market",
+            "undercrown",
+            "zenith-spires",
+            "erasure-fields",
+            "memory-nexus"
+          ],
+          "final": {
+            "step": 571,
+            "simSeconds": 9.5,
+            "hero": "kai",
+            "pos": [
+              4.7,
+              0,
+              -60.8
+            ],
+            "kaiHp": 316,
+            "jaxHp": 355,
+            "alive": 0,
+            "stage": 2,
+            "combo": 9,
+            "boss": {
+              "id": "boss-hollow-architect",
+              "hp": 0,
+              "maxHp": 780,
+              "phase": 2,
+              "armor": 0,
+              "state": "dead"
+            }
+          },
+          "bossPhasesObserved": [
+            1,
+            2
+          ],
+          "timeline": [
+            {
+              "step": 60,
+              "simSeconds": 1,
+              "hero": "kai",
+              "pos": [
+                -2.9,
+                0,
+                -5
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 3,
+              "stage": 0,
+              "combo": 0,
+              "boss": {
+                "id": "boss-hollow-architect",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 120,
+              "simSeconds": 2,
+              "hero": "kai",
+              "pos": [
+                -5.3,
+                0,
+                -11.1
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 2,
+              "stage": 0,
+              "combo": 2,
+              "boss": {
+                "id": "boss-hollow-architect",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 180,
+              "simSeconds": 3,
+              "hero": "kai",
+              "pos": [
+                -1.6,
+                0,
+                -13.4
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 4,
+              "boss": {
+                "id": "boss-hollow-architect",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 240,
+              "simSeconds": 4,
+              "hero": "kai",
+              "pos": [
+                -1.2,
+                0,
+                -25
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 4,
+              "boss": {
+                "id": "boss-hollow-architect",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 300,
+              "simSeconds": 5,
+              "hero": "kai",
+              "pos": [
+                -0.9,
+                0,
+                -36.9
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 4,
+              "boss": {
+                "id": "boss-hollow-architect",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 360,
+              "simSeconds": 6,
+              "hero": "kai",
+              "pos": [
+                -0.5,
+                0,
+                -48.8
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 4,
+              "boss": {
+                "id": "boss-hollow-architect",
+                "hp": 780,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 190,
+                "state": "chase"
+              }
+            },
+            {
+              "step": 420,
+              "simSeconds": 7,
+              "hero": "kai",
+              "pos": [
+                -0.2,
+                0,
+                -61.3
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 1,
+              "boss": {
+                "id": "boss-hollow-architect",
+                "hp": 725,
+                "maxHp": 780,
+                "phase": 1,
+                "armor": 98,
+                "state": "windup"
+              }
+            },
+            {
+              "step": 480,
+              "simSeconds": 8,
+              "hero": "kai",
+              "pos": [
+                5.2,
+                0,
+                -59.3
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 4,
+              "boss": {
+                "id": "boss-hollow-architect",
+                "hp": 397,
+                "maxHp": 780,
+                "phase": 2,
+                "armor": 0,
+                "state": "stagger"
+              }
+            },
+            {
+              "step": 540,
+              "simSeconds": 9,
+              "hero": "kai",
+              "pos": [
+                2.7,
+                0,
+                -60
+              ],
+              "kaiHp": 298,
+              "jaxHp": 337,
+              "alive": 1,
+              "stage": 1,
+              "combo": 7,
+              "boss": {
+                "id": "boss-hollow-architect",
+                "hp": 135,
+                "maxHp": 780,
+                "phase": 2,
+                "armor": 0,
+                "state": "stagger"
+              }
+            }
+          ]
+        }
+      ],
+      "entry": {
+        "district": "memory-nexus",
+        "walkableZones": 7,
+        "anchors": 6,
+        "anchorsAttached": true,
+        "civilians": [],
+        "memorySitePos": [
+          0,
+          0,
+          -34
+        ],
+        "alleyGatePos": [
+          0,
+          0,
+          -48
+        ],
+        "walkableTops": [
+          [
+            -15.3,
+            -9.8,
+            -19,
+            -9,
+            6
+          ],
+          [
+            9.8,
+            15.3,
+            -19,
+            -9,
+            6
+          ],
+          [
+            -14,
+            14,
+            -30.5,
+            -25.5,
+            7.6
+          ],
+          [
+            -16,
+            -11,
+            -47,
+            -37,
+            9
+          ],
+          [
+            11,
+            16,
+            -47,
+            -37,
+            9
+          ],
+          [
+            -17.3,
+            -12.8,
+            -75,
+            -57,
+            7.6
+          ],
+          [
+            12.8,
+            17.3,
+            -75,
+            -57,
+            7.6
+          ]
+        ],
+        "enemies": [
+          {
+            "id": "mn-guard-1",
+            "kind": "bruiser",
+            "hp": 215
+          },
+          {
+            "id": "mn-guard-2",
+            "kind": "dodger",
+            "hp": 98
+          },
+          {
+            "id": "boss-hollow-architect",
+            "kind": "boss",
+            "hp": 780
+          }
+        ]
+      },
+      "screenshots": [
+        "memory-nexus-01-entry.jpg",
+        "memory-nexus-02-boss-engaged.jpg",
+        "memory-nexus-03-boss-defeated.jpg"
+      ],
+      "victoryDialogueClicks": 2,
+      "afterDefeat": {
+        "completedDistricts": [
+          "sector-7",
+          "neon-ward",
+          "iron-market",
+          "undercrown",
+          "zenith-spires",
+          "erasure-fields",
+          "memory-nexus"
+        ],
+        "rewards": [
+          {
+            "xp": 68,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 48,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 260,
+            "items": {
+              "Ash Scrap": 1
+            },
+            "shards": 0
+          },
+          {
+            "xp": 500,
+            "items": {
+              "Storm Capacitor": 2,
+              "Ash Scrap": 3
+            },
+            "shards": 1
+          }
+        ],
+        "dialogueBlocks": [
+          2
+        ]
+      },
+      "cleared": true,
+      "perf": {
+        "fpsEstimate": 5,
+        "onePercentLowFps": 2,
+        "drawCalls": 29,
+        "activeTriangles": 37576,
+        "geometries": 191,
+        "textures": 131,
+        "adaptiveScaleApplied": false,
+        "isSoftwareGl": true
+      }
+    }
+  },
+  "engineReady": true,
+  "dialogueTranscript": [
+    {
+      "at": "opening",
+      "text": "Bovar (Comms) Adoptive Father 1 / 3 Kai, Jax—stay off the main avenue! The Fang Syndicate locked down the Alley Gate and swept half the block. Skip Scene Next"
+    },
+    {
+      "at": "opening",
+      "text": "Jax Storm Fang 2 / 3 Let them try to hold the street. Give the word, Kai, and I'll break their frontline wide open. Skip Scene Next"
+    },
+    {
+      "at": "opening",
+      "text": "Kai Memory-Web Heir 3 / 3 Stay sharp. Civilians are still trapped past the market stalls, and something near the plaza is tearing at my head—like a static echo. Skip Scene Continue"
+    },
+    {
+      "at": "ashblock-heights#1@142",
+      "text": "Kai Memory-Web Heir 1 / 2 That's the first squad down. Keep moving—two neighbors are pinned behind the shipping crates and up on the fire-escape deck. Skip Scene Next"
+    },
+    {
+      "at": "ashblock-heights#1@142",
+      "text": "Jax Storm Fang 2 / 2 I see the overhead crane line. Swing across or vault the crates—I'm right on your flank. Skip Scene Continue"
+    },
+    {
+      "at": "ashblock-heights#1@920",
+      "text": "Kai Memory-Web Heir 1 / 2 Look at the pavement—threads of violet light bleeding out of the stone. Someone tried to scrub what happened here. Skip Scene Next"
+    },
+    {
+      "at": "ashblock-heights#1@920",
+      "text": "Jax Storm Fang 2 / 2 My mane's bristling just standing near it. Pull it together, brother—let's see what the Syndicate is hiding. Skip Scene Continue"
+    },
+    {
+      "at": "ashblock-heights#1@1140",
+      "text": "Kai Memory-Web Heir 1 / 2 That memory echo... Boryn stood at this gate before the city fell silent. The Fang Syndicate didn't take Ashblock alone. Skip Scene Next"
+    },
+    {
+      "at": "ashblock-heights#1@1140",
+      "text": "Jax Storm Fang 2 / 2 Answers are on the other side of that Alley Gate. Let's tear the lock off. Skip Scene Continue"
+    },
+    {
+      "at": "ashblock-heights#1@1400",
+      "text": "Fang Enforcer Syndicate Heavy Commander 1 / 3 Two stray cubs rattling the gate? Bovar should've kept you chained indoors. Ashblock belongs to the Fang now. Skip Scene Next"
+    },
+    {
+      "at": "ashblock-heights#1@1400",
+      "text": "Jax Storm Fang 2 / 3 Big talk for a tin-plated bully. Watch his hammer swing—it's heavy, which means it leaves an opening! Skip Scene Next"
+    },
+    {
+      "at": "ashblock-heights#1@1400",
+      "text": "Kai Memory-Web Heir 3 / 3 Together, Jax. Don't let him corner us! Skip Scene Continue"
+    },
+    {
+      "at": "ashblock-heights#1@1580",
+      "text": "Fang Enforcer Syndicate Heavy Commander 1 / 4 Enough games! Hydraulic Overdrive—let's crush this courtyard down to bedrock! Skip Scene Next"
+    },
+    {
+      "at": "ashblock-heights#1@1580",
+      "text": "Jax Storm Fang 2 / 4 Kai—his shockwave's locking down the whole plaza! My storm and your threads are resonating! Skip Scene Next"
+    },
+    {
+      "at": "ashblock-heights#1@1580",
+      "text": "Kai Memory-Web Heir 3 / 4 Ember, Storm, and Memory... three threads, one will. Grab on, brother—NOW! Skip Scene Next"
+    },
+    {
+      "at": "ashblock-heights#1@1580",
+      "text": "Kai-Jax The Memory Hero (Three-Tail Convergence) 4 / 4 We remember what you tried to erase. Press Fusion [F] to unleash Kai-Jax and finish the Enforcer! Skip Scene Continue"
+    },
+    {
+      "at": "ashblock-heights#victory",
+      "text": "Kai Memory-Web Heir 1 / 3 The Enforcer's down, and the blockade across Ashblock Heights is breaking. Skip Scene Next"
+    },
+    {
+      "at": "ashblock-heights#victory",
+      "text": "Jax Storm Fang 2 / 3 That felt like thunder and fire forged into one body. Whatever Borax and Boryn hid from us... it's waking up. Skip Scene Next"
+    },
+    {
+      "at": "ashblock-heights#victory",
+      "text": "Bovar (Comms) Adoptive Father 3 / 3 I felt that surge from three blocks away. Catch your breath, boys—Sector-7 scouts already know the gate fell. Rest at Ashblock and prepare. Skip Scene Continue"
+    },
+    {
+      "at": "sector-7#victory",
+      "text": "Kai Memory-Web Heir 1 / 2 The Architect Scout's relay is offline. Their telemetry was feeding straight into Neon Ward. Skip Scene Next"
+    },
+    {
+      "at": "sector-7#victory",
+      "text": "Jax Storm Fang 2 / 2 Then Neon Ward is our next stop—or we can regroup back at Ashblock Heights anytime. Skip Scene Continue"
+    },
+    {
+      "at": "neon-ward#victory",
+      "text": "Kai Memory-Web Heir 1 / 2 Another district ward is broken—the memory threads across Raging City are reconnecting. Skip Scene Next"
+    },
+    {
+      "at": "neon-ward#victory",
+      "text": "Jax Storm Fang 2 / 2 Our lineage is waking up across every sector. Let's check the Raging City map for our next target. Skip Scene Continue"
+    },
+    {
+      "at": "iron-market#victory",
+      "text": "Kai Memory-Web Heir 1 / 2 Another district ward is broken—the memory threads across Raging City are reconnecting. Skip Scene Next"
+    },
+    {
+      "at": "iron-market#victory",
+      "text": "Jax Storm Fang 2 / 2 Our lineage is waking up across every sector. Let's check the Raging City map for our next target. Skip Scene Continue"
+    },
+    {
+      "at": "undercrown#victory",
+      "text": "Kai Memory-Web Heir 1 / 2 Another district ward is broken—the memory threads across Raging City are reconnecting. Skip Scene Next"
+    },
+    {
+      "at": "undercrown#victory",
+      "text": "Jax Storm Fang 2 / 2 Our lineage is waking up across every sector. Let's check the Raging City map for our next target. Skip Scene Continue"
+    },
+    {
+      "at": "zenith-spires#victory",
+      "text": "Kai Memory-Web Heir 1 / 2 Another district ward is broken—the memory threads across Raging City are reconnecting. Skip Scene Next"
+    },
+    {
+      "at": "zenith-spires#victory",
+      "text": "Jax Storm Fang 2 / 2 Our lineage is waking up across every sector. Let's check the Raging City map for our next target. Skip Scene Continue"
+    },
+    {
+      "at": "erasure-fields#victory",
+      "text": "Kai Memory-Web Heir 1 / 2 Another district ward is broken—the memory threads across Raging City are reconnecting. Skip Scene Next"
+    },
+    {
+      "at": "erasure-fields#victory",
+      "text": "Jax Storm Fang 2 / 2 Our lineage is waking up across every sector. Let's check the Raging City map for our next target. Skip Scene Continue"
+    },
+    {
+      "at": "memory-nexus#victory",
+      "text": "Kai-Jax The Memory Hero (Three-Tail Convergence) 1 / 2 The Hollow Architect has fallen. The Memory Nexus remembers every bloodline—Myrr'Kai, Pyraxis, Kar-Voth, and Thryxen stand unbroken. Skip Scene Next"
+    },
+    {
+      "at": "memory-nexus#victory",
+      "text": "Borax The Law · Elder Mentor 2 / 2 You carried the city across eight districts and forged your own path. Raging City is finally free. Skip Scene Continue"
+    }
+  ],
+  "start": {
+    "startedFromTitle": true,
+    "openingDialogueClicks": 3
+  },
+  "wrongBossDialogue": [],
+  "travelStateRegression": {
+    "isGameOverAfterTravel": false,
+    "isVictoryAfterTravel": false
+  },
+  "preReload": {
+    "completed": [
+      "sector-7",
+      "neon-ward",
+      "iron-market",
+      "undercrown",
+      "zenith-spires",
+      "erasure-fields",
+      "memory-nexus"
+    ],
+    "storageKeys": [
+      "kaijax_save_v1_autosave",
+      "kaijax_save_v1_autosave_bak"
+    ]
+  },
+  "postReload": {
+    "completed": [
+      "sector-7",
+      "neon-ward",
+      "iron-market",
+      "undercrown",
+      "zenith-spires",
+      "erasure-fields",
+      "memory-nexus"
+    ],
+    "district": "ashblock-heights"
+  },
+  "saveReloadMatches": true,
+  "returnTravel": {
+    "district": "ashblock-heights",
+    "walkableZones": 23
+  },
+  "returnTravelShot": "return-travel-ashblock.jpg",
+  "finishedAt": "2026-11-16T09:16:39.396Z",
+  "runtime": {
+    "consoleErrors": [],
+    "pageExceptions": [],
+    "httpFailures": []
+  },
+  "summary": {
+    "ashblock-heights": {
+      "cleared": true,
+      "attempts": 1,
+      "phases": [
+        1,
+        2
+      ]
+    },
+    "sector-7": {
+      "cleared": true,
+      "attempts": 1,
+      "phases": [
+        1,
+        2
+      ]
+    },
+    "neon-ward": {
+      "cleared": true,
+      "attempts": 1,
+      "phases": [
+        1,
+        2
+      ]
+    },
+    "iron-market": {
+      "cleared": true,
+      "attempts": 1,
+      "phases": [
+        1,
+        2
+      ]
+    },
+    "undercrown": {
+      "cleared": true,
+      "attempts": 1,
+      "phases": [
+        1,
+        2
+      ]
+    },
+    "zenith-spires": {
+      "cleared": true,
+      "attempts": 1,
+      "phases": [
+        1,
+        2
+      ]
+    },
+    "erasure-fields": {
+      "cleared": true,
+      "attempts": 1,
+      "phases": [
+        1,
+        2
+      ]
+    },
+    "memory-nexus": {
+      "cleared": true,
+      "attempts": 1,
+      "phases": [
+        1,
+        2
+      ]
+    }
+  }
+}
