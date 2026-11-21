@@ -46,3 +46,6 @@ jobs:
           set -euo pipefail
           npm run lint
           npx tsx --test src/game/__tests__/polishWave9.test.ts
+      - name: Certify dialogue accessibility semantics
+        working-directory: apps/kaijax-android
+        run: npx tsx --test src/components/__tests__/dialogueOverlay.a11y.test.tsx

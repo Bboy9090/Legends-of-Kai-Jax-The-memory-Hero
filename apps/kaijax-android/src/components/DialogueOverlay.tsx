@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ChevronRight, FastForward } from 'lucide-react';
 import { DialogueLine } from '../game/types';
 
@@ -27,13 +27,26 @@ export const DialogueOverlay: React.FC<DialogueOverlayProps> = ({
   onSkip,
 }) => {
   const line = lines[currentIndex];
+  const advanceRef = useRef<HTMLButtonElement>(null);
+
+  // Keyboard / gamepad / switch users: keep focus on the primary action for every new line so
+  // Enter or Space advances without having to tab through the HUD first.
+  useEffect(() => {
+    if (line) advanceRef.current?.focus({ preventScroll: true });
+  }, [currentIndex, line]);
+
   if (!line) return null;
 
   const accent = SPEAKER_ACCENT[line.portraitHero ?? 'civilian'] ?? SPEAKER_ACCENT.civilian;
   const textSize = subtitleScale === 'large' ? 'text-base sm:text-lg' : 'text-sm sm:text-base';
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 p-4 sm:p-6 safe-area-pad flex justify-center pointer-events-auto">
+    <div
+      role="dialog"
+      aria-label="Story dialogue"
+      data-testid="dialogue-overlay"
+      className="fixed inset-x-0 bottom-0 z-40 p-4 sm:p-6 safe-area-pad flex justify-center pointer-events-auto"
+    >
       <div className="w-full max-w-3xl rounded-2xl bg-[#0a0b10]/95 border border-slate-700/90 p-5 sm:p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -44,24 +57,39 @@ export const DialogueOverlay: React.FC<DialogueOverlayProps> = ({
               <span className="text-xs text-slate-400 font-medium">{line.role}</span>
             </div>
           </div>
-          <span className="text-xs font-mono-tabular text-slate-400">
+          <span
+            className="text-xs font-mono-tabular text-slate-400"
+            aria-label={`Line ${currentIndex + 1} of ${lines.length}`}
+          >
             {currentIndex + 1} / {lines.length}
           </span>
         </div>
 
-        <p className={`mt-3 text-slate-100 leading-relaxed ${textSize}`}>{line.text}</p>
+        {/* Polite live region: the speaker is part of the announcement so a screen-reader user knows who is talking. */}
+        <p
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          data-testid="dialogue-line"
+          className={`mt-3 text-slate-100 leading-relaxed ${textSize}`}
+        >
+          <span className="sr-only">{line.speaker}: </span>
+          {line.text}
+        </p>
 
         <div className="mt-4 flex items-center justify-end gap-3">
           <button
             onClick={onSkip}
+            aria-label="Skip scene"
             className="min-h-[44px] inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#131620] hover:bg-slate-800 border border-slate-700 text-xs font-medium text-slate-300 transition-colors"
           >
             <FastForward className="w-3.5 h-3.5" />
             Skip Scene
           </button>
           <button
+            ref={advanceRef}
             onClick={onAdvance}
-            className="min-h-[44px] inline-flex items-center gap-1.5 px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-semibold transition-colors"
+            className="min-h-[44px] inline-flex items-center gap-1.5 px-5 py-2 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-semibold transition-colors"
           >
             {currentIndex + 1 >= lines.length ? 'Continue' : 'Next'}
             <ChevronRight className="w-4 h-4" />
