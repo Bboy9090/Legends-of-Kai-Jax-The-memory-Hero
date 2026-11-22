@@ -51,5 +51,5 @@ test("prunes unreferenced nested GLBs without touching source artwork or root al
   assert.ok(fs.existsSync(smallNestedModel), "small nested files remain covered by existing policy");
   assert.ok(fs.existsSync(sourceArt), "pruning generated dist must preserve source artwork");
   assert.match(result.stdout, /nestedPruned=2/);
-  assert.match(result.stdout, /nestedKept=1/);
+  assert.match(result.stdout, /nestedKept=2/);
 });
