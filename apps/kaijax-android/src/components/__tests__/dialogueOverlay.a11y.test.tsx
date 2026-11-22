@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { DialogueOverlay } from '../DialogueOverlay';
+import { DialogueOverlay, trapDialogueTabFocus } from '../DialogueOverlay';
 import type { DialogueLine } from '../../game/types';
 
 const lines = [
@@ -19,6 +19,32 @@ test('dialogue is a named dialog region', () => {
   const html = render(0);
   assert.match(html, /role="dialog"/);
   assert.match(html, /aria-label="Story dialogue"/);
+  assert.match(html, /aria-modal="true"/);
+});
+
+test('dialogue tab focus wraps between Skip and Next at both boundaries', () => {
+  let prevented = 0;
+  let focused = '';
+  const skip = { focus: () => { focused = 'skip'; } };
+  const advance = { focus: () => { focused = 'advance'; } };
+  const event = (shiftKey: boolean) => ({
+    key: 'Tab',
+    shiftKey,
+    preventDefault: () => { prevented += 1; },
+  });
+
+  trapDialogueTabFocus(event(false), advance, skip, advance);
+  assert.equal(focused, 'skip');
+  trapDialogueTabFocus(event(true), skip, skip, advance);
+  assert.equal(focused, 'advance');
+  assert.equal(prevented, 2);
+});
+
+test('dialogue focus trap leaves ordinary key navigation alone', () => {
+  let prevented = false;
+  const event = { key: 'Enter', shiftKey: false, preventDefault: () => { prevented = true; } };
+  trapDialogueTabFocus(event, {}, { focus: () => {} }, { focus: () => {} });
+  assert.equal(prevented, false);
 });
 
 test('the line is a polite, atomic live region that names the speaker for screen readers', () => {

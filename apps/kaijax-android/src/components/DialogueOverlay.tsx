@@ -19,6 +19,23 @@ const SPEAKER_ACCENT: Record<string, string> = {
   civilian: 'border-slate-500/70 text-slate-200',
 };
 
+export function trapDialogueTabFocus(
+  event: Pick<React.KeyboardEvent, 'key' | 'shiftKey' | 'preventDefault'>,
+  activeElement: unknown,
+  firstAction: Pick<HTMLButtonElement, 'focus'> | null,
+  lastAction: Pick<HTMLButtonElement, 'focus'> | null,
+): void {
+  if (event.key !== 'Tab' || !firstAction || !lastAction) return;
+
+  if (event.shiftKey && activeElement === firstAction) {
+    event.preventDefault();
+    lastAction.focus();
+  } else if (!event.shiftKey && activeElement === lastAction) {
+    event.preventDefault();
+    firstAction.focus();
+  }
+}
+
 export const DialogueOverlay: React.FC<DialogueOverlayProps> = ({
   lines,
   currentIndex,
@@ -27,7 +44,12 @@ export const DialogueOverlay: React.FC<DialogueOverlayProps> = ({
   onSkip,
 }) => {
   const line = lines[currentIndex];
+  const skipRef = useRef<HTMLButtonElement>(null);
   const advanceRef = useRef<HTMLButtonElement>(null);
+
+  const keepTabFocusInsideDialogue = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    trapDialogueTabFocus(event, document.activeElement, skipRef.current, advanceRef.current);
+  };
 
   // Keyboard / gamepad / switch users: keep focus on the primary action for every new line so
   // Enter or Space advances without having to tab through the HUD first.
@@ -44,6 +66,8 @@ export const DialogueOverlay: React.FC<DialogueOverlayProps> = ({
     <div
       role="dialog"
       aria-label="Story dialogue"
+      aria-modal="true"
+      onKeyDown={keepTabFocusInsideDialogue}
       data-testid="dialogue-overlay"
       className="fixed inset-x-0 bottom-0 z-40 p-4 sm:p-6 safe-area-pad flex justify-center pointer-events-auto"
     >
@@ -79,6 +103,7 @@ export const DialogueOverlay: React.FC<DialogueOverlayProps> = ({
 
         <div className="mt-4 flex items-center justify-end gap-3">
           <button
+            ref={skipRef}
             onClick={onSkip}
             aria-label="Skip scene"
             className="min-h-[44px] inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#131620] hover:bg-slate-800 border border-slate-700 text-xs font-medium text-slate-300 transition-colors"
