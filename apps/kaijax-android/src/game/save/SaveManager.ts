@@ -223,10 +223,18 @@ export function migrateSaveData(raw: unknown, slotId: string): SaveSlotData {
     activeHero: safeHero,
     missionStageIndex: safeStage,
     checkpointPos: safePos,
-    combatStats: {
-      ...base.combatStats,
-      ...(obj.combatStats ?? {}),
-    },
+    combatStats: Object.fromEntries(
+      Object.entries(base.combatStats).map(([key, fallback]) => [
+        key,
+        finiteNonnegativeInt(
+          obj.combatStats && typeof obj.combatStats === 'object' && !Array.isArray(obj.combatStats)
+            ? (obj.combatStats as unknown as Record<string, unknown>)[key]
+            : undefined,
+          fallback ?? 0,
+          1_000_000_000
+        ),
+      ])
+    ) as SaveSlotData['combatStats'],
     heroes: {
       kai: cleanHero(obj.heroes?.kai, base.heroes.kai),
       jax: cleanHero(obj.heroes?.jax, base.heroes.jax),
