@@ -113,3 +113,29 @@ test('truncated and malformed inventories are not accepted as valid save data', 
   assert.equal(validateSavePayload({ materials: null }), false);
   assert.equal(validateSavePayload({ checkpointPos: [0, Number.POSITIVE_INFINITY, 2] }), false);
 });
+
+test('legacy saves sanitize combat telemetry without preserving corrupt counters', () => {
+  const raw = createNewSave('slot-3');
+  const brokenStats = {
+    parryCount: -4,
+    evadeCount: Number.POSITIVE_INFINITY,
+    hitsTaken: Number.NaN,
+    maxCombo: 2.9,
+    duoFinishersUsed: 9_999_999_999,
+    wallPinsCount: 'bad-data',
+    guardBreaksCount: 3,
+    styleScoreBest: -100,
+    injectedProperty: 100,
+  };
+  raw.combatStats = brokenStats as unknown as typeof raw.combatStats;
+  const recovered = migrateSaveData(raw, 'slot-3');
+  assert.equal(recovered.combatStats.parryCount, 0);
+  assert.equal(recovered.combatStats.evadeCount, 0);
+  assert.equal(recovered.combatStats.hitsTaken, 0);
+  assert.equal(recovered.combatStats.maxCombo, 2);
+  assert.equal(recovered.combatStats.duoFinishersUsed, 1_000_000_000);
+  assert.equal(recovered.combatStats.wallPinsCount, 0);
+  assert.equal(recovered.combatStats.guardBreaksCount, 3);
+  assert.equal(recovered.combatStats.styleScoreBest, 0);
+  assert.equal('injectedProperty' in recovered.combatStats, false);
+});
