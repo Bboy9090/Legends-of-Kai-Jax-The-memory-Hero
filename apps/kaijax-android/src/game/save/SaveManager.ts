@@ -234,7 +234,7 @@ export function migrateSaveData(raw: unknown, slotId: string): SaveSlotData {
           1_000_000_000
         ),
       ])
-    ) as SaveSlotData['combatStats'],
+    ) as unknown as SaveSlotData['combatStats'],
     heroes: {
       kai: cleanHero(obj.heroes?.kai, base.heroes.kai),
       jax: cleanHero(obj.heroes?.jax, base.heroes.jax),
