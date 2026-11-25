@@ -3,7 +3,15 @@ import { CombatState } from './stateEnums';
 import { getMoveFrameTime } from './frameTiming';
 import { MOVES } from './moveData';
 
-let frame: ((state: any, delta: number) => void) | undefined;
+interface MutableVec3Like {
+  set: (x: number, y: number, z: number) => unknown;
+}
+interface FrameStateLike {
+  camera: {
+    getWorldDirection: (v: MutableVec3Like) => unknown;
+  };
+}
+let frame: ((state: FrameStateLike, delta: number) => void) | undefined;
 let cleanup: (() => void) | undefined;
 vi.mock('@react-three/fiber', () => ({ useFrame: (fn: typeof frame) => { frame = fn; } }));
 vi.mock('react', () => ({
@@ -16,11 +24,11 @@ import { useAdventure } from '../../lib/stores/useAdventure';
 import { useTouchInput } from '../../lib/stores/useTouchInput';
 const initial = useAdventure.getState();
 const touchInitial = useTouchInput.getState();
-const camera = { camera: { getWorldDirection: (v: any) => v.set(0, 0, -1) } };
-const press = (code: string) => { const event = new Event('keydown'); Object.defineProperty(event, 'code', { value: code }); (globalThis.window as any).dispatchEvent(event); };
+const camera: FrameStateLike = { camera: { getWorldDirection: (v: MutableVec3Like) => v.set(0, 0, -1) } };
+const press = (code: string) => { const event = new Event('keydown'); Object.defineProperty(event, 'code', { value: code }); globalThis.window.dispatchEvent(event); };
 
 beforeEach(() => {
-  const win = new EventTarget() as any;
+  const win = new EventTarget();
   win.addEventListener = win.addEventListener.bind(win);
   win.removeEventListener = win.removeEventListener.bind(win);
   win.dispatchEvent = win.dispatchEvent.bind(win);
