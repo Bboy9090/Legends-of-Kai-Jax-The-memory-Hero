@@ -588,14 +588,14 @@ export const TECH_UPGRADES: Upgrade[] = [
 ];
 
 /**
- * TRIFORCE SPELLCRAFT UPGRADES
+ * TRIUNE SPELLCRAFT UPGRADES
  */
-export const TRIFORCE_UPGRADES: Upgrade[] = [
+export const TRIUNE_UPGRADES: Upgrade[] = [
   {
-    id: 'triforce_001',
+    id: 'triune_001',
     name: 'Magic Power',
     description: 'Increases magic damage by 12% per level',
-    category: UpgradeCategory.TRIFORCE,
+    category: UpgradeCategory.TRIUNE,
     rarity: UpgradeRarity.UNCOMMON,
     level: 0,
     maxLevel: 7,
@@ -609,19 +609,19 @@ export const TRIFORCE_UPGRADES: Upgrade[] = [
         scaling: 'linear',
       }],
     },
-    tags: ['triforce', 'magic', 'damage'],
+    tags: ['triune', 'magic', 'damage'],
   },
   {
-    id: 'triforce_002',
+    id: 'triune_002',
     name: 'Spell Efficiency',
     description: 'Reduces magic ability cooldown',
-    category: UpgradeCategory.TRIFORCE,
+    category: UpgradeCategory.TRIUNE,
     rarity: UpgradeRarity.RARE,
     level: 0,
     maxLevel: 5,
     unlocked: false,
     cost: { currency: 300 },
-    prerequisites: [{ upgradeId: 'triforce_001', minUpgradeLevel: 3 }],
+    prerequisites: [{ upgradeId: 'triune_001', minUpgradeLevel: 3 }],
     effects: {
       statModifications: [{
         stat: 'specialCooldown',
@@ -630,7 +630,7 @@ export const TRIFORCE_UPGRADES: Upgrade[] = [
         scaling: 'linear',
       }],
     },
-    tags: ['triforce', 'cooldown'],
+    tags: ['triune', 'cooldown'],
   },
 ];
 
@@ -934,11 +934,11 @@ export const UPGRADE_SYSTEMS: UpgradeSystem[] = [
     upgrades: TECH_UPGRADES,
   },
   {
-    id: 'triforce_system',
-    name: 'Triforce Spellcraft',
+    id: 'triune_system',
+    name: 'Triune Spellcraft',
     description: 'Magic and spell-based upgrades',
-    category: UpgradeCategory.TRIFORCE,
-    upgrades: TRIFORCE_UPGRADES,
+    category: UpgradeCategory.TRIUNE,
+    upgrades: TRIUNE_UPGRADES,
   },
   {
     id: 'starborn_system',
@@ -988,7 +988,7 @@ export const ALL_UPGRADES: Upgrade[] = [
   ...STAT_UPGRADES,
   ...CHAOS_UPGRADES,
   ...TECH_UPGRADES,
-  ...TRIFORCE_UPGRADES,
+  ...TRIUNE_UPGRADES,
   ...STARBORN_UPGRADES,
   ...MEMORY_UPGRADES,
   ...TIME_UPGRADES,

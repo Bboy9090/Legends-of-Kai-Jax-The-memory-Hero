@@ -403,16 +403,16 @@ export const LEGENDARY_BEAST_ROSTER: LegendaryBeast[] = [
     name: 'Bat Dragon',
     title: 'The Night Tyrant',
     beastHybrid: 'Bat-Dragon Hybrid',
-    description: 'Dragon with bat wings and echolocation - night predator with sonic attacks',
+    description: 'Dragon with bat wings and echolocation - night predator with resonance attacks',
     visual: {
       primaryColor: '#1A1A1A', // Charcoal Black
       accentColor: '#FF1493', // Deep Pink
-      features: ['dragon_body', 'bat_wings', 'echolocation', 'sonic_attacks', 'night_aura'],
+      features: ['dragon_body', 'bat_wings', 'echolocation', 'resonance_attacks', 'night_aura'],
       size: 'large',
       build: 'powerful',
     },
     powers: {
-      primary: 'Sonic Blast',
+      primary: 'Resonance Blast',
       secondary: 'Echo Strike',
       ultimate: 'Night Tyrant Scream',
     },
@@ -1054,17 +1054,17 @@ export const LEGENDARY_BEAST_ROSTER: LegendaryBeast[] = [
     name: 'Cricket Wolf',
     title: 'The Leaping Hunter',
     beastHybrid: 'Cricket-Wolf Hybrid',
-    description: 'Wolf with cricket jumping and sound - agile predator with sonic attacks',
+    description: 'Wolf with cricket jumping and sound - agile predator with resonance attacks',
     visual: {
       primaryColor: '#228B22', // Forest Green
       accentColor: '#FFD700', // Gold
-      features: ['wolf_body', 'cricket_jumping', 'sonic_attacks', 'leaping', 'agile'],
+      features: ['wolf_body', 'cricket_jumping', 'resonance_attacks', 'leaping', 'agile'],
       size: 'medium',
       build: 'agile',
     },
     powers: {
       primary: 'Leap Strike',
-      secondary: 'Sonic Blast',
+      secondary: 'Resonance Blast',
       ultimate: 'Leaping Hunter Fury',
     },
     role: 'blitzer',
@@ -1222,7 +1222,7 @@ export const LEGENDARY_BEAST_ROSTER: LegendaryBeast[] = [
     name: 'Cicada Wolf',
     title: 'The Sound Storm',
     beastHybrid: 'Cicada-Wolf Hybrid',
-    description: 'Wolf with cicada sound generation and molting - sonic predator with transformation',
+    description: 'Wolf with cicada sound generation and molting - resonance predator with transformation',
     visual: {
       primaryColor: '#228B22', // Forest Green
       accentColor: '#FFD700', // Gold
@@ -1231,7 +1231,7 @@ export const LEGENDARY_BEAST_ROSTER: LegendaryBeast[] = [
       build: 'agile',
     },
     powers: {
-      primary: 'Sonic Blast',
+      primary: 'Resonance Blast',
       secondary: 'Molting Defense',
       ultimate: 'Sound Storm',
     },

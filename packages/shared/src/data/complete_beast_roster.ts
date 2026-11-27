@@ -643,12 +643,12 @@ export const COMPLETE_BEAST_ROSTER: LegendaryBeast[] = [
     visual: {
       primaryColor: '#1A1A1A',
       accentColor: '#FF1493',
-      features: ['dragon_body', 'bat_wings', 'sonic_attacks'],
+      features: ['dragon_body', 'bat_wings', 'resonance_attacks'],
       size: 'large',
       build: 'powerful',
     },
     powers: {
-      primary: 'Sonic Blast',
+      primary: 'Resonance Blast',
       secondary: 'Echo Strike',
       ultimate: 'Night Tyrant Scream',
     },
@@ -1168,13 +1168,13 @@ export const COMPLETE_BEAST_ROSTER: LegendaryBeast[] = [
     visual: {
       primaryColor: '#228B22',
       accentColor: '#FFD700',
-      features: ['wolf_body', 'cricket_jumping', 'sonic_attacks'],
+      features: ['wolf_body', 'cricket_jumping', 'resonance_attacks'],
       size: 'medium',
       build: 'agile',
     },
     powers: {
       primary: 'Leap Strike',
-      secondary: 'Sonic Blast',
+      secondary: 'Resonance Blast',
       ultimate: 'Leaping Hunter Fury',
     },
     role: 'blitzer',
@@ -1341,7 +1341,7 @@ export const COMPLETE_BEAST_ROSTER: LegendaryBeast[] = [
       build: 'agile',
     },
     powers: {
-      primary: 'Sonic Blast',
+      primary: 'Resonance Blast',
       secondary: 'Molting Defense',
       ultimate: 'Sound Storm',
     },

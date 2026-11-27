@@ -96,7 +96,7 @@ export default function FlynnModel({
           <meshToonMaterial color="#8B4513" />
         </mesh>
         
-        {/* Triforce glow */}
+        {/* Triune Sigil glow */}
         {emotionIntensity > 0.4 && (
           <group position={[0, 0.15, 0.40]} scale={0.15}>
             <mesh position={[0, 0.3, 0]} castShadow>
