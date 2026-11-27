@@ -11,8 +11,16 @@ const mockStorage = {
 };
 
 if (typeof globalThis.localStorage === 'undefined') {
-  (globalThis as any).localStorage = mockStorage;
-  (globalThis as any).window = { localStorage: mockStorage };
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: mockStorage,
+    configurable: true,
+    writable: true,
+  });
+  Object.defineProperty(globalThis, 'window', {
+    value: { localStorage: mockStorage },
+    configurable: true,
+    writable: true,
+  });
 }
 
 describe('KJ-010B — Persistence & Mission Completion Contract', () => {
