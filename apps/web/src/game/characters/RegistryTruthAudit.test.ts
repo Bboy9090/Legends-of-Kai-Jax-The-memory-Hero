@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MODEL_REGISTRY } from '../../assets/modelRegistry';
+import { MODEL_REGISTRY, getModelConfig, getModelPath, hasModel } from '../../assets/modelRegistry';
 
 describe('KJ-011.1 — Canon Integrity and Restricted Alias Audit', () => {
   const RELEASE_SLICE_IDS = ['kai-jax', 'jaxon', 'kaison'];
@@ -52,15 +52,14 @@ describe('KJ-011.1 — Canon Integrity and Restricted Alias Audit', () => {
     expect(PROVEN_ALIAS_MAP['kaxon']).toBeUndefined();
   });
 
-  it('ensures unknown fighter IDs fail safely without mutating distinct fighters', () => {
-    const resolveFighterId = (id: string): string => {
-      if (RELEASE_SLICE_IDS.includes(id)) return id;
-      return PROVEN_ALIAS_MAP[id] || 'kai-jax'; // Safe fallback
-    };
+  it('ensures unknown fighter IDs fail closed instead of becoming Kai-Jax', () => {
+    expect(MODEL_REGISTRY['kaijax']).toBeDefined();
+    expect(MODEL_REGISTRY['kai_jax']).toBeDefined();
+    expect(MODEL_REGISTRY['jaxon']).toBeDefined();
+    expect(MODEL_REGISTRY['kaison']).toBeDefined();
 
-    expect(resolveFighterId('kaijax')).toBe('kai-jax');
-    expect(resolveFighterId('jaxon')).toBe('jaxon');
-    expect(resolveFighterId('kaison')).toBe('kaison');
-    expect(resolveFighterId('unknown_id')).toBe('kai-jax');
+    expect(getModelConfig('unknown_id')).toBeNull();
+    expect(getModelPath('unknown_id')).toBeNull();
+    expect(hasModel('unknown_id')).toBe(false);
   });
 });
