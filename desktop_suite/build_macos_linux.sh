@@ -6,6 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
 APP_NAME="$(python3 -c "import json; print(json.load(open('$SCRIPT_DIR/app_meta.json'))['exe_name'])")"
 OS_NAME="$(uname -s)"
+test -s "$REPO_DIR/apps/web/dist/index.html" || { echo "Canonical Kai-Jax build missing" >&2; exit 1; }
 
 python3 -m pip install --quiet --upgrade pyinstaller pywebview flask psutil pillow
 
@@ -27,6 +28,7 @@ if [[ "$OS_NAME" == "Darwin" ]]; then
     --paths "$SCRIPT_DIR" \
     --add-data "$SCRIPT_DIR/app_meta.json:." \
     --add-data "$SCRIPT_DIR/ui:ui" \
+    --add-data "$REPO_DIR/apps/web/dist:real_app" \
     --add-data "$REPO_DIR/assets/windows:assets" \
     $EXTRA_ARGS \
     --hidden-import=app_engine \
@@ -49,6 +51,7 @@ else
     --paths "$SCRIPT_DIR" \
     --add-data "$SCRIPT_DIR/app_meta.json:." \
     --add-data "$SCRIPT_DIR/ui:ui" \
+    --add-data "$REPO_DIR/apps/web/dist:real_app" \
     --add-data "$REPO_DIR/assets/windows:assets" \
     $EXTRA_ARGS \
     --hidden-import=app_engine \

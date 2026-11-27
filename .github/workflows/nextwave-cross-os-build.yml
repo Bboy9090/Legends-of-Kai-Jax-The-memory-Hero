@@ -30,7 +30,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.inputs.release_tag || github.ref_name }}
         run: |
-          Write-Host 'No Vite prebuild needed'
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          pnpm install --filter ./apps/web... --frozen-lockfile
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pnpm -C apps/web build
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python -m pip install --upgrade pip pyinstaller pywebview flask psutil pillow
           python scripts/zies_gate.py
           python desktop_suite/build_windows_exe.py
@@ -45,7 +50,10 @@ jobs:
           TAG: ${{ github.event.inputs.release_tag || github.ref_name }}
         run: |
           git clone --depth 1 --branch "${{ github.ref_name }}" "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" .
-          echo 'No Vite prebuild needed'
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          pnpm install --filter ./apps/web... --frozen-lockfile
+          pnpm -C apps/web build
           python3 -m venv .venv
           source .venv/bin/activate
           python3 -m pip install --upgrade pip pyinstaller pywebview flask psutil pillow
@@ -62,7 +70,10 @@ jobs:
           TAG: ${{ github.event.inputs.release_tag || github.ref_name }}
         run: |
           git clone --depth 1 --branch "${{ github.ref_name }}" "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" .
-          echo 'No Vite prebuild needed'
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          pnpm install --filter ./apps/web... --frozen-lockfile
+          pnpm -C apps/web build
           sudo apt-get update && sudo apt-get install -y python3-gi gir1.2-webkit2-4.1 libcairo2-dev libgirepository1.0-dev
           python3 -m pip install --upgrade pip pyinstaller pywebview flask psutil pillow
           python3 scripts/zies_gate.py

@@ -105,8 +105,11 @@ def build() -> Path:
     for extra in meta.get("extra_datas", []):
         src, dst = extra["src"], extra["dst"]
         src_path = REPO_DIR / src
-        if src_path.exists():
-            cmd.append(f"--add-data={src_path};{dst}")
+        if not src_path.exists():
+            raise FileNotFoundError(f"Required bundle input missing: {src_path}")
+        if dst == "real_app" and not (src_path / "index.html").is_file():
+            raise FileNotFoundError("Canonical game build missing index.html")
+        cmd.append(f"--add-data={src_path};{dst}")
 
     cmd.append(str(SUITE_DIR / "launcher.py"))
     print(f"=== Compiling {exe_name}.exe ===")
@@ -136,10 +139,10 @@ def build() -> Path:
     # 2. REAL GUI WINDOW VERIFICATION (locally when not running in headless CI)
     import os
     if os.environ.get("CI", "").lower() == "true":
-        gui = {"opened": True, "title": "CI-headless-skipped", "hwnd": -1}
+        gui = {"opened": None, "status": "NOT_RUN", "reason": "headless CI", "hwnd": None}
         data["gui_window_verified"] = gui
         test_out.write_text(json.dumps(data, indent=2), encoding="utf-8")
-        print(f"[VERIFIED CI] {exe_file.name} ({exe_file.stat().st_size // (1024*1024)} MB) | self-test PASSED")
+        print(f"[HEADLESS SELF-TEST ONLY; GUI NOT RUN] {exe_file.name} ({exe_file.stat().st_size // (1024*1024)} MB) | self-test PASSED")
     else:
         gui = verify_real_gui_window(exe_file, meta.get("title", ""))
         data["gui_window_verified"] = gui

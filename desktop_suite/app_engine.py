@@ -12,23 +12,14 @@ mimetypes.add_type("model/gltf-binary", ".glb")
 mimetypes.add_type("application/wasm", ".wasm")
 
 def _resolve_spa_dir(bundle_root: Path) -> Path:
+    # Packaged releases must never load a developer machine's stale UI or fallback shell.
     cand = bundle_root / "real_app"
-    if (cand / "index.html").exists():
-        return cand
-    disk_rel = 'Legends-of-Kai-Jax-The-memory-Hero/apps/web/dist'
-    if disk_rel:
-        for base in [
-            Path(r"C:\Users\hareb\Desktop\Bobbys-Apps"),
-            bundle_root.parent,
-            bundle_root.parent.parent,
-            Path.cwd(),
-        ]:
-            p = base / disk_rel
-            if (p / "index.html").exists():
-                return p
-    return bundle_root / "ui"
+    index = cand / "index.html"
+    if not index.is_file() or index.stat().st_size == 0:
+        raise FileNotFoundError("Canonical Kai-Jax game bundle missing: real_app/index.html")
+    return cand
 
-def start_server(port: int, bundle_root: Path, meta: dict):
+def create_app(bundle_root: Path, meta: dict):
     app = Flask(__name__)
     spa_dir = _resolve_spa_dir(bundle_root)
     assets_dir = bundle_root / "assets"
@@ -60,10 +51,18 @@ def start_server(port: int, bundle_root: Path, meta: dict):
     @app.route("/", defaults={"path": ""})
     @app.route("/<path:path>")
     def serve_spa(path):
+        if path == "api" or path.startswith("api/"):
+            return jsonify({"error": "API endpoint unavailable"}), 404
         if path:
             target = spa_dir / path
-            if target.exists() and target.is_file():
+            if target.is_file():
                 return send_from_directory(spa_dir, path)
+            if path.startswith(("assets/", "models/", "textures/", "audio/")) or Path(path).suffix:
+                return jsonify({"error": "Game asset not found"}), 404
         return send_from_directory(spa_dir, "index.html")
 
-    app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)
+    return app
+
+
+def start_server(port: int, bundle_root: Path, meta: dict):
+    create_app(bundle_root, meta).run(host="127.0.0.1", port=port, debug=False, use_reloader=False)
