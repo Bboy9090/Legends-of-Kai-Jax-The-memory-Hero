@@ -1,0 +1,93 @@
+{
+  "operation": "KAI-JAX P1-K WAVE 1 \u2014 ASHBLOCK HEIGHTS MODULAR KIT",
+  "blenderVersion": "3.4.1",
+  "visualAuthoritySheets": [
+    "ChatGPT_Image_Aug_3__2026__04_56_26_PM__2__d438c610.png",
+    "ChatGPT_Image_Aug_3__2026__04_56_26_PM__5__d2fb286b.png",
+    "ChatGPT_Image_Aug_3__2026__04_56_25_PM__1__f9d37a6e.png",
+    "ChatGPT_Image_Aug_3__2026__04_56_28_PM__9__e5b27b30.png"
+  ],
+  "assetCount": 6,
+  "totalTrianglesPerKitSet": 2936,
+  "totalBytes": 649596,
+  "assets": [
+    {
+      "assetId": "ashblock_tenement_facade",
+      "file": "ashblock_tenement_facade.glb",
+      "bytes": 138612,
+      "sha256": "09f466690f54897d615b764446104f12378d48aa51d2553a3c8f886bb69874fa",
+      "vertexCount": 616,
+      "triangleCount": 924,
+      "dimensionsMeters": {
+        "widthX": 10.25,
+        "heightY": 18.594,
+        "depthZ": 10.42
+      }
+    },
+    {
+      "assetId": "ashblock_skybridge_truss",
+      "file": "ashblock_skybridge_truss.glb",
+      "bytes": 121832,
+      "sha256": "208c41283d81f4ec712325befe97892b51afc34127858f53938a9ccd884f2da3",
+      "vertexCount": 450,
+      "triangleCount": 684,
+      "dimensionsMeters": {
+        "widthX": 34.2,
+        "heightY": 3.25,
+        "depthZ": 3.5
+      }
+    },
+    {
+      "assetId": "ashblock_rooftop_watertower",
+      "file": "ashblock_rooftop_watertower.glb",
+      "bytes": 110700,
+      "sha256": "78f970507ea654d9b37c8459a7f03dda20282e5d0557b5fa723d5ab950354236",
+      "vertexCount": 282,
+      "triangleCount": 508,
+      "dimensionsMeters": {
+        "widthX": 3.78,
+        "heightY": 6.777,
+        "depthZ": 3.16
+      }
+    },
+    {
+      "assetId": "ashblock_bloodward_dojo",
+      "file": "ashblock_bloodward_dojo.glb",
+      "bytes": 89024,
+      "sha256": "2a619d825b75032595599bb7df9d0fcd576bba92214bd5b2af2bc6f70c63e15e",
+      "vertexCount": 132,
+      "triangleCount": 216,
+      "dimensionsMeters": {
+        "widthX": 7.4,
+        "heightY": 4.586,
+        "depthZ": 6.8
+      }
+    },
+    {
+      "assetId": "ashblock_syndicate_relay",
+      "file": "ashblock_syndicate_relay.glb",
+      "bytes": 107072,
+      "sha256": "a20bff4870be5fec2e5d652b7a9d48603c3a610d5f269887d83c0379811a94e4",
+      "vertexCount": 268,
+      "triangleCount": 484,
+      "dimensionsMeters": {
+        "widthX": 1.95,
+        "heightY": 3.295,
+        "depthZ": 1.55
+      }
+    },
+    {
+      "assetId": "ashblock_market_awning_stall",
+      "file": "ashblock_market_awning_stall.glb",
+      "bytes": 82356,
+      "sha256": "72c3867cdfa879c006e790bbcf94bd0131a007bfe6a70ab9dfab3ed2374ad39c",
+      "vertexCount": 80,
+      "triangleCount": 120,
+      "dimensionsMeters": {
+        "widthX": 3.85,
+        "heightY": 3.287,
+        "depthZ": 2.621
+      }
+    }
+  ]
+}

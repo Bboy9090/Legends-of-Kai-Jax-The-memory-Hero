@@ -8,6 +8,8 @@ import { getDistrictMeta } from "../../../lib/encounters";
 import { useMissions } from "../../../lib/stores/useMissions";
 import { ASHBLOCK_OBJECTIVE_BLURBS } from "../../../game/world/zones/AshblockHeights/AshblockHeightsNarrative";
 import MoveListOverlay from "../MoveListOverlay";
+import BossPhaseBanner from "../BossPhaseBanner";
+import { resolveBoss } from "../../../lib/combatIntel";
 import { useState, useEffect } from "react";
 import { isTouchDevice } from "../../../lib/touchUtils";
 import { MISSION6_ID, isMemoryInRange, findRecoverableMemory } from "../../../lib/mission6";
@@ -497,6 +499,18 @@ export default function AdventureHUD() {
       <ComboDisplay step={player.comboStep} state={player.combatState} />
       <CombatStateLabel state={player.combatState} />
       <AutoTargetIndicator targetId={player.autoTargetId} enemies={enemies} />
+      {(() => {
+        // Only bosses with a verified identity (story mission bossId + encounter data) get a phase banner.
+        const live = enemies.find((e) => !e.isDead && resolveBoss(e.fighterId));
+        const encounter = live ? resolveBoss(live.fighterId) : null;
+        return live && encounter ? (
+          <BossPhaseBanner
+            boss={encounter}
+            healthPct={(live.health / Math.max(1, live.maxHealth)) * 100}
+            className="absolute top-[148px] left-1/2 -translate-x-1/2 max-w-[min(92vw,420px)] pointer-events-none"
+          />
+        ) : null;
+      })()}
 
       {!touchCapable && (
         <div className="absolute bottom-4 left-0 right-0 text-center">

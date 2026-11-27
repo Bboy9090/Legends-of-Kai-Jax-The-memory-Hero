@@ -1,0 +1,776 @@
+import * as THREE from 'three';
+import { WorldTextureSet } from './ProceduralTextures';
+
+export interface BoxCollider {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+  minZ: number;
+  maxZ: number;
+  walkableTop?: boolean;
+  wallRunnable?: boolean;
+}
+
+export interface WebAnchor {
+  id: string;
+  position: THREE.Vector3;
+  ringMesh: THREE.Mesh;
+}
+
+export interface CivilianProp {
+  id: string;
+  name: string;
+  position: THREE.Vector3;
+  group: THREE.Group;
+  rescued: boolean;
+}
+
+export interface CrateProp {
+  id: string;
+  position: THREE.Vector3;
+  mesh: THREE.Mesh;
+  hp: number;
+  broken: boolean;
+  rewardMaterial: string;
+}
+
+export interface AshblockWorld {
+  colliders: BoxCollider[];
+  webAnchors: WebAnchor[];
+  civilians: CivilianProp[];
+  crates: CrateProp[];
+  memorySitePos: THREE.Vector3;
+  memoryCrystal: THREE.Group;
+  memorySiteReconstructed: boolean;
+  alleyGatePos: THREE.Vector3;
+  alleyGateBarrier: THREE.Mesh;
+  alleyGateColliderIndex: number;
+  alleyGateOpen: boolean;
+  bossArenaCenter: THREE.Vector3;
+  borynMentorPos: THREE.Vector3;
+  boraxMentorPos: THREE.Vector3;
+  updateVisuals: (elapsed: number) => void;
+}
+
+/**
+ * Builds the 3 colossal ancient Beast-God Guardian monoliths rising in the misty horizon
+ * behind Ashblock Heights (matching official Visual Library sheet d438c610.png).
+ */
+function addHorizonBeastMonoliths(scene: THREE.Scene): void {
+  const monolithMat = new THREE.MeshStandardMaterial({
+    color: 0x1a2232,
+    roughness: 0.9,
+    metalness: 0.12,
+  });
+  const trimStoneMat = new THREE.MeshStandardMaterial({
+    color: 0x263147,
+    roughness: 0.82,
+    metalness: 0.18,
+  });
+
+  const buildColossus = (
+    x: number,
+    z: number,
+    scale: number,
+    yaw: number,
+    headVariant: 'lupine' | 'bull' | 'saber'
+  ) => {
+    const g = new THREE.Group();
+    g.position.set(x, 0, z);
+    g.rotation.y = yaw;
+    g.scale.setScalar(scale);
+
+    // Pedestal & Legs
+    const plinth = new THREE.Mesh(new THREE.BoxGeometry(11, 14, 9), monolithMat);
+    plinth.position.y = 7;
+    g.add(plinth);
+
+    const legGeo = new THREE.CylinderGeometry(1.9, 2.3, 18, 7);
+    const leftLeg = new THREE.Mesh(legGeo, monolithMat);
+    leftLeg.position.set(-2.6, 22, 0);
+    g.add(leftLeg);
+    const rightLeg = new THREE.Mesh(legGeo, monolithMat);
+    rightLeg.position.set(2.6, 22, 0);
+    g.add(rightLeg);
+
+    // Heroic Broad Torso & Shoulder Mantle
+    const waist = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 3.3, 9, 8), monolithMat);
+    waist.position.y = 34;
+    g.add(waist);
+
+    const chest = new THREE.Mesh(new THREE.CylinderGeometry(6.2, 4.3, 12, 8), trimStoneMat);
+    chest.position.y = 43.5;
+    g.add(chest);
+
+    // Crossed or Vigilant Stone Arms
+    const armGeo = new THREE.CylinderGeometry(1.7, 1.4, 16, 7);
+    const lArm = new THREE.Mesh(armGeo, monolithMat);
+    lArm.position.set(-6.8, 41, 1.0);
+    lArm.rotation.z = 0.22;
+    g.add(lArm);
+    const rArm = new THREE.Mesh(armGeo, monolithMat);
+    rArm.position.set(6.8, 41, 1.0);
+    rArm.rotation.z = -0.22;
+    g.add(rArm);
+
+    // Beast-God Head & Iconic Crest/Horns
+    const cranium = new THREE.Mesh(new THREE.ConeGeometry(3.4, 7.2, 7), trimStoneMat);
+    cranium.position.set(0, 53, 0.6);
+    g.add(cranium);
+
+    const muzzle = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.6, 4.4), monolithMat);
+    muzzle.position.set(0, 51.5, 2.8);
+    g.add(muzzle);
+
+    if (headVariant === 'bull') {
+      const hornGeo = new THREE.ConeGeometry(0.95, 6.8, 6);
+      const lh = new THREE.Mesh(hornGeo, trimStoneMat);
+      lh.position.set(-3.8, 56.5, 0.5);
+      lh.rotation.z = 0.68;
+      g.add(lh);
+      const rh = new THREE.Mesh(hornGeo, trimStoneMat);
+      rh.position.set(3.8, 56.5, 0.5);
+      rh.rotation.z = -0.68;
+      g.add(rh);
+    } else {
+      const earGeo = new THREE.ConeGeometry(1.05, 5.4, 5);
+      const le = new THREE.Mesh(earGeo, trimStoneMat);
+      le.position.set(-2.2, 57.2, 0);
+      le.rotation.z = 0.16;
+      g.add(le);
+      const re = new THREE.Mesh(earGeo, trimStoneMat);
+      re.position.set(2.2, 57.2, 0);
+      re.rotation.z = -0.16;
+      g.add(re);
+
+      if (headVariant === 'saber') {
+        const tuskGeo = new THREE.ConeGeometry(0.45, 3.2, 5);
+        const lt = new THREE.Mesh(tuskGeo, trimStoneMat);
+        lt.position.set(-1.1, 49.4, 4.2);
+        lt.rotation.x = Math.PI;
+        g.add(lt);
+        const rt = new THREE.Mesh(tuskGeo, trimStoneMat);
+        rt.position.set(1.1, 49.4, 4.2);
+        rt.rotation.x = Math.PI;
+        g.add(rt);
+      }
+    }
+
+    scene.add(g);
+  };
+
+  buildColossus(-54, -124, 1.12, 0.32, 'lupine');
+  buildColossus(4, -138, 1.18, 0.0, 'bull');
+  buildColossus(58, -122, 1.14, -0.34, 'saber');
+}
+
+export function buildAshblockHeights(
+  scene: THREE.Scene,
+  textures: WorldTextureSet
+): AshblockWorld {
+  const colliders: BoxCollider[] = [];
+  const webAnchors: WebAnchor[] = [];
+  const civilians: CivilianProp[] = [];
+  const crates: CrateProp[] = [];
+
+  // 1. Main Wet Asphalt Ground Plane (extends far beyond playable zone for natural horizon)
+  const groundMat = new THREE.MeshStandardMaterial({
+    map: textures.asphaltMap,
+    roughnessMap: textures.asphaltRoughness,
+    roughness: 0.7,
+    metalness: 0.15,
+  });
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(180, 240), groundMat);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.set(0, 0, -45);
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // Raised Flagstone Sidewalks (offset Y >= 0.04 to avoid any Z-fighting)
+  const curbMat = new THREE.MeshStandardMaterial({
+    map: textures.sidewalkMap,
+    roughness: 0.84,
+    metalness: 0.08,
+  });
+  const addWalkablePlatform = (
+    x: number,
+    y: number,
+    z: number,
+    w: number,
+    h: number,
+    d: number,
+    mat: THREE.Material,
+    wallRunnable = false
+  ) => {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    mesh.position.set(x, y + h / 2, z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+    colliders.push({
+      minX: x - w / 2,
+      maxX: x + w / 2,
+      minY: y,
+      maxY: y + h,
+      minZ: z - d / 2,
+      maxZ: z + d / 2,
+      walkableTop: true,
+      wallRunnable,
+    });
+    return mesh;
+  };
+
+  // West & East Sidewalks along Ashblock Row (z = +20 to -48)
+  addWalkablePlatform(-13.5, 0, -14, 7, 0.22, 68, curbMat);
+  addWalkablePlatform(13.5, 0, -14, 7, 0.22, 68, curbMat);
+
+  // 2. Tenement Buildings & Wall-Runnable Facades (Alternating Slate-Brick & Warm Ochre Plaster)
+  const bldMat = new THREE.MeshStandardMaterial({
+    map: textures.buildingFacadeMap,
+    roughness: 0.82,
+    metalness: 0.1,
+  });
+  const bldWarmMat = new THREE.MeshStandardMaterial({
+    map: textures.buildingWarmOchreMap,
+    roughness: 0.85,
+    metalness: 0.08,
+  });
+  const darkMetalMat = new THREE.MeshStandardMaterial({
+    color: 0x1b202b,
+    roughness: 0.46,
+    metalness: 0.72,
+  });
+  const rustIronMat = new THREE.MeshStandardMaterial({
+    color: 0x3b2c26,
+    roughness: 0.66,
+    metalness: 0.58,
+  });
+  const containerMat = new THREE.MeshStandardMaterial({
+    map: textures.containerMap,
+    roughness: 0.54,
+    metalness: 0.52,
+  });
+  const awningMat = new THREE.MeshStandardMaterial({
+    map: textures.awningMap,
+    roughness: 0.68,
+    metalness: 0.35,
+    side: THREE.DoubleSide,
+  });
+
+  // Playable Perimeter & Alley Buildings (wall-runnable — exact canonical collider indices preserved!)
+  const buildings: [number, number, number, number, number, boolean][] = [
+    [-25, -4, 14, 24, 24, true],
+    [-25, -36, 14, 28, 22, false],
+    [25, -4, 14, 22, 24, false],
+    [25, -36, 14, 26, 22, true],
+    [-26, -70, 14, 30, 38, false],
+    [26, -70, 14, 30, 38, true],
+    [0, -96, 56, 32, 12, false], // North Courtyard Backdrop Wall
+    [0, 26, 46, 16, 10, true],   // South Street Closure
+  ];
+  buildings.forEach(([bx, bz, bw, bh, bd, useWarm]) => {
+    const m = addWalkablePlatform(bx, 0, bz, bw, bh, bd, useWarm ? bldWarmMat : bldMat, true);
+    // Decorative rooftop parapet cornice (visual only, no extra colliders)
+    const cornice = new THREE.Mesh(new THREE.BoxGeometry(bw + 0.5, 0.55, bd + 0.5), rustIronMat);
+    cornice.position.set(bx, bh + 0.275, bz);
+    scene.add(cornice);
+    void m;
+  });
+
+  // 3. Vertical Parkour Structures: Containers, Ramps & Elevated Fire-Escape Rooftop Walkway
+  // West Alley Stacked Containers (leads to Civilian 1)
+  addWalkablePlatform(-14, 0, -24, 4.2, 2.2, 7.5, containerMat, true);
+  addWalkablePlatform(-14.5, 2.2, -26, 3.6, 1.9, 4.0, containerMat, true);
+
+  // East Rooftop Fire-Escape Deck + Stepped Access (leads to Civilian 2)
+  addWalkablePlatform(14.5, 0, -18, 4.5, 1.4, 4.0, containerMat);
+  addWalkablePlatform(14.5, 0, -23.5, 4.5, 2.8, 5.5, containerMat, true);
+  addWalkablePlatform(14.5, 2.8, -31, 6.0, 0.5, 9.5, darkMetalMat); // Elevated catwalk at y=3.3
+
+  // Central Street Cover Containers (can be vaulted or swung over)
+  addWalkablePlatform(-4.8, 0, -14, 2.8, 1.7, 5.4, containerMat);
+  addWalkablePlatform(5.2, 0, -28, 3.0, 2.0, 5.2, containerMat);
+
+  // 4. Alley Gate Structure at z = -48
+  addWalkablePlatform(-11.5, 0, -48, 13, 8.5, 3.2, darkMetalMat, true);
+  addWalkablePlatform(11.5, 0, -48, 13, 8.5, 3.2, darkMetalMat, true);
+  // Overhead gate archway bridge
+  const arch = new THREE.Mesh(new THREE.BoxGeometry(10, 2.2, 3.2), darkMetalMat);
+  arch.position.set(0, 7.4, -48);
+  arch.castShadow = true;
+  scene.add(arch);
+
+  const gateBarrierMat = new THREE.MeshStandardMaterial({
+    color: 0xef4444,
+    emissive: 0xdc2626,
+    emissiveIntensity: 1.6,
+    transparent: true,
+    opacity: 0.65,
+    roughness: 0.2,
+  });
+  const alleyGateBarrier = new THREE.Mesh(new THREE.BoxGeometry(10, 6.2, 0.45), gateBarrierMat);
+  alleyGateBarrier.position.set(0, 3.1, -48);
+  scene.add(alleyGateBarrier);
+
+  const alleyGateColliderIndex = colliders.length;
+  colliders.push({
+    minX: -5,
+    maxX: 5,
+    minY: 0,
+    maxY: 6.2,
+    minZ: -48.4,
+    maxZ: -47.6,
+  });
+
+  // 4b. Ashblock Street-Level Architectural Polish (Instanced Fire-Escapes, Shopfront Awnings, Bollards & Murals)
+  const dummy = new THREE.Object3D();
+
+  // Instanced Iron Fire-Escape Balconies along West & East Tenement Walls (above y=5.5 so street colliders stay clean)
+  const balconyAnchors: [number, number, number][] = [];
+  for (const zPos of [2, -8, -18, -32, -42, -62, -76]) {
+    balconyAnchors.push([-17.3, 6.4, zPos], [-17.3, 11.2, zPos], [-17.3, 16.0, zPos]);
+    balconyAnchors.push([17.3, 6.4, zPos], [17.3, 11.2, zPos], [17.3, 16.0, zPos]);
+  }
+  const balconyInst = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(1.5, 0.22, 4.4),
+    rustIronMat,
+    balconyAnchors.length
+  );
+  const railInst = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(0.12, 0.95, 4.4),
+    darkMetalMat,
+    balconyAnchors.length
+  );
+  balconyAnchors.forEach(([bx, by, bz], idx) => {
+    dummy.position.set(bx, by, bz);
+    dummy.rotation.set(0, 0, 0);
+    dummy.scale.set(1, 1, 1);
+    dummy.updateMatrix();
+    balconyInst.setMatrixAt(idx, dummy.matrix);
+
+    dummy.position.set(bx + (bx < 0 ? 0.72 : -0.72), by + 0.52, bz);
+    dummy.updateMatrix();
+    railInst.setMatrixAt(idx, dummy.matrix);
+  });
+  balconyInst.computeBoundingSphere();
+  railInst.computeBoundingSphere();
+  scene.add(balconyInst);
+  scene.add(railInst);
+
+  // Instanced Corrugated Tin Shopfront Awnings along West & East Row
+  const awningSpots: [number, number, number, number][] = [
+    [-16.6, 3.65, 4, 0.26],
+    [-16.6, 3.65, -7, 0.26],
+    [-16.6, 3.65, -34, 0.26],
+    [16.6, 3.65, 3, -0.26],
+    [16.6, 3.65, -9, -0.26],
+    [16.6, 3.65, -39, -0.26],
+  ];
+  const awningInst = new THREE.InstancedMesh(
+    new THREE.PlaneGeometry(2.8, 5.6),
+    awningMat,
+    awningSpots.length
+  );
+  awningSpots.forEach(([ax, ay, az, tiltZ], idx) => {
+    dummy.position.set(ax, ay, az);
+    dummy.rotation.set(0, 0, 0);
+    dummy.rotation.x = -Math.PI / 2;
+    dummy.rotation.y = tiltZ;
+    dummy.scale.set(1, 1, 1);
+    dummy.updateMatrix();
+    awningInst.setMatrixAt(idx, dummy.matrix);
+  });
+  awningInst.computeBoundingSphere();
+  scene.add(awningInst);
+
+  // Instanced Sidewalk Curb Bollards (visual framing along curb edge x = ±10.2)
+  const bollardCoords: [number, number][] = [];
+  for (let bz = 12; bz >= -42; bz -= 9) {
+    bollardCoords.push([-10.15, bz], [10.15, bz]);
+  }
+  const bollardInst = new THREE.InstancedMesh(
+    new THREE.CylinderGeometry(0.11, 0.13, 0.78, 8),
+    darkMetalMat,
+    bollardCoords.length
+  );
+  bollardCoords.forEach(([bx, bz], idx) => {
+    dummy.position.set(bx, 0.61, bz);
+    dummy.rotation.set(0, 0, 0);
+    dummy.scale.set(1, 1, 1);
+    dummy.updateMatrix();
+    bollardInst.setMatrixAt(idx, dummy.matrix);
+  });
+  bollardInst.computeBoundingSphere();
+  scene.add(bollardInst);
+
+  // Canonical Ashblock Heights Murals & Propaganda Billboards (from d438c610.png)
+  const addWallArtPlane = (
+    tex: THREE.Texture,
+    w: number,
+    h: number,
+    x: number,
+    y: number,
+    z: number,
+    rotY: number
+  ) => {
+    const mat = new THREE.MeshStandardMaterial({
+      map: tex,
+      roughness: 0.78,
+      metalness: 0.08,
+      polygonOffset: true,
+      polygonOffsetFactor: -1,
+      polygonOffsetUnits: -1,
+    });
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+    m.position.set(x, y, z);
+    m.rotation.y = rotY;
+    scene.add(m);
+  };
+
+  // "STRENGTH THROUGH UNITY" tall mural on East tenement tower & North courtyard
+  addWallArtPlane(textures.muralUnityMap, 5.2, 10.4, 17.92, 13.8, -5.5, -Math.PI / 2);
+  addWallArtPlane(textures.muralUnityMap, 6.4, 12.8, -12.0, 16.5, -89.85, 0);
+
+  // "TRUST — WE SEE YOU" Covenant billboard above Alley Gate & West Row
+  addWallArtPlane(textures.billboardTrustMap, 8.6, 4.3, 0, 10.8, -46.3, 0);
+  addWallArtPlane(textures.billboardTrustMap, 7.2, 3.6, -17.92, 9.6, -34.0, Math.PI / 2);
+
+  // "THE MEMORY — REMEMBER WHAT THEY TRIED TO ERASE!" stencil graffiti near spawn & Memory Site
+  addWallArtPlane(textures.graffitiMemoryMap, 4.2, 4.2, -17.92, 4.8, 3.5, Math.PI / 2);
+  addWallArtPlane(textures.graffitiMemoryMap, 4.2, 4.2, 17.92, 4.8, -36.5, -Math.PI / 2);
+
+  // High Overhead Tenement Clotheslines & District Pennants (y = 13.5..15.2, well above swing arc)
+  const cableSpans: [number, number][] = [
+    [-2, 14.2],
+    [-19, 14.8],
+    [-35, 13.9],
+    [-64, 15.2],
+  ];
+  const pennantColors = [0xb45309, 0x7c2d12, 0x1d4ed8, 0x6d28d9, 0xd97706];
+  cableSpans.forEach(([cz, cy], sIdx) => {
+    const wire = new THREE.Mesh(new THREE.BoxGeometry(35.5, 0.05, 0.05), darkMetalMat);
+    wire.position.set(0, cy, cz);
+    scene.add(wire);
+    for (let p = -12; p <= 12; p += 4.8) {
+      const cloth = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.95, 1.35),
+        new THREE.MeshStandardMaterial({
+          color: pennantColors[(Math.abs(Math.round(p)) + sIdx) % pennantColors.length],
+          roughness: 0.85,
+          side: THREE.DoubleSide,
+        })
+      );
+      cloth.position.set(p, cy - 0.72, cz);
+      scene.add(cloth);
+    }
+  });
+
+  // 5. Overhead Web Swing Anchors (Crane Booms & Street Lamps)
+  const anchorPositions: [number, number, number][] = [
+    [0, 9.2, -8],
+    [-4, 9.6, -21],
+    [6, 9.4, -33],
+    [0, 9.8, -44],
+    [0, 10.2, -64],
+  ];
+  const anchorRingGeo = new THREE.TorusGeometry(0.62, 0.09, 8, 20);
+  const anchorMat = new THREE.MeshStandardMaterial({
+    color: 0xf97316,
+    emissive: 0xf97316,
+    emissiveIntensity: 1.4,
+    roughness: 0.25,
+  });
+  anchorPositions.forEach(([ax, ay, az], idx) => {
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(14, 0.3, 0.3), darkMetalMat);
+    beam.position.set(ax, ay + 0.75, az);
+    scene.add(beam);
+
+    const ringMesh = new THREE.Mesh(anchorRingGeo, anchorMat.clone());
+    ringMesh.position.set(ax, ay, az);
+    scene.add(ringMesh);
+
+    webAnchors.push({
+      id: `anchor-${idx}`,
+      position: new THREE.Vector3(ax, ay, az),
+      ringMesh,
+    });
+  });
+
+  // 6. Streetlamps with Warm/Cool Atmosphere
+  const lampPostGeo = new THREE.CylinderGeometry(0.08, 0.11, 5.2, 6);
+  const lampBulbGeo = new THREE.BoxGeometry(0.55, 0.14, 0.3);
+  const warmLampMat = new THREE.MeshStandardMaterial({
+    color: 0xf59e0b,
+    emissive: 0xf59e0b,
+    emissiveIntensity: 2.0,
+  });
+  const coolLampMat = new THREE.MeshStandardMaterial({
+    color: 0x38bdf8,
+    emissive: 0x38bdf8,
+    emissiveIntensity: 1.8,
+  });
+  const lampCoords: [number, number, boolean][] = [
+    [-10.2, 4, true],
+    [10.2, -10, false],
+    [-10.2, -26, false],
+    [10.2, -38, true],
+    [-12, -62, true],
+    [12, -62, false],
+    [-12, -80, false],
+    [12, -80, true],
+  ];
+  lampCoords.forEach(([lx, lz, isWarm]) => {
+    const post = new THREE.Mesh(lampPostGeo, darkMetalMat);
+    post.position.set(lx, 2.6, lz);
+    post.castShadow = true;
+    scene.add(post);
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.08, 0.08), darkMetalMat);
+    arm.position.set(lx + (lx < 0 ? 0.25 : -0.25), 5.2, lz);
+    scene.add(arm);
+    const bulb = new THREE.Mesh(lampBulbGeo, isWarm ? warmLampMat : coolLampMat);
+    bulb.position.set(lx + (lx < 0 ? 0.45 : -0.45), 5.12, lz);
+    scene.add(bulb);
+  });
+
+  // 7. Distant Skyline Towers via InstancedMesh + Colossal Horizon Beast-God Monoliths
+  const towerCount = 48;
+  const towerGeo = new THREE.BoxGeometry(1, 1, 1);
+  const towerMat = new THREE.MeshStandardMaterial({
+    color: 0x111724,
+    roughness: 0.86,
+    metalness: 0.2,
+  });
+  const skyline = new THREE.InstancedMesh(towerGeo, towerMat, towerCount);
+  const tintColor = new THREE.Color();
+  for (let i = 0; i < towerCount; i++) {
+    const angle = (i / towerCount) * Math.PI * 2;
+    const radius = 66 + (i % 4) * 14;
+    const h = 22 + ((i * 17) % 44);
+    const w = 8 + ((i * 7) % 9);
+    dummy.position.set(Math.cos(angle) * radius, h / 2, -40 + Math.sin(angle) * radius);
+    dummy.rotation.set(0, 0, 0);
+    dummy.scale.set(w, h, w);
+    dummy.updateMatrix();
+    skyline.setMatrixAt(i, dummy.matrix);
+    tintColor.setHSL(0.6 + (i % 5) * 0.02 - 0.04, 0.24, 0.08 + (i % 3) * 0.02);
+    skyline.setColorAt(i, tintColor);
+  }
+  skyline.computeBoundingSphere();
+  scene.add(skyline);
+
+  addHorizonBeastMonoliths(scene);
+
+  // 7b. Canon Ashblock Heights Landmarks (Elevated Rail Viaduct & Rooftop Water Towers)
+  const viaductDeck = new THREE.Mesh(new THREE.BoxGeometry(92, 1.8, 5.4), darkMetalMat);
+  viaductDeck.position.set(0, 14.5, -86);
+  scene.add(viaductDeck);
+  for (const px of [-32, -16, 16, 32]) {
+    const pier = new THREE.Mesh(new THREE.BoxGeometry(2.4, 14.5, 3.2), darkMetalMat);
+    pier.position.set(px, 7.25, -86);
+    scene.add(pier);
+  }
+
+  // Dual Weathered Ashblock Rooftop Water Towers (East & West Tenements)
+  for (const [tx, ty, tz] of [
+    [21.5, 22.0, -8],
+    [-21.5, 24.0, -34],
+  ] as [number, number, number][]) {
+    const tankLegs = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 2.1, 3.2, 6, 1, true), darkMetalMat);
+    tankLegs.position.set(tx, ty + 1.6, tz);
+    scene.add(tankLegs);
+    const waterTank = new THREE.Mesh(
+      new THREE.CylinderGeometry(2.2, 2.2, 3.8, 12),
+      new THREE.MeshStandardMaterial({ color: 0x5c4f45, roughness: 0.82, metalness: 0.22 })
+    );
+    waterTank.position.set(tx, ty + 4.8, tz);
+    scene.add(waterTank);
+    const tankCap = new THREE.Mesh(
+      new THREE.ConeGeometry(2.45, 1.3, 12),
+      new THREE.MeshStandardMaterial({ color: 0x3b332e, roughness: 0.78, metalness: 0.28 })
+    );
+    tankCap.position.set(tx, ty + 7.35, tz);
+    scene.add(tankCap);
+  }
+
+  // Official Faction & Memory Resistance Vertical Banners (#4A2A7A Syndicate Purple, #E4511E Blood Orange, #D4AF37 Memory Gold)
+  const bannerSpecs: [number, number, number, number, number][] = [
+    [-17.9, 9.5, -12, 0x4a2a7a, 0xd4af37],
+    [17.9, 10.2, -28, 0x2360d1, 0x38bdf8],
+    [-18.8, 10.5, -66, 0x4a2a7a, 0xe4511e],
+    [18.8, 10.5, -66, 0x4a2a7a, 0xe4511e],
+  ];
+  bannerSpecs.forEach(([bx, by, bz, clothHex, trimHex]) => {
+    const banner = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.6, 6.8),
+      new THREE.MeshStandardMaterial({
+        color: clothHex,
+        emissive: trimHex,
+        emissiveIntensity: 0.32,
+        roughness: 0.68,
+        side: THREE.DoubleSide,
+      })
+    );
+    banner.position.set(bx, by, bz);
+    banner.rotation.y = bx < 0 ? Math.PI / 2 : -Math.PI / 2;
+    scene.add(banner);
+  });
+
+  // 8. Endangered Civilians (2 rescue targets —composite beastfolk citizen silhouettes)
+  const buildCivilian = (id: string, name: string, pos: THREE.Vector3) => {
+    const g = new THREE.Group();
+    g.position.copy(pos);
+
+    const shadow = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.2, 1.2),
+      new THREE.MeshBasicMaterial({
+        map: textures.contactShadowMap,
+        transparent: true,
+        depthWrite: false,
+        opacity: 0.65,
+      })
+    );
+    shadow.rotation.x = -Math.PI / 2;
+    shadow.position.y = 0.03;
+    g.add(shadow);
+
+    const coatMat = new THREE.MeshStandardMaterial({ color: 0x3b495e, roughness: 0.78 });
+    const furMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.68 });
+    const beaconMat = new THREE.MeshStandardMaterial({
+      color: 0x38bdf8,
+      emissive: 0x38bdf8,
+      emissiveIntensity: 1.6,
+    });
+    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 0.95, 8), coatMat);
+    torso.position.y = 0.55;
+    torso.castShadow = true;
+    g.add(torso);
+
+    const headGroup = new THREE.Group();
+    headGroup.position.y = 1.22;
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 10), furMat);
+    headGroup.add(head);
+    const earGeo = new THREE.ConeGeometry(0.055, 0.18, 5);
+    const lEar = new THREE.Mesh(earGeo, furMat);
+    lEar.position.set(-0.1, 0.18, 0);
+    lEar.rotation.z = 0.2;
+    headGroup.add(lEar);
+    const rEar = new THREE.Mesh(earGeo, furMat);
+    rEar.position.set(0.1, 0.18, 0);
+    rEar.rotation.z = -0.2;
+    headGroup.add(rEar);
+    g.add(headGroup);
+
+    // Keep beaconRing at index 3 so updateVisuals pulse stays aligned
+    const beaconRing = new THREE.Mesh(new THREE.TorusGeometry(0.68, 0.035, 6, 24), beaconMat);
+    beaconRing.rotation.x = Math.PI / 2;
+    beaconRing.position.y = 0.12;
+    g.add(beaconRing);
+
+    scene.add(g);
+    civilians.push({ id, name, position: pos.clone(), group: g, rescued: false });
+  };
+
+  buildCivilian('civ-1', 'Ashblock Medic', new THREE.Vector3(-15.5, 0.22, -16));
+  buildCivilian('civ-2', 'Rooftop Machinist', new THREE.Vector3(14.5, 3.3, -32));
+
+  // 9. Disrupted Myrr'Kai Memory Site
+  const memorySitePos = new THREE.Vector3(15.5, 0.22, -38);
+  const memoryCrystal = new THREE.Group();
+  memoryCrystal.position.copy(memorySitePos);
+  const plinthStone = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 1.15, 0.36, 8), rustIronMat);
+  plinthStone.position.y = 0.18;
+  memoryCrystal.add(plinthStone);
+
+  const coreCrystal = new THREE.Mesh(
+    new THREE.OctahedronGeometry(0.68, 0),
+    new THREE.MeshStandardMaterial({
+      color: 0x8b5cf6,
+      emissive: 0x8b5cf6,
+      emissiveIntensity: 2.0,
+      roughness: 0.18,
+      metalness: 0.4,
+    })
+  );
+  coreCrystal.position.y = 1.45;
+  memoryCrystal.add(coreCrystal);
+
+  const threadRing = new THREE.Mesh(
+    new THREE.TorusGeometry(1.25, 0.045, 8, 32),
+    new THREE.MeshStandardMaterial({
+      color: 0xd4af37,
+      emissive: 0xd4af37,
+      emissiveIntensity: 1.4,
+    })
+  );
+  threadRing.rotation.x = Math.PI / 2.4;
+  threadRing.position.y = 1.45;
+  memoryCrystal.add(threadRing);
+  scene.add(memoryCrystal);
+
+  // 10. Destructible Supply Crates [GAMEPLAY ADAPTATION]
+  const cratePositions: [number, number, number, string][] = [
+    [-7.5, 0, -6, 'Ash Scrap'],
+    [7.2, 0, -16, 'Pyraxis Ember'],
+    [-8.5, 0, -34, 'Storm Capacitor'],
+    [8.2, 0, -42, "Myrr'Kai Thread"],
+    [-11, 0, -60, 'Pyraxis Ember'],
+    [11, 0, -68, 'Storm Capacitor'],
+  ];
+  const crateGeo = new THREE.BoxGeometry(1.15, 1.15, 1.15);
+  const crateMat = new THREE.MeshStandardMaterial({
+    map: textures.containerMap,
+    color: 0x8a99ad,
+    emissive: 0xf97316,
+    emissiveIntensity: 0.24,
+    roughness: 0.52,
+    metalness: 0.42,
+  });
+  cratePositions.forEach(([cx, cy, cz, matReward], i) => {
+    const mesh = new THREE.Mesh(crateGeo, crateMat.clone());
+    mesh.position.set(cx, cy + 0.575, cz);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+    crates.push({
+      id: `crate-${i}`,
+      position: new THREE.Vector3(cx, cy, cz),
+      mesh,
+      hp: 30,
+      broken: false,
+      rewardMaterial: matReward,
+    });
+  });
+
+  const world: AshblockWorld = {
+    colliders,
+    webAnchors,
+    civilians,
+    crates,
+    memorySitePos,
+    memoryCrystal,
+    memorySiteReconstructed: false,
+    alleyGatePos: new THREE.Vector3(0, 0, -48),
+    alleyGateBarrier,
+    alleyGateColliderIndex,
+    alleyGateOpen: false,
+    bossArenaCenter: new THREE.Vector3(0, 0, -72),
+    borynMentorPos: new THREE.Vector3(16.2, 0.22, -41.2),
+    boraxMentorPos: new THREE.Vector3(-14.5, 4.1, -26.0),
+    updateVisuals: (elapsed: number) => {
+      coreCrystal.rotation.y = elapsed * 1.1;
+      coreCrystal.position.y = 1.45 + Math.sin(elapsed * 2.2) * 0.16;
+      threadRing.rotation.z = elapsed * 1.4;
+      webAnchors.forEach((a, idx) => {
+        a.ringMesh.rotation.y = elapsed * 1.2 + idx;
+      });
+      civilians.forEach((c) => {
+        if (!c.rescued && c.group.children[3]) {
+          c.group.children[3].scale.setScalar(1 + Math.sin(elapsed * 4) * 0.08);
+        }
+      });
+    },
+  };
+
+  return world;
+}

@@ -90,6 +90,9 @@ function DialogueOverlay({
 
   return (
     <div
+      data-testid="story-dialogue-overlay"
+      data-line-index={lineIndex}
+      data-typing={isTyping ? "true" : "false"}
       className="fixed inset-0 z-50 flex items-end justify-center pb-12 px-6"
       style={{ background: "linear-gradient(transparent 20%, rgba(5,5,10,0.8) 70%, rgba(5,5,10,0.95) 100%)" }}
       onClick={handleClick}

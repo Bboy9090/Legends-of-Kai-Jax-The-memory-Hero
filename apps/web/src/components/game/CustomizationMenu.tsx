@@ -1,5 +1,5 @@
 import { useRunner } from "../../lib/stores/useRunner";
-import { FIGHTERS, getFighterById } from "../../lib/characters";
+import { FIGHTERS, getFighterById, type Fighter } from "../../lib/characters";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -9,11 +9,12 @@ export default function CustomizationMenu() {
     setGameState 
   } = useRunner();
 
-  const categories = [
-    { name: 'Heroes', id: 'heroes' as const, color: 'from-blue-500 to-cyan-500' },
-    { name: 'Speedsters', id: 'speedsters' as const, color: 'from-yellow-500 to-orange-500' },
-    { name: 'Warriors', id: 'warriors' as const, color: 'from-green-500 to-emerald-500' },
-    { name: 'Legends', id: 'legends' as const, color: 'from-purple-500 to-pink-500' }
+  // Fighters carry a `role`, not a `category`; the old category filter matched nothing and rendered an empty menu.
+  const categories: Array<{ name: string; id: NonNullable<Fighter['role']>; color: string }> = [
+    { name: 'Heroes', id: 'hero', color: 'from-blue-500 to-cyan-500' },
+    { name: 'Rivals', id: 'rival', color: 'from-yellow-500 to-orange-500' },
+    { name: 'Enemies', id: 'enemy', color: 'from-green-500 to-emerald-500' },
+    { name: 'Bosses', id: 'boss', color: 'from-purple-500 to-pink-500' },
   ];
   
   return (
@@ -41,7 +42,7 @@ export default function CustomizationMenu() {
       <div className="max-w-7xl mx-auto p-4 sm:p-6 pb-8 sm:pb-24">
         {/* Fighter Categories */}
         {categories.map(category => {
-          const categoryFighters = FIGHTERS.filter(f => f.category === category.id);
+          const categoryFighters = FIGHTERS.filter(f => (f.role ?? 'hero') === category.id);
           
           return (
             <div key={category.id} className="mb-8">
@@ -75,7 +76,7 @@ export default function CustomizationMenu() {
                               {fighter.name}
                             </div>
                             <div className="text-[9px] font-bold text-white/70">
-                              {fighter.category.toUpperCase()}
+                              {(fighter.role ?? 'hero').toUpperCase()}
                             </div>
                           </div>
                         </div>
@@ -85,7 +86,7 @@ export default function CustomizationMenu() {
                         </h3>
                         
                         <p className="text-xs text-gray-300">
-                          {fighter.description}
+                          POW {fighter.baseStats.power} · SPD {fighter.baseStats.speed} · DEF {fighter.baseStats.defense}
                         </p>
                       </CardContent>
                     </Card>

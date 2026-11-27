@@ -1,0 +1,204 @@
+{
+  "updatedAt": "2026-08-03T16:56:29.000Z",
+  "sourceAccount": "Official Legends of Kai-Jax Visual Library",
+  "assets": [
+    {
+      "driveId": "canon-sheet-main-roster",
+      "name": "01 — Character Visual Library (Boryn, Kai, Kai-Jax, Jax, Borax)",
+      "mimeType": "image/png",
+      "category": "character",
+      "subjectTag": "character-roster-sheet",
+      "folderPath": "Legends of Kai-Jax Art Production / Character Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_50_12_PM__1__078f6bfc.png",
+      "sizeBytes": 2480000,
+      "importedAt": "2026-08-03T16:50:12.000Z"
+    },
+    {
+      "driveId": "canon-sheet-fathers-mentors",
+      "name": "02 — Fathers, Mentor, and Elder Fang (Boryn, Borax, Vharok)",
+      "mimeType": "image/png",
+      "category": "character",
+      "subjectTag": "mentors-sheet",
+      "folderPath": "Legends of Kai-Jax Art Production / Character Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_50_13_PM__3__3e003001.png",
+      "sizeBytes": 2450000,
+      "importedAt": "2026-08-03T16:50:13.000Z"
+    },
+    {
+      "driveId": "canon-sheet-sabertooth-gods",
+      "name": "03 — First Sabertooth Gods (Kar-Voth, Thryxen, Pyraxis, Myrr'Kai)",
+      "mimeType": "image/png",
+      "category": "character",
+      "subjectTag": "sabertooth-gods-sheet",
+      "folderPath": "Legends of Kai-Jax Art Production / Character Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_50_13_PM__2__499cf6b7.png",
+      "sizeBytes": 2420000,
+      "importedAt": "2026-08-03T16:50:13.000Z"
+    },
+    {
+      "driveId": "canon-sheet-allies-a",
+      "name": "04 — Allies & The Fracture Circle I (Aurelion, Selene, Miri, Old Moss, Rikka, Mirek, Sable Nine)",
+      "mimeType": "image/png",
+      "category": "character",
+      "subjectTag": "allies-sheet",
+      "folderPath": "Legends of Kai-Jax Art Production / Character Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_50_13_PM__4__ffdee5d4.png",
+      "sizeBytes": 2510000,
+      "importedAt": "2026-08-03T16:50:13.000Z"
+    },
+    {
+      "driveId": "canon-sheet-allies-b",
+      "name": "05 — Allies & The Fracture Circle II (Resistance & Companion Sheet)",
+      "mimeType": "image/png",
+      "category": "character",
+      "subjectTag": "allies-sheet",
+      "folderPath": "Legends of Kai-Jax Art Production / Character Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_50_02_PM_e94e8100.png",
+      "sizeBytes": 2490000,
+      "importedAt": "2026-08-03T16:50:02.000Z"
+    },
+    {
+      "driveId": "canon-sheet-fang-syndicate",
+      "name": "06 — Faction Dossier: Fang Syndicate (Enforcer, Scout, Bruiser, Stalker, Broker, Lieutenant)",
+      "mimeType": "image/png",
+      "category": "character",
+      "subjectTag": "boss-or-faction",
+      "folderPath": "Legends of Kai-Jax Art Production / Faction & Enemy Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_50_13_PM__5__5c371ed9.png",
+      "sizeBytes": 2460000,
+      "importedAt": "2026-08-03T16:50:13.000Z"
+    },
+    {
+      "driveId": "canon-sheet-anti-sabertooth-covenant",
+      "name": "07 — Faction Dossier: Anti-Sabertooth Covenant (Ulgorr, Widow, Varkesh, Sybeth, Overseer)",
+      "mimeType": "image/png",
+      "category": "character",
+      "subjectTag": "boss-or-faction",
+      "folderPath": "Legends of Kai-Jax Art Production / Faction & Enemy Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_50_14_PM__6__3e978121.png",
+      "sizeBytes": 2470000,
+      "importedAt": "2026-08-03T16:50:14.000Z"
+    },
+    {
+      "driveId": "canon-sheet-major-threats",
+      "name": "08 — Major Threats: Engineered Horrors & War Engines (Korthyx Prime, Pillar Twins, Hollow Architect)",
+      "mimeType": "image/png",
+      "category": "character",
+      "subjectTag": "boss-or-faction",
+      "folderPath": "Legends of Kai-Jax Art Production / Faction & Enemy Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_50_14_PM__7__85105f23.png",
+      "sizeBytes": 2520000,
+      "importedAt": "2026-08-03T16:50:14.000Z"
+    },
+    {
+      "driveId": "canon-area-raging-city",
+      "name": "09 — The Raging City: World Overview",
+      "mimeType": "image/png",
+      "category": "arena",
+      "subjectTag": "raging-city-world",
+      "folderPath": "Legends of Kai-Jax Art Production / Area & World Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_56_25_PM__1__f9d37a6e.png",
+      "sizeBytes": 2610000,
+      "importedAt": "2026-08-03T16:56:25.000Z"
+    },
+    {
+      "driveId": "canon-area-ashblock-heights",
+      "name": "10 — Ashblock Heights (Playable District 1 Area Sheet)",
+      "mimeType": "image/png",
+      "category": "arena",
+      "subjectTag": "ashblock-heights",
+      "folderPath": "Legends of Kai-Jax Art Production / Area & World Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_56_26_PM__2__d438c610.png",
+      "sizeBytes": 2640000,
+      "importedAt": "2026-08-03T16:56:26.000Z"
+    },
+    {
+      "driveId": "canon-area-ironvein-wards",
+      "name": "11 — Ironvein Wards (Industrial District Area Sheet)",
+      "mimeType": "image/png",
+      "category": "arena",
+      "subjectTag": "iron-market",
+      "folderPath": "Legends of Kai-Jax Art Production / Area & World Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_56_26_PM__3__e05fb785.png",
+      "sizeBytes": 2580000,
+      "importedAt": "2026-08-03T16:56:26.000Z"
+    },
+    {
+      "driveId": "canon-area-skyfall-spines",
+      "name": "12 — Skyfall Spines (High-Altitude Spires Area Sheet)",
+      "mimeType": "image/png",
+      "category": "arena",
+      "subjectTag": "zenith-spires",
+      "folderPath": "Legends of Kai-Jax Art Production / Area & World Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_56_26_PM__4__a43aff68.png",
+      "sizeBytes": 2590000,
+      "importedAt": "2026-08-03T16:56:26.000Z"
+    },
+    {
+      "driveId": "canon-area-bloodward-loft",
+      "name": "13 — Bloodward Loft (Boryn's Sanctuary & Training Dojo)",
+      "mimeType": "image/png",
+      "category": "arena",
+      "subjectTag": "ashblock-heights",
+      "folderPath": "Legends of Kai-Jax Art Production / Area & World Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_56_26_PM__5__d2fb286b.png",
+      "sizeBytes": 2550000,
+      "importedAt": "2026-08-03T16:56:26.000Z"
+    },
+    {
+      "driveId": "canon-area-storm-ronin-sanctum",
+      "name": "14 — Storm Ronin Sanctum (Borax's Upper-City Sanctum)",
+      "mimeType": "image/png",
+      "category": "arena",
+      "subjectTag": "zenith-spires",
+      "folderPath": "Legends of Kai-Jax Art Production / Area & World Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_56_27_PM__6__16464786.png",
+      "sizeBytes": 2570000,
+      "importedAt": "2026-08-03T16:56:27.000Z"
+    },
+    {
+      "driveId": "canon-area-library-of-threads",
+      "name": "15 — Library of Threads (The World's Great Memory Archive)",
+      "mimeType": "image/png",
+      "category": "arena",
+      "subjectTag": "memory-nexus",
+      "folderPath": "Legends of Kai-Jax Art Production / Area & World Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_56_27_PM__7__1f74b763.png",
+      "sizeBytes": 2630000,
+      "importedAt": "2026-08-03T16:56:27.000Z"
+    },
+    {
+      "driveId": "canon-area-fang-syndicate-stronghold",
+      "name": "16 — Fang Syndicate Stronghold (Fight Pit & Syndicate HQ)",
+      "mimeType": "image/png",
+      "category": "arena",
+      "subjectTag": "sector-7",
+      "folderPath": "Legends of Kai-Jax Art Production / Area & World Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_56_27_PM__8__0e91caa6.png",
+      "sizeBytes": 2620000,
+      "importedAt": "2026-08-03T16:56:27.000Z"
+    },
+    {
+      "driveId": "canon-area-fracture-pit-undercity",
+      "name": "17 — The Fracture Pit & Undercity",
+      "mimeType": "image/png",
+      "category": "arena",
+      "subjectTag": "undercrown",
+      "folderPath": "Legends of Kai-Jax Art Production / Area & World Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_56_28_PM__9__e5b27b30.png",
+      "sizeBytes": 2600000,
+      "importedAt": "2026-08-03T16:56:28.000Z"
+    },
+    {
+      "driveId": "canon-area-hollow-fang-cathedral",
+      "name": "18 — Hollow Fang Cathedral (Anti-Sabertooth Covenant Citadel)",
+      "mimeType": "image/png",
+      "category": "arena",
+      "subjectTag": "erasure-fields",
+      "folderPath": "Legends of Kai-Jax Art Production / Area & World Sheets",
+      "localUrl": "/assets/aistudio/ChatGPT_Image_Aug_3__2026__04_56_29_PM__10__fbb50f2d.png",
+      "sizeBytes": 2650000,
+      "importedAt": "2026-08-03T16:56:29.000Z"
+    }
+  ]
+}

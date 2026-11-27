@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useAdventure } from "../../../lib/stores/useAdventure";
 import { useTouchInput } from "../../../lib/stores/useTouchInput";
 import { isTouchDevice, hapticFeedback } from "../../../lib/touchUtils";
+import { abilityAvailability, describeAvailability } from "../../../lib/abilityAvailability";
+import { useRunner } from "../../../lib/stores/useRunner";
 
 /**
  * On-screen touch controls for Adventure Mode (Training Arena + Story
@@ -144,6 +146,11 @@ function TouchButton({
   const ref = useRef<HTMLButtonElement>(null);
   const touchIdRef = useRef<number | null>(null);
   const [pressed, setPressed] = useState(false);
+  // Real readiness from live stamina / combat state (same gating the controller applies), never static data.
+  const stamina = useAdventure((s) => s.player.stamina);
+  const combatState = useAdventure((s) => s.player.combatState);
+  const trainingSession = useRunner((s) => s.trainingSession);
+  const availability = abilityAvailability(action, { stamina, combatState, trainingSession });
 
   useEffect(() => {
     const el = ref.current;
@@ -187,13 +194,21 @@ function TouchButton({
       ref={ref}
       type="button"
       data-testid={`touch-${action}`}
-      aria-label={label}
-      className="pointer-events-auto touch-none select-none rounded-full font-black text-white flex items-center justify-center"
+      data-ready={availability.ready ? "true" : "false"}
+      aria-label={describeAvailability(label, availability)}
+      aria-disabled={!availability.ready}
+      // Touch is handled above (and suppresses the synthetic click). Click covers mouse, keyboard (Enter/Space) and
+      // assistive-technology activation, which touch-only buttons could not receive.
+      onClick={() => {
+        useTouchInput.getState().queueAttack(action);
+        hapticFeedback(haptic);
+      }}
+      className="pointer-events-auto touch-none select-none rounded-full font-black text-white flex items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#efcf91]"
       style={{
         width: size,
         height: size,
         background: color,
-        opacity: pressed ? 0.75 : 0.92,
+        opacity: pressed ? 0.75 : availability.ready ? 0.92 : 0.5,
         transform: pressed ? "scale(0.93)" : "scale(1)",
         border: "2px solid rgba(198,155,85,0.72)",
         boxShadow: "0 0 0 3px rgba(0,0,0,.28), 0 4px 18px rgba(0,0,0,.55), inset 0 0 18px rgba(255,255,255,.06)",
@@ -204,6 +219,24 @@ function TouchButton({
       }}
     >
       <span style={{ fontSize: size >= 60 ? 13 : 11 }}>{label}</span>
+      {!availability.ready && (
+        <span
+          aria-hidden="true"
+          data-testid={`touch-${action}-meter`}
+          style={{
+            position: "absolute",
+            left: "12%",
+            right: "12%",
+            bottom: 5,
+            height: 4,
+            borderRadius: 2,
+            background: "rgba(0,0,0,.55)",
+            overflow: "hidden",
+          }}
+        >
+          <span style={{ display: "block", height: "100%", width: `${Math.round(availability.progress * 100)}%`, background: availability.reason === "busy" ? "#94a3b8" : "#f59e0b" }} />
+        </span>
+      )}
     </button>
   );
 }

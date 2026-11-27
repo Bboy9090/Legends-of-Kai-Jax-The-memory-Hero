@@ -12,7 +12,7 @@
  */
 
 import * as THREE from 'three';
-import { EventBus } from '@game/core/EventBus';
+import type { EventBus } from './eventBusContract';
 import { TransformationTier } from './TransformationSystem';
 
 // Move types

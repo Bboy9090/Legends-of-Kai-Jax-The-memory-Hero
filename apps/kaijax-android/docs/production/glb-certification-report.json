@@ -1,0 +1,1792 @@
+{
+  "generatedAt": "2026-11-15T17:21:46.712Z",
+  "overallStatus": "PASS",
+  "approvedCharacterCount": 5,
+  "withheldCharacterCount": 1,
+  "totalGlbBinariesCertified": 10,
+  "characters": {
+    "kai": {
+      "id": "kai",
+      "displayName": "Kai — Memory-Web Heir",
+      "visualAuthorityStatus": "approved",
+      "officialSheets": [
+        "ChatGPT_Image_Aug_3__2026__04_50_12_PM__1__078f6bfc.png"
+      ],
+      "master": {
+        "fileName": "kai_master.glb",
+        "tier": "master",
+        "status": "PASS",
+        "sha256": "48acf7be8d2a055cbb152a099ca397fa183637939ef0de4ecedc6061491e7ddb",
+        "sizeBytes": 6537612,
+        "sizeMB": 6.235,
+        "vertices": 20861,
+        "triangles": 22087,
+        "triangleBudget": 30000,
+        "joints": 37,
+        "physicalTails": 0,
+        "tailRootNames": [],
+        "spiderBones": 12,
+        "maneBones": 0,
+        "bounds": {
+          "min": [
+            -0.466,
+            0.0002,
+            -0.331
+          ],
+          "max": [
+            0.466,
+            2.08,
+            0.331
+          ],
+          "heightMeters": 2.08,
+          "targetHeightMeters": 1.82
+        },
+        "skinWeightSumRange": [
+          1,
+          1
+        ],
+        "morphMaxDeltas": {
+          "blink": 0.00738,
+          "snarl": 0.00987,
+          "roar": 0.01418,
+          "pain": 0.00755,
+          "focus": 0.00679
+        },
+        "socketParents": {
+          "socket_weapon_L": "hand_L",
+          "socket_weapon_R": "hand_R",
+          "socket_relic": "chest",
+          "socket_hitbox_L": "hand_L",
+          "socket_hitbox_R": "hand_R",
+          "socket_head": "head"
+        },
+        "pbrMaps": [
+          {
+            "name": "normal",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 717547
+          },
+          {
+            "name": "Image_0",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 739226
+          },
+          {
+            "name": "Image_1",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 302521
+          }
+        ],
+        "clipCount": 19,
+        "clips": [
+          {
+            "name": "idle",
+            "durationSec": 2.375,
+            "trackCount": 111
+          },
+          {
+            "name": "breathing",
+            "durationSec": 2.083,
+            "trackCount": 111
+          },
+          {
+            "name": "walk",
+            "durationSec": 0.875,
+            "trackCount": 111
+          },
+          {
+            "name": "run",
+            "durationSec": 0.583,
+            "trackCount": 111
+          },
+          {
+            "name": "sprint",
+            "durationSec": 0.458,
+            "trackCount": 111
+          },
+          {
+            "name": "jump",
+            "durationSec": 0.417,
+            "trackCount": 111
+          },
+          {
+            "name": "fall",
+            "durationSec": 0.417,
+            "trackCount": 111
+          },
+          {
+            "name": "landing",
+            "durationSec": 0.417,
+            "trackCount": 111
+          },
+          {
+            "name": "dodge",
+            "durationSec": 0.417,
+            "trackCount": 111
+          },
+          {
+            "name": "attack_1",
+            "durationSec": 0.375,
+            "trackCount": 111
+          },
+          {
+            "name": "attack_2",
+            "durationSec": 0.375,
+            "trackCount": 111
+          },
+          {
+            "name": "attack_3",
+            "durationSec": 0.5,
+            "trackCount": 111
+          },
+          {
+            "name": "heavy_strike",
+            "durationSec": 0.5,
+            "trackCount": 111
+          },
+          {
+            "name": "parry",
+            "durationSec": 0.417,
+            "trackCount": 111
+          },
+          {
+            "name": "hit_reaction",
+            "durationSec": 0.417,
+            "trackCount": 111
+          },
+          {
+            "name": "roar",
+            "durationSec": 0.75,
+            "trackCount": 111
+          },
+          {
+            "name": "ability_cast",
+            "durationSec": 0.75,
+            "trackCount": 111
+          },
+          {
+            "name": "victory",
+            "durationSec": 2,
+            "trackCount": 111
+          },
+          {
+            "name": "defeat",
+            "durationSec": 1.083,
+            "trackCount": 111
+          }
+        ],
+        "duplicateNodeNames": 0
+      },
+      "lod1": {
+        "fileName": "kai_lod1.glb",
+        "tier": "lod1",
+        "status": "PASS",
+        "sha256": "13c7e263e8d9509ddb757d8b2a7cbc28f0012d437673c985ab7515dc39068530",
+        "sizeBytes": 3749484,
+        "sizeMB": 3.576,
+        "vertices": 10118,
+        "triangles": 9211,
+        "triangleBudget": 12000,
+        "joints": 37,
+        "physicalTails": 0,
+        "tailRootNames": [],
+        "spiderBones": 12,
+        "maneBones": 0,
+        "bounds": {
+          "min": [
+            -0.465,
+            0,
+            -0.331
+          ],
+          "max": [
+            0.465,
+            2.079,
+            0.332
+          ],
+          "heightMeters": 2.079,
+          "targetHeightMeters": 1.82
+        },
+        "skinWeightSumRange": [
+          1,
+          1
+        ],
+        "morphMaxDeltas": {
+          "blink": 0.00745,
+          "snarl": 0.00996,
+          "roar": 0.01431,
+          "pain": 0.00762,
+          "focus": 0.00685
+        },
+        "socketParents": {
+          "socket_weapon_L": "hand_L",
+          "socket_weapon_R": "hand_R",
+          "socket_relic": "chest",
+          "socket_hitbox_L": "hand_L",
+          "socket_hitbox_R": "hand_R",
+          "socket_head": "head"
+        },
+        "pbrMaps": [
+          {
+            "name": "normal",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 346693
+          },
+          {
+            "name": "Image_0",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 382450
+          },
+          {
+            "name": "Image_1",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 166998
+          }
+        ],
+        "clipCount": 19,
+        "clips": [
+          {
+            "name": "idle",
+            "durationSec": 2.375,
+            "trackCount": 111
+          },
+          {
+            "name": "breathing",
+            "durationSec": 2.083,
+            "trackCount": 111
+          },
+          {
+            "name": "walk",
+            "durationSec": 0.875,
+            "trackCount": 111
+          },
+          {
+            "name": "run",
+            "durationSec": 0.583,
+            "trackCount": 111
+          },
+          {
+            "name": "sprint",
+            "durationSec": 0.458,
+            "trackCount": 111
+          },
+          {
+            "name": "jump",
+            "durationSec": 0.417,
+            "trackCount": 111
+          },
+          {
+            "name": "fall",
+            "durationSec": 0.417,
+            "trackCount": 111
+          },
+          {
+            "name": "landing",
+            "durationSec": 0.417,
+            "trackCount": 111
+          },
+          {
+            "name": "dodge",
+            "durationSec": 0.417,
+            "trackCount": 111
+          },
+          {
+            "name": "attack_1",
+            "durationSec": 0.375,
+            "trackCount": 111
+          },
+          {
+            "name": "attack_2",
+            "durationSec": 0.375,
+            "trackCount": 111
+          },
+          {
+            "name": "attack_3",
+            "durationSec": 0.5,
+            "trackCount": 111
+          },
+          {
+            "name": "heavy_strike",
+            "durationSec": 0.5,
+            "trackCount": 111
+          },
+          {
+            "name": "parry",
+            "durationSec": 0.417,
+            "trackCount": 111
+          },
+          {
+            "name": "hit_reaction",
+            "durationSec": 0.417,
+            "trackCount": 111
+          },
+          {
+            "name": "roar",
+            "durationSec": 0.75,
+            "trackCount": 111
+          },
+          {
+            "name": "ability_cast",
+            "durationSec": 0.75,
+            "trackCount": 111
+          },
+          {
+            "name": "victory",
+            "durationSec": 2,
+            "trackCount": 111
+          },
+          {
+            "name": "defeat",
+            "durationSec": 1.083,
+            "trackCount": 111
+          }
+        ],
+        "duplicateNodeNames": 0
+      }
+    },
+    "jax": {
+      "id": "jax",
+      "displayName": "Jax — Storm Fang",
+      "visualAuthorityStatus": "approved",
+      "officialSheets": [
+        "ChatGPT_Image_Aug_3__2026__04_50_12_PM__1__078f6bfc.png"
+      ],
+      "master": {
+        "fileName": "jax_master.glb",
+        "tier": "master",
+        "status": "PASS",
+        "sha256": "41a3f4616c96db6786ed988cf7ad8876fcb61caa1a43611b438f8083b880a39a",
+        "sizeBytes": 6177608,
+        "sizeMB": 5.891,
+        "vertices": 21307,
+        "triangles": 22087,
+        "triangleBudget": 30000,
+        "joints": 32,
+        "physicalTails": 0,
+        "tailRootNames": [],
+        "spiderBones": 0,
+        "maneBones": 7,
+        "bounds": {
+          "min": [
+            -0.434,
+            0.0003,
+            -0.344
+          ],
+          "max": [
+            0.434,
+            1.94,
+            0.345
+          ],
+          "heightMeters": 1.939,
+          "targetHeightMeters": 1.88
+        },
+        "skinWeightSumRange": [
+          1,
+          1
+        ],
+        "morphMaxDeltas": {
+          "blink": 0.00758,
+          "snarl": 0.01013,
+          "roar": 0.01457,
+          "pain": 0.00776,
+          "focus": 0.00698
+        },
+        "socketParents": {
+          "socket_weapon_L": "hand_L",
+          "socket_weapon_R": "hand_R",
+          "socket_relic": "chest",
+          "socket_hitbox_L": "hand_L",
+          "socket_hitbox_R": "hand_R",
+          "socket_head": "head"
+        },
+        "pbrMaps": [
+          {
+            "name": "normal",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 668785
+          },
+          {
+            "name": "Image_0",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 568739
+          },
+          {
+            "name": "Image_1",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 227655
+          }
+        ],
+        "clipCount": 19,
+        "clips": [
+          {
+            "name": "idle",
+            "durationSec": 2.375,
+            "trackCount": 96
+          },
+          {
+            "name": "breathing",
+            "durationSec": 2.083,
+            "trackCount": 96
+          },
+          {
+            "name": "walk",
+            "durationSec": 0.875,
+            "trackCount": 96
+          },
+          {
+            "name": "run",
+            "durationSec": 0.583,
+            "trackCount": 96
+          },
+          {
+            "name": "sprint",
+            "durationSec": 0.458,
+            "trackCount": 96
+          },
+          {
+            "name": "jump",
+            "durationSec": 0.417,
+            "trackCount": 96
+          },
+          {
+            "name": "fall",
+            "durationSec": 0.417,
+            "trackCount": 96
+          },
+          {
+            "name": "landing",
+            "durationSec": 0.417,
+            "trackCount": 96
+          },
+          {
+            "name": "dodge",
+            "durationSec": 0.417,
+            "trackCount": 96
+          },
+          {
+            "name": "attack_1",
+            "durationSec": 0.375,
+            "trackCount": 96
+          },
+          {
+            "name": "attack_2",
+            "durationSec": 0.375,
+            "trackCount": 96
+          },
+          {
+            "name": "attack_3",
+            "durationSec": 0.5,
+            "trackCount": 96
+          },
+          {
+            "name": "heavy_strike",
+            "durationSec": 0.5,
+            "trackCount": 96
+          },
+          {
+            "name": "parry",
+            "durationSec": 0.417,
+            "trackCount": 96
+          },
+          {
+            "name": "hit_reaction",
+            "durationSec": 0.417,
+            "trackCount": 96
+          },
+          {
+            "name": "roar",
+            "durationSec": 0.75,
+            "trackCount": 96
+          },
+          {
+            "name": "ability_cast",
+            "durationSec": 0.75,
+            "trackCount": 96
+          },
+          {
+            "name": "victory",
+            "durationSec": 2,
+            "trackCount": 96
+          },
+          {
+            "name": "defeat",
+            "durationSec": 1.083,
+            "trackCount": 96
+          }
+        ],
+        "duplicateNodeNames": 0
+      },
+      "lod1": {
+        "fileName": "jax_lod1.glb",
+        "tier": "lod1",
+        "status": "PASS",
+        "sha256": "20c15b2f59406580717bc4573e1545f062e8d3abe0246493e18345cf42673fcd",
+        "sizeBytes": 3492408,
+        "sizeMB": 3.331,
+        "vertices": 10293,
+        "triangles": 9211,
+        "triangleBudget": 12000,
+        "joints": 32,
+        "physicalTails": 0,
+        "tailRootNames": [],
+        "spiderBones": 0,
+        "maneBones": 7,
+        "bounds": {
+          "min": [
+            -0.434,
+            0.0003,
+            -0.345
+          ],
+          "max": [
+            0.433,
+            1.939,
+            0.345
+          ],
+          "heightMeters": 1.939,
+          "targetHeightMeters": 1.88
+        },
+        "skinWeightSumRange": [
+          1,
+          1
+        ],
+        "morphMaxDeltas": {
+          "blink": 0.0076,
+          "snarl": 0.01016,
+          "roar": 0.01461,
+          "pain": 0.00778,
+          "focus": 0.00699
+        },
+        "socketParents": {
+          "socket_weapon_L": "hand_L",
+          "socket_weapon_R": "hand_R",
+          "socket_relic": "chest",
+          "socket_hitbox_L": "hand_L",
+          "socket_hitbox_R": "hand_R",
+          "socket_head": "head"
+        },
+        "pbrMaps": [
+          {
+            "name": "normal",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 326612
+          },
+          {
+            "name": "Image_0",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 302328
+          },
+          {
+            "name": "Image_1",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 122692
+          }
+        ],
+        "clipCount": 19,
+        "clips": [
+          {
+            "name": "idle",
+            "durationSec": 2.375,
+            "trackCount": 96
+          },
+          {
+            "name": "breathing",
+            "durationSec": 2.083,
+            "trackCount": 96
+          },
+          {
+            "name": "walk",
+            "durationSec": 0.875,
+            "trackCount": 96
+          },
+          {
+            "name": "run",
+            "durationSec": 0.583,
+            "trackCount": 96
+          },
+          {
+            "name": "sprint",
+            "durationSec": 0.458,
+            "trackCount": 96
+          },
+          {
+            "name": "jump",
+            "durationSec": 0.417,
+            "trackCount": 96
+          },
+          {
+            "name": "fall",
+            "durationSec": 0.417,
+            "trackCount": 96
+          },
+          {
+            "name": "landing",
+            "durationSec": 0.417,
+            "trackCount": 96
+          },
+          {
+            "name": "dodge",
+            "durationSec": 0.417,
+            "trackCount": 96
+          },
+          {
+            "name": "attack_1",
+            "durationSec": 0.375,
+            "trackCount": 96
+          },
+          {
+            "name": "attack_2",
+            "durationSec": 0.375,
+            "trackCount": 96
+          },
+          {
+            "name": "attack_3",
+            "durationSec": 0.5,
+            "trackCount": 96
+          },
+          {
+            "name": "heavy_strike",
+            "durationSec": 0.5,
+            "trackCount": 96
+          },
+          {
+            "name": "parry",
+            "durationSec": 0.417,
+            "trackCount": 96
+          },
+          {
+            "name": "hit_reaction",
+            "durationSec": 0.417,
+            "trackCount": 96
+          },
+          {
+            "name": "roar",
+            "durationSec": 0.75,
+            "trackCount": 96
+          },
+          {
+            "name": "ability_cast",
+            "durationSec": 0.75,
+            "trackCount": 96
+          },
+          {
+            "name": "victory",
+            "durationSec": 2,
+            "trackCount": 96
+          },
+          {
+            "name": "defeat",
+            "durationSec": 1.083,
+            "trackCount": 96
+          }
+        ],
+        "duplicateNodeNames": 0
+      }
+    },
+    "kaijax": {
+      "id": "kaijax",
+      "displayName": "Kai-Jax — The Memory Hero",
+      "visualAuthorityStatus": "approved",
+      "officialSheets": [
+        "ChatGPT_Image_Aug_3__2026__04_50_12_PM__1__078f6bfc.png"
+      ],
+      "master": {
+        "fileName": "kaijax_master.glb",
+        "tier": "master",
+        "status": "PASS",
+        "sha256": "6b7d5c9399c6e4e35073b9561ec409acb3e386846d5c60b10a922a8222bda20e",
+        "sizeBytes": 9160224,
+        "sizeMB": 8.736,
+        "vertices": 30347,
+        "triangles": 23967,
+        "triangleBudget": 35000,
+        "joints": 56,
+        "physicalTails": 3,
+        "tailRootNames": [
+          "tail_ember_01",
+          "tail_storm_01",
+          "tail_memory_01"
+        ],
+        "spiderBones": 12,
+        "maneBones": 7,
+        "bounds": {
+          "min": [
+            -0.617,
+            0,
+            -0.407
+          ],
+          "max": [
+            0.618,
+            2.28,
+            0.407
+          ],
+          "heightMeters": 2.28,
+          "targetHeightMeters": 2.04
+        },
+        "skinWeightSumRange": [
+          1,
+          1
+        ],
+        "morphMaxDeltas": {
+          "blink": 0.0092,
+          "snarl": 0.0123,
+          "roar": 0.01767,
+          "pain": 0.00941,
+          "focus": 0.00846
+        },
+        "socketParents": {
+          "socket_weapon_L": "hand_L",
+          "socket_weapon_R": "hand_R",
+          "socket_relic": "chest",
+          "socket_hitbox_L": "hand_L",
+          "socket_hitbox_R": "hand_R",
+          "socket_head": "head"
+        },
+        "pbrMaps": [
+          {
+            "name": "normal",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 874341
+          },
+          {
+            "name": "Image_0",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 826617
+          },
+          {
+            "name": "Image_1",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 496797
+          }
+        ],
+        "clipCount": 19,
+        "clips": [
+          {
+            "name": "idle",
+            "durationSec": 2.375,
+            "trackCount": 168
+          },
+          {
+            "name": "breathing",
+            "durationSec": 2.083,
+            "trackCount": 168
+          },
+          {
+            "name": "walk",
+            "durationSec": 0.875,
+            "trackCount": 168
+          },
+          {
+            "name": "run",
+            "durationSec": 0.583,
+            "trackCount": 168
+          },
+          {
+            "name": "sprint",
+            "durationSec": 0.458,
+            "trackCount": 168
+          },
+          {
+            "name": "jump",
+            "durationSec": 0.417,
+            "trackCount": 168
+          },
+          {
+            "name": "fall",
+            "durationSec": 0.417,
+            "trackCount": 168
+          },
+          {
+            "name": "landing",
+            "durationSec": 0.417,
+            "trackCount": 168
+          },
+          {
+            "name": "dodge",
+            "durationSec": 0.417,
+            "trackCount": 168
+          },
+          {
+            "name": "attack_1",
+            "durationSec": 0.375,
+            "trackCount": 168
+          },
+          {
+            "name": "attack_2",
+            "durationSec": 0.375,
+            "trackCount": 168
+          },
+          {
+            "name": "attack_3",
+            "durationSec": 0.5,
+            "trackCount": 168
+          },
+          {
+            "name": "heavy_strike",
+            "durationSec": 0.5,
+            "trackCount": 168
+          },
+          {
+            "name": "parry",
+            "durationSec": 0.417,
+            "trackCount": 168
+          },
+          {
+            "name": "hit_reaction",
+            "durationSec": 0.417,
+            "trackCount": 168
+          },
+          {
+            "name": "roar",
+            "durationSec": 0.75,
+            "trackCount": 168
+          },
+          {
+            "name": "ability_cast",
+            "durationSec": 0.75,
+            "trackCount": 168
+          },
+          {
+            "name": "victory",
+            "durationSec": 2,
+            "trackCount": 168
+          },
+          {
+            "name": "defeat",
+            "durationSec": 1.083,
+            "trackCount": 168
+          }
+        ],
+        "duplicateNodeNames": 0
+      },
+      "lod1": {
+        "fileName": "kaijax_lod1.glb",
+        "tier": "lod1",
+        "status": "PASS",
+        "sha256": "66db7bb61f816fbf6b8014a962c72ad6038ed7d2b18daa958bc69c5c95c47bde",
+        "sizeBytes": 5374508,
+        "sizeMB": 5.126,
+        "vertices": 15166,
+        "triangles": 10526,
+        "triangleBudget": 14000,
+        "joints": 56,
+        "physicalTails": 3,
+        "tailRootNames": [
+          "tail_ember_01",
+          "tail_storm_01",
+          "tail_memory_01"
+        ],
+        "spiderBones": 12,
+        "maneBones": 7,
+        "bounds": {
+          "min": [
+            -0.617,
+            0.0003,
+            -0.407
+          ],
+          "max": [
+            0.619,
+            2.279,
+            0.408
+          ],
+          "heightMeters": 2.279,
+          "targetHeightMeters": 2.04
+        },
+        "skinWeightSumRange": [
+          1,
+          1
+        ],
+        "morphMaxDeltas": {
+          "blink": 0.00915,
+          "snarl": 0.01224,
+          "roar": 0.01759,
+          "pain": 0.00937,
+          "focus": 0.00843
+        },
+        "socketParents": {
+          "socket_weapon_L": "hand_L",
+          "socket_weapon_R": "hand_R",
+          "socket_relic": "chest",
+          "socket_hitbox_L": "hand_L",
+          "socket_hitbox_R": "hand_R",
+          "socket_head": "head"
+        },
+        "pbrMaps": [
+          {
+            "name": "normal",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 417010
+          },
+          {
+            "name": "Image_0",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 418199
+          },
+          {
+            "name": "Image_1",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 268485
+          }
+        ],
+        "clipCount": 19,
+        "clips": [
+          {
+            "name": "idle",
+            "durationSec": 2.375,
+            "trackCount": 168
+          },
+          {
+            "name": "breathing",
+            "durationSec": 2.083,
+            "trackCount": 168
+          },
+          {
+            "name": "walk",
+            "durationSec": 0.875,
+            "trackCount": 168
+          },
+          {
+            "name": "run",
+            "durationSec": 0.583,
+            "trackCount": 168
+          },
+          {
+            "name": "sprint",
+            "durationSec": 0.458,
+            "trackCount": 168
+          },
+          {
+            "name": "jump",
+            "durationSec": 0.417,
+            "trackCount": 168
+          },
+          {
+            "name": "fall",
+            "durationSec": 0.417,
+            "trackCount": 168
+          },
+          {
+            "name": "landing",
+            "durationSec": 0.417,
+            "trackCount": 168
+          },
+          {
+            "name": "dodge",
+            "durationSec": 0.417,
+            "trackCount": 168
+          },
+          {
+            "name": "attack_1",
+            "durationSec": 0.375,
+            "trackCount": 168
+          },
+          {
+            "name": "attack_2",
+            "durationSec": 0.375,
+            "trackCount": 168
+          },
+          {
+            "name": "attack_3",
+            "durationSec": 0.5,
+            "trackCount": 168
+          },
+          {
+            "name": "heavy_strike",
+            "durationSec": 0.5,
+            "trackCount": 168
+          },
+          {
+            "name": "parry",
+            "durationSec": 0.417,
+            "trackCount": 168
+          },
+          {
+            "name": "hit_reaction",
+            "durationSec": 0.417,
+            "trackCount": 168
+          },
+          {
+            "name": "roar",
+            "durationSec": 0.75,
+            "trackCount": 168
+          },
+          {
+            "name": "ability_cast",
+            "durationSec": 0.75,
+            "trackCount": 168
+          },
+          {
+            "name": "victory",
+            "durationSec": 2,
+            "trackCount": 168
+          },
+          {
+            "name": "defeat",
+            "durationSec": 1.083,
+            "trackCount": 168
+          }
+        ],
+        "duplicateNodeNames": 0
+      }
+    },
+    "boryn": {
+      "id": "boryn",
+      "displayName": "Boryn — The Shield",
+      "visualAuthorityStatus": "approved",
+      "officialSheets": [
+        "ChatGPT_Image_Aug_3__2026__04_50_12_PM__1__078f6bfc.png",
+        "ChatGPT_Image_Aug_3__2026__04_50_13_PM__3__3e003001.png"
+      ],
+      "master": {
+        "fileName": "boryn_master.glb",
+        "tier": "master",
+        "status": "PASS",
+        "sha256": "58657935b21b29108e7fb93a8a7456197ee20784ac1221a74e4cb941638929c9",
+        "sizeBytes": 6153628,
+        "sizeMB": 5.869,
+        "vertices": 20837,
+        "triangles": 20675,
+        "triangleBudget": 28000,
+        "joints": 29,
+        "physicalTails": 1,
+        "tailRootNames": [
+          "tail_01"
+        ],
+        "spiderBones": 0,
+        "maneBones": 0,
+        "bounds": {
+          "min": [
+            -0.633,
+            0,
+            -0.442
+          ],
+          "max": [
+            0.633,
+            2.12,
+            0.442
+          ],
+          "heightMeters": 2.12,
+          "targetHeightMeters": 2.12
+        },
+        "skinWeightSumRange": [
+          1,
+          1
+        ],
+        "morphMaxDeltas": {
+          "blink": 0.00901,
+          "snarl": 0.01205,
+          "roar": 0.01733,
+          "pain": 0.00922,
+          "focus": 0.0083
+        },
+        "socketParents": {
+          "socket_weapon_L": "hand_L",
+          "socket_weapon_R": "hand_R",
+          "socket_relic": "chest",
+          "socket_hitbox_L": "hand_L",
+          "socket_hitbox_R": "hand_R",
+          "socket_head": "head"
+        },
+        "pbrMaps": [
+          {
+            "name": "normal",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 698270
+          },
+          {
+            "name": "Image_0",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 628460
+          },
+          {
+            "name": "Image_1",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 288704
+          }
+        ],
+        "clipCount": 19,
+        "clips": [
+          {
+            "name": "idle",
+            "durationSec": 2.375,
+            "trackCount": 87
+          },
+          {
+            "name": "breathing",
+            "durationSec": 2.083,
+            "trackCount": 87
+          },
+          {
+            "name": "walk",
+            "durationSec": 0.875,
+            "trackCount": 87
+          },
+          {
+            "name": "run",
+            "durationSec": 0.583,
+            "trackCount": 87
+          },
+          {
+            "name": "sprint",
+            "durationSec": 0.458,
+            "trackCount": 87
+          },
+          {
+            "name": "jump",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "fall",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "landing",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "dodge",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "attack_1",
+            "durationSec": 0.375,
+            "trackCount": 87
+          },
+          {
+            "name": "attack_2",
+            "durationSec": 0.375,
+            "trackCount": 87
+          },
+          {
+            "name": "attack_3",
+            "durationSec": 0.5,
+            "trackCount": 87
+          },
+          {
+            "name": "heavy_strike",
+            "durationSec": 0.5,
+            "trackCount": 87
+          },
+          {
+            "name": "parry",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "hit_reaction",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "roar",
+            "durationSec": 0.75,
+            "trackCount": 87
+          },
+          {
+            "name": "ability_cast",
+            "durationSec": 0.75,
+            "trackCount": 87
+          },
+          {
+            "name": "victory",
+            "durationSec": 2,
+            "trackCount": 87
+          },
+          {
+            "name": "defeat",
+            "durationSec": 1.083,
+            "trackCount": 87
+          }
+        ],
+        "duplicateNodeNames": 0
+      },
+      "lod1": {
+        "fileName": "boryn_lod1.glb",
+        "tier": "lod1",
+        "status": "PASS",
+        "sha256": "f305afc30b74559519f5e47a8d38547da3dcd286f7b82529c06df7064ba9fbf6",
+        "sizeBytes": 3416484,
+        "sizeMB": 3.258,
+        "vertices": 9989,
+        "triangles": 8648,
+        "triangleBudget": 11000,
+        "joints": 29,
+        "physicalTails": 1,
+        "tailRootNames": [
+          "tail_01"
+        ],
+        "spiderBones": 0,
+        "maneBones": 0,
+        "bounds": {
+          "min": [
+            -0.633,
+            0.0005,
+            -0.445
+          ],
+          "max": [
+            0.632,
+            2.121,
+            0.441
+          ],
+          "heightMeters": 2.121,
+          "targetHeightMeters": 2.12
+        },
+        "skinWeightSumRange": [
+          1,
+          1
+        ],
+        "morphMaxDeltas": {
+          "blink": 0.00901,
+          "snarl": 0.01205,
+          "roar": 0.01731,
+          "pain": 0.00922,
+          "focus": 0.00829
+        },
+        "socketParents": {
+          "socket_weapon_L": "hand_L",
+          "socket_weapon_R": "hand_R",
+          "socket_relic": "chest",
+          "socket_hitbox_L": "hand_L",
+          "socket_hitbox_R": "hand_R",
+          "socket_head": "head"
+        },
+        "pbrMaps": [
+          {
+            "name": "normal",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 335515
+          },
+          {
+            "name": "Image_0",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 322440
+          },
+          {
+            "name": "Image_1",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 158404
+          }
+        ],
+        "clipCount": 19,
+        "clips": [
+          {
+            "name": "idle",
+            "durationSec": 2.375,
+            "trackCount": 87
+          },
+          {
+            "name": "breathing",
+            "durationSec": 2.083,
+            "trackCount": 87
+          },
+          {
+            "name": "walk",
+            "durationSec": 0.875,
+            "trackCount": 87
+          },
+          {
+            "name": "run",
+            "durationSec": 0.583,
+            "trackCount": 87
+          },
+          {
+            "name": "sprint",
+            "durationSec": 0.458,
+            "trackCount": 87
+          },
+          {
+            "name": "jump",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "fall",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "landing",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "dodge",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "attack_1",
+            "durationSec": 0.375,
+            "trackCount": 87
+          },
+          {
+            "name": "attack_2",
+            "durationSec": 0.375,
+            "trackCount": 87
+          },
+          {
+            "name": "attack_3",
+            "durationSec": 0.5,
+            "trackCount": 87
+          },
+          {
+            "name": "heavy_strike",
+            "durationSec": 0.5,
+            "trackCount": 87
+          },
+          {
+            "name": "parry",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "hit_reaction",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "roar",
+            "durationSec": 0.75,
+            "trackCount": 87
+          },
+          {
+            "name": "ability_cast",
+            "durationSec": 0.75,
+            "trackCount": 87
+          },
+          {
+            "name": "victory",
+            "durationSec": 2,
+            "trackCount": 87
+          },
+          {
+            "name": "defeat",
+            "durationSec": 1.083,
+            "trackCount": 87
+          }
+        ],
+        "duplicateNodeNames": 0
+      }
+    },
+    "borax": {
+      "id": "borax",
+      "displayName": "Borax — The Law",
+      "visualAuthorityStatus": "approved",
+      "officialSheets": [
+        "ChatGPT_Image_Aug_3__2026__04_50_12_PM__1__078f6bfc.png",
+        "ChatGPT_Image_Aug_3__2026__04_50_13_PM__3__3e003001.png"
+      ],
+      "master": {
+        "fileName": "borax_master.glb",
+        "tier": "master",
+        "status": "PASS",
+        "sha256": "1efd15bae76b7573c2b6db176709b502ea4db03df6a16b4da97aeb9e67c56c43",
+        "sizeBytes": 7032564,
+        "sizeMB": 6.707,
+        "vertices": 24676,
+        "triangles": 22082,
+        "triangleBudget": 30000,
+        "joints": 29,
+        "physicalTails": 1,
+        "tailRootNames": [
+          "tail_01"
+        ],
+        "spiderBones": 0,
+        "maneBones": 0,
+        "bounds": {
+          "min": [
+            -0.578,
+            0,
+            -0.575
+          ],
+          "max": [
+            0.578,
+            2.2,
+            0.575
+          ],
+          "heightMeters": 2.2,
+          "targetHeightMeters": 2.2
+        },
+        "skinWeightSumRange": [
+          1,
+          1
+        ],
+        "morphMaxDeltas": {
+          "blink": 0.00903,
+          "snarl": 0.01208,
+          "roar": 0.01736,
+          "pain": 0.00924,
+          "focus": 0.00831
+        },
+        "socketParents": {
+          "socket_weapon_L": "hand_L",
+          "socket_weapon_R": "hand_R",
+          "socket_relic": "chest",
+          "socket_hitbox_L": "hand_L",
+          "socket_hitbox_R": "hand_R",
+          "socket_head": "head"
+        },
+        "pbrMaps": [
+          {
+            "name": "normal",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 797238
+          },
+          {
+            "name": "Image_0",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 704082
+          },
+          {
+            "name": "Image_1",
+            "format": "JPEG",
+            "width": 1536,
+            "height": 1536,
+            "bytes": 324162
+          }
+        ],
+        "clipCount": 19,
+        "clips": [
+          {
+            "name": "idle",
+            "durationSec": 2.375,
+            "trackCount": 87
+          },
+          {
+            "name": "breathing",
+            "durationSec": 2.083,
+            "trackCount": 87
+          },
+          {
+            "name": "walk",
+            "durationSec": 0.875,
+            "trackCount": 87
+          },
+          {
+            "name": "run",
+            "durationSec": 0.583,
+            "trackCount": 87
+          },
+          {
+            "name": "sprint",
+            "durationSec": 0.458,
+            "trackCount": 87
+          },
+          {
+            "name": "jump",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "fall",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "landing",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "dodge",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "attack_1",
+            "durationSec": 0.375,
+            "trackCount": 87
+          },
+          {
+            "name": "attack_2",
+            "durationSec": 0.375,
+            "trackCount": 87
+          },
+          {
+            "name": "attack_3",
+            "durationSec": 0.5,
+            "trackCount": 87
+          },
+          {
+            "name": "heavy_strike",
+            "durationSec": 0.5,
+            "trackCount": 87
+          },
+          {
+            "name": "parry",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "hit_reaction",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "roar",
+            "durationSec": 0.75,
+            "trackCount": 87
+          },
+          {
+            "name": "ability_cast",
+            "durationSec": 0.75,
+            "trackCount": 87
+          },
+          {
+            "name": "victory",
+            "durationSec": 2,
+            "trackCount": 87
+          },
+          {
+            "name": "defeat",
+            "durationSec": 1.083,
+            "trackCount": 87
+          }
+        ],
+        "duplicateNodeNames": 0
+      },
+      "lod1": {
+        "fileName": "borax_lod1.glb",
+        "tier": "lod1",
+        "status": "PASS",
+        "sha256": "5028a1d8a2671e027df2eaa95629c9fb91c92826e1c2085ad6383718cf4dd970",
+        "sizeBytes": 3905056,
+        "sizeMB": 3.724,
+        "vertices": 12254,
+        "triangles": 9212,
+        "triangleBudget": 12000,
+        "joints": 29,
+        "physicalTails": 1,
+        "tailRootNames": [
+          "tail_01"
+        ],
+        "spiderBones": 0,
+        "maneBones": 0,
+        "bounds": {
+          "min": [
+            -0.577,
+            0.0006,
+            -0.572
+          ],
+          "max": [
+            0.578,
+            2.199,
+            0.574
+          ],
+          "heightMeters": 2.199,
+          "targetHeightMeters": 2.2
+        },
+        "skinWeightSumRange": [
+          1,
+          1
+        ],
+        "morphMaxDeltas": {
+          "blink": 0.00884,
+          "snarl": 0.01182,
+          "roar": 0.01698,
+          "pain": 0.00904,
+          "focus": 0.00813
+        },
+        "socketParents": {
+          "socket_weapon_L": "hand_L",
+          "socket_weapon_R": "hand_R",
+          "socket_relic": "chest",
+          "socket_hitbox_L": "hand_L",
+          "socket_hitbox_R": "hand_R",
+          "socket_head": "head"
+        },
+        "pbrMaps": [
+          {
+            "name": "normal",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 380777
+          },
+          {
+            "name": "Image_0",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 355485
+          },
+          {
+            "name": "Image_1",
+            "format": "JPEG",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 175530
+          }
+        ],
+        "clipCount": 19,
+        "clips": [
+          {
+            "name": "idle",
+            "durationSec": 2.375,
+            "trackCount": 87
+          },
+          {
+            "name": "breathing",
+            "durationSec": 2.083,
+            "trackCount": 87
+          },
+          {
+            "name": "walk",
+            "durationSec": 0.875,
+            "trackCount": 87
+          },
+          {
+            "name": "run",
+            "durationSec": 0.583,
+            "trackCount": 87
+          },
+          {
+            "name": "sprint",
+            "durationSec": 0.458,
+            "trackCount": 87
+          },
+          {
+            "name": "jump",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "fall",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "landing",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "dodge",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "attack_1",
+            "durationSec": 0.375,
+            "trackCount": 87
+          },
+          {
+            "name": "attack_2",
+            "durationSec": 0.375,
+            "trackCount": 87
+          },
+          {
+            "name": "attack_3",
+            "durationSec": 0.5,
+            "trackCount": 87
+          },
+          {
+            "name": "heavy_strike",
+            "durationSec": 0.5,
+            "trackCount": 87
+          },
+          {
+            "name": "parry",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "hit_reaction",
+            "durationSec": 0.417,
+            "trackCount": 87
+          },
+          {
+            "name": "roar",
+            "durationSec": 0.75,
+            "trackCount": 87
+          },
+          {
+            "name": "ability_cast",
+            "durationSec": 0.75,
+            "trackCount": 87
+          },
+          {
+            "name": "victory",
+            "durationSec": 2,
+            "trackCount": 87
+          },
+          {
+            "name": "defeat",
+            "durationSec": 1.083,
+            "trackCount": 87
+          }
+        ],
+        "duplicateNodeNames": 0
+      }
+    },
+    "bovar": {
+      "id": "bovar",
+      "displayName": "Bovar — Adoptive Father",
+      "visualAuthorityStatus": "awaiting_visual_approval",
+      "officialSheets": [],
+      "master": null,
+      "lod1": null,
+      "governanceNote": "Withheld per Visual Authority Rule: Fathers/Mentors sheet depicts Boryn, Borax, and Vharok."
+    }
+  },
+  "governanceChecks": {
+    "bovarMasterExists": false,
+    "bovarLod1Exists": false,
+    "bovarStatus": "PASS — Strictly withheld (awaiting_visual_approval)",
+    "kaiJaxThreeTailRule": "PASS — 3 physical tail roots (tail_ember_01, tail_storm_01, tail_memory_01), 12 tail bones"
+  }
+}

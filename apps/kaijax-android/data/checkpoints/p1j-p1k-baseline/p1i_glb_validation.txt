@@ -1,0 +1,11 @@
+[VALIDATED] kai_master.glb       6.54 MB | tris= 22087 | joints=37 | morphs=5 | clips=19
+[VALIDATED] kai_lod1.glb         3.75 MB | tris=  9211 | joints=37 | morphs=5 | clips=19
+[VALIDATED] jax_master.glb       6.18 MB | tris= 22087 | joints=32 | morphs=5 | clips=19
+[VALIDATED] jax_lod1.glb         3.49 MB | tris=  9211 | joints=32 | morphs=5 | clips=19
+[VALIDATED] kaijax_master.glb    9.16 MB | tris= 23967 | joints=56 | morphs=5 | clips=19
+[VALIDATED] kaijax_lod1.glb      5.37 MB | tris= 10526 | joints=56 | morphs=5 | clips=19
+[VALIDATED] boryn_master.glb     6.15 MB | tris= 20675 | joints=29 | morphs=5 | clips=19
+[VALIDATED] boryn_lod1.glb       3.42 MB | tris=  8648 | joints=29 | morphs=5 | clips=19
+[VALIDATED] borax_master.glb     7.03 MB | tris= 22082 | joints=29 | morphs=5 | clips=19
+[VALIDATED] borax_lod1.glb       3.90 MB | tris=  9212 | joints=29 | morphs=5 | clips=19
+ALL GLB BINARY & CANON INVARIANTS PASSED.

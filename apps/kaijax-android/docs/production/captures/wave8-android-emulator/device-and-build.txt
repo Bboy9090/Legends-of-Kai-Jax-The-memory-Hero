@@ -1,0 +1,19 @@
+device: sdk_gphone64_x86_64 / Android 17
+Current WebView Update Service state
+  Current WebView package (name, version): (com.google.android.webview, 145.0.7632.218)
+7202aa1a7557db01a3794758f59c375e5483fa22e38ad1c208d6ebfaed51a3e5  /Users/bj23/.gemini/antigravity/scratch/legends-of-kai-jax-unified/apps/kaijax-android/android/app/build/outputs/apk/debug/app-debug.apk
+package: com.bobbyblanco.legendsofkaijax
+--- meminfo (after campaign) ---
+  Native Heap    27793    27748        0        0    31572    45008    33501     7935
+        TOTAL   152403    71668    23744        0   337928    53151    37573    12006
+           Java Heap:    10736                          35164
+         Native Heap:    27748                          31572
+            Graphics:        0                              0
+           TOTAL PSS:   152403            TOTAL RSS:   337928      TOTAL SWAP (KB):        0
+--- launch ---
+Status: ok
+LaunchState: COLD
+TotalTime: 19913
+WaitTime: 20021
+--- build under test ---
+fa368e8e test(campaign): Wave 8 eight-district playthrough harness with real-combat evidence
