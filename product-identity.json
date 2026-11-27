@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "repository": "Bboy9090/Legends-of-Kai-Jax-The-memory-Hero",
+  "status": "recorded",
+  "public_name": "Legends of Kai-Jax: The Memory Hero",
+  "checks": [
+    {
+      "path": "desktop_suite/app_meta.json",
+      "format": "json",
+      "key": [
+        "title"
+      ],
+      "expected": "Legends of Kai-Jax: The Memory Hero",
+      "role": "public_name"
+    },
+    {
+      "path": "desktop_suite/app_meta.json",
+      "format": "json",
+      "key": [
+        "slug"
+      ],
+      "expected": "legends-of-kai-jax",
+      "role": "internal_identifier"
+    },
+    {
+      "path": "desktop_suite/app_meta.json",
+      "format": "json",
+      "key": [
+        "exe_name"
+      ],
+      "expected": "LegendsOfKaiJax",
+      "role": "internal_identifier"
+    }
+  ],
+  "evidence": "Recorded franchise identity and a30a938237cc3c0f0efdd1509af5393c128f942b desktop_suite/app_meta.json",
+  "release_verification": "not_performed"
+}
