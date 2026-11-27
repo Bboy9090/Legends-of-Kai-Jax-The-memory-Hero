@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Legends of Kai-Jax: The Memory Hero</title>
+<style>
+  :root {
+    --bg: #060B18;
+    --surface: #0E172E;
+    --surface2: #162445;
+    --primary: #22E5FF;
+    --accent: #F5C542;
+    --text: #F0F8FF;
+    --muted: #9BB3D4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  #splash {
+    position: fixed; inset: 0; z-index: 9999;
+    background: radial-gradient(circle at center, rgba(14,23,46,0.42), rgba(6,11,24,0.96)),
+                url('/assets/splash_1280x720.jpg') center/cover no-repeat;
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 58px;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+  }
+  #splash.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+  .s-card {
+    background: rgba(6,11,24,0.85); backdrop-filter: blur(18px);
+    border: 1px solid rgba(34,229,255,0.5); border-radius: 22px; padding: 22px 38px;
+    display: flex; align-items: center; gap: 22px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.7), 0 0 42px rgba(34,229,255,0.25);
+  }
+  .s-card img { width: 82px; height: 82px; border-radius: 18px; box-shadow: 0 0 26px rgba(245,197,66,0.4); }
+  .bar { width: 320px; height: 6px; background: rgba(255,255,255,0.12); border-radius: 99px; margin-top: 12px; overflow: hidden; }
+  .bar > div { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.25s; }
+
+  header {
+    height: 60px; background: linear-gradient(90deg, #091124, #111F3D);
+    border-bottom: 1px solid rgba(34,229,255,0.28);
+    display: flex; align-items: center; justify-content: space-between; padding: 0 18px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand img { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--primary); }
+  .brand h1 { font-size: 17px; letter-spacing: 0.5px; }
+  .brand h1 em { font-style: normal; color: var(--primary); }
+  .tabs { display: flex; gap: 8px; }
+  .tab {
+    background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid rgba(34,229,255,0.2);
+    padding: 7px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 13px;
+  }
+  .tab.active { background: linear-gradient(135deg, var(--primary), #0EA5E9); color: #060B18; border-color: transparent; }
+
+  main { flex: 1; position: relative; overflow: hidden; }
+  .view { position: absolute; inset: 0; display: none; overflow-y: auto; padding: 20px; }
+  .view.active { display: flex; }
+  #view-arena { padding: 0; flex-direction: column; }
+  .arena-wrap { flex: 1; position: relative; background: #050914; }
+  canvas { width: 100%; height: 100%; display: block; }
+  .hud { position: absolute; top: 14px; left: 16px; right: 16px; display: flex; justify-content: space-between; pointer-events: none; }
+  .hbox { background: rgba(6,11,24,0.8); backdrop-filter: blur(10px); border: 1px solid rgba(34,229,255,0.35); border-radius: 12px; padding: 8px 16px; display: flex; gap: 16px; font-size: 13px; font-weight: 700; }
+  .hint { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(6,11,24,0.82); border: 1px solid rgba(245,197,66,0.35); padding: 6px 14px; border-radius: 99px; font-size: 12px; color: var(--muted); }
+  .hint kbd { color: var(--accent); font-weight: 800; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; width: 100%; max-width: 1180px; margin: 0 auto; align-content: start; }
+  .card { background: linear-gradient(160deg, var(--surface), var(--surface2)); border: 1px solid rgba(34,229,255,0.25); border-radius: 16px; padding: 18px; }
+  .card h3 { color: var(--primary); margin-bottom: 6px; }
+  .card p { color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .btn { background: linear-gradient(135deg, var(--accent), #D97706); color: #060B18; border: none; padding: 8px 16px; border-radius: 10px; font-weight: 800; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="splash">
+  <div class="s-card">
+    <img src="/assets/icon_256.png" alt="Kai-Jax">
+    <div>
+      <div style="font-size:24px;font-weight:800;">Legends of <span style="color:var(--primary)">Kai-Jax</span></div>
+      <div style="font-size:13px;color:var(--accent);margin-top:3px;">The Memory Hero &bull; Desktop Combat &amp; LoreHub Edition</div>
+      <div class="bar"><div id="sbar"></div></div>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="brand">
+    <img src="/assets/icon_256.png" alt="Icon">
+    <h1>Legends of <em>Kai-Jax</em>: The Memory Hero</h1>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('arena', this)">Citadel Combat Arena</button>
+    <button class="tab" onclick="showTab('roster', this)">Hero Roster</button>
+    <button class="tab" onclick="showTab('lore', this)">LoreHub Codex</button>
+    <button class="tab" onclick="showTab('os', this)">OS Parity</button>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;font-size:13px;font-weight:700;">
+    <span style="color:var(--accent)">Best: <b id="hdr-best">0</b></span>
+    <button class="btn" onclick="restartArena()">Reset Run</button>
+  </div>
+</header>
+
+<main>
+  <section id="view-arena" class="view active">
+    <div class="arena-wrap">
+      <canvas id="arena"></canvas>
+      <div class="hud">
+        <div class="hbox">
+          <span style="color:var(--primary)">HP: <b id="a-hp">120</b></span>
+          <span style="color:var(--accent)">Shards: <b id="a-shards">0</b></span>
+          <span>Wave: <b id="a-wave">1</b></span>
+        </div>
+        <div class="hbox">
+          <span>Score: <b id="a-score" style="color:var(--primary)">0</b></span>
+          <span>Nova Charge: <b id="a-nova" style="color:var(--accent)">100%</b></span>
+        </div>
+      </div>
+      <div class="hint"><kbd>WASD/Arrows</kbd> Move &bull; <kbd>J / Space</kbd> Memory Blade Slash &bull; <kbd>K / Shift</kbd> Chrono Dash &bull; <kbd>L / E</kbd> <b>Shard Nova Burst</b></div>
+    </div>
+  </section>
+
+  <section id="view-roster" class="view"><div class="grid" id="roster-grid"></div></section>
+  <section id="view-lore" class="view"><div class="grid" id="lore-grid"></div></section>
+  <section id="view-os" class="view"><div class="grid" id="os-grid"></div></section>
+</main>
+
+<script>
+(function(){
+  let p = 15; const b = document.getElementById('sbar');
+  const iv = setInterval(()=>{ p = Math.min(100, p+22); b.style.width = p+'%'; if(p>=100){ clearInterval(iv); setTimeout(()=>document.getElementById('splash').classList.add('hide'), 320); }}, 140);
+})();
+
+function showTab(id, btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  if(id==='arena') resize();
+}
+
+const canvas = document.getElementById('arena');
+const ctx = canvas.getContext('2d');
+function resize(){ const r = canvas.parentElement.getBoundingClientRect(); canvas.width = Math.max(800, r.width); canvas.height = Math.max(460, r.height); }
+window.addEventListener('resize', resize);
+
+let keys = {}, hero, foes = [], shards = [], fx = [], wave = 1, score = 0, slashCd = 0, dashCd = 0, nova = 100;
+
+function spawnWave(n){
+  foes = [];
+  const count = 4 + n * 2;
+  for(let i=0;i<count;i++){
+    const ang = (Math.PI*2/count)*i;
+    const boss = (n % 3 === 0 && i === 0);
+    foes.push({
+      x: canvas.width/2 + Math.cos(ang)*380, y: canvas.height/2 + Math.sin(ang)*240,
+      hp: boss ? 140 + n*20 : 35 + n*8, maxHp: boss ? 140 + n*20 : 35 + n*8,
+      r: boss ? 28 : 16, spd: boss ? 1.8 : 2.1 + n*0.12, boss
+    });
+  }
+}
+
+function restartArena(){
+  resize();
+  hero = { x: canvas.width/2, y: canvas.height/2, vx:0, vy:0, hp: 120, facing: 0, inv: 0, slashAnim: 0 };
+  wave = 1; score = 0; nova = 100; shards = []; fx = [];
+  spawnWave(1);
+}
+
+function doSlash(){
+  if(slashCd > 0) return;
+  slashCd = 14; hero.slashAnim = 12;
+  foes.forEach(f => {
+    const dist = Math.hypot(f.x - hero.x, f.y - hero.y);
+    if(dist < 95 + f.r){
+      f.hp -= 38;
+      fx.push({x:f.x, y:f.y, r:26, col:'#22E5FF', life:14});
+      if(f.hp <= 0){
+        score += f.boss ? 500 : 100;
+        shards.push({x:f.x, y:f.y, gold: f.boss});
+      }
+    }
+  });
+  foes = foes.filter(f=>f.hp > 0);
+}
+
+function doNova(){
+  if(nova < 100) return;
+  nova = 0;
+  fx.push({x:hero.x, y:hero.y, r:230, col:'#F5C542', life:24});
+  foes.forEach(f => {
+    if(Math.hypot(f.x-hero.x, f.y-hero.y) < 250){
+      f.hp -= 95;
+      if(f.hp <= 0){ score += f.boss ? 500 : 120; shards.push({x:f.x, y:f.y, gold:true}); }
+    }
+  });
+  foes = foes.filter(f=>f.hp > 0);
+}
+
+window.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if(e.code==='Space' || e.code==='KeyJ') doSlash();
+  if((e.code==='ShiftLeft' || e.code==='KeyK') && dashCd<=0){ dashCd=32; hero.x += Math.cos(hero.facing)*110; hero.y += Math.sin(hero.facing)*110; fx.push({x:hero.x,y:hero.y,r:34,col:'#22E5FF',life:14}); }
+  if(e.code==='KeyE' || e.code==='KeyL') doNova();
+});
+window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+function tick(){
+  if(!hero) return;
+  let dx = (keys['KeyD']||keys['ArrowRight']?1:0) - (keys['KeyA']||keys['ArrowLeft']?1:0);
+  let dy = (keys['KeyS']||keys['ArrowDown']?1:0) - (keys['KeyW']||keys['ArrowUp']?1:0);
+  if(dx||dy){ hero.facing = Math.atan2(dy, dx); const m = Math.hypot(dx,dy); hero.x += (dx/m)*5.2; hero.y += (dy/m)*5.2; }
+  hero.x = Math.max(30, Math.min(canvas.width-30, hero.x));
+  hero.y = Math.max(30, Math.min(canvas.height-30, hero.y));
+  if(slashCd>0) slashCd--; if(dashCd>0) dashCd--; if(hero.inv>0) hero.inv--; if(hero.slashAnim>0) hero.slashAnim--;
+  nova = Math.min(100, nova + 0.25);
+
+  for(const f of foes){
+    const ang = Math.atan2(hero.y - f.y, hero.x - f.x);
+    f.x += Math.cos(ang)*f.spd; f.y += Math.sin(ang)*f.spd;
+    if(Math.hypot(f.x-hero.x, f.y-hero.y) < f.r + 18 && hero.inv <= 0){
+      hero.hp -= f.boss ? 20 : 12; hero.inv = 35;
+      if(hero.hp <= 0){
+        fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({score, wave, shards_gained: 5})});
+        restartArena(); return;
+      }
+    }
+  }
+  shards = shards.filter(s => {
+    if(Math.hypot(s.x-hero.x, s.y-hero.y) < 34){ score += s.gold ? 200 : 50; nova = Math.min(100, nova + 25); return false; }
+    return true;
+  });
+  if(foes.length === 0){
+    wave++; hero.hp = Math.min(120, hero.hp + 25);
+    fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({score, wave, shards_gained: 3})}).then(r=>r.json()).then(d=>{ document.getElementById('hdr-best').textContent = d.save.best_score; });
+    spawnWave(wave);
+  }
+  fx.forEach(e=>e.life--); fx = fx.filter(e=>e.life>0);
+
+  document.getElementById('a-hp').textContent = hero.hp;
+  document.getElementById('a-wave').textContent = wave;
+  document.getElementById('a-score').textContent = score;
+  document.getElementById('a-shards').textContent = shards.length;
+  document.getElementById('a-nova').textContent = Math.floor(nova) + '%';
+
+  // Render Citadel Arena
+  ctx.fillStyle = '#060B18'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  // Subtle geometric citadel rings
+  ctx.strokeStyle = 'rgba(34,229,255,0.12)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(canvas.width/2, canvas.height/2, 210, 0, Math.PI*2); ctx.stroke();
+  ctx.strokeStyle = 'rgba(245,197,66,0.12)';
+  ctx.beginPath(); ctx.arc(canvas.width/2, canvas.height/2, 340, 0, Math.PI*2); ctx.stroke();
+
+  shards.forEach(s => {
+    ctx.fillStyle = s.gold ? '#F5C542' : '#22E5FF';
+    ctx.beginPath(); ctx.moveTo(s.x, s.y-12); ctx.lineTo(s.x+8, s.y); ctx.lineTo(s.x, s.y+12); ctx.lineTo(s.x-8, s.y); ctx.closePath(); ctx.fill();
+  });
+  foes.forEach(f => {
+    ctx.fillStyle = f.boss ? '#F59E0B' : '#A855F7';
+    ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#111'; ctx.fillRect(f.x-f.r, f.y-f.r-10, f.r*2, 4);
+    ctx.fillStyle = '#EF4444'; ctx.fillRect(f.x-f.r, f.y-f.r-10, f.r*2*(f.hp/f.maxHp), 4);
+  });
+  fx.forEach(e => {
+    ctx.strokeStyle = e.col; ctx.lineWidth = 4; ctx.globalAlpha = e.life/24;
+    ctx.beginPath(); ctx.arc(e.x, e.y, e.r*(1.2 - e.life/30), 0, Math.PI*2); ctx.stroke(); ctx.globalAlpha = 1;
+  });
+  // Kai-Jax warrior emblem
+  ctx.fillStyle = hero.inv>0 && hero.inv%4<2 ? '#fff' : '#0E172E';
+  ctx.strokeStyle = '#22E5FF'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(hero.x, hero.y, 19, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#22E5FF'; ctx.fillRect(hero.x-8, hero.y-4, 16, 5);
+  if(hero.slashAnim > 0){
+    ctx.strokeStyle = '#22E5FF'; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.arc(hero.x, hero.y, 68, hero.facing-1.1, hero.facing+1.1); ctx.stroke();
+  }
+  requestAnimationFrame(tick);
+}
+
+async function loadMeta(){
+  const d = await (await fetch('/api/lore')).json();
+  document.getElementById('hdr-best').textContent = d.save.best_score || 0;
+  document.getElementById('roster-grid').innerHTML = d.roster.map(c=>`
+    <div class="card">
+      <h3>${c.name}</h3>
+      <p style="color:var(--accent);font-weight:700;margin-bottom:8px;">${c.role}</p>
+      <p>HP: <b>${c.hp}</b> &bull; Speed: <b>${c.speed}</b> &bull; Power: <b>${c.power}</b></p>
+      <p style="margin-top:8px;">${c.ability}</p>
+    </div>`).join('');
+  document.getElementById('lore-grid').innerHTML = d.codex.map(l=>`
+    <div class="card">
+      <span style="color:var(--accent);font-size:11px;font-weight:800;">${l.era.toUpperCase()}</span>
+      <h3>${l.chapter}</h3>
+      <p>${l.summary}</p>
+    </div>`).join('');
+  const p = await (await fetch('/api/platform')).json();
+  const caps = p.exclusive_capabilities || {};
+  document.getElementById('os-grid').innerHTML = ['windows','macos','linux'].map(k=>`
+    <div class="card">
+      <h3>${k.toUpperCase()} Edition</h3>
+      <p>${(caps[k]||[]).map(c=>'&bull; '+c).join('<br>')}</p>
+    </div>`).join('');
+}
+
+restartArena(); loadMeta(); tick();
+</script>
+</body>
+</html>

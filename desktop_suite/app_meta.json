@@ -1,0 +1,19 @@
+{
+  "title": "Legends of Kai-Jax: The Memory Hero",
+  "slug": "legends-of-kai-jax",
+  "exe_name": "LegendsOfKaiJax",
+  "version": "1.0.0",
+  "width": 1380,
+  "height": 860,
+  "theme": {
+    "bg": "#0A090E",
+    "surface": "#16141F",
+    "surface2": "#221E30",
+    "primary": "#F59E0B",
+    "accent": "#38BDF8",
+    "secondary": "#EF4444",
+    "text": "#F8FAFC",
+    "muted": "#B4B9C9"
+  },
+  "extra_datas": []
+}
