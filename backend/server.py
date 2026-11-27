@@ -1640,44 +1640,47 @@ async def get_full_bible():
 
 @api_router.post("/generate-image", response_model=ImageGenerationResponse)
 async def generate_character_image(request: ImageGenerationRequest):
-    """Generate character image using AI"""
-    from emergentintegrations.llm.openai.image_generation import OpenAIImageGeneration
-    
-    api_key = os.environ.get('EMERGENT_LLM_KEY')
+    """Generate character art with the official OpenAI Images API."""
+    from openai import AsyncOpenAI
+
+    # OPENAI_API_KEY is the supported production variable. Keep the historical
+    # EMERGENT_LLM_KEY as a transition fallback so existing deployments do not
+    # break solely because the private wrapper package was removed.
+    api_key = (os.environ.get("OPENAI_API_KEY") or os.environ.get("EMERGENT_LLM_KEY") or "").strip()
     if not api_key:
-        raise HTTPException(status_code=500, detail="API key not configured")
-    
+        raise HTTPException(status_code=503, detail="Image generation provider is not configured")
+
     try:
-        image_gen = OpenAIImageGeneration(api_key=api_key)
-        images = await image_gen.generate_images(
+        client = AsyncOpenAI(api_key=api_key)
+        result = await client.images.generate(
+            model=os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-1"),
             prompt=request.prompt,
-            model="gpt-image-1",
-            number_of_images=1
+            size="1024x1024",
         )
-        
-        if images and len(images) > 0:
-            image_base64 = base64.b64encode(images[0]).decode('utf-8')
-            
-            # Save to database
-            generated = GeneratedImage(
-                character_type=request.character_type,
-                prompt=request.prompt,
-                image_base64=image_base64
-            )
-            doc = generated.model_dump()
-            doc['created_at'] = doc['created_at'].isoformat()
-            await db.generated_images.insert_one(doc)
-            
-            return ImageGenerationResponse(
-                image_base64=image_base64,
-                character_type=request.character_type,
-                prompt=request.prompt
-            )
-        else:
-            raise HTTPException(status_code=500, detail="No image was generated")
-    except Exception as e:
-        logging.error(f"Image generation error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Image generation failed: {str(e)}")
+
+        image_base64 = result.data[0].b64_json if result.data else None
+        if not image_base64:
+            raise RuntimeError("OpenAI Images API returned no base64 image payload")
+
+        generated = GeneratedImage(
+            character_type=request.character_type,
+            prompt=request.prompt,
+            image_base64=image_base64,
+        )
+        doc = generated.model_dump()
+        doc["created_at"] = doc["created_at"].isoformat()
+        await db.generated_images.insert_one(doc)
+
+        return ImageGenerationResponse(
+            image_base64=image_base64,
+            character_type=request.character_type,
+            prompt=request.prompt,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logging.exception("Image generation failed")
+        raise HTTPException(status_code=502, detail="Image generation provider failed") from exc
 
 @api_router.get("/generated-images/{character_type}")
 async def get_generated_images(character_type: str):
