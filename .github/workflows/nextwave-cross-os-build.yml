@@ -46,6 +46,8 @@ jobs:
         run: |
           git clone --depth 1 --branch "${{ github.ref_name }}" "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" .
           echo 'No Vite prebuild needed'
+          python3 -m venv .venv
+          source .venv/bin/activate
           python3 -m pip install --upgrade pip pyinstaller pywebview flask psutil pillow
           python3 scripts/zies_gate.py
           bash desktop_suite/build_macos_linux.sh
