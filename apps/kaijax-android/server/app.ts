@@ -21,6 +21,7 @@ import {
 } from './security.js';
 
 import { createAdmin, type AdminOptions } from './admin.js';
+import { decodeSafeArtZip } from './safeArtZip.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -796,32 +797,21 @@ export function buildApp(cfg: ServerConfig) {
 
         const buffer = Buffer.from(await dlRes.arrayBuffer());
 
-        // Unpack explicitly chosen .zip art archives into individual sheets
+        // Parse archive metadata before any vault writes. Unlike system
+        // unzip, this is deterministic on macOS/Linux and never creates
+        // archive-controlled filesystem paths, directories or symlinks.
         if (/\.zip$/i.test(meta.name) || meta.mimeType.includes('zip')) {
           if (buffer.byteLength > MAX_ZIP_BYTES) continue;
-          const tmpZipDir = fs.mkdtempSync(path.join(os.tmpdir(), 'kaijax-artzip-'));
-          const tmpZipPath = path.join(tmpZipDir, 'archive.zip');
-          const outRoot = path.join(tmpZipDir, 'out');
-          try {
-            fs.writeFileSync(tmpZipPath, buffer);
-            await execFileAsync('unzip', ['-o', '-q', tmpZipPath, '-d', outRoot], {
-              timeout: 120000,
-              maxBuffer: 4 * 1024 * 1024,
-            });
-            let extractedBytes = 0;
-            const extractedFiles = walkFilesRecursive(outRoot).slice(0, MAX_ZIP_ENTRIES);
-            for (const extFile of extractedFiles) {
-              // Only regular files that really live inside the extraction directory (no symlink escapes).
-              const safeExtFile = resolveInside(outRoot, path.relative(outRoot, extFile));
-              if (!safeExtFile || !isPlainFile(safeExtFile)) continue;
-              const extName = path.basename(safeExtFile);
-              if (extName.startsWith('._') || safeExtFile.includes('__MACOSX')) continue;
-              if (!/\.(png|jpe?g|webp|glb|gltf)$/i.test(extName)) continue;
-
-              const relDir = path.relative(outRoot, path.dirname(safeExtFile));
-              const entryBuf = fs.readFileSync(safeExtFile);
-              extractedBytes += entryBuf.byteLength;
-              if (extractedBytes > MAX_ZIP_EXTRACTED_BYTES) break;
+          const extractedFiles = decodeSafeArtZip(buffer, {
+            maxCompressedBytes: MAX_ZIP_BYTES,
+            maxExtractedBytes: MAX_ZIP_EXTRACTED_BYTES,
+            maxEntries: MAX_ZIP_ENTRIES,
+          });
+          for (const entry of extractedFiles) {
+              const extName = path.posix.basename(entry.name);
+              const entryDir = path.posix.dirname(entry.name);
+              const relDir = entryDir === '.' ? '' : entryDir;
+              const entryBuf = entry.bytes;
               const isGlb = /\.(glb|gltf)$/i.test(extName);
               const entryMime = isGlb
                 ? 'model/gltf-binary'
@@ -860,10 +850,7 @@ export function buildApp(cfg: ServerConfig) {
                 importedAt: new Date().toISOString(),
               });
             }
-            saveProgressManifest();
-          } finally {
-            fs.rmSync(tmpZipDir, { recursive: true, force: true });
-          }
+          saveProgressManifest();
           continue;
         }
 
