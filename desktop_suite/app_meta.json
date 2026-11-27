@@ -15,5 +15,10 @@
     "text": "#F8FAFC",
     "muted": "#B4B9C9"
   },
-  "extra_datas": []
+  "extra_datas": [
+    {
+      "src": "apps/web/dist",
+      "dst": "real_app"
+    }
+  ]
 }
