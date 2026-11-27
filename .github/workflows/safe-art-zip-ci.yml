@@ -1,0 +1,43 @@
+name: Candidate Wave 9 Safe Art ZIP Tests
+
+on:
+  push:
+    branches: ['hardening/p1p-wave9-safe-art-zip']
+  pull_request:
+    branches: ['integration/p1p-unified-reconciliation']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wave9-safe-art-zip-candidate
+  cancel-in-progress: true
+
+jobs:
+  safe-zip-and-server:
+    name: ZIP32 security and canon-drive server tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact commit without unpinned external actions
+        env:
+          EXACT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          git clone --no-checkout "https://github.com/$GITHUB_REPOSITORY.git" source
+          git -C source checkout --detach "$EXACT_SHA"
+          test "$(git -C source rev-parse HEAD)" = "$EXACT_SHA"
+      - name: Activate frozen pnpm toolchain
+        working-directory: source
+        run: |
+          set -euo pipefail
+          node --version
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+      - name: Install frozen workspace dependencies
+        working-directory: source
+        run: pnpm install --filter ./apps/kaijax-android... --frozen-lockfile
+      - name: Run ZIP and full server security tests
+        working-directory: source
+        run: pnpm -C apps/kaijax-android test:server
