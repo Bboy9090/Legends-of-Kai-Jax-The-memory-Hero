@@ -47,3 +47,7 @@ cd frontend && npx craco build   # Build check for Game Hub frontend
 - The frontend (`frontend/`) has ESLint 9.x as devDependency but no `eslint.config.js` — linting is handled internally by `react-scripts`/CRACO.
 - `~/.local/bin` must be on `PATH` for Python tools (uvicorn, flake8, etc.).
 - No automated test files exist in `apps/web` or `frontend`.
+
+## Product identity governance
+
+Read BRAND_POLICY.md, product-identity.json and ZERO_ILLUSION_STANDARD.md. Use the approved full franchise title in reports and preserve original canon/artwork and active branches. Source metadata is not proof of a playable or release-qualified build.
