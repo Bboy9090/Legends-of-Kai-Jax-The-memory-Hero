@@ -1,0 +1,3 @@
+# Legends of Kai-Jax: The Memory Hero — identity policy
+
+Public franchise title: Legends of Kai-Jax: The Memory Hero. Memory Hero is a reported short-form shipped UI label; this desktop contract does not establish any other store title. Preserve original character models, art, story canon and active game integration lanes. Do not substitute fallback assets or an unrelated shell for the actual game. Read ZERO_ILLUSION_STANDARD.md. Source metadata verification does not certify graphics, gameplay, signing, installed artifacts or store identity. Changes to identity rules require independent owner review. No unauthorized renaming, merging or publication.
